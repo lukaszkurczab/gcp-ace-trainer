@@ -6,17 +6,17 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { Badge, Button, Card, ListRow, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { colors, radius, spacing, typography } from "../../theme";
-import { QuestionBankSummary } from "../questions";
 import { clearActiveExamSession, getActiveExamSession, getQuestions } from "../../storage";
 import type { ActiveExamSession, Question } from "../../types";
 import type { RootStackParamList } from "../../navigation";
 import { createExamSession } from "../exam/examService";
+import { DEFAULT_QUESTION_BANK } from "../questions/defaultQuestionBank";
 import { buildQuestionBankSummary } from "../questions/questionBankStats";
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.HOME>;
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<Question[]>(DEFAULT_QUESTION_BANK);
   const [activeSession, setActiveSession] = useState<ActiveExamSession | null>(null);
   const [isStartingExam, setIsStartingExam] = useState(false);
 
@@ -87,9 +87,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         </View>
       </Card>
 
-      <QuestionBankSummary questions={questions} />
-
-      <Card variant={bankSummary.examReady || activeSession ? "default" : "warning"}>
+      <Card>
         {activeSession ? (
           <>
             <SectionHeader
@@ -105,25 +103,17 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         ) : (
           <>
             <SectionHeader
-              title={bankSummary.examReady ? "Ready for exam mode" : "Build the bank to unlock exam mode"}
+              title="Ready for exam mode"
               subtitle={
                 bankSummary.examReady
                   ? "Start a timed local training session from the current question bank."
-                  : "Start Exam remains locked until every domain minimum is covered."
+                  : "The built-in question bank is unavailable or incomplete."
               }
               action={<Badge label={bankSummary.examReady ? "Ready" : "Locked"} tone={bankSummary.examReady ? "ready" : "warning"} />}
             />
             <Button disabled={!bankSummary.examReady} loading={isStartingExam} onPress={handleStartExam}>
               Start Exam
             </Button>
-            {!bankSummary.examReady ? (
-              <View style={styles.notReadyBlock}>
-                <Text style={styles.helperText}>Import questions next, then use the domain progress above to close any coverage gaps.</Text>
-                <Button variant="ghost" onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}>
-                  Import Questions
-                </Button>
-              </View>
-            ) : null}
           </>
         )}
       </Card>
@@ -131,14 +121,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       <Card>
         <SectionHeader title="Next Actions" subtitle="Choose the shortest path for the current study state." tight />
         <View style={styles.actionList}>
-          {!bankSummary.examReady ? (
-            <DashboardAction
-              detail="Paste local JSON questions and refresh coverage."
-              label="Import Questions"
-              onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}
-              tone="warning"
-            />
-          ) : null}
           <DashboardAction
             detail="Work through one domain with immediate feedback."
             label="Practice by Domain"
@@ -157,14 +139,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             onPress={() => navigation.navigate(ROUTES.ANALYTICS)}
             tone="info"
           />
-          {bankSummary.examReady ? (
-            <DashboardAction
-              detail="Append or replace the local question set."
-              label="Import Questions"
-              onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}
-              tone="warning"
-            />
-          ) : null}
         </View>
       </Card>
 
@@ -243,13 +217,6 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.body,
     color: colors.light.textSecondary
-  },
-  helperText: {
-    ...typography.small,
-    color: colors.light.textSecondary
-  },
-  notReadyBlock: {
-    gap: spacing.md
   },
   actionList: {
     gap: spacing.md

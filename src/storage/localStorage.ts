@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { mergeWithDefaultQuestionBank } from "../features/questions/defaultQuestionBank";
 import type { ActiveExamSession, AttemptSummary, PracticeAnswerRecord, Question, QuestionReviewState } from "../types";
 import { STORAGE_KEYS } from "./keys";
 
@@ -113,7 +114,7 @@ function isPracticeAnswerRecord(value: unknown): value is PracticeAnswerRecord {
 
 export async function getQuestions(): Promise<Question[]> {
   const value = await readLocalJson<unknown>(STORAGE_KEYS.QUESTIONS, []);
-  return readArray<unknown>(value).filter(isQuestion);
+  return mergeWithDefaultQuestionBank(readArray<unknown>(value).filter(isQuestion));
 }
 
 export async function saveQuestions(questions: Question[]): Promise<void> {

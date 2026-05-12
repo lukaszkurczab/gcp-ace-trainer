@@ -1,6 +1,5 @@
 export const ROUTES = {
   HOME: "Home",
-  IMPORT_QUESTIONS: "ImportQuestions",
   EXAM: "Exam",
   EXAM_REVIEW: "ExamReview",
   RESULT: "Result",

@@ -76,7 +76,7 @@ function push(errors: string[], label: string, message: string) {
   errors.push(`${label}: ${message}`);
 }
 
-export function validateQuestionBankFile(filePath = "data/question-bank/ace-foundation-240.json"): ValidationSummary {
+export function validateQuestionBankFile(filePath = "data/question-bank/ace-foundation-320.json"): ValidationSummary {
   const summary = emptySummary();
   const absolutePath = resolve(filePath);
   const parsed = JSON.parse(readFileSync(absolutePath, "utf8")) as unknown;

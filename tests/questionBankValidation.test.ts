@@ -7,20 +7,20 @@ test("foundation question bank satisfies strict seed validation", () => {
   const summary = validateQuestionBankFile();
 
   assert.deepEqual(summary.errors, []);
-  assert.equal(summary.total, 240);
+  assert.equal(summary.total, 320);
   assert.deepEqual(summary.byDomain, {
-    setup_environment: 58,
-    planning_implementation: 72,
-    operations: 62,
-    access_security: 48
+    setup_environment: 78,
+    planning_implementation: 92,
+    operations: 82,
+    access_security: 68
   });
   assert.deepEqual(summary.byDifficulty, {
-    easy: 60,
-    medium: 132,
-    hard: 48
+    easy: 63,
+    medium: 182,
+    hard: 75
   });
   assert.deepEqual(summary.byType, {
-    single: 184,
-    multiple: 56
+    single: 240,
+    multiple: 80
   });
 });

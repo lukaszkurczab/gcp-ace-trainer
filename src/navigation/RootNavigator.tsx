@@ -7,7 +7,6 @@ import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
-import { ImportQuestionsScreen } from "../features/import/ImportQuestionsScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
@@ -31,7 +30,6 @@ export function RootNavigator() {
       }}
     >
       <Stack.Screen name={ROUTES.HOME} component={HomeScreen} options={{ title: "GCP ACE Trainer" }} />
-      <Stack.Screen name={ROUTES.IMPORT_QUESTIONS} component={ImportQuestionsScreen} options={{ title: "Import Questions" }} />
       <Stack.Screen name={ROUTES.EXAM} component={ExamScreen} options={{ title: "Exam" }} />
       <Stack.Screen name={ROUTES.EXAM_REVIEW} component={ExamReviewScreen} options={{ title: "Exam Review" }} />
       <Stack.Screen name={ROUTES.RESULT} component={ResultScreen} options={{ title: "Result" }} />

@@ -33,8 +33,8 @@ export function SettingsScreen() {
 
   function clearQuestionBank() {
     confirmAction(
-      "Clear question bank?",
-      "This deletes all imported questions and also clears any active exam that depends on them. Attempts and practice history stay saved.",
+      "Clear added questions?",
+      "This deletes only locally imported questions. The built-in question bank stays available. Active exams are cleared because their question set may change.",
       async () => {
         await clearQuestions();
         await clearActiveExamSession();
@@ -57,7 +57,7 @@ export function SettingsScreen() {
   function clearAllLocalData() {
     confirmAction(
       "Clear all local data?",
-      "This deletes imported questions, active exam session, completed attempts, practice history, review marks, and local settings.",
+      "This deletes added questions, active exam session, completed attempts, practice history, review marks, and local settings. The built-in question bank stays available.",
       async () => {
         await Promise.all([
           clearActiveExamSession(),
@@ -92,7 +92,7 @@ export function SettingsScreen() {
             Clear Active Exam Session
           </Button>
           <Button variant="secondary" onPress={clearQuestionBank}>
-            Clear Question Bank
+            Clear Added Questions
           </Button>
           <Button variant="secondary" onPress={clearAttemptHistory}>
             Clear Attempt History
@@ -110,7 +110,7 @@ export function SettingsScreen() {
           <Text style={styles.aboutTitle}>GCP ACE Trainer</Text>
           <Text style={styles.aboutText}>Local-only study tool.</Text>
           <Text style={styles.aboutText}>No backend, no account, and no network sync.</Text>
-          <Text style={styles.aboutText}>Questions are user-provided through local JSON import.</Text>
+          <Text style={styles.aboutText}>Questions use the built-in local question bank.</Text>
           <Text style={styles.aboutText}>This app is not affiliated with Google.</Text>
           <Text style={styles.aboutText}>Theme tokens are dark-ready; the app currently uses the light theme.</Text>
         </View>

@@ -3,7 +3,6 @@ import type { ExamDomain } from "../types";
 
 export type RootStackParamList = {
   [ROUTES.HOME]: undefined;
-  [ROUTES.IMPORT_QUESTIONS]: undefined;
   [ROUTES.EXAM]: { questionIndex?: number } | undefined;
   [ROUTES.EXAM_REVIEW]: undefined;
   [ROUTES.RESULT]: { attemptId?: string; autoSubmitted?: boolean } | undefined;
