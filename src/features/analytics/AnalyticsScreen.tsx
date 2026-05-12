@@ -2,7 +2,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Badge, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Card, EmptyState, MetricCard, ProgressBar, Screen, SectionHeader } from "../../components";
+import { TRAINING_PASS_THRESHOLD } from "../../constants";
 import { getAttempts, getPracticeHistory } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
 import { DomainPerformanceChart, ScoreTrendChart } from "./AnalyticsCharts";
@@ -39,19 +40,50 @@ export function AnalyticsScreen() {
     );
   }
 
+  const hasCompletedExams = analytics.summary.totalCompletedExams > 0;
+  const hasPracticeAnswers = analytics.summary.totalPracticeQuestionsAnswered > 0;
+  const hasAnyAnalytics = hasCompletedExams || hasPracticeAnswers;
+
   return (
     <Screen>
-      <Card>
-        <SectionHeader title="Analytics" subtitle="Local diagnostics from saved exams and practice answers." />
-        <Text style={styles.note}>No backend, network calls, or user tracking.</Text>
+      <Card variant="elevated">
+        <SectionHeader
+          title="Analytics"
+          subtitle="Local diagnostics from completed exams and practice answers."
+          action={<Badge label={hasAnyAnalytics ? "Local data" : "No data yet"} tone={hasAnyAnalytics ? "info" : "neutral"} />}
+        />
+        <Text style={styles.note}>No backend, network calls, account sync, or sample metrics.</Text>
       </Card>
 
       <View style={styles.summaryGrid}>
-        <SummaryMetric label="Completed Exams" value={analytics.summary.totalCompletedExams} />
-        <SummaryMetric label="Average Score" value={`${analytics.summary.averageExamScore}%`} />
-        <SummaryMetric label="Best Score" value={`${analytics.summary.bestExamScore}%`} />
-        <SummaryMetric label="Training Pass Rate" value={`${analytics.summary.trainingPassRate}%`} />
-        <SummaryMetric label="Practice Answered" value={analytics.summary.totalPracticeQuestionsAnswered} />
+        <MetricCard helper={hasCompletedExams ? "Timed attempts" : "Submit an exam"} label="Completed Exams" value={analytics.summary.totalCompletedExams} tone="info" />
+        <MetricCard
+          helper={hasCompletedExams ? "Across completed exams" : "Unavailable until first exam"}
+          label="Average Score"
+          progress={hasCompletedExams ? analytics.summary.averageExamScore / 100 : undefined}
+          tone={getPercentTone(analytics.summary.averageExamScore, hasCompletedExams)}
+          value={hasCompletedExams ? `${analytics.summary.averageExamScore}%` : "—"}
+        />
+        <MetricCard
+          helper={hasCompletedExams ? "Best completed exam" : "Unavailable until first exam"}
+          label="Best Score"
+          progress={hasCompletedExams ? analytics.summary.bestExamScore / 100 : undefined}
+          tone={getPercentTone(analytics.summary.bestExamScore, hasCompletedExams)}
+          value={hasCompletedExams ? `${analytics.summary.bestExamScore}%` : "—"}
+        />
+        <MetricCard
+          helper={hasCompletedExams ? `Against local ${TRAINING_PASS_THRESHOLD}% threshold` : "Unavailable until first exam"}
+          label="Training Pass Rate"
+          progress={hasCompletedExams ? analytics.summary.trainingPassRate / 100 : undefined}
+          tone={getPercentTone(analytics.summary.trainingPassRate, hasCompletedExams)}
+          value={hasCompletedExams ? `${analytics.summary.trainingPassRate}%` : "—"}
+        />
+        <MetricCard
+          helper={hasPracticeAnswers ? "Practice records" : "Answer practice questions"}
+          label="Practice Answered"
+          tone={hasPracticeAnswers ? "primary" : "neutral"}
+          value={analytics.summary.totalPracticeQuestionsAnswered}
+        />
       </View>
 
       <Card>
@@ -108,29 +140,20 @@ export function AnalyticsScreen() {
 
       <Card>
         <SectionHeader title="Weakness Summary" />
-        <View style={styles.list}>
-          {analytics.weaknessSummary.map((message) => (
-            <Text key={message} style={styles.summaryText}>
-              {message}
-            </Text>
-          ))}
-        </View>
+        {hasAnyAnalytics ? (
+          <View style={styles.list}>
+            {analytics.weaknessSummary.map((message) => (
+              <View key={message} style={styles.summaryRow}>
+                <View style={styles.summaryDot} />
+                <Text style={styles.summaryText}>{message}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <EmptyState title="No analytics yet" description="Complete an exam or answer practice questions to build a diagnostic summary." />
+        )}
       </Card>
     </Screen>
-  );
-}
-
-type SummaryMetricProps = {
-  label: string;
-  value: string | number;
-};
-
-function SummaryMetric({ label, value }: SummaryMetricProps) {
-  return (
-    <View style={styles.summaryCard}>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-    </View>
   );
 }
 
@@ -141,9 +164,13 @@ type PerformanceRowProps = {
 function PerformanceRow({ score }: PerformanceRowProps) {
   return (
     <View style={styles.row}>
-      <Text style={styles.rowLabel}>{score.label}</Text>
+      <View style={styles.rowHeader}>
+        <Text style={styles.rowLabel}>{score.label}</Text>
+        <Badge label={getStrengthLabel(score)} tone={getPerformanceBadgeTone(score)} />
+      </View>
+      <ProgressBar progress={score.percent / 100} tone={getPerformanceProgressTone(score)} />
       <Text style={styles.rowValue}>
-        {score.correct}/{score.total} · {score.percent}%
+        {score.correct}/{score.total} correct · {score.percent}%
       </Text>
     </View>
   );
@@ -158,10 +185,11 @@ function ConfidenceRow({ item }: ConfidenceRowProps) {
     <View style={styles.row}>
       <View style={styles.rowHeader}>
         <Text style={styles.rowLabel}>{formatLabel(item.confidence)}</Text>
-        {item.warning ? <Badge label={item.warning} tone="warning" /> : null}
+        {item.warning ? <Badge label={item.warning} tone="warning" /> : <Badge label={item.total >= 3 ? "Calibrated" : "Low sample"} tone={item.total >= 3 ? "success" : "neutral"} />}
       </View>
+      <ProgressBar progress={item.percent / 100} tone={item.total < 3 ? "info" : getPercentProgressTone(item.percent)} />
       <Text style={styles.rowValue}>
-        {item.correct}/{item.total} · {item.percent}%
+        {item.total > 0 ? `${item.correct}/${item.total} correct · ${item.percent}%` : "No answers recorded for this confidence level."}
       </Text>
     </View>
   );
@@ -174,12 +202,50 @@ type MistakeReasonRowProps = {
 function MistakeReasonRow({ item }: MistakeReasonRowProps) {
   return (
     <View style={styles.row}>
-      <Text style={styles.rowLabel}>{formatLabel(item.reason)}</Text>
-      <Text style={styles.rowValue}>
-        {item.count} · {item.percent}%
-      </Text>
+      <View style={styles.rowHeader}>
+        <Text style={styles.rowLabel}>{formatLabel(item.reason)}</Text>
+        <Badge label={`${item.percent}%`} tone="warning" />
+      </View>
+      <ProgressBar progress={item.percent / 100} tone="warning" />
+      <Text style={styles.rowValue}>{item.count} recorded incorrect answer{item.count === 1 ? "" : "s"}</Text>
     </View>
   );
+}
+
+function getPercentTone(percent: number, hasData: boolean) {
+  if (!hasData) {
+    return "neutral";
+  }
+
+  return percent >= TRAINING_PASS_THRESHOLD ? "success" : "warning";
+}
+
+function getPercentProgressTone(percent: number) {
+  return percent >= TRAINING_PASS_THRESHOLD ? "success" : "warning";
+}
+
+function getPerformanceProgressTone(score: PerformanceScore) {
+  if (score.total < 3) {
+    return "info";
+  }
+
+  return score.percent >= TRAINING_PASS_THRESHOLD ? "success" : "warning";
+}
+
+function getPerformanceBadgeTone(score: PerformanceScore) {
+  if (score.total < 3) {
+    return "neutral";
+  }
+
+  return score.percent >= TRAINING_PASS_THRESHOLD ? "success" : "warning";
+}
+
+function getStrengthLabel(score: PerformanceScore): string {
+  if (score.total < 3) {
+    return "Low sample";
+  }
+
+  return score.percent >= TRAINING_PASS_THRESHOLD ? "Strong" : "Weak";
 }
 
 function formatLabel(value: string): string {
@@ -192,50 +258,59 @@ function formatLabel(value: string): string {
 const styles = StyleSheet.create({
   note: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   summaryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.md
   },
-  summaryCard: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    gap: spacing.xs,
-    minWidth: "46%",
-    padding: spacing.lg
-  },
-  metricValue: {
-    ...typography.heading,
-    color: colors.light.text
-  },
-  metricLabel: {
-    ...typography.caption,
-    color: colors.light.textMuted
-  },
   list: {
     gap: spacing.md
   },
   row: {
-    gap: spacing.xs
+    backgroundColor: colors.light.surface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.sm,
+    padding: spacing.md
   },
   rowHeader: {
     alignItems: "flex-start",
-    gap: spacing.sm
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    justifyContent: "space-between"
   },
   rowLabel: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   rowValue: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   summaryText: {
-    ...typography.body,
-    color: colors.light.text
+    ...typography.small,
+    color: colors.light.textSecondary,
+    flex: 1
+  },
+  summaryRow: {
+    alignItems: "flex-start",
+    backgroundColor: colors.light.elevatedSurface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.md,
+    padding: spacing.md
+  },
+  summaryDot: {
+    backgroundColor: colors.light.primary,
+    borderRadius: radius.pill,
+    height: 8,
+    marginTop: spacing.sm,
+    width: 8
   }
 });

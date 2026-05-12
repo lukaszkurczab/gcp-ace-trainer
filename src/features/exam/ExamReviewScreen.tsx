@@ -1,13 +1,13 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, ListRow, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveExamSession, getQuestions } from "../../storage";
-import { colors, radius, spacing, typography } from "../../theme";
+import { spacing } from "../../theme";
 import type { ActiveExamSession } from "../../types";
 import { formatDuration } from "../../utils";
 import {
@@ -96,13 +96,15 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
 
   const answeredCount = questions.filter((question) => (session.selectedOptionIdsByQuestionId[question.id] ?? []).length > 0).length;
   const flaggedCount = session.flaggedQuestionIds.length;
+  const answeredProgress = questions.length > 0 ? answeredCount / questions.length : 0;
 
   return (
-    <Screen>
+    <Screen footer={<Button onPress={handleSubmit}>Submit Exam</Button>}>
       <Card>
         <SectionHeader title="Review Before Submit" subtitle={`Time left: ${formatDuration(remainingSeconds)}`} />
+        <ProgressBar progress={answeredProgress} tone={answeredCount === questions.length ? "success" : "warning"} />
         <View style={styles.summaryRow}>
-          <Badge label={`${answeredCount}/${questions.length} answered`} tone="primary" />
+          <Badge label={`${answeredCount}/${questions.length} answered`} tone="ready" />
           <Badge label={`${flaggedCount} flagged`} tone={flaggedCount > 0 ? "warning" : "neutral"} />
         </View>
       </Card>
@@ -113,23 +115,21 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
           const isFlagged = session.flaggedQuestionIds.includes(question.id);
 
           return (
-            <Pressable
-              accessibilityRole="button"
+            <ListRow
               key={question.id}
+              detail={(session.selectedOptionIdsByQuestionId[question.id] ?? []).length > 0 ? "Answer saved" : "No answer selected"}
               onPress={() => navigation.navigate(ROUTES.EXAM, { questionIndex: index })}
-              style={({ pressed }) => [styles.reviewItem, pressed ? styles.reviewItemPressed : null]}
-            >
-              <Text style={styles.reviewTitle}>Question {index + 1}</Text>
-              <View style={styles.statusRow}>
-                <Badge label={isAnswered ? "Answered" : "Unanswered"} tone={isAnswered ? "success" : "danger"} />
-                {isFlagged ? <Badge label="Flagged" tone="warning" /> : null}
-              </View>
-            </Pressable>
+              title={`Question ${index + 1}`}
+              trailing={
+                <View style={styles.statusRow}>
+                  <Badge label={isAnswered ? "Answered" : "Unanswered"} tone={isAnswered ? "success" : "danger"} />
+                  {isFlagged ? <Badge label="Flagged" tone="warning" /> : null}
+                </View>
+              }
+            />
           );
         })}
       </View>
-
-      <Button onPress={handleSubmit}>Submit Exam</Button>
     </Screen>
   );
 }
@@ -142,21 +142,6 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: spacing.md
-  },
-  reviewItem: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    gap: spacing.sm,
-    padding: spacing.lg
-  },
-  reviewItemPressed: {
-    opacity: 0.82
-  },
-  reviewTitle: {
-    ...typography.bodyStrong,
-    color: colors.light.text
   },
   statusRow: {
     flexDirection: "row",

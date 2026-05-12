@@ -3,7 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
 import { clearActiveExamSession, getActiveExamSession, getQuestions } from "../../storage";
@@ -153,18 +153,40 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
   const isFlagged = session.flaggedQuestionIds.includes(currentQuestion.id);
   const isFirstQuestion = session.currentQuestionIndex === 0;
   const isLastQuestion = session.currentQuestionIndex === session.questionIds.length - 1;
+  const progress = (session.currentQuestionIndex + 1) / session.questionIds.length;
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
 
   return (
-    <Screen>
+    <Screen
+      footer={
+        <View style={styles.footerActions}>
+          <Button style={styles.footerButton} variant="secondary" disabled={isFirstQuestion} onPress={() => void handleMove(session.currentQuestionIndex - 1)}>
+            Previous
+          </Button>
+          <Button style={styles.footerButton} variant={isFlagged ? "ghost" : "secondary"} onPress={handleToggleFlag}>
+            {isFlagged ? "Flagged" : "Flag"}
+          </Button>
+          {isLastQuestion ? (
+            <Button style={styles.footerButton} onPress={() => navigation.navigate(ROUTES.EXAM_REVIEW)}>Review</Button>
+          ) : (
+            <Button style={styles.footerButton} onPress={() => void handleMove(session.currentQuestionIndex + 1)}>Next</Button>
+          )}
+        </View>
+      }
+    >
       <Card>
         <SectionHeader
           title={`Question ${session.currentQuestionIndex + 1} / ${session.questionIds.length}`}
-          subtitle={`Time left: ${formatDuration(remainingSeconds)}`}
+          subtitle={getDomainLabel(currentQuestion.domain)}
+          action={<Badge label={formatDuration(remainingSeconds)} tone={remainingSeconds < 600 ? "warning" : "info"} />}
         />
-        <Text style={styles.domainLabel}>{getDomainLabel(currentQuestion.domain)}</Text>
+        <ProgressBar progress={progress} tone="primary" />
+        <View style={styles.examMetaRow}>
+          <Badge label={currentQuestion.type === "single" ? "Single choice" : "Multiple select"} tone="neutral" />
+          <Badge label={chooseLabel} tone="info" />
+          {isFlagged ? <Badge label="Flagged" tone="warning" /> : null}
+        </View>
         <Text style={styles.questionText}>{currentQuestion.question}</Text>
-        <Text style={styles.chooseText}>{chooseLabel}</Text>
       </Card>
 
       <View style={styles.options}>
@@ -178,50 +200,46 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
               onPress={() => void handleSelectOption(option.id)}
               style={({ pressed }) => [styles.optionCard, isSelected ? styles.optionSelected : null, pressed ? styles.optionPressed : null]}
             >
+              <OptionMarker selected={isSelected} type={currentQuestion.type} />
               <Text style={[styles.optionText, isSelected ? styles.optionTextSelected : null]}>{option.text}</Text>
             </Pressable>
           );
         })}
       </View>
-
-      <View style={styles.actions}>
-        <Button variant="secondary" onPress={handleToggleFlag}>
-          {isFlagged ? "Unflag" : "Flag"}
-        </Button>
-        <Button variant="secondary" disabled={isFirstQuestion} onPress={() => void handleMove(session.currentQuestionIndex - 1)}>
-          Previous
-        </Button>
-        {isLastQuestion ? (
-          <Button onPress={() => navigation.navigate(ROUTES.EXAM_REVIEW)}>Review</Button>
-        ) : (
-          <Button onPress={() => void handleMove(session.currentQuestionIndex + 1)}>Next</Button>
-        )}
-      </View>
     </Screen>
   );
 }
 
+function OptionMarker({ selected, type }: { selected: boolean; type: "single" | "multiple" }) {
+  return (
+    <View style={[styles.optionMarker, type === "multiple" ? styles.optionMarkerSquare : null, selected ? styles.optionMarkerSelected : null]}>
+      {selected ? <View style={[styles.optionMarkerInner, type === "multiple" ? styles.optionMarkerInnerSquare : null]} /> : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  domainLabel: {
-    ...typography.caption,
-    color: colors.light.primary
+  examMetaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
   },
   questionText: {
     ...typography.heading,
-    color: colors.light.text
-  },
-  chooseText: {
-    ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textPrimary
   },
   options: {
     gap: spacing.md
   },
   optionCard: {
+    alignItems: "flex-start",
     backgroundColor: colors.light.surface,
     borderColor: colors.light.border,
     borderRadius: radius.md,
     borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 72,
     padding: spacing.lg
   },
   optionSelected: {
@@ -233,13 +251,43 @@ const styles = StyleSheet.create({
   },
   optionText: {
     ...typography.body,
-    color: colors.light.text
+    flex: 1,
+    color: colors.light.textPrimary
   },
   optionTextSelected: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
-  actions: {
+  optionMarker: {
+    alignItems: "center",
+    borderColor: colors.light.borderStrong,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 22,
+    justifyContent: "center",
+    marginTop: spacing.xxs,
+    width: 22
+  },
+  optionMarkerSquare: {
+    borderRadius: radius.xs
+  },
+  optionMarkerSelected: {
+    borderColor: colors.light.primary
+  },
+  optionMarkerInner: {
+    backgroundColor: colors.light.primary,
+    borderRadius: radius.pill,
+    height: 10,
+    width: 10
+  },
+  optionMarkerInnerSquare: {
+    borderRadius: radius.xs
+  },
+  footerActions: {
+    flexDirection: "row",
     gap: spacing.md
+  },
+  footerButton: {
+    flex: 1
   }
 });

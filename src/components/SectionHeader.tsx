@@ -6,13 +6,14 @@ type SectionHeaderProps = {
   action?: React.ReactNode;
   subtitle?: string;
   title: string;
+  tight?: boolean;
 };
 
-export function SectionHeader({ action, subtitle, title }: SectionHeaderProps) {
+export function SectionHeader({ action, subtitle, tight = false, title }: SectionHeaderProps) {
   return (
     <View style={styles.container}>
-      <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
+      <View style={[styles.copy, tight ? styles.copyTight : null]}>
+        <Text style={[styles.title, tight ? styles.titleTight : null]}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
       {action}
@@ -31,12 +32,18 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.xs
   },
+  copyTight: {
+    gap: spacing.xxs
+  },
   title: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
+  },
+  titleTight: {
+    ...typography.bodyStrong
   },
   subtitle: {
-    ...typography.body,
-    color: colors.light.textMuted
+    ...typography.small,
+    color: colors.light.textSecondary
   }
 });

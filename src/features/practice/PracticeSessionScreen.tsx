@@ -1,9 +1,10 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
+import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
@@ -158,14 +159,38 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
+  const progress = (currentIndex + 1) / questions.length;
 
   return (
-    <Screen>
+    <Screen
+      footer={
+        <View style={styles.actions}>
+          {isSubmitted ? (
+            <>
+              <Button variant={needsReview ? "primary" : "ghost"} onPress={() => void toggleNeedsReview()}>
+                {needsReview ? "Marked Needs Review" : "Mark Needs Review"}
+              </Button>
+              <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
+            </>
+          ) : (
+            <Button disabled={selectedOptionIds.length === 0} onPress={() => void submitAnswer()}>
+              Submit Answer
+            </Button>
+          )}
+        </View>
+      }
+    >
       <Card>
         <SectionHeader
           title={`Question ${currentIndex + 1} / ${questions.length}`}
-          subtitle={`${getDomainLabel(currentQuestion.domain)} · ${chooseLabel}`}
+          subtitle={getDomainLabel(currentQuestion.domain)}
+          action={<Badge label={isSubmitted ? (isCorrect ? "Correct" : "Review") : "Practice"} tone={isSubmitted ? (isCorrect ? "success" : "warning") : "info"} />}
         />
+        <ProgressBar progress={progress} tone={isSubmitted ? (isCorrect ? "success" : "warning") : "primary"} />
+        <View style={styles.metaRow}>
+          <Badge label={currentQuestion.type === "single" ? "Single choice" : "Multiple select"} tone="neutral" />
+          <Badge label={chooseLabel} tone="info" />
+        </View>
         <Text style={styles.questionText}>{currentQuestion.question}</Text>
       </Card>
 
@@ -187,6 +212,12 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
                 pressed && !isSubmitted ? styles.optionPressed : null
               ]}
             >
+              <OptionMarker
+                correct={isSubmitted && isCorrectOption}
+                incorrect={isSubmitted && isSelected && !isCorrectOption}
+                selected={isSelected}
+                type={currentQuestion.type}
+              />
               <Text style={styles.optionText}>{option.text}</Text>
             </Pressable>
           );
@@ -230,20 +261,6 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
       ) : null}
 
-      <View style={styles.actions}>
-        {isSubmitted ? (
-          <>
-            <Button variant={needsReview ? "primary" : "secondary"} onPress={() => void toggleNeedsReview()}>
-              {needsReview ? "Marked Needs Review" : "Mark Needs Review"}
-            </Button>
-            <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
-          </>
-        ) : (
-          <Button disabled={selectedOptionIds.length === 0} onPress={() => void submitAnswer()}>
-            Submit Answer
-          </Button>
-        )}
-      </View>
     </Screen>
   );
 }
@@ -256,44 +273,40 @@ type FeedbackCardProps = {
 
 function FeedbackCard({ question, selectedOptionIds, isCorrect }: FeedbackCardProps) {
   const whyWrongEntries = Object.entries(question.whyOthersAreWrong ?? {});
+  const watchOutForItems = normalizeWatchOutFor(question.watchOutFor);
 
   return (
-    <Card>
+    <Card variant={isCorrect ? "success" : "warning"}>
       <SectionHeader
-        title={isCorrect ? "Correct" : "Incorrect"}
+        title={isCorrect ? "Correct answer" : "Needs review"}
         action={<Badge label={isCorrect ? "Correct" : "Review"} tone={isCorrect ? "success" : "warning"} />}
       />
-      <Text style={styles.feedbackText}>Selected: {getOptionText(question, selectedOptionIds) || "No answer selected."}</Text>
-      <Text style={styles.feedbackText}>Correct: {getOptionText(question, question.correctOptionIds)}</Text>
-      <Text style={styles.feedbackText}>{question.explanation}</Text>
+      <DiagnosticSection label="Selected answer" value={getOptionText(question, selectedOptionIds) || "No answer selected."} />
+      <DiagnosticSection label="Correct answer" value={getOptionText(question, question.correctOptionIds)} />
+      <DiagnosticSection label="Explanation" value={question.explanation} />
 
       {whyWrongEntries.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Why other options are wrong</Text>
+        <DiagnosticSection label="Why other options are wrong">
           {whyWrongEntries.map(([optionId, reason]) => (
             <Text key={optionId} style={styles.feedbackText}>
               {optionId}: {reason}
             </Text>
           ))}
-        </View>
+        </DiagnosticSection>
       ) : null}
 
-      {question.watchOutFor && question.watchOutFor.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Watch out for</Text>
-          {question.watchOutFor.map((item) => (
+      {watchOutForItems.length > 0 ? (
+        <DiagnosticSection label="Watch out for">
+          {watchOutForItems.map((item) => (
             <Text key={item} style={styles.feedbackText}>
               {item}
             </Text>
           ))}
-        </View>
+        </DiagnosticSection>
       ) : null}
 
       {question.examSignals && question.examSignals.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Exam signals</Text>
-          <Text style={styles.feedbackText}>{question.examSignals.join(", ")}</Text>
-        </View>
+        <DiagnosticSection label="Exam signals" value={question.examSignals.join(", ")} />
       ) : null}
 
       {question.tags.length > 0 ? (
@@ -307,9 +320,52 @@ function FeedbackCard({ question, selectedOptionIds, isCorrect }: FeedbackCardPr
   );
 }
 
+function DiagnosticSection({ children, label, value }: { children?: ReactNode; label: string; value?: string }) {
+  return (
+    <View style={styles.diagnosticSection}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      {value ? <Text style={styles.feedbackText}>{value}</Text> : children}
+    </View>
+  );
+}
+
+function OptionMarker({
+  correct,
+  incorrect,
+  selected,
+  type
+}: {
+  correct: boolean;
+  incorrect: boolean;
+  selected: boolean;
+  type: "single" | "multiple";
+}) {
+  return (
+    <View
+      style={[
+        styles.optionMarker,
+        type === "multiple" ? styles.optionMarkerSquare : null,
+        selected ? styles.optionMarkerSelected : null,
+        correct ? styles.optionMarkerCorrect : null,
+        incorrect ? styles.optionMarkerIncorrect : null
+      ]}
+    >
+      {selected || correct ? <View style={[styles.optionMarkerInner, type === "multiple" ? styles.optionMarkerInnerSquare : null]} /> : null}
+    </View>
+  );
+}
+
 function getOptionText(question: Question, optionIds: readonly string[]): string {
   const optionById = new Map(question.options.map((option) => [option.id, option.text]));
   return optionIds.map((optionId) => optionById.get(optionId) ?? optionId).join(", ");
+}
+
+function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
 }
 
 function formatLabel(value: string): string {
@@ -320,18 +376,27 @@ function formatLabel(value: string): string {
 }
 
 const styles = StyleSheet.create({
+  metaRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
   questionText: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   options: {
     gap: spacing.md
   },
   optionCard: {
+    alignItems: "flex-start",
     backgroundColor: colors.light.surface,
     borderColor: colors.light.border,
     borderRadius: radius.md,
     borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 72,
     padding: spacing.lg
   },
   optionSelected: {
@@ -339,9 +404,11 @@ const styles = StyleSheet.create({
     borderColor: colors.light.primary
   },
   optionCorrect: {
+    backgroundColor: colors.light.successSoft,
     borderColor: colors.light.success
   },
   optionIncorrect: {
+    backgroundColor: colors.light.dangerSoft,
     borderColor: colors.light.danger
   },
   optionPressed: {
@@ -349,7 +416,39 @@ const styles = StyleSheet.create({
   },
   optionText: {
     ...typography.body,
-    color: colors.light.text
+    flex: 1,
+    color: colors.light.textPrimary
+  },
+  optionMarker: {
+    alignItems: "center",
+    borderColor: colors.light.borderStrong,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 22,
+    justifyContent: "center",
+    marginTop: spacing.xxs,
+    width: 22
+  },
+  optionMarkerSquare: {
+    borderRadius: radius.xs
+  },
+  optionMarkerSelected: {
+    borderColor: colors.light.primary
+  },
+  optionMarkerCorrect: {
+    borderColor: colors.light.success
+  },
+  optionMarkerIncorrect: {
+    borderColor: colors.light.danger
+  },
+  optionMarkerInner: {
+    backgroundColor: colors.light.primary,
+    borderRadius: radius.pill,
+    height: 10,
+    width: 10
+  },
+  optionMarkerInnerSquare: {
+    borderRadius: radius.xs
   },
   segmentRow: {
     flexDirection: "row",
@@ -365,15 +464,23 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   feedbackText: {
-    ...typography.body,
-    color: colors.light.textMuted
+    ...typography.small,
+    color: colors.light.textSecondary
+  },
+  diagnosticSection: {
+    backgroundColor: colors.light.surface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.xs,
+    padding: spacing.md
   },
   detailBlock: {
     gap: spacing.xs
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   tagRow: {
     flexDirection: "row",

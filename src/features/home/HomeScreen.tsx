@@ -3,9 +3,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, Screen } from "../../components";
+import { Badge, Button, Card, ListRow, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { colors, spacing, typography } from "../../theme";
+import { colors, radius, spacing, typography } from "../../theme";
 import { QuestionBankSummary } from "../questions";
 import { clearActiveExamSession, getActiveExamSession, getQuestions } from "../../storage";
 import type { ActiveExamSession, Question } from "../../types";
@@ -76,70 +76,265 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <Screen>
-      <View style={styles.header}>
-        <Text style={styles.title}>GCP ACE Trainer</Text>
-        <Text style={styles.subtitle}>Focused local study workspace for Associate Cloud Engineer preparation.</Text>
-      </View>
+      <Card variant="elevated" style={styles.hero}>
+        <View style={styles.heroTopRow}>
+          <StudyMark />
+          <Badge label="Local study workspace" tone="info" />
+        </View>
+        <View style={styles.heroCopy}>
+          <Text style={styles.title}>GCP ACE Trainer</Text>
+          <Text style={styles.subtitle}>Focused local exam preparation with diagnostic practice, review, and analytics.</Text>
+        </View>
+      </Card>
 
       <QuestionBankSummary questions={questions} />
 
-      <Card>
+      <Card variant={bankSummary.examReady || activeSession ? "default" : "warning"}>
         {activeSession ? (
           <>
+            <SectionHeader
+              title="Exam in progress"
+              subtitle="Resume the saved timed session or discard it before starting another."
+              action={<Badge label="Active" tone="ready" />}
+            />
             <Button onPress={() => navigation.navigate(ROUTES.EXAM)}>Resume Exam</Button>
-            <Button variant="secondary" onPress={handleDiscardExam}>
+            <Button variant="destructive" onPress={handleDiscardExam}>
               Discard Active Exam
             </Button>
           </>
         ) : (
           <>
-            <Button disabled={!bankSummary.examReady || isStartingExam} onPress={handleStartExam}>
+            <SectionHeader
+              title={bankSummary.examReady ? "Ready for exam mode" : "Build the bank to unlock exam mode"}
+              subtitle={
+                bankSummary.examReady
+                  ? "Start a timed local training session from the current question bank."
+                  : "Start Exam remains locked until every domain minimum is covered."
+              }
+              action={<Badge label={bankSummary.examReady ? "Ready" : "Locked"} tone={bankSummary.examReady ? "ready" : "warning"} />}
+            />
+            <Button disabled={!bankSummary.examReady} loading={isStartingExam} onPress={handleStartExam}>
               Start Exam
             </Button>
             {!bankSummary.examReady ? (
-              <Text style={styles.helperText}>
-                Exam mode unlocks when the local question bank has enough questions for every domain.
-              </Text>
+              <View style={styles.notReadyBlock}>
+                <Text style={styles.helperText}>Import questions next, then use the domain progress above to close any coverage gaps.</Text>
+                <Button variant="ghost" onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}>
+                  Import Questions
+                </Button>
+              </View>
             ) : null}
           </>
         )}
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}>
-          Practice by Domain
-        </Button>
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}>
-          Review Mistakes
-        </Button>
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.ANALYTICS)}>
-          Analytics
-        </Button>
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}>
-          Import Questions
-        </Button>
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.ATTEMPT_HISTORY)}>
-          Attempt History
-        </Button>
-        <Button variant="secondary" onPress={() => navigation.navigate(ROUTES.SETTINGS)}>
-          Settings
-        </Button>
+      </Card>
+
+      <Card>
+        <SectionHeader title="Next Actions" subtitle="Choose the shortest path for the current study state." tight />
+        <View style={styles.actionList}>
+          {!bankSummary.examReady ? (
+            <DashboardAction
+              detail="Paste local JSON questions and refresh coverage."
+              label="Import Questions"
+              onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}
+              tone="warning"
+            />
+          ) : null}
+          <DashboardAction
+            detail="Work through one domain with immediate feedback."
+            label="Practice by Domain"
+            onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
+            tone="primary"
+          />
+          <DashboardAction
+            detail="Revisit incorrect and marked questions."
+            label="Review Mistakes"
+            onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
+            tone="danger"
+          />
+          <DashboardAction
+            detail="Inspect score trends, weak domains, and confidence."
+            label="Analytics"
+            onPress={() => navigation.navigate(ROUTES.ANALYTICS)}
+            tone="info"
+          />
+          {bankSummary.examReady ? (
+            <DashboardAction
+              detail="Append or replace the local question set."
+              label="Import Questions"
+              onPress={() => navigation.navigate(ROUTES.IMPORT_QUESTIONS)}
+              tone="warning"
+            />
+          ) : null}
+        </View>
+      </Card>
+
+      <Card>
+        <SectionHeader title="Workspace" tight />
+        <View style={styles.actionList}>
+          <DashboardAction
+            detail="Review completed local attempts."
+            label="Attempt History"
+            onPress={() => navigation.navigate(ROUTES.ATTEMPT_HISTORY)}
+            tone="neutral"
+          />
+          <DashboardAction detail="Manage local data and training settings." label="Settings" onPress={() => navigation.navigate(ROUTES.SETTINGS)} tone="neutral" />
+        </View>
       </Card>
     </Screen>
   );
 }
 
+type DashboardActionTone = "neutral" | "primary" | "warning" | "danger" | "info";
+
+type DashboardActionProps = {
+  detail: string;
+  label: string;
+  onPress: () => void;
+  tone: DashboardActionTone;
+};
+
+function DashboardAction({ detail, label, onPress, tone }: DashboardActionProps) {
+  return (
+    <ListRow
+      detail={detail}
+      leading={<ActionGlyph tone={tone} />}
+      onPress={onPress}
+      title={label}
+      trailing={<Text style={styles.actionArrow}>{">"}</Text>}
+    />
+  );
+}
+
+function StudyMark() {
+  return (
+    <View style={styles.markFrame}>
+      <View style={styles.markColumnTall} />
+      <View style={styles.markColumnShort} />
+      <View style={styles.markDot} />
+    </View>
+  );
+}
+
+function ActionGlyph({ tone }: { tone: DashboardActionTone }) {
+  return (
+    <View style={[styles.actionGlyph, styles[`${tone}Glyph`]]}>
+      <View style={[styles.actionGlyphLine, styles[`${tone}GlyphLine`]]} />
+      <View style={[styles.actionGlyphDot, styles[`${tone}GlyphLine`]]} />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  header: {
+  hero: {
+    gap: spacing.lg
+  },
+  heroTopRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  heroCopy: {
     gap: spacing.sm
   },
   title: {
     ...typography.title,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   subtitle: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   helperText: {
-    ...typography.caption,
+    ...typography.small,
+    color: colors.light.textSecondary
+  },
+  notReadyBlock: {
+    gap: spacing.md
+  },
+  actionList: {
+    gap: spacing.md
+  },
+  actionArrow: {
+    ...typography.bodyStrong,
     color: colors.light.textMuted
+  },
+  markFrame: {
+    alignItems: "flex-end",
+    backgroundColor: colors.light.primarySoft,
+    borderColor: colors.light.border,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.xs,
+    height: 44,
+    justifyContent: "center",
+    padding: spacing.sm,
+    width: 44
+  },
+  markColumnTall: {
+    backgroundColor: colors.light.primary,
+    borderRadius: radius.pill,
+    height: 24,
+    width: 6
+  },
+  markColumnShort: {
+    backgroundColor: colors.light.info,
+    borderRadius: radius.pill,
+    height: 16,
+    width: 6
+  },
+  markDot: {
+    backgroundColor: colors.light.accentTeal,
+    borderRadius: radius.pill,
+    height: 6,
+    width: 6
+  },
+  actionGlyph: {
+    alignItems: "center",
+    borderRadius: radius.sm,
+    height: 32,
+    justifyContent: "center",
+    width: 32
+  },
+  actionGlyphLine: {
+    borderRadius: radius.pill,
+    height: 14,
+    width: 4
+  },
+  actionGlyphDot: {
+    borderRadius: radius.pill,
+    height: 6,
+    marginTop: spacing.xxs,
+    width: 6
+  },
+  neutralGlyph: {
+    backgroundColor: colors.light.elevatedSurface
+  },
+  primaryGlyph: {
+    backgroundColor: colors.light.primarySoft
+  },
+  warningGlyph: {
+    backgroundColor: colors.light.warningSoft
+  },
+  dangerGlyph: {
+    backgroundColor: colors.light.dangerSoft
+  },
+  infoGlyph: {
+    backgroundColor: colors.light.infoSoft
+  },
+  neutralGlyphLine: {
+    backgroundColor: colors.light.textMuted
+  },
+  primaryGlyphLine: {
+    backgroundColor: colors.light.primary
+  },
+  warningGlyphLine: {
+    backgroundColor: colors.light.warning
+  },
+  dangerGlyphLine: {
+    backgroundColor: colors.light.danger
+  },
+  infoGlyphLine: {
+    backgroundColor: colors.light.info
   }
 });

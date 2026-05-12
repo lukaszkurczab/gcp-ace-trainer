@@ -1,14 +1,15 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
+import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getAttempts, getQuestionReviewState, saveQuestionReviewState } from "../../storage";
-import { colors, spacing, typography } from "../../theme";
-import type { AnswerRecord, AttemptSummary, QuestionReviewState } from "../../types";
+import { colors, radius, spacing, typography } from "../../theme";
+import type { AnswerRecord, AttemptSummary, Question, QuestionReviewState } from "../../types";
 
 type AnswerReviewScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ANSWER_REVIEW>;
 
@@ -78,17 +79,10 @@ export function AnswerReviewScreen({ route }: AnswerReviewScreenProps) {
               title="Answer Review"
               subtitle={`${attempt.correctCount}/${attempt.questionCount} correct · ${attempt.scorePercent}%`}
             />
+            <ProgressBar progress={attempt.scorePercent / 100} tone={attempt.passedTrainingThreshold ? "success" : "warning"} />
             <View style={styles.filterRow}>
-              <Button variant={filter === "all" ? "primary" : "secondary"} style={styles.filterButton} onPress={() => setFilter("all")}>
-                All
-              </Button>
-              <Button
-                variant={filter === "incorrect" ? "primary" : "secondary"}
-                style={styles.filterButton}
-                onPress={() => setFilter("incorrect")}
-              >
-                Incorrect
-              </Button>
+              <FilterChip active={filter === "all"} label="All" onPress={() => setFilter("all")} tone="info" />
+              <FilterChip active={filter === "incorrect"} label="Incorrect" onPress={() => setFilter("incorrect")} tone="danger" />
             </View>
           </Card>
 
@@ -129,59 +123,52 @@ function AnswerCard({ answer, needsReview, onToggleNeedsReview }: AnswerCardProp
   const selectedText = getOptionText(answer, answer.selectedOptionIds);
   const correctText = getOptionText(answer, answer.correctOptionIds);
   const whyWrongEntries = Object.entries(question.whyOthersAreWrong ?? {});
+  const watchOutForItems = normalizeWatchOutFor(question.watchOutFor);
 
   return (
-    <Card>
+    <Card variant={!answer.isAnswered || !answer.isCorrect ? "warning" : "default"}>
       <SectionHeader
         title={`Question ${answer.questionNumber}`}
         subtitle={answer.isAnswered ? (answer.isCorrect ? "Correct" : "Incorrect") : "Unanswered"}
-        action={<Badge label={needsReview ? "Needs Review" : answer.wasFlagged ? "Flagged" : "Reviewed"} tone={needsReview ? "warning" : "neutral"} />}
+        action={<Badge label={needsReview ? "Needs Review" : answer.wasFlagged ? "Flagged" : answer.isCorrect ? "Correct" : "Review"} tone={needsReview ? "warning" : answer.isCorrect ? "success" : "danger"} />}
       />
+
+      <View style={styles.badgeRow}>
+        {answer.confidence ? <Badge label={`Confidence: ${formatLabel(answer.confidence)}`} tone="info" /> : null}
+        {answer.mistakeReason ? <Badge label={`Reason: ${formatLabel(answer.mistakeReason)}`} tone="warning" /> : null}
+        {answer.wasFlagged ? <Badge label="Flagged" tone="warning" /> : null}
+      </View>
 
       <Text style={styles.questionText}>{question.question}</Text>
 
-      <View style={styles.detailBlock}>
-        <Text style={styles.detailLabel}>Selected answer</Text>
-        <Text style={styles.detailText}>{selectedText || "No answer selected."}</Text>
-      </View>
+      <DiagnosticBlock label="Selected answer" tone={answer.isCorrect ? "neutral" : "danger"} value={selectedText || "No answer selected."} />
 
-      <View style={styles.detailBlock}>
-        <Text style={styles.detailLabel}>Correct answer</Text>
-        <Text style={styles.detailText}>{correctText}</Text>
-      </View>
+      <DiagnosticBlock label="Correct answer" tone="success" value={correctText} />
 
-      <View style={styles.detailBlock}>
-        <Text style={styles.detailLabel}>Explanation</Text>
-        <Text style={styles.detailText}>{question.explanation}</Text>
-      </View>
+      <DiagnosticBlock label="Explanation" value={question.explanation} />
 
       {whyWrongEntries.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Why other options are wrong</Text>
+        <DiagnosticBlock label="Why other options are wrong">
           {whyWrongEntries.map(([optionId, reason]) => (
             <Text key={optionId} style={styles.detailText}>
               {optionId}: {reason}
             </Text>
           ))}
-        </View>
+        </DiagnosticBlock>
       ) : null}
 
-      {question.watchOutFor && question.watchOutFor.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Watch out for</Text>
-          {question.watchOutFor.map((item) => (
+      {watchOutForItems.length > 0 ? (
+        <DiagnosticBlock label="Watch out for">
+          {watchOutForItems.map((item) => (
             <Text key={item} style={styles.detailText}>
               {item}
             </Text>
           ))}
-        </View>
+        </DiagnosticBlock>
       ) : null}
 
       {question.examSignals && question.examSignals.length > 0 ? (
-        <View style={styles.detailBlock}>
-          <Text style={styles.detailLabel}>Exam signals</Text>
-          <Text style={styles.detailText}>{question.examSignals.join(", ")}</Text>
-        </View>
+        <DiagnosticBlock label="Exam signals" value={question.examSignals.join(", ")} />
       ) : null}
 
       {question.tags.length > 0 ? (
@@ -205,33 +192,124 @@ function getOptionText(answer: AnswerRecord, optionIds: readonly string[]): stri
   return optionIds.map((optionId) => optionById.get(optionId) ?? optionId).join(", ");
 }
 
+function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
+function DiagnosticBlock({
+  children,
+  label,
+  tone = "neutral",
+  value
+}: {
+  children?: ReactNode;
+  label: string;
+  tone?: "neutral" | "success" | "danger";
+  value?: string;
+}) {
+  return (
+    <View style={[styles.detailBlock, tone === "success" ? styles.successBlock : null, tone === "danger" ? styles.dangerBlock : null]}>
+      <Text style={styles.detailLabel}>{label}</Text>
+      {value ? <Text style={styles.detailText}>{value}</Text> : children}
+    </View>
+  );
+}
+
+function FilterChip({ active, label, onPress, tone }: { active: boolean; label: string; onPress: () => void; tone: "danger" | "info" }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={({ pressed }) => [styles.filterChip, active ? styles[`${tone}FilterChip`] : null, pressed ? styles.pressed : null]}
+    >
+      <Text style={[styles.filterChipText, active ? styles.activeFilterChipText : null]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function formatLabel(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 const styles = StyleSheet.create({
   filterRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.md
   },
-  filterButton: {
-    flex: 1
+  filterChip: {
+    backgroundColor: colors.light.surface,
+    borderColor: colors.light.border,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  dangerFilterChip: {
+    backgroundColor: colors.light.dangerSoft,
+    borderColor: colors.light.danger
+  },
+  infoFilterChip: {
+    backgroundColor: colors.light.infoSoft,
+    borderColor: colors.light.info
+  },
+  filterChipText: {
+    ...typography.caption,
+    color: colors.light.textSecondary
+  },
+  activeFilterChipText: {
+    color: colors.light.textPrimary
+  },
+  pressed: {
+    opacity: 0.82
   },
   answerList: {
     gap: spacing.lg
   },
   questionText: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   detailBlock: {
-    gap: spacing.xs
+    backgroundColor: colors.light.surface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.xs,
+    padding: spacing.md
+  },
+  successBlock: {
+    backgroundColor: colors.light.successSoft,
+    borderColor: colors.light.successSoft
+  },
+  dangerBlock: {
+    backgroundColor: colors.light.dangerSoft,
+    borderColor: colors.light.dangerSoft
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   detailText: {
-    ...typography.body,
-    color: colors.light.textMuted
+    ...typography.small,
+    color: colors.light.textSecondary
   },
   tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm

@@ -2,10 +2,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, ListRow, Screen, SectionHeader } from "../../components";
 import { getAttempts, getPracticeHistory, getQuestionReviewState, getQuestions, saveQuestionReviewState } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
-import type { AnswerRecord, ExamDomain, PracticeAnswerRecord, Question, QuestionReviewState } from "../../types";
+import type { AnswerRecord, Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord, Question, QuestionReviewState } from "../../types";
 import { getDomainLabel } from "../../utils";
 
 type ReviewFilter = "incorrect" | "needs_review";
@@ -19,6 +19,8 @@ type MistakeReviewItem = {
   needsReview: boolean;
   selectedOptionIds: string[];
   correctOptionIds: string[];
+  confidence?: Confidence;
+  mistakeReason?: MistakeReason;
   answeredAt?: string;
 };
 
@@ -98,33 +100,23 @@ export function MistakesReviewScreen() {
       <Card>
         <SectionHeader title="Mistakes Review" subtitle="Review incorrect answers and questions marked Needs Review." />
         <View style={styles.filterRow}>
-          <Button style={styles.filterButton} variant={filter === "incorrect" ? "primary" : "secondary"} onPress={() => setFilter("incorrect")}>
-            Incorrect
-          </Button>
-          <Button
-            style={styles.filterButton}
-            variant={filter === "needs_review" ? "primary" : "secondary"}
-            onPress={() => setFilter("needs_review")}
-          >
-            Needs Review
-          </Button>
+          <FilterChip active={filter === "incorrect"} label="Incorrect" onPress={() => setFilter("incorrect")} tone="danger" />
+          <FilterChip active={filter === "needs_review"} label="Needs Review" onPress={() => setFilter("needs_review")} tone="warning" />
         </View>
       </Card>
 
       <Card>
-        <SectionHeader title="Domain Filter" />
-        <View style={styles.domainList}>
-          <Button style={styles.domainButton} variant={domainFilter === "all" ? "primary" : "secondary"} onPress={() => setDomainFilter("all")}>
-            All Domains
-          </Button>
+        <SectionHeader title="Domain Filter" tight />
+        <View style={styles.filterRow}>
+          <FilterChip active={domainFilter === "all"} label="All Domains" onPress={() => setDomainFilter("all")} tone="info" />
           {(["setup_environment", "planning_implementation", "operations", "access_security"] as ExamDomain[]).map((domain) => (
-            <Button
+            <FilterChip
+              active={domainFilter === domain}
               key={domain}
+              label={getShortDomainLabel(domain)}
               onPress={() => setDomainFilter(domain)}
-              variant={domainFilter === domain ? "primary" : "secondary"}
-            >
-              {getDomainLabel(domain)}
-            </Button>
+              tone="neutral"
+            />
           ))}
         </View>
       </Card>
@@ -132,19 +124,21 @@ export function MistakesReviewScreen() {
       {visibleItems.length > 0 ? (
         <View style={styles.list}>
           {visibleItems.map((item) => (
-            <Pressable
-              accessibilityRole="button"
+            <ListRow
+              detail={getDomainLabel(item.question.domain)}
               key={item.id}
               onPress={() => setSelectedItemId((current) => (current === item.id ? null : item.id))}
-              style={({ pressed }) => [styles.listItem, pressed ? styles.pressed : null]}
-            >
-              <Text style={styles.itemTitle}>{item.question.question}</Text>
-              <View style={styles.badgeRow}>
-                <Badge label={formatLabel(item.source)} tone="neutral" />
-                {item.isIncorrect ? <Badge label="Incorrect" tone="danger" /> : null}
-                {item.needsReview ? <Badge label="Needs Review" tone="warning" /> : null}
-              </View>
-            </Pressable>
+              title={item.question.question}
+              trailing={
+                <View style={styles.badgeRow}>
+                  <Badge label={formatLabel(item.source)} tone="neutral" />
+                  {item.isIncorrect ? <Badge label="Incorrect" tone="danger" /> : null}
+                  {item.needsReview ? <Badge label="Needs Review" tone="warning" /> : null}
+                  {item.confidence ? <Badge label={formatLabel(item.confidence)} tone="info" /> : null}
+                  {item.mistakeReason ? <Badge label={formatLabel(item.mistakeReason)} tone="warning" /> : null}
+                </View>
+              }
+            />
           ))}
         </View>
       ) : (
@@ -179,6 +173,8 @@ function buildMistakeReviewItems(
         needsReview: reviewState[answer.questionId]?.needsReview ?? false,
         selectedOptionIds: answer.selectedOptionIds,
         correctOptionIds: answer.correctOptionIds,
+        confidence: answer.confidence,
+        mistakeReason: answer.mistakeReason,
         answeredAt: answer.answeredAt
       });
     });
@@ -195,6 +191,8 @@ function buildMistakeReviewItems(
         needsReview: reviewState[record.questionId]?.needsReview ?? false,
         selectedOptionIds: record.selectedOptionIds,
         correctOptionIds: record.correctOptionIds,
+        confidence: record.confidence,
+        mistakeReason: record.mistakeReason,
         answeredAt: record.answeredAt
       });
     });
@@ -219,7 +217,9 @@ function buildMistakeReviewItems(
           isIncorrect: false,
           needsReview: true,
           selectedOptionIds: [],
-          correctOptionIds: question.correctOptionIds
+          correctOptionIds: question.correctOptionIds,
+          confidence: item.confidence,
+          mistakeReason: item.mistakeReason
         });
       }
     });
@@ -234,10 +234,18 @@ type MistakeDetailProps = {
 
 function MistakeDetail({ item, onToggleNeedsReview }: MistakeDetailProps) {
   const whyWrongEntries = Object.entries(item.question.whyOthersAreWrong ?? {});
+  const watchOutForItems = normalizeWatchOutFor(item.question.watchOutFor);
 
   return (
     <Card>
       <SectionHeader title="Question Detail" subtitle={getDomainLabel(item.question.domain)} />
+      <View style={styles.badgeRow}>
+        <Badge label={formatLabel(item.source)} tone="neutral" />
+        {item.isIncorrect ? <Badge label="Incorrect" tone="danger" /> : null}
+        {item.needsReview ? <Badge label="Needs Review" tone="warning" /> : null}
+        {item.confidence ? <Badge label={`Confidence: ${formatLabel(item.confidence)}`} tone="info" /> : null}
+        {item.mistakeReason ? <Badge label={`Reason: ${formatLabel(item.mistakeReason)}`} tone="warning" /> : null}
+      </View>
       <Text style={styles.detailQuestion}>{item.question.question}</Text>
       <DetailBlock label="Selected answer" value={getOptionText(item.question, item.selectedOptionIds) || "No answer recorded."} />
       <DetailBlock label="Correct answer" value={getOptionText(item.question, item.correctOptionIds)} />
@@ -254,10 +262,10 @@ function MistakeDetail({ item, onToggleNeedsReview }: MistakeDetailProps) {
         </View>
       ) : null}
 
-      {item.question.watchOutFor && item.question.watchOutFor.length > 0 ? (
+      {watchOutForItems.length > 0 ? (
         <View style={styles.detailBlock}>
           <Text style={styles.detailLabel}>Watch out for</Text>
-          {item.question.watchOutFor.map((value) => (
+          {watchOutForItems.map((value) => (
             <Text key={value} style={styles.detailText}>
               {value}
             </Text>
@@ -303,41 +311,91 @@ function getOptionText(question: Question, optionIds: readonly string[]): string
   return optionIds.map((optionId) => optionById.get(optionId) ?? optionId).join(", ");
 }
 
+function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return Array.isArray(value) ? value : [value];
+}
+
 function formatLabel(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function getShortDomainLabel(domain: ExamDomain): string {
+  switch (domain) {
+    case "setup_environment":
+      return "Setup";
+    case "planning_implementation":
+      return "Planning";
+    case "operations":
+      return "Operations";
+    case "access_security":
+      return "Access";
+  }
+}
+
+function FilterChip({ active, label, onPress, tone }: { active: boolean; label: string; onPress: () => void; tone: "neutral" | "danger" | "warning" | "info" }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={({ pressed }) => [styles.filterChip, active ? styles[`${tone}FilterChip`] : null, pressed ? styles.pressed : null]}
+    >
+      <Text style={[styles.filterChipText, active ? styles.activeFilterChipText : null]}>{label}</Text>
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
   filterRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.md
-  },
-  filterButton: {
-    flex: 1
-  },
-  domainList: {
-    gap: spacing.md
-  },
-  domainButton: {
-    alignSelf: "stretch"
   },
   list: {
     gap: spacing.md
   },
-  listItem: {
+  filterChip: {
     backgroundColor: colors.light.surface,
     borderColor: colors.light.border,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    gap: spacing.md,
-    padding: spacing.lg
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  neutralFilterChip: {
+    backgroundColor: colors.light.elevatedSurface,
+    borderColor: colors.light.borderStrong
+  },
+  dangerFilterChip: {
+    backgroundColor: colors.light.dangerSoft,
+    borderColor: colors.light.danger
+  },
+  warningFilterChip: {
+    backgroundColor: colors.light.warningSoft,
+    borderColor: colors.light.warning
+  },
+  infoFilterChip: {
+    backgroundColor: colors.light.infoSoft,
+    borderColor: colors.light.info
+  },
+  filterChipText: {
+    ...typography.caption,
+    color: colors.light.textSecondary
+  },
+  activeFilterChipText: {
+    color: colors.light.textPrimary
   },
   pressed: {
     opacity: 0.82
-  },
-  itemTitle: {
-    ...typography.bodyStrong,
-    color: colors.light.text
   },
   badgeRow: {
     flexDirection: "row",
@@ -346,17 +404,17 @@ const styles = StyleSheet.create({
   },
   detailQuestion: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   detailBlock: {
     gap: spacing.xs
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   detailText: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   }
 });

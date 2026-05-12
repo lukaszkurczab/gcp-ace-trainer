@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
 import { Button } from "./Button";
 
 type EmptyStateProps = {
@@ -22,14 +22,20 @@ export function EmptyState({ actionLabel, description, onActionPress, title }: E
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.md
+    alignItems: "flex-start",
+    backgroundColor: colors.light.elevatedSurface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    padding: spacing.lg
   },
   title: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   description: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   }
 });

@@ -117,9 +117,11 @@ function normalizeQuestion(value: unknown, index: number): { question?: Question
       correctOptionIds,
       explanation: value.explanation as string,
       tags: Array.isArray(value.tags) ? value.tags.filter((tag): tag is string => typeof tag === "string") : [],
-      watchOutFor: Array.isArray(value.watchOutFor)
-        ? value.watchOutFor.filter((item): item is string => typeof item === "string")
-        : undefined,
+      watchOutFor: isNonEmptyString(value.watchOutFor)
+        ? value.watchOutFor
+        : Array.isArray(value.watchOutFor)
+          ? value.watchOutFor.filter((item): item is string => typeof item === "string")
+          : undefined,
       examSignals: Array.isArray(value.examSignals)
         ? value.examSignals.filter((item): item is string => typeof item === "string")
         : undefined

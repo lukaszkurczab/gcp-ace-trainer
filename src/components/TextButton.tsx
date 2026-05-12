@@ -1,17 +1,18 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, type ViewStyle } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { colors, radius, spacing, typography } from "../theme";
 
 type TextButtonProps = {
   children: ReactNode;
   disabled?: boolean;
   onPress: () => void;
+  style?: ViewStyle;
 };
 
-export function TextButton({ children, disabled = false, onPress }: TextButtonProps) {
+export function TextButton({ children, disabled = false, onPress, style }: TextButtonProps) {
   return (
-    <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={styles.button}>
+    <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, style]}>
       {({ pressed }) => (
         <Text style={[styles.label, pressed && !disabled ? styles.pressed : null, disabled ? styles.disabled : null]}>{children}</Text>
       )}
@@ -22,7 +23,11 @@ export function TextButton({ children, disabled = false, onPress }: TextButtonPr
 const styles = StyleSheet.create({
   button: {
     alignSelf: "flex-start",
-    paddingVertical: spacing.xs
+    borderRadius: radius.sm,
+    minHeight: 44,
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm
   },
   label: {
     ...typography.bodyStrong,

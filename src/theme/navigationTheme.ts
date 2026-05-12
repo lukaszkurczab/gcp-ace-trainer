@@ -11,6 +11,6 @@ export const navigationTheme: Theme = {
     card: colors.light.surface,
     notification: colors.light.primary,
     primary: colors.light.primary,
-    text: colors.light.text
+    text: colors.light.textPrimary
   }
 };

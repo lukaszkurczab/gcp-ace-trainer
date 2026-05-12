@@ -17,7 +17,9 @@ export function ErrorMessage({ message }: ErrorMessageProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.light.dangerSoft,
+    borderColor: colors.light.dangerSoft,
     borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md
   },
   message: {

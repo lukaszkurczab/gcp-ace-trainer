@@ -100,7 +100,7 @@ export function SettingsScreen() {
           <Button variant="secondary" onPress={clearPractice}>
             Clear Practice History
           </Button>
-          <Button onPress={clearAllLocalData}>Clear All Local Data</Button>
+          <Button variant="destructive" onPress={clearAllLocalData}>Clear All Local Data</Button>
         </View>
       </Card>
 
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   settingValue: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   note: {
     ...typography.body,
@@ -157,10 +157,10 @@ const styles = StyleSheet.create({
   },
   aboutTitle: {
     ...typography.heading,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   aboutText: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   }
 });

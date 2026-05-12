@@ -2,7 +2,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Button, Card, ErrorMessage, Screen, SectionHeader, TextButton } from "../../components";
+import { Button, Card, ErrorMessage, MetricCard, Screen, SectionHeader, TextButton } from "../../components";
 import { QuestionBankSummary } from "../questions";
 import { colors, radius, spacing, typography } from "../../theme";
 import { getQuestions, saveQuestions } from "../../storage";
@@ -198,26 +198,21 @@ type ResultMetricProps = {
 };
 
 function ResultMetric({ label, value }: ResultMetricProps) {
-  return (
-    <View style={styles.metric}>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-    </View>
-  );
+  return <MetricCard label={label} value={value} />;
 }
 
 const styles = StyleSheet.create({
   bodyText: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   input: {
     ...typography.body,
-    backgroundColor: colors.light.surfaceMuted,
+    backgroundColor: colors.light.elevatedSurface,
     borderColor: colors.light.border,
     borderRadius: radius.md,
     borderWidth: 1,
-    color: colors.light.text,
+    color: colors.light.textPrimary,
     fontFamily: "Courier",
     minHeight: 240,
     padding: spacing.md
@@ -245,37 +240,23 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.md
   },
-  metric: {
-    backgroundColor: colors.light.surfaceMuted,
-    borderRadius: radius.md,
-    minWidth: "45%",
-    padding: spacing.md
-  },
-  metricValue: {
-    ...typography.heading,
-    color: colors.light.text
-  },
-  metricLabel: {
-    ...typography.caption,
-    color: colors.light.textMuted
-  },
   resultSection: {
     gap: spacing.sm
   },
   resultHeading: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   domainRow: {
     gap: spacing.xs
   },
   domainLabel: {
     ...typography.bodyStrong,
-    color: colors.light.text
+    color: colors.light.textPrimary
   },
   domainCount: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   },
   errorText: {
     ...typography.body,

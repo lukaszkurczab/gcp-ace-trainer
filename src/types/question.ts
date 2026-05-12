@@ -23,7 +23,7 @@ export type Question = {
   correctOptionIds: string[];
   explanation: string;
   whyOthersAreWrong?: Record<string, string>;
-  watchOutFor?: string[];
+  watchOutFor?: string | string[];
   tags: string[];
   examSignals?: string[];
 };

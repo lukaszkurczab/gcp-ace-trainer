@@ -1,13 +1,13 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, Screen, SectionHeader } from "../../components";
-import { ROUTES } from "../../constants";
+import { Badge, Button, Card, DomainAccent, ProgressBar, Screen, SectionHeader } from "../../components";
+import { EXAM_BLUEPRINT, EXAM_DURATION_MINUTES, EXAM_QUESTION_COUNT, ROUTES, TRAINING_PASS_THRESHOLD } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getQuestions } from "../../storage";
-import { colors, spacing, typography } from "../../theme";
+import { colors, radius, spacing, typography } from "../../theme";
 import type { ExamDomain, Question } from "../../types";
 import { getDomainLabel } from "../../utils";
 import { getPracticeDomainCounts, type PracticeQuestionCount } from "./practiceService";
@@ -44,32 +44,74 @@ export function PracticeSetupScreen({ navigation }: PracticeSetupScreenProps) {
 
   const domainCounts = useMemo(() => getPracticeDomainCounts(questions), [questions]);
   const selectedDomainCount = domainCounts.find((item) => item.domain === selectedDomain)?.count ?? 0;
+  const maxDomainCount = Math.max(1, ...domainCounts.map((item) => item.count));
   const canStart = selectedDomain !== null && selectedDomainCount > 0;
 
   return (
-    <Screen>
+    <Screen
+      footer={
+        <Button
+          disabled={!canStart}
+          onPress={() => {
+            if (selectedDomain) {
+              navigation.navigate(ROUTES.PRACTICE_SESSION, { domain: selectedDomain, questionCount });
+            }
+          }}
+        >
+          Start Practice
+        </Button>
+      }
+    >
       <Card>
-        <SectionHeader title="Practice by Domain" subtitle="Immediate feedback for focused learning." />
+        <SectionHeader title="Practice by Domain" subtitle="Focused sessions with immediate feedback after each answer." />
       </Card>
 
       <Card>
-        <SectionHeader title="Domain" subtitle="Choose one domain for this practice session." />
+        <SectionHeader title="Domain" subtitle="Choose one domain for this practice session." tight />
         <View style={styles.list}>
-          {domainCounts.map((item) => (
-            <Button
-              disabled={item.count === 0}
-              key={item.domain}
-              onPress={() => setSelectedDomain(item.domain)}
-              variant={selectedDomain === item.domain ? "primary" : "secondary"}
-            >
-              {getDomainLabel(item.domain)} ({item.count})
-            </Button>
-          ))}
+          {domainCounts.map((item) => {
+            const isSelected = selectedDomain === item.domain;
+            const isEmpty = item.count === 0;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: isEmpty, selected: isSelected }}
+                disabled={isEmpty}
+                key={item.domain}
+                onPress={() => setSelectedDomain(item.domain)}
+                style={({ pressed }) => [
+                  styles.domainCard,
+                  isSelected ? styles.domainCardSelected : null,
+                  isEmpty ? styles.domainCardDisabled : null,
+                  pressed && !isEmpty ? styles.pressed : null
+                ]}
+              >
+                <DomainAccent tone={getDomainAccentTone(item.domain)} />
+                <View style={styles.domainCopy}>
+                  <View style={styles.domainHeader}>
+                    <Text style={styles.domainLabel}>{getDomainLabel(item.domain)}</Text>
+                    <Badge label={isEmpty ? "Empty" : `${item.count} available`} tone={isEmpty ? "neutral" : "info"} />
+                  </View>
+                  <ProgressBar progress={item.count / maxDomainCount} tone={isEmpty ? "info" : "primary"} />
+                  <Text style={styles.domainMeta}>
+                    Blueprint target: {EXAM_BLUEPRINT[item.domain]} questions. {isEmpty ? "Import questions before practicing this domain." : "Ready for focused practice."}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
       </Card>
 
       <Card>
-        <SectionHeader title="Question Count" />
+        <SectionHeader title="Practice Settings" subtitle="Exam defaults are shown here for context; practice remains untimed." tight />
+        <View style={styles.settingsGrid}>
+          <SettingMetric label="Exam default" value={`${EXAM_QUESTION_COUNT} q`} />
+          <SettingMetric label="Time limit" value={`${EXAM_DURATION_MINUTES} min`} />
+          <SettingMetric label="Local threshold" value={`${TRAINING_PASS_THRESHOLD}%`} />
+        </View>
+        <Text style={styles.helperText}>The threshold is only a local training benchmark, not an official passing score.</Text>
         <View style={styles.countRow}>
           {countOptions.map((option) => (
             <Button
@@ -89,24 +131,93 @@ export function PracticeSetupScreen({ navigation }: PracticeSetupScreenProps) {
           </Text>
         ) : null}
       </Card>
-
-      <Button
-        disabled={!canStart}
-        onPress={() => {
-          if (selectedDomain) {
-            navigation.navigate(ROUTES.PRACTICE_SESSION, { domain: selectedDomain, questionCount });
-          }
-        }}
-      >
-        Start Practice
-      </Button>
     </Screen>
   );
+}
+
+function SettingMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.settingMetric}>
+      <Text style={styles.settingValue}>{value}</Text>
+      <Text style={styles.settingLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function getDomainAccentTone(domain: ExamDomain) {
+  switch (domain) {
+    case "setup_environment":
+      return "purple";
+    case "planning_implementation":
+      return "teal";
+    case "operations":
+      return "orange";
+    case "access_security":
+      return "info";
+  }
 }
 
 const styles = StyleSheet.create({
   list: {
     gap: spacing.md
+  },
+  domainCard: {
+    alignItems: "center",
+    backgroundColor: colors.light.surface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 104,
+    padding: spacing.lg
+  },
+  domainCardSelected: {
+    backgroundColor: colors.light.primarySoft,
+    borderColor: colors.light.primary
+  },
+  domainCardDisabled: {
+    opacity: 0.62
+  },
+  pressed: {
+    opacity: 0.84
+  },
+  domainCopy: {
+    flex: 1,
+    gap: spacing.sm
+  },
+  domainHeader: {
+    alignItems: "flex-start",
+    gap: spacing.xs
+  },
+  domainLabel: {
+    ...typography.bodyStrong,
+    color: colors.light.textPrimary
+  },
+  domainMeta: {
+    ...typography.caption,
+    color: colors.light.textSecondary
+  },
+  settingsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.md
+  },
+  settingMetric: {
+    backgroundColor: colors.light.elevatedSurface,
+    borderColor: colors.light.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    minWidth: "30%",
+    padding: spacing.md
+  },
+  settingValue: {
+    ...typography.bodyStrong,
+    color: colors.light.textPrimary
+  },
+  settingLabel: {
+    ...typography.caption,
+    color: colors.light.textSecondary
   },
   countRow: {
     flexDirection: "row",
@@ -117,6 +228,6 @@ const styles = StyleSheet.create({
   },
   helperText: {
     ...typography.body,
-    color: colors.light.textMuted
+    color: colors.light.textSecondary
   }
 });

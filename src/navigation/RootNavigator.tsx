@@ -26,7 +26,7 @@ export function RootNavigator() {
         contentStyle: { backgroundColor: colors.light.background },
         headerShadowVisible: false,
         headerStyle: { backgroundColor: colors.light.surface },
-        headerTintColor: colors.light.text,
+        headerTintColor: colors.light.textPrimary,
         headerTitleStyle: { fontWeight: "700" }
       }}
     >
