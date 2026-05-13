@@ -2212,7 +2212,7 @@
     "domain": "planning_implementation",
     "type": "single",
     "difficulty": "medium",
-    "question": "Traffic for a static content site varies significantly during the day. The team wants the VM fleet to add and remove instances automatically based on load. What should they configure?",
+    "question": "Traffic for a stateless web tier on Compute Engine varies significantly during the day. The team wants the VM fleet to add and remove instances automatically based on load. What should they configure?",
     "options": [
       {
         "id": "A",
@@ -2241,7 +2241,7 @@
     "watchOutFor": "Automatic add and remove of VM instances is autoscaling, not DNS or disk sizing.",
     "tags": ["autoscaling", "managed-instance-groups", "compute-engine"],
     "examSignals": [
-      "varies during day",
+      "stateless web tier",
       "add and remove instances",
       "based on load"
     ]
@@ -2290,7 +2290,7 @@
     "options": [
       {
         "id": "A",
-        "text": "Cloud Functions triggered by the Cloud Storage finalize event."
+        "text": "Cloud Run functions triggered by the Cloud Storage finalize event."
       },
       {
         "id": "B",
@@ -2306,14 +2306,14 @@
       }
     ],
     "correctOptionIds": ["A"],
-    "explanation": "Cloud Functions is a good fit for small event-driven code triggered by Cloud Storage events.",
+    "explanation": "Cloud Run functions are a good fit for small event-driven code triggered by Cloud Storage events.",
     "whyOthersAreWrong": {
       "B": "Polling a VM adds operational overhead and is less efficient than an event trigger.",
       "C": "A database replica does not execute image processing code on object uploads.",
       "D": "DNS does not run event-driven processing code."
     },
-    "watchOutFor": "Object upload event plus small code points to serverless functions, not polling infrastructure.",
-    "tags": ["cloud-functions", "cloud-storage", "event-driven"],
+    "watchOutFor": "Object upload event plus small code points to Cloud Run functions, not polling infrastructure.",
+    "tags": ["cloud-run-functions", "cloud-storage", "event-driven"],
     "examSignals": ["object finalized", "small code", "event trigger"]
   },
   {
@@ -2638,7 +2638,7 @@
     "domain": "planning_implementation",
     "type": "multiple",
     "difficulty": "medium",
-    "question": "A team choosing a compute platform for a static content site wants minimal operations. Choose 2 answers. Which choices are managed/serverless options for application code?",
+    "question": "A team choosing a compute platform for a small web app/API wants minimal operations. Choose 2 answers. Which choices are managed/serverless options for application code?",
     "options": [
       {
         "id": "A",
@@ -2665,7 +2665,7 @@
     },
     "watchOutFor": "Minimal operations is a managed service clue.",
     "tags": ["cloud-run", "app-engine", "managed-services"],
-    "examSignals": ["minimal operations", "application code", "managed"]
+    "examSignals": ["small web app", "application code", "minimal operations"]
   },
   {
     "id": "ace-q-0076",
@@ -3461,7 +3461,7 @@
       },
       {
         "id": "B",
-        "text": "A Cloud Function or Cloud Run function triggered by Pub/Sub."
+        "text": "A Cloud Run function triggered by Pub/Sub."
       },
       {
         "id": "C",
@@ -3473,14 +3473,14 @@
       }
     ],
     "correctOptionIds": ["B"],
-    "explanation": "Serverless functions are appropriate for small event-driven processing triggered by Pub/Sub.",
+    "explanation": "Cloud Run functions are appropriate for small event-driven processing triggered by Pub/Sub.",
     "whyOthersAreWrong": {
       "A": "Polling with user credentials adds operations and weakens identity design.",
       "C": "DNS forwarding does not process Pub/Sub messages.",
       "D": "A database replica does not execute event transformation code."
     },
-    "watchOutFor": "Event source plus small code is a functions/serverless trigger signal.",
-    "tags": ["cloud-functions", "pubsub", "event-driven"],
+    "watchOutFor": "Event source plus small code is a Cloud Run functions trigger signal.",
+    "tags": ["cloud-run-functions", "pubsub", "event-driven"],
     "examSignals": ["Pub/Sub trigger", "no servers", "transformation"]
   },
   {
@@ -4122,7 +4122,7 @@
     "domain": "planning_implementation",
     "type": "multiple",
     "difficulty": "medium",
-    "question": "A team choosing a compute platform for a batch processing service wants minimal operations. Choose 2 answers. Which choices are managed/serverless options for application code?",
+    "question": "A team choosing a compute platform for a small internal web application wants minimal operations and built-in managed scaling. Choose 2 answers. Which choices are managed/serverless options for application code?",
     "options": [
       {
         "id": "A",
@@ -4147,9 +4147,9 @@
       "B": "Self-managed clusters require more operational work.",
       "C": "Standalone VMs require OS and runtime maintenance."
     },
-    "watchOutFor": "Minimal operations is a managed service clue.",
+    "watchOutFor": "Small web applications that need minimal operations point to managed platforms before self-managed infrastructure.",
     "tags": ["cloud-run", "app-engine", "managed-services"],
-    "examSignals": ["minimal operations", "application code", "managed"]
+    "examSignals": ["small internal web app", "managed scaling", "minimal operations"]
   },
   {
     "id": "ace-q-0118",
@@ -4439,7 +4439,7 @@
     "domain": "planning_implementation",
     "type": "multiple",
     "difficulty": "medium",
-    "question": "A database plan for a static content site requires a managed relational engine and private connectivity. Choose 2 answers. What fits?",
+    "question": "A web application requires a managed relational database and private connectivity from its application VPC. Choose 2 answers. What fits?",
     "options": [
       {
         "id": "A",
@@ -4466,14 +4466,14 @@
     },
     "watchOutFor": "Relational compatibility and private access are Cloud SQL private IP clues.",
     "tags": ["cloud-sql", "private-ip", "managed-services"],
-    "examSignals": ["managed relational", "private connectivity", "database"]
+    "examSignals": ["web application", "managed relational", "private connectivity"]
   },
   {
     "id": "ace-q-0127",
     "domain": "planning_implementation",
     "type": "single",
     "difficulty": "medium",
-    "question": "A batch worker runs on a fleet of preemptible-style VMs and should recreate failed workers from the same template. Which design fits best?",
+    "question": "An interruption-tolerant batch worker runs on a fleet of Spot VMs and should recreate interrupted or failed workers from the same template. Which design fits best?",
     "options": [
       {
         "id": "A",
@@ -4481,7 +4481,7 @@
       },
       {
         "id": "B",
-        "text": "A managed instance group using an instance template."
+        "text": "A managed instance group using an instance template and Spot VM provisioning."
       },
       {
         "id": "C",
@@ -4493,19 +4493,19 @@
       }
     ],
     "correctOptionIds": ["B"],
-    "explanation": "A managed instance group can maintain a target size and recreate failed instances from an instance template.",
+    "explanation": "Spot VMs can lower cost for interruption-tolerant workloads, and a managed instance group can automatically recreate workers from an instance template when capacity is available.",
     "whyOthersAreWrong": {
       "A": "A spreadsheet does not recreate or manage VM instances.",
       "C": "DNS can resolve names but does not create or repair workers.",
       "D": "BigQuery tables do not manage VM lifecycle."
     },
-    "watchOutFor": "For replaceable VM workers, manage the fleet rather than each VM manually.",
+    "watchOutFor": "Spot VMs are only appropriate for interruption-tolerant work; use a MIG when replacement workers should be recreated automatically.",
     "tags": [
       "managed-instance-groups",
       "instance-templates",
       "batch-processing"
     ],
-    "examSignals": ["replaceable workers", "recreate failed VMs", "template"]
+    "examSignals": ["Spot VMs", "interruption-tolerant", "recreate workers"]
   },
   {
     "id": "ace-q-0128",
@@ -5350,8 +5350,8 @@
     "id": "ace-q-0152",
     "domain": "operations",
     "type": "multiple",
-    "difficulty": "easy",
-    "question": "A data recovery plan for a VM connectivity issue uses Google-managed services. Choose 2 answers. Which backup concepts are valid?",
+    "difficulty": "medium",
+    "question": "A disaster recovery plan must cover Compute Engine disks and Cloud SQL data. Choose 2 answers. Which backup mechanisms are appropriate?",
     "options": [
       {
         "id": "A",
@@ -5363,22 +5363,22 @@
       },
       {
         "id": "C",
-        "text": "Cloud DNS TTLs as database backups"
+        "text": "Cloud Monitoring alert policies as disk restore points"
       },
       {
         "id": "D",
-        "text": "IAM role descriptions as disk restore points"
+        "text": "BigQuery scheduled queries as Cloud SQL point-in-time backups"
       }
     ],
     "correctOptionIds": ["A", "B"],
-    "explanation": "Different services use different backup mechanisms; disks use snapshots and Cloud SQL uses database backups.",
+    "explanation": "Compute Engine persistent disks can be protected with snapshots, while Cloud SQL should use automated backups and point-in-time recovery where recovery to a specific time is required.",
     "whyOthersAreWrong": {
-      "C": "DNS TTLs do not preserve database data.",
-      "D": "IAM metadata does not capture disk contents."
+      "C": "Alert policies can notify on conditions but do not store disk data for restore.",
+      "D": "BigQuery scheduled queries do not provide native Cloud SQL backup or point-in-time recovery."
     },
-    "watchOutFor": "Match the backup tool to the resource type.",
+    "watchOutFor": "Use service-native backup mechanisms: disk snapshots for VM disks and Cloud SQL backups/PITR for database recovery.",
     "tags": ["backups", "snapshots", "cloud-sql"],
-    "examSignals": ["data recovery", "managed services", "backup"]
+    "examSignals": ["DR plan", "Compute Engine disks", "Cloud SQL data"]
   },
   {
     "id": "ace-q-0153",
@@ -6756,36 +6756,37 @@
   {
     "id": "ace-q-0192",
     "domain": "operations",
-    "type": "multiple",
-    "difficulty": "easy",
-    "question": "A data recovery plan for a failed deployment uses Google-managed services. Choose 2 answers. Which backup concepts are valid?",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An operator accidentally changed important rows in a Cloud SQL database and needs to recover the database to the state it had shortly before the change. What should they use?",
     "options": [
       {
         "id": "A",
-        "text": "Automated backups for Cloud SQL instances"
+        "text": "Cloud SQL point-in-time recovery from backups and retained transaction logs"
       },
       {
         "id": "B",
-        "text": "Cloud DNS TTLs as database backups"
+        "text": "Cloud DNS TTL changes"
       },
       {
         "id": "C",
-        "text": "IAM role descriptions as disk restore points"
+        "text": "A Compute Engine persistent disk snapshot schedule"
       },
       {
         "id": "D",
-        "text": "Persistent disk snapshots for Compute Engine disks"
+        "text": "A Cloud Monitoring alert policy"
       }
     ],
-    "correctOptionIds": ["A", "D"],
-    "explanation": "Different services use different backup mechanisms; disks use snapshots and Cloud SQL uses database backups.",
+    "correctOptionIds": ["A"],
+    "explanation": "Cloud SQL point-in-time recovery can restore a database to a specific time before an accidental data change when backups and retained logs are available.",
     "whyOthersAreWrong": {
-      "B": "DNS TTLs do not preserve database data.",
-      "C": "IAM metadata does not capture disk contents."
+      "B": "DNS TTLs do not preserve or restore database rows.",
+      "C": "Persistent disk snapshots protect VM disks, not native Cloud SQL database state.",
+      "D": "Alert policies notify about conditions but do not restore database data."
     },
-    "watchOutFor": "Match the backup tool to the resource type.",
-    "tags": ["backups", "snapshots", "cloud-sql"],
-    "examSignals": ["data recovery", "managed services", "backup"]
+    "watchOutFor": "Accidental Cloud SQL data changes point to point-in-time recovery, not VM disk snapshots.",
+    "tags": ["cloud-sql", "point-in-time-recovery", "restore"],
+    "examSignals": ["accidental data change", "recover database", "specific time"]
   },
   {
     "id": "ace-q-0193",
@@ -8087,7 +8088,7 @@
     "domain": "access_security",
     "type": "single",
     "difficulty": "medium",
-    "question": "An admin subnet should allow RDP only from a bastion host service account target and deny broad internet access. What firewall principle applies?",
+    "question": "Admin VMs should allow RDP only from bastion VMs that run as a known source service account. The rule should target only the admin VMs by target service account or tag and deny broad internet access. What firewall principle applies?",
     "options": [
       {
         "id": "A",
@@ -8107,15 +8108,15 @@
       }
     ],
     "correctOptionIds": ["B"],
-    "explanation": "Firewall rules should minimize sources, targets, protocols, and ports to the required path.",
+    "explanation": "Firewall rules should minimize sources, targets, protocols, and ports to the required path. In this case, the source is the bastion VM identity or range, and the target is the admin VM identity or tag.",
     "whyOthersAreWrong": {
       "A": "That exposes RDP broadly and violates least privilege.",
       "C": "Labels do not enforce network traffic controls.",
       "D": "Logging does not replace access control, and disabling logs hurts auditability."
     },
-    "watchOutFor": "Network least privilege is as important as IAM least privilege.",
+    "watchOutFor": "Do not mix source and target fields: bastion VMs are the source, while admin VMs are the target.",
     "tags": ["firewall-rules", "rdp", "network-security"],
-    "examSignals": ["bastion", "narrow ingress", "admin subnet"]
+    "examSignals": ["bastion source", "target admin VMs", "TCP 3389 only"]
   },
   {
     "id": "ace-q-0230",
@@ -10712,7 +10713,7 @@
     "domain": "operations",
     "type": "multiple",
     "difficulty": "medium",
-    "question": "A Cloud Scheduler job fails to invoke a private Cloud Run service. Choose 2 answers. What should be checked?",
+    "question": "A Cloud Scheduler job fails to invoke an authenticated Cloud Run service that requires IAM-based invocation and has reachable ingress. Choose 2 answers. What should be checked?",
     "options": [
       {
         "id": "A",
@@ -10732,14 +10733,14 @@
       }
     ],
     "correctOptionIds": ["A", "B"],
-    "explanation": "Cloud Scheduler HTTP jobs need a correct target and, for private/authenticated services, an identity with invocation permission.",
+    "explanation": "Cloud Scheduler HTTP jobs need a correct target URL and auth configuration. For an authenticated Cloud Run service, the invoking service account must also have Cloud Run Invoker permission.",
     "whyOthersAreWrong": {
       "C": "A public DNS zone is not required for every scheduled job.",
       "D": "Disk snapshots do not affect Scheduler invocation."
     },
-    "watchOutFor": "Scheduled HTTP invocation failures often involve both URL/auth setup and target IAM.",
+    "watchOutFor": "Authenticated Cloud Run invocation is about request authentication and roles/run.invoker when ingress is otherwise reachable.",
     "tags": ["cloud-scheduler", "cloud-run", "iam"],
-    "examSignals": ["Scheduler fails", "private Cloud Run", "invoke permission"]
+    "examSignals": ["Scheduler fails", "authenticated Cloud Run", "roles/run.invoker"]
   },
   {
     "id": "ace-q-0304",
@@ -11279,7 +11280,7 @@
     "domain": "access_security",
     "type": "multiple",
     "difficulty": "medium",
-    "question": "A Cloud Scheduler job invokes a private Cloud Run endpoint using a service account. Choose 2 answers. Which IAM statements are correct?",
+    "question": "A Cloud Scheduler job invokes an authenticated Cloud Run endpoint using a service account, and the endpoint has reachable ingress. Choose 2 answers. Which IAM statements are correct?",
     "options": [
       {
         "id": "A",
@@ -11299,14 +11300,14 @@
       }
     ],
     "correctOptionIds": ["A", "B"],
-    "explanation": "Authenticated scheduled invocations should use a service account with the appropriate Cloud Run invocation permission.",
+    "explanation": "Authenticated scheduled invocations should use a service account with the appropriate Cloud Run invocation permission, such as roles/run.invoker on the target service.",
     "whyOthersAreWrong": {
-      "C": "Cloud Scheduler can invoke authenticated targets when configured correctly.",
+      "C": "The service does not need to allow unauthenticated access; Cloud Scheduler can invoke authenticated targets when configured correctly.",
       "D": "Billing visibility does not authorize service invocation."
     },
-    "watchOutFor": "Scheduled private invocation is primarily target IAM plus correct auth configuration.",
+    "watchOutFor": "Do not read authenticated as public. A Scheduler service account can invoke Cloud Run when auth and IAM are configured correctly.",
     "tags": ["cloud-scheduler", "cloud-run", "iam"],
-    "examSignals": ["private endpoint", "service account", "invoke"]
+    "examSignals": ["authenticated endpoint", "service account", "roles/run.invoker"]
   },
   {
     "id": "ace-q-0320",
@@ -11342,5 +11343,1438 @@
     "watchOutFor": "Sensitive data in logs is a data handling problem as well as an IAM problem.",
     "tags": ["cloud-logging", "secret-handling", "least-privilege"],
     "examSignals": ["read logs", "secret values", "logging hygiene"]
+  },
+  {
+    "id": "ace-q-0321",
+    "domain": "setup_environment",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An administrator needs to inventory all Compute Engine instances, disks, and service accounts across several projects without opening each project separately. Which service should they use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud Billing budgets"
+      },
+      {
+        "id": "B",
+        "text": "Cloud Asset Inventory search and export capabilities"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS managed zones"
+      },
+      {
+        "id": "D",
+        "text": "Cloud NAT logging"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Cloud Asset Inventory is designed to search, analyze, and export asset metadata across projects, folders, or organizations.",
+    "whyOthersAreWrong": {
+      "A": "Budgets monitor spend and do not provide a resource inventory.",
+      "C": "Cloud DNS manages zones and records, not a cross-project resource inventory.",
+      "D": "NAT logs show network translation events and do not inventory Google Cloud assets."
+    },
+    "watchOutFor": "Cross-project resource inventory is a Cloud Asset Inventory signal.",
+    "tags": ["cloud-asset-inventory", "resource-inventory", "projects"],
+    "examSignals": ["inventory assets", "several projects", "search resources"]
+  },
+  {
+    "id": "ace-q-0322",
+    "domain": "setup_environment",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A team setting up a new environment wants AI-assisted recommendations about resource configuration and possible operational issues in the Google Cloud console. What should they use as a starting point?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Gemini Cloud Assist in the Google Cloud console"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS private zones"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage object versioning"
+      },
+      {
+        "id": "D",
+        "text": "A manually maintained spreadsheet of resources"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Gemini Cloud Assist can help analyze Google Cloud resources and provide contextual assistance in supported console workflows.",
+    "whyOthersAreWrong": {
+      "B": "DNS zones provide name resolution, not AI-assisted resource analysis.",
+      "C": "Object versioning protects bucket objects but does not analyze cloud resources.",
+      "D": "A spreadsheet does not provide integrated resource analysis or recommendations."
+    },
+    "watchOutFor": "When the clue is AI-assisted analysis in the console, look for Gemini Cloud Assist, not a resource-specific service.",
+    "tags": ["gemini-cloud-assist", "resource-analysis", "console"],
+    "examSignals": ["AI-assisted", "analyze resources", "Google Cloud console"]
+  },
+  {
+    "id": "ace-q-0323",
+    "domain": "setup_environment",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Before choosing a region for a new workload, an engineer must confirm that the required Google Cloud services and machine types are available there. What should they check?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Only the project display name"
+      },
+      {
+        "id": "B",
+        "text": "Only the billing account currency"
+      },
+      {
+        "id": "C",
+        "text": "Google Cloud product and regional availability documentation, plus relevant quotas"
+      },
+      {
+        "id": "D",
+        "text": "The number of labels on existing projects"
+      }
+    ],
+    "correctOptionIds": ["C"],
+    "explanation": "Product availability, machine families, accelerators, and quotas can vary by region and zone, so they should be checked before committing to a location.",
+    "whyOthersAreWrong": {
+      "A": "A project display name does not determine regional service availability.",
+      "B": "Billing currency does not indicate which products or machine types are available in a region.",
+      "D": "Labels are metadata and do not reveal regional product availability."
+    },
+    "watchOutFor": "Location questions often require checking product availability and quota, not just choosing the nearest region.",
+    "tags": ["regions", "product-availability", "quotas"],
+    "examSignals": ["choose region", "service availability", "machine type"]
+  },
+  {
+    "id": "ace-q-0324",
+    "domain": "setup_environment",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A small company using unmanaged consumer accounts wants a proper Google Cloud organization resource for centralized IAM and policy management. What should be set up first?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A default VPC in every new project"
+      },
+      {
+        "id": "B",
+        "text": "Cloud Identity or Google Workspace for the company's domain so an organization resource can be created"
+      },
+      {
+        "id": "C",
+        "text": "A public Cloud Storage bucket named after the company"
+      },
+      {
+        "id": "D",
+        "text": "A service account key shared with all administrators"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "A Google Cloud organization resource is tied to a managed domain through Cloud Identity or Google Workspace, enabling centralized governance.",
+    "whyOthersAreWrong": {
+      "A": "Default VPC creation does not establish an organization resource.",
+      "C": "A storage bucket is a project resource and does not create organization-level governance.",
+      "D": "Shared keys are insecure and do not provide organization-level identity management."
+    },
+    "watchOutFor": "Standalone organization setup starts with managed identity for the domain, not with project resources.",
+    "tags": ["cloud-identity", "organization", "resource-hierarchy"],
+    "examSignals": [
+      "organization resource",
+      "centralized IAM",
+      "company domain"
+    ]
+  },
+  {
+    "id": "ace-q-0325",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A Compute Engine database workload needs block storage with high, configurable IOPS and throughput beyond typical persistent disk settings. Which storage option should be evaluated?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "B",
+        "text": "Cloud Storage Archive class"
+      },
+      {
+        "id": "C",
+        "text": "Google Cloud Hyperdisk"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Billing export"
+      }
+    ],
+    "correctOptionIds": ["C"],
+    "explanation": "Hyperdisk is a block storage option for Compute Engine that can provide configurable high performance for demanding workloads.",
+    "whyOthersAreWrong": {
+      "A": "DNS manages name resolution and does not provide block storage.",
+      "B": "Archive class is object storage for rarely accessed data, not VM block storage.",
+      "D": "Billing export provides cost data, not storage performance."
+    },
+    "watchOutFor": "High-performance Compute Engine block storage is a Hyperdisk signal.",
+    "tags": ["hyperdisk", "compute-engine", "block-storage"],
+    "examSignals": ["high IOPS", "throughput", "VM disk"]
+  },
+  {
+    "id": "ace-q-0326",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A stateful Compute Engine workload needs a block device that is synchronously replicated between two zones in the same region. What should be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A regional Persistent Disk"
+      },
+      {
+        "id": "B",
+        "text": "A Cloud DNS CNAME"
+      },
+      {
+        "id": "C",
+        "text": "A BigQuery materialized view"
+      },
+      {
+        "id": "D",
+        "text": "A single zonal Persistent Disk only"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Regional Persistent Disk provides replicated block storage across two zones in a region for Compute Engine workloads.",
+    "whyOthersAreWrong": {
+      "B": "DNS records do not replicate disk data.",
+      "C": "BigQuery views are analytics objects and not VM block devices.",
+      "D": "A zonal disk remains tied to one zone and does not provide cross-zone disk replication."
+    },
+    "watchOutFor": "Zonal and regional Persistent Disk solve different availability requirements.",
+    "tags": ["persistent-disk", "regional-persistent-disk", "availability"],
+    "examSignals": ["replicated disk", "two zones", "stateful VM"]
+  },
+  {
+    "id": "ace-q-0327",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A team wants to run containers on Kubernetes but does not want to manage node provisioning, node sizing, or node upgrades. Which GKE mode is the best fit?",
+    "options": [
+      {
+        "id": "A",
+        "text": "GKE Autopilot"
+      },
+      {
+        "id": "B",
+        "text": "Self-managed Kubernetes on Compute Engine"
+      },
+      {
+        "id": "C",
+        "text": "A manually patched standalone VM"
+      },
+      {
+        "id": "D",
+        "text": "Cloud DNS"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "GKE Autopilot reduces cluster operations by managing much of the node infrastructure for Kubernetes workloads.",
+    "whyOthersAreWrong": {
+      "B": "Self-managed Kubernetes requires more operational responsibility.",
+      "C": "A standalone VM does not provide managed Kubernetes.",
+      "D": "Cloud DNS provides name resolution, not container orchestration."
+    },
+    "watchOutFor": "Kubernetes with minimal node management is a GKE Autopilot clue.",
+    "tags": ["gke", "autopilot", "kubernetes"],
+    "examSignals": ["no node management", "Kubernetes", "managed cluster"]
+  },
+  {
+    "id": "ace-q-0328",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A platform team needs custom GKE node pools with specific machine types, node labels, and low-level control over cluster infrastructure. Which option is more appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud Run functions only"
+      },
+      {
+        "id": "B",
+        "text": "GKE Standard"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage static website hosting"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Billing budgets"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "GKE Standard is appropriate when teams need more direct control over node pools and cluster infrastructure.",
+    "whyOthersAreWrong": {
+      "A": "Cloud Run functions do not expose Kubernetes node pool controls.",
+      "C": "Static hosting does not run Kubernetes workloads.",
+      "D": "Budgets monitor spend and do not configure clusters."
+    },
+    "watchOutFor": "When the scenario requires node-level control, Autopilot may not be the best answer.",
+    "tags": ["gke", "node-pools", "cluster-configuration"],
+    "examSignals": ["custom node pools", "machine types", "node labels"]
+  },
+  {
+    "id": "ace-q-0329",
+    "domain": "planning_implementation",
+    "type": "multiple",
+    "difficulty": "medium",
+    "question": "A GKE application must adjust to changing demand. Choose 2 answers. Which autoscaling mechanisms are relevant for Pods?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Horizontal Pod Autoscaler to adjust replica count"
+      },
+      {
+        "id": "B",
+        "text": "Vertical Pod Autoscaler to adjust or recommend CPU and memory requests"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS TTL as the Pod replica controller"
+      },
+      {
+        "id": "D",
+        "text": "Billing budget thresholds as Kubernetes resource requests"
+      }
+    ],
+    "correctOptionIds": ["A", "B"],
+    "explanation": "HPA scales the number of Pod replicas, while VPA helps tune Pod CPU and memory requests.",
+    "whyOthersAreWrong": {
+      "C": "DNS TTL does not control Pod replicas.",
+      "D": "Budgets do not define Kubernetes resource requests."
+    },
+    "watchOutFor": "Replica scaling and resource-request tuning are separate Kubernetes autoscaling concerns.",
+    "tags": ["gke", "hpa", "vpa"],
+    "examSignals": ["Pod autoscaling", "replica count", "resource requests"]
+  },
+  {
+    "id": "ace-q-0330",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A GKE Standard cluster runs out of node capacity when Pods scale up. The team wants the number of nodes in a node pool to adjust automatically. What should be configured?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Object versioning on the container image bucket"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS private forwarding"
+      },
+      {
+        "id": "C",
+        "text": "Cluster autoscaler for the node pool"
+      },
+      {
+        "id": "D",
+        "text": "A Cloud SQL read replica"
+      }
+    ],
+    "correctOptionIds": ["C"],
+    "explanation": "Cluster autoscaler can add or remove nodes in a GKE node pool based on unscheduled Pods and resource needs.",
+    "whyOthersAreWrong": {
+      "A": "Object versioning does not create more cluster nodes.",
+      "B": "DNS forwarding does not change compute capacity.",
+      "D": "A database replica does not provide Kubernetes node capacity."
+    },
+    "watchOutFor": "HPA changes Pods; cluster autoscaler changes nodes.",
+    "tags": ["gke", "cluster-autoscaler", "node-pools"],
+    "examSignals": ["node capacity", "unscheduled Pods", "node pool"]
+  },
+  {
+    "id": "ace-q-0331",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "Small code must run when a Cloud Storage object is finalized, and the team wants a serverless function-style deployment without managing servers. What is the best fit?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud Run functions triggered by the Cloud Storage event"
+      },
+      {
+        "id": "B",
+        "text": "A VM that polls the bucket every second"
+      },
+      {
+        "id": "C",
+        "text": "A Cloud DNS record for each object"
+      },
+      {
+        "id": "D",
+        "text": "A Cloud SQL read replica"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Cloud Run functions are appropriate for small event-driven code triggered by Google Cloud events such as Cloud Storage object changes.",
+    "whyOthersAreWrong": {
+      "B": "Polling on a VM adds unnecessary operations and latency.",
+      "C": "DNS records do not execute code on object changes.",
+      "D": "A database replica does not process storage events."
+    },
+    "watchOutFor": "Event-driven small code now maps cleanly to Cloud Run functions in current Google Cloud terminology.",
+    "tags": ["cloud-run-functions", "eventarc", "cloud-storage"],
+    "examSignals": ["object finalized", "serverless function", "event trigger"]
+  },
+  {
+    "id": "ace-q-0332",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A fault-tolerant batch workload can handle interruptions and should minimize VM cost. The team wants failed workers to be recreated automatically when capacity is available. Which design fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Spot VMs in a managed instance group with checkpoint-aware worker logic"
+      },
+      {
+        "id": "B",
+        "text": "A single expensive on-demand VM with no restart plan"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS round-robin as the worker scheduler"
+      },
+      {
+        "id": "D",
+        "text": "A public Cloud Storage bucket for worker credentials"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Spot VMs can reduce cost for interruptible workloads, and a managed instance group can recreate workers when resources are available.",
+    "whyOthersAreWrong": {
+      "B": "A single on-demand VM does not use interruptible cost savings or automatic fleet repair.",
+      "C": "DNS does not schedule or recreate worker VMs.",
+      "D": "Public credentials are insecure and unrelated to batch compute design."
+    },
+    "watchOutFor": "Use Spot VMs only when the workload tolerates interruption.",
+    "tags": ["spot-vms", "managed-instance-groups", "batch-processing"],
+    "examSignals": ["interruptible", "minimize cost", "recreate workers"]
+  },
+  {
+    "id": "ace-q-0333",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A global application needs a managed relational database with horizontal scale and strong consistency across regions. Which product should be evaluated?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud Storage Nearline"
+      },
+      {
+        "id": "B",
+        "text": "Cloud Spanner"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "D",
+        "text": "A single-zone Compute Engine VM running MySQL"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Cloud Spanner is designed for globally distributed relational workloads that need horizontal scale and strong consistency.",
+    "whyOthersAreWrong": {
+      "A": "Nearline is object storage and not a relational database.",
+      "C": "DNS provides name resolution, not database transactions.",
+      "D": "A single-zone self-managed database does not meet the global scale and availability requirement."
+    },
+    "watchOutFor": "Global relational scale with strong consistency is a Spanner signal.",
+    "tags": ["spanner", "relational-database", "global-scale"],
+    "examSignals": [
+      "global application",
+      "strong consistency",
+      "horizontal scale"
+    ]
+  },
+  {
+    "id": "ace-q-0334",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An IoT platform stores very large volumes of time-series readings and needs high-throughput low-latency access by row key. Which database is most appropriate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud Bigtable"
+      },
+      {
+        "id": "B",
+        "text": "Cloud SQL on the smallest instance"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS private zone"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage signed URLs only"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Cloud Bigtable is a managed wide-column database suited to high-throughput time-series and analytical operational workloads.",
+    "whyOthersAreWrong": {
+      "B": "Cloud SQL is relational and not the best fit for massive wide-column time-series access.",
+      "C": "DNS does not store application data.",
+      "D": "Signed URLs grant object access but do not provide a time-series database."
+    },
+    "watchOutFor": "Very large time-series data and row-key access are Bigtable clues.",
+    "tags": ["bigtable", "time-series", "managed-database"],
+    "examSignals": ["IoT readings", "high throughput", "row key"]
+  },
+  {
+    "id": "ace-q-0335",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A PostgreSQL-compatible application needs high performance from a managed relational database, and the team wants Google to manage database operations. Which product should be considered?",
+    "options": [
+      {
+        "id": "A",
+        "text": "AlloyDB for PostgreSQL"
+      },
+      {
+        "id": "B",
+        "text": "Cloud NAT"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage Archive"
+      },
+      {
+        "id": "D",
+        "text": "Cloud DNS forwarding"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "AlloyDB is a managed PostgreSQL-compatible database service for demanding relational workloads.",
+    "whyOthersAreWrong": {
+      "B": "Cloud NAT provides outbound connectivity, not a database engine.",
+      "C": "Archive storage is object storage and not PostgreSQL-compatible.",
+      "D": "DNS forwarding does not provide relational database functionality."
+    },
+    "watchOutFor": "PostgreSQL-compatible managed database can point to Cloud SQL for PostgreSQL or AlloyDB; use scenario clues such as performance and managed operations.",
+    "tags": ["alloydb", "postgresql", "managed-database"],
+    "examSignals": [
+      "PostgreSQL-compatible",
+      "high performance",
+      "managed database"
+    ]
+  },
+  {
+    "id": "ace-q-0336",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A web application needs a managed Redis-compatible cache to reduce database reads. Which service should be selected?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "B",
+        "text": "Memorystore"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Billing budgets"
+      },
+      {
+        "id": "D",
+        "text": "Persistent Disk snapshots"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Memorystore provides managed in-memory caching services such as Redis-compatible caching.",
+    "whyOthersAreWrong": {
+      "A": "DNS resolves names and is not a cache for application data.",
+      "C": "Budgets monitor cost and do not cache data.",
+      "D": "Snapshots protect disks and do not provide in-memory caching."
+    },
+    "watchOutFor": "Managed Redis cache is a Memorystore signal.",
+    "tags": ["memorystore", "redis", "cache"],
+    "examSignals": ["managed cache", "Redis", "reduce database reads"]
+  },
+  {
+    "id": "ace-q-0337",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "Several Compute Engine VMs need to mount the same managed NFS file share for shared application files. Which service should be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Filestore"
+      },
+      {
+        "id": "B",
+        "text": "Cloud NAT"
+      },
+      {
+        "id": "C",
+        "text": "Cloud SQL"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Trace"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Filestore provides managed file storage that can be mounted by Compute Engine and GKE workloads using NFS.",
+    "whyOthersAreWrong": {
+      "B": "Cloud NAT provides outbound internet access, not shared file storage.",
+      "C": "Cloud SQL is a relational database, not an NFS file share.",
+      "D": "Cloud Trace diagnoses latency and does not store shared files."
+    },
+    "watchOutFor": "Managed NFS shared file storage is a Filestore signal.",
+    "tags": ["filestore", "nfs", "compute-engine"],
+    "examSignals": ["shared file storage", "mount", "NFS"]
+  },
+  {
+    "id": "ace-q-0338",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A team needs a managed service to run an Apache Beam pipeline that transforms streaming events before writing them to BigQuery. What should they use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "B",
+        "text": "Dataflow"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage lifecycle rules"
+      },
+      {
+        "id": "D",
+        "text": "Cloud NAT"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Dataflow is the managed service for running Apache Beam batch and streaming data processing pipelines.",
+    "whyOthersAreWrong": {
+      "A": "DNS does not process streaming events.",
+      "C": "Lifecycle rules manage object age and storage class, not event transformation pipelines.",
+      "D": "Cloud NAT provides egress networking and does not run Apache Beam."
+    },
+    "watchOutFor": "Apache Beam and streaming/batch ETL are Dataflow signals.",
+    "tags": ["dataflow", "apache-beam", "streaming"],
+    "examSignals": ["Apache Beam", "streaming events", "BigQuery"]
+  },
+  {
+    "id": "ace-q-0339",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A company must migrate terabytes of objects from an external object store to Cloud Storage with scheduling and managed transfer monitoring. Which service should be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Storage Transfer Service"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "C",
+        "text": "Cloud SQL private IP"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Monitoring uptime checks only"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Storage Transfer Service supports managed transfers into Cloud Storage from supported sources with scheduling and monitoring.",
+    "whyOthersAreWrong": {
+      "B": "DNS does not move object data.",
+      "C": "Cloud SQL private IP is database connectivity, not object migration.",
+      "D": "Uptime checks monitor endpoints and do not transfer storage objects."
+    },
+    "watchOutFor": "Large managed object migration to Cloud Storage points to Storage Transfer Service.",
+    "tags": ["storage-transfer-service", "cloud-storage", "migration"],
+    "examSignals": ["migrate objects", "scheduled transfer", "Cloud Storage"]
+  },
+  {
+    "id": "ace-q-0340",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A new event-driven application only needs managed publish/subscribe messaging and does not require Kafka protocol compatibility. Which service is the simplest fit?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Google Cloud Managed Service for Apache Kafka"
+      },
+      {
+        "id": "B",
+        "text": "Cloud Pub/Sub"
+      },
+      {
+        "id": "C",
+        "text": "Cloud SQL"
+      },
+      {
+        "id": "D",
+        "text": "Cloud DNS"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Cloud Pub/Sub is a fully managed messaging service for decoupled event-driven systems when Kafka compatibility is not required.",
+    "whyOthersAreWrong": {
+      "A": "Managed Kafka is useful when Kafka APIs or ecosystem compatibility are required, which the scenario does not require.",
+      "C": "Cloud SQL is a relational database, not a publish/subscribe messaging service.",
+      "D": "DNS provides name resolution, not event delivery."
+    },
+    "watchOutFor": "Do not choose Kafka unless the scenario requires Kafka compatibility or ecosystem constraints.",
+    "tags": ["pubsub", "managed-kafka", "messaging"],
+    "examSignals": ["publish/subscribe", "no Kafka requirement", "event-driven"]
+  },
+  {
+    "id": "ace-q-0341",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A central networking team must manage VPC networks, subnets, and firewall policies while application teams deploy resources in separate projects. What should be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Shared VPC with a host project and service projects"
+      },
+      {
+        "id": "B",
+        "text": "One billing account per subnet"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS TXT records as network policy"
+      },
+      {
+        "id": "D",
+        "text": "Public IP addresses on every resource"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Shared VPC lets a host project centrally manage networking while service projects use the shared network for their resources.",
+    "whyOthersAreWrong": {
+      "B": "Billing accounts do not centralize VPC administration.",
+      "C": "DNS records are not a VPC sharing or firewall governance mechanism.",
+      "D": "Public IP addresses do not provide centralized private network management."
+    },
+    "watchOutFor": "Centralized networking with separate application projects is a Shared VPC signal.",
+    "tags": ["shared-vpc", "networking", "projects"],
+    "examSignals": ["central networking", "service projects", "host project"]
+  },
+  {
+    "id": "ace-q-0342",
+    "domain": "planning_implementation",
+    "type": "multiple",
+    "difficulty": "hard",
+    "question": "A security team wants firewall policy rules that apply consistently to tagged workloads across projects. Choose 2 answers. Which Google Cloud features are relevant?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud NGFW policies"
+      },
+      {
+        "id": "B",
+        "text": "Secure Tags used as rule targets or attributes"
+      },
+      {
+        "id": "C",
+        "text": "Billing export tables as firewall targets"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage lifecycle rules as ingress controls"
+      }
+    ],
+    "correctOptionIds": ["A", "B"],
+    "explanation": "Cloud NGFW policies can use attributes such as sources, destinations, targets, protocols, ports, service accounts, and secure Tags for firewall policy design.",
+    "whyOthersAreWrong": {
+      "C": "Billing exports are cost data, not firewall targets.",
+      "D": "Lifecycle rules manage object age and class, not network traffic."
+    },
+    "watchOutFor": "Secure Tags are not the same as billing labels; they can participate in policy evaluation.",
+    "tags": ["cloud-ngfw", "secure-tags", "firewall-rules"],
+    "examSignals": ["firewall policy", "tagged workloads", "across projects"]
+  },
+  {
+    "id": "ace-q-0343",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A public web service needs Google's highest-performance global network path for internet traffic. Cost is less important than performance. Which Network Service Tier should be selected?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Standard Tier"
+      },
+      {
+        "id": "B",
+        "text": "Premium Tier"
+      },
+      {
+        "id": "C",
+        "text": "Coldline Tier"
+      },
+      {
+        "id": "D",
+        "text": "Archive Tier"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Premium Tier uses Google's premium network to deliver higher performance and broader global routing characteristics for supported external traffic.",
+    "whyOthersAreWrong": {
+      "A": "Standard Tier can reduce cost but is not the highest-performance global network option.",
+      "C": "Coldline is a Cloud Storage class, not a network service tier.",
+      "D": "Archive is a Cloud Storage class, not a network service tier."
+    },
+    "watchOutFor": "Network Service Tiers are networking choices; do not confuse them with Cloud Storage classes.",
+    "tags": ["network-service-tiers", "load-balancing", "networking"],
+    "examSignals": ["highest performance", "internet traffic", "global network"]
+  },
+  {
+    "id": "ace-q-0344",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A company needs private connectivity between its on-premises network and Google Cloud. The initial requirement is encrypted connectivity over the public internet, not a dedicated physical connection. What should they choose?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cloud VPN"
+      },
+      {
+        "id": "B",
+        "text": "Dedicated Interconnect"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS public zone only"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage signed URLs"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Cloud VPN provides encrypted IPsec connectivity over the internet between on-premises networks and Google Cloud.",
+    "whyOthersAreWrong": {
+      "B": "Dedicated Interconnect provides a dedicated physical connection, which the scenario says is not required initially.",
+      "C": "DNS records do not create private network connectivity.",
+      "D": "Signed URLs grant object access and are not a site-to-site network connection."
+    },
+    "watchOutFor": "Encrypted over public internet points to Cloud VPN; dedicated physical connectivity points to Interconnect.",
+    "tags": ["cloud-vpn", "interconnect", "hybrid-connectivity"],
+    "examSignals": ["on-premises", "encrypted", "public internet"]
+  },
+  {
+    "id": "ace-q-0345",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A team uses Terraform to provision production infrastructure. Multiple engineers and CI jobs must safely share deployment state. What is the best practice?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Store the Terraform state only on one engineer's laptop"
+      },
+      {
+        "id": "B",
+        "text": "Use a shared remote backend with versioning and appropriate access controls"
+      },
+      {
+        "id": "C",
+        "text": "Email the state file after every deployment"
+      },
+      {
+        "id": "D",
+        "text": "Put the state contents in DNS TXT records"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "IaC state should be centrally managed with controlled access and versioning so teams and CI can coordinate safely.",
+    "whyOthersAreWrong": {
+      "A": "Local-only state is fragile and unsafe for multi-operator production workflows.",
+      "C": "Emailing state is insecure and error-prone.",
+      "D": "DNS records are not a secure or functional Terraform state backend."
+    },
+    "watchOutFor": "Terraform questions often test state management, not only resource syntax.",
+    "tags": ["terraform", "iac", "state-management"],
+    "examSignals": ["shared state", "CI jobs", "production infrastructure"]
+  },
+  {
+    "id": "ace-q-0346",
+    "domain": "planning_implementation",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A platform team wants to manage Google Cloud resources declaratively from Kubernetes-style YAML objects reconciled by a controller. Which tool fits this pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Config Connector"
+      },
+      {
+        "id": "B",
+        "text": "Cloud NAT"
+      },
+      {
+        "id": "C",
+        "text": "Cloud DNS TTL only"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Billing budgets"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Config Connector lets teams manage Google Cloud resources declaratively using Kubernetes-style configuration and reconciliation.",
+    "whyOthersAreWrong": {
+      "B": "Cloud NAT provides egress networking, not declarative resource reconciliation.",
+      "C": "DNS TTL does not manage Google Cloud resources as Kubernetes objects.",
+      "D": "Budgets monitor spend and are not an IaC reconciliation tool."
+    },
+    "watchOutFor": "Kubernetes-native management of Google Cloud resources is a Config Connector signal.",
+    "tags": ["config-connector", "iac", "kubernetes"],
+    "examSignals": ["Kubernetes YAML", "declarative", "Google Cloud resources"]
+  },
+  {
+    "id": "ace-q-0347",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "A Compute Engine VM needs enhanced collection of logs and system/application metrics into Google Cloud Observability. What should be installed and configured?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ops Agent"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS forwarding"
+      },
+      {
+        "id": "C",
+        "text": "Object versioning"
+      },
+      {
+        "id": "D",
+        "text": "A billing export only"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Ops Agent collects logs and metrics from Compute Engine VMs and sends them to Cloud Logging and Cloud Monitoring.",
+    "whyOthersAreWrong": {
+      "B": "DNS forwarding does not collect VM telemetry.",
+      "C": "Object versioning protects Cloud Storage objects and does not collect metrics.",
+      "D": "Billing export provides cost data, not VM logs and metrics."
+    },
+    "watchOutFor": "VM telemetry collection is an Ops Agent clue.",
+    "tags": ["ops-agent", "cloud-monitoring", "cloud-logging"],
+    "examSignals": ["VM logs", "system metrics", "Observability"]
+  },
+  {
+    "id": "ace-q-0348",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security team needs to export selected audit logs from Cloud Logging to BigQuery for long-term analysis. What should be configured?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A log sink through the Log Router to a BigQuery dataset"
+      },
+      {
+        "id": "B",
+        "text": "A Cloud NAT gateway"
+      },
+      {
+        "id": "C",
+        "text": "A Cloud DNS SOA record"
+      },
+      {
+        "id": "D",
+        "text": "A Compute Engine snapshot schedule"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Log Router sinks export matching logs from Cloud Logging to supported destinations such as BigQuery, Cloud Storage, or Pub/Sub.",
+    "whyOthersAreWrong": {
+      "B": "Cloud NAT handles outbound network translation and does not export logs to BigQuery.",
+      "C": "DNS records do not route log entries.",
+      "D": "Snapshot schedules protect disks and do not export logs."
+    },
+    "watchOutFor": "Exporting logs to another destination is a Log Router sink signal.",
+    "tags": ["log-router", "log-sinks", "bigquery"],
+    "examSignals": ["export logs", "BigQuery", "audit logs"]
+  },
+  {
+    "id": "ace-q-0349",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "An operations team wants to retain application logs in a dedicated location with custom retention and query them with Log Analytics. What should they configure?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A larger VM boot disk"
+      },
+      {
+        "id": "B",
+        "text": "A log bucket with appropriate retention and Log Analytics enabled where needed"
+      },
+      {
+        "id": "C",
+        "text": "A Cloud DNS public managed zone"
+      },
+      {
+        "id": "D",
+        "text": "A Cloud SQL read replica"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Log buckets store logs with configurable retention, and Log Analytics can be used for SQL-style analysis of supported log data.",
+    "whyOthersAreWrong": {
+      "A": "Boot disk size does not control Cloud Logging retention.",
+      "C": "DNS zones do not store or query logs.",
+      "D": "Database replicas do not manage Cloud Logging retention."
+    },
+    "watchOutFor": "Log retention and analytics are Cloud Logging bucket and Log Analytics clues.",
+    "tags": ["log-buckets", "log-analytics", "cloud-logging"],
+    "examSignals": ["custom retention", "query logs", "dedicated location"]
+  },
+  {
+    "id": "ace-q-0350",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A GKE team already uses Prometheus metrics and wants a Google-managed way to collect and monitor them without running a fully self-managed Prometheus stack. What should they deploy?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Google Cloud Managed Service for Prometheus"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS managed zones"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage lifecycle rules"
+      },
+      {
+        "id": "D",
+        "text": "Cloud SQL authorized networks"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Google Cloud Managed Service for Prometheus provides managed collection and storage for Prometheus-compatible metrics.",
+    "whyOthersAreWrong": {
+      "B": "DNS zones do not collect Prometheus metrics.",
+      "C": "Lifecycle rules manage object storage and not metrics ingestion.",
+      "D": "Authorized networks control database connectivity, not monitoring."
+    },
+    "watchOutFor": "Prometheus-compatible metrics on Google Cloud point to Managed Service for Prometheus.",
+    "tags": ["managed-service-for-prometheus", "gke", "monitoring"],
+    "examSignals": ["Prometheus metrics", "GKE", "managed monitoring"]
+  },
+  {
+    "id": "ace-q-0351",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "easy",
+    "question": "During an incident, a team wants to confirm whether Google Cloud has reported a service issue affecting their project and region. Where should they look?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Personalized Service Health dashboard"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS TXT records"
+      },
+      {
+        "id": "C",
+        "text": "A local Terraform state file"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage object metadata only"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Personalized Service Health provides information about relevant Google Cloud service disruptions and incidents for affected projects.",
+    "whyOthersAreWrong": {
+      "B": "DNS records do not report Google Cloud service incidents.",
+      "C": "Terraform state does not show provider service health.",
+      "D": "Object metadata does not indicate platform service incidents."
+    },
+    "watchOutFor": "Provider-side incident visibility is a Personalized Service Health clue.",
+    "tags": ["personalized-service-health", "incident-response", "operations"],
+    "examSignals": [
+      "service issue",
+      "affected project",
+      "Google Cloud incident"
+    ]
+  },
+  {
+    "id": "ace-q-0352",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A database operations team wants a centralized view of its Google Cloud database fleet, including health and management signals across services. Which tool should they use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Database Center"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS"
+      },
+      {
+        "id": "C",
+        "text": "Cloud NAT"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage signed URLs"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Database Center helps manage and observe the Google Cloud database fleet from a centralized place.",
+    "whyOthersAreWrong": {
+      "B": "DNS does not manage database fleet health.",
+      "C": "Cloud NAT provides egress connectivity and not database fleet management.",
+      "D": "Signed URLs provide object access and do not manage databases."
+    },
+    "watchOutFor": "A cross-database fleet view is a Database Center signal.",
+    "tags": ["database-center", "managed-databases", "operations"],
+    "examSignals": ["database fleet", "centralized view", "health signals"]
+  },
+  {
+    "id": "ace-q-0353",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A project has oversized idle resources and the team wants Google Cloud recommendations to optimize cost and utilization. Which capability should they review?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Active Assist recommendations"
+      },
+      {
+        "id": "B",
+        "text": "Cloud DNS private zones"
+      },
+      {
+        "id": "C",
+        "text": "Cloud Storage object ACLs only"
+      },
+      {
+        "id": "D",
+        "text": "A larger machine type for every VM"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Active Assist provides recommendations that can help optimize utilization, cost, security, and reliability depending on the recommender.",
+    "whyOthersAreWrong": {
+      "B": "DNS zones do not identify oversized resources.",
+      "C": "Object ACLs do not provide fleet optimization recommendations.",
+      "D": "Increasing every VM size worsens the likely overprovisioning problem."
+    },
+    "watchOutFor": "Optimization recommendations and idle resources point to Active Assist/Recommender.",
+    "tags": ["active-assist", "recommender", "cost-optimization"],
+    "examSignals": ["oversized resources", "recommendations", "utilization"]
+  },
+  {
+    "id": "ace-q-0354",
+    "domain": "operations",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A GKE workload cannot pull a private image from Artifact Registry. The image path is correct. What should be checked first?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Whether the node or workload identity used for pulling has Artifact Registry read permissions"
+      },
+      {
+        "id": "B",
+        "text": "Whether a billing budget alert is set to 90 percent"
+      },
+      {
+        "id": "C",
+        "text": "Whether Cloud DNS has a public MX record"
+      },
+      {
+        "id": "D",
+        "text": "Whether BigQuery has a dataset in the same region"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "GKE image pulls from Artifact Registry require the pulling identity to have appropriate Artifact Registry permissions.",
+    "whyOthersAreWrong": {
+      "B": "Budget alerts do not grant image pull permissions.",
+      "C": "DNS mail records are unrelated to container image access.",
+      "D": "BigQuery dataset placement does not affect Artifact Registry authorization."
+    },
+    "watchOutFor": "Image pull failures can be IAM failures for the pulling identity, not image path mistakes.",
+    "tags": ["gke", "artifact-registry", "iam"],
+    "examSignals": [
+      "cannot pull image",
+      "private Artifact Registry",
+      "permissions"
+    ]
+  },
+  {
+    "id": "ace-q-0355",
+    "domain": "access_security",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A predefined IAM role contains many permissions, but an automation job needs only three specific permissions. What should be considered if no predefined role matches least privilege?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Grant Owner temporarily and remove it later"
+      },
+      {
+        "id": "B",
+        "text": "Create a custom IAM role with only the required permissions"
+      },
+      {
+        "id": "C",
+        "text": "Share a human administrator password with the automation"
+      },
+      {
+        "id": "D",
+        "text": "Disable audit logs for the project"
+      }
+    ],
+    "correctOptionIds": ["B"],
+    "explanation": "Custom IAM roles are appropriate when predefined roles are too broad and the required permissions can be explicitly defined.",
+    "whyOthersAreWrong": {
+      "A": "Owner is far broader than needed and increases risk.",
+      "C": "Shared human credentials are insecure and unauditable.",
+      "D": "Disabling audit logs reduces accountability and does not solve least privilege."
+    },
+    "watchOutFor": "Use custom roles only when predefined roles do not fit; do not default to Owner.",
+    "tags": ["custom-iam-roles", "least-privilege", "iam"],
+    "examSignals": [
+      "predefined role too broad",
+      "specific permissions",
+      "automation"
+    ]
+  },
+  {
+    "id": "ace-q-0356",
+    "domain": "access_security",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A developer needs temporary access to deploy as a service account without downloading a long-lived key. What should be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Service account impersonation with appropriate IAM permissions"
+      },
+      {
+        "id": "B",
+        "text": "A service account key committed to the repository"
+      },
+      {
+        "id": "C",
+        "text": "A shared Owner user account"
+      },
+      {
+        "id": "D",
+        "text": "A public Cloud Storage bucket containing credentials"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Service account impersonation lets an authorized principal obtain short-lived credentials for a service account without distributing a key file.",
+    "whyOthersAreWrong": {
+      "B": "Committing keys creates long-lived credential exposure.",
+      "C": "Shared user accounts reduce accountability and violate identity best practices.",
+      "D": "Publishing credentials is insecure."
+    },
+    "watchOutFor": "Temporary service account access should favor impersonation or federation over key files.",
+    "tags": ["service-account-impersonation", "short-lived-credentials", "iam"],
+    "examSignals": [
+      "temporary access",
+      "no key file",
+      "deploy as service account"
+    ]
+  },
+  {
+    "id": "ace-q-0357",
+    "domain": "access_security",
+    "type": "single",
+    "difficulty": "hard",
+    "question": "A GKE application needs to call Google Cloud APIs using a Google Cloud service account, but the team wants to avoid storing service account keys in Kubernetes Secrets. What should they configure?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Workload Identity Federation for GKE between the Kubernetes service account and the IAM service account"
+      },
+      {
+        "id": "B",
+        "text": "A public service account key mounted into every Pod"
+      },
+      {
+        "id": "C",
+        "text": "A Cloud DNS A record for the service account"
+      },
+      {
+        "id": "D",
+        "text": "A billing budget scoped to the namespace"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Workload Identity Federation for GKE lets Kubernetes workloads use IAM service accounts without storing long-lived keys in the cluster.",
+    "whyOthersAreWrong": {
+      "B": "Keys in Kubernetes Secrets increase credential risk and are not the preferred keyless pattern.",
+      "C": "DNS records do not grant API identity.",
+      "D": "Budgets do not provide workload identity."
+    },
+    "watchOutFor": "GKE workload access to Google APIs should usually use keyless identity federation, not downloaded keys.",
+    "tags": ["gke", "workload-identity-federation", "service-accounts"],
+    "examSignals": ["GKE application", "Google Cloud APIs", "avoid keys"]
+  },
+  {
+    "id": "ace-q-0358",
+    "domain": "access_security",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A security policy says new user-managed service account keys must not be created in any project under a folder. What control should be applied?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An organization policy constraint that disables service account key creation at the folder or organization scope"
+      },
+      {
+        "id": "B",
+        "text": "A Cloud DNS private zone"
+      },
+      {
+        "id": "C",
+        "text": "A Cloud Storage lifecycle policy"
+      },
+      {
+        "id": "D",
+        "text": "A billing alert at 100 percent"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Organization policy constraints can enforce governance rules such as restricting service account key creation across folders or organizations.",
+    "whyOthersAreWrong": {
+      "B": "DNS zones do not control IAM key creation.",
+      "C": "Lifecycle policies manage object storage, not service account keys.",
+      "D": "Billing alerts do not enforce credential policy."
+    },
+    "watchOutFor": "Governance rules across projects usually point to organization policy, not per-resource configuration.",
+    "tags": ["organization-policies", "service-account-keys", "governance"],
+    "examSignals": [
+      "disable key creation",
+      "folder scope",
+      "policy enforcement"
+    ]
+  },
+  {
+    "id": "ace-q-0359",
+    "domain": "access_security",
+    "type": "single",
+    "difficulty": "medium",
+    "question": "A team wants to classify resources for policy enforcement and Cloud NGFW rules. They are considering labels, but need hierarchy-aware policy targets. What should they use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Secure Tags"
+      },
+      {
+        "id": "B",
+        "text": "Project display names only"
+      },
+      {
+        "id": "C",
+        "text": "Billing account names"
+      },
+      {
+        "id": "D",
+        "text": "Cloud Storage object version IDs"
+      }
+    ],
+    "correctOptionIds": ["A"],
+    "explanation": "Secure Tags are designed for policy use cases such as IAM conditions and Cloud NGFW targeting, unlike labels that are primarily metadata.",
+    "whyOthersAreWrong": {
+      "B": "Display names are not a policy classification system.",
+      "C": "Billing account names do not classify resources for NGFW policy targets.",
+      "D": "Object version IDs apply to storage objects and not general policy classification."
+    },
+    "watchOutFor": "Labels are for organization/reporting metadata; secure Tags are for policy-oriented classification.",
+    "tags": ["secure-tags", "cloud-ngfw", "policy"],
+    "examSignals": ["policy enforcement", "NGFW rules", "hierarchy-aware"]
+  },
+  {
+    "id": "ace-q-0360",
+    "domain": "access_security",
+    "type": "multiple",
+    "difficulty": "medium",
+    "question": "An application deployment service account must create resources and attach a runtime service account to them. Choose 2 answers. Which permissions or roles are typically relevant?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Permissions to create the target resources"
+      },
+      {
+        "id": "B",
+        "text": "Permission to act as the runtime service account, such as iam.serviceAccounts.actAs"
+      },
+      {
+        "id": "C",
+        "text": "Billing Account Viewer only"
+      },
+      {
+        "id": "D",
+        "text": "Cloud DNS Reader only"
+      }
+    ],
+    "correctOptionIds": ["A", "B"],
+    "explanation": "Deployment identities usually need permissions for the resource being created and, when attaching a service account, permission to act as that service account.",
+    "whyOthersAreWrong": {
+      "C": "Billing visibility alone cannot create resources or attach service accounts.",
+      "D": "DNS read access does not grant deployment or service account attachment permissions."
+    },
+    "watchOutFor": "Many deployment failures come from missing actAs on the runtime service account even when resource creation permissions exist.",
+    "tags": ["iam", "service-accounts", "act-as"],
+    "examSignals": [
+      "attach service account",
+      "deployment identity",
+      "iam.serviceAccounts.actAs"
+    ]
   }
 ]

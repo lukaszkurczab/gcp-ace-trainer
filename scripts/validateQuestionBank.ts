@@ -191,11 +191,11 @@ export function validateQuestionBankFile(filePath = "data/question-bank/ace-foun
     }
 
     if (question.type === "multiple") {
-      if (correctOptionIds.length < 2 || correctOptionIds.length > 3) {
-        push(summary.errors, label, "multiple questions must have 2 or 3 correct answers.");
+      if (correctOptionIds.length !== 2) {
+        push(summary.errors, label, "multiple questions must have exactly two correct answers.");
       }
 
-      const chooseText = `Choose ${correctOptionIds.length} answers.`;
+      const chooseText = "Choose 2 answers.";
 
       if (typeof question.question !== "string" || !question.question.includes(chooseText)) {
         push(summary.errors, label, `multiple questions must include "${chooseText}".`);
