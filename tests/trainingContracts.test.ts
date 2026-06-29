@@ -109,9 +109,11 @@ test("Algorithms pattern-identification item can be represented as a TrainingIte
 
 test("Algorithms strategy-choice attempt can be represented without selected option ids", () => {
   const attempt: TrainingAttempt = {
+    answeredAt: "2026-06-29T12:00:00.000Z",
     id: "attempt-algo-strategy-001",
     itemId: "algo-strategy-001",
     itemType: "strategy_choice",
+    modeId: "algorithms-pattern-drill",
     response: {
       kind: "strategy_selection",
       selectedStrategyId: "sort-then-two-pointers",
@@ -121,13 +123,48 @@ test("Algorithms strategy-choice attempt can be represented without selected opt
       quality: "strong",
       score: 0.9,
     },
-    submittedAt: "2026-06-29T12:00:00.000Z",
     trackId: ALGORITHMS_TRACK_ID,
   };
 
+  assert.equal(attempt.modeId, "algorithms-pattern-drill");
   assert.equal(attempt.response.kind, "strategy_selection");
   assert.equal("selectedOptionIds" in attempt.response, false);
   assert.equal(attempt.result?.kind, "strategy_quality");
+});
+
+test("Cloud attempt can carry mode, answer time, confidence, mistake refs, and feedback signals", () => {
+  const attempt: TrainingAttempt = {
+    answeredAt: "2026-06-29T12:00:00.000Z",
+    confidence: "unsure",
+    feedbackSignals: ["incorrect", "review_recommended"],
+    id: "attempt-cloud-001",
+    itemId: "cloud-single-001",
+    itemType: "single_choice_question",
+    mistakeTypeRefs: [
+      {
+        axisId: "cloud-mistake-type",
+        nodeId: "confused_services",
+        role: "mistake_type",
+      },
+    ],
+    modeId: "cloud-practice",
+    response: {
+      kind: "option_selection",
+      selectedOptionIds: ["compute-engine"],
+    },
+    result: {
+      isCorrect: false,
+      kind: "correctness",
+    },
+    sessionId: "session-cloud-001",
+    trackId: CLOUD_CERTIFICATION_TRACK_ID,
+  };
+
+  assert.equal(attempt.modeId, "cloud-practice");
+  assert.equal(attempt.answeredAt, "2026-06-29T12:00:00.000Z");
+  assert.equal(attempt.confidence, "unsure");
+  assert.deepEqual(attempt.mistakeTypeRefs?.map((ref) => ref.nodeId), ["confused_services"]);
+  assert.deepEqual(attempt.feedbackSignals, ["incorrect", "review_recommended"]);
 });
 
 test("review queue item references a source attempt and has a real dueAt", () => {

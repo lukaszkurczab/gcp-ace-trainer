@@ -1,8 +1,11 @@
 import type { TrackId, TrainingItemType } from "../tracks";
-import type { TrainingItemId } from "./trainingItem";
-import type { TrainingSessionId } from "./trainingSession";
+import type { FeedbackSignal } from "./trainingFeedback";
+import type { TrainingItemId, TrainingItemTaxonomyRef } from "./trainingItem";
+import type { TrainingSessionId, TrainingSessionModeId } from "./trainingSession";
 
 export type TrainingAttemptId = string;
+
+export type TrainingAttemptConfidence = "low" | "medium" | "high" | "unsure";
 
 export type ComplexityAnswer = {
   rationale?: string;
@@ -61,13 +64,17 @@ export type TrainingAttemptResult =
     };
 
 export type TrainingAttempt = {
+  answeredAt: string;
+  confidence?: TrainingAttemptConfidence;
   durationSeconds?: number;
+  feedbackSignals?: FeedbackSignal[];
   id: TrainingAttemptId;
   itemId: TrainingItemId;
   itemType: TrainingItemType;
+  mistakeTypeRefs?: TrainingItemTaxonomyRef[];
+  modeId: TrainingSessionModeId;
   response: TrainingAttemptResponse;
   result?: TrainingAttemptResult;
   sessionId?: TrainingSessionId;
-  submittedAt: string;
   trackId: TrackId;
 };
