@@ -20,6 +20,7 @@ export type {
   ReviewReason,
   TaxonomyProgress,
   TrainingAttempt,
+  TrainingAttemptConfidence,
   TrainingAttemptId,
   TrainingAttemptResponse,
   TrainingAttemptResult,

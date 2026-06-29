@@ -411,6 +411,8 @@ Suggested commit:
 
 domain: add training session engine primitives
 
+State: accepted
+
 ⸻
 
 Phase 4 — Storage Repositories for Training Models
