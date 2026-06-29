@@ -1,0 +1,248 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Patternly - Learning Gateway</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Use the provided Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "surface-variant": "#dae2fd",
+                    "primary": "#004ac6",
+                    "primary-container": "#2563eb",
+                    "on-error": "#ffffff",
+                    "secondary-fixed": "#eaddff",
+                    "secondary-container": "#8a4cfc",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-high": "#e2e7ff",
+                    "tertiary-fixed-dim": "#6cd3f7",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-surface": "#131b2e",
+                    "inverse-primary": "#b4c5ff",
+                    "tertiary": "#005d73",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#d2d9f4",
+                    "on-tertiary-container": "#dcf4ff",
+                    "surface": "#faf8ff",
+                    "surface-bright": "#faf8ff",
+                    "secondary": "#712ae2",
+                    "on-primary-container": "#eeefff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-tint": "#0053db",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "on-tertiary-fixed": "#001f28",
+                    "surface-container-highest": "#dae2fd",
+                    "on-background": "#131b2e",
+                    "surface-container": "#eaedff",
+                    "on-secondary-fixed": "#25005a",
+                    "tertiary-container": "#007793",
+                    "on-surface-variant": "#434655",
+                    "outline": "#737686",
+                    "inverse-on-surface": "#eef0ff",
+                    "primary-fixed": "#dbe1ff",
+                    "inverse-surface": "#283044",
+                    "tertiary-fixed": "#b7eaff",
+                    "on-tertiary-fixed-variant": "#004e61",
+                    "on-secondary-container": "#fffbff",
+                    "surface-container-low": "#f2f3ff",
+                    "background": "#faf8ff",
+                    "on-primary-fixed": "#00174b",
+                    "outline-variant": "#c3c6d7"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap-sm": "0.5rem",
+                    "stack-gap-lg": "1.5rem",
+                    "section-padding": "2rem",
+                    "card-padding": "1.25rem",
+                    "stack-gap-md": "1rem",
+                    "container-margin": "1rem"
+            },
+            "fontFamily": {
+                    "code-snippet": ["JetBrains Mono"],
+                    "section-title": ["Hanken Grotesk"],
+                    "screen-title": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "card-title": ["Hanken Grotesk"],
+                    "caption": ["Inter"]
+            },
+            "fontSize": {
+                    "code-snippet": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "section-title": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "screen-title": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "card-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0f172a; /* Deep Navy override for this specific screen */
+            color: #f8fafc;
+        }
+        .lavender-gradient {
+            background: linear-gradient(135deg, #712ae2 0%, #a855f7 100%);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased overflow-x-hidden min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/5 flex justify-between items-center px-container-margin py-stack-gap-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">grid_view</span>
+<h1 class="font-screen-title text-screen-title-mobile font-bold text-white tracking-tight">Patternly</h1>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-secondary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional studio headshot of a software engineer, styled in a high-key modern tech aesthetic with soft, clean lighting. The portrait is framed within a circular border, emphasizing a clean corporate minimalist vibe that fits a premium technical training application's user interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY_UV1r5JLnSvoc2jtqM0J2LS9UDDRKj2HHb_M724OC7AhkrqAYIerbormSvsZJYMiVrDhkjL2Sabk-vRITrg3uu3mO12zf2ZjF3NeSC9bM_PsbYtfheeVEeImnCmYlvHW1W3IwbCWoAba_jPyr5tMs3tGAnAhojh-n2LY7GF1N-fPgTdJ11TWGD6ej9cGgy3e9V_VUBEUfpy05DZ-DyutJ39bLR7Mg2QYGWJclzyQ-i-bpzT98SoN0Zv_BGhLlOIY__DwgebNdoTm">
+</div>
+</header>
+<main class="pt-20 px-container-margin max-w-2xl mx-auto space-y-stack-gap-lg">
+<!-- Current Focus Section -->
+<section class="flex justify-between items-center bg-white/5 p-4 rounded-xl border border-white/10">
+<div class="flex flex-col">
+<span class="font-caption text-caption text-secondary uppercase tracking-widest">Current Focus</span>
+<span class="font-card-title text-card-title text-white">Cloud Certification</span>
+</div>
+<button class="text-secondary-fixed-dim hover:text-white transition-colors text-body-sm font-medium flex items-center gap-1 group">
+                Change focus
+                <span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+</button>
+</section>
+<!-- Main Hero Card -->
+<section class="relative group">
+<div class="absolute -inset-0.5 bg-gradient-to-r from-secondary to-primary-container rounded-xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+<div class="relative glass-card p-card-padding rounded-xl overflow-hidden flex flex-col gap-4">
+<!-- Abstract BG Decoration -->
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-secondary/10 rounded-full blur-3xl"></div>
+<div class="flex flex-col gap-1">
+<span class="font-caption text-caption text-secondary-fixed-dim uppercase font-bold tracking-widest">CONTINUE LEARNING</span>
+<h2 class="font-screen-title text-screen-title text-white">IAM policies</h2>
+</div>
+<p class="text-slate-300 leading-relaxed max-w-[85%]">
+                    Resume your last Cloud Certification topic or choose another area before starting.
+                </p>
+<div class="mt-2">
+<button class="lavender-gradient text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-secondary/20 active:scale-95 transition-all w-full md:w-auto text-center">
+                        Start learning
+                    </button>
+</div>
+</div>
+</section>
+<!-- Recommended Today Section -->
+<section class="space-y-stack-gap-md">
+<h3 class="font-section-title text-section-title text-white">Recommended today</h3>
+<div class="grid grid-cols-1 gap-4">
+<!-- Recommendation 1 -->
+<div class="glass-card p-4 rounded-xl border-l-4 border-secondary hover:bg-white/10 transition-all cursor-pointer flex items-center justify-between group">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-card-title text-card-title text-white">Review IAM policies</span>
+<span class="bg-secondary/20 text-secondary-fixed-dim px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight">Recommended</span>
+</div>
+<p class="font-caption text-caption text-slate-400">Suggested because of recent mistakes</p>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-secondary transition-colors">arrow_forward_ios</span>
+</div>
+<!-- Recommendation 2 -->
+<div class="glass-card p-4 rounded-xl border-l-4 border-primary-container hover:bg-white/10 transition-all cursor-pointer flex items-center justify-between group">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-card-title text-card-title text-white">Due for review</span>
+<span class="bg-primary/20 text-primary-fixed-dim px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight">8 items</span>
+</div>
+<p class="font-caption text-caption text-slate-400">Concepts scheduled for review</p>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-primary transition-colors">arrow_forward_ios</span>
+</div>
+<!-- Recommendation 3 -->
+<div class="glass-card p-4 rounded-xl border-l-4 border-error hover:bg-white/10 transition-all cursor-pointer flex items-center justify-between group">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-card-title text-card-title text-white">IAM roles</span>
+<span class="bg-error/20 text-error-container px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight">Weak area</span>
+</div>
+<p class="font-caption text-caption text-slate-400">Access-control scenarios</p>
+</div>
+<span class="material-symbols-outlined text-slate-500 group-hover:text-error transition-colors">arrow_forward_ios</span>
+</div>
+</div>
+</section>
+<!-- Last Session Metadata -->
+<footer class="pt-stack-gap-lg border-t border-white/5">
+<div class="flex items-center justify-between text-slate-500 px-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">history</span>
+<span class="font-caption text-caption">Last session: 2h ago</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="font-caption text-caption">12 day streak</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-secondary">verified</span>
+<span class="font-caption text-caption">Level 14</span>
+</div>
+</div>
+</footer>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-[#0f172a] border-t border-white/5 flex justify-around items-center h-16 px-4 pb-safe">
+<div class="flex flex-col items-center justify-center text-secondary font-bold tap-highlight-transparent active:scale-90 transition-transform cursor-pointer">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-caption text-caption">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-60 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">terminal</span>
+<span class="font-caption text-caption">Practice</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-60 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-caption text-caption">Progress</span>
+</div>
+<div class="flex flex-col items-center justify-center text-slate-400 opacity-60 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-caption text-caption">Settings</span>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for tile hover
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0px)';
+            });
+        });
+    </script>
+</body></html>

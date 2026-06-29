@@ -1,0 +1,229 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Patternly — Algorithm Patterns</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#1e293b",
+                    "surface-bright": "#1e293b",
+                    "on-surface": "#e2e8f0",
+                    "on-surface-variant": "#94a3b8",
+                    "tertiary": "#2dd4bf",
+                    "outline-variant": "#33394c",
+                    "error-container": "#450a0a",
+                    "on-tertiary": "#000000",
+                    "on-tertiary-container": "#ccfbf1",
+                    "surface-dim": "#0c1324",
+                    "on-primary-container": "#e0e7ff",
+                    "surface-container-low": "#0f172a",
+                    "surface": "#0c1324",
+                    "tertiary-fixed-dim": "#5eead4",
+                    "on-secondary-fixed": "#e0e7ff",
+                    "surface-tint": "#6366f1",
+                    "secondary-container": "#4338ca",
+                    "surface-container-lowest": "#0c1324",
+                    "primary-container": "#4f46e5",
+                    "on-secondary-container": "#ffffff",
+                    "tertiary-fixed": "#99f6e4",
+                    "primary": "#818cf8",
+                    "inverse-primary": "#818cf8",
+                    "on-tertiary-fixed-variant": "#0f766e",
+                    "tertiary-container": "#134e4a",
+                    "error": "#f87171",
+                    "surface-variant": "#151b2d",
+                    "surface-container-highest": "#1e293b",
+                    "primary-fixed-dim": "#a5b4fc",
+                    "inverse-on-surface": "#020617",
+                    "secondary-fixed": "#c7d2fe",
+                    "on-error-container": "#fecaca",
+                    "secondary": "#a5b4fc",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#a5b4fc",
+                    "on-tertiary-fixed": "#042f2e",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#111827",
+                    "surface-container": "#151b2d",
+                    "on-primary-fixed-variant": "#4338ca",
+                    "background": "#0c1324",
+                    "outline": "#33394c",
+                    "on-secondary-fixed-variant": "#4f46e5",
+                    "on-primary-fixed": "#e0e7ff",
+                    "inverse-surface": "#f1f5f9",
+                    "on-background": "#f8fafc",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.375rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap-sm": "0.5rem",
+                    "stack-gap-md": "1rem",
+                    "section-padding": "2.5rem",
+                    "stack-gap-lg": "2rem",
+                    "container-margin": "1.25rem",
+                    "card-padding": "1.5rem"
+            },
+            "fontFamily": {
+                    "section-title": ["Hanken Grotesk", "sans-serif"],
+                    "code-snippet": ["JetBrains Mono", "monospace"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "screen-title": ["Hanken Grotesk", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "caption": ["Inter", "sans-serif"],
+                    "card-title": ["Hanken Grotesk", "sans-serif"]
+            },
+            "fontSize": {
+                    "section-title": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "code-snippet": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "screen-title": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.03em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600"}],
+                    "card-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0c1324;
+            color: #e2e8f0;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            vertical-align: middle;
+        }
+        .syntax-keyword { color: #818cf8; }
+        .syntax-function { color: #5eead4; }
+        .syntax-string { color: #fcd34d; }
+        .syntax-comment { color: #475569; }
+        .code-block {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #070d1f;
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface bg-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-6 h-16 bg-background/80 backdrop-blur-md border-b border-white/[0.04]">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-md bg-primary-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-base" data-icon="terminal">terminal</span>
+</div>
+<span class="font-screen-title text-lg font-extrabold tracking-[0.15em] text-white uppercase">Patternly</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-white/5 transition-colors p-2 rounded-full active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="grid_view">grid_view</span>
+</button>
+</div>
+</header>
+<main class="flex-1 max-w-2xl mx-auto w-full px-6 py-10 mb-24 animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both">
+<!-- Progress Area -->
+<div class="mb-16"><div class="flex justify-between items-center mb-3"><span class="font-caption text-[11px] text-on-surface-variant/70 font-semibold tracking-widest uppercase">ITEM 12 OF 20</span></div><div class="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#6557FF] to-[#8B3DFF] w-3/5 rounded-full transition-all duration-1000"></div></div></div>
+<!-- Problem Header -->
+<section class="mb-12">
+<h1 class="font-screen-title text-screen-title text-white leading-tight mb-10 mt-4">Complexity Analysis Comparison</h1>
+<div class="bg-[#151b2d] rounded-2xl border border-[#33394c] overflow-hidden shadow-sm">
+<div class="p-6">
+<p class="font-body-md text-on-surface-variant leading-relaxed">
+                    Given an array of integers <code class="font-code-snippet text-primary bg-primary/10 px-1.5 py-0.5 rounded">nums</code> and an integer <code class="font-code-snippet text-primary bg-primary/10 px-1.5 py-0.5 rounded">target</code>, return the indices of the two numbers such that they add up to the target.
+                </p>
+</div>
+</div>
+</section>
+<!-- Approach Selection Tabs -->
+<div class="mb-8 border-b border-white/[0.04] flex gap-8 overflow-x-auto" id="approach-tabs"><button class="pb-4 px-1 border-b-2 border-primary text-white font-semibold text-sm transition-all whitespace-nowrap" id="tab-a" onclick="switchApproach('a')">Approach A: Iterative</button><button class="pb-4 px-1 border-b-2 border-transparent text-on-surface-variant/70 hover:text-white font-semibold text-sm transition-all whitespace-nowrap" id="tab-b" onclick="switchApproach('b')">Approach B: Hash Map</button></div>
+<div class="mb-16"><div class="flex justify-between items-center mb-3"><span class="font-caption text-[11px] text-on-surface-variant/70 font-semibold tracking-widest uppercase">ITEM 12 OF 20</span></div><div class="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#6557FF] to-[#8B3DFF] w-3/5 rounded-full transition-all duration-1000"></div></div></div>
+<!-- Question Section -->
+
+<!-- Action Button -->
+<div class="flex justify-end mt-8">
+<button class="bg-gradient-to-r from-[#6557FF] to-[#8B3DFF] hover:opacity-90 text-[#F8FAFC] px-8 py-4 rounded-2xl font-semibold flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-primary/20 w-full sm:w-auto">
+                Check Answer
+                <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 h-20 bg-background/90 backdrop-blur-xl border-t border-white/[0.04] z-50">
+<a class="flex flex-col items-center justify-center gap-1.5 text-on-surface-variant/60 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-caption text-[10px]">HOME</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-primary transition-colors relative" href="#">
+<span class="material-symbols-outlined" data-icon="lab_profile" style="font-variation-settings: 'FILL' 1">lab_profile</span>
+<span class="font-caption text-[10px]">PRACTICE</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-on-surface-variant/60 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-caption text-[10px]">ANALYTICS</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1.5 text-on-surface-variant/60 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-caption text-[10px]">PROFILE</span>
+</a>
+</nav>
+<script>
+        function switchApproach(approach) {
+            const tabA = document.getElementById('tab-a');
+            const tabB = document.getElementById('tab-b');
+            const contentA = document.getElementById('approach-a-content');
+            const contentB = document.getElementById('approach-b-content');
+
+            if (approach === 'a') {
+                tabA.classList.replace('border-transparent', 'border-primary');
+                tabA.classList.replace('text-on-surface-variant', 'text-white');
+                tabB.classList.replace('border-primary', 'border-transparent');
+                tabB.classList.replace('text-white', 'text-on-surface-variant');
+                contentA.classList.remove('hidden');
+                contentB.classList.add('hidden');
+            } else {
+                tabB.classList.replace('border-transparent', 'border-primary');
+                tabB.classList.replace('text-on-surface-variant', 'text-white');
+                tabA.classList.replace('border-primary', 'border-transparent');
+                tabA.classList.replace('text-white', 'text-on-surface-variant');
+                contentB.classList.remove('hidden');
+                contentA.classList.add('hidden');
+            }
+        }
+
+        function selectOption(el) {
+            document.querySelectorAll('button.group').forEach(btn => {
+                btn.classList.remove('selected', 'border-primary/60', 'bg-primary/5');
+                btn.classList.add('border-[#33394c]', 'bg-[#151b2d]');
+                const box = btn.querySelector('.shrink-0');
+                box.classList.remove('bg-primary/20', 'text-primary', 'border-primary/40');
+                box.classList.add('border-[#33394c]', 'text-on-surface-variant');
+            });
+            
+            el.classList.remove('border-[#33394c]', 'bg-[#151b2d]');
+            el.classList.add('selected', 'border-primary/60', 'bg-primary/5');
+            const indexBox = el.querySelector('.shrink-0');
+            indexBox.classList.remove('border-[#33394c]', 'text-on-surface-variant');
+            indexBox.classList.add('bg-primary/20', 'text-primary', 'border-primary/40');
+        }
+    </script>
+
+
+
+
+
+
+</body></html>

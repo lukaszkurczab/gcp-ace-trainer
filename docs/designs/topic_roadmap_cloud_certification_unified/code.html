@@ -1,0 +1,302 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Hanken+Grotesk:wght@700;800&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        :root {
+            --bg-deep-navy: #0c1324;
+            --lavender: #a855f7;
+        }
+        body {
+            background-color: var(--bg-deep-navy);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .node-connector {
+            background: linear-gradient(to bottom, #1e293b 50%, transparent 50%);
+            background-size: 1px 8px;
+        }
+        .glow-lavender {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+        }
+        .bottom-sheet-transition {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .canvas-bg {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .lavender-gradient {
+            background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#0c1324",
+                        "surface": "#161e31",
+                        "surface-container": "#1e293b",
+                        "primary": "#a855f7",
+                        "on-background": "#f8fafc",
+                        "on-surface": "#f1f5f9",
+                        "on-surface-variant": "#94a3b8",
+                        "outline-variant": "#334155",
+                        "outline": "#475569",
+                        "secondary": "#a855f7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.375rem",
+                        "lg": "0.5rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap-sm": "0.5rem",
+                        "stack-gap-lg": "1.5rem",
+                        "section-padding": "2rem",
+                        "card-padding": "1.25rem",
+                        "stack-gap-md": "1rem",
+                        "container-margin": "1rem"
+                    },
+                    "fontFamily": {
+                        "code-snippet": ["JetBrains Mono"],
+                        "section-title": ["Hanken Grotesk"],
+                        "screen-title": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "card-title": ["Hanken Grotesk"],
+                        "caption": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden antialiased">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-container-margin py-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]">grid_view</span>
+<h1 class="font-screen-title text-on-background tracking-tight font-bold text-[20px]">Patternly</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdp-P1Qf5xiTpLmTJXoLOueTLelFVZTv-O-yoFQzSpNb99HqGTM6pn5arCeCYClSvpGkWw-Hx_Sg3nxbs88RMz44VZXWlFKnby6KRo29F9QuzeG2nekxC2jly2OHhExLwQfxPXQibcxuB6YrXTEwSVQ_37LLHIwZiqTChFCSqG14KBp-ZhWSKbdYhd_7nBLkQzeKa4g7IaOt0QvayFEYC50yqRpz8AwzD4V7QrO1cbk9z-Au5bszuA1UtMN2woE-trX7ZqpRQ9LFxA">
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 mt-16 pb-24 px-container-margin overflow-y-auto canvas-bg">
+<!-- Header & Controls -->
+<div class="pt-8 space-y-6 max-w-2xl mx-auto">
+<div class="space-y-2">
+<h2 class="font-screen-title text-on-background text-[28px] leading-tight">Choose topic</h2>
+<p class="font-body-sm text-on-surface-variant max-w-md">Select a topic to practice in Cloud Certification. Patternly may still suggest areas based on your answers.</p>
+</div>
+<!-- Context Chip & Search -->
+
+</div>
+<!-- Roadmap Canvas -->
+<div class="mt-12 max-w-2xl mx-auto relative">
+<!-- Vertical Timeline Line -->
+<div class="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[1px] node-connector"></div>
+<div class="space-y-16 relative">
+<!-- Node 1: Fundamentals (Strong) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center border-4 border-background shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[28px]">cloud</span>
+</div>
+<span class="mt-3 font-card-title text-[15px] text-on-surface">Cloud Fundamentals</span>
+<span class="text-[10px] font-caption uppercase tracking-widest text-primary font-bold mt-1">Strong</span>
+</button>
+</div>
+<!-- Node 2: IAM (Recommended) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center" onclick="openBottomSheet('IAM &amp; Access Control', 'Practice access control scenarios, IAM roles, and policy decisions.')">
+<div class="w-16 h-16 rounded-full bg-background border-[3px] border-primary text-primary flex items-center justify-center glow-lavender transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[28px]">lock</span>
+</div>
+<span class="mt-3 font-card-title text-[15px] text-on-surface">IAM &amp; Access Control</span>
+<span class="text-[10px] font-caption uppercase tracking-widest text-primary font-bold mt-1">Recommended</span>
+</button>
+</div>
+<!-- Split Row: Compute & Storage -->
+<div class="flex justify-between items-center w-full max-w-sm mx-auto relative px-4">
+<div class="absolute top-1/2 left-0 right-0 h-[1px] node-connector -z-0"></div>
+<!-- Compute (Practicing) -->
+<button class="group relative z-10 flex flex-col items-center bg-background p-2">
+<div class="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center border-4 border-background glow-lavender transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[24px]">memory</span>
+</div>
+<span class="mt-2 font-card-title text-[13px] text-on-surface">Compute</span>
+<span class="text-[9px] font-caption uppercase tracking-widest text-primary font-bold">Practicing</span>
+</button>
+<!-- Storage (New) -->
+<button class="group relative z-10 flex flex-col items-center bg-background p-2">
+<div class="w-14 h-14 rounded-full bg-background border-2 border-outline text-on-surface-variant flex items-center justify-center transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[24px]">storage</span>
+</div>
+<span class="mt-2 font-card-title text-[13px] text-on-surface">Storage</span>
+<span class="text-[9px] font-caption uppercase tracking-widest text-outline font-bold">New</span>
+</button>
+</div>
+<!-- Node 5: Networking (Strong) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-primary text-white flex items-center justify-center border-4 border-background transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[28px]">hub</span>
+</div>
+<span class="mt-3 font-card-title text-[15px] text-on-surface">Networking</span>
+</button>
+</div>
+<!-- Split Row: Databases & Monitoring -->
+<div class="grid grid-cols-2 gap-12 w-full max-w-md mx-auto">
+<!-- Databases (Locked) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center opacity-40 grayscale">
+<div class="w-14 h-14 rounded-full bg-surface-container border border-outline-variant text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">database</span>
+</div>
+<span class="mt-2 font-card-title text-[13px] text-outline text-center">Databases</span>
+</button>
+</div>
+<!-- Monitoring (Locked) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center opacity-40 grayscale">
+<div class="w-14 h-14 rounded-full bg-surface-container border border-outline-variant text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+</div>
+<span class="mt-2 font-card-title text-[13px] text-outline text-center">Monitoring</span>
+</button>
+</div>
+</div>
+<!-- Billing (Locked) -->
+<div class="flex justify-center">
+<button class="group relative z-10 flex flex-col items-center opacity-40 grayscale">
+<div class="w-14 h-14 rounded-full bg-surface-container border border-outline-variant text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<span class="mt-2 font-card-title text-[13px] text-outline">Billing</span>
+</button>
+</div>
+<!-- Final Node: Exam Scenarios -->
+<div class="flex justify-center pt-8">
+<button class="relative z-10 p-6 rounded-[24px] bg-surface-container/50 border border-outline-variant border-dashed flex flex-col items-center opacity-30 grayscale">
+<span class="material-symbols-outlined text-[40px]">assignment_turned_in</span>
+<span class="mt-3 font-card-title text-[14px]">Exam Scenarios</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-background border-t border-outline-variant flex justify-around items-center h-16 px-4 pb-safe">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium mt-0.5">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span class="text-[10px] font-bold mt-0.5">Practice</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[24px]">query_stats</span>
+<span class="text-[10px] font-medium mt-0.5">Progress</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium mt-0.5">Settings</span>
+</button>
+</nav>
+<!-- Interaction Layer: Detail Bottom Sheet -->
+<div class="fixed inset-0 bg-background/80 backdrop-blur-sm z-[60] opacity-0 pointer-events-none transition-opacity duration-300" id="backdrop" onclick="closeBottomSheet()"></div>
+<div class="fixed bottom-0 left-0 right-0 z-[70] bg-surface rounded-t-[32px] border-t border-outline-variant p-container-margin transform translate-y-full bottom-sheet-transition max-w-2xl mx-auto shadow-2xl pb-10" id="bottomSheet">
+<!-- Drag Handle -->
+<div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-8"></div>
+<div class="space-y-8">
+<div class="flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold text-[10px] uppercase tracking-widest border border-primary/20">Recommended</span>
+</div>
+<h3 class="font-screen-title text-on-background text-[24px]" id="sheetTopic">Topic Name</h3>
+</div>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="closeBottomSheet()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div>
+<h4 class="font-card-title text-[12px] text-primary uppercase tracking-[0.1em] mb-3">Description</h4>
+<p class="font-body-md text-on-surface-variant leading-relaxed" id="sheetDesc">Topic description goes here.</p>
+</div>
+<div>
+<h4 class="font-card-title text-[12px] text-primary uppercase tracking-[0.1em] mb-4">Available Modes</h4>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-4 bg-surface-container border border-outline-variant rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">school</span>
+<span class="text-body-sm font-medium">Learn</span>
+</div>
+<div class="p-4 bg-surface-container border border-outline-variant rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">fitness_center</span>
+<span class="text-body-sm font-medium">Drill</span>
+</div>
+<div class="p-4 bg-surface-container border border-outline-variant rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">history</span>
+<span class="text-body-sm font-medium">Review</span>
+</div>
+<div class="p-4 bg-surface-container border border-outline-variant rounded-2xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">psychology</span>
+<span class="text-body-sm font-medium">Scenario</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 pt-4">
+<button class="w-full py-4 lavender-gradient text-white rounded-2xl font-bold text-body-md shadow-lg shadow-primary/30 active:scale-[0.98] transition-transform">
+                    Use this topic
+                </button>
+<button class="w-full py-4 bg-transparent text-on-surface-variant rounded-2xl font-medium text-body-md active:scale-[0.98] transition-transform" onclick="closeBottomSheet()">
+                    Cancel
+                </button>
+</div>
+</div>
+</div>
+<script>
+        function openBottomSheet(name, desc) {
+            const sheet = document.getElementById('bottomSheet');
+            const backdrop = document.getElementById('backdrop');
+            const topicEl = document.getElementById('sheetTopic');
+            const descEl = document.getElementById('sheetDesc');
+
+            topicEl.textContent = name;
+            descEl.textContent = desc;
+
+            backdrop.classList.remove('opacity-0', 'pointer-events-none');
+            backdrop.classList.add('opacity-100');
+            sheet.classList.remove('translate-y-full');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBottomSheet() {
+            const sheet = document.getElementById('bottomSheet');
+            const backdrop = document.getElementById('backdrop');
+
+            backdrop.classList.add('opacity-0', 'pointer-events-none');
+            backdrop.classList.remove('opacity-100');
+            sheet.classList.add('translate-y-full');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeBottomSheet();
+        });
+    </script>
+
+
+</body></html>

@@ -1,0 +1,97 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly main shell screenshots
+tags:
+  - screenshot
+  - patternly
+  - main-shell
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F192.168.1.29%3A8081"
+- waitForAnimationToEnd:
+    timeout: 20000
+- assertVisible: "Patternly"
+- tapOn: "Home"
+- waitForAnimationToEnd:
+    timeout: 12000
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: "track-card-cloud-certification"
+    direction: DOWN
+- tapOn:
+    id: "track-card-cloud-certification"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    id: "track-card-cloud-certification"
+- takeScreenshot: "01-home-cloud"
+
+- tapOn: "Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Cloud practice"
+- takeScreenshot: "02-practice-cloud"
+
+- tapOn: "Progress"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Focus overview"
+- takeScreenshot: "03-progress-cloud"
+
+- tapOn: "Settings"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Local-first workspace controls."
+- takeScreenshot: "04-settings-cloud"
+
+- tapOn: "Home"
+- waitForAnimationToEnd:
+    timeout: 12000
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: "track-card-algorithms"
+    direction: DOWN
+- tapOn:
+    id: "track-card-algorithms"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    id: "track-card-algorithms"
+- takeScreenshot: "05-home-algorithms"
+
+- tapOn: "Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Algorithms is registered"
+- takeScreenshot: "06-practice-algorithms-draft"
+
+- tapOn: "Home"
+- waitForAnimationToEnd:
+    timeout: 12000
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- swipe:
+    direction: DOWN
+- scrollUntilVisible:
+    element:
+      id: "track-card-cloud-certification"
+    direction: DOWN
+- tapOn:
+    id: "track-card-cloud-certification"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    id: "track-card-cloud-certification"
+- takeScreenshot: "07-home-cloud-restored"

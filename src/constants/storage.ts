@@ -1,4 +1,5 @@
 export const STORAGE_KEYS = {
+  ACTIVE_TRACK: "patternly.activeTrack",
   QUESTIONS: "gcpAceTrainer.questions",
   ATTEMPTS: "gcpAceTrainer.attempts",
   PRACTICE_HISTORY: "gcpAceTrainer.practiceHistory",

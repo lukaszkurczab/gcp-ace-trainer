@@ -1,0 +1,214 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Focus Lab — Cloud Certification</title>
+<!-- Google Fonts: Hanken Grotesk & Inter & JetBrains Mono -->
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "primary": "#7C5CFF", // Patternly Violet
+                  "secondary": "#8B3DFF",
+                  "background": "#080D1C", // Deep Dark Navy
+                  "surface": "#11182A", // Dark Slate Surface
+                  "outline": "rgba(148, 163, 184, 0.16)", // Subtle Slate Border
+                  "on-surface": "#F8FAFC", // Primary White
+                  "on-surface-variant": "#94A3B8", // Muted Slate
+                  "accent-violet": "#7C5CFF",
+                  "muted-violet": "#9BA8FF"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.5rem",
+                  "lg": "0.75rem",
+                  "xl": "1rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "stack-gap-sm": "0.5rem",
+                  "stack-gap-md": "1rem",
+                  "section-padding": "2rem",
+                  "stack-gap-lg": "1.5rem",
+                  "container-margin": "1rem",
+                  "card-padding": "1.25rem"
+          },
+          "fontFamily": {
+                  "section-title": ["Hanken Grotesk"],
+                  "code-snippet": ["JetBrains Mono"],
+                  "body-md": ["Inter"],
+                  "screen-title": ["Hanken Grotesk"],
+                  "body-sm": ["Inter"],
+                  "caption": ["Inter"],
+                  "card-title": ["Hanken Grotesk"]
+          },
+          "fontSize": {
+                  "section-title": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                  "code-snippet": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "screen-title": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                  "card-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #080D1C;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .choice-card:hover {
+      background-color: rgba(17, 24, 42, 0.8);
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+    .choice-card.active {
+      border-color: #7C5CFF;
+      background-color: rgba(124, 92, 255, 0.1);
+    }
+    .btn-gradient {
+      background: linear-gradient(135deg, #6557FF 0%, #8B3DFF 100%);
+    }
+    .bottom-nav-item.active {
+      color: #7C5CFF;
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface min-h-screen flex flex-col">
+<!-- Header -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-4 h-16 bg-background border-b border-outline">
+<div class="flex items-center gap-3">
+<button aria-label="Close" class="flex items-center justify-center p-2 rounded-full hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">close</span>
+</button>
+<h1 class="font-screen-title text-[18px] tracking-tight text-on-surface">Patternly</h1>
+</div>
+<div class="flex items-center gap-4">
+
+<div class="w-8 h-8 rounded-full border border-outline flex items-center justify-center overflow-hidden bg-surface">
+<img alt="User headshot" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdRMyk8mETn_w7Tm5pYpygqhORBv8W1nPnxu2oPhRxpdI7qAoXZlvpAz4sdOiABM-P-BcV7hSe0rcKjx1Y0bDuDm_cxdpfz13Ubgq_8vT5jp-eyDQDt9v4OT4QFYZTipENo917cv99_moybjAXdwDcOguMkH-CaAlmNBCoKBCiOhmXLY8h5LN69ZKQS05RFMpvu50meRwk_VYv05Fd2JsgHHUODgEmtt2yZkWpSeHJwWWfzCVcV-wfls8cceKnzTLAsc1ISRIB5Oz_">
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-3xl mx-auto px-4 py-8 w-full"><div class="mb-4 space-y-2"><div class="flex justify-between items-center"><span class="font-caption text-[11px] text-on-surface-variant uppercase tracking-[0.1em]">Item 4 of 20</span></div><div class="w-full h-2.5 bg-surface border border-outline rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full" style="width: 20%;"></div></div></div>
+<!-- Question Section -->
+<section class="space-y-stack-gap-lg">
+<div class="relative bg-surface border border-outline p-8 rounded-xl overflow-hidden shadow-xl">
+<!-- Violet Accent Line -->
+<div class="absolute left-0 top-8 bottom-8 w-[3px] bg-accent-violet rounded-r-full"></div>
+<div class="flex items-center gap-2 mb-4">
+<span class="font-caption text-[11px] uppercase tracking-[0.15em] text-muted-violet font-semibold">Cloud Certification</span>
+</div>
+<h2 class="font-section-title text-[24px] leading-tight text-on-surface max-w-2xl">
+          Which role allows managing compute resources without project-level access?
+        </h2>
+</div>
+<!-- Answer Options -->
+<div class="grid grid-cols-1 gap-3" id="choice-container">
+<!-- Option A -->
+<button class="choice-card group flex items-start text-left bg-surface border border-outline p-5 rounded-xl transition-all duration-200" onclick="selectOption(this)">
+<div class="flex-shrink-0 w-5 h-5 border-2 border-on-surface-variant/30 rounded-full mt-1 mr-4 flex items-center justify-center group-[.active]:border-primary transition-colors">
+<div class="w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-md font-medium text-on-surface">Compute Instance Admin (v1)</p>
+<p class="font-body-sm text-on-surface-variant mt-1 leading-relaxed">Grants full control over Compute Engine instances, but only at the resource level.</p>
+</div>
+</button>
+<!-- Option B -->
+<button class="choice-card group flex items-start text-left bg-surface border border-outline p-5 rounded-xl transition-all duration-200" onclick="selectOption(this)">
+<div class="flex-shrink-0 w-5 h-5 border-2 border-on-surface-variant/30 rounded-full mt-1 mr-4 flex items-center justify-center group-[.active]:border-primary transition-colors">
+<div class="w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-md font-medium text-on-surface">Compute Network Admin</p>
+<p class="font-body-sm text-on-surface-variant mt-1 leading-relaxed">Grants permissions to create, modify, and delete networking resources.</p>
+</div>
+</button>
+<!-- Option C -->
+<button class="choice-card group flex items-start text-left bg-surface border border-outline p-5 rounded-xl transition-all duration-200" onclick="selectOption(this)">
+<div class="flex-shrink-0 w-5 h-5 border-2 border-on-surface-variant/30 rounded-full mt-1 mr-4 flex items-center justify-center group-[.active]:border-primary transition-colors">
+<div class="w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-md font-medium text-on-surface">Compute Admin</p>
+<p class="font-body-sm text-on-surface-variant mt-1 leading-relaxed">Grants full control of all Compute Engine resources at the project level.</p>
+</div>
+</button>
+<!-- Option D -->
+<button class="choice-card group flex items-start text-left bg-surface border border-outline p-5 rounded-xl transition-all duration-200" onclick="selectOption(this)">
+<div class="flex-shrink-0 w-5 h-5 border-2 border-on-surface-variant/30 rounded-full mt-1 mr-4 flex items-center justify-center group-[.active]:border-primary transition-colors">
+<div class="w-2.5 h-2.5 bg-primary rounded-full opacity-0 group-[.active]:opacity-100 transition-opacity"></div>
+</div>
+<div class="flex-1">
+<p class="font-body-md font-medium text-on-surface">Service Account User</p>
+<p class="font-body-sm text-on-surface-variant mt-1 leading-relaxed">Allows a user to run jobs as a service account, often used with other roles.</p>
+</div>
+</button>
+</div>
+</section>
+</main>
+<!-- Navigation Footer -->
+<footer class="mt-auto border-t border-outline bg-background p-6">
+<div class="max-w-3xl mx-auto flex items-center justify-center">
+
+<button class="w-full max-w-xs mx-auto px-10 py-4 btn-gradient text-on-surface font-body-md font-semibold rounded-xl opacity-40 cursor-not-allowed transition-all duration-300 shadow-lg shadow-primary/20 flex items-center justify-center" disabled="" id="submit-btn">Check Answer -&gt;</button>
+</div>
+</footer>
+<!-- Tab Bar -->
+<nav class="flex items-center justify-around w-full h-16 bg-background border-t border-outline px-6">
+<div class="flex flex-col items-center gap-1 text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Home</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary cursor-pointer active">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Practice</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined">emoji_events</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Stats</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium uppercase tracking-wider">Settings</span>
+</div>
+</nav>
+<!-- Interactive Logic -->
+<script>
+    function selectOption(element) {
+      const options = document.querySelectorAll('.choice-card');
+      options.forEach(opt => opt.classList.remove('active'));
+      element.classList.add('active');
+      
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+    }
+
+    document.getElementById('submit-btn').addEventListener('click', function() {
+      if (!this.disabled) {
+        this.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>';
+        setTimeout(() => {
+          this.innerHTML = 'Confirmed <span class="material-symbols-outlined text-[20px]">check_circle</span>';
+          this.classList.remove('btn-gradient');
+          this.classList.add('bg-accent-violet', 'text-white');
+        }, 800);
+      }
+    });
+  </script>
+
+
+
+
+</body></html>

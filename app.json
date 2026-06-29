@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "GCP ACE Trainer",
+    "name": "Patternly",
     "slug": "gcp-ace-trainer",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -10,10 +10,12 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lkurczab.gcpacetrainer"
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.lkurczab.gcpacetrainer"
     }
   }
 }

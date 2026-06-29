@@ -1,0 +1,35 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly track foundation screenshots
+tags:
+  - screenshot
+  - patternly
+  - track-foundation
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F192.168.1.29%3A8081"
+- waitForAnimationToEnd:
+    timeout: 20000
+- takeScreenshot: "home-cloud-track"
+
+- tapOn:
+    point: "50%,48%"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "select-track-cloud-active"
+
+- tapOn:
+    point: "50%,64%"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "home-algorithms-draft"
+
+- tapOn:
+    point: "50%,58%"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "select-track-algorithms-active"
+
+- tapOn:
+    point: "50%,40%"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "home-cloud-restored"

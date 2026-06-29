@@ -1,0 +1,241 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Complexity Summary | Patternly</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#dae2fd",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "on-background": "#0c1324", // Deep navy background requested
+                    "secondary-fixed": "#eaddff",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#00174b",
+                    "surface-tint": "#0053db",
+                    "outline-variant": "#2a344d", // Darker border for navy theme
+                    "inverse-surface": "#283044",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#eef0ff",
+                    "tertiary-fixed": "#b7eaff",
+                    "on-tertiary-fixed": "#001f28",
+                    "background": "#0c1324",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "surface-container-lowest": "#080c18",
+                    "primary-fixed": "#dbe1ff",
+                    "secondary-container": "#712ae2", // Using violet/lavender
+                    "on-primary-container": "#eeefff",
+                    "on-surface": "#f2f3ff",
+                    "on-secondary-fixed": "#25005a",
+                    "on-secondary-container": "#fffbff",
+                    "surface-container-high": "#1a233a",
+                    "surface": "#121a2e",
+                    "surface-dim": "#0c1324",
+                    "primary-container": "#2563eb",
+                    "on-error": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#004e61",
+                    "surface-bright": "#1a233a",
+                    "inverse-primary": "#b4c5ff",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "tertiary": "#005d73",
+                    "primary": "#712ae2", // Patternly violet
+                    "outline": "#434655",
+                    "surface-container-highest": "#242e48",
+                    "on-surface-variant": "#c3c6d7",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "tertiary-fixed-dim": "#6cd3f7",
+                    "surface-container": "#151e36",
+                    "secondary": "#712ae2",
+                    "on-tertiary-container": "#dcf4ff",
+                    "surface-container-low": "#11182c",
+                    "tertiary-container": "#007793",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-margin": "1.25rem",
+                    "stack-gap-lg": "1.5rem",
+                    "card-padding": "1.25rem",
+                    "stack-gap-sm": "0.5rem",
+                    "stack-gap-md": "1rem",
+                    "section-padding": "2rem"
+            },
+            "fontFamily": {
+                    "code-snippet": ["JetBrains Mono"],
+                    "card-title": ["Hanken Grotesk"],
+                    "body-md": ["Inter"],
+                    "section-title": ["Hanken Grotesk"],
+                    "body-sm": ["Inter"],
+                    "screen-title": ["Hanken Grotesk"],
+                    "caption": ["Inter"]
+            },
+            "fontSize": {
+                    "code-snippet": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "card-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "section-title": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "screen-title": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0c1324;
+            color: #f2f3ff;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-card {
+            background: rgba(26, 35, 58, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .violet-gradient {
+            background: linear-gradient(135deg, #712ae2 0%, #4a148c 100%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-on-surface pb-24">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-on-background/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center px-container-margin py-stack-gap-sm h-16">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary cursor-pointer active:scale-95 duration-150" data-icon="grid_view">grid_view</span>
+<h1 class="font-screen-title text-screen-title font-bold text-primary tracking-tight">Patternly</h1>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary/30 overflow-hidden cursor-pointer active:scale-95 duration-150">
+<img class="w-full h-full object-cover" data-alt="A close-up high-resolution profile portrait of a professional software engineer with a minimalist aesthetic. The lighting is low-key with soft purple highlights reflecting off their glasses, set against a deep navy blue background. The style is modern, sharp, and clean, conveying technical expertise and focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDl4mE5uF6DGgTrY8UqajnyR_4x_LOvjDldaiet5gHoTryO2_HZOhnoNZrBTKaptZYUTP2SDIwJeNzay98v7x3LF3dnPKDvqEfbJPuHj8jX8HNRDvueuWnU83MPH4wIFGNW8Wfn-BxG9uFyeoPSzZsH1utLsAf0CvaIamzJaUVMgLMBSEAlh0Brj_0VVSUqDW0L6cFqZXaz_yC2usdg3beTsLpV-xKmC5zBhT6ltR31978G9hriOEJkFY67MoXETiwxUDEwk8aqg5Mm">
+</div>
+</header>
+<main class="mt-20 px-container-margin">
+<!-- Sub-header context -->
+<div class="flex flex-col gap-2 mb-stack-gap-lg pt-4"><div class="flex justify-between items-center"><span class="font-caption text-caption text-on-surface-variant uppercase tracking-widest font-bold">ITEM 12 OF 20</span></div><div class="w-full h-1.5 bg-outline-variant/30 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full" style="width: 60%;"></div></div></div>
+<!-- Screen Title -->
+<h2 class="font-screen-title text-screen-title mb-stack-gap-lg">Complexity Summary</h2>
+<!-- Comparison Section -->
+<section class="space-y-stack-gap-md mb-stack-gap-lg">
+<h3 class="font-section-title text-section-title text-on-surface-variant opacity-60 flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="compare_arrows">compare_arrows</span>
+                Approach Comparison
+            </h3>
+<!-- Approach A: Iterative -->
+<div class="glass-card rounded-xl p-card-padding relative overflow-hidden group hover:border-outline transition-all duration-300">
+<div class="flex justify-between items-start mb-stack-gap-sm">
+<div>
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-widest block mb-1">Approach A</span>
+<h4 class="font-card-title text-card-title">Iterative</h4>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 rounded bg-on-background border border-outline-variant font-code-snippet text-caption text-on-surface">Time: O(n²)</span>
+<span class="px-2 py-1 rounded bg-on-background border border-outline-variant font-code-snippet text-caption text-on-surface">Space: O(1)</span>
+</div>
+</div>
+<p class="font-body-sm text-on-surface-variant leading-relaxed">
+                    Uses nested loops. It checks each pair of numbers, so the number of comparisons grows quadratically as the input grows. It uses constant extra space.
+                </p>
+<!-- Subtle indicator for non-optimal -->
+<div class="absolute left-0 top-0 h-full w-1 bg-outline-variant opacity-30"></div>
+</div>
+<!-- Approach B: Hash Map (Optimal) -->
+<div class="glass-card rounded-xl p-card-padding relative overflow-hidden group hover:border-primary transition-all duration-300 border-primary">
+<div class="flex justify-between items-start mb-stack-gap-sm">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-caption text-caption text-on-surface-variant uppercase tracking-widest">Approach B</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold tracking-tighter uppercase border border-secondary/30">Optimal</span>
+</div>
+<h4 class="font-card-title text-card-title text-primary">Hash Map</h4>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 rounded bg-secondary-container/10 border border-secondary/30 font-code-snippet text-caption text-secondary">Time: O(n)</span>
+<span class="px-2 py-1 rounded bg-secondary-container/10 border border-secondary/30 font-code-snippet text-caption text-secondary">Space: O(n)</span>
+</div>
+</div>
+<p class="font-body-sm text-on-surface-variant leading-relaxed">
+                    Uses a hash map to store previously seen values. Each number is processed once, which gives linear time, but the hash map requires additional memory proportional to the input size.
+                </p>
+<!-- Active Indicator -->
+<div class="absolute left-0 top-0 h-full w-1 bg-primary"></div>
+</div>
+</section>
+<!-- Why this matters Section -->
+<section class="mb-10">
+<div class="bg-surface-container rounded-xl p-card-padding border border-outline-variant/30">
+<h3 class="font-section-title text-section-title mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="lightbulb">lightbulb</span>
+                    Why this matters
+                </h3>
+<p class="font-body-md text-on-surface-variant leading-relaxed italic">
+                    "The optimized approach reduces repeated work by remembering previous values. The tradeoff is using extra memory to avoid scanning the array multiple times."
+                </p>
+</div>
+</section>
+<!-- Action Area -->
+<div class="flex flex-col gap-4 mb-10">
+<button class="w-full py-4 rounded-[1rem] font-card-title font-semibold text-[#F8FAFC] shadow-lg shadow-primary/20 active:scale-[0.98] transition-all duration-150" style="background: linear-gradient(135deg, rgb(101, 87, 255) 0%, rgb(139, 61, 255) 100%);">Continue</button>
+
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface/95 backdrop-blur-xl border-t border-outline-variant flex justify-around items-center h-20 px-4">
+<!-- Home -->
+<div class="flex flex-col items-center justify-center text-on-surface-variant transition-colors cursor-pointer group active:scale-90 duration-150">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary" data-icon="home">home</span>
+<span class="font-caption text-caption">Home</span>
+</div>
+<!-- Practice (Active) -->
+<div class="flex flex-col items-center justify-center text-secondary font-bold bg-secondary-container/10 rounded-xl px-5 py-2 transition-transform cursor-pointer active:scale-90 duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="exercise" style="font-variation-settings: 'FILL' 1;">exercise</span>
+<span class="font-caption text-caption">Practice</span>
+</div>
+<!-- Progress -->
+<div class="flex flex-col items-center justify-center text-on-surface-variant transition-colors cursor-pointer group active:scale-90 duration-150">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary" data-icon="analytics">analytics</span>
+<span class="font-caption text-caption">Progress</span>
+</div>
+<!-- Settings -->
+<div class="flex flex-col items-center justify-center text-on-surface-variant transition-colors cursor-pointer group active:scale-90 duration-150">
+<span class="material-symbols-outlined mb-1 group-hover:text-primary" data-icon="settings">settings</span>
+<span class="font-caption text-caption">Settings</span>
+</div>
+</nav>
+<!-- Micro-interaction script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.glass-card');
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('border-primary', 'border-primary/40'));
+                    cards.forEach(c => c.querySelector('.absolute.left-0').classList.add('bg-outline-variant', 'opacity-30'));
+                    cards.forEach(c => c.querySelector('.absolute.left-0').classList.remove('bg-primary'));
+                    
+                    card.classList.add('border-primary');
+                    const indicator = card.querySelector('.absolute.left-0');
+                    indicator.classList.remove('bg-outline-variant', 'opacity-30');
+                    indicator.classList.add('bg-primary');
+                });
+            });
+        });
+    </script>
+
+
+</body></html>

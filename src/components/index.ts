@@ -1,4 +1,6 @@
+export * from "./AppShellHeader";
 export * from "./Badge";
+export * from "./BottomTabBar";
 export * from "./Button";
 export * from "./Card";
 export * from "./Divider";
@@ -11,4 +13,6 @@ export * from "./MetricCard";
 export * from "./ProgressBar";
 export * from "./Screen";
 export * from "./SectionHeader";
+export * from "./SettingsGroup";
 export * from "./TextButton";
+export * from "./training";

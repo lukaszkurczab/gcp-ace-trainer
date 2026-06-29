@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { DEFAULT_TRACK_ID, isTrackId, type TrackId } from "../domain";
 import { mergeWithDefaultQuestionBank } from "../features/questions/defaultQuestionBank";
 import type { ActiveExamSession, AttemptSummary, PracticeAnswerRecord, Question, QuestionReviewState } from "../types";
 import { STORAGE_KEYS } from "./keys";
@@ -110,6 +111,15 @@ function isPracticeAnswerRecord(value: unknown): value is PracticeAnswerRecord {
     typeof value.isCorrect === "boolean" &&
     typeof value.answeredAt === "string"
   );
+}
+
+export async function getActiveTrackId(): Promise<TrackId> {
+  const value = await readLocalJson<unknown>(STORAGE_KEYS.ACTIVE_TRACK, DEFAULT_TRACK_ID);
+  return typeof value === "string" && isTrackId(value) ? value : DEFAULT_TRACK_ID;
+}
+
+export async function saveActiveTrackId(trackId: TrackId): Promise<void> {
+  await writeLocalJson(STORAGE_KEYS.ACTIVE_TRACK, trackId);
 }
 
 export async function getQuestions(): Promise<Question[]> {

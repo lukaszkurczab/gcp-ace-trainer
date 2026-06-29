@@ -1,0 +1,204 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Session Summary - Patternly</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#dbe1ff",
+                    "surface-bright": "#1a2236",
+                    "on-surface": "#f1f5f9",
+                    "on-surface-variant": "#94a3b8",
+                    "tertiary": "#22d3ee",
+                    "outline-variant": "#334155",
+                    "error-container": "#450a0a",
+                    "on-tertiary": "#083344",
+                    "on-tertiary-container": "#cffafe",
+                    "surface-dim": "#0c1324",
+                    "on-primary-container": "#e0e7ff",
+                    "surface-container-low": "#111827",
+                    "surface": "#0c1324",
+                    "tertiary-fixed-dim": "#22d3ee",
+                    "on-secondary-fixed": "#1e1b4b",
+                    "surface-tint": "#6366f1",
+                    "secondary-container": "#4338ca",
+                    "surface-container-lowest": "#0c1324",
+                    "primary-container": "#3730a3",
+                    "on-secondary-container": "#e0e7ff",
+                    "tertiary-fixed": "#67e8f9",
+                    "primary": "#6366f1",
+                    "inverse-primary": "#818cf8",
+                    "on-tertiary-fixed-variant": "#083344",
+                    "tertiary-container": "#164e63",
+                    "error": "#ef4444",
+                    "surface-variant": "#1e293b",
+                    "surface-container-highest": "#334155",
+                    "primary-fixed-dim": "#818cf8",
+                    "inverse-on-surface": "#0f172a",
+                    "secondary-fixed": "#c7d2fe",
+                    "on-error-container": "#fecaca",
+                    "secondary": "#818cf8",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#a5b4fc",
+                    "on-tertiary-fixed": "#ecfeff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#1e293b",
+                    "surface-container": "#111827",
+                    "on-primary-fixed-variant": "#312e81",
+                    "background": "#0c1324",
+                    "outline": "#475569",
+                    "on-secondary-fixed-variant": "#3730a3",
+                    "on-primary-fixed": "#e0e7ff",
+                    "inverse-surface": "#f1f5f9",
+                    "on-background": "#f8fafc",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap-sm": "0.5rem",
+                    "stack-gap-md": "1rem",
+                    "section-padding": "2rem",
+                    "stack-gap-lg": "1.5rem",
+                    "container-margin": "1rem",
+                    "card-padding": "1.25rem"
+            },
+            "fontFamily": {
+                    "section-title": ["Hanken Grotesk", "sans-serif"],
+                    "code-snippet": ["JetBrains Mono", "monospace"],
+                    "body-md": ["Inter", "sans-serif"],
+                    "screen-title": ["Hanken Grotesk", "sans-serif"],
+                    "body-sm": ["Inter", "sans-serif"],
+                    "caption": ["Inter", "sans-serif"],
+                    "card-title": ["Hanken Grotesk", "sans-serif"]
+            },
+            "fontSize": {
+                    "section-title": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "code-snippet": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "screen-title": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "caption": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "card-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #0c1324;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .action-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      }
+      .action-gradient:hover {
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      }
+    </style>
+</head>
+<body class="font-body-md text-on-surface">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-4 h-16 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-container flex items-center justify-center text-on-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist portrait of a professional developer in a bright, modern studio." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYi32VlABxOUWxMjN16PZtX1YFyYpMs8AMTI1x8mPVpwufZsm9pKNVk59DGBzS1tKw6XUwV5Pa4RR4kgjHULkPEU7rrHPbB5mBtPSHp5Y54HLDsWS8rEAVXv3BPOjxaaPA-r7yY83eB_mYa6iI_9O2BH5SppKoBeJzLZp0jVtkxAluZZDGyOiksvRQJt7edc_7HavoVU1GubuCI0y2aeZvzTE1moj7KSgi5Zrs8Parcl6Yw9iiqyp-jsSKeB2Z1UVtA_QuhYsamKu9">
+</div>
+<span class="font-screen-title text-screen-title font-bold text-on-surface">Patternly</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-4 py-8 pb-24">
+<!-- Header Section -->
+<div class="mb-10 text-left">
+<h1 class="font-screen-title text-screen-title text-white mb-2">Session complete</h1>
+<p class="font-body-md text-on-surface-variant max-w-xl">You answered 16 of 20 correctly. Review the missed areas before your next session.</p>
+</div>
+<!-- Technical Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
+<!-- Performance Score Card -->
+<div class="md:col-span-4 bg-surface-container-low border border-outline-variant rounded-xl p-card-padding flex flex-col justify-between">
+<div>
+<span class="font-caption text-caption text-outline-variant uppercase tracking-wider">Session score</span>
+<div class="mt-4 flex items-baseline gap-1"><span class="text-5xl font-bold text-primary">16</span><span class="text-2xl text-outline-variant font-semibold">/ 20 correct</span></div>
+</div>
+<div class="mt-8">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-on-surface-variant">Accuracy</span>
+<span class="font-body-sm font-semibold text-primary">80%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 80%"></div>
+</div>
+</div>
+</div>
+<!-- Insights Card -->
+<div class="md:col-span-8 bg-surface-container-low border border-outline-variant rounded-xl p-card-padding">
+<span class="font-caption text-caption text-outline-variant uppercase tracking-wider flex items-center gap-2 mb-6"><span class="material-symbols-outlined text-sm">terminal</span>Session insights</span>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-1 bg-tertiary rounded-full"></div>
+<div>
+<h4 class="font-card-title text-card-title text-white leading-tight">Strengths</h4>
+<p class="font-body-sm text-on-surface-variant mt-1">You handled IAM roles and least-privilege access well.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex-shrink-0 w-1 bg-error rounded-full"></div>
+<div>
+<h4 class="font-card-title text-card-title text-white leading-tight">Needs review</h4>
+<p class="font-body-sm text-on-surface-variant mt-1">Networking policies and VPC peering constraints caused the most mistakes.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress History -->
+<div class="md:col-span-12 bg-surface-container-low border border-outline-variant rounded-xl p-card-padding"><span class="font-caption text-caption text-outline-variant uppercase tracking-wider mb-6 block">Recent accuracy<span class="block text-xs opacity-70 normal-case mt-1">Last 6 sessions</span></span><div class="flex gap-4 h-40"><div class="flex flex-col justify-between text-[10px] text-on-surface-variant/50 font-caption pb-6"><span>100%</span><span>50%</span><span>0%</span></div><div class="flex-1 relative"><div class="absolute inset-0 flex flex-col justify-between pb-6 pointer-events-none"><div class="border-b border-outline-variant/20 w-full"></div><div class="border-b border-outline-variant/20 w-full"></div><div class="border-b border-outline-variant/20 w-full"></div></div><div class="relative h-full flex items-end gap-3 px-2 pb-6"><div class="flex-1 bg-surface-container-highest rounded-sm h-[45%] opacity-50"></div><div class="flex-1 bg-surface-container-highest rounded-sm h-[55%] opacity-50"></div><div class="flex-1 bg-surface-container-highest rounded-sm h-[65%] opacity-50"></div><div class="flex-1 bg-surface-container-highest rounded-sm h-[50%] opacity-50"></div><div class="flex-1 bg-surface-container-highest rounded-sm h-[75%] opacity-50"></div><div class="flex-1 bg-primary rounded-sm h-[80%]"></div></div></div></div><div class="flex justify-between text-caption font-caption text-outline-variant pl-10"><span class="">Oct 12</span><span class="">Today</span></div></div>
+</div>
+<!-- Actionable Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><button class="flex items-center gap-4 p-4 action-gradient text-on-primary rounded-xl transition-all shadow-lg text-left w-full"><div class="w-11 h-11 flex-shrink-0 rounded-lg bg-white/20 flex items-center justify-center"><span class="material-symbols-outlined">history_edu</span></div><div class="flex flex-col"><span class="font-card-title text-card-title text-white">Review weak areas</span><p class="font-body-sm opacity-90">Practice the concepts missed in this session.</p></div></button><button class="flex items-center gap-4 p-4 bg-surface-container-low border border-outline-variant rounded-xl hover:border-primary transition-all text-left w-full"><div class="w-11 h-11 flex-shrink-0 rounded-lg bg-surface-container-high flex items-center justify-center"><span class="material-symbols-outlined text-primary">play_arrow</span></div><div class="flex flex-col"><span class="font-card-title text-card-title text-white">Start new session</span><p class="font-body-sm text-on-surface-variant">Continue with a fresh set of questions.</p></div></button></div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 bg-surface/90 backdrop-blur-lg border-t border-outline-variant z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface px-3 py-1 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-caption text-[10px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center px-3 py-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">fitness_center</span>
+<span class="font-caption text-[10px] mt-1">Practice</span>
+</a>
+<a class="flex flex-col items-center justify-center px-3 py-1 text-on-surface-variant hover:text-on-surface transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-caption text-[10px] mt-1">Progress</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-on-surface px-3 py-1 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-caption text-[10px] mt-1">Settings</span>
+</a>
+</nav>
+</body></html>
