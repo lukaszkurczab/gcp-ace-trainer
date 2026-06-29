@@ -361,6 +361,8 @@ Suggested commit:
 
 tracks: add content and scoring adapter contracts
 
+State: accepted
+
 ⸻
 
 Phase 3 — Session Engine Primitives
