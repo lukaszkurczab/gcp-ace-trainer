@@ -7,6 +7,7 @@ import {
   saveActiveExamSession
 } from "../../storage";
 import type { ActiveExamSession, AttemptSummary, Question } from "../../types";
+import { writeThroughAttemptSummary } from "../../tracks/cloud-certification";
 import { buildQuestionBankSummary } from "../questions/questionBankStats";
 import { buildExamQuestionViewsFromSession, selectExamQuestions } from "./examGeneration";
 import { buildAttemptSummary, scoreExamSession } from "./scoringService";
@@ -169,6 +170,7 @@ export async function submitActiveExamSession(autoSubmitted = false): Promise<At
   });
 
   await addAttempt(summary);
+  await writeThroughAttemptSummary(summary);
   await clearActiveExamSession();
 
   return summary;

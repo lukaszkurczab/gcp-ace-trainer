@@ -493,6 +493,8 @@ cloud: map certification questions to training items
 cloud: migrate practice attempts to training attempts
 cloud: connect certification review to review queue
 
+State: accepted
+
 ⸻
 
 Phase 6 — Algorithms MVP Pattern Drill

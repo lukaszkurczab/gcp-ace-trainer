@@ -19,7 +19,7 @@ const MAX_STORAGE_ISSUES = 5;
 
 let storageIssues: LocalStorageIssue[] = [];
 
-function recordStorageIssue(issue: LocalStorageIssue): void {
+export function recordStorageIssue(issue: LocalStorageIssue): void {
   storageIssues = [issue, ...storageIssues].slice(0, MAX_STORAGE_ISSUES);
 }
 

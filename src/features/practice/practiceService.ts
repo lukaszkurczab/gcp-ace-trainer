@@ -7,6 +7,7 @@ import {
   saveQuestionReviewState
 } from "../../storage";
 import type { Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord, Question } from "../../types";
+import { writeThroughPracticeAnswerRecord } from "../../tracks/cloud-certification";
 import { areOptionSetsEqual, shuffleArray } from "../../utils";
 
 export type PracticeQuestionCount = 10 | 20 | "all";
@@ -63,6 +64,7 @@ export async function savePracticeAnswer(input: {
   };
 
   await addPracticeAnswer(record);
+  await writeThroughPracticeAnswerRecord(record);
   return record;
 }
 
