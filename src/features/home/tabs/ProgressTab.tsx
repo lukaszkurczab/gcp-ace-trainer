@@ -13,17 +13,20 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
+import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import { colors, spacing, typography } from "../../../theme";
 import type {
   AttemptSummary,
   PracticeAnswerRecord,
 } from "../../../types";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { buildProgressTabModel } from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDefinition;
   analytics: AnalyticsData;
   attempts: AttemptSummary[];
+  cloudProgress?: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
 };
 
@@ -31,14 +34,16 @@ export function ProgressTab({
   activeTrack,
   analytics,
   attempts,
+  cloudProgress,
   practiceHistory,
 }: ProgressTabProps) {
-  const hasData = attempts.length > 0 || practiceHistory.length > 0;
-  const domainScoresWithData =
-    activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID
-      ? analytics.domainPerformance.filter((score) => score.total > 0)
-      : [];
-  const reviewQueueCount = analytics.summary.totalPracticeQuestionsAnswered;
+  const progress = buildProgressTabModel({
+    activeTrackId: activeTrack.id,
+    analytics,
+    attempts,
+    cloudProgress,
+    practiceHistory,
+  });
 
   return (
     <>
@@ -54,30 +59,33 @@ export function ProgressTab({
           <View style={styles.reviewCopy}>
             <Text style={styles.reviewTitle}>Review queue</Text>
             <Text style={styles.mutedText}>
-              {formatReviewQueueCopy(reviewQueueCount)}
+              {progress.reviewQueueCopy}
             </Text>
           </View>
-          <Text style={styles.reviewNumber}>{reviewQueueCount}</Text>
+          <Text style={styles.reviewNumber}>{progress.reviewQueueCount}</Text>
         </View>
+        {progress.warning ? (
+          <View style={styles.warningBanner}>
+            <Text style={styles.warningText}>{progress.warning}</Text>
+          </View>
+        ) : null}
         <View style={styles.metricRow}>
-          <MetricCard
-            label="Completed exams"
-            tone="info"
-            value={analytics.summary.totalCompletedExams}
-          />
-          <MetricCard
-            label="Practice answers"
-            tone="primary"
-            value={analytics.summary.totalPracticeQuestionsAnswered}
-          />
+          {progress.metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              tone={metric.tone}
+              value={metric.value}
+            />
+          ))}
         </View>
       </Card>
 
       <View style={styles.section}>
         <SectionHeader title="Performance by topic" tight />
-        {domainScoresWithData.length > 0 ? (
+        {progress.performanceScores.length > 0 ? (
           <View style={styles.actionList}>
-            {domainScoresWithData.map((score) => (
+            {progress.performanceScores.map((score) => (
               <View key={score.id} style={styles.performanceRow}>
                 <View style={styles.performanceHeader}>
                   <IconTile name="cloud" tone="info" />
@@ -99,20 +107,12 @@ export function ProgressTab({
         ) : (
           <EmptyState
             title={getProgressEmptyTitle(activeTrack.id)}
-            description={getProgressEmptyDescription(activeTrack.id, hasData)}
+            description={getProgressEmptyDescription(activeTrack.id, progress.hasData)}
           />
         )}
       </View>
     </>
   );
-}
-
-function formatReviewQueueCopy(count: number): string {
-  if (count === 0) {
-    return "No local practice records yet.";
-  }
-
-  return `${count} local practice ${count === 1 ? "record" : "records"} available for review.`;
 }
 
 function getProgressEmptyTitle(trackId: TrackDefinition["id"]): string {
@@ -170,6 +170,7 @@ const styles = StyleSheet.create({
   },
   metricRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.md,
   },
   section: {
@@ -178,6 +179,15 @@ const styles = StyleSheet.create({
   mutedText: {
     ...typography.small,
     color: colors.dark.textSecondary,
+  },
+  warningBanner: {
+    backgroundColor: colors.dark.warningSoft,
+    borderRadius: 8,
+    padding: spacing.md,
+  },
+  warningText: {
+    ...typography.small,
+    color: colors.dark.textPrimary,
   },
   actionList: {
     gap: spacing.md,

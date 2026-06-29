@@ -33,6 +33,10 @@ import {
   type LocalStorageIssue,
 } from "../../storage";
 import { colors } from "../../theme";
+import {
+  loadCloudCertificationProgressViewModel,
+  type CloudCertificationProgressViewModel,
+} from "../../tracks/cloud-certification";
 import type {
   ActiveExamSession,
   AttemptSummary,
@@ -57,6 +61,7 @@ type HomeScreenProps = NativeStackScreenProps<
 type ShellData = {
   activeSession: ActiveExamSession | null;
   attempts: AttemptSummary[];
+  cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
   questions: Question[];
   storageIssues: readonly LocalStorageIssue[];
@@ -78,6 +83,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   const [data, setData] = useState<ShellData>({
     activeSession: null,
     attempts: [],
+    cloudProgress: null,
     practiceHistory: [],
     questions: DEFAULT_QUESTION_BANK,
     storageIssues: [],
@@ -94,12 +100,14 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           savedSession,
           savedAttempts,
           savedPracticeHistory,
+          cloudProgress,
         ] = await Promise.all([
           getActiveTrackId(),
           getQuestions(),
           getActiveExamSession(),
           getAttempts(),
           getPracticeHistory(),
+          loadCloudCertificationProgressViewModel(),
         ]);
 
         if (isActive) {
@@ -107,6 +115,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           setData({
             activeSession: savedSession,
             attempts: savedAttempts,
+            cloudProgress,
             practiceHistory: savedPracticeHistory,
             questions: savedQuestions,
             storageIssues: getStorageIssues(),
@@ -203,6 +212,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
               setData({
                 activeSession: null,
                 attempts: [],
+                cloudProgress: null,
                 practiceHistory: [],
                 questions: DEFAULT_QUESTION_BANK,
                 storageIssues: getStorageIssues(),
@@ -245,6 +255,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             activeTrack={activeTrack}
             analytics={analytics}
             attempts={data.attempts}
+            cloudProgress={data.cloudProgress}
             practiceHistory={data.practiceHistory}
           />
         ) : null}
