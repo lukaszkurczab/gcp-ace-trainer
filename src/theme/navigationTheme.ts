@@ -6,11 +6,11 @@ export const navigationTheme: Theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: colors.light.background,
-    border: colors.light.border,
-    card: colors.light.surface,
-    notification: colors.light.primary,
-    primary: colors.light.primary,
-    text: colors.light.textPrimary
+    background: colors.dark.background,
+    border: colors.dark.border,
+    card: colors.dark.surface,
+    notification: colors.dark.primary,
+    primary: colors.dark.primary,
+    text: colors.dark.textPrimary
   }
 };

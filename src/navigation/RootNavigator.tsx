@@ -1,7 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { ROUTES } from "../constants/routes";
-import { AttemptHistoryScreen } from "../features/attempts/AttemptHistoryScreen";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
@@ -20,10 +19,10 @@ export function RootNavigator() {
     <Stack.Navigator
       initialRouteName={ROUTES.HOME}
       screenOptions={{
-        contentStyle: { backgroundColor: colors.light.background },
+        contentStyle: { backgroundColor: colors.dark.background },
         headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.light.surface },
-        headerTintColor: colors.light.textPrimary,
+        headerStyle: { backgroundColor: colors.dark.surface },
+        headerTintColor: colors.dark.textPrimary,
         headerTitleStyle: { fontWeight: "700" },
       }}
     >
@@ -66,11 +65,6 @@ export function RootNavigator() {
         name={ROUTES.MISTAKES_REVIEW}
         component={MistakesReviewScreen}
         options={{ title: "Review Mistakes" }}
-      />
-      <Stack.Screen
-        name={ROUTES.ATTEMPT_HISTORY}
-        component={AttemptHistoryScreen}
-        options={{ title: "Attempt History" }}
       />
     </Stack.Navigator>
   );

@@ -3,42 +3,86 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULT_TRACK_ID, isTrackId, type TrackId } from "../domain";
 import { mergeWithDefaultQuestionBank } from "../features/questions/defaultQuestionBank";
 import type { ActiveExamSession, AttemptSummary, PracticeAnswerRecord, Question, QuestionReviewState } from "../types";
-import { STORAGE_KEYS } from "./keys";
+import {
+  getStorageClearKeys,
+  getStorageReadKeys,
+  STORAGE_KEYS,
+  type StorageKeyName,
+} from "./keys";
+import {
+  decodeLocalJson,
+  getStorageErrorMessage,
+  type LocalStorageIssue,
+} from "./storageCodec";
 
-export function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) {
-    return fallback;
-  }
+const MAX_STORAGE_ISSUES = 5;
 
-  try {
-    return JSON.parse(value) as T;
-  } catch {
-    return fallback;
-  }
+let storageIssues: LocalStorageIssue[] = [];
+
+function recordStorageIssue(issue: LocalStorageIssue): void {
+  storageIssues = [issue, ...storageIssues].slice(0, MAX_STORAGE_ISSUES);
 }
 
-async function readLocalJson<T>(key: string, fallback: T): Promise<T> {
-  try {
-    const value = await AsyncStorage.getItem(key);
-    return safeJsonParse(value, fallback);
-  } catch {
-    return fallback;
-  }
+export function getStorageIssues(): readonly LocalStorageIssue[] {
+  return storageIssues;
 }
 
-async function writeLocalJson<T>(key: string, value: T): Promise<void> {
+async function readLocalJson<T>(keyName: StorageKeyName, fallback: T): Promise<T> {
+  for (const key of getStorageReadKeys(keyName)) {
+    try {
+      const value = await AsyncStorage.getItem(key);
+
+      if (value === null) {
+        continue;
+      }
+
+      const decoded = decodeLocalJson(key, value, fallback);
+
+      if (!decoded.ok) {
+        recordStorageIssue(decoded.issue);
+      }
+
+      return decoded.value;
+    } catch (error) {
+      recordStorageIssue({
+        key,
+        message: getStorageErrorMessage(error),
+        operation: "read",
+      });
+      return fallback;
+    }
+  }
+
+  return fallback;
+}
+
+async function writeLocalJson<T>(keyName: StorageKeyName, value: T): Promise<void> {
+  const key = STORAGE_KEYS[keyName];
+
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Local storage writes should not crash the app shell.
+  } catch (error) {
+    recordStorageIssue({
+      key,
+      message: getStorageErrorMessage(error),
+      operation: "write",
+    });
   }
 }
 
-export async function removeLocalValue(key: string): Promise<void> {
+async function removeStorageValue(keyName: StorageKeyName): Promise<void> {
+  await Promise.all(getStorageClearKeys(keyName).map(removeLocalValue));
+}
+
+async function removeLocalValue(key: string): Promise<void> {
   try {
     await AsyncStorage.removeItem(key);
-  } catch {
-    // Local storage cleanup should never crash the app.
+  } catch (error) {
+    recordStorageIssue({
+      key,
+      message: getStorageErrorMessage(error),
+      operation: "remove",
+    });
   }
 }
 
@@ -114,34 +158,34 @@ function isPracticeAnswerRecord(value: unknown): value is PracticeAnswerRecord {
 }
 
 export async function getActiveTrackId(): Promise<TrackId> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.ACTIVE_TRACK, DEFAULT_TRACK_ID);
+  const value = await readLocalJson<unknown>("ACTIVE_TRACK", DEFAULT_TRACK_ID);
   return typeof value === "string" && isTrackId(value) ? value : DEFAULT_TRACK_ID;
 }
 
 export async function saveActiveTrackId(trackId: TrackId): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.ACTIVE_TRACK, trackId);
+  await writeLocalJson("ACTIVE_TRACK", trackId);
 }
 
 export async function getQuestions(): Promise<Question[]> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.QUESTIONS, []);
+  const value = await readLocalJson<unknown>("QUESTIONS", []);
   return mergeWithDefaultQuestionBank(readArray<unknown>(value).filter(isQuestion));
 }
 
 export async function saveQuestions(questions: Question[]): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.QUESTIONS, questions);
+  await writeLocalJson("QUESTIONS", questions);
 }
 
 export async function clearQuestions(): Promise<void> {
-  await removeLocalValue(STORAGE_KEYS.QUESTIONS);
+  await removeStorageValue("QUESTIONS");
 }
 
 export async function getAttempts(): Promise<AttemptSummary[]> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.ATTEMPTS, []);
+  const value = await readLocalJson<unknown>("ATTEMPTS", []);
   return readArray<unknown>(value).filter(isAttemptSummary);
 }
 
 export async function saveAttempts(attempts: AttemptSummary[]): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.ATTEMPTS, attempts);
+  await writeLocalJson("ATTEMPTS", attempts);
 }
 
 export async function addAttempt(attempt: AttemptSummary): Promise<void> {
@@ -150,16 +194,16 @@ export async function addAttempt(attempt: AttemptSummary): Promise<void> {
 }
 
 export async function clearAttempts(): Promise<void> {
-  await removeLocalValue(STORAGE_KEYS.ATTEMPTS);
+  await removeStorageValue("ATTEMPTS");
 }
 
 export async function getPracticeHistory(): Promise<PracticeAnswerRecord[]> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.PRACTICE_HISTORY, []);
+  const value = await readLocalJson<unknown>("PRACTICE_HISTORY", []);
   return readArray<unknown>(value).filter(isPracticeAnswerRecord);
 }
 
 export async function savePracticeHistory(records: PracticeAnswerRecord[]): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.PRACTICE_HISTORY, records);
+  await writeLocalJson("PRACTICE_HISTORY", records);
 }
 
 export async function addPracticeAnswer(record: PracticeAnswerRecord): Promise<void> {
@@ -168,28 +212,32 @@ export async function addPracticeAnswer(record: PracticeAnswerRecord): Promise<v
 }
 
 export async function clearPracticeHistory(): Promise<void> {
-  await removeLocalValue(STORAGE_KEYS.PRACTICE_HISTORY);
+  await removeStorageValue("PRACTICE_HISTORY");
 }
 
 export async function getActiveExamSession(): Promise<ActiveExamSession | null> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.ACTIVE_EXAM_SESSION, null);
+  const value = await readLocalJson<unknown>("ACTIVE_EXAM_SESSION", null);
   const session = readNullableRecord<ActiveExamSession>(value);
   return isActiveExamSession(session) ? session : null;
 }
 
 export async function saveActiveExamSession(session: ActiveExamSession): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.ACTIVE_EXAM_SESSION, session);
+  await writeLocalJson("ACTIVE_EXAM_SESSION", session);
 }
 
 export async function clearActiveExamSession(): Promise<void> {
-  await removeLocalValue(STORAGE_KEYS.ACTIVE_EXAM_SESSION);
+  await removeStorageValue("ACTIVE_EXAM_SESSION");
 }
 
 export async function getQuestionReviewState(): Promise<QuestionReviewState> {
-  const value = await readLocalJson<unknown>(STORAGE_KEYS.QUESTION_REVIEW_STATE, {});
+  const value = await readLocalJson<unknown>("QUESTION_REVIEW_STATE", {});
   return isRecord(value) ? (value as QuestionReviewState) : {};
 }
 
 export async function saveQuestionReviewState(reviewState: QuestionReviewState): Promise<void> {
-  await writeLocalJson(STORAGE_KEYS.QUESTION_REVIEW_STATE, reviewState);
+  await writeLocalJson("QUESTION_REVIEW_STATE", reviewState);
+}
+
+export async function clearQuestionReviewState(): Promise<void> {
+  await removeStorageValue("QUESTION_REVIEW_STATE");
 }

@@ -8,6 +8,8 @@ Design system nie może być projektowany wyłącznie pod GCP ACE, quizy ani try
 
 Nota kanoniczna 2026-06-29: po decyzji `ADR-005-dark-first-focus-lab-ui.md` docelowy kierunek UI to **dark-first Focus Lab**. Wcześniejsze wzmianki o light-first należy traktować jako historyczny kontekst, nie aktywną wytyczną.
 
+Nota kanoniczna dla `docs/designs`: ekrany w `docs/designs/*` są referencjami wizualnymi, nie kontraktami pixel-perfect. Implementacja UI powinna osiągać co najmniej **90% zgodności z wybranymi referencjami**, ale po ujednoliceniu rozbieżności przez ten design system. Nie kopiować 1:1 pojedynczych ekranów, jeżeli prowadzi to do niespójności między widokami, fałszywych metryk, lokalnych wyjątków stylistycznych albo konfliktu z aktualnym modelem produktu.
+
 Bazowy model produktu:
 
 ```txt
@@ -873,6 +875,32 @@ src/tracks/algorithms/components/
 - Feedback powinien być edukacyjny, nie tylko oceniający.
 - Progress powinien prowadzić do kolejnej akcji.
 - Settings nie są miejscem naprawiania błędów w głównym flow.
+
+## Zasady zgodności z referencjami ekranów
+
+Referencje w `docs/designs/*` służą do określenia docelowego kierunku layoutu, hierarchii i tonu wizualnego. Ponieważ referencje powstawały eksploracyjnie i zawierają rozbieżności między ekranami, implementacja musi normalizować je do jednego spójnego systemu.
+
+Wymagana zgodność minimum 90% oznacza zachowanie:
+
+- celu ekranu i głównej akcji,
+- top-level układu i hierarchii informacji,
+- języka komponentów,
+- gęstości informacji,
+- rytmu spacingu,
+- skali typografii,
+- dark-first Focus Lab tone,
+- zachowania na mobile,
+- dostępności i braku nakładania tekstu.
+
+Dozwolone i oczekiwane są odstępstwa, gdy:
+
+- wybrana referencja zawiera fake precision, np. readiness/progress bez danych,
+- kilka referencji rozwiązuje ten sam problem niespójnie,
+- layout referencji konfliktuje z aktualną architekturą lub działającymi flow,
+- dokładne skopiowanie pogarsza czytelność, dostępność lub spójność między ekranami,
+- dane albo stany w repo nie wspierają jeszcze pokazanej metryki lub akcji.
+
+Każdy większy batch UI powinien wskazać, które referencje były użyte, co zachowano, co zmieniono i dlaczego.
 
 ## Antywzorce
 

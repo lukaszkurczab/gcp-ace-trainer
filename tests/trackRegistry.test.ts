@@ -35,4 +35,8 @@ test("track id guard rejects unknown values", () => {
   assert.equal(isTrackId("cloud-certification"), true);
   assert.equal(isTrackId("algorithms"), true);
   assert.equal(isTrackId("gcp-ace-trainer"), false);
+  assert.throws(
+    () => getTrackDefinition("gcp-ace-trainer" as Parameters<typeof getTrackDefinition>[0]),
+    /Unknown track id: gcp-ace-trainer/,
+  );
 });

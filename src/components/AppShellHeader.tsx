@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { colors, spacing, typography } from "../theme";
+import { Icon } from "./Icon";
 
 type AppShellHeaderProps = {
   action?: ReactNode;
@@ -13,11 +14,8 @@ export function AppShellHeader({ action, subtitle, title }: AppShellHeaderProps)
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
-        <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.brandMark}>
-          <View style={styles.brandMarkCell} />
-          <View style={styles.brandMarkCell} />
-          <View style={styles.brandMarkCell} />
-          <View style={styles.brandMarkCell} />
+        <View style={styles.brandMark}>
+          <Icon color={colors.dark.primary} name="grid" size={30} />
         </View>
         <View style={styles.headerCopy}>
           <Text style={styles.brandTitle}>{title}</Text>
@@ -41,27 +39,20 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   brandMark: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.xxs,
-    height: 28,
-    width: 28,
-  },
-  brandMarkCell: {
-    backgroundColor: colors.light.primary,
-    borderRadius: radius.xs,
-    height: 12,
-    width: 12,
+    alignItems: "center",
+    height: 32,
+    justifyContent: "center",
+    width: 32,
   },
   headerCopy: {
     gap: spacing.xxs,
   },
   brandTitle: {
     ...typography.heading,
-    color: colors.light.textPrimary,
+    color: colors.dark.textPrimary,
   },
   headerMeta: {
     ...typography.caption,
-    color: colors.light.textSecondary,
+    color: colors.dark.textSecondary,
   },
 });

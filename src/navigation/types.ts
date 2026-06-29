@@ -10,5 +10,4 @@ export type RootStackParamList = {
   [ROUTES.PRACTICE_SETUP]: undefined;
   [ROUTES.PRACTICE_SESSION]: { domain: ExamDomain; questionCount: 10 | 20 | "all" };
   [ROUTES.MISTAKES_REVIEW]: undefined;
-  [ROUTES.ATTEMPT_HISTORY]: undefined;
 };

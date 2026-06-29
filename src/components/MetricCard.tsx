@@ -29,8 +29,8 @@ export function MetricCard({ helper, label, progress, style, tone = "neutral", v
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
@@ -39,38 +39,38 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   neutral: {
-    backgroundColor: colors.light.surface
+    backgroundColor: colors.dark.surface
   },
   primary: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primarySoft
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primarySoft
   },
   success: {
-    backgroundColor: colors.light.successSoft,
-    borderColor: colors.light.successSoft
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.successSoft
   },
   warning: {
-    backgroundColor: colors.light.warningSoft,
-    borderColor: colors.light.warningSoft
+    backgroundColor: colors.dark.warningSoft,
+    borderColor: colors.dark.warningSoft
   },
   danger: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.dangerSoft
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.dangerSoft
   },
   info: {
-    backgroundColor: colors.light.infoSoft,
-    borderColor: colors.light.infoSoft
+    backgroundColor: colors.dark.infoSoft,
+    borderColor: colors.dark.infoSoft
   },
   value: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   label: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   helper: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.dark.textMuted
   }
 });

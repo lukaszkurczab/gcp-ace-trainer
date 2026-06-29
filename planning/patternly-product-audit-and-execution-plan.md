@@ -2,7 +2,9 @@
 
 Audit date: 2026-06-29  
 Repository root observed: `/Users/lukaszkurczab/Desktop/Projects/GCP`  
-Status: planning artifact created after read-only audit.
+Status: planning artifact created after read-only audit; implementation notes below reflect the first Phase 2 cleanup pass.
+
+Implementation note, 2026-06-29: the first Phase 2 pass split the Home shell into tab components, removed the hardcoded `Readiness 72%` UI, deleted selected unreachable legacy screens, made storage parse/read/write failures observable, moved active writes to the Patternly v1 namespace, and switched the runtime shell/components to the dark-first token path. Treat older audit tables as historical evidence where they explicitly reference pre-cleanup screenshots or removed code.
 
 ## Executive Summary
 
@@ -14,10 +16,10 @@ Main blockers:
 
 - No canonical shared `TrainingItem`, `TrainingSession`, `TrainingAttempt`, `ReviewQueueItem`, or `UserProgress` implementation.
 - Algorithms track is registered but intentionally draft; no content, scoring, session runner, progress, or review loop.
-- Current shell is implemented inside one large `src/features/home/HomeScreen.tsx`.
-- UI is light-first and card-heavy while current product direction is dark-first Focus Lab.
-- Cloud progress shows hardcoded `Readiness 72%`, conflicting with `docs/14-learning-effectiveness-model.md`.
-- Storage silently swallows read/write failures and remains GCP/question-shaped.
+- Shell has been split out of the former large `HomeScreen`, but the current Home/Practice/Progress/Settings implementation is still transitional and not yet backed by canonical shared session/progress contracts.
+- Runtime UI now uses the dark-first token path, but full per-screen layout alignment to `docs/designs/*` is still a separate implementation pass.
+- Cloud progress no longer shows hardcoded readiness precision; remaining progress work is to replace coarse Cloud analytics with concrete track-aware diagnostics.
+- Storage no longer silently swallows parse/read/write failures and active writes use Patternly v1 keys, but the data model remains question-shaped.
 - No CI config, no EAS config, no release checklist, and limited E2E coverage.
 - Documentation conflicts: newer product docs say multi-track/dark-first; `docs/README.md` and ADR-004 still describe older GCP/light-first direction.
 
@@ -29,17 +31,16 @@ Planning stance: do not add product features on top of the current GCP-shaped ar
 |---|---|---|---|
 | App entry | `App.tsx`, `app.json` | Navigation container, status bar, Expo config | Partial; app name Patternly but slug/bundle still `gcp-ace-trainer`, light UI |
 | Navigation | `src/navigation/RootNavigator.tsx`, `src/constants/routes.ts` | Native stack routes | Partial; root still has `Exam`, `PracticeSetup`, `MistakesReview`, etc. as top-level stack routes |
-| Shell/screens | `src/features/home/HomeScreen.tsx` | Inlined Home/Practice/Progress/Settings shell | Transitional; too large and Cloud-coupled |
+| Shell/screens | `src/features/home/HomeScreen.tsx`, `src/features/home/tabs/*` | Home/Practice/Progress/Settings shell | Transitional; split into tabs, still needs canonical session/progress contracts |
 | Cloud practice | `src/features/practice/*` | Domain practice, immediate feedback | Working Cloud-specific path; not canonical shared session runner |
 | Cloud exam | `src/features/exam/*` | Exam generation, timed session, scoring, result/review | Working Cloud-specific path; should become track-specific module |
 | Review | `src/features/review/*` | Mistake review and answer review | Partial; question-based, no due queue/priority/spaced review |
 | Analytics/progress | `src/features/analytics/analyticsService.ts` | Domain/tag/confidence summaries | Cloud-shaped; no track-aware progress model |
 | Track registry | `src/domain/tracks/*` | `cloud-certification`, `algorithms` definitions | Partial canonical seed; not yet session/content/scoring contract |
 | Types | `src/types/question.ts`, `src/types/attempt.ts` | GCP question and attempt models | Legacy/shared leakage; should move under certification track or be adapted |
-| Storage | `src/storage/localStorage.ts`, `src/constants/storage.ts` | AsyncStorage helpers | Partial; helper layer exists but not repository-style, silent failures, GCP keys |
-| Theme/components | `src/theme/*`, `src/components/*` | Tokens and shared UI | Partial; light tokens used everywhere, dark tokens unused, placeholder tab icons |
+| Storage | `src/storage/localStorage.ts`, `src/constants/storage.ts`, `src/storage/storageCodec.ts` | AsyncStorage helpers | Partial; Patternly v1 active keys and observable storage errors, still not repository-style |
+| Theme/components | `src/theme/*`, `src/components/*` | Tokens and shared UI | Partial; runtime dark-first pass complete, full design-layout pass still pending |
 | Content | `data/question-bank/ace-foundation-320.json` | 360 Cloud seed questions | Canonical Cloud seed for now; not multi-track content pack format |
-| Import | `src/features/import/*` | Paste JSON question import | Unclear/unreachable from navigator; candidate to remove or re-scope |
 | Tests | `tests/*.test.ts` | Node tests for scoring, registry, validation, analytics | Passing; too Cloud/GCP-centric |
 | Scripts | `scripts/validateQuestionBank.ts` | Strict seed validation | Useful; Cloud-specific |
 | Maestro flows | `.maestro/screenshot-capture/*` | Screenshot capture flows | Current main-shell flow canonical; older track-foundation flow obsolete |
@@ -57,7 +58,7 @@ Planning stance: do not add product features on top of the current GCP-shaped ar
 | `02-architecture.md` | Neutral navigation, track registry, domain logic, storage layer | Track registry exists; shell and storage still Cloud-coupled | Partial | Doc canonical |
 | `03-navigation-and-flows.md` | Home/Practice/Progress/Settings, exam inside certification track | Shell tabs exist inside Home; exam remains stack route | Partial | Flow doc canonical; implement real tab/shell structure later |
 | `04-data-model.md` | `TrainingItem` base, taxonomy refs, track-aware attempts/progress | `Question`, `ExamDomain`, `AttemptSummary` dominate | Conflict | Doc canonical, with implementation migration |
-| `05-design-system.md` | Calm technical workspace, currently says light-first/dark-ready | Light UI implemented | Partial, but conflicts user/product dark-first direction | Update doc/ADR to dark-first before UI pass |
+| `05-design-system.md` | Calm technical workspace with dark-first design-reference alignment | Runtime shell/components use dark-first tokens | Partial; full per-screen layout alignment still pending | Complete focused screen-layout pass against `docs/designs/*` |
 | `06-branding-and-style-direction.md` | Patternly umbrella, neutral tracks, legal safety | App display says Patternly; package/bundle still GCP | Partial | Doc canonical |
 | `07-content-guidelines.md` | Content must be original, track-aware, not only questions | Cloud seed validates; no Algorithms content | Partial | Doc canonical |
 | `08-storage-and-offline.md` | Local-first, storage adapters/repositories, no `gcpAceTrainer` namespace | AsyncStorage helpers use `gcpAceTrainer.*` | Conflict | Doc canonical; storage migration/reset plan needed |
@@ -66,7 +67,7 @@ Planning stance: do not add product features on top of the current GCP-shaped ar
 | `11-implementation-guidelines.md` | Avoid `Question`/`Exam` as shared architecture | Code still uses them broadly | Conflict | Guidelines canonical |
 | `12-testing-strategy.md` | Domain/track/storage tests first | Tests cover Cloud scoring/validation/registry only | Partial | Add canonical contract tests |
 | `13-risk-register.md` | Critical risk: one track dominates architecture | This risk is active | Match as warning | Treat R-002 as P0 |
-| `14-learning-effectiveness-model.md` | No fake readiness/retention, use active recall, due review, diagnostic feedback | Current UI hardcodes readiness; review not due-based | Conflict | Canonical learning model |
+| `14-learning-effectiveness-model.md` | No fake readiness/retention, use active recall, due review, diagnostic feedback | Fake readiness UI removed; review still not due-based | Partial | Canonical learning model |
 | `15-certification-track-learning-system.md` | Certification has competency/topic/skill atom model, review plan, no fake readiness | Current Cloud uses four exam domains and tags only | Partial | Canonical for certification |
 | `16-leetcode-like-learning-system.md` | Algorithms needs staged approach mechanics, pattern/strategy/complexity loops | Algorithms is registry-only draft | Missing | Canonical for Algorithms |
 | `docs/README.md` | Says private GCP ACE tool, calm exam simulator | Outdated versus `00-16` and current app name | Conflict | Update later; not canonical |
@@ -125,7 +126,7 @@ General learning model (`14`):
 
 - Exists: active response before feedback in Cloud practice; confidence capture; explanations.
 - Missing: `dueAt`, priority review, interleaving, worked examples/fading, hint usage, first-attempt score, review reason, concrete next action.
-- Incorrect: hardcoded `Readiness 72%` and percentage readiness label.
+- Corrected in Phase 2: hardcoded `Readiness 72%` and percentage readiness label removed from runtime UI.
 
 Certification (`15`):
 
@@ -143,7 +144,7 @@ Algorithms (`16`):
 
 | Path/name | Problem | Cause | Risk | Correction | Acceptance criteria |
 |---|---|---|---|---|---|
-| `src/features/home/HomeScreen.tsx` | Monolithic shell + data + tabs + settings | Fast transitional rebuild | Hard to test, extend, or make track-aware | Split into shell, tabs, hooks/services | Home imports only shell components and track summary data |
+| `src/features/home/HomeScreen.tsx` | Shell still owns orchestration/data loading, although tab UI is split | Fast transitional rebuild | Hard to extend into canonical session/progress contracts | Continue extracting focused hooks/services only where they clarify ownership | Home imports only shell components and track summary data |
 | `src/types/question.ts` | `Question`/`ExamDomain` as shared root | Original GCP app | Blocks Algorithms | Move/copy under certification track; add `TrainingItem` union | Shared code no longer imports `ExamDomain` |
 | `src/types/attempt.ts` | Attempt summary question-shaped | Exam-first architecture | Wrong progress/review model | Add `TrainingAttempt` and map Cloud attempts | Attempts include `trackId`, `itemId`, `itemType`, `contentVersion` |
 | `src/constants/storage.ts` | `gcpAceTrainer.*` keys | Legacy namespace | Migration/reset ambiguity | Add `patternly:v1:*` keys and migration/reset plan | New writes use Patternly namespace |
@@ -156,7 +157,7 @@ Algorithms (`16`):
 | `analyticsService.ts` | Domain/tag analytics only | GCP model | Misleading track progress | Progress aggregators per track | Algorithms progress can be computed |
 | `ImportQuestionsScreen.tsx` | Unreachable UI | Route removed | Dead feature surface | Remove UI or route intentionally under settings/dev | No unreachable feature code remains |
 | Empty dirs | `src/features/settings`, `src/features/tracks` | Deleted screens | Dead structure | Remove when implementation pass allowed | No empty feature dirs |
-| Theme usage | `colors.light.*` everywhere | ADR-004 | Dark-first mismatch | Supersede ADR and implement mode tokens | Runtime dark-first verified by Maestro |
+| Theme usage | Runtime now uses `colors.dark.*`; light tokens remain defined | ADR-004 | Full design alignment not finished | Supersede ADR and complete per-screen dark-first layout pass | Runtime dark-first verified by Maestro |
 | `BottomTabBar` | Text placeholders for icons | No icon lib | Unpolished/nonstandard | Use approved icon library or RN-safe icons | Tabs use meaningful icons and labels |
 | CI/build | No `.github`, `eas.json` | Early repo | No release gate | Add CI for typecheck/test/validate and EAS/build plan | CI required before release |
 
@@ -170,7 +171,7 @@ Algorithms (`16`):
 | `artifacts/.../patternly-track-foundation/*` | Historical artifacts | Current state superseded | report says superseded | Historical evidence loss | Keep archived, do not use as baseline | Defer |
 | `ImportQuestionsScreen.tsx` | Unreachable screen | No route import | `rg` finds only definition | Could lose useful local import | Dev tool script or routed admin/settings item | Verify then Phase 2/4 |
 | `QuestionBankSummary.tsx` | Possibly unreachable UI | Used only by import screen | `rg` | Same as import | Validation script or content screen | With import decision |
-| Hardcoded `Readiness 72%` | UI concept | Fake precision | `HomeScreen`, screenshot | None; removing changes UI copy | Evidence/practice signal | Phase 2 |
+| Hardcoded `Readiness 72%` | Removed UI concept | Fake precision | Historical `HomeScreen` screenshot/design reference | None | Evidence/practice signal | Done in Phase 2 |
 | `gcpAceTrainer.*` as active write namespace | Storage keys | Legacy product name | `constants/storage.ts` | Existing local data migration | `patternly:v1:*` with migration/reset | Phase 4 |
 | `Exam` as main mental route | Route/concept | Certification-specific | navigator/docs conflict | Existing Cloud exam path | Cloud-specific nested flow | Phase 3/4 |
 | Placeholder tab icons `H`, `>`, `#`, `*` | UI pattern | Not premium/familiar | `HomeScreen`/screenshots | None | Proper icons | Phase 5 |
@@ -250,7 +251,7 @@ Objective: remove/isolate stale paths before building more.
 Tasks:
 
 1. Remove empty feature dirs after verification.
-2. Remove hardcoded `Readiness 72%` and replace with explicit insufficient-evidence or concrete practice signals.
+2. Done: remove hardcoded `Readiness 72%` and replace with explicit insufficient-evidence or concrete practice signals.
 3. Split `HomeScreen` into shell/tab components without changing behavior.
 4. Move Cloud-only copy/actions behind Cloud-specific tab sections or adapters.
 5. Replace hidden fallback from invalid track to Cloud with explicit invalid/unavailable state.
@@ -298,6 +299,8 @@ Definition of done: storage tests pass; UI shows explicit unavailable/corrupt/re
 
 Objective: bring screens into Patternly visual system and complete states.
 
+Design reference rule: use `docs/designs/*` as high-fidelity visual references, not as pixel-perfect source files. Final layouts should reach at least **90% alignment** with the selected reference screens while resolving inconsistencies into one coherent app-wide layout system. Do not copy references 1:1 when they conflict with canonical docs, current product truth, accessibility, verified Cloud behavior, or internal consistency.
+
 Tasks:
 
 1. Implement dark-first Focus Lab tokens if ADR supersedes light-first.
@@ -307,9 +310,10 @@ Tasks:
 5. Add topic/detail screens after progress model exists.
 6. Add empty/loading/error/unavailable states.
 7. Add accessibility labels, roles, dynamic text checks.
-8. Capture updated Maestro screenshots.
+8. For every UI slice, record selected `docs/designs/*` references, intentional deviations, and 90% alignment evidence.
+9. Capture updated Maestro screenshots.
 
-Definition of done: main flows visually match product direction and pass Maestro captures.
+Definition of done: main flows visually match the canonical product direction, demonstrate at least 90% alignment with selected design references after consistency normalization, and pass Maestro captures.
 
 ### Phase 6 - Testing and QA
 
@@ -436,7 +440,7 @@ Commit: multiple commits.
 Scope: Focus Lab tokens and screen application.  
 Files: `src/theme/*`, `src/components/*`, feature screens, `app.json`, `App.tsx`.  
 Tests: typecheck/tests; Maestro screenshots.  
-Acceptance: dark-first, accessible, no text overlap, no placeholder icons.  
+Acceptance: dark-first, accessible, no text overlap, no placeholder icons, at least 90% alignment with selected `docs/designs/*` references without copying inconsistent screens 1:1.  
 Commit: multiple UI commits.
 
 ### Batch 9 - QA and Release Gate

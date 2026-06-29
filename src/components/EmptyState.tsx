@@ -23,8 +23,8 @@ export function EmptyState({ actionLabel, description, onActionPress, title }: E
 const styles = StyleSheet.create({
   container: {
     alignItems: "flex-start",
-    backgroundColor: colors.light.elevatedSurface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   description: {
     ...typography.body,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   }
 });

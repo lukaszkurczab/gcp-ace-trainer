@@ -3,13 +3,11 @@ import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native"
 import type { TrackDefinition } from "../../domain";
 import { colors, radius, spacing, typography } from "../../theme";
 import { Badge } from "../Badge";
-import { ProgressBar } from "../ProgressBar";
+import { Icon } from "../Icon";
 
 type TrackCardProps = {
   isActive?: boolean;
   onPress?: () => void;
-  progress?: number;
-  progressLabel?: string;
   style?: ViewStyle;
   testID?: string;
   track: TrackDefinition;
@@ -18,8 +16,6 @@ type TrackCardProps = {
 export function TrackCard({
   isActive = false,
   onPress,
-  progress,
-  progressLabel,
   style,
   testID,
   track,
@@ -54,19 +50,9 @@ export function TrackCard({
 
       <Text style={styles.description}>{track.description}</Text>
 
-      {typeof progress === "number" ? (
-        <View style={styles.progressBlock}>
-          <View style={styles.progressMeta}>
-            <Text style={styles.progressLabel}>{progressLabel ?? "Progress"}</Text>
-            <Text style={styles.progressValue}>{Math.round(progress * 100)}%</Text>
-          </View>
-          <ProgressBar progress={progress} tone={track.id === "algorithms" ? "warning" : "primary"} />
-        </View>
-      ) : null}
-
       <View style={styles.footer}>
         <Text style={styles.nextAction}>{track.nextActionLabel}</Text>
-        <Text style={styles.arrow}>{">"}</Text>
+        <Icon name="chevron-right" />
       </View>
     </Pressable>
   );
@@ -74,8 +60,8 @@ export function TrackCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.lg,
     borderWidth: 1,
     gap: spacing.md,
@@ -83,7 +69,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   activeCard: {
-    borderColor: colors.light.primary,
+    borderColor: colors.dark.primary,
   },
   pressed: {
     opacity: 0.84,
@@ -111,31 +97,15 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.light.textPrimary,
+    color: colors.dark.textPrimary,
   },
   description: {
     ...typography.body,
-    color: colors.light.textSecondary,
-  },
-  progressBlock: {
-    gap: spacing.sm,
-  },
-  progressMeta: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  progressLabel: {
-    ...typography.caption,
-    color: colors.light.textSecondary,
-  },
-  progressValue: {
-    ...typography.caption,
-    color: colors.light.textPrimary,
+    color: colors.dark.textSecondary,
   },
   footer: {
     alignItems: "center",
-    borderTopColor: colors.light.border,
+    borderTopColor: colors.dark.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: spacing.md,
@@ -144,11 +114,7 @@ const styles = StyleSheet.create({
   },
   nextAction: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary,
+    color: colors.dark.textPrimary,
     flex: 1,
-  },
-  arrow: {
-    ...typography.heading,
-    color: colors.light.textMuted,
   },
 });

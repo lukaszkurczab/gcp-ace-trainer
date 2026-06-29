@@ -38,7 +38,7 @@ export function Button({ children, disabled = false, loading = false, onPress, s
 }
 
 function getActivityColor(variant: ButtonVariant): string {
-  return variant === "primary" || variant === "destructive" ? colors.light.surface : colors.light.primary;
+  return variant === "primary" || variant === "destructive" ? colors.dark.textPrimary : colors.dark.primary;
 }
 
 const styles = StyleSheet.create({
@@ -54,27 +54,27 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md
   },
   primary: {
-    backgroundColor: colors.light.primary,
-    borderColor: colors.light.primary
+    backgroundColor: colors.dark.primary,
+    borderColor: colors.dark.primary
   },
   secondary: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border
   },
   ghost: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primarySoft
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primarySoft
   },
   destructive: {
-    backgroundColor: colors.light.danger,
-    borderColor: colors.light.danger
+    backgroundColor: colors.dark.danger,
+    borderColor: colors.dark.danger
   },
   pressed: {
     opacity: 0.82
   },
   disabled: {
-    backgroundColor: colors.light.elevatedSurface,
-    borderColor: colors.light.border
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border
   },
   spinner: {
     marginLeft: -spacing.xs
@@ -85,18 +85,18 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   primaryLabel: {
-    color: colors.light.surface
+    color: colors.dark.textPrimary
   },
   secondaryLabel: {
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   ghostLabel: {
-    color: colors.light.primary
+    color: colors.dark.primary
   },
   destructiveLabel: {
-    color: colors.light.surface
+    color: colors.dark.textPrimary
   },
   disabledLabel: {
-    color: colors.light.textMuted
+    color: colors.dark.textMuted
   }
 });

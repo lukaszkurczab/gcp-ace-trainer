@@ -226,15 +226,15 @@ const styles = StyleSheet.create({
   },
   questionText: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   options: {
     gap: spacing.md
   },
   optionCard: {
     alignItems: "flex-start",
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: "row",
@@ -243,8 +243,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   optionSelected: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primary
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primary
   },
   optionPressed: {
     opacity: 0.82
@@ -252,15 +252,15 @@ const styles = StyleSheet.create({
   optionText: {
     ...typography.body,
     flex: 1,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   optionTextSelected: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   optionMarker: {
     alignItems: "center",
-    borderColor: colors.light.borderStrong,
+    borderColor: colors.dark.borderStrong,
     borderRadius: radius.pill,
     borderWidth: 1,
     height: 22,
@@ -272,10 +272,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.xs
   },
   optionMarkerSelected: {
-    borderColor: colors.light.primary
+    borderColor: colors.dark.primary
   },
   optionMarkerInner: {
-    backgroundColor: colors.light.primary,
+    backgroundColor: colors.dark.primary,
     borderRadius: radius.pill,
     height: 10,
     width: 10

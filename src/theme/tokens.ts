@@ -28,24 +28,24 @@ export const colors = {
     shadow: "#152033"
   },
   dark: {
-    background: "#0F1724",
-    surface: "#172033",
-    elevatedSurface: "#1F2A3D",
-    border: "#314057",
-    borderStrong: "#506176",
-    textPrimary: "#F5F7FA",
-    textSecondary: "#C7D0DC",
-    textMuted: "#93A1B3",
-    primary: "#6EA8FE",
-    primaryPressed: "#4C8EF7",
-    primarySoft: "#16345F",
+    background: "#0C1324",
+    surface: "#111827",
+    elevatedSurface: "#1E293B",
+    border: "#263247",
+    borderStrong: "#334155",
+    textPrimary: "#F8FAFC",
+    textSecondary: "#CBD5E1",
+    textMuted: "#94A3B8",
+    primary: "#8B5CF6",
+    primaryPressed: "#7C3AED",
+    primarySoft: "#2B2147",
     success: "#6EE7A8",
     successSoft: "#123B2A",
     warning: "#F6B44B",
     warningSoft: "#442B0B",
     danger: "#FDA29B",
     dangerSoft: "#4A1715",
-    info: "#7DD3FC",
+    info: "#38BDF8",
     infoSoft: "#0B344A",
     accentPurple: "#B99CFF",
     accentPurpleSoft: "#2B2147",
@@ -53,7 +53,7 @@ export const colors = {
     accentTealSoft: "#143A38",
     accentOrange: "#FDBA74",
     accentOrangeSoft: "#43240F",
-    shadow: "#000000"
+    shadow: "#020617"
   }
 } as const;
 
@@ -130,14 +130,14 @@ export const shadows = {
     elevation: 0
   },
   card: {
-    shadowColor: colors.light.shadow,
+    shadowColor: colors.dark.shadow,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 1
   },
   elevated: {
-    shadowColor: colors.light.shadow,
+    shadowColor: colors.dark.shadow,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 24,
@@ -146,4 +146,4 @@ export const shadows = {
 } as const;
 
 export type ColorMode = keyof typeof colors;
-export type AppColors = typeof colors.light;
+export type AppColors = typeof colors.dark;

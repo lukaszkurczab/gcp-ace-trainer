@@ -7,7 +7,7 @@ import { navigationTheme } from "./src/theme/navigationTheme";
 export default function App() {
   return (
     <NavigationContainer theme={navigationTheme}>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <RootNavigator />
     </NavigationContainer>
   );

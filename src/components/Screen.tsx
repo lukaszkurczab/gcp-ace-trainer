@@ -37,7 +37,7 @@ export function Screen({ children, compact = false, edges = ["bottom"], footer, 
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: colors.light.background,
+    backgroundColor: colors.dark.background,
     flex: 1
   },
   scrollContent: {
@@ -60,8 +60,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md
   },
   footer: {
-    backgroundColor: colors.light.background,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.background,
+    borderColor: colors.dark.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
     padding: spacing.lg

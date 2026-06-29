@@ -163,8 +163,8 @@ const styles = StyleSheet.create({
   },
   domainCard: {
     alignItems: "center",
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: "row",
@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   domainCardSelected: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primary
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primary
   },
   domainCardDisabled: {
     opacity: 0.62
@@ -192,11 +192,11 @@ const styles = StyleSheet.create({
   },
   domainLabel: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   domainMeta: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   settingsGrid: {
     flexDirection: "row",
@@ -204,8 +204,8 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   settingMetric: {
-    backgroundColor: colors.light.elevatedSurface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     minWidth: "30%",
@@ -213,11 +213,11 @@ const styles = StyleSheet.create({
   },
   settingValue: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   settingLabel: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   countRow: {
     flexDirection: "row",
@@ -228,6 +228,6 @@ const styles = StyleSheet.create({
   },
   helperText: {
     ...typography.body,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   }
 });

@@ -7,5 +7,4 @@ export const ROUTES = {
   PRACTICE_SETUP: "PracticeSetup",
   PRACTICE_SESSION: "PracticeSession",
   MISTAKES_REVIEW: "MistakesReview",
-  ATTEMPT_HISTORY: "AttemptHistory",
 } as const;

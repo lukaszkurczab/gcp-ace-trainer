@@ -184,7 +184,13 @@ export function isTrackId(value: string): value is TrackId {
 }
 
 export function getTrackDefinition(trackId: TrackId): TrackDefinition {
-  return TRACK_DEFINITIONS.find((track) => track.id === trackId) ?? cloudCertificationTrack;
+  const track = TRACK_DEFINITIONS.find((item) => item.id === trackId);
+
+  if (!track) {
+    throw new Error(`Unknown track id: ${trackId}`);
+  }
+
+  return track;
 }
 
 export function getEnabledSessionModes(trackId: TrackId) {

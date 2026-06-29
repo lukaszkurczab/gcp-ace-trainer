@@ -37,13 +37,13 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   titleTight: {
     ...typography.bodyStrong
   },
   subtitle: {
     ...typography.small,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   }
 });

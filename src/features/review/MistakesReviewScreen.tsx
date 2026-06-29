@@ -362,8 +362,8 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   filterChip: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.pill,
     borderWidth: 1,
     minHeight: 40,
@@ -372,27 +372,27 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm
   },
   neutralFilterChip: {
-    backgroundColor: colors.light.elevatedSurface,
-    borderColor: colors.light.borderStrong
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.borderStrong
   },
   dangerFilterChip: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.danger
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.danger
   },
   warningFilterChip: {
-    backgroundColor: colors.light.warningSoft,
-    borderColor: colors.light.warning
+    backgroundColor: colors.dark.warningSoft,
+    borderColor: colors.dark.warning
   },
   infoFilterChip: {
-    backgroundColor: colors.light.infoSoft,
-    borderColor: colors.light.info
+    backgroundColor: colors.dark.infoSoft,
+    borderColor: colors.dark.info
   },
   filterChipText: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   activeFilterChipText: {
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   pressed: {
     opacity: 0.82
@@ -404,17 +404,17 @@ const styles = StyleSheet.create({
   },
   detailQuestion: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   detailBlock: {
     gap: spacing.xs
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   detailText: {
     ...typography.body,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   }
 });

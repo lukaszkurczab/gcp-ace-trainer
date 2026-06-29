@@ -44,8 +44,8 @@ export function ListRow({ detail, leading, meta, onPress, style, title, trailing
 const styles = StyleSheet.create({
   row: {
     alignItems: "center",
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
@@ -72,15 +72,15 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   detail: {
     ...typography.small,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   meta: {
     ...typography.caption,
-    color: colors.light.textMuted
+    color: colors.dark.textMuted
   },
   trailing: {
     alignItems: "center",

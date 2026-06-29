@@ -38,33 +38,33 @@ const styles = StyleSheet.create({
     width: 6
   },
   primaryFrame: {
-    backgroundColor: colors.light.primarySoft
+    backgroundColor: colors.dark.primarySoft
   },
   purpleFrame: {
-    backgroundColor: colors.light.accentPurpleSoft
+    backgroundColor: colors.dark.accentPurpleSoft
   },
   tealFrame: {
-    backgroundColor: colors.light.accentTealSoft
+    backgroundColor: colors.dark.accentTealSoft
   },
   orangeFrame: {
-    backgroundColor: colors.light.accentOrangeSoft
+    backgroundColor: colors.dark.accentOrangeSoft
   },
   infoFrame: {
-    backgroundColor: colors.light.infoSoft
+    backgroundColor: colors.dark.infoSoft
   },
   primary: {
-    backgroundColor: colors.light.primary
+    backgroundColor: colors.dark.primary
   },
   purple: {
-    backgroundColor: colors.light.accentPurple
+    backgroundColor: colors.dark.accentPurple
   },
   teal: {
-    backgroundColor: colors.light.accentTeal
+    backgroundColor: colors.dark.accentTeal
   },
   orange: {
-    backgroundColor: colors.light.accentOrange
+    backgroundColor: colors.dark.accentOrange
   },
   info: {
-    backgroundColor: colors.light.info
+    backgroundColor: colors.dark.info
   }
 });

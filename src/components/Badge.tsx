@@ -26,55 +26,55 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs
   },
   neutral: {
-    backgroundColor: colors.light.elevatedSurface,
-    borderColor: colors.light.border
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border
   },
   primary: {
-    backgroundColor: colors.light.infoSoft,
-    borderColor: colors.light.infoSoft
+    backgroundColor: colors.dark.infoSoft,
+    borderColor: colors.dark.infoSoft
   },
   ready: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primarySoft
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primarySoft
   },
   success: {
-    backgroundColor: colors.light.successSoft,
-    borderColor: colors.light.successSoft
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.successSoft
   },
   warning: {
-    backgroundColor: colors.light.warningSoft,
-    borderColor: colors.light.warningSoft
+    backgroundColor: colors.dark.warningSoft,
+    borderColor: colors.dark.warningSoft
   },
   danger: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.dangerSoft
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.dangerSoft
   },
   info: {
-    backgroundColor: colors.light.infoSoft,
-    borderColor: colors.light.infoSoft
+    backgroundColor: colors.dark.infoSoft,
+    borderColor: colors.dark.infoSoft
   },
   label: {
     ...typography.caption
   },
   neutralLabel: {
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   primaryLabel: {
-    color: colors.light.info
+    color: colors.dark.info
   },
   readyLabel: {
-    color: colors.light.primary
+    color: colors.dark.primary
   },
   successLabel: {
-    color: colors.light.success
+    color: colors.dark.success
   },
   warningLabel: {
-    color: colors.light.warning
+    color: colors.dark.warning
   },
   dangerLabel: {
-    color: colors.light.danger
+    color: colors.dark.danger
   },
   infoLabel: {
-    color: colors.light.info
+    color: colors.dark.info
   }
 });

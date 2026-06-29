@@ -141,18 +141,18 @@ function getWeakTags(attempt: AttemptSummary) {
 const styles = StyleSheet.create({
   score: {
     ...typography.title,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   scoreBlock: {
     gap: spacing.md
   },
   meta: {
     ...typography.body,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   disclaimer: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   breakdown: {
     gap: spacing.md
@@ -165,11 +165,11 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   rowValue: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   actions: {
     gap: spacing.md

@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing, typography } from "../theme";
+import { Icon, type IconName } from "./Icon";
 
 export type BottomTabBarItem<TId extends string> = {
-  icon: string;
+  icon: IconName;
   id: TId;
   label: string;
 };
@@ -36,9 +37,17 @@ export function BottomTabBar<TId extends string>({
             style={styles.tabButton}
             testID={`${testID ?? "bottom-tab-bar"}-${item.id}`}
           >
-            <Text style={[styles.tabIcon, isActive ? styles.tabIconActive : null]}>
-              {item.icon}
-            </Text>
+            <View
+              style={[
+                styles.activeIndicator,
+                isActive ? styles.activeIndicatorVisible : null,
+              ]}
+            />
+            <Icon
+              color={isActive ? colors.dark.primary : colors.dark.textMuted}
+              name={item.icon}
+              size={22}
+            />
             <Text style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}>
               {item.label}
             </Text>
@@ -52,8 +61,8 @@ export function BottomTabBar<TId extends string>({
 const styles = StyleSheet.create({
   tabBar: {
     alignItems: "center",
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: "row",
@@ -61,29 +70,32 @@ const styles = StyleSheet.create({
     left: 0,
     paddingBottom: spacing.lg,
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.md,
     position: "absolute",
     right: 0,
   },
   tabButton: {
     alignItems: "center",
     flex: 1,
-    gap: spacing.xs,
     justifyContent: "center",
+    gap: spacing.xs,
     minHeight: 52,
+    paddingHorizontal: spacing.xs,
   },
-  tabIcon: {
-    ...typography.heading,
-    color: colors.light.textMuted,
+  activeIndicator: {
+    backgroundColor: "transparent",
+    borderRadius: 999,
+    height: 3,
+    width: 24,
   },
-  tabIconActive: {
-    color: colors.light.primary,
+  activeIndicatorVisible: {
+    backgroundColor: colors.dark.primary,
   },
   tabLabel: {
     ...typography.caption,
-    color: colors.light.textMuted,
+    color: colors.dark.textMuted,
   },
   tabLabelActive: {
-    color: colors.light.primary,
+    color: colors.dark.primary,
   },
 });

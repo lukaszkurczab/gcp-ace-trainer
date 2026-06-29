@@ -45,7 +45,8 @@ tags:
 - tapOn: "Settings"
 - waitForAnimationToEnd:
     timeout: 12000
-- assertVisible: "Local-first workspace controls."
+- assertVisible:
+    id: "settings-screen"
 - takeScreenshot: "04-settings-cloud"
 
 - tapOn: "Home"

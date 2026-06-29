@@ -246,8 +246,8 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
   filterChip: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.pill,
     borderWidth: 1,
     justifyContent: "center",
@@ -256,19 +256,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm
   },
   dangerFilterChip: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.danger
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.danger
   },
   infoFilterChip: {
-    backgroundColor: colors.light.infoSoft,
-    borderColor: colors.light.info
+    backgroundColor: colors.dark.infoSoft,
+    borderColor: colors.dark.info
   },
   filterChipText: {
     ...typography.caption,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   activeFilterChipText: {
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   pressed: {
     opacity: 0.82
@@ -278,31 +278,31 @@ const styles = StyleSheet.create({
   },
   questionText: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   detailBlock: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
     padding: spacing.md
   },
   successBlock: {
-    backgroundColor: colors.light.successSoft,
-    borderColor: colors.light.successSoft
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.successSoft
   },
   dangerBlock: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.dangerSoft
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.dangerSoft
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   detailText: {
     ...typography.small,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   tagRow: {
     flexDirection: "row",

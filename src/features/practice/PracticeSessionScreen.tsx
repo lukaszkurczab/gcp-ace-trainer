@@ -383,15 +383,15 @@ const styles = StyleSheet.create({
   },
   questionText: {
     ...typography.heading,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   options: {
     gap: spacing.md
   },
   optionCard: {
     alignItems: "flex-start",
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: "row",
@@ -400,16 +400,16 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   optionSelected: {
-    backgroundColor: colors.light.primarySoft,
-    borderColor: colors.light.primary
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primary
   },
   optionCorrect: {
-    backgroundColor: colors.light.successSoft,
-    borderColor: colors.light.success
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.success
   },
   optionIncorrect: {
-    backgroundColor: colors.light.dangerSoft,
-    borderColor: colors.light.danger
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.danger
   },
   optionPressed: {
     opacity: 0.82
@@ -417,11 +417,11 @@ const styles = StyleSheet.create({
   optionText: {
     ...typography.body,
     flex: 1,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   optionMarker: {
     alignItems: "center",
-    borderColor: colors.light.borderStrong,
+    borderColor: colors.dark.borderStrong,
     borderRadius: radius.pill,
     borderWidth: 1,
     height: 22,
@@ -433,16 +433,16 @@ const styles = StyleSheet.create({
     borderRadius: radius.xs
   },
   optionMarkerSelected: {
-    borderColor: colors.light.primary
+    borderColor: colors.dark.primary
   },
   optionMarkerCorrect: {
-    borderColor: colors.light.success
+    borderColor: colors.dark.success
   },
   optionMarkerIncorrect: {
-    borderColor: colors.light.danger
+    borderColor: colors.dark.danger
   },
   optionMarkerInner: {
-    backgroundColor: colors.light.primary,
+    backgroundColor: colors.dark.primary,
     borderRadius: radius.pill,
     height: 10,
     width: 10
@@ -465,11 +465,11 @@ const styles = StyleSheet.create({
   },
   feedbackText: {
     ...typography.small,
-    color: colors.light.textSecondary
+    color: colors.dark.textSecondary
   },
   diagnosticSection: {
-    backgroundColor: colors.light.surface,
-    borderColor: colors.light.border,
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.light.textPrimary
+    color: colors.dark.textPrimary
   },
   tagRow: {
     flexDirection: "row",

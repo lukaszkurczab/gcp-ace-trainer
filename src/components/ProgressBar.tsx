@@ -21,7 +21,7 @@ export function ProgressBar({ progress, tone = "primary" }: ProgressBarProps) {
 
 const styles = StyleSheet.create({
   track: {
-    backgroundColor: colors.light.elevatedSurface,
+    backgroundColor: colors.dark.elevatedSurface,
     borderRadius: radius.pill,
     height: 8,
     overflow: "hidden",
@@ -32,18 +32,18 @@ const styles = StyleSheet.create({
     height: "100%"
   },
   primary: {
-    backgroundColor: colors.light.primary
+    backgroundColor: colors.dark.primary
   },
   success: {
-    backgroundColor: colors.light.success
+    backgroundColor: colors.dark.success
   },
   warning: {
-    backgroundColor: colors.light.warning
+    backgroundColor: colors.dark.warning
   },
   danger: {
-    backgroundColor: colors.light.danger
+    backgroundColor: colors.dark.danger
   },
   info: {
-    backgroundColor: colors.light.info
+    backgroundColor: colors.dark.info
   }
 });
