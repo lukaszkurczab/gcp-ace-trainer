@@ -3,9 +3,13 @@
 Status: **Accepted**  
 Data: 2026-06-26
 
+## Scope note
+
+Ta decyzja pozostaje historycznie poprawna dla pierwszego contentu certyfikacyjnego. W aktualnym modelu Patternly `Question` jest tylko jednym wariantem `TrainingItem`, a lokalne dane powinny docelowo przyjąć postać wersjonowanych content packów per track zgodnie z `docs/04-data-model.md` i `docs/08-storage-and-offline.md`.
+
 ## Kontekst
 
-Aplikacja potrzebuje lokalnej bazy pytań egzaminacyjnych. W MVP nie ma backendu ani panelu administracyjnego.
+W momencie powstania tej decyzji aplikacja potrzebowała lokalnej bazy pytań egzaminacyjnych dla pierwszego tracka certyfikacyjnego. W MVP nie było backendu ani panelu administracyjnego.
 
 ## Decyzja
 

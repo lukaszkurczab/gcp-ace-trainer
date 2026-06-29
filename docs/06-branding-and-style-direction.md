@@ -292,11 +292,12 @@ Dobre skojarzenia:
 Dobre skojarzenia dla GCP / certification track:
 
 - domains,
-- exam readiness,
+- certification evidence,
 - scenario question,
 - least privilege,
 - service selection,
-- readiness score.
+- review priority,
+- practice signal.
 
 Dobre skojarzenia dla Algorithms track:
 

@@ -53,9 +53,18 @@ Deliverables:
 - `08-storage-and-offline.md`,
 - `09-security-and-privacy.md`,
 - `10-roadmap.md`,
+- `11-implementation-guidelines.md`,
+- `12-testing-strategy.md`,
+- `13-risk-register.md`,
+- `14-learning-effectiveness-model.md`,
+- `15-certification-track-learning-system.md`,
+- `16-leetcode-like-learning-system.md`,
+- `planning/patternly-product-audit-and-execution-plan.md`,
 - ADR-y dla decyzji architektonicznych.
 
 Status: in progress.
+
+Nota 2026-06-29: `14-learning-effectiveness-model.md` jest kanonicznym ogólnym modelem uczenia, `15-certification-track-learning-system.md` jest kanonicznym modelem dla tracków certyfikacyjnych, a `16-leetcode-like-learning-system.md` jest kanonicznym modelem dla tracków LeetCode-like / algorithmic problem-solving. Dalsza implementacja powinna startować od planu w `planning/patternly-product-audit-and-execution-plan.md`, nie od starszych GCP-only założeń.
 
 ## Phase 1 — App Shell, Navigation and Design System
 
@@ -230,7 +239,7 @@ Zakres `cloud-certification`:
 
 - weak certification domains,
 - incorrect question review,
-- exam-readiness style summary bez obietnicy zdania egzaminu.
+- evidence-based certification insight bez obietnicy zdania egzaminu.
 
 Zakres `algorithms`:
 
@@ -315,7 +324,7 @@ Po MVP można rozważyć:
 - export/import local backup,
 - spaced repetition,
 - confidence rating,
-- better readiness score,
+- lepsze evidence-level diagnostics,
 - remote content updates,
 - optional cloud sync,
 - notifications,
@@ -324,7 +333,7 @@ Po MVP można rozważyć:
 - additional certification tracks,
 - additional algorithm packs,
 - richer onboarding,
-- dark mode jeśli nie został wdrożony wcześniej,
+- light-compatible theme variant, jeżeli dark-first MVP jest już stabilne,
 - lightweight admin/content authoring tools.
 
 ## Priorytet implementacji

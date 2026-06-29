@@ -3,9 +3,13 @@
 Status: **Accepted**  
 Data: 2026-06-26
 
+## Scope note
+
+Decyzja `local-first/offline-first` pozostaje aktywna dla Patternly. Oryginalny kontekst GCP ACE poniżej jest historycznym kontekstem pierwszego tracka, a nie aktualnym zakresem całego produktu. Aktualny produkt jest wielotrackowy zgodnie z `docs/00-overview.md` i `docs/01-product-definition.md`.
+
 ## Kontekst
 
-Aplikacja Patternly jest prywatnym narzędziem treningowym do przygotowania do egzaminu Google Cloud Associate Cloud Engineer.
+W momencie powstania tej decyzji Patternly było prowadzone jako prywatne narzędzie treningowe do przygotowania do egzaminu Google Cloud Associate Cloud Engineer.
 
 Core MVP obejmuje:
 

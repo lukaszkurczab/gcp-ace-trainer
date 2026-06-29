@@ -6,6 +6,8 @@ Ten dokument definiuje wspólny design system dla wielotrackowej aplikacji treni
 
 Design system nie może być projektowany wyłącznie pod GCP ACE, quizy ani tryb egzaminacyjny. Musi obsługiwać różne tracki nauki, różne typy itemów treningowych i różne tryby sesji.
 
+Nota kanoniczna 2026-06-29: po decyzji `ADR-005-dark-first-focus-lab-ui.md` docelowy kierunek UI to **dark-first Focus Lab**. Wcześniejsze wzmianki o light-first należy traktować jako historyczny kontekst, nie aktywną wytyczną.
+
 Bazowy model produktu:
 
 ```txt
@@ -31,8 +33,8 @@ Roboczy kierunek:
 
 Cechy:
 
-- light-first,
-- dark-ready,
+- dark-first,
+- light-compatible jako późniejszy wariant dostępnościowy lub preferencja,
 - minimalistyczny,
 - techniczny,
 - spokojny,
@@ -79,41 +81,41 @@ Wyjątek: komponenty specyficzne dla tracka mogą mieć nazwę domenową, jeśli
 
 ## Kolory
 
-Robocza paleta bazowa:
+Docelowa paleta bazowa powinna być dark-first. Poniższe wartości są przykładem semantycznej struktury tokenów, a nie finalną paletą implementacyjną:
 
 ```ts
 export const colors = {
-  background: '#F8FAFC',
-  surface: '#FFFFFF',
-  surfaceMuted: '#F1F5F9',
-  surfaceRaised: '#FFFFFF',
+  background: '#050816',
+  surface: '#0D1324',
+  surfaceMuted: '#141C2F',
+  surfaceRaised: '#182036',
 
-  textPrimary: '#0F172A',
-  textSecondary: '#475569',
-  textMuted: '#94A3B8',
-  textInverse: '#FFFFFF',
+  textPrimary: '#F8FAFC',
+  textSecondary: '#CBD5E1',
+  textMuted: '#64748B',
+  textInverse: '#050816',
 
-  border: '#E2E8F0',
-  borderStrong: '#CBD5E1',
+  border: '#263247',
+  borderStrong: '#3A4A63',
 
-  primary: '#2563EB',
-  primaryMuted: '#DBEAFE',
-  primaryStrong: '#1D4ED8',
+  primary: '#7DD3FC',
+  primaryMuted: '#0B344A',
+  primaryStrong: '#BAE6FD',
 
-  success: '#16A34A',
-  successMuted: '#DCFCE7',
+  success: '#6EE7A8',
+  successMuted: '#123B2A',
 
-  warning: '#D97706',
-  warningMuted: '#FEF3C7',
+  warning: '#F6B44B',
+  warningMuted: '#442B0B',
 
-  error: '#DC2626',
-  errorMuted: '#FEE2E2',
+  error: '#FDA29B',
+  errorMuted: '#4A1715',
 
-  info: '#0891B2',
-  infoMuted: '#CFFAFE',
+  info: '#7DD3FC',
+  infoMuted: '#0B344A',
 
-  neutral: '#64748B',
-  neutralMuted: '#E2E8F0'
+  neutral: '#94A3B8',
+  neutralMuted: '#334155'
 };
 ```
 
@@ -398,7 +400,7 @@ Przykłady:
 
 ```txt
 Google Cloud ACE
-Certification track · 42% readiness
+Certification track · 4 items due
 Continue IAM practice
 ```
 
@@ -573,7 +575,7 @@ Używać ostrożnie. Zbyt wiele wskaźników procentowych obniża czytelność.
 Dobre użycia:
 
 - postęp sesji,
-- readiness w tracku certyfikacyjnym,
+- evidence level albo practice signal w tracku certyfikacyjnym,
 - completion w tracku algorytmicznym,
 - accuracy per taxonomy,
 - review queue size.
@@ -618,7 +620,7 @@ Wspólne elementy:
 Track certyfikacyjny może pokazać:
 
 - score,
-- readiness,
+- evidence level albo practice signal,
 - accuracy by domain,
 - missed questions.
 
@@ -676,7 +678,7 @@ Start pattern drill
 
 ```txt
 No certification progress yet
-Start a short practice session to establish your first readiness baseline.
+Start a short practice session to establish your first practice evidence.
 Start practice
 ```
 
@@ -743,13 +745,13 @@ Zasady:
 - nie używać ikon LeetCode ani stylistyki kojarzącej się z konkretną platformą,
 - tracki mogą mieć abstrakcyjne ikony, np. chmura dla certyfikacji, graf/pattern dla algorytmów.
 
-## Dark mode
+## Dark-first theme
 
-MVP może być light-first, ale theme powinien być przygotowany pod dark mode.
+MVP jest dark-first zgodnie z `ADR-005-dark-first-focus-lab-ui.md`. Theme powinien nadal zachować semantyczne tokeny, żeby późniejszy light-compatible wariant nie wymagał przebudowy komponentów.
 
 Nie kodować kolorów bezpośrednio w komponentach. Używać tokenów z `src/theme`.
 
-Minimalna paleta dark mode:
+Minimalna paleta dark-first:
 
 ```ts
 export const darkColors = {
@@ -899,5 +901,5 @@ Nie robić:
 - Różnice tracków są obsługiwane przez akcenty, komponenty domenowe i typy itemów, nie przez osobne aplikacje wizualne.
 - `TrainingItemCard` i `ChoiceOption` są bazą dla sesji, nie `QuestionCard` i `AnswerOption`.
 - Kolor komunikuje stan lub kontekst; nie służy jako dekoracja.
-- MVP jest light-first, ale dark-ready.
+- MVP jest dark-first Focus Lab; light-compatible może być późniejszym wariantem, ale nie jest kierunkiem kanonicznym.
 - Track algorytmiczny w MVP nie wymaga pełnego edytora kodu ani środowiska uruchomieniowego.
