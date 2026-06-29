@@ -450,6 +450,8 @@ Suggested commit:
 
 storage: add training repositories
 
+State: accepted
+
 ⸻
 
 Phase 5 — Cloud Certification Migration
