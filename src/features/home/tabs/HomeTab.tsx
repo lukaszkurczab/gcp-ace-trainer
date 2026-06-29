@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   Icon,
+  IconTile,
   ListRow,
   SectionHeader,
   TrackCard,
@@ -33,21 +34,18 @@ export function HomeTab({
 }: HomeTabProps) {
   const hasPractice = analytics.summary.totalPracticeQuestionsAnswered > 0;
   const hasExams = analytics.summary.totalCompletedExams > 0;
+  const isActiveTrackReady = activeTrack.status === "active";
 
   return (
     <>
-      <Card style={styles.focusStrip}>
-        <View style={styles.focusCopy}>
-          <Text style={styles.eyebrow}>Current focus</Text>
-          <Text style={styles.focusTitle}>{activeTrack.title}</Text>
-        </View>
-        <Badge
-          label={activeTrack.status === "active" ? "Ready" : "Draft"}
-          tone={activeTrack.status === "active" ? "ready" : "warning"}
-        />
-      </Card>
-
       <Card variant="tonal" style={styles.hero}>
+        <View style={styles.heroHeader}>
+          <Text style={styles.eyebrow}>Continue learning</Text>
+          <Badge
+            label={isActiveTrackReady ? "Ready" : "Draft"}
+            tone={isActiveTrackReady ? "ready" : "warning"}
+          />
+        </View>
         <SectionHeader
           title={getHomeTitle(activeTrackId)}
           subtitle={getHomeSubtitle(activeTrackId)}
@@ -58,10 +56,28 @@ export function HomeTab({
         </Button>
       </Card>
 
-      <Card>
+      <View style={styles.section}>
+        <SectionHeader title="Recommended today" tight />
+        <ListRow
+          detail={getRecommendationDetail(activeTrackId, hasPractice, hasExams)}
+          leading={<IconTile name="cloud" tone="primary" />}
+          style={styles.recommendedPrimary}
+          title={getRecommendationTitle(activeTrackId)}
+          trailing={<Icon name="chevron-right" />}
+        />
+        <ListRow
+          detail="Review suggestions become richer as real attempts and practice records are added."
+          leading={<IconTile name="rotate-ccw" tone="info" />}
+          meta={`${analytics.summary.totalPracticeQuestionsAnswered} local`}
+          title="Review queue"
+          trailing={<Badge label="Local" tone="info" />}
+        />
+      </View>
+
+      <View style={styles.section}>
         <SectionHeader
-          title="Tracks"
-          subtitle="Choose the context before starting a session."
+          title="Choose track"
+          subtitle="Switch context before starting a session."
           tight
         />
         <View style={styles.trackList}>
@@ -74,26 +90,7 @@ export function HomeTab({
             />
           ))}
         </View>
-      </Card>
-
-      <Card>
-        <SectionHeader title="Recommended today" tight />
-        <View style={styles.actionList}>
-          <ListRow
-            detail={getRecommendationDetail(activeTrackId, hasPractice, hasExams)}
-            leading={<View style={[styles.leadingMark, styles.leadingMarkPrimary]} />}
-            title={getRecommendationTitle(activeTrackId)}
-            trailing={<Icon name="chevron-right" />}
-          />
-          <ListRow
-            detail="Items and weak areas become richer as track-aware attempts are added."
-            leading={<View style={[styles.leadingMark, styles.leadingMarkInfo]} />}
-            meta={String(analytics.summary.totalPracticeQuestionsAnswered)}
-            title="Review queue"
-            trailing={<Badge label="Local" tone="info" />}
-          />
-        </View>
-      </Card>
+      </View>
     </>
   );
 }
@@ -133,42 +130,26 @@ function getRecommendationDetail(
 }
 
 const styles = StyleSheet.create({
-  focusStrip: {
+  hero: {
+    gap: spacing.lg,
+  },
+  heroHeader: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  focusCopy: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
   eyebrow: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: colors.dark.primary,
     textTransform: "uppercase",
   },
-  focusTitle: {
-    ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+  section: {
+    gap: spacing.md,
   },
-  hero: {
-    gap: spacing.lg,
+  recommendedPrimary: {
+    borderColor: colors.dark.primary,
   },
   trackList: {
     gap: spacing.md,
-  },
-  actionList: {
-    gap: spacing.md,
-  },
-  leadingMark: {
-    borderRadius: 8,
-    height: 40,
-    width: 6,
-  },
-  leadingMarkPrimary: {
-    backgroundColor: colors.dark.primary,
-  },
-  leadingMarkInfo: {
-    backgroundColor: colors.dark.info,
   },
 });

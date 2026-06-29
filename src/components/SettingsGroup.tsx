@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
-import { spacing } from "../theme";
-import { Card } from "./Card";
-import { SectionHeader } from "./SectionHeader";
+import { colors, radius, spacing, typography } from "../theme";
 
 type SettingsGroupProps = {
   children: ReactNode;
@@ -12,15 +10,28 @@ type SettingsGroupProps = {
 
 export function SettingsGroup({ children, title }: SettingsGroupProps) {
   return (
-    <Card>
-      <SectionHeader title={title} tight />
+    <View style={styles.group}>
+      <Text style={styles.title}>{title}</Text>
       <View style={styles.rows}>{children}</View>
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  group: {
+    gap: spacing.xs,
+  },
+  title: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+    paddingHorizontal: spacing.sm,
+    textTransform: "uppercase",
+  },
   rows: {
-    gap: spacing.md,
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: "hidden",
   },
 });

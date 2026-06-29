@@ -216,7 +216,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <View style={styles.shell}>
-      <Screen edges={["top"]} style={styles.screenContent}>
+      <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
         <AppShellHeader
           action={<Badge label="Local" tone="info" />}
           subtitle={`${activeTrack.shortTitle} workspace`}

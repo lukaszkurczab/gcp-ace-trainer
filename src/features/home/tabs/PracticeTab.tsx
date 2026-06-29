@@ -6,6 +6,7 @@ import {
   Card,
   EmptyState,
   Icon,
+  IconTile,
   ListRow,
   SectionHeader,
 } from "../../../components";
@@ -52,7 +53,10 @@ export function PracticeTab({
 
       {isCloud ? (
         <>
-          <Card variant="tonal">
+          <Card variant="tonal" style={styles.practiceHero}>
+            <Text style={styles.heroEyebrow}>
+              {activeSession ? "Continue practice" : "Start practice"}
+            </Text>
             <SectionHeader
               title={activeSession ? "Exam in progress" : "Cloud practice"}
               subtitle={
@@ -78,37 +82,35 @@ export function PracticeTab({
             )}
           </Card>
 
-          <Card>
-            <SectionHeader title="Other modes" tight />
-            <View style={styles.actionList}>
-              <ListRow
-                detail="Work through one domain with immediate feedback."
-                leading={<View style={[styles.leadingMark, styles.leadingMarkInfo]} />}
-                onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
-                title="Practice by domain"
-                trailing={<Icon name="chevron-right" />}
-              />
-              <ListRow
-                detail="Full assessment-style session with feedback after submit."
-                leading={<View style={[styles.leadingMark, styles.leadingMarkPrimary]} />}
-                onPress={() => void onStartExam()}
-                title="Exam simulation"
-                trailing={
-                  <Badge
-                    label={bankReady ? "Ready" : "Locked"}
-                    tone={bankReady ? "ready" : "warning"}
-                  />
-                }
-              />
-              <ListRow
-                detail="Revisit missed and marked questions."
-                leading={<View style={[styles.leadingMark, styles.leadingMarkWarning]} />}
-                onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
-                title="Review missed items"
-                trailing={<Icon name="chevron-right" />}
-              />
-            </View>
-          </Card>
+          <View style={styles.section}>
+            <SectionHeader title="Other practice modes" tight />
+            <ListRow
+              detail="Work through one domain with immediate feedback."
+              leading={<IconTile name="book-open" tone="info" />}
+              onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
+              title="Practice by domain"
+              trailing={<Icon name="chevron-right" />}
+            />
+            <ListRow
+              detail="Full assessment-style session with feedback after submit."
+              leading={<IconTile name="clipboard" tone="primary" />}
+              onPress={() => void onStartExam()}
+              title="Exam simulation"
+              trailing={
+                <Badge
+                  label={bankReady ? "Ready" : "Locked"}
+                  tone={bankReady ? "ready" : "warning"}
+                />
+              }
+            />
+            <ListRow
+              detail="Revisit missed and marked questions."
+              leading={<IconTile name="rotate-ccw" tone="warning" />}
+              onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
+              title="Review missed items"
+              trailing={<Icon name="chevron-right" />}
+            />
+          </View>
         </>
       ) : (
         <Card>
@@ -146,21 +148,15 @@ const styles = StyleSheet.create({
     ...typography.bodyStrong,
     color: colors.dark.textPrimary,
   },
-  actionList: {
+  practiceHero: {
+    gap: spacing.lg,
+  },
+  heroEyebrow: {
+    ...typography.caption,
+    color: colors.dark.primary,
+    textTransform: "uppercase",
+  },
+  section: {
     gap: spacing.md,
-  },
-  leadingMark: {
-    borderRadius: 8,
-    height: 40,
-    width: 6,
-  },
-  leadingMarkInfo: {
-    backgroundColor: colors.dark.info,
-  },
-  leadingMarkPrimary: {
-    backgroundColor: colors.dark.primary,
-  },
-  leadingMarkWarning: {
-    backgroundColor: colors.dark.warning,
   },
 });

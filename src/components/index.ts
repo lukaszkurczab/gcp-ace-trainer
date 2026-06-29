@@ -6,6 +6,7 @@ export * from "./Card";
 export * from "./DomainAccent";
 export * from "./EmptyState";
 export * from "./Icon";
+export * from "./IconTile";
 export * from "./ListRow";
 export * from "./MetricCard";
 export * from "./ProgressBar";

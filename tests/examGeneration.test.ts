@@ -3,7 +3,6 @@ import test from "node:test";
 
 import { EXAM_BLUEPRINT, EXAM_QUESTION_COUNT } from "../src/constants";
 import { buildExamQuestionViewsFromSession, selectExamQuestions } from "../src/features/exam/examGeneration";
-import type { ExamDomain } from "../src/types";
 import { makeQuestionBank, makeSession } from "./fixtures";
 
 test("selects exact exam blueprint distribution", () => {

@@ -11,9 +11,24 @@ type ListRowProps = {
   style?: ViewStyle;
   title: string;
   trailing?: ReactNode;
+  variant?: "card" | "grouped";
 };
 
-export function ListRow({ detail, leading, meta, onPress, style, title, trailing }: ListRowProps) {
+export function ListRow({
+  detail,
+  leading,
+  meta,
+  onPress,
+  style,
+  title,
+  trailing,
+  variant = "card",
+}: ListRowProps) {
+  const rowStyle = [
+    styles.row,
+    variant === "grouped" ? styles.groupedRow : styles.cardRow,
+    style,
+  ];
   const content = (
     <>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
@@ -32,28 +47,38 @@ export function ListRow({ detail, leading, meta, onPress, style, title, trailing
 
   if (onPress) {
     return (
-      <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.row, pressed ? styles.pressed : null, style]}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => [rowStyle, pressed ? styles.pressed : null]}
+      >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={[styles.row, style]}>{content}</View>;
+  return <View style={rowStyle}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
   row: {
     alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 72,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  cardRow: {
     backgroundColor: colors.dark.surface,
     borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md,
-    minHeight: 56,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md
+  },
+  groupedRow: {
+    backgroundColor: colors.dark.elevatedSurface,
+    borderBottomColor: colors.dark.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   pressed: {
     opacity: 0.84
@@ -72,7 +97,8 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary
+    color: colors.dark.textPrimary,
+    flexShrink: 1,
   },
   detail: {
     ...typography.small,
@@ -84,7 +110,7 @@ const styles = StyleSheet.create({
   },
   trailing: {
     alignItems: "center",
-    flexShrink: 1,
+    flexShrink: 0,
     justifyContent: "center"
   }
 });

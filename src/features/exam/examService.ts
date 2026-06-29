@@ -1,4 +1,4 @@
-import { EXAM_BLUEPRINT, EXAM_DURATION_MINUTES } from "../../constants";
+import { EXAM_DURATION_MINUTES } from "../../constants";
 import {
   addAttempt,
   clearActiveExamSession,
@@ -6,9 +6,9 @@ import {
   getQuestions,
   saveActiveExamSession
 } from "../../storage";
-import type { ActiveExamSession, AttemptSummary, ExamDomain, Question } from "../../types";
+import type { ActiveExamSession, AttemptSummary, Question } from "../../types";
 import { buildQuestionBankSummary } from "../questions/questionBankStats";
-import { buildExamQuestionViewsFromSession, examDomains, selectExamQuestions } from "./examGeneration";
+import { buildExamQuestionViewsFromSession, selectExamQuestions } from "./examGeneration";
 import { buildAttemptSummary, scoreExamSession } from "./scoringService";
 
 export type ExamGenerationResult =

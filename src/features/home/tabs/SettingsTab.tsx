@@ -1,15 +1,16 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import {
   Badge,
   Card,
+  IconTile,
   ListRow,
   SectionHeader,
   SettingsGroup,
 } from "../../../components";
 import type { TrackDefinition } from "../../../domain";
 import type { LocalStorageIssue } from "../../../storage";
-import { colors } from "../../../theme";
+import { colors, spacing, typography } from "../../../theme";
 
 type SettingsTabProps = {
   activeTrack: TrackDefinition;
@@ -26,7 +27,7 @@ export function SettingsTab({
 
   return (
     <>
-      <Card testID="settings-screen" variant="tonal">
+      <Card testID="settings-screen" variant="tonal" style={styles.hero}>
         <SectionHeader
           title="Settings"
           subtitle="Manage local-first learning controls and data safety."
@@ -37,15 +38,23 @@ export function SettingsTab({
             />
           }
         />
+        <View style={styles.localProfile}>
+          <IconTile name="cloud" size={56} tone="primary" />
+          <View style={styles.localProfileCopy}>
+            <Text style={styles.profileTitle}>Patternly local workspace</Text>
+            <Text style={styles.profileSubtitle}>{activeTrack.title}</Text>
+          </View>
+        </View>
       </Card>
 
       {latestStorageIssue ? (
         <SettingsGroup title="Storage status">
           <ListRow
             detail={formatStorageIssue(latestStorageIssue)}
-            leading={<View style={[styles.leadingMark, styles.leadingMarkWarning]} />}
+            leading={<IconTile name="alert-triangle" tone="warning" />}
             title="Local data degraded"
             trailing={<Badge label="Check" tone="warning" />}
+            variant="grouped"
           />
         </SettingsGroup>
       ) : null}
@@ -53,28 +62,33 @@ export function SettingsTab({
       <SettingsGroup title="Learning preferences">
         <ListRow
           detail={activeTrack.title}
-          leading={<View style={[styles.leadingMark, styles.leadingMarkPrimary]} />}
+          leading={<IconTile name="route" tone="primary" />}
           title="Active track"
+          trailing={<Badge label={activeTrack.shortTitle} tone="info" />}
+          variant="grouped"
         />
       </SettingsGroup>
 
       <SettingsGroup title="Data and privacy">
         <ListRow
           detail="No account, backend, or sync in MVP."
-          leading={<View style={[styles.leadingMark, styles.leadingMarkInfo]} />}
+          leading={<IconTile name="database" tone="info" />}
           title="Local-only data"
+          variant="grouped"
         />
         <ListRow
           detail="Google and LeetCode references are independent study context only."
-          leading={<View style={[styles.leadingMark, styles.leadingMarkMuted]} />}
+          leading={<IconTile name="shield-check" tone="muted" />}
           title="Legal safety"
+          variant="grouped"
         />
         <ListRow
           detail="Deletes local progress and local question overrides."
-          leading={<View style={[styles.leadingMark, styles.leadingMarkDanger]} />}
+          leading={<IconTile name="trash" tone="danger" />}
           onPress={onClearAllLocalData}
           title="Clear all local data"
           trailing={<Badge label="Destructive" tone="danger" />}
+          variant="grouped"
         />
       </SettingsGroup>
     </>
@@ -93,24 +107,24 @@ function formatStorageIssue(issue: LocalStorageIssue): string {
 }
 
 const styles = StyleSheet.create({
-  leadingMark: {
-    borderRadius: 8,
-    height: 40,
-    width: 6,
+  hero: {
+    gap: spacing.lg,
   },
-  leadingMarkDanger: {
-    backgroundColor: colors.dark.danger,
+  localProfile: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
   },
-  leadingMarkInfo: {
-    backgroundColor: colors.dark.info,
+  localProfileCopy: {
+    flex: 1,
+    gap: spacing.xxs,
   },
-  leadingMarkMuted: {
-    backgroundColor: colors.dark.textMuted,
+  profileTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
   },
-  leadingMarkPrimary: {
-    backgroundColor: colors.dark.primary,
-  },
-  leadingMarkWarning: {
-    backgroundColor: colors.dark.warning,
+  profileSubtitle: {
+    ...typography.caption,
+    color: colors.dark.primary,
   },
 });

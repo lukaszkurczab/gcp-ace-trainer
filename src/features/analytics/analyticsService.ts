@@ -1,5 +1,5 @@
 import { TRAINING_PASS_THRESHOLD } from "../../constants";
-import type { AnswerRecord, AttemptSummary, Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord } from "../../types";
+import type { AttemptSummary, Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord } from "../../types";
 import { calculatePercent, getDomainLabel } from "../../utils";
 
 export type SummaryMetrics = {

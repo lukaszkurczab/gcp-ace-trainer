@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import {
-  Badge,
   Card,
   EmptyState,
+  Icon,
+  IconTile,
   MetricCard,
   ProgressBar,
   SectionHeader,
@@ -33,20 +34,31 @@ export function ProgressTab({
   practiceHistory,
 }: ProgressTabProps) {
   const hasData = attempts.length > 0 || practiceHistory.length > 0;
+  const domainScoresWithData =
+    activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID
+      ? analytics.domainPerformance.filter((score) => score.total > 0)
+      : [];
+  const reviewQueueCount = analytics.summary.totalPracticeQuestionsAnswered;
 
   return (
     <>
-      <Card variant="elevated">
-        <SectionHeader
-          title="Focus overview"
-          subtitle={`Track-aware progress for ${activeTrack.title}.`}
-          action={
-            <Badge
-              label={hasData ? "Local data" : "No data"}
-              tone={hasData ? "info" : "neutral"}
-            />
-          }
-        />
+      <View style={styles.pageIntro}>
+        <Text style={styles.screenTitle}>Focus overview</Text>
+        <Text style={styles.screenSubtitle}>
+          Review what needs attention and track recent local practice.
+        </Text>
+      </View>
+
+      <Card variant="tonal" style={styles.reviewCard}>
+        <View style={styles.reviewHeader}>
+          <View style={styles.reviewCopy}>
+            <Text style={styles.reviewTitle}>Review queue</Text>
+            <Text style={styles.mutedText}>
+              {formatReviewQueueCopy(reviewQueueCount)}
+            </Text>
+          </View>
+          <Text style={styles.reviewNumber}>{reviewQueueCount}</Text>
+        </View>
         <View style={styles.metricRow}>
           <MetricCard
             label="Completed exams"
@@ -61,59 +73,107 @@ export function ProgressTab({
         </View>
       </Card>
 
-      <Card>
-        <SectionHeader
-          title="Review queue"
-          subtitle="Review becomes track-aware as session records are migrated."
-        />
-        <View style={styles.reviewMetric}>
-          <Text style={styles.largeNumber}>
-            {analytics.summary.totalPracticeQuestionsAnswered}
-          </Text>
-          <Text style={styles.mutedText}>local practice records available</Text>
-        </View>
-      </Card>
-
-      <Card>
+      <View style={styles.section}>
         <SectionHeader title="Performance by topic" tight />
-        {activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID ? (
+        {domainScoresWithData.length > 0 ? (
           <View style={styles.actionList}>
-            {analytics.domainPerformance.map((score) => (
+            {domainScoresWithData.map((score) => (
               <View key={score.id} style={styles.performanceRow}>
                 <View style={styles.performanceHeader}>
-                  <Text style={styles.performanceTitle}>{score.label}</Text>
-                  <Text style={styles.performanceValue}>{score.percent}%</Text>
+                  <IconTile name="cloud" tone="info" />
+                  <View style={styles.performanceCopy}>
+                    <Text style={styles.performanceTitle}>{score.label}</Text>
+                    <Text style={styles.mutedText}>
+                      {score.correct}/{score.total} correct
+                    </Text>
+                  </View>
+                  <View style={styles.performanceMeta}>
+                    <Text style={styles.performanceValue}>{score.percent}%</Text>
+                    <Icon name="chevron-right" size={20} />
+                  </View>
                 </View>
                 <ProgressBar progress={score.percent / 100} tone="primary" />
-                <Text style={styles.mutedText}>
-                  {score.correct}/{score.total} correct
-                </Text>
               </View>
             ))}
           </View>
         ) : (
           <EmptyState
-            title="No algorithm progress yet"
-            description="Pattern, strategy, and complexity metrics will appear after Algorithms sessions are implemented."
+            title={getProgressEmptyTitle(activeTrack.id)}
+            description={getProgressEmptyDescription(activeTrack.id, hasData)}
           />
         )}
-      </Card>
+      </View>
     </>
   );
 }
 
+function formatReviewQueueCopy(count: number): string {
+  if (count === 0) {
+    return "No local practice records yet.";
+  }
+
+  return `${count} local practice ${count === 1 ? "record" : "records"} available for review.`;
+}
+
+function getProgressEmptyTitle(trackId: TrackDefinition["id"]): string {
+  return trackId === CLOUD_CERTIFICATION_TRACK_ID
+    ? "No topic samples yet"
+    : "No algorithm progress yet";
+}
+
+function getProgressEmptyDescription(
+  trackId: TrackDefinition["id"],
+  hasData: boolean,
+): string {
+  if (trackId !== CLOUD_CERTIFICATION_TRACK_ID) {
+    return "Pattern, strategy, and complexity metrics will appear after Algorithms sessions are implemented.";
+  }
+
+  return hasData
+    ? "Topic performance appears after answers have domain-level scoring data."
+    : "Start a focused practice session to build track-aware performance data.";
+}
+
 const styles = StyleSheet.create({
+  pageIntro: {
+    gap: spacing.md,
+  },
+  screenTitle: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+  },
+  screenSubtitle: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+  },
+  reviewCard: {
+    gap: spacing.lg,
+  },
+  reviewHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  reviewCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  reviewTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
+  reviewNumber: {
+    ...typography.display,
+    color: colors.dark.info,
+    fontVariant: ["tabular-nums"],
+  },
   metricRow: {
     flexDirection: "row",
     gap: spacing.md,
   },
-  reviewMetric: {
-    gap: spacing.xs,
-  },
-  largeNumber: {
-    ...typography.display,
-    color: colors.dark.primary,
-    fontVariant: ["tabular-nums"],
+  section: {
+    gap: spacing.md,
   },
   mutedText: {
     ...typography.small,
@@ -123,19 +183,32 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   performanceRow: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.sm,
+    padding: spacing.lg,
   },
   performanceHeader: {
-    alignItems: "flex-start",
+    alignItems: "center",
     flexDirection: "row",
-    gap: spacing.sm,
+    gap: spacing.md,
     justifyContent: "space-between",
+  },
+  performanceCopy: {
+    flex: 1,
+    gap: spacing.xs,
   },
   performanceTitle: {
     ...typography.bodyStrong,
     color: colors.dark.textPrimary,
-    flex: 1,
     flexShrink: 1,
+  },
+  performanceMeta: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
   },
   performanceValue: {
     ...typography.bodyStrong,
