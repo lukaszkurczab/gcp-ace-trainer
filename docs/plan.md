@@ -1,30 +1,120 @@
-Patternly — Working Execution Loop
+Patternly — Working Execution Plan v2
 
-Status: working document
+Status: active working document
 Repository: lukaszkurczab/gcp-ace-trainer
 Product: Patternly
-Purpose: control the implementation process from GPT planning through Codex implementation, Git push, GPT review, documentation update, and next-step decision.
+Purpose: control Patternly implementation from GPT planning through Codex implementation, GitHub push, GPT review, documentation update, and next-step decision.
 
 ⸻
 
-1. Purpose
+1. Why this plan exists
 
-This document defines the working process for developing Patternly in controlled iterations.
+Patternly is transitioning from a GCP ACE Trainer codebase into a multi-track technical learning product.
 
-Patternly is currently transitioning from a GCP ACE Trainer codebase into a multi-track technical learning product. The main implementation risk is adding new features on top of legacy GCP-shaped architecture before the shared Patternly domain model is stable.
+The previous execution plan over-prioritized backend/domain architecture and under-prioritized visual/product correctness. That created a critical risk: technically correct infrastructure was being added while the visible app diverged from the approved design direction and while core user paths were not reliably runnable.
 
-The process must prevent:
+This plan resets execution order around three non-negotiable gates:
 
-- implementing features without a clear product/architecture goal,
-- letting Codex make broad uncontrolled changes,
-- mixing documentation updates, architecture changes, UI changes, and feature work in one pass,
-- progressing without review,
-- allowing documentation to become stale after implementation,
-- building Algorithms as a second generic quiz instead of a separate learning system.
+1. Product/design parity
+2. Runnable user paths
+3. Canonical multi-track architecture
+
+No implementation pass is accepted unless it protects all three.
 
 ⸻
 
-2. Core Working Loop
+2. Current product direction
+
+Patternly is a calm, premium, dark-first technical learning app for:
+
+- focused practice,
+- pattern recognition,
+- mistake review,
+- technical skill training,
+- track-based learning.
+
+Initial tracks:
+
+- cloud-certification
+- algorithms
+
+The app is not:
+
+- a GCP-branded app,
+- a LeetCode clone,
+- a generic quiz app,
+- a gamified streak/level product,
+- a Google-style Material app,
+- a dashboard-heavy analytics product.
+
+⸻
+
+3. Canonical UI direction
+
+The active visual direction is Dark-first Focus Lab.
+
+The approved design direction is represented by the current design screenshots and the Patternly documentation:
+
+- deep navy / slate background,
+- restrained blue/violet accents,
+- premium technical look,
+- minimal geometric iconography,
+- calm cards,
+- clear hierarchy,
+- low clutter,
+- strong mobile readability,
+- no unnecessary gamification,
+- no Google-like color language,
+- no LeetCode-specific identity.
+
+Hard UI constraints
+
+Do not introduce or preserve:
+
+- streaks,
+- levels,
+- achievement badges,
+- gamified status rows,
+- avatars as a primary product element unless explicitly designed,
+- random profile/user identity UI in MVP,
+- inconsistent tab labels,
+- inconsistent headers,
+- unrelated icon systems between screens,
+- old “GCP trainer” screen structures,
+- screens that visually contradict the approved references.
+
+Current visual blockers observed
+
+The current implementation has or recently had the following issues:
+
+- Home layout does not match approved Patternly references.
+- Practice layout differs from approved reference structure.
+- Progress layout differs significantly from approved reference.
+- Settings layout differs significantly from approved reference.
+- Bottom navigation labels/icons are inconsistent across references and implementation.
+- Some screens still show gamified elements such as streak/level style metrics.
+- Some CTAs imply flows that are not wired or testable.
+- The app shell is not yet a stable implementation of the approved designs.
+
+These are product blockers, not polish tasks.
+
+⸻
+
+4. Source-of-truth hierarchy
+
+When there is a conflict, use this priority order:
+
+1. User-approved current design screenshots
+2. Patternly docs: product, architecture, navigation, design system, testing
+3. Current repository reality
+4. Older implementation behavior
+5. Codex assumptions
+
+Legacy GCP implementation is current code reality, not canonical product direction.
+
+⸻
+
+5. Core working loop
 
 Every implementation cycle follows this loop:
 
@@ -37,903 +127,580 @@ Push to GitHub
 GPT review of pushed changes
 ↓
 Decision:
-├─ accept → update working docs → move to next task
-└─ reject / partial → create correction prompt → Codex fixes → push again
+├─ ACCEPTED → update working plan → next task
+├─ PARTIAL_ACCEPT → correction prompt
+└─ REJECTED / BLOCKED → stop and re-plan
 
-No implementation step should be considered complete until GPT has reviewed the pushed diff and the working documentation reflects the new repo state.
+GitHub pushed state is the review source of truth.
 
-⸻
-
-3. Roles
-
-GPT
-
-GPT acts as:
-
-- product-engineering reviewer,
-- architecture reviewer,
-- documentation maintainer,
-- prompt author for Codex,
-- quality gate before moving to the next task.
-
-GPT is responsible for:
-
-- defining the next task,
-- checking whether the task matches Patternly’s product direction,
-- reviewing Codex output after push,
-- identifying regressions, overreach, missing tests, and documentation drift,
-- deciding whether to proceed or request corrections,
-- updating this working plan when the repository state changes.
-
-GPT must not assume implementation success without inspecting the pushed repo state.
-
-Codex
-
-Codex acts as:
-
-- implementation agent,
-- repository-aware engineer,
-- test runner,
-- local change author.
-
-Codex is responsible for:
-
-- inspecting the current repository before making changes,
-- implementing only the requested scope,
-- running relevant checks,
-- reporting changed files,
-- pushing changes to GitHub when requested.
-
-Codex must not:
-
-- silently broaden scope,
-- rewrite unrelated files,
-- mix unrelated phases,
-- implement future phases early,
-- treat legacy GCP-specific architecture as canonical shared Patternly architecture,
-- skip tests unless it explicitly explains why.
-
-GitHub
-
-GitHub is the source of truth for review.
-
-Every completed Codex implementation pass must result in:
-
-- pushed branch or commit,
-- visible diff,
-- implementation summary,
-- tests/checks summary.
+A Codex report without pushed code is not accepted.
 
 ⸻
 
-4. Current Repository Baseline
+6. Review statuses
 
-Current observed baseline:
+Use exactly one:
 
-- App stack: Expo / React Native / TypeScript.
-- Product name in app.json: Patternly.
-- Repo/package identity still contains gcp-ace-trainer.
-- Documentation now treats Patternly as a multi-track product.
-- docs/README.md describes GCP ACE as historical context of the first certification track, not as the full product scope.
-- ADR-005-dark-first-focus-lab-ui.md supersedes the earlier light-first direction.
-- Shell is split into Home/Practice/Progress/Settings tab components.
-- Runtime UI uses dark-first tokens in key shell paths.
-- Storage active keys use patternly:v1:\*.
-- Legacy gcpAceTrainer.\* keys are still read/cleared for compatibility.
-- Cloud Certification track is active.
-- Algorithms track exists in registry but remains draft.
-- Cloud practice/exam/review flows still rely on Question, ExamDomain, AttemptSummary, PracticeAnswerRecord, and ActiveExamSession.
-- There is no canonical shared implementation yet for:
-  - TrainingItem,
-  - TrainingSession,
-  - TrainingAttempt,
-  - ReviewQueueItem,
-  - UserProgress.
-- Progress/review are still partially Cloud-shaped and not fully track-aware.
-- CI/release gate is missing or not yet production-ready.
+- ACCEPTED
+- PARTIAL_ACCEPT
+- NEEDS_CORRECTION
+- REJECTED
+- BLOCKED
+- NEEDS_MANUAL_DECISION
+
+Important distinction:
+
+- Technical accepted means code compiles/tests and matches the narrow technical prompt.
+- Product accepted means the result matches Patternly’s visible product direction and user paths work.
+
+A phase can be technically accepted but product-blocked.
 
 ⸻
 
-5. Canonical Product Decisions
+7. Current repository state
 
-The following decisions are active unless explicitly changed in documentation:
+Current baseline:
 
-1. Patternly is the canonical product name.
-2. Patternly is a multi-track technical learning product.
-3. First product tracks:
-   - cloud-certification,
-   - algorithms.
-4. Certification-style learning and LeetCode-like / algorithmic learning are separate learning systems.
-5. Tracks may share:
-   - app shell,
-   - navigation,
-   - design system,
-   - storage primitives,
-   - session history,
-   - progress infrastructure,
-   - review infrastructure.
-6. Tracks must not be collapsed into one generic quiz loop.
-7. 14-learning-effectiveness-model.md is the canonical general learning model.
-8. 15-certification-track-learning-system.md is the canonical certification learning model.
-9. 16-leetcode-like-learning-system.md is the canonical LeetCode-like / algorithmic learning model.
-10. UI direction is dark-first Focus Lab:
-    - calm,
-    - premium,
-    - technical,
-    - domain-neutral,
-    - focused,
-    - non-gamified.
-11. Fake precision metrics such as generic readiness/retention percentages are not canonical product metrics.
-12. GCP-specific implementation concepts are current implementation reality, not canonical shared architecture.
+- Expo / React Native / TypeScript app.
+- Product name: Patternly.
+- Repository/package identity still contains gcp-ace-trainer.
+- Cloud Certification is the active track.
+- Algorithms exists as a draft track.
+- Dark-first theme work exists but is not yet fully aligned with approved screen layouts.
+- Shared training domain contracts exist.
+- Track adapter contracts exist.
+- Session engine primitives exist.
+- Storage repositories for canonical training data exist.
+- Cloud write-through to canonical attempts/review exists.
+- Canonical Cloud progress/review selectors exist.
+- Progress tab has begun using canonical progress data.
+- Legacy Cloud flows still exist and must not be broken.
+- UI layout parity is not yet achieved.
+- Core user paths are not yet verified as runnable end-to-end.
 
 ⸻
 
-6. Active Implementation Strategy
+8. Current blockers
 
-Current priority is not UI polish and not Algorithms feature expansion.
+P0-B1 — Approved layout mismatch
 
-The correct next implementation direction is:
+Severity: Critical
+Status: active blocker
 
-1. refresh the working plan to match current repo reality,
-2. add shared domain contracts,
-3. add session engine primitives,
-4. add track content/scoring/review adapter contracts,
-5. add storage repositories for new training models,
-6. migrate Cloud Certification gradually,
-7. implement Algorithms MVP on the canonical model,
-8. then align Progress/Review,
-9. then perform Focus Lab UI alignment,
-10. then add QA/CI/release gates.
+The implemented app must match the approved Patternly screen references before additional feature expansion.
+
+Affected screens:
+
+- Home
+- Practice
+- Practice session / question
+- Progress
+- Settings
+- bottom navigation
+- screen headers
+
+P0-B2 — Broken or unverified user paths
+
+Severity: Critical
+Status: active blocker
+
+The app must support at least these runnable paths:
+
+Home → Start/Continue Practice → Question screen → Select answer → Check answer → Feedback/Next
+Practice tab → Exam simulation → Exam session starts
+Practice tab → Review weak items → Review session or clear unavailable state
+Progress tab → Review queue CTA → Review path or explicit unavailable state
+Settings → Clear local history → data reset confirmed
+
+If a CTA exists, it must either:
+
+- navigate to a working flow, or
+- be disabled with clear product copy, or
+- be removed.
+
+No dead CTAs.
+
+P0-B3 — Testability gap
+
+Severity: High
+Status: active blocker
+
+Unit tests are not enough. The product needs route-level smoke checks or a deterministic manual QA checklist before further feature expansion.
+
+Minimum verification:
+
+npm run typecheck
+npm test
+npm run validate:questions
+manual / scripted route smoke:
+
+- app opens
+- Home renders
+- Practice renders
+- Cloud practice starts
+- answer can be selected
+- Check Answer works
+- Progress renders
+- Settings renders
+
+Maestro can be added later, but the route smoke checklist must exist now.
+
+P0-B4 — Working plan stale
+
+Severity: High
+Status: active blocker
+
+The previous plan claims phases are accepted while the visible app is still product-blocked. This document replaces that plan as the active working source.
 
 ⸻
 
-7. Development Phases
+9. Corrected implementation strategy
 
-Phase 0 — Planning Baseline Refresh
+The correct order is now:
 
-Goal: make the planning documents reflect the actual current repository state.
+1. Plan reset and blocker capture
+2. UI/layout parity baseline
+3. Runnable route/path repair
+4. Smoke QA gate
+5. Canonical Review UI migration
+6. Algorithms MVP
+7. Further progress/review diagnostics
+8. Focus Lab polish
+9. CI/release gate
+
+Do not continue domain/selector expansion until UI parity and runnable paths are restored.
+
+⸻
+
+10. Phase 0 — Plan reset and blocker capture
+
+Goal: replace stale execution plan with this v2 working plan.
 
 Scope:
 
-- Update planning/patternly-product-audit-and-execution-plan.md.
-- Mark completed or partially completed:
-  - documentation alignment,
-  - ADR-005 dark-first decision,
-  - Home shell split,
-  - removal of fake readiness UI,
-  - Patternly v1 storage namespace,
-  - observable storage issues.
-- Remove or demote outdated blockers from active P0 lists.
-- Keep active P0 blockers:
-  - no shared TrainingItem,
-  - no shared TrainingSession,
-  - no shared TrainingAttempt,
-  - no shared ReviewQueueItem,
-  - no shared UserProgress,
-  - Algorithms track is draft-only,
-  - Cloud flow still relies on GCP/question-shaped models.
+- add/update active working plan,
+- mark visual/layout parity as P0,
+- mark broken/unverified routes as P0,
+- clarify that previous architecture work is technically accepted but product integration remains blocked.
 
 Definition of done:
 
-- The planning file no longer contradicts the current repo state.
-- Historical observations are clearly marked as historical.
-- Active next steps are unambiguous.
+- active plan reflects current repo and design reality,
+- next Codex task is unambiguous,
+- no app code changes in this phase unless explicitly requested.
 
-Suggested commit:
-
-docs/planning: refresh Patternly execution baseline
+Status: active
 
 ⸻
 
-Phase 1 — Shared Domain Contract Foundation
+11. Phase 1 — UI/layout parity baseline
 
-Goal: create neutral Patternly domain contracts before migrating screens or adding Algorithms content.
-
-Create or update:
-
-src/domain/training/
-trainingItem.ts
-trainingSession.ts
-trainingAttempt.ts
-trainingFeedback.ts
-trainingReview.ts
-trainingProgress.ts
-index.ts
-
-Minimum contracts:
-
-TrainingItem
-
-- id
-- trackId
-- contentVersion
-- type
-- prompt/title/question
-- taxonomyRefs
-- difficulty?
-- estimatedTime?
-- learningObjective?
-  TrainingSession
-- id
-- trackId
-- modeId
-- status
-- startedAt
-- completedAt?
-- itemIds
-- currentItemIndex
-  TrainingAttempt
-- id
-- trackId
-- sessionId
-- itemId
-- itemType
-- modeId
-- answeredAt
-- response
-- result
-- confidence?
-- mistakeTypes?
-- feedbackSignals
-  ReviewQueueItem
-- id
-- trackId
-- itemId
-- sourceAttemptId
-- dueAt
-- priority
-- reason
-- mistakeTypes
-  UserProgress
-- trackId
-- taxonomyProgress
-- recentActivity
-- reviewQueueSummary
-- evidenceSignals
-
-Rules:
-
-- Question may remain for Cloud Certification content.
-- Question must not become the shared Patternly root model.
-- No UI migration in this phase unless required for type exports.
-- No Algorithms feature implementation in this phase.
-
-Tests to add:
-
-tests/trainingContracts.test.ts
-tests/sessionModel.test.ts
-tests/reviewQueueModel.test.ts
-
-Definition of done:
-
-- Contracts can represent at least one Cloud item and one Algorithms item.
-- Tests demonstrate both tracks without any.
-- Existing Cloud flows still compile.
-- npm run typecheck passes.
-- npm test passes.
-
-Suggested commit:
-
-domain: add shared training contracts
-
-State: accepted
-
-⸻
-
-Phase 2 — Track Adapter Contracts
-
-Goal: make tracks responsible for content, scoring, and review behavior without hardcoding everything into shared screens.
-
-Create:
-
-src/tracks/cloud-certification/
-cloudCertificationContentAdapter.ts
-cloudCertificationScoringAdapter.ts
-cloudCertificationReviewAdapter.ts
-index.ts
-src/tracks/algorithms/
-algorithmsContentAdapter.ts
-algorithmsScoringAdapter.ts
-algorithmsReviewAdapter.ts
-index.ts
-
-Cloud Certification adapter:
-
-- maps existing Question into TrainingItem,
-- keeps correctness-based scoring,
-- maps existing domains/tags into taxonomy refs,
-- does not rewrite Cloud screens yet.
-
-Algorithms adapter:
-
-- defines item/scoring/review contracts,
-- may return empty content initially,
-- does not enable Algorithms UI yet.
-
-Definition of done:
-
-- Both tracks expose content/scoring/review adapter contracts.
-- Cloud adapter maps existing question content.
-- Algorithms adapter compiles and is tested with fixture items.
-- Shared domain does not import Cloud-specific types.
-
-Suggested commit:
-
-tracks: add content and scoring adapter contracts
-
-State: accepted
-
-⸻
-
-Phase 3 — Session Engine Primitives
-
-Goal: create a testable session engine outside React Native screens.
-
-Create:
-
-src/domain/sessions/
-createTrainingSession.ts
-answerTrainingItem.ts
-completeTrainingSession.ts
-sessionNavigation.ts
-sessionScoring.ts
-index.ts
-
-Engine must support:
-
-- starting a session,
-- navigating items,
-- recording answers,
-- completing a session,
-- calculating result state,
-- feedback timing:
-  - immediate,
-  - after_submit,
-  - session_summary_only.
-
-Rules:
-
-- Do not redesign screens.
-- Do not migrate Cloud UI fully yet.
-- Use tests before UI integration.
-
-Tests:
-
-tests/sessionEngine.test.ts
-
-Definition of done:
-
-- Cloud practice can be simulated through the engine in tests.
-- Algorithms pattern drill can be simulated with fixture items in tests.
-- Existing app behavior is not broken.
-
-Suggested commit:
-
-domain: add training session engine primitives
-
-State: accepted
-
-⸻
-
-Phase 4 — Storage Repositories for Training Models
-
-Goal: stop expanding localStorage.ts as a global helper and introduce repositories for the new domain model.
-
-Create:
-
-src/storage/repositories/
-activeTrackRepository.ts
-trainingAttemptRepository.ts
-trainingSessionRepository.ts
-reviewQueueRepository.ts
-userProgressRepository.ts
-storageResult.ts
-
-Rules:
-
-- Keep legacy storage compatibility.
-- New code should use repositories.
-- Storage errors should be observable.
-- Do not silently convert corrupt data into valid product state.
-
-Tests:
-
-tests/storageRepositories.test.ts
-
-Definition of done:
-
-- New training models have repository coverage.
-- Missing/corrupt data cases are tested.
-- Existing Cloud storage still works.
-
-Suggested commit:
-
-storage: add training repositories
-
-State: accepted
-
-⸻
-
-Phase 5 — Cloud Certification Migration
-
-Goal: migrate the working Cloud Certification flow to the canonical training model without breaking existing behavior.
+Goal: align implemented screens with approved Patternly visual references before adding more features.
 
 Scope:
 
-src/features/practice/
-src/features/exam/
-src/features/review/
-src/features/analytics/
-src/tracks/cloud-certification/
+- Home
+- Practice
+- Practice question/session screen
+- Progress
+- Settings
+- bottom navigation
+- headers
+- CTA hierarchy
 
-Steps:
+Rules:
 
-1. Map Cloud questions to TrainingItem.
-2. Map practice answers to TrainingAttempt.
-3. Map exam summaries to session-level attempts/progress.
-4. Generate review queue entries from:
-   - incorrect answers,
-   - marked items,
-   - low confidence,
-   - repeated weak taxonomy nodes.
-5. Keep exam simulation Cloud-specific.
-6. Keep immediate feedback for practice.
+- This is not a redesign.
+- This is implementation alignment to approved designs.
+- Do not invent new product sections.
+- Do not add gamification.
+- Do not expose implementation terms.
+- Do not change domain architecture unless required to wire existing data.
+
+Required corrections:
+
+Home
+
+Must align with approved Patternly Home structure:
+
+- app header,
+- clear continue learning card,
+- recommended actions,
+- no streak/level footer,
+- no random gamified identity row,
+- CTA must route to a working learning/practice path.
+
+Practice
+
+Must align with approved Patternly Practice structure:
+
+- active track section,
+- primary recommended/continue session card,
+- secondary practice modes,
+- no unnecessary “why this session” block unless design requires it,
+- all visible CTAs either working or explicitly unavailable.
+
+Practice session/question
+
+Must align with approved question screen:
+
+- consistent top bar,
+- item progress,
+- question card,
+- option cards,
+- bottom check-answer CTA,
+- no disabled button confusion,
+- answer selection must make CTA usable.
+
+Progress
+
+Must align with approved Progress structure:
+
+- Focus overview,
+- review queue card,
+- practice activity or canonical replacement if available,
+- performance section,
+- concrete metrics only,
+- no readiness/retention/pass prediction.
+
+Settings
+
+Must align with approved Settings structure:
+
+- profile/track card only if product-relevant,
+- active tracks,
+- session length,
+- review priority,
+- app preferences,
+- data/privacy,
+- account section if applicable,
+- no fake user/account data if auth does not exist.
 
 Definition of done:
 
-- Cloud practice works.
-- Cloud exam works.
-- Review works.
-- Cloud progress reads from canonical attempt/progress structures.
-- No shared code depends on ExamDomain as a root architecture concept.
+- screens visually match reference structure,
+- no gamified artifacts remain,
+- bottom nav is consistent,
+- no dead CTA remains on visible screen,
+- tests still pass.
 
-Suggested commits:
+Suggested commit:
 
-cloud: map certification questions to training items
-cloud: migrate practice attempts to training attempts
-cloud: connect certification review to review queue
+ui: align core screens with Patternly reference layouts
 
-State: accepted
+Status: next
 
 ⸻
 
-Phase 6 — Algorithms MVP Pattern Drill
+12. Phase 2 — Runnable route and CTA repair
 
-Goal: make Algorithms a real MVP track without building a LeetCode clone.
+Goal: make the visible product paths actually work.
 
-Create content pack:
+Required path contracts:
 
-data/tracks/algorithms/algorithms-core-v1.json
+Home
 
-Initial content:
+Start learning
+→ active Cloud practice setup or practice session
 
-- 3–5 algorithmic patterns:
-  - two pointers,
-  - sliding window,
-  - hash map,
-  - binary search,
-  - DFS/BFS.
-- 2–3 original items per pattern.
-- Item types:
-  - pattern_identification,
-  - strategy_choice,
-  - complexity_analysis.
+Recommended cards:
 
-No code editor.
-No runtime execution.
-No LeetCode references.
-No copied problem statements.
+Review IAM policies
+→ review path if canonical review items exist
+→ otherwise disabled/empty state
+Due for review
+→ canonical review path if items exist
+→ otherwise disabled/empty state
+Weak area card
+→ topic/domain detail if implemented
+→ otherwise disabled/empty state
 
-UI scope:
+Practice
 
-- enable algorithms-pattern-drill,
-- add simple item renderer,
-- add answer selection,
-- add feedback:
-  - why this pattern,
-  - why alternatives are weaker,
-  - time complexity,
-  - space complexity,
-  - mistake type.
+Start session
+→ starts Cloud practice session
+Exam simulation
+→ starts Cloud exam session
+Review weak items
+→ starts canonical review path or shows unavailable state
+
+Question screen
+
+select option
+→ Check Answer enabled
+→ feedback shown
+→ Next item or finish session
+
+Progress
+
+Start review
+→ canonical review path if due items exist
+
+Settings
+
+Clear local history
+→ confirmation
+→ clears legacy and canonical local data
 
 Definition of done:
 
-- Algorithms no longer shows only draft state.
-- User can complete one Pattern Drill session.
-- Attempts save as TrainingAttempt.
-- Progress shows minimal pattern-level signal.
+- every visible CTA has working route or safe unavailable state,
+- user can complete at least one Cloud practice question flow,
+- user can start exam simulation,
+- no screen leads to blank/broken state.
 
-Suggested commits:
+Suggested commit:
 
-algorithms: add MVP pattern drill content
-algorithms: enable pattern drill session
+flow: repair core Cloud practice and review routes
 
-State: accepted
+Status: blocked until Phase 1 complete or done together if tightly coupled.
 
 ⸻
 
-Phase 7 — Shared Review and Progress
+13. Phase 3 — Smoke QA gate
 
-Goal: replace placeholder progress/review with real track-aware diagnostics.
+Goal: prevent accepting invisible breakages.
 
-Review queue must represent actual due/pending items, not merely the number of answered practice records.
+Add one of:
 
-Progress should show concrete evidence signals:
+- manual QA checklist in repo,
+- route smoke test,
+- Maestro baseline flow,
+- lightweight script if available.
 
-- practice coverage,
+Minimum manual QA checklist:
+
+[ ] App opens on Home
+[ ] Home Start Learning opens Cloud practice path
+[ ] Practice tab opens
+[ ] Practice Start Session opens question screen
+[ ] Selecting an answer enables Check Answer
+[ ] Check Answer shows result/feedback
+[ ] Exam simulation opens exam session
+[ ] Progress tab opens without crash
+[ ] Review queue CTA is working or safely unavailable
+[ ] Settings opens
+[ ] Clear local history confirmation appears
+[ ] Clear local history clears legacy and canonical training data
+
+Definition of done:
+
+- QA checklist exists,
+- Codex must report it for every future UI pass,
+- typecheck/test/question validation still pass.
+
+Suggested commit:
+
+qa: add Patternly route smoke checklist
+
+⸻
+
+14. Phase 4 — Canonical Review UI migration
+
+Goal: use canonical review selector in the Review/Mistakes UI.
+
+Do not start until:
+
+- core layouts are aligned,
+- review entry path is clear,
+- route smoke is possible.
+
+Scope:
+
+- review screen read path,
+- review model adapter,
+- legacy fallback.
+
+Definition of done:
+
+- canonical review items can be displayed,
+- legacy fallback remains,
+- degraded state is shown inline,
+- no navigation breakage.
+
+⸻
+
+15. Phase 5 — Algorithms MVP Pattern Drill
+
+Goal: make Algorithms a real MVP track without turning it into a quiz clone.
+
+Do not start until:
+
+- Cloud core flows are runnable,
+- shared UI shell is stable,
+- canonical session/attempt/review paths are working.
+
+Initial Algorithms scope:
+
+- original pattern drill content,
+- pattern identification,
+- strategy choice,
+- complexity analysis,
+- feedback explaining why the chosen pattern/strategy works,
+- no code editor,
+- no online judge,
+- no LeetCode references.
+
+⸻
+
+16. Phase 6 — Progress and review diagnostics
+
+Goal: improve diagnostics only after paths are reliable.
+
+Allowed metrics:
+
+- attempts count,
 - first-attempt accuracy,
-- repeated mistake types,
+- recent accuracy,
 - due review count,
+- high-priority review count,
 - weak taxonomy nodes,
-- recent activity.
+- repeated mistake types,
+- coverage.
 
-Avoid:
+Forbidden metrics:
 
-- generic readiness percentage,
-- generic retention percentage,
-- fake certainty,
-- exam-passing predictions.
-
-Definition of done:
-
-- Review queue uses ReviewQueueItem.
-- Cloud progress shows topic/domain diagnostics.
-- Algorithms progress shows pattern diagnostics.
-- Home recommendations are explainable.
-
-Suggested commits:
-
-review: add due review queue model
-progress: add track-aware progress diagnostics
+- generic readiness percent,
+- retention percent,
+- exam pass prediction,
+- fake confidence score.
 
 ⸻
 
-Phase 8 — Focus Lab UI Alignment
+17. Phase 7 — CI and release gate
 
-Goal: align screens with dark-first Focus Lab after domain and product flows are stable.
+Goal: make regressions visible.
 
-Scope:
-
-- Home,
-- Practice,
-- Progress,
-- Settings,
-- Cloud practice/session screens,
-- Algorithms pattern drill,
-- review screens,
-- empty/loading/error states,
-- icons,
-- spacing,
-- card density,
-- typography.
-
-Rules:
-
-- No major domain changes in this phase.
-- UI copy must not expose implementation tasks such as “content and scoring are next”.
-- Track-specific accents must remain restrained.
-- Do not make Patternly look like Google, LeetCode, a bootcamp app, or a gamified learning app.
-
-Definition of done:
-
-- Main screens are consistently dark-first.
-- No placeholder tab icons.
-- Empty states are user-facing, not developer-facing.
-- Maestro screenshots exist for both tracks.
-
-Suggested commits:
-
-ui: align shell screens with Focus Lab
-ui: complete empty and unavailable states
-
-⸻
-
-Phase 9 — QA, CI, and Release Gate
-
-Goal: make progress measurable and prevent regressions.
-
-Add or update:
-
-.github/workflows/ci.yml
-.maestro/release/
-eas.json or docs/release-build.md
-docs/release-checklist.md
-
-CI should run:
+Required commands:
 
 npm run typecheck
 npm test
 npm run validate:questions
 
-Later add:
+Future:
 
 npm run validate:tracks
 
-Maestro release flows should cover:
+Release checklist should include:
 
-- app opens,
-- track switch,
-- Cloud practice,
-- Cloud review,
-- Algorithms pattern drill,
-- Settings local data reset confirmation.
-
-Definition of done:
-
-- CI exists.
-- Release checklist exists.
-- Maestro release flows exist or are explicitly deferred.
-- No P0/P1 issues remain before release candidate.
-
-Suggested commit:
-
-qa: add CI and release gates
+- app launch,
+- Home,
+- Practice,
+- Cloud practice session,
+- Cloud exam simulation,
+- Progress,
+- Review,
+- Settings reset,
+- Algorithms unavailable or working state depending on implementation stage.
 
 ⸻
 
-8. Iteration Template
+18. Current phase status
 
-Each implementation iteration should use this structure.
-
-8.1 GPT Planning Prompt
-
-Before Codex starts, GPT prepares a precise prompt with:
-
-- goal,
-- scope,
-- files likely involved,
-- files not allowed,
-- current repo assumptions,
-- required checks,
-- acceptance criteria,
-- expected commit shape.
-
-Prompt must include:
-
-Do not broaden scope.
-Do not implement later phases.
-Inspect the current repo before editing.
-Report changed files and checks run.
-
-8.2 Codex Implementation
-
-Codex implements only the requested scope.
-
-Expected Codex output:
-
-Summary
-
-- ...
-  Changed files
-- ...
-  Checks run
-- npm run typecheck
-- npm test
-- ...
-  Notes / risks
-- ...
-
-  8.3 Push to GitHub
-
-After implementation:
-
-- push branch/commit,
-- provide commit SHA or PR URL,
-- include summary and checks.
-
-  8.4 GPT Review
-
-GPT reviews the pushed state.
-
-Review checklist:
-
-- Did Codex stay in scope?
-- Did it modify forbidden files?
-- Did it implement the requested architecture/product goal?
-- Did it avoid legacy architecture leakage?
-- Did it preserve existing Cloud functionality?
-- Did tests cover the new behavior?
-- Did documentation need updates?
-- Did the working plan need updates?
-- Is the repo ready for the next phase?
-
-  8.5 Decision
-
-Use one of these statuses:
-
-ACCEPTED
-PARTIAL_ACCEPT
-REJECTED
-NEEDS_CORRECTION
-NEEDS_MANUAL_DECISION
-
-8.6 Documentation Update
-
-After accepted or partially accepted implementation:
-
-- update this working file,
-- update audit/execution plan if needed,
-- mark completed phases/tasks,
-- add newly discovered risks,
-- adjust next prompt.
-
-No phase should be considered closed until documentation reflects the actual pushed state.
+Phase Status Notes
+Shared training contracts Technical accepted Product integration still ongoing
+Track adapters Technical accepted Algorithms still draft
+Session engine Technical accepted Not fully wired into UI
+Storage repositories Technical accepted Clear/reset path must include canonical data
+Cloud bridge/write-through Technical accepted UI still legacy/mixed
+Canonical progress selector Technical accepted Progress UI partially wired
+Progress tab canonical migration Partial technical accepted Product/layout parity still blocked
+Review UI migration Not started Blocked by UI/path baseline
+Algorithms MVP Not started Blocked by Cloud flow baseline
+Focus Lab UI alignment Critical active blocker Must move earlier
+QA/route smoke Critical active blocker Must be added before more feature work
 
 ⸻
 
-9. GPT Review Report Template
+19. Active next task
 
-Use this after every Codex push.
+The next task is:
 
-# Patternly GPT Review
+Phase 1 — UI/layout parity baseline for Home, Practice, Question, Progress, Settings, and bottom navigation.
 
-Date:
-Reviewed commit / PR:
-Scope requested:
-Scope delivered:
+The task must not add new domain infrastructure.
 
-## Verdict
+The task must not migrate Review UI yet.
 
-Status: ACCEPTED / PARTIAL_ACCEPT / REJECTED / NEEDS_CORRECTION / NEEDS_MANUAL_DECISION
-
-## Summary
-
-...
-
-## What matches the request
-
-- ...
-
-## Problems found
-
-- ...
-
-## Scope issues
-
-- ...
-
-## Architecture/product concerns
-
-- ...
-
-## Tests and validation
-
-Reported by Codex:
-
-- ...
-  Verified by GPT:
-- ...
-
-## Documentation impact
-
-- Working plan update needed: yes/no
-- Product docs update needed: yes/no
-- ADR update needed: yes/no
-- Testing docs update needed: yes/no
-
-## Required corrections
-
-1. ...
-2. ...
-
-## Next recommended action
-
-...
+The task must fix visible product divergence from approved Patternly screen references.
 
 ⸻
 
-10. Codex Prompt Template
+20. Codex rules for next pass
 
-Use this for each implementation pass.
+Codex must:
 
-Act as a strict senior product-engineering implementation agent for Patternly.
-You are working in the repository:
-`lukaszkurczab/gcp-ace-trainer`
+- inspect current screens before editing,
+- compare implementation to approved screen references,
+- keep scope narrow,
+- fix layout and CTA correctness,
+- preserve canonical data work,
+- avoid new product concepts,
+- avoid gamification,
+- run checks,
+- report any CTA that cannot be wired yet.
 
-## Goal
+Codex must not:
 
-[Insert one precise goal.]
-
-## Current context
-
-Patternly is transitioning from a GCP ACE Trainer implementation into a multi-track technical learning product.
-The current canonical product direction is:
-
-- Patternly is multi-track.
-- First tracks are `cloud-certification` and `algorithms`.
-- Certification-style learning and LeetCode-like / algorithmic learning have separate mechanics.
-- Shared infrastructure is allowed: shell, design system, storage primitives, sessions, attempts, progress, review.
-- Do not collapse both tracks into one generic quiz/question loop.
-- Dark-first Focus Lab is the canonical UI direction.
-- Avoid fake precision metrics such as generic readiness/retention percentages.
-
-## Scope
-
-Allowed:
-
-- [Allowed files/areas.]
-  Not allowed:
-- [Forbidden files/areas.]
-- Do not implement later phases.
-- Do not rewrite unrelated code.
-- Do not perform broad cleanup.
-- Do not modify docs unless explicitly listed.
-
-## Required work
-
-1. ...
-2. ...
-3. ...
-
-## Tests / checks
-
-Run:
-
-````bash
-npm run typecheck
-npm test
-
-Also run if relevant:
-
-npm run validate:questions
-
-If a command fails, stop and report the failure with the relevant output. Do not hide failures.
-
-Acceptance criteria
-
-* …
-* …
-* …
-
-Output required
-
-After implementation, report:
-
-1. Files changed.
-2. Summary of changes.
-3. Tests/checks run.
-4. Any failures.
-5. Any risks or follow-up tasks.
-
-Do not commit or push unless explicitly instructed.
-
----
-## 11. Active Next Task
-The next task should be:
-```txt
-Phase 0 — Planning Baseline Refresh
-
-Then:
-
-Phase 1 — Shared Domain Contract Foundation
-
-Recommended next GPT prompt for Codex:
-
-Update the Patternly planning baseline to reflect the current repository state, then stop. Do not modify app code.
-
-After that is accepted:
-
-Add shared Patternly training domain contracts without migrating UI or Cloud flows yet.
+- continue architecture expansion,
+- add Algorithms content,
+- rewrite navigation broadly,
+- add backend/auth/user accounts,
+- add streaks/levels/badges,
+- modify docs unless explicitly requested,
+- hide broken routes.
 
 ⸻
 
-12. Open Risks
+21. Next Codex prompt summary
 
-Risk	Severity	Notes
-Cloud-specific models remain shared architecture	High	Blocks clean Algorithms implementation
-Algorithms becomes a second quiz loop	High	Violates learning-system docs
-Planning file contains historical stale blockers	Medium	Can mislead Codex
-Storage compatibility grows into permanent legacy layer	Medium	Needs explicit migration/reset strategy
-UI work starts before domain model	Medium	Can polish unstable architecture
-Progress/review remain fake or proxy metrics	High	Contradicts learning model
-No CI/release gate	Medium	Fine during architecture work, not fine before release
+Next Codex task:
+
+Align the core Patternly screens with the approved dark-first Focus Lab reference layouts and repair visible CTAs so each is working, disabled, or removed.
+
+Expected changed areas:
+
+src/features/home/
+src/features/practice/
+src/features/exam/
+src/features/review/ only if CTA unavailable state requires it
+src/components/
+src/theme/
+tests/
+
+Forbidden:
+
+domain model expansion
+Algorithms content
+new backend/auth
+documentation updates
+large unrelated cleanup
 
 ⸻
 
-13. Completion Log
+22. Open risks
 
-Use this section after every accepted iteration.
+Risk Severity Status Notes
+Implemented UI diverges from approved design Critical Active Current blocker
+Visible CTAs do not route to working flows Critical Active Current blocker
+Unit tests pass while app is unusable High Active Add smoke QA
+Architecture work continues while product shell is broken High Active Stop architecture expansion
+Gamification leaks into product High Active Remove streak/level/badge patterns
+Algorithms becomes generic quiz High Watch Do not start before Cloud baseline
+Legacy and canonical storage diverge Medium Watch Clear/reset must handle both
+Progress uses fake precision High Watch Use concrete evidence only
+No CI/release gate Medium Later Add after route baseline
 
-Date	Commit / PR	Phase	Status	Notes
-2026-06-29	TBD	Phase 0	Planned	Create/update working baseline
-````
+⸻
+
+23. Completion log
+
+Date Commit / PR Phase Status Notes
+2026-06-29 TBD Shared training contracts Technical accepted UI not affected
+2026-06-29 TBD Track adapters Technical accepted Algorithms draft only
+2026-06-29 TBD Session engine Technical accepted Not fully UI-wired
+2026-06-29 TBD Storage repositories Technical accepted Canonical storage added
+2026-06-29 TBD Cloud bridge/write-through Technical accepted Legacy behavior preserved
+2026-06-29 TBD Canonical progress selectors Technical accepted Read-side added
+2026-06-29 TBD Progress tab canonical migration Partial accept Product/layout parity blocked
+2026-06-29 TBD Plan v2 reset Active UI/path baseline moved to P0
