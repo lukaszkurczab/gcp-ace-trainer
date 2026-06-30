@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Card,
-  Icon,
   IconTile,
   ListRow,
   SectionHeader,
@@ -96,11 +95,10 @@ export function PracticeTab({
               }
             />
             <ListRow
-              detail="Revisit missed and marked questions."
+              detail="Available after review queue is verified."
               leading={<IconTile name="rotate-ccw" tone="warning" />}
-              onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
               title={PRACTICE_REVIEW_CTA.label}
-              trailing={<Icon name="chevron-right" />}
+              trailing={<Badge label="Unavailable" tone="warning" />}
             />
           </View>
         </>
