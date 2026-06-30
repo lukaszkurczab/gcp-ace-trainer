@@ -27,8 +27,17 @@ test("cloud certification is active and algorithms is explicit draft", () => {
 
   assert.equal(cloud.status, "active");
   assert.equal(algorithms.status, "draft");
+  assert.equal(algorithms.title, "Algorithms");
+  assert.equal(algorithms.contentManifest.itemCount, 0);
   assert.ok(getEnabledSessionModes(cloud.id).length > 0);
   assert.equal(getEnabledSessionModes(algorithms.id).length, 0);
+  assert.deepEqual(
+    algorithms.sessionModes.map((mode) => [mode.title, mode.enabled]),
+    [
+      ["Pattern drill", false],
+      ["Strategy practice", false],
+    ],
+  );
 });
 
 test("track id guard rejects unknown values", () => {

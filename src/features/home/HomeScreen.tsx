@@ -207,13 +207,15 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
         <AppShellHeader
-          subtitle="Cloud Certification"
+          subtitle={activeTrack.title}
           title="Patternly"
         />
         {activeTab === "home" ? (
           <HomeTab
+            activeTrack={activeTrack}
             analytics={analytics}
             onChangeFocus={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onOpenPractice={() => setActiveTab("practice")}
             onStartLearning={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
           />
         ) : null}

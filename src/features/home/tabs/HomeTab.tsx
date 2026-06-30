@@ -9,30 +9,40 @@ import {
   ListRow,
   SectionHeader,
 } from "../../../components";
+import type { TrackDefinition } from "../../../domain";
 import { colors, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { HOME_PRIMARY_CTA, HOME_RECOMMENDATIONS } from "../shellModel";
+import {
+  buildHomeTabModel,
+  isCloudHomePracticeAction,
+} from "./homeTabModel";
 
 type HomeTabProps = {
+  activeTrack: TrackDefinition;
   analytics: AnalyticsData;
   onChangeFocus: () => void;
+  onOpenPractice: () => void;
   onStartLearning: () => void;
 };
 
 export function HomeTab({
+  activeTrack,
   analytics,
   onChangeFocus,
+  onOpenPractice,
   onStartLearning,
 }: HomeTabProps) {
-  const hasPractice = analytics.summary.totalPracticeQuestionsAnswered > 0;
-  const hasExams = analytics.summary.totalCompletedExams > 0;
+  const model = buildHomeTabModel({ activeTrack, analytics });
+  const onPrimaryPress = isCloudHomePracticeAction(model)
+    ? onStartLearning
+    : onOpenPractice;
 
   return (
     <>
       <Card style={styles.focusStrip}>
         <View style={styles.focusCopy}>
           <Text style={styles.eyebrow}>Current focus</Text>
-          <Text style={styles.focusTitle}>Cloud Certification</Text>
+          <Text style={styles.focusTitle}>{model.focusTitle}</Text>
         </View>
         <Pressable
           accessibilityRole="button"
@@ -45,24 +55,24 @@ export function HomeTab({
       </Card>
 
       <Card variant="tonal" style={styles.hero}>
-        <Text style={styles.heroEyebrow}>Continue learning</Text>
+        <Text style={styles.heroEyebrow}>{model.heroEyebrow}</Text>
         <SectionHeader
-          title="IAM policies"
-          subtitle="Resume your last Cloud Certification topic or choose another area before starting."
+          title={model.heroTitle}
+          subtitle={model.heroSubtitle}
           tight
         />
-        <Button onPress={onStartLearning}>
-          {HOME_PRIMARY_CTA.label}
+        <Button onPress={onPrimaryPress}>
+          {model.primaryLabel}
         </Button>
       </Card>
 
       <View style={styles.section}>
         <SectionHeader title="Recommended today" tight />
-        {HOME_RECOMMENDATIONS.map((item, index) => (
+        {model.recommendations.map((item, index) => (
           <ListRow
-            detail={getRecommendationDetail(item.detail, index, hasPractice, hasExams)}
+            detail={item.detail}
             key={item.title}
-            leading={<IconTile name={index === 1 ? "rotate-ccw" : "cloud"} tone={getRecommendationTone(index)} />}
+            leading={<IconTile name={item.icon} tone={item.tone} />}
             style={index === 0 ? styles.recommendedPrimary : undefined}
             title={item.title}
             trailing={<Badge label={item.label} tone={index === 0 ? "info" : "neutral"} />}
@@ -71,31 +81,6 @@ export function HomeTab({
       </View>
     </>
   );
-}
-
-function getRecommendationDetail(
-  baseDetail: string,
-  index: number,
-  hasPractice: boolean,
-  hasExams: boolean,
-): string {
-  if (index === 0 && (hasPractice || hasExams)) {
-    return "Suggested from local attempts and practice records.";
-  }
-
-  return baseDetail;
-}
-
-function getRecommendationTone(index: number): "primary" | "info" | "warning" {
-  if (index === 0) {
-    return "primary";
-  }
-
-  if (index === 1) {
-    return "info";
-  }
-
-  return "warning";
 }
 
 const styles = StyleSheet.create({

@@ -108,7 +108,7 @@ const algorithmsTrack: TrackDefinition = {
   id: ALGORITHMS_TRACK_ID,
   legalNote:
     "Original training content. Not affiliated with LeetCode or any coding platform.",
-  nextActionLabel: "Set up algorithm drills",
+  nextActionLabel: "View draft modes",
   sessionModes: [
     {
       description: "Recognize the likely pattern or strategy for a problem.",
@@ -139,7 +139,7 @@ const algorithmsTrack: TrackDefinition = {
   ],
   shortTitle: "Algorithms",
   status: "draft",
-  subtitle: "Problem-solving track",
+  subtitle: "Pattern and strategy track",
   taxonomy: {
     primaryAxis: {
       id: "algorithm-pattern",
@@ -167,7 +167,7 @@ const algorithmsTrack: TrackDefinition = {
       },
     ],
   },
-  title: "Algorithm Patterns",
+  title: "Algorithms",
 };
 
 export const TRACK_DEFINITIONS = [

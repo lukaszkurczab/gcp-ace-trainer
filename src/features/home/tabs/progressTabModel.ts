@@ -1,4 +1,5 @@
 import {
+  ALGORITHMS_TRACK_ID,
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
@@ -59,6 +60,10 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
     return buildCloudProgressTabModel(input.cloudProgress);
   }
 
+  if (input.activeTrackId === ALGORITHMS_TRACK_ID) {
+    return buildAlgorithmsProgressTabModel();
+  }
+
   return buildLegacyProgressTabModel(input);
 }
 
@@ -105,6 +110,40 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
     reviewQueueCount: progress.dueReviewCount,
     reviewQueueCopy: formatCanonicalReviewQueueCopy(progress.dueReviewCount, progress.highPriorityReviewCount),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
+  };
+}
+
+function buildAlgorithmsProgressTabModel(): ProgressTabModel {
+  return {
+    activitySummary: {
+      detail: "Algorithms activity will appear after pattern and strategy sessions are implemented.",
+      label: "Algorithm attempts",
+      value: 0,
+    },
+    hasData: false,
+    metrics: [
+      {
+        label: "Pattern drills",
+        tone: "primary",
+        value: 0,
+      },
+      {
+        label: "Strategy checks",
+        tone: "info",
+        value: 0,
+      },
+      {
+        label: "Complexity reviews",
+        tone: "neutral",
+        value: 0,
+      },
+    ],
+    performanceScores: [],
+    performanceSectionTitle: "Performance areas",
+    reviewActionEnabled: false,
+    reviewActionLabel: "Algorithms review is not available yet.",
+    reviewQueueCount: 0,
+    reviewQueueCopy: "Algorithm review queue will appear after Algorithms sessions are implemented.",
   };
 }
 

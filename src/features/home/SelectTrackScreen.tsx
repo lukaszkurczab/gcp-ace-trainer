@@ -52,7 +52,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
   );
 
   async function selectTrack(track: TrackDefinition) {
-    if (track.status !== "active") {
+    if (track.status === "archived") {
       return;
     }
 
@@ -72,7 +72,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
       <View style={styles.trackList}>
         {getTrackDefinitions().map((track) => {
           const isActive = track.id === activeTrackId;
-          const isAvailable = track.status === "active";
+          const isSelectable = track.status !== "archived";
 
           return (
             <Card key={track.id} style={isActive ? styles.activeTrackCard : undefined}>
@@ -81,8 +81,8 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
                 subtitle={track.description}
                 action={
                   <Badge
-                    label={isAvailable ? (isActive ? "Current" : "Available") : "Draft"}
-                    tone={isAvailable ? "info" : "warning"}
+                    label={isActive ? "Current" : track.status === "active" ? "Available" : "Draft"}
+                    tone={track.status === "active" ? "info" : "warning"}
                   />
                 }
               />
@@ -94,14 +94,18 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
                     tone={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "info" : "primary"}
                   />
                 }
-                title={isAvailable ? "Ready for focused practice" : "Not available in this build"}
+                title={
+                  track.status === "active"
+                    ? "Ready for focused practice"
+                    : "Draft-safe learning surface"
+                }
               />
               <Button
-                disabled={!isAvailable}
+                disabled={!isSelectable}
                 onPress={() => void selectTrack(track)}
                 variant={isActive ? "secondary" : "primary"}
               >
-                {isActive ? "Keep focus" : isAvailable ? "Change focus" : "Unavailable"}
+                {isActive ? "Keep focus" : track.status === "active" ? "Change focus" : "Use draft focus"}
               </Button>
             </Card>
           );

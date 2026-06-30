@@ -9,7 +9,6 @@ import {
   SectionHeader,
 } from "../../../components";
 import {
-  CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
 import { ROUTES } from "../../../constants/routes";
@@ -17,6 +16,10 @@ import { colors, spacing, typography } from "../../../theme";
 import type { ActiveExamSession } from "../../../types";
 import type { HomeNavigation } from "../types";
 import { PRACTICE_PRIMARY_CTA, PRACTICE_REVIEW_CTA } from "../shellModel";
+import {
+  buildAlgorithmsPracticeModel,
+  isCloudPracticeTrack,
+} from "./practiceTabModel";
 
 type PracticeTabProps = {
   activeSession: ActiveExamSession | null;
@@ -35,7 +38,8 @@ export function PracticeTab({
   onDiscardExam,
   onStartExam,
 }: PracticeTabProps) {
-  const isCloud = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID;
+  const isCloud = isCloudPracticeTrack(activeTrack);
+  const algorithmsModel = !isCloud ? buildAlgorithmsPracticeModel(activeTrack) : null;
 
   return (
     <>
@@ -104,13 +108,32 @@ export function PracticeTab({
           </View>
         </>
       ) : (
-        <Card variant="tonal">
-          <SectionHeader
-            title="Algorithms unavailable"
-            subtitle="Pattern Drill and Strategy Practice stay disabled until original content and scoring are implemented."
-            action={<Badge label="Draft" tone="warning" />}
-          />
-        </Card>
+        <>
+          <Card variant="tonal" style={styles.practiceHero}>
+            <Text style={styles.heroEyebrow}>Draft learning system</Text>
+            <SectionHeader
+              title={algorithmsModel?.title ?? activeTrack.title}
+              subtitle={algorithmsModel?.description}
+              action={<Badge label="Draft" tone="warning" />}
+            />
+            <Button disabled onPress={() => undefined} variant="secondary">
+              Sessions not available yet
+            </Button>
+          </Card>
+
+          <View style={styles.section}>
+            <SectionHeader title="Planned learning modes" tight />
+            {algorithmsModel?.modes.map((mode) => (
+              <ListRow
+                detail={mode.detail}
+                key={mode.title}
+                leading={<IconTile name="route" tone={mode.tone} />}
+                title={mode.title}
+                trailing={<Badge label={mode.label} tone="neutral" />}
+              />
+            ))}
+          </View>
+        </>
       )}
     </>
   );

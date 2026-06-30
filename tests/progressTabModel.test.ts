@@ -170,14 +170,23 @@ test("Algorithms progress keeps the existing draft empty behavior", () => {
   });
 
   assert.equal(model.hasData, false);
+  assert.equal(model.reviewQueueCount, 0);
+  assert.equal(model.reviewQueueCopy, "Algorithm review queue will appear after Algorithms sessions are implemented.");
+  assert.equal(model.reviewActionLabel, "Algorithms review is not available yet.");
   assert.deepEqual(model.performanceScores, []);
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
-      ["Completed exams", 0],
-      ["Practice answers", 7],
+      ["Pattern drills", 0],
+      ["Strategy checks", 0],
+      ["Complexity reviews", 0],
     ],
   );
+  assert.deepEqual(model.activitySummary, {
+    detail: "Algorithms activity will appear after pattern and strategy sessions are implemented.",
+    label: "Algorithm attempts",
+    value: 0,
+  });
 });
 
 function makeCloudProgress(
