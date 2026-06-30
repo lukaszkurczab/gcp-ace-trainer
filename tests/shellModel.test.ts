@@ -10,6 +10,7 @@ import {
   MAIN_TAB_ITEMS,
   PRACTICE_PRIMARY_CTA,
   PRACTICE_REVIEW_CTA,
+  SETTINGS_ROWS,
 } from "../src/features/home/shellModel";
 import { canCheckAnswer } from "../src/features/practice/practiceSessionModel";
 
@@ -63,6 +64,21 @@ test("Practice review weak items is static until review queue is verified", () =
     label: "Review weak items",
   });
   assert.equal(buildShellSafetyModel().practiceReviewRoute, null);
+});
+
+test("Settings model keeps only clear local history as destructive active action", () => {
+  assert.deepEqual(
+    SETTINGS_ROWS.filter((row) => row.behavior === "destructive").map((row) => row.id),
+    ["clearLocalHistory"],
+  );
+  assert.equal(
+    SETTINGS_ROWS.filter((row) => row.behavior !== "static" && row.behavior !== "destructive").length,
+    0,
+  );
+  assert.deepEqual(
+    SETTINGS_ROWS.filter((row) => row.section === "account").map((row) => row.behavior),
+    ["static", "static", "static"],
+  );
 });
 
 test("selecting an answer enables the Check Answer action", () => {

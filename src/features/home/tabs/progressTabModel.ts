@@ -19,6 +19,12 @@ export type ProgressTabMetric = {
   value: number;
 };
 
+export type ProgressTabActivitySummary = {
+  detail: string;
+  label: string;
+  value: number;
+};
+
 export type ProgressTabPerformanceScore = {
   correct: number;
   id: string;
@@ -28,9 +34,13 @@ export type ProgressTabPerformanceScore = {
 };
 
 export type ProgressTabModel = {
+  activitySummary: ProgressTabActivitySummary;
   hasData: boolean;
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
+  performanceSectionTitle: "Performance by domain" | "Performance areas";
+  reviewActionEnabled: false;
+  reviewActionLabel: string;
   reviewQueueCount: number;
   reviewQueueCopy: string;
   warning?: string;
@@ -54,6 +64,14 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
 
 function buildCloudProgressTabModel(progress: CloudCertificationProgressViewModel): ProgressTabModel {
   return {
+    activitySummary: {
+      detail:
+        progress.totalAttempts > 0
+          ? `${progress.practiceAttemptCount} practice answers and ${progress.examAttemptCount} exam answers recorded.`
+          : "Practice activity appears after local sessions are completed.",
+      label: "Local attempts",
+      value: progress.totalAttempts,
+    },
     hasData: progress.totalAttempts > 0,
     metrics: [
       {
@@ -81,6 +99,9 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
         percent: score.percent,
         total: score.totalAttempts,
       })),
+    performanceSectionTitle: "Performance by domain",
+    reviewActionEnabled: false,
+    reviewActionLabel: "Review unavailable until queue is verified",
     reviewQueueCount: progress.dueReviewCount,
     reviewQueueCopy: formatCanonicalReviewQueueCopy(progress.dueReviewCount, progress.highPriorityReviewCount),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
@@ -92,6 +113,14 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
   const reviewQueueCount = input.analytics.summary.totalPracticeQuestionsAnswered;
 
   return {
+    activitySummary: {
+      detail:
+        input.practiceHistory.length > 0
+          ? `${input.practiceHistory.length} local practice ${input.practiceHistory.length === 1 ? "answer" : "answers"} recorded.`
+          : "Practice activity appears after local sessions are completed.",
+      label: "Local practice",
+      value: input.practiceHistory.length,
+    },
     hasData,
     metrics: [
       {
@@ -117,6 +146,12 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
               total: score.total,
             }))
         : [],
+    performanceSectionTitle:
+      input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID
+        ? "Performance by domain"
+        : "Performance areas",
+    reviewActionEnabled: false,
+    reviewActionLabel: "Review unavailable until queue is verified",
     reviewQueueCount,
     reviewQueueCopy: formatLegacyReviewQueueCopy(reviewQueueCount),
   };

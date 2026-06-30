@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import {
+  Badge,
   Card,
   EmptyState,
   IconTile,
@@ -68,20 +69,39 @@ export function ProgressTab({
             <Text style={styles.warningText}>{progress.warning}</Text>
           </View>
         ) : null}
-        <View style={styles.metricRow}>
-          {progress.metrics.map((metric) => (
-            <MetricCard
-              key={metric.label}
-              label={metric.label}
-              tone={metric.tone}
-              value={metric.value}
-            />
-          ))}
+        <View style={styles.unavailableAction}>
+          <Text style={styles.unavailableActionText}>
+            {progress.reviewActionLabel}
+          </Text>
         </View>
       </Card>
 
       <View style={styles.section}>
-        <SectionHeader title="Performance by topic" tight />
+        <SectionHeader
+          title="Practice activity"
+          action={<Badge label="Local data" tone="neutral" />}
+          tight
+        />
+        <Card>
+          <View style={styles.activityHeader}>
+            <IconTile name="practice" tone="primary" />
+            <View style={styles.activityCopy}>
+              <Text style={styles.activityValue}>
+                {progress.activitySummary.value}
+              </Text>
+              <Text style={styles.performanceTitle}>
+                {progress.activitySummary.label}
+              </Text>
+              <Text style={styles.mutedText}>
+                {progress.activitySummary.detail}
+              </Text>
+            </View>
+          </View>
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title={progress.performanceSectionTitle} tight />
         {progress.performanceScores.length > 0 ? (
           <View style={styles.actionList}>
             {progress.performanceScores.map((score) => (
@@ -108,6 +128,20 @@ export function ProgressTab({
             description={getProgressEmptyDescription(activeTrack.id, progress.hasData)}
           />
         )}
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Concrete metrics" tight />
+        <View style={styles.metricRow}>
+          {progress.metrics.map((metric) => (
+            <MetricCard
+              key={metric.label}
+              label={metric.label}
+              tone={metric.tone}
+              value={metric.value}
+            />
+          ))}
+        </View>
       </View>
     </>
   );
@@ -171,8 +205,34 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.md,
   },
+  unavailableAction: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: spacing.md,
+  },
+  unavailableActionText: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+    textAlign: "center",
+  },
   section: {
     gap: spacing.md,
+  },
+  activityHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  activityCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  activityValue: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+    fontVariant: ["tabular-nums"],
   },
   mutedText: {
     ...typography.small,

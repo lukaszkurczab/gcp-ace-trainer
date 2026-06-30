@@ -84,6 +84,31 @@ export type ShellSafetyModel = {
   tabLabels: readonly ShellTabItem["label"][];
 };
 
+export type SettingsRowBehavior = "static" | "destructive";
+
+export type SettingsRowModel = {
+  behavior: SettingsRowBehavior;
+  id: string;
+  label: string;
+  section: "learning" | "app" | "data" | "account";
+};
+
+export const SETTINGS_ROWS: readonly SettingsRowModel[] = [
+  { behavior: "static", id: "activeTracks", label: "Active tracks", section: "learning" },
+  { behavior: "static", id: "sessionLength", label: "Session length", section: "learning" },
+  { behavior: "static", id: "reviewPriority", label: "Review priority", section: "learning" },
+  { behavior: "static", id: "notifications", label: "Notifications", section: "app" },
+  { behavior: "static", id: "dailyReminder", label: "Daily reminder", section: "app" },
+  { behavior: "static", id: "appearance", label: "Appearance", section: "app" },
+  { behavior: "static", id: "soundEffects", label: "Sound effects", section: "app" },
+  { behavior: "static", id: "localOnlyData", label: "Local-only data", section: "data" },
+  { behavior: "static", id: "legalSafety", label: "Legal safety", section: "data" },
+  { behavior: "destructive", id: "clearLocalHistory", label: "Clear local history", section: "data" },
+  { behavior: "static", id: "accountStatus", label: "Account status", section: "account" },
+  { behavior: "static", id: "subscription", label: "Subscription", section: "account" },
+  { behavior: "static", id: "helpFeedback", label: "Help and feedback", section: "account" },
+];
+
 export function buildShellSafetyModel(): ShellSafetyModel {
   return {
     gamifiedFields: [],

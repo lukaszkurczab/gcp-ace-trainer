@@ -27,6 +27,14 @@ test("canonical Cloud progress maps to ProgressTab metrics", () => {
     ],
   );
   assert.equal(model.hasData, true);
+  assert.equal(model.performanceSectionTitle, "Performance by domain");
+  assert.equal(model.reviewActionEnabled, false);
+  assert.equal(model.reviewActionLabel, "Review unavailable until queue is verified");
+  assert.deepEqual(model.activitySummary, {
+    detail: "3 practice answers and 2 exam answers recorded.",
+    label: "Local attempts",
+    value: 5,
+  });
 });
 
 test("canonical due review count comes from the Cloud progress view model", () => {
@@ -129,6 +137,8 @@ test("mapped ProgressTab data does not expose readiness or retention fields", ()
   assert.equal("readinessPercent" in model, false);
   assert.equal("retentionPercent" in model, false);
   assert.equal("examPassPrediction" in model, false);
+  assert.equal("streak" in model, false);
+  assert.equal("level" in model, false);
 });
 
 test("Algorithms progress keeps the existing draft empty behavior", () => {
