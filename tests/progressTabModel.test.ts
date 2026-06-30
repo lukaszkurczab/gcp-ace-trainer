@@ -29,7 +29,7 @@ test("canonical Cloud progress maps to ProgressTab metrics", () => {
   assert.equal(model.hasData, true);
   assert.equal(model.performanceSectionTitle, "Performance by domain");
   assert.equal(model.reviewActionEnabled, false);
-  assert.equal(model.reviewActionLabel, "Review unavailable until queue is verified");
+  assert.equal(model.reviewActionLabel, "Review from Progress is not available yet.");
   assert.deepEqual(model.activitySummary, {
     detail: "3 practice answers and 2 exam answers recorded.",
     label: "Local attempts",
@@ -53,6 +53,21 @@ test("canonical due review count comes from the Cloud progress view model", () =
 
   assert.equal(model.reviewQueueCount, 4);
   assert.equal(model.reviewQueueCopy, "4 due items, 2 high priority.");
+});
+
+test("Progress review action remains explicitly unavailable from Progress", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "cloud-certification",
+    analytics: makeAnalytics(),
+    attempts: [],
+    cloudProgress: makeCloudProgress({
+      dueReviewCount: 2,
+    }),
+    practiceHistory: [],
+  });
+
+  assert.equal(model.reviewActionEnabled, false);
+  assert.equal(model.reviewActionLabel, "Review from Progress is not available yet.");
 });
 
 test("canonical domain performance maps into ProgressTab scores", () => {

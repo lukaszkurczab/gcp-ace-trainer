@@ -95,10 +95,11 @@ export function PracticeTab({
               }
             />
             <ListRow
-              detail="Available after review queue is verified."
-              leading={<IconTile name="rotate-ccw" tone="warning" />}
+              detail="Open scheduled Cloud Certification review items."
+              leading={<IconTile name="rotate-ccw" tone="primary" />}
+              onPress={() => navigation.navigate(PRACTICE_REVIEW_CTA.route)}
               title={PRACTICE_REVIEW_CTA.label}
-              trailing={<Badge label="Unavailable" tone="warning" />}
+              trailing={<Badge label="Ready" tone="ready" />}
             />
           </View>
         </>

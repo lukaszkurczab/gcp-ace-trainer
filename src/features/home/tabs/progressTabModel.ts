@@ -101,7 +101,7 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
       })),
     performanceSectionTitle: "Performance by domain",
     reviewActionEnabled: false,
-    reviewActionLabel: "Review unavailable until queue is verified",
+    reviewActionLabel: "Review from Progress is not available yet.",
     reviewQueueCount: progress.dueReviewCount,
     reviewQueueCopy: formatCanonicalReviewQueueCopy(progress.dueReviewCount, progress.highPriorityReviewCount),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
@@ -151,7 +151,7 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
         ? "Performance by domain"
         : "Performance areas",
     reviewActionEnabled: false,
-    reviewActionLabel: "Review unavailable until queue is verified",
+    reviewActionLabel: "Review from Progress is not available yet.",
     reviewQueueCount,
     reviewQueueCopy: formatLegacyReviewQueueCopy(reviewQueueCount),
   };

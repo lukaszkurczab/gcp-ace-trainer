@@ -217,6 +217,7 @@ test("review selector joins canonical review item to Cloud content prompt and ta
   await saveReviewQueueItems([
     makeReviewQueueItem("review-join-001", {
       itemId: question.id,
+      mistakeTypeNodeId: "confused_services",
     }),
   ]);
 
@@ -229,7 +230,11 @@ test("review selector joins canonical review item to Cloud content prompt and ta
   assert.equal(viewModel.dueItems[0]?.prompt, question.question);
   assert.deepEqual(
     viewModel.dueItems[0]?.taxonomyRefs.map((ref) => `${ref.axisId}:${ref.nodeId}`),
-    ["cloud-domain:operations", "cloud-topic:logging"],
+    ["cloud-domain:operations", "cloud-topic:logging", "cloud-mistake-type:confused_services"],
+  );
+  assert.deepEqual(
+    viewModel.dueItems[0]?.mistakeTypeRefs.map((ref) => `${ref.axisId}:${ref.nodeId}`),
+    ["cloud-mistake-type:confused_services"],
   );
 });
 
@@ -318,6 +323,7 @@ function makeReviewQueueItem(
   overrides: {
     dueAt?: string;
     itemId?: string;
+    mistakeTypeNodeId?: string;
     priority?: ReviewQueueItem["priority"];
   } = {},
 ): ReviewQueueItem {
@@ -326,6 +332,16 @@ function makeReviewQueueItem(
     dueAt: overrides.dueAt ?? "2026-06-29T11:00:00.000Z",
     id,
     itemId: overrides.itemId ?? "review-item-001",
+    mistakeTypeRefs: overrides.mistakeTypeNodeId
+      ? [
+          {
+            axisId: "cloud-mistake-type",
+            nodeId: overrides.mistakeTypeNodeId,
+            role: "mistake_type",
+            trackId: "cloud-certification",
+          },
+        ]
+      : undefined,
     priority: overrides.priority ?? "high",
     reasons: ["incorrect_attempt"],
     sourceAttemptId: `attempt:${id}`,

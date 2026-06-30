@@ -58,12 +58,12 @@ test("Home recommendations are static unless explicitly wired", () => {
   assert.deepEqual(buildShellSafetyModel().homeRecommendationRoutes, []);
 });
 
-test("Practice review weak items is static until review queue is verified", () => {
+test("Practice review weak items routes to canonical review queue", () => {
   assert.deepEqual(PRACTICE_REVIEW_CTA, {
-    enabled: false,
     label: "Review weak items",
+    route: ROUTES.MISTAKES_REVIEW,
   });
-  assert.equal(buildShellSafetyModel().practiceReviewRoute, null);
+  assert.equal(buildShellSafetyModel().practiceReviewRoute, ROUTES.MISTAKES_REVIEW);
 });
 
 test("Settings model keeps only clear local history as destructive active action", () => {

@@ -52,10 +52,10 @@ export const PRACTICE_EXAM_CTA: VisibleCta = {
   route: ROUTES.EXAM,
 };
 
-export const PRACTICE_REVIEW_CTA: StaticCta = {
-  enabled: false,
+export const PRACTICE_REVIEW_CTA = {
   label: "Review weak items",
-};
+  route: ROUTES.MISTAKES_REVIEW,
+} satisfies VisibleCta;
 
 export const HOME_RECOMMENDATIONS: readonly HomeRecommendation[] = [
   {
@@ -117,7 +117,7 @@ export function buildShellSafetyModel(): ShellSafetyModel {
     ),
     primaryHomeRoute: HOME_PRIMARY_CTA.route,
     primaryPracticeRoute: PRACTICE_PRIMARY_CTA.route,
-    practiceReviewRoute: null,
+    practiceReviewRoute: PRACTICE_REVIEW_CTA.route,
     tabLabels: MAIN_TAB_ITEMS.map((item) => item.label),
   };
 }

@@ -16,6 +16,7 @@ export type CloudCertificationReviewViewItem = {
   isDue: boolean;
   isOverdue: boolean;
   itemId: string;
+  mistakeTypeRefs: TrainingItemTaxonomyRef[];
   priority: ReviewPriority;
   prompt?: string;
   reasons: ReviewReason[];
@@ -93,6 +94,7 @@ function buildReviewViewItem(
     isDue,
     isOverdue,
     itemId: item.itemId,
+    mistakeTypeRefs: dedupeTaxonomyRefs(item.mistakeTypeRefs ?? []),
     priority: item.priority,
     prompt: contentItem?.prompt,
     reasons: item.reasons,
