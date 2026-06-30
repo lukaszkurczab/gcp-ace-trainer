@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
   ALGORITHM_EVIDENCE_LEVELS,
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
@@ -12,6 +13,7 @@ import {
   ALGORITHM_PROBLEM_ARCHETYPES,
   ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
   ALGORITHM_SKILL_ATOMS,
+  ALGORITHM_STATIC_MICRO_CHECK_TYPES,
   type AlgorithmTrainingItem,
   validateAlgorithmTrainingItem,
 } from "../src/tracks/algorithms";
@@ -91,6 +93,102 @@ test("Algorithms training item quality rejects multiple primary skills and missi
   assert.ok(issueCodes(missingFeedbackModel).includes("missing_feedback_model"));
 });
 
+test("Algorithms approach templates include mechanics, invariant, pseudocode, complexity, pitfalls, and static status", () => {
+  assert.deepEqual(
+    ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id),
+    [
+      "hash_map_complement_lookup",
+      "sorted_two_pointers_pair_scan",
+      "positive_sliding_window",
+    ],
+  );
+
+  for (const approach of ALGORITHM_APPROACH_TEMPLATES) {
+    assert.equal(approach.contentVersion, ALGORITHM_CONTENT_VERSION);
+    assert.equal(approach.status, "draft");
+    assert.ok(approach.whenToUseSignals.length > 0);
+    assert.ok(approach.whenNotToUseSignals.length > 0);
+    assert.ok(approach.invariants.length > 0);
+    assert.ok(approach.steps.length > 0);
+    assert.ok(approach.pseudocodeTemplate.lines.length > 0);
+    assert.ok(approach.typicalTimeComplexity.length > 0);
+    assert.ok(approach.typicalSpaceComplexity.length > 0);
+    assert.ok(approach.commonMistakeTypes.length > 0);
+    assert.ok(approach.pitfalls.length > 0);
+  }
+});
+
+test("Algorithms static micro-check model does not expose dynamic evaluation fields", () => {
+  const staticCheck = makeStaticMicroCheck();
+  const exposedKeys = new Set(Object.keys(staticCheck));
+
+  for (const forbiddenField of [
+    "ai",
+    "llm",
+    "chat",
+    "generatedFeedback",
+    "semanticEvaluator",
+    "model",
+    "promptTemplate",
+  ]) {
+    assert.equal(exposedKeys.has(forbiddenField), false, forbiddenField);
+  }
+
+  assert.deepEqual(
+    [...ALGORITHM_STATIC_MICRO_CHECK_TYPES],
+    [
+      "single_choice",
+      "multi_select",
+      "order_steps",
+      "fill_blank",
+      "trace_next_step",
+      "select_pseudocode_line",
+    ],
+  );
+});
+
+test("Algorithms approach primer validation rejects missing mechanics fields", () => {
+  const invalidApproachPrimer = makeBaseAlgorithmItem({
+    type: "approach_primer",
+  });
+
+  assert.deepEqual(
+    issueCodes(invalidApproachPrimer).filter((code) =>
+      [
+        "missing_approach_id",
+        "missing_mechanics_summary",
+        "missing_when_to_use_signals",
+        "missing_invariant",
+        "missing_pseudocode",
+        "missing_pitfalls",
+        "missing_static_micro_check",
+      ].includes(code),
+    ),
+    [
+      "missing_approach_id",
+      "missing_invariant",
+      "missing_mechanics_summary",
+      "missing_pitfalls",
+      "missing_pseudocode",
+      "missing_static_micro_check",
+      "missing_when_to_use_signals",
+    ],
+  );
+
+  const validApproachPrimer = makeBaseAlgorithmItem({
+    approachId: "hash_map_complement_lookup",
+    invariant: makeInvariant(),
+    mechanicsSummary: "For each value, check whether the needed complement was already seen, then store this value.",
+    pitfalls: [makePitfall()],
+    pseudocodeTemplate: makePseudocodeTemplate(),
+    staticMicroChecks: [makeStaticMicroCheck()],
+    type: "approach_primer",
+    whenToUseSignals: ["Need fast complement lookup while scanning once."],
+  });
+
+  assert.deepEqual(issueCodes(validApproachPrimer), []);
+});
+
 test("Algorithms strategy choice requires strategy data plus reason and constraint signals", () => {
   const invalidStrategyChoice = makeBaseAlgorithmItem({
     type: "strategy_choice",
@@ -143,29 +241,56 @@ test("Algorithms complexity check requires time, space, and explanation", () => 
   assert.deepEqual(issueCodes(validComplexityCheck), []);
 });
 
-test("Algorithms worked example requires subgoals, solution, and an active micro prompt", () => {
+test("Algorithms worked example requires trace, pseudocode, alternatives, complexity, and static micro-check", () => {
   const invalidWorkedExample = makeBaseAlgorithmItem({
     type: "worked_example",
   });
 
   assert.deepEqual(
-    issueCodes(invalidWorkedExample).filter((code) => code.includes("worked_example")),
+    issueCodes(invalidWorkedExample).filter((code) =>
+      [
+        "missing_problem_statement",
+        "missing_constraints",
+        "missing_approach_id",
+        "missing_approach_choice_reason",
+        "missing_worked_example_subgoals",
+        "missing_step_by_step_trace",
+        "missing_pseudocode",
+        "missing_expected_time_complexity",
+        "missing_expected_space_complexity",
+        "missing_complexity_explanation",
+        "missing_why_not_alternatives",
+        "missing_common_mistakes",
+        "missing_worked_example_static_micro_check",
+      ].includes(code),
+    ),
     [
-      "missing_worked_example_active_prompt",
-      "missing_worked_example_solution",
+      "missing_approach_choice_reason",
+      "missing_approach_id",
+      "missing_common_mistakes",
+      "missing_complexity_explanation",
+      "missing_constraints",
+      "missing_expected_space_complexity",
+      "missing_expected_time_complexity",
+      "missing_problem_statement",
+      "missing_pseudocode",
+      "missing_step_by_step_trace",
+      "missing_why_not_alternatives",
+      "missing_worked_example_static_micro_check",
       "missing_worked_example_subgoals",
     ],
   );
 
   const validWorkedExample = makeBaseAlgorithmItem({
-    microPrompts: [
-      {
-        expectedSignal: "n is too large for checking every pair.",
-        id: "micro-001",
-        prompt: "What constraint makes the nested-loop approach fail?",
-        status: "active",
-      },
-    ],
+    approachChoiceReason: "A one-pass lookup avoids checking every pair for a large input.",
+    approachId: "hash_map_complement_lookup",
+    commonMistakes: ["duplicate_handling_error"],
+    complexityExplanation: "Each input value is scanned once and the lookup can hold up to n values.",
+    constraints: ["n can be 100000"],
+    expectedSpaceComplexity: "O(n)",
+    expectedTimeComplexity: "O(n)",
+    problemStatement: "Find whether any pair sums to the target.",
+    pseudocodeTemplate: makePseudocodeTemplate(),
     solution: {
       approachId: "hash_map_and_set",
       id: "solution-001",
@@ -182,14 +307,49 @@ test("Algorithms worked example requires subgoals, solution, and an active micro
         order: 1,
       },
     ],
+    staticMicroChecks: [makeStaticMicroCheck()],
+    stepByStepTrace: [
+      {
+        description: "First value is stored because no complement has been seen yet.",
+        id: "trace-001",
+        order: 1,
+        state: ["seen = {first value}"],
+      },
+    ],
     type: "worked_example",
+    whyNotAlternatives: [
+      {
+        approachId: "nested_loop",
+        reason: "Checking every pair is too slow for the input limit.",
+      },
+    ],
   });
 
   assert.deepEqual(issueCodes(validWorkedExample), []);
 });
 
+test("Algorithms mechanics-first item types exist before draft item seeding", () => {
+  const itemTypes = new Set<string>([
+    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+  ]);
+
+  for (const itemType of [
+    "approach_naming",
+    "subgoal_identification",
+    "subgoal_ordering",
+    "pseudocode_ordering",
+    "fill_missing_step",
+    "trace_next_step",
+  ]) {
+    assert.equal(itemTypes.has(itemType), true, itemType);
+  }
+});
+
 test("Algorithms model values avoid disallowed progress, gamification, and platform naming", () => {
   const exposedModelValues = [
+    ...ALGORITHM_APPROACH_TEMPLATES,
     ...ALGORITHM_PATTERN_FAMILIES,
     ...ALGORITHM_PATTERN_VARIANTS,
     ...ALGORITHM_PROBLEM_ARCHETYPES,
@@ -199,8 +359,10 @@ test("Algorithms model values avoid disallowed progress, gamification, and platf
     ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
     ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
     ...ALGORITHM_EVIDENCE_LEVELS,
+    ...ALGORITHM_STATIC_MICRO_CHECK_TYPES,
   ];
   const serializedModel = JSON.stringify(exposedModelValues).toLowerCase();
+  const modelTokens = new Set(serializedModel.split(/[^a-z0-9]+/).filter(Boolean));
 
   for (const forbiddenTerm of [
     "readiness",
@@ -211,8 +373,12 @@ test("Algorithms model values avoid disallowed progress, gamification, and platf
     "badge",
     "leaderboard",
     "leetcode",
+    "ai",
+    "llm",
+    "chat",
+    "generated",
   ]) {
-    assert.equal(serializedModel.includes(forbiddenTerm), false, forbiddenTerm);
+    assert.equal(modelTokens.has(forbiddenTerm), false, forbiddenTerm);
   }
 });
 
@@ -248,5 +414,54 @@ function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): 
     trackId: "algorithms",
     type: "trace_drill",
     ...overrides,
+  };
+}
+
+function makeInvariant() {
+  return {
+    description: "The lookup contains values scanned before the current value.",
+    id: "fixture-invariant",
+    label: "Prior values are available",
+  };
+}
+
+function makePitfall() {
+  return {
+    description: "Storing the current value before lookup can reuse the same element.",
+    id: "fixture-pitfall",
+    mistakeTypes: ["duplicate_handling_error"] as const,
+  };
+}
+
+function makePseudocodeTemplate() {
+  return {
+    id: "fixture-pseudocode",
+    language: "pseudocode" as const,
+    lines: [
+      {
+        id: "line-001",
+        indentationLevel: 0,
+        order: 1,
+        text: "for each value, check needed complement before storing current value",
+      },
+    ],
+  };
+}
+
+function makeStaticMicroCheck() {
+  return {
+    correctAnswer: "check_before_store",
+    expectedAnswer: "check_before_store",
+    feedback: "Check before storing when one input element cannot be reused.",
+    id: "static-check-001",
+    mistakeTypes: ["duplicate_handling_error"] as const,
+    options: [
+      { id: "check_before_store", text: "Check complement before storing the current value." },
+      { id: "store_before_check", text: "Store the current value before checking complement." },
+    ],
+    prompt: "Which order avoids reusing the current element?",
+    status: "active" as const,
+    testedSkillAtomIds: ["explain_hash_map_average_lookup"],
+    type: "single_choice" as const,
   };
 }

@@ -1,3 +1,4 @@
+export * from "./algorithmApproaches";
 export * from "./algorithmContentQuality";
 export * from "./algorithmContentTypes";
 export * from "./algorithmTaxonomy";

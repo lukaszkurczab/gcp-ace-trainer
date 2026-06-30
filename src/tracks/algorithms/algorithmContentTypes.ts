@@ -61,8 +61,10 @@ export type AlgorithmEvidenceLevel = (typeof ALGORITHM_EVIDENCE_LEVELS)[number];
 
 export const ALGORITHM_MVP_TRAINING_ITEM_TYPES = [
   "approach_primer",
+  "approach_naming",
   "worked_example",
   "trace_drill",
+  "trace_next_step",
   "strategy_choice",
   "complexity_check",
   "solution_comparison",
@@ -72,9 +74,12 @@ export const ALGORITHM_MVP_TRAINING_ITEM_TYPES = [
 export type AlgorithmMvpTrainingItemType = (typeof ALGORITHM_MVP_TRAINING_ITEM_TYPES)[number];
 
 export const ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES = [
+  "subgoal_identification",
   "subgoal_ordering",
   "pseudocode_parsons",
+  "pseudocode_ordering",
   "faded_solution",
+  "fill_missing_step",
 ] as const;
 
 export type AlgorithmSecondStageTrainingItemType =
@@ -94,6 +99,12 @@ export type AlgorithmTrainingItemType =
   | AlgorithmLaterTrainingItemType;
 
 export type AlgorithmContentStatus = "draft" | "active" | "disabled";
+
+export type AlgorithmApproachId =
+  | "hash_map_complement_lookup"
+  | "sorted_two_pointers_pair_scan"
+  | "positive_sliding_window"
+  | string;
 
 export type AlgorithmTaxonomyAxis =
   | "learning_stage"
@@ -156,6 +167,58 @@ export type AlgorithmSkillAtom = {
   prerequisiteSkillAtomIds: readonly string[];
 };
 
+export type AlgorithmApproachStep = {
+  description: string;
+  id: string;
+  label: string;
+  order: number;
+};
+
+export type AlgorithmInvariant = {
+  description: string;
+  id: string;
+  label: string;
+};
+
+export type AlgorithmPseudocodeLine = {
+  id: string;
+  indentationLevel: number;
+  order: number;
+  text: string;
+};
+
+export type AlgorithmPseudocodeTemplate = {
+  id: string;
+  language: "pseudocode";
+  lines: readonly AlgorithmPseudocodeLine[];
+};
+
+export type AlgorithmApproachPitfall = {
+  description: string;
+  id: string;
+  mistakeTypes: readonly AlgorithmMistakeType[];
+};
+
+export type AlgorithmApproach = {
+  commonMistakeTypes: readonly AlgorithmMistakeType[];
+  contentVersion: string;
+  description: string;
+  id: AlgorithmApproachId;
+  invariants: readonly AlgorithmInvariant[];
+  label: string;
+  patternFamilyId: AlgorithmPatternFamilyId;
+  pitfalls: readonly AlgorithmApproachPitfall[];
+  pseudocodeTemplate: AlgorithmPseudocodeTemplate;
+  status: AlgorithmContentStatus;
+  steps: readonly AlgorithmApproachStep[];
+  typicalSpaceComplexity: AlgorithmComplexityClass;
+  typicalTimeComplexity: AlgorithmComplexityClass;
+  whenNotToUseSignals: readonly string[];
+  whenToUseSignals: readonly string[];
+};
+
+export type AlgorithmApproachTemplate = AlgorithmApproach;
+
 export type AlgorithmFeedbackResult = "correct" | "partial" | "incorrect" | "diagnostic";
 
 export type AlgorithmFeedbackModel = {
@@ -195,22 +258,51 @@ export type AlgorithmSolution = {
   title: string;
 };
 
-export type AlgorithmMicroPrompt = {
-  expectedSignal?: string;
+export const ALGORITHM_STATIC_MICRO_CHECK_TYPES = [
+  "single_choice",
+  "multi_select",
+  "order_steps",
+  "fill_blank",
+  "trace_next_step",
+  "select_pseudocode_line",
+] as const;
+
+export type AlgorithmStaticMicroCheckType = (typeof ALGORITHM_STATIC_MICRO_CHECK_TYPES)[number];
+
+export type AlgorithmStaticMicroCheckOption = {
   id: string;
-  prompt: string;
-  status: "active" | "disabled";
+  text: string;
 };
 
-export type AlgorithmActiveCheck = {
+export type AlgorithmStaticMicroCheck = {
+  correctAnswer: string | readonly string[];
+  expectedAnswer?: string | readonly string[];
+  feedback: string;
   id: string;
-  label: string;
+  mistakeTypes: readonly AlgorithmMistakeType[];
+  options?: readonly AlgorithmStaticMicroCheckOption[];
+  prompt: string;
   status: "active" | "disabled";
+  testedSkillAtomIds: readonly string[];
+  type: AlgorithmStaticMicroCheckType;
+};
+
+export type AlgorithmTraceStep = {
+  description: string;
+  id: string;
+  order: number;
+  state: readonly string[];
+};
+
+export type AlgorithmRejectedAlternative = {
+  approachId: string;
+  reason: string;
 };
 
 export type AlgorithmTrainingItem = {
   acceptableApproachIds?: readonly string[];
-  activeChecks?: readonly AlgorithmActiveCheck[];
+  approachChoiceReason?: string;
+  approachId?: AlgorithmApproachId;
   complexityExplanation?: string;
   constraintSignal?: string;
   constraints?: readonly string[];
@@ -221,20 +313,31 @@ export type AlgorithmTrainingItem = {
   expectedTimeComplexity?: AlgorithmComplexityClass;
   feedbackModel: AlgorithmFeedbackModel;
   id: string;
+  invariant?: AlgorithmInvariant;
   learningStage: AlgorithmLearningStage;
-  microPrompts?: readonly AlgorithmMicroPrompt[];
+  mechanicsSummary?: string;
   primarySkillAtomId: string;
+  problemStatement?: string;
   prompt: string;
+  pseudocodeLines?: readonly AlgorithmPseudocodeLine[];
+  pseudocodeTemplate?: AlgorithmPseudocodeTemplate;
+  pitfalls?: readonly AlgorithmApproachPitfall[];
   reasonSignal?: string;
   rejectedApproachIds?: readonly string[];
   secondarySkillAtomIds?: readonly string[];
   solution?: AlgorithmSolution;
   status: AlgorithmContentStatus;
+  staticMicroChecks?: readonly AlgorithmStaticMicroCheck[];
+  stepByStepTrace?: readonly AlgorithmTraceStep[];
   subgoals?: readonly AlgorithmSubgoal[];
   taxonomyRefs: readonly AlgorithmTaxonomyRef[];
   title: string;
   trackId: "algorithms";
   type: AlgorithmTrainingItemType;
+  whenNotToUseSignals?: readonly string[];
+  whenToUseSignals?: readonly string[];
+  whyNotAlternatives?: readonly AlgorithmRejectedAlternative[];
+  commonMistakes?: readonly AlgorithmMistakeType[];
 };
 
 export function isAlgorithmMistakeType(value: unknown): value is AlgorithmMistakeType {
