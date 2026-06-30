@@ -11,10 +11,14 @@ import {
   ALGORITHM_PATTERN_FAMILIES,
   ALGORITHM_PATTERN_VARIANTS,
   ALGORITHM_PROBLEM_ARCHETYPES,
+  ALGORITHM_ROADMAP,
   ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
+  type AlgorithmRoadmapNode,
+  type AlgorithmRoadmapTrack,
   type AlgorithmTrainingItem,
+  validateAlgorithmRoadmap,
   validateAlgorithmTrainingItem,
 } from "../src/tracks/algorithms";
 
@@ -347,6 +351,142 @@ test("Algorithms mechanics-first item types exist before draft item seeding", ()
   }
 });
 
+test("Algorithms roadmap contains the required first sequence in order", () => {
+  assert.deepEqual(
+    ALGORITHM_ROADMAP.nodes.map((node) => node.id),
+    [
+      "complexity_basics",
+      "array_string_basics",
+      "hash_map_lookup",
+      "two_pointers_pair_scan",
+      "sliding_window_positive",
+      "prefix_sums_range_reasoning",
+      "stack_nested_structure",
+      "binary_search_sorted_input",
+      "strategy_selection_basics",
+      "mixed_pattern_practice",
+    ],
+  );
+  assert.deepEqual(
+    ALGORITHM_ROADMAP.nodes.map((node) => node.order),
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  );
+  assert.deepEqual(validateAlgorithmRoadmap(ALGORITHM_ROADMAP).issues, []);
+});
+
+test("Algorithms roadmap prerequisites point backward only", () => {
+  const nodesById = new Map(getRoadmapNodes().map((node) => [node.id, node]));
+
+  for (const node of getRoadmapNodes()) {
+    for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
+      const prerequisite = nodesById.get(prerequisiteNodeId);
+
+      assert.ok(prerequisite);
+      assert.ok(prerequisite.order < node.order, `${prerequisiteNodeId} should come before ${node.id}`);
+    }
+  }
+});
+
+test("Algorithms roadmap approach refs resolve to existing approach templates", () => {
+  const approachIds = new Set<string>(ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id));
+
+  assert.deepEqual(getRoadmapNode("hash_map_lookup").approachIds, ["hash_map_complement_lookup"]);
+  assert.deepEqual(getRoadmapNode("two_pointers_pair_scan").approachIds, ["sorted_two_pointers_pair_scan"]);
+  assert.deepEqual(getRoadmapNode("sliding_window_positive").approachIds, ["positive_sliding_window"]);
+
+  for (const node of getRoadmapNodes()) {
+    for (const approachId of node.approachIds ?? []) {
+      assert.equal(approachIds.has(approachId), true, approachId);
+    }
+  }
+});
+
+test("Algorithms roadmap pattern family refs resolve to existing taxonomy", () => {
+  const familyIds = new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id));
+
+  for (const node of getRoadmapNodes()) {
+    if (node.primaryPatternFamilyId) {
+      assert.equal(familyIds.has(node.primaryPatternFamilyId), true, node.primaryPatternFamilyId);
+    }
+  }
+});
+
+test("Algorithms roadmap skill atom refs resolve to existing skill atoms", () => {
+  const skillAtomIds = new Set<string>(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
+
+  for (const node of getRoadmapNodes()) {
+    for (const skillAtomId of node.skillAtomIds ?? []) {
+      assert.equal(skillAtomIds.has(skillAtomId), true, skillAtomId);
+    }
+  }
+});
+
+test("Algorithms roadmap recommended item types exist", () => {
+  const itemTypes = new Set<string>([
+    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+  ]);
+
+  for (const node of getRoadmapNodes()) {
+    for (const itemType of node.recommendedItemTypes) {
+      assert.equal(itemTypes.has(itemType), true, `${node.id}:${itemType}`);
+    }
+  }
+});
+
+test("Algorithms roadmap validation rejects duplicate ids and forward prerequisites", () => {
+  const duplicateNode = {
+    ...ALGORITHM_ROADMAP.nodes[2],
+    id: ALGORITHM_ROADMAP.nodes[1].id,
+    order: ALGORITHM_ROADMAP.nodes[1].order,
+  };
+  const forwardPrerequisiteNode = {
+    ...ALGORITHM_ROADMAP.nodes[0],
+    prerequisiteNodeIds: [ALGORITHM_ROADMAP.nodes[1].id],
+  };
+  const invalidRoadmap: AlgorithmRoadmapTrack = {
+    ...ALGORITHM_ROADMAP,
+    nodes: [
+      ALGORITHM_ROADMAP.nodes[0],
+      duplicateNode,
+      forwardPrerequisiteNode,
+      ...ALGORITHM_ROADMAP.nodes.slice(2),
+    ],
+  };
+
+  const issueCodes = validateAlgorithmRoadmap(invalidRoadmap).issues.map((issue) => issue.code);
+
+  assert.ok(issueCodes.includes("duplicate_node_id"));
+  assert.ok(issueCodes.includes("duplicate_order"));
+  assert.ok(issueCodes.includes("forward_prerequisite"));
+});
+
+test("Algorithms roadmap visible values avoid forbidden progress and platform terms", () => {
+  const serializedRoadmap = JSON.stringify(ALGORITHM_ROADMAP).toLowerCase();
+  const roadmapTokens = new Set(serializedRoadmap.split(/[^a-z0-9]+/).filter(Boolean));
+
+  for (const forbiddenTerm of [
+    "readiness",
+    "retention",
+    "mastery",
+    "mastered",
+    "strong",
+    "weak",
+    "streak",
+    "level",
+    "badge",
+    "leaderboard",
+    "leetcode",
+    "ai",
+    "llm",
+    "chat",
+    "generated",
+  ]) {
+    assert.equal(roadmapTokens.has(forbiddenTerm), false, forbiddenTerm);
+  }
+});
+
 test("Algorithms model values avoid disallowed progress, gamification, and platform naming", () => {
   const exposedModelValues = [
     ...ALGORITHM_APPROACH_TEMPLATES,
@@ -360,6 +500,7 @@ test("Algorithms model values avoid disallowed progress, gamification, and platf
     ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
     ...ALGORITHM_EVIDENCE_LEVELS,
     ...ALGORITHM_STATIC_MICRO_CHECK_TYPES,
+    ALGORITHM_ROADMAP,
   ];
   const serializedModel = JSON.stringify(exposedModelValues).toLowerCase();
   const modelTokens = new Set(serializedModel.split(/[^a-z0-9]+/).filter(Boolean));
@@ -386,6 +527,17 @@ function issueCodes(item: unknown): string[] {
   return validateAlgorithmTrainingItem(item)
     .issues.map((issue) => issue.code)
     .sort();
+}
+
+function getRoadmapNodes(): readonly AlgorithmRoadmapNode[] {
+  return ALGORITHM_ROADMAP.nodes;
+}
+
+function getRoadmapNode(nodeId: string): AlgorithmRoadmapNode {
+  const node = getRoadmapNodes().find((item) => item.id === nodeId);
+
+  assert.ok(node);
+  return node;
 }
 
 function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): AlgorithmTrainingItem {
