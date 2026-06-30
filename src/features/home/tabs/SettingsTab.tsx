@@ -10,6 +10,7 @@ import {
 import type { TrackDefinition } from "../../../domain";
 import type { LocalStorageIssue } from "../../../storage";
 import { colors, spacing, typography } from "../../../theme";
+import { CLEAR_LOCAL_HISTORY_DETAIL } from "../localReset";
 import { SETTINGS_ROWS } from "../shellModel";
 
 type SettingsTabProps = {
@@ -129,7 +130,7 @@ export function SettingsTab({
           variant="grouped"
         />
         <ListRow
-          detail="Clears legacy local history, overrides, review marks, and active sessions."
+          detail={CLEAR_LOCAL_HISTORY_DETAIL}
           leading={<IconTile name="trash" tone="danger" />}
           onPress={onClearAllLocalData}
           title={getSettingsRowLabel("clearLocalHistory")}

@@ -18,10 +18,6 @@ import {
 import type { RootStackParamList } from "../../navigation";
 import {
   clearActiveExamSession,
-  clearAttempts,
-  clearPracticeHistory,
-  clearQuestionReviewState,
-  clearQuestions,
   getActiveExamSession,
   getActiveTrackId,
   getAttempts,
@@ -49,6 +45,10 @@ import { HomeTab } from "./tabs/HomeTab";
 import { PracticeTab } from "./tabs/PracticeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import { SettingsTab } from "./tabs/SettingsTab";
+import {
+  CLEAR_LOCAL_HISTORY_CONFIRMATION,
+  clearPatternlyLocalHistory,
+} from "./localReset";
 import { MAIN_TAB_ITEMS } from "./shellModel";
 import type { ShellTab } from "./types";
 
@@ -180,20 +180,14 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   function clearAllLocalData() {
     Alert.alert(
       "Clear all local data?",
-      "This deletes local attempts, practice history, local question overrides, review marks, and active sessions. Built-in content remains available.",
+      CLEAR_LOCAL_HISTORY_CONFIRMATION,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Clear",
           style: "destructive",
           onPress: () => {
-            void Promise.all([
-              clearActiveExamSession(),
-              clearQuestions(),
-              clearAttempts(),
-              clearPracticeHistory(),
-              clearQuestionReviewState(),
-            ]).then(() =>
+            void clearPatternlyLocalHistory().then(() =>
               setData({
                 activeSession: null,
                 attempts: [],
