@@ -10,5 +10,6 @@ export type RootStackParamList = {
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
   [ROUTES.PRACTICE_SETUP]: undefined;
   [ROUTES.PRACTICE_SESSION]: { domain: ExamDomain; questionCount: 10 | 20 | "all" };
+  [ROUTES.ALGORITHMS_SESSION]: { nodeId?: string } | undefined;
   [ROUTES.MISTAKES_REVIEW]: undefined;
 };

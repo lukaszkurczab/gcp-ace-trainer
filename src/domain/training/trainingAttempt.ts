@@ -52,11 +52,6 @@ export type TrainingAttemptResult =
       maxPoints: number;
     }
   | {
-      kind: "strategy_quality";
-      quality: "strong" | "acceptable" | "weak" | "unsafe";
-      score?: number;
-    }
-  | {
       components: TrainingAttemptResult[];
       isCorrect?: boolean;
       kind: "mixed";

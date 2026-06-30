@@ -69,7 +69,7 @@ export type TrainingItemBase = {
   id: TrainingItemId;
   learningObjective?: string;
   prompt: string;
-  taxonomyRefs: TrainingItemTaxonomyRef[];
+  taxonomyRefs: readonly TrainingItemTaxonomyRef[];
   trackId: TrackId;
   type: TrainingItemType;
 };
@@ -107,6 +107,26 @@ export type AlgorithmsSolutionComparisonTrainingItem = TrainingItemBase & {
   type: "solution_comparison";
 };
 
+export type AlgorithmsStaticTrainingItem = TrainingItemBase & {
+  type:
+    | "approach_primer"
+    | "approach_naming"
+    | "worked_example"
+    | "trace_drill"
+    | "trace_next_step"
+    | "complexity_check"
+    | "edge_case_drill"
+    | "subgoal_identification"
+    | "subgoal_ordering"
+    | "pseudocode_parsons"
+    | "pseudocode_ordering"
+    | "faded_solution"
+    | "fill_missing_step"
+    | "independent_attempt"
+    | "interview_simulation_problem"
+    | "full_code_editor";
+};
+
 export type MistakeReviewTrainingItem = TrainingItemBase & {
   responseSpec: TrainingFreeformResponseSpec;
   type: "mistake_review";
@@ -124,5 +144,6 @@ export type TrainingItem =
   | AlgorithmsStrategyChoiceTrainingItem
   | AlgorithmsComplexityAnalysisTrainingItem
   | AlgorithmsSolutionComparisonTrainingItem
+  | AlgorithmsStaticTrainingItem
   | MistakeReviewTrainingItem
   | FreeformReflectionTrainingItem;

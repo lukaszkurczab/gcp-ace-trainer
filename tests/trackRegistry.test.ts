@@ -28,16 +28,17 @@ test("cloud certification is active and algorithms is explicit draft", () => {
   assert.equal(cloud.status, "active");
   assert.equal(algorithms.status, "draft");
   assert.equal(algorithms.title, "Algorithms");
-  assert.equal(algorithms.contentManifest.itemCount, 0);
+  assert.equal(algorithms.contentManifest.itemCount, 7);
   assert.ok(getEnabledSessionModes(cloud.id).length > 0);
-  assert.equal(getEnabledSessionModes(algorithms.id).length, 0);
+  assert.equal(getEnabledSessionModes(algorithms.id).length, 1);
   assert.deepEqual(
     algorithms.sessionModes.map((mode) => [mode.title, mode.enabled]),
     [
-      ["Pattern drill", false],
+      ["Roadmap basics", true],
       ["Strategy practice", false],
     ],
   );
+  assert.equal(algorithms.nextActionLabel, "Start Complexity basics");
 });
 
 test("track id guard rejects unknown values", () => {

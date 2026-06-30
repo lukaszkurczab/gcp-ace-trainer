@@ -4,6 +4,7 @@ export type {
   AlgorithmsComplexityAnalysisTrainingItem,
   AlgorithmsPatternIdentificationTrainingItem,
   AlgorithmsSolutionComparisonTrainingItem,
+  AlgorithmsStaticTrainingItem,
   AlgorithmsStrategyChoiceTrainingItem,
   CertificationMultipleChoiceTrainingItem,
   CertificationSingleChoiceTrainingItem,

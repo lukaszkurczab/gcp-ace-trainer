@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { ROUTES } from "../constants/routes";
+import { AlgorithmsSessionScreen } from "../features/algorithms/AlgorithmsSessionScreen";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
@@ -66,6 +67,11 @@ export function RootNavigator() {
         name={ROUTES.PRACTICE_SESSION}
         component={PracticeSessionScreen}
         options={{ headerShown: false, title: "Practice Session" }}
+      />
+      <Stack.Screen
+        name={ROUTES.ALGORITHMS_SESSION}
+        component={AlgorithmsSessionScreen}
+        options={{ headerShown: false, title: "Algorithms Session" }}
       />
       <Stack.Screen
         name={ROUTES.MISTAKES_REVIEW}

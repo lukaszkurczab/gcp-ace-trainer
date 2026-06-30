@@ -1,11 +1,12 @@
 import { ALGORITHMS_TRACK_ID, getTrackDefinition } from "../../domain";
 import type { TrainingItem, TrainingItemId, TrainingSessionModeId } from "../../domain/training";
 import type { TrackContentAdapter } from "../types";
+import { ALGORITHM_TRAINING_ITEMS } from "./algorithmItems";
 
 const algorithmsTrack = getTrackDefinition(ALGORITHMS_TRACK_ID);
 
 export function createAlgorithmsContentAdapter(
-  items: readonly TrainingItem[] = [],
+  items: readonly TrainingItem[] = ALGORITHM_TRAINING_ITEMS,
 ): TrackContentAdapter {
   const algorithmsItems = items.filter((item) => item.trackId === ALGORITHMS_TRACK_ID);
   const itemsById = new Map(algorithmsItems.map((item) => [item.id, item]));

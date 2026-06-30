@@ -3,6 +3,8 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
+import type { TrainingAttempt } from "../../../domain/training";
+import { buildAlgorithmProgressFacts } from "../../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type {
   AttemptSummary,
@@ -28,6 +30,7 @@ export type ProgressTabActivitySummary = {
 
 export type ProgressTabPerformanceScore = {
   correct: number;
+  detail?: string;
   id: string;
   label: string;
   percent: number;
@@ -39,7 +42,7 @@ export type ProgressTabModel = {
   hasData: boolean;
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
-  performanceSectionTitle: "Performance by domain" | "Performance areas";
+  performanceSectionTitle: "Performance by domain" | "Performance areas" | "Roadmap nodes";
   reviewActionEnabled: false;
   reviewActionLabel: string;
   reviewQueueCount: number;
@@ -53,6 +56,7 @@ export type BuildProgressTabModelInput = {
   attempts: readonly AttemptSummary[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   practiceHistory: readonly PracticeAnswerRecord[];
+  trainingAttempts?: readonly TrainingAttempt[];
 };
 
 export function buildProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
@@ -61,7 +65,7 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
   }
 
   if (input.activeTrackId === ALGORITHMS_TRACK_ID) {
-    return buildAlgorithmsProgressTabModel();
+    return buildAlgorithmsProgressTabModel(input.trainingAttempts ?? []);
   }
 
   return buildLegacyProgressTabModel(input);
@@ -113,37 +117,58 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
   };
 }
 
-function buildAlgorithmsProgressTabModel(): ProgressTabModel {
+function buildAlgorithmsProgressTabModel(
+  trainingAttempts: readonly TrainingAttempt[],
+): ProgressTabModel {
+  const facts = buildAlgorithmProgressFacts(trainingAttempts);
+
   return {
     activitySummary: {
-      detail: "Algorithms activity will appear after pattern and strategy sessions are implemented.",
-      label: "Algorithm attempts",
-      value: 0,
+      detail: `Active roadmap node: ${facts.activeRoadmapNode.label}.`,
+      label: "Items completed",
+      value: facts.itemsCompleted,
     },
-    hasData: false,
+    hasData: facts.itemsCompleted > 0,
     metrics: [
       {
-        label: "Pattern drills",
-        tone: "primary",
-        value: 0,
+        label: "Correct",
+        tone: "success",
+        value: facts.correctCount,
       },
       {
-        label: "Strategy checks",
+        label: "Partial",
         tone: "info",
-        value: 0,
+        value: facts.partialCount,
       },
       {
-        label: "Complexity reviews",
+        label: "Incorrect",
+        tone: "warning",
+        value: facts.incorrectCount,
+      },
+      {
+        label: "Nodes started",
+        tone: "primary",
+        value: facts.roadmapNodesStarted,
+      },
+      {
+        label: "Nodes completed",
         tone: "neutral",
-        value: 0,
+        value: facts.roadmapNodesCompleted,
       },
     ],
-    performanceScores: [],
-    performanceSectionTitle: "Performance areas",
+    performanceScores: facts.nodeProgress.map((node) => ({
+      correct: node.completedItemCount,
+      detail: `${node.completedItemCount}/${node.itemCount} items completed`,
+      id: node.nodeId,
+      label: node.label,
+      percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
+      total: node.itemCount,
+    })),
+    performanceSectionTitle: "Roadmap nodes",
     reviewActionEnabled: false,
-    reviewActionLabel: "Algorithms review is not available yet.",
+    reviewActionLabel: "Algorithms review is not active for this MVP.",
     reviewQueueCount: 0,
-    reviewQueueCopy: "Algorithm review queue will appear after Algorithms sessions are implemented.",
+    reviewQueueCopy: "Algorithms review queue is not active for this MVP.",
   };
 }
 

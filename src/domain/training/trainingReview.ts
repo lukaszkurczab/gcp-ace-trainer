@@ -10,7 +10,6 @@ export type ReviewReason =
   | "incorrect_attempt"
   | "partial_credit"
   | "low_confidence"
-  | "weak_strategy"
   | "repeated_mistake"
   | "manual"
   | "due_spacing";

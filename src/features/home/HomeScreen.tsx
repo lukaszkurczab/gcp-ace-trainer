@@ -24,6 +24,7 @@ import {
   getPracticeHistory,
   getQuestions,
   getStorageIssues,
+  getTrainingAttempts,
   type LocalStorageIssue,
 } from "../../storage";
 import { colors } from "../../theme";
@@ -37,6 +38,7 @@ import type {
   PracticeAnswerRecord,
   Question,
 } from "../../types";
+import type { TrainingAttempt } from "../../domain/training";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { createExamSession } from "../exam/examService";
 import { DEFAULT_QUESTION_BANK } from "../questions/defaultQuestionBank";
@@ -64,6 +66,7 @@ type ShellData = {
   practiceHistory: PracticeAnswerRecord[];
   questions: Question[];
   storageIssues: readonly LocalStorageIssue[];
+  trainingAttempts: TrainingAttempt[];
 };
 
 const tabs: readonly BottomTabBarItem<ShellTab>[] = MAIN_TAB_ITEMS;
@@ -81,6 +84,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     practiceHistory: [],
     questions: DEFAULT_QUESTION_BANK,
     storageIssues: [],
+    trainingAttempts: [],
   });
 
   useFocusEffect(
@@ -95,6 +99,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           savedAttempts,
           savedPracticeHistory,
           cloudProgress,
+          trainingAttemptsResult,
         ] = await Promise.all([
           getActiveTrackId(),
           getQuestions(),
@@ -102,6 +107,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           getAttempts(),
           getPracticeHistory(),
           loadCloudCertificationProgressViewModel(),
+          getTrainingAttempts(),
         ]);
 
         if (isActive) {
@@ -113,6 +119,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             practiceHistory: savedPracticeHistory,
             questions: savedQuestions,
             storageIssues: getStorageIssues(),
+            trainingAttempts: trainingAttemptsResult.value,
           });
         }
       }
@@ -195,6 +202,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
                 practiceHistory: [],
                 questions: DEFAULT_QUESTION_BANK,
                 storageIssues: getStorageIssues(),
+                trainingAttempts: [],
               }),
             );
           },
@@ -236,6 +244,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
             practiceHistory={data.practiceHistory}
+            trainingAttempts={data.trainingAttempts}
           />
         ) : null}
         {activeTab === "settings" ? (

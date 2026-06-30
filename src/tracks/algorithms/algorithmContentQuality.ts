@@ -413,6 +413,13 @@ function validateStaticMicroChecks(
     ) {
       addIssue(issues, "invalid_static_micro_check", "Static micro-check is missing required static fields.", itemId);
     }
+
+    if (
+      Array.isArray(check.mistakeTypes) &&
+      check.mistakeTypes.some((mistakeType) => !isAlgorithmMistakeType(mistakeType))
+    ) {
+      addIssue(issues, "invalid_static_micro_check", "Static micro-check includes an unsupported mistake type.", itemId);
+    }
   }
 }
 
@@ -450,5 +457,13 @@ function isNonEmptyStringArray(value: unknown): value is string[] {
 }
 
 function hasStaticAnswer(value: unknown): boolean {
-  return isNonEmptyString(value) || isNonEmptyStringArray(value);
+  return isNonEmptyString(value) || isNonEmptyStringArray(value) || isComplexityPairAnswer(value);
+}
+
+function isComplexityPairAnswer(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.time) &&
+    isNonEmptyString(value.space)
+  );
 }

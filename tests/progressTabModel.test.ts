@@ -4,6 +4,7 @@ import test from "node:test";
 import type { CloudCertificationProgressViewModel } from "../src/tracks";
 import { buildProgressTabModel } from "../src/features/home/tabs/progressTabModel";
 import type { AnalyticsData } from "../src/features/analytics/analyticsService";
+import type { TrainingAttempt } from "../src/domain/training";
 
 test("canonical Cloud progress maps to ProgressTab metrics", () => {
   const model = buildProgressTabModel({
@@ -156,7 +157,7 @@ test("mapped ProgressTab data does not expose readiness or retention fields", ()
   assert.equal("level" in model, false);
 });
 
-test("Algorithms progress keeps the existing draft empty behavior", () => {
+test("Algorithms progress shows empty local facts before attempts", () => {
   const model = buildProgressTabModel({
     activeTrackId: "algorithms",
     analytics: makeAnalytics({
@@ -171,22 +172,105 @@ test("Algorithms progress keeps the existing draft empty behavior", () => {
 
   assert.equal(model.hasData, false);
   assert.equal(model.reviewQueueCount, 0);
-  assert.equal(model.reviewQueueCopy, "Algorithm review queue will appear after Algorithms sessions are implemented.");
-  assert.equal(model.reviewActionLabel, "Algorithms review is not available yet.");
-  assert.deepEqual(model.performanceScores, []);
+  assert.equal(model.reviewQueueCopy, "Algorithms review queue is not active for this MVP.");
+  assert.equal(model.reviewActionLabel, "Algorithms review is not active for this MVP.");
+  assert.equal(model.performanceSectionTitle, "Roadmap nodes");
+  assert.equal(model.performanceScores[0]?.detail, "0/1 items completed");
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
-      ["Pattern drills", 0],
-      ["Strategy checks", 0],
-      ["Complexity reviews", 0],
+      ["Correct", 0],
+      ["Partial", 0],
+      ["Incorrect", 0],
+      ["Nodes started", 0],
+      ["Nodes completed", 0],
     ],
   );
   assert.deepEqual(model.activitySummary, {
-    detail: "Algorithms activity will appear after pattern and strategy sessions are implemented.",
-    label: "Algorithm attempts",
+    detail: "Active roadmap node: Complexity basics.",
+    label: "Items completed",
     value: 0,
   });
+});
+
+test("Algorithms progress uses only Algorithms training attempts", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics({
+      totalPracticeQuestionsAnswered: 11,
+    }),
+    attempts: [],
+    cloudProgress: makeCloudProgress({
+      totalAttempts: 9,
+    }),
+    practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+        isCorrect: true,
+        kind: "correctness",
+      }),
+      {
+        ...makeAlgorithmAttempt("alg-array-string-naming-001", {
+          isCorrect: true,
+          kind: "correctness",
+        }),
+        trackId: "cloud-certification",
+      },
+    ],
+  });
+
+  assert.equal(model.hasData, true);
+  assert.deepEqual(model.activitySummary, {
+    detail: "Active roadmap node: Array and string basics.",
+    label: "Items completed",
+    value: 1,
+  });
+  assert.deepEqual(
+    model.metrics.map((metric) => [metric.label, metric.value]),
+    [
+      ["Correct", 1],
+      ["Partial", 0],
+      ["Incorrect", 0],
+      ["Nodes started", 1],
+      ["Nodes completed", 1],
+    ],
+  );
+});
+
+test("Algorithms node completion is based on seeded item attempts", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+        isCorrect: true,
+        kind: "correctness",
+      }),
+      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+        isCorrect: false,
+        kind: "correctness",
+      }),
+    ],
+  });
+  const complexityNode = model.performanceScores.find((score) => score.id === "complexity_basics");
+  const hashNode = model.performanceScores.find((score) => score.id === "hash_map_lookup");
+
+  assert.equal(complexityNode?.detail, "1/1 items completed");
+  assert.equal(complexityNode?.percent, 100);
+  assert.equal(hashNode?.detail, "1/3 items completed");
+  assert.equal(hashNode?.percent, 33);
+  assert.deepEqual(
+    model.metrics.map((metric) => [metric.label, metric.value]),
+    [
+      ["Correct", 1],
+      ["Partial", 0],
+      ["Incorrect", 1],
+      ["Nodes started", 2],
+      ["Nodes completed", 1],
+    ],
+  );
 });
 
 function makeCloudProgress(
@@ -240,5 +324,24 @@ function makeAnalytics(
     },
     weakestTags: [],
     weaknessSummary: [],
+  };
+}
+
+function makeAlgorithmAttempt(
+  itemId: string,
+  result: TrainingAttempt["result"],
+): TrainingAttempt {
+  return {
+    answeredAt: `2026-06-29T12:00:00.000Z:${itemId}`,
+    id: `attempt-${itemId}`,
+    itemId,
+    itemType: "approach_primer",
+    modeId: "algorithms-roadmap-basics",
+    response: {
+      kind: "option_selection",
+      selectedOptionIds: ["fixture"],
+    },
+    result,
+    trackId: "algorithms",
   };
 }

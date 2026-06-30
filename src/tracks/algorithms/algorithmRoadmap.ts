@@ -128,7 +128,7 @@ const algorithmRoadmapNodes = [
     recommendedItemTypes: ["approach_primer", "complexity_check"],
     shortDescription: "Build the constraint and Big O reasoning needed before choosing approaches.",
     skillAtomIds: ["recognize_n2_too_slow_for_large_n"],
-    status: "draft",
+    status: "available",
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
@@ -150,7 +150,7 @@ const algorithmRoadmapNodes = [
     recommendedItemTypes: ["trace_drill", "edge_case_drill"],
     shortDescription: "Prepare the input-shape reasoning used by early array and string approaches.",
     skillAtomIds: ["recognize_n2_too_slow_for_large_n"],
-    status: "draft",
+    status: "available",
   },
   {
     approachIds: ["hash_map_complement_lookup"],
@@ -174,7 +174,7 @@ const algorithmRoadmapNodes = [
     recommendedItemTypes: ["approach_primer", "worked_example", "trace_next_step"],
     shortDescription: "Learn one-pass lookup mechanics before broader strategy selection.",
     skillAtomIds: ["explain_hash_map_average_lookup"],
-    status: "draft",
+    status: "available",
   },
   {
     approachIds: ["sorted_two_pointers_pair_scan"],
@@ -198,7 +198,7 @@ const algorithmRoadmapNodes = [
     recommendedItemTypes: ["approach_primer", "trace_next_step", "subgoal_ordering"],
     shortDescription: "Practice boundary movement after hash lookup mechanics are grounded.",
     skillAtomIds: ["choose_two_pointers_for_sorted_pair_condition"],
-    status: "draft",
+    status: "available",
   },
   {
     approachIds: ["positive_sliding_window"],

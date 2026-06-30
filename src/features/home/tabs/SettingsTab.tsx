@@ -124,7 +124,7 @@ export function SettingsTab({
           variant="grouped"
         />
         <ListRow
-          detail="Google and LeetCode references are independent study context only."
+          detail="Certification and algorithm references are independent study context only."
           leading={<IconTile name="shield-check" tone="muted" />}
           title={getSettingsRowLabel("legalSafety")}
           variant="grouped"

@@ -7,8 +7,6 @@ export type FeedbackSignal =
   | "correct"
   | "incorrect"
   | "partially_correct"
-  | "strong_strategy"
-  | "weak_strategy"
   | "misconception"
   | "review_recommended"
   | "neutral";

@@ -67,10 +67,6 @@ function isReviewCandidateResult(result: TrainingAttemptResult): boolean {
     return result.earnedPoints < result.maxPoints;
   }
 
-  if (result.kind === "strategy_quality") {
-    return result.quality !== "strong";
-  }
-
   if (result.kind === "mixed") {
     return result.isCorrect === false || result.components.some(isReviewCandidateResult);
   }

@@ -7,5 +7,6 @@ export const ROUTES = {
   ANSWER_REVIEW: "AnswerReview",
   PRACTICE_SETUP: "PracticeSetup",
   PRACTICE_SESSION: "PracticeSession",
+  ALGORITHMS_SESSION: "AlgorithmsSession",
   MISTAKES_REVIEW: "MistakesReview",
 } as const;

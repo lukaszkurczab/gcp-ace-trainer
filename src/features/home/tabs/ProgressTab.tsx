@@ -13,6 +13,7 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
+import type { TrainingAttempt } from "../../../domain/training";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import { colors, spacing, typography } from "../../../theme";
 import type {
@@ -28,6 +29,7 @@ type ProgressTabProps = {
   attempts: AttemptSummary[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
+  trainingAttempts?: TrainingAttempt[];
 };
 
 export function ProgressTab({
@@ -36,6 +38,7 @@ export function ProgressTab({
   attempts,
   cloudProgress,
   practiceHistory,
+  trainingAttempts = [],
 }: ProgressTabProps) {
   const progress = buildProgressTabModel({
     activeTrackId: activeTrack.id,
@@ -43,6 +46,7 @@ export function ProgressTab({
     attempts,
     cloudProgress,
     practiceHistory,
+    trainingAttempts,
   });
 
   return (
@@ -107,11 +111,14 @@ export function ProgressTab({
             {progress.performanceScores.map((score) => (
               <View key={score.id} style={styles.performanceRow}>
                 <View style={styles.performanceHeader}>
-                  <IconTile name="cloud" tone="info" />
+                  <IconTile
+                    name={activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}
+                    tone="info"
+                  />
                   <View style={styles.performanceCopy}>
                     <Text style={styles.performanceTitle}>{score.label}</Text>
                     <Text style={styles.mutedText}>
-                      {score.correct}/{score.total} correct
+                      {score.detail ?? `${score.correct}/${score.total} correct`}
                     </Text>
                   </View>
                   <View style={styles.performanceMeta}>
@@ -158,7 +165,7 @@ function getProgressEmptyDescription(
   hasData: boolean,
 ): string {
   if (trackId !== CLOUD_CERTIFICATION_TRACK_ID) {
-    return "Pattern, strategy, and complexity metrics will appear after Algorithms sessions are implemented.";
+    return "Start an Algorithms session to record local roadmap progress.";
   }
 
   return hasData

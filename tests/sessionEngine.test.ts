@@ -15,6 +15,7 @@ import {
 } from "../src/domain";
 import type { TrainingAttempt, TrainingItem, TrainingSession } from "../src/domain/training";
 import {
+  ALGORITHM_TRAINING_ITEMS,
   createAlgorithmsScoringAdapter,
   createCloudCertificationContentAdapter,
   createCloudCertificationScoringAdapter,
@@ -203,11 +204,11 @@ test("scores a Cloud attempt through the Cloud adapter", () => {
 });
 
 test("scores an Algorithms fixture attempt through the Algorithms adapter", () => {
-  const item = makeAlgorithmsStrategyItem();
+  const item = getRequiredItem(ALGORITHM_TRAINING_ITEMS, "alg-hash-map-primer-001");
   const session = createTrainingSession({
     id: "session-algorithms-score-001",
     items: [item],
-    modeId: "algorithms-pattern-drill",
+    modeId: "algorithms-roadmap-basics",
     startedAt: "2026-06-29T10:00:00.000Z",
     trackId: ALGORITHMS_TRACK_ID,
   });
@@ -216,8 +217,8 @@ test("scores an Algorithms fixture attempt through the Algorithms adapter", () =
     id: "attempt-algorithms-score-001",
     item,
     response: {
-      kind: "strategy_selection",
-      selectedStrategyId: "two-pointers",
+      kind: "option_selection",
+      selectedOptionIds: ["check_complement_first"],
     },
     session,
   });
@@ -235,12 +236,7 @@ test("scores an Algorithms fixture attempt through the Algorithms adapter", () =
         createReviewQueueItems: () => [],
         trackId: ALGORITHMS_TRACK_ID,
       },
-      scoring: createAlgorithmsScoringAdapter({
-        [item.id]: {
-          expectedStrategyId: "two-pointers",
-          kind: "strategy_selection",
-        },
-      }),
+      scoring: createAlgorithmsScoringAdapter(),
       trackId: ALGORITHMS_TRACK_ID,
     },
     attempt,
@@ -249,9 +245,8 @@ test("scores an Algorithms fixture attempt through the Algorithms adapter", () =
   });
 
   assert.deepEqual(scored.result, {
-    kind: "strategy_quality",
-    quality: "strong",
-    score: 1,
+    isCorrect: true,
+    kind: "correctness",
   });
 });
 

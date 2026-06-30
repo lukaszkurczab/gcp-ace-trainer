@@ -261,6 +261,7 @@ export type AlgorithmSolution = {
 export const ALGORITHM_STATIC_MICRO_CHECK_TYPES = [
   "single_choice",
   "multi_select",
+  "complexity_pair",
   "order_steps",
   "fill_blank",
   "trace_next_step",
@@ -274,9 +275,19 @@ export type AlgorithmStaticMicroCheckOption = {
   text: string;
 };
 
+export type AlgorithmComplexityPairAnswer = {
+  space: AlgorithmComplexityClass;
+  time: AlgorithmComplexityClass;
+};
+
+export type AlgorithmStaticMicroCheckAnswer =
+  | string
+  | readonly string[]
+  | AlgorithmComplexityPairAnswer;
+
 export type AlgorithmStaticMicroCheck = {
-  correctAnswer: string | readonly string[];
-  expectedAnswer?: string | readonly string[];
+  correctAnswer: AlgorithmStaticMicroCheckAnswer;
+  expectedAnswer?: AlgorithmStaticMicroCheckAnswer;
   feedback: string;
   id: string;
   mistakeTypes: readonly AlgorithmMistakeType[];
@@ -324,6 +335,7 @@ export type AlgorithmTrainingItem = {
   pitfalls?: readonly AlgorithmApproachPitfall[];
   reasonSignal?: string;
   rejectedApproachIds?: readonly string[];
+  roadmapNodeId?: string;
   secondarySkillAtomIds?: readonly string[];
   solution?: AlgorithmSolution;
   status: AlgorithmContentStatus;

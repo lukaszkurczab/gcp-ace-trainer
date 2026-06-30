@@ -110,26 +110,40 @@ export function PracticeTab({
       ) : (
         <>
           <Card variant="tonal" style={styles.practiceHero}>
-            <Text style={styles.heroEyebrow}>Draft learning system</Text>
+            <Text style={styles.heroEyebrow}>Algorithms roadmap</Text>
             <SectionHeader
               title={algorithmsModel?.title ?? activeTrack.title}
               subtitle={algorithmsModel?.description}
               action={<Badge label="Draft" tone="warning" />}
             />
-            <Button disabled onPress={() => undefined} variant="secondary">
-              Sessions not available yet
+            <Button
+              onPress={() =>
+                algorithmsModel
+                  ? navigation.navigate(
+                    algorithmsModel.primaryAction.route,
+                    algorithmsModel.primaryAction.routeParams,
+                  )
+                  : undefined
+              }
+            >
+              {algorithmsModel?.primaryAction.label ?? "Start Complexity basics"}
             </Button>
           </Card>
 
           <View style={styles.section}>
-            <SectionHeader title="Planned learning modes" tight />
-            {algorithmsModel?.modes.map((mode) => (
+            <SectionHeader title="Roadmap" tight />
+            {algorithmsModel?.nodes.map((node) => (
               <ListRow
-                detail={mode.detail}
-                key={mode.title}
-                leading={<IconTile name="route" tone={mode.tone} />}
-                title={mode.title}
-                trailing={<Badge label={mode.label} tone="neutral" />}
+                detail={node.detail}
+                key={node.nodeId}
+                leading={<IconTile name="route" tone={node.tone} />}
+                onPress={
+                  node.enabled && node.routeParams
+                    ? () => navigation.navigate(ROUTES.ALGORITHMS_SESSION, node.routeParams)
+                    : undefined
+                }
+                title={node.title}
+                trailing={<Badge label={node.label} tone={node.enabled ? "ready" : "neutral"} />}
               />
             ))}
           </View>

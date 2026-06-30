@@ -107,29 +107,28 @@ test("Algorithms pattern-identification item can be represented as a TrainingIte
   assert.equal(item.responseSpec.kind, "pattern_selection");
 });
 
-test("Algorithms strategy-choice attempt can be represented without selected option ids", () => {
+test("Algorithms static item attempt can store deterministic scoring", () => {
   const attempt: TrainingAttempt = {
     answeredAt: "2026-06-29T12:00:00.000Z",
-    id: "attempt-algo-strategy-001",
-    itemId: "algo-strategy-001",
-    itemType: "strategy_choice",
-    modeId: "algorithms-pattern-drill",
+    id: "attempt-algo-static-001",
+    itemId: "alg-hash-map-primer-001",
+    itemType: "approach_primer",
+    modeId: "algorithms-roadmap-basics",
     response: {
-      kind: "strategy_selection",
-      selectedStrategyId: "sort-then-two-pointers",
+      kind: "option_selection",
+      selectedOptionIds: ["check_complement_first"],
     },
     result: {
-      kind: "strategy_quality",
-      quality: "strong",
-      score: 0.9,
+      isCorrect: true,
+      kind: "correctness",
     },
     trackId: ALGORITHMS_TRACK_ID,
   };
 
-  assert.equal(attempt.modeId, "algorithms-pattern-drill");
-  assert.equal(attempt.response.kind, "strategy_selection");
-  assert.equal("selectedOptionIds" in attempt.response, false);
-  assert.equal(attempt.result?.kind, "strategy_quality");
+  assert.equal(attempt.modeId, "algorithms-roadmap-basics");
+  assert.equal(attempt.response.kind, "option_selection");
+  assert.deepEqual(attempt.response.selectedOptionIds, ["check_complement_first"]);
+  assert.equal(attempt.result?.kind, "correctness");
 });
 
 test("Cloud attempt can carry mode, answer time, confidence, mistake refs, and feedback signals", () => {

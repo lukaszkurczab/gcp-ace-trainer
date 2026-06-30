@@ -15,6 +15,7 @@ import {
   ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
+  ALGORITHM_TRAINING_ITEMS,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapTrack,
   type AlgorithmTrainingItem,
@@ -143,12 +144,105 @@ test("Algorithms static micro-check model does not expose dynamic evaluation fie
     [
       "single_choice",
       "multi_select",
+      "complexity_pair",
       "order_steps",
       "fill_blank",
       "trace_next_step",
       "select_pseudocode_line",
     ],
   );
+});
+
+test("Seeded Algorithms MVP items pass validation", () => {
+  assert.equal(ALGORITHM_TRAINING_ITEMS.length, 7);
+
+  for (const item of ALGORITHM_TRAINING_ITEMS) {
+    const result = validateAlgorithmTrainingItem(item);
+
+    assert.deepEqual(result.issues, [], item.id);
+    assert.equal(item.status, "active");
+    assert.ok(item.staticMicroChecks?.some((check) => check.status === "active"));
+  }
+});
+
+test("Seeded Algorithms MVP items map to existing roadmap nodes", () => {
+  const roadmapNodeIds = new Set(ALGORITHM_ROADMAP.nodes.map((node) => node.id));
+
+  assert.deepEqual(
+    ALGORITHM_TRAINING_ITEMS.map((item) => item.roadmapNodeId),
+    [
+      "complexity_basics",
+      "array_string_basics",
+      "hash_map_lookup",
+      "hash_map_lookup",
+      "hash_map_lookup",
+      "two_pointers_pair_scan",
+      "two_pointers_pair_scan",
+    ],
+  );
+
+  for (const item of ALGORITHM_TRAINING_ITEMS) {
+    assert.ok(item.roadmapNodeId);
+    assert.equal(roadmapNodeIds.has(item.roadmapNodeId), true, item.id);
+  }
+});
+
+test("Seeded Algorithms MVP items include required item and static check types", () => {
+  const itemTypes = new Set(ALGORITHM_TRAINING_ITEMS.map((item) => item.type));
+  const checkTypes = new Set(
+    ALGORITHM_TRAINING_ITEMS.flatMap((item) =>
+      (item.staticMicroChecks ?? []).map((check) => check.type),
+    ),
+  );
+
+  for (const itemType of [
+    "approach_primer",
+    "approach_naming",
+    "complexity_check",
+    "subgoal_ordering",
+    "pseudocode_ordering",
+    "trace_next_step",
+  ] as const) {
+    assert.equal(itemTypes.has(itemType), true, itemType);
+  }
+
+  for (const checkType of [
+    "single_choice",
+    "multi_select",
+    "complexity_pair",
+    "order_steps",
+    "select_pseudocode_line",
+    "trace_next_step",
+  ] as const) {
+    assert.equal(checkTypes.has(checkType), true, checkType);
+  }
+});
+
+test("Seeded Algorithms MVP items avoid forbidden visible terms", () => {
+  const serializedItems = JSON.stringify(ALGORITHM_TRAINING_ITEMS).toLowerCase();
+  const itemTokens = new Set(serializedItems.split(/[^a-z0-9]+/).filter(Boolean));
+
+  assert.equal(serializedItems.includes("full_code_editor"), false);
+
+  for (const forbiddenTerm of [
+    "readiness",
+    "retention",
+    "mastery",
+    "mastered",
+    "strong",
+    "weak",
+    "streak",
+    "level",
+    "badge",
+    "leaderboard",
+    "leetcode",
+    "ai",
+    "llm",
+    "chat",
+    "generated",
+  ]) {
+    assert.equal(itemTokens.has(forbiddenTerm), false, forbiddenTerm);
+  }
 });
 
 test("Algorithms approach primer validation rejects missing mechanics fields", () => {

@@ -6,9 +6,10 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackId,
 } from "../src/domain";
-import type { TrainingAttempt, TrainingItem } from "../src/domain/training";
+import type { TrainingAttempt } from "../src/domain/training";
 import {
   createAlgorithmsScoringAdapter,
+  ALGORITHM_TRAINING_ITEMS,
   createCloudCertificationContentAdapter,
   createCloudCertificationReviewAdapter,
   createCloudCertificationScoringAdapter,
@@ -134,47 +135,23 @@ test("Algorithms adapter exists for algorithms", () => {
   assert.equal(adapter.content.trackId, ALGORITHMS_TRACK_ID);
   assert.equal(adapter.scoring.trackId, ALGORITHMS_TRACK_ID);
   assert.equal(adapter.review.trackId, ALGORITHMS_TRACK_ID);
-  assert.deepEqual(adapter.content.getItems(), []);
+  assert.equal(adapter.content.getItems().length, 7);
 });
 
-test("Algorithms scoring can score a fixture strategy-choice item without selected option ids", () => {
-  const item: TrainingItem = {
-    contentVersion: "algorithms-core-draft",
-    id: "algo-strategy-fixture-001",
-    prompt: "Choose the best strategy for finding a pair sum in a sorted array.",
-    responseSpec: {
-      kind: "strategy_selection",
-      strategies: [
-        { id: "two-pointers", text: "Scan inward with two pointers." },
-        { id: "nested-loop", text: "Check every pair." },
-      ],
-    },
-    taxonomyRefs: [
-      {
-        axisId: "algorithm-pattern",
-        nodeId: "two_pointers",
-        role: "primary",
-      },
-    ],
-    trackId: ALGORITHMS_TRACK_ID,
-    type: "strategy_choice",
-  };
-  const scoring = createAlgorithmsScoringAdapter({
-    [item.id]: {
-      expectedStrategyId: "two-pointers",
-      kind: "strategy_selection",
-    },
-  });
+test("Algorithms scoring can score a seeded static item", () => {
+  const item = ALGORITHM_TRAINING_ITEMS.find((candidate) => candidate.id === "alg-hash-map-primer-001");
+  const scoring = createAlgorithmsScoringAdapter();
+
+  assert.ok(item);
 
   const result = scoring.scoreAttempt(item, {
-    kind: "strategy_selection",
-    selectedStrategyId: "two-pointers",
+    kind: "option_selection",
+    selectedOptionIds: ["check_complement_first"],
   });
 
   assert.deepEqual(result, {
-    kind: "strategy_quality",
-    quality: "strong",
-    score: 1,
+    isCorrect: true,
+    kind: "correctness",
   });
 });
 
