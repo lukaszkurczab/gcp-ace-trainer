@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Card,
-  EmptyState,
   Icon,
   IconTile,
   ListRow,
@@ -18,6 +17,7 @@ import { ROUTES } from "../../../constants/routes";
 import { colors, spacing, typography } from "../../../theme";
 import type { ActiveExamSession } from "../../../types";
 import type { HomeNavigation } from "../types";
+import { PRACTICE_PRIMARY_CTA, PRACTICE_REVIEW_CTA } from "../shellModel";
 
 type PracticeTabProps = {
   activeSession: ActiveExamSession | null;
@@ -55,16 +55,15 @@ export function PracticeTab({
         <>
           <Card variant="tonal" style={styles.practiceHero}>
             <Text style={styles.heroEyebrow}>
-              {activeSession ? "Continue practice" : "Start practice"}
+              {activeSession ? "Continue practice" : "Continue practice"}
             </Text>
             <SectionHeader
-              title={activeSession ? "Exam in progress" : "Cloud practice"}
+              title={activeSession ? "Exam in progress" : "IAM review session"}
               subtitle={
                 activeSession
                   ? "Resume or discard the saved assessment session."
-                  : "Start from focused practice before using exam simulation."
+                  : "Focus: Scenario-based questions"
               }
-              action={<Badge label={activeSession ? "Active" : "Ready"} tone="ready" />}
             />
             {activeSession ? (
               <>
@@ -77,7 +76,7 @@ export function PracticeTab({
               </>
             ) : (
               <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}>
-                Start focused practice
+                {PRACTICE_PRIMARY_CTA.label}
               </Button>
             )}
           </Card>
@@ -85,15 +84,8 @@ export function PracticeTab({
           <View style={styles.section}>
             <SectionHeader title="Other practice modes" tight />
             <ListRow
-              detail="Work through one domain with immediate feedback."
-              leading={<IconTile name="book-open" tone="info" />}
-              onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
-              title="Practice by domain"
-              trailing={<Icon name="chevron-right" />}
-            />
-            <ListRow
               detail="Full assessment-style session with feedback after submit."
-              leading={<IconTile name="clipboard" tone="primary" />}
+              leading={<IconTile name="clipboard" tone="info" />}
               onPress={() => void onStartExam()}
               title="Exam simulation"
               trailing={
@@ -107,21 +99,17 @@ export function PracticeTab({
               detail="Revisit missed and marked questions."
               leading={<IconTile name="rotate-ccw" tone="warning" />}
               onPress={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
-              title="Review missed items"
+              title={PRACTICE_REVIEW_CTA.label}
               trailing={<Icon name="chevron-right" />}
             />
           </View>
         </>
       ) : (
-        <Card>
+        <Card variant="tonal">
           <SectionHeader
-            title="Algorithms is registered"
+            title="Algorithms unavailable"
             subtitle="Pattern Drill and Strategy Practice stay disabled until original content and scoring are implemented."
             action={<Badge label="Draft" tone="warning" />}
-          />
-          <EmptyState
-            title="No algorithm sessions yet"
-            description="The next implementation slice should add original algorithm items, scoring, and feedback."
           />
         </Card>
       )}

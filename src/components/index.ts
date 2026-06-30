@@ -13,4 +13,3 @@ export * from "./ProgressBar";
 export * from "./Screen";
 export * from "./SectionHeader";
 export * from "./SettingsGroup";
-export * from "./training";

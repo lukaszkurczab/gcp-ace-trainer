@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   Badge,
@@ -8,139 +8,135 @@ import {
   IconTile,
   ListRow,
   SectionHeader,
-  TrackCard,
 } from "../../../components";
-import {
-  ALGORITHMS_TRACK_ID,
-  getTrackDefinitions,
-  type TrackDefinition,
-  type TrackId,
-} from "../../../domain";
 import { colors, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { HOME_PRIMARY_CTA, HOME_RECOMMENDATIONS } from "../shellModel";
 
 type HomeTabProps = {
-  activeTrack: TrackDefinition;
-  activeTrackId: TrackId;
   analytics: AnalyticsData;
-  onSelectTrack: (trackId: TrackId) => Promise<void>;
+  onChangeFocus: () => void;
+  onStartLearning: () => void;
 };
 
 export function HomeTab({
-  activeTrack,
-  activeTrackId,
   analytics,
-  onSelectTrack,
+  onChangeFocus,
+  onStartLearning,
 }: HomeTabProps) {
   const hasPractice = analytics.summary.totalPracticeQuestionsAnswered > 0;
   const hasExams = analytics.summary.totalCompletedExams > 0;
-  const isActiveTrackReady = activeTrack.status === "active";
 
   return (
     <>
-      <Card variant="tonal" style={styles.hero}>
-        <View style={styles.heroHeader}>
-          <Text style={styles.eyebrow}>Continue learning</Text>
-          <Badge
-            label={isActiveTrackReady ? "Ready" : "Draft"}
-            tone={isActiveTrackReady ? "ready" : "warning"}
-          />
+      <Card style={styles.focusStrip}>
+        <View style={styles.focusCopy}>
+          <Text style={styles.eyebrow}>Current focus</Text>
+          <Text style={styles.focusTitle}>Cloud Certification</Text>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onChangeFocus}
+          style={({ pressed }) => [styles.changeFocusButton, pressed ? styles.pressed : null]}
+        >
+          <Text style={styles.changeFocusText}>Change focus</Text>
+          <Icon color={colors.dark.accentPurple} name="chevron-right" size={18} />
+        </Pressable>
+      </Card>
+
+      <Card variant="tonal" style={styles.hero}>
+        <Text style={styles.heroEyebrow}>Continue learning</Text>
         <SectionHeader
-          title={getHomeTitle(activeTrackId)}
-          subtitle={getHomeSubtitle(activeTrackId)}
+          title="IAM policies"
+          subtitle="Resume your last Cloud Certification topic or choose another area before starting."
           tight
         />
-        <Button onPress={() => void onSelectTrack(activeTrack.id)}>
-          {activeTrack.nextActionLabel}
+        <Button onPress={onStartLearning}>
+          {HOME_PRIMARY_CTA.label}
         </Button>
       </Card>
 
       <View style={styles.section}>
         <SectionHeader title="Recommended today" tight />
-        <ListRow
-          detail={getRecommendationDetail(activeTrackId, hasPractice, hasExams)}
-          leading={<IconTile name="cloud" tone="primary" />}
-          style={styles.recommendedPrimary}
-          title={getRecommendationTitle(activeTrackId)}
-          trailing={<Icon name="chevron-right" />}
-        />
-        <ListRow
-          detail="Review suggestions become richer as real attempts and practice records are added."
-          leading={<IconTile name="rotate-ccw" tone="info" />}
-          meta={`${analytics.summary.totalPracticeQuestionsAnswered} local`}
-          title="Review queue"
-          trailing={<Badge label="Local" tone="info" />}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <SectionHeader
-          title="Choose track"
-          subtitle="Switch context before starting a session."
-          tight
-        />
-        <View style={styles.trackList}>
-          {getTrackDefinitions().map((track) => (
-            <TrackCard
-              isActive={track.id === activeTrackId}
-              key={track.id}
-              onPress={() => void onSelectTrack(track.id)}
-              track={track}
-            />
-          ))}
-        </View>
+        {HOME_RECOMMENDATIONS.map((item, index) => (
+          <ListRow
+            detail={getRecommendationDetail(item.detail, index, hasPractice, hasExams)}
+            key={item.title}
+            leading={<IconTile name={index === 1 ? "rotate-ccw" : "cloud"} tone={getRecommendationTone(index)} />}
+            style={index === 0 ? styles.recommendedPrimary : undefined}
+            title={item.title}
+            trailing={<Badge label={item.label} tone={index === 0 ? "info" : "neutral"} />}
+          />
+        ))}
       </View>
     </>
   );
 }
 
-function getHomeTitle(trackId: TrackId): string {
-  return trackId === ALGORITHMS_TRACK_ID
-    ? "Algorithm Patterns"
-    : "Cloud Certification";
-}
-
-function getHomeSubtitle(trackId: TrackId): string {
-  return trackId === ALGORITHMS_TRACK_ID
-    ? "Recognize patterns, compare strategies, and reason about complexity."
-    : "Resume certification practice or review weak cloud domains.";
-}
-
-function getRecommendationTitle(trackId: TrackId): string {
-  return trackId === ALGORITHMS_TRACK_ID
-    ? "Prepare Pattern Drill"
-    : "Review cloud weak areas";
-}
-
 function getRecommendationDetail(
-  trackId: TrackId,
+  baseDetail: string,
+  index: number,
   hasPractice: boolean,
   hasExams: boolean,
 ): string {
-  if (trackId === ALGORITHMS_TRACK_ID) {
-    return "Algorithms is visible as a draft track; content and scoring are next.";
-  }
-
-  if (hasPractice || hasExams) {
+  if (index === 0 && (hasPractice || hasExams)) {
     return "Suggested from local attempts and practice records.";
   }
 
-  return "Start a practice session to build diagnostics.";
+  return baseDetail;
+}
+
+function getRecommendationTone(index: number): "primary" | "info" | "warning" {
+  if (index === 0) {
+    return "primary";
+  }
+
+  if (index === 1) {
+    return "info";
+  }
+
+  return "warning";
 }
 
 const styles = StyleSheet.create({
-  hero: {
-    gap: spacing.lg,
-  },
-  heroHeader: {
+  focusStrip: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  focusCopy: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  focusTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
+  changeFocusButton: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  changeFocusText: {
+    ...typography.bodyStrong,
+    color: colors.dark.accentPurple,
+  },
+  pressed: {
+    opacity: 0.78,
+  },
+  hero: {
+    gap: spacing.lg,
+  },
   eyebrow: {
     ...typography.caption,
-    color: colors.dark.primary,
+    color: colors.dark.textMuted,
+    textTransform: "uppercase",
+  },
+  heroEyebrow: {
+    ...typography.caption,
+    color: colors.dark.accentPurple,
     textTransform: "uppercase",
   },
   section: {
@@ -148,8 +144,5 @@ const styles = StyleSheet.create({
   },
   recommendedPrimary: {
     borderColor: colors.dark.primary,
-  },
-  trackList: {
-    gap: spacing.md,
   },
 });

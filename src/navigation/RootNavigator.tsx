@@ -5,6 +5,7 @@ import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
+import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
@@ -30,6 +31,11 @@ export function RootNavigator() {
         name={ROUTES.HOME}
         component={HomeScreen}
         options={{ headerShown: false, title: "Patternly" }}
+      />
+      <Stack.Screen
+        name={ROUTES.SELECT_TRACK}
+        component={SelectTrackScreen}
+        options={{ title: "Choose track" }}
       />
       <Stack.Screen
         name={ROUTES.EXAM}
@@ -59,7 +65,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.PRACTICE_SESSION}
         component={PracticeSessionScreen}
-        options={{ title: "Practice Session" }}
+        options={{ headerShown: false, title: "Practice Session" }}
       />
       <Stack.Screen
         name={ROUTES.MISTAKES_REVIEW}

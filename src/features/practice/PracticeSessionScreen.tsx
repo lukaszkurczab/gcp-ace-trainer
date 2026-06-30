@@ -4,41 +4,27 @@ import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
-import type { Confidence, MistakeReason, Question } from "../../types";
+import type { Question } from "../../types";
 import { areOptionSetsEqual, getDomainLabel } from "../../utils";
 import {
   loadPracticeQuestions,
   savePracticeAnswer,
   setQuestionNeedsReview,
-  updatePracticeAnswerMetadata
 } from "./practiceService";
+import { canCheckAnswer } from "./practiceSessionModel";
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
-
-const confidenceOptions: Confidence[] = ["sure", "unsure", "guess"];
-const mistakeReasons: MistakeReason[] = [
-  "knowledge_gap",
-  "misread_question",
-  "confused_services",
-  "iam_misunderstanding",
-  "networking_misunderstanding",
-  "rushed",
-  "other"
-];
 
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [confidence, setConfidence] = useState<Confidence | undefined>();
-  const [mistakeReason, setMistakeReason] = useState<MistakeReason | undefined>();
   const [needsReview, setNeedsReview] = useState(false);
-  const [practiceRecordId, setPracticeRecordId] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -73,10 +59,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   function resetQuestionState() {
     setSelectedOptionIds([]);
     setIsSubmitted(false);
-    setConfidence(undefined);
-    setMistakeReason(undefined);
     setNeedsReview(false);
-    setPracticeRecordId(null);
   }
 
   function selectOption(optionId: string) {
@@ -99,30 +82,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       return;
     }
 
-    const record = await savePracticeAnswer({
+    await savePracticeAnswer({
       question: currentQuestion,
       selectedOptionIds,
-      confidence,
-      mistakeReason
     });
-    setPracticeRecordId(record.id);
     setIsSubmitted(true);
-  }
-
-  async function handleConfidenceChange(nextConfidence: Confidence) {
-    setConfidence(nextConfidence);
-
-    if (practiceRecordId) {
-      await updatePracticeAnswerMetadata(practiceRecordId, { confidence: nextConfidence });
-    }
-  }
-
-  async function handleMistakeReasonChange(nextMistakeReason: MistakeReason) {
-    setMistakeReason(nextMistakeReason);
-
-    if (practiceRecordId) {
-      await updatePracticeAnswerMetadata(practiceRecordId, { mistakeReason: nextMistakeReason });
-    }
   }
 
   async function toggleNeedsReview() {
@@ -160,9 +124,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
   const progress = (currentIndex + 1) / questions.length;
+  const canSubmit = canCheckAnswer(selectedOptionIds, isSubmitted);
 
   return (
     <Screen
+      edges={["top", "bottom"]}
       footer={
         <View style={styles.actions}>
           {isSubmitted ? (
@@ -173,25 +139,38 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
               <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
             </>
           ) : (
-            <Button disabled={selectedOptionIds.length === 0} onPress={() => void submitAnswer()}>
-              Submit Answer
+            <Button disabled={!canSubmit} onPress={() => void submitAnswer()}>
+              Check Answer
             </Button>
           )}
         </View>
       }
     >
-      <Card>
-        <SectionHeader
-          title={`Question ${currentIndex + 1} / ${questions.length}`}
-          subtitle={getDomainLabel(currentQuestion.domain)}
-          action={<Badge label={isSubmitted ? (isCorrect ? "Correct" : "Review") : "Practice"} tone={isSubmitted ? (isCorrect ? "success" : "warning") : "info"} />}
-        />
+      <View style={styles.sessionTopBar}>
+        <Pressable
+          accessibilityLabel="Close practice session"
+          accessibilityRole="button"
+          onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
+          style={({ pressed }) => [styles.closeButton, pressed ? styles.optionPressed : null]}
+        >
+          <Icon name="close" size={18} />
+        </Pressable>
+        <Text style={styles.sessionBrand}>Patternly</Text>
+      </View>
+
+      <View style={styles.progressBlock}>
+        <Text style={styles.itemCount}>Item {currentIndex + 1} of {questions.length}</Text>
         <ProgressBar progress={progress} tone={isSubmitted ? (isCorrect ? "success" : "warning") : "primary"} />
+      </View>
+
+      <Card style={styles.questionCard}>
+        <View style={styles.questionAccent} />
+        <Text style={styles.questionEyebrow}>Cloud Certification</Text>
+        <Text style={styles.questionText}>{currentQuestion.question}</Text>
         <View style={styles.metaRow}>
           <Badge label={currentQuestion.type === "single" ? "Single choice" : "Multiple select"} tone="neutral" />
           <Badge label={chooseLabel} tone="info" />
         </View>
-        <Text style={styles.questionText}>{currentQuestion.question}</Text>
       </Card>
 
       <View style={styles.options}>
@@ -223,39 +202,6 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
           );
         })}
       </View>
-
-      <Card>
-        <SectionHeader title="Confidence" subtitle="Optional, useful for analytics later." />
-        <View style={styles.segmentRow}>
-          {confidenceOptions.map((item) => (
-            <Button
-              key={item}
-              onPress={() => void handleConfidenceChange(item)}
-              style={styles.segmentButton}
-              variant={confidence === item ? "primary" : "secondary"}
-            >
-              {formatLabel(item)}
-            </Button>
-          ))}
-        </View>
-      </Card>
-
-      {isSubmitted && !isCorrect ? (
-        <Card>
-          <SectionHeader title="Mistake Reason" subtitle="Optional, only for incorrect answers." />
-          <View style={styles.reasonList}>
-            {mistakeReasons.map((reason) => (
-              <Button
-                key={reason}
-                onPress={() => void handleMistakeReasonChange(reason)}
-                variant={mistakeReason === reason ? "primary" : "secondary"}
-              >
-                {formatLabel(reason)}
-              </Button>
-            ))}
-          </View>
-        </Card>
-      ) : null}
 
       {isSubmitted ? (
         <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
@@ -368,21 +314,62 @@ function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
   return Array.isArray(value) ? value : [value];
 }
 
-function formatLabel(value: string): string {
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 const styles = StyleSheet.create({
+  sessionTopBar: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 48,
+  },
+  closeButton: {
+    alignItems: "center",
+    borderColor: colors.dark.border,
+    borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 36,
+    justifyContent: "center",
+    width: 36,
+  },
+  sessionBrand: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+  },
+  progressBlock: {
+    gap: spacing.sm,
+  },
+  itemCount: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+    textTransform: "uppercase",
+  },
+  questionCard: {
+    gap: spacing.lg,
+    overflow: "hidden",
+    paddingLeft: spacing.xxl,
+  },
+  questionAccent: {
+    backgroundColor: colors.dark.primary,
+    borderBottomRightRadius: radius.pill,
+    borderTopRightRadius: radius.pill,
+    bottom: spacing.xl,
+    left: 0,
+    position: "absolute",
+    top: spacing.xl,
+    width: 3,
+  },
+  questionEyebrow: {
+    ...typography.caption,
+    color: colors.dark.accentPurple,
+    fontWeight: "700",
+    textTransform: "uppercase",
+  },
   metaRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm
   },
   questionText: {
-    ...typography.heading,
+    ...typography.title,
     color: colors.dark.textPrimary
   },
   options: {
@@ -449,16 +436,6 @@ const styles = StyleSheet.create({
   },
   optionMarkerInnerSquare: {
     borderRadius: radius.xs
-  },
-  segmentRow: {
-    flexDirection: "row",
-    gap: spacing.md
-  },
-  segmentButton: {
-    flex: 1
-  },
-  reasonList: {
-    gap: spacing.md
   },
   actions: {
     gap: spacing.md

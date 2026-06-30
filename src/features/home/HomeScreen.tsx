@@ -5,7 +5,6 @@ import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
-  Badge,
   BottomTabBar,
   Screen,
   type BottomTabBarItem,
@@ -29,7 +28,6 @@ import {
   getPracticeHistory,
   getQuestions,
   getStorageIssues,
-  saveActiveTrackId,
   type LocalStorageIssue,
 } from "../../storage";
 import { colors } from "../../theme";
@@ -51,6 +49,7 @@ import { HomeTab } from "./tabs/HomeTab";
 import { PracticeTab } from "./tabs/PracticeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import { SettingsTab } from "./tabs/SettingsTab";
+import { MAIN_TAB_ITEMS } from "./shellModel";
 import type { ShellTab } from "./types";
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -67,12 +66,7 @@ type ShellData = {
   storageIssues: readonly LocalStorageIssue[];
 };
 
-const tabs: readonly BottomTabBarItem<ShellTab>[] = [
-  { icon: "home", id: "home", label: "Home" },
-  { icon: "practice", id: "practice", label: "Practice" },
-  { icon: "progress", id: "progress", label: "Progress" },
-  { icon: "settings", id: "settings", label: "Settings" },
-];
+const tabs: readonly BottomTabBarItem<ShellTab>[] = MAIN_TAB_ITEMS;
 
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
@@ -137,15 +131,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-
-  async function selectTrack(trackId: TrackId) {
-    await saveActiveTrackId(trackId);
-    setActiveTrackId(trackId);
-    setData((current) => ({
-      ...current,
-      storageIssues: getStorageIssues(),
-    }));
-  }
 
   async function startExam() {
     if (!bankSummary.examReady || isStartingExam) {
@@ -228,16 +213,14 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
         <AppShellHeader
-          action={<Badge label="Local" tone="info" />}
-          subtitle={`${activeTrack.shortTitle} workspace`}
+          subtitle="Cloud Certification"
           title="Patternly"
         />
         {activeTab === "home" ? (
           <HomeTab
-            activeTrack={activeTrack}
-            activeTrackId={activeTrackId}
             analytics={analytics}
-            onSelectTrack={selectTrack}
+            onChangeFocus={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onStartLearning={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
           />
         ) : null}
         {activeTab === "practice" ? (

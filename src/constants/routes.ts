@@ -1,5 +1,6 @@
 export const ROUTES = {
   HOME: "Home",
+  SELECT_TRACK: "select_track",
   EXAM: "Exam",
   EXAM_REVIEW: "ExamReview",
   RESULT: "Result",

@@ -4,6 +4,7 @@ import type { SvgProps } from "react-native-svg";
 import AlertTriangleIcon from "../assets/icons/alert-triangle.svg";
 import BookOpenIcon from "../assets/icons/book-open.svg";
 import ChevronRightIcon from "../assets/icons/chevron-right.svg";
+import CloseIcon from "../assets/icons/close.svg";
 import ClipboardIcon from "../assets/icons/clipboard.svg";
 import CloudIcon from "../assets/icons/cloud.svg";
 import DatabaseIcon from "../assets/icons/database.svg";
@@ -23,6 +24,7 @@ export type IconName =
   | "alert-triangle"
   | "book-open"
   | "chevron-right"
+  | "close"
   | "clipboard"
   | "cloud"
   | "database"
@@ -47,6 +49,7 @@ const icons: Record<IconName, ComponentType<SvgProps>> = {
   "alert-triangle": AlertTriangleIcon,
   "book-open": BookOpenIcon,
   "chevron-right": ChevronRightIcon,
+  close: CloseIcon,
   clipboard: ClipboardIcon,
   cloud: CloudIcon,
   database: DatabaseIcon,

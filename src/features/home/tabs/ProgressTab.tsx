@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import {
   Card,
   EmptyState,
-  Icon,
   IconTile,
   MetricCard,
   ProgressBar,
@@ -97,7 +96,6 @@ export function ProgressTab({
                   </View>
                   <View style={styles.performanceMeta}>
                     <Text style={styles.performanceValue}>{score.percent}%</Text>
-                    <Icon name="chevron-right" size={20} />
                   </View>
                 </View>
                 <ProgressBar progress={score.percent / 100} tone="primary" />

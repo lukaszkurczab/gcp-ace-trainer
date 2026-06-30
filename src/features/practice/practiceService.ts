@@ -1,9 +1,7 @@
 import {
   addPracticeAnswer,
-  getPracticeHistory,
   getQuestions,
   getQuestionReviewState,
-  savePracticeHistory,
   saveQuestionReviewState
 } from "../../storage";
 import type { Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord, Question } from "../../types";
@@ -66,28 +64,6 @@ export async function savePracticeAnswer(input: {
   await addPracticeAnswer(record);
   await writeThroughPracticeAnswerRecord(record);
   return record;
-}
-
-export async function updatePracticeAnswerMetadata(
-  recordId: string,
-  metadata: {
-    confidence?: Confidence;
-    mistakeReason?: MistakeReason;
-  }
-): Promise<void> {
-  const history = await getPracticeHistory();
-
-  await savePracticeHistory(
-    history.map((record) =>
-      record.id === recordId
-        ? {
-            ...record,
-            confidence: metadata.confidence ?? record.confidence,
-            mistakeReason: metadata.mistakeReason ?? record.mistakeReason
-          }
-        : record
-    )
-  );
 }
 
 export async function setQuestionNeedsReview(questionId: string, needsReview: boolean): Promise<void> {
