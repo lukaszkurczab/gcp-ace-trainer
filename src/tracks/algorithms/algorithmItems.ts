@@ -2,7 +2,6 @@ import type { TrainingItem } from "../../domain/training";
 import { ALGORITHM_APPROACH_TEMPLATES } from "./algorithmApproaches";
 import {
   ALGORITHM_CONTENT_VERSION,
-  resolveAlgorithmCurriculumAlias,
   type AlgorithmApproachId,
   type AlgorithmApproachTemplate,
   type AlgorithmMistakeType,
@@ -18,7 +17,7 @@ import {
 export const ALGORITHMS_SESSION_MODE_ID = "algorithms-roadmap-basics";
 
 const hashMapComplementLookup = getApproachTemplate("hash_map_complement_lookup");
-const sortedTwoPointersPairScan = getApproachTemplate("sorted_two_pointers_pair_scan");
+const pairScanSortedInput = getApproachTemplate("pair_scan_sorted_input");
 
 export const ALGORITHM_TRAINING_ITEMS = [
   {
@@ -345,7 +344,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         type: "order_steps",
       },
     ],
-    subgoals: sortedTwoPointersPairScan.steps,
+    subgoals: pairScanSortedInput.steps,
     taxonomyRefs: [
       {
         axisId: "pattern_family",
@@ -377,7 +376,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
     primarySkillAtomId: "move_decisive_pointer",
     prompt:
       "In a sorted array, left + right is less than target. Which pseudocode line runs next?",
-    pseudocodeTemplate: sortedTwoPointersPairScan.pseudocodeTemplate,
+    pseudocodeTemplate: pairScanSortedInput.pseudocodeTemplate,
     roadmapNodeId: "two_pointers",
     status: "active",
     staticMicroChecks: [
@@ -387,7 +386,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
           "A sum that is too small rules out the current left value, so left moves forward.",
         id: "alg-check-two-pointers-line-001",
         mistakeTypes: ["cannot_trace_algorithm", "off_by_one"],
-        options: sortedTwoPointersPairScan.pseudocodeTemplate.lines.map((line) => ({
+        options: pairScanSortedInput.pseudocodeTemplate.lines.map((line) => ({
           id: line.id,
           text: line.text,
         })),
@@ -413,110 +412,110 @@ export const ALGORITHM_TRAINING_ITEMS = [
     trackId: "algorithms",
     type: "pseudocode_ordering",
   },
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Keep a range state and move boundaries only when the invariant says to shrink.",
     familyId: "sliding_window",
-    id: "alg-demo-sliding-window-invariant-001",
+    id: "alg-sliding-window-invariant-001",
     mistakeTypes: ["invariant_missing", "invariant_broken"],
     nodeId: "sliding_window",
     prompt: "A contiguous positive-number range grows past its allowed sum. Which reasoning should guide the next move?",
     skillAtomId: "maintain_window_invariant",
     title: "Identify the window invariant",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
     familyId: "prefix_sums",
-    id: "alg-demo-prefix-window-failure-001",
+    id: "alg-prefix-window-failure-001",
     mistakeTypes: ["negative_numbers_assumption_error", "wrong_approach"],
     nodeId: "prefix_sums",
     prompt: "A subarray-sum task allows negative values. Which signal should make you question a simple sum window?",
     skillAtomId: "detect_window_failure_signal",
     title: "Detect when a window fails",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Sorting may reveal structure, but its cost and any lost original-position requirement must be checked.",
     familyId: "sorting_based",
-    id: "alg-demo-sorting-tradeoff-001",
+    id: "alg-sorting-tradeoff-001",
     mistakeTypes: ["complexity_mismatch", "constraint_ignored"],
     nodeId: "sorting_based",
     prompt: "Before sorting an input to simplify comparisons, what tradeoff should you check first?",
     skillAtomId: "recognize_sorting_tradeoff",
     title: "Recognize sorting tradeoff",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Use the most recent unresolved opening state to decide whether the next closing token is valid.",
     familyId: "stack",
-    id: "alg-demo-stack-unresolved-state-001",
+    id: "alg-stack-unresolved-state-001",
     mistakeTypes: ["data_structure_mismatch", "cannot_trace_algorithm"],
     nodeId: "stack",
     prompt: "A nested-structure scan sees a closing token. Which state should control the next decision?",
     skillAtomId: "use_last_unresolved_state",
     title: "Use last unresolved state",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "A repeated yes/no boundary lets each check discard part of the ordered search space.",
     familyId: "binary_search",
-    id: "alg-demo-binary-search-predicate-001",
+    id: "alg-binary-search-predicate-001",
     mistakeTypes: ["wrong_approach", "off_by_one"],
     nodeId: "binary_search",
     prompt: "Which signal makes binary search more appropriate than scanning each position?",
     skillAtomId: "identify_monotonic_predicate",
     title: "Identify a monotonic predicate",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Choose the approach by matching problem signals to required state, then justify the tradeoff.",
     familyId: "hash_map_and_set",
-    id: "alg-demo-strategy-core-001",
+    id: "alg-strategy-core-001",
     mistakeTypes: ["wrong_approach", "cannot_explain_why"],
     nodeId: "strategy_selection_core",
     prompt: "When several familiar approaches could fit, what should decide the strategy?",
     skillAtomId: "choose_lookup_key",
     title: "Choose from core approaches",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Use lookup when preserving original relationships matters more than ordering the whole input.",
     familyId: "hash_map_and_set",
-    id: "alg-demo-contrast-hash-sorting-001",
+    id: "alg-contrast-hash-sorting-001",
     mistakeTypes: ["wrong_approach", "data_structure_mismatch"],
     nodeId: "contrast_hash_map_vs_sorting",
     prompt: "A pair task needs fast membership checks and original positions still matter. Which contrast signal is strongest?",
     skillAtomId: "choose_lookup_key",
     title: "Contrast lookup with sorting",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Use window reasoning only when the answer is a contiguous range with maintainable state.",
     familyId: "sliding_window",
-    id: "alg-demo-contrast-pointers-window-001",
+    id: "alg-contrast-pointers-window-001",
     mistakeTypes: ["wrong_approach", "invariant_missing"],
     nodeId: "contrast_two_pointers_vs_sliding_window",
     prompt: "What separates a sliding-window problem from a two-boundary pair scan?",
     skillAtomId: "maintain_window_invariant",
     title: "Contrast pointers with window",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Prefix sums handle range totals when window movement no longer gives a safe invariant.",
     familyId: "prefix_sums",
-    id: "alg-demo-contrast-window-prefix-001",
+    id: "alg-contrast-window-prefix-001",
     mistakeTypes: ["negative_numbers_assumption_error", "invariant_broken"],
     nodeId: "contrast_sliding_window_vs_prefix_sums",
     prompt: "Which signal should push a range-sum problem away from sliding window and toward prefix state?",
     skillAtomId: "detect_window_failure_signal",
     title: "Contrast window with prefix sums",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
     familyId: "monotonic_stack",
-    id: "alg-demo-contrast-stack-monotonic-001",
+    id: "alg-contrast-stack-monotonic-001",
     mistakeTypes: ["invariant_missing", "cannot_trace_algorithm"],
     nodeId: "contrast_stack_vs_monotonic_stack_intro",
     prompt: "What makes a monotonic stack different from a basic last-in-first-out stack?",
     skillAtomId: "maintain_monotonic_stack_invariant",
     title: "Contrast stack variants",
   }),
-  makeSingleChoiceDemoItem({
+  makeSingleChoiceTrainingItem({
     correctText: "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
     familyId: "binary_search",
-    id: "alg-demo-contrast-binary-linear-001",
+    id: "alg-contrast-binary-linear-001",
     mistakeTypes: ["wrong_approach", "constraint_ignored"],
     nodeId: "contrast_binary_search_vs_linear_scan",
     prompt: "What must be true before replacing a linear scan with binary search?",
@@ -540,31 +539,44 @@ export function getAlgorithmTrainingItemById(itemId: string): AlgorithmTrainingI
 export function getAlgorithmTrainingItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
 ): readonly AlgorithmTrainingItem[] {
-  const canonicalNodeId = resolveAlgorithmCurriculumAlias("roadmap_node", nodeId);
-  return getActiveAlgorithmTrainingItems().filter((item) => item.roadmapNodeId === canonicalNodeId);
+  return getActiveAlgorithmTrainingItems().filter((item) => item.roadmapNodeId === nodeId);
 }
 
-export function getSeededAlgorithmRoadmapNodes(): readonly AlgorithmRoadmapNode[] {
-  const seededNodeIds = new Set<string>(
+export function getRoadmapNodesWithActiveItems(): readonly AlgorithmRoadmapNode[] {
+  const nodeIdsWithActiveItems = new Set<string>(
     getActiveAlgorithmTrainingItems()
       .map((item) => item.roadmapNodeId)
       .filter((nodeId): nodeId is string => typeof nodeId === "string"),
   );
-  return ALGORITHM_ROADMAP.nodes.filter((node) => seededNodeIds.has(node.id));
+  return ALGORITHM_ROADMAP.nodes.filter((node) => nodeIdsWithActiveItems.has(node.id));
 }
 
 export function isAlgorithmRoadmapNodeSelectable(node: AlgorithmRoadmapNode): boolean {
   return (
     node.status === "available" &&
-    getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumDemoItemCount
+    getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumActiveItemCount
   );
+}
+
+export function isAlgorithmTrainingItemSelectable(item: AlgorithmTrainingItem): boolean {
+  if (item.status !== "active") return false;
+  if (!item.roadmapNodeId) return false;
+
+  const node = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === item.roadmapNodeId);
+  if (!node) return false;
+
+  return isAlgorithmRoadmapNodeSelectable(node);
+}
+
+export function getSelectableAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
+  return ALGORITHM_TRAINING_ITEMS.filter(isAlgorithmTrainingItemSelectable);
 }
 
 export function getFirstUsableAlgorithmRoadmapNode(): AlgorithmRoadmapNode {
   const node = ALGORITHM_ROADMAP.nodes.find(isAlgorithmRoadmapNodeSelectable);
 
   if (!node) {
-    throw new Error("No usable Algorithms roadmap node has seeded items.");
+    throw new Error("No selectable Algorithms roadmap node has active items.");
   }
 
   return node;
@@ -590,7 +602,7 @@ function requiredFirst<T>(items: readonly T[], label: string): T {
   return item;
 }
 
-function makeSingleChoiceDemoItem(input: {
+function makeSingleChoiceTrainingItem(input: {
   correctText: string;
   familyId: AlgorithmPatternFamilyId;
   id: string;

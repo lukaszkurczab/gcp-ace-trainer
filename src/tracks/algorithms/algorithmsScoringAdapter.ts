@@ -198,8 +198,8 @@ function answerFromTrainingResponse(
   response: TrainingAttemptResponse,
 ): AlgorithmSubmittedAnswer {
   if (check.type === "complexity_pair") {
-    if (response.kind !== "complexity_analysis") {
-      throw new Error(`Algorithms response kind mismatch for ${check.id}: expected complexity_analysis.`);
+    if (response.kind !== "complexity_check") {
+      throw new Error(`Algorithms response kind mismatch for ${check.id}: expected complexity_check.`);
     }
 
     return response.selectedComplexityAnswer;

@@ -117,7 +117,7 @@ export type AlgorithmContentStatus = "draft" | "active" | "disabled";
 
 export type AlgorithmApproachId =
   | "hash_map_complement_lookup"
-  | "sorted_two_pointers_pair_scan"
+  | "pair_scan_sorted_input"
   | "positive_sliding_window"
   | string;
 
@@ -187,89 +187,6 @@ export type AlgorithmSkillAtom = {
   problemArchetypeIds?: readonly string[];
   prerequisiteSkillAtomIds: readonly string[];
 };
-
-export type AlgorithmCurriculumAliasAxis =
-  | "pattern_family"
-  | "pattern_variant"
-  | "roadmap_node";
-
-export type AlgorithmCurriculumAlias = {
-  axisId: AlgorithmCurriculumAliasAxis;
-  fromId: string;
-  toId: string;
-};
-
-export const ALGORITHM_CURRICULUM_ID_ALIASES = [
-  {
-    axisId: "pattern_family",
-    fromId: "complexity_basics",
-    toId: "complexity_and_constraints",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "complexity_basics",
-    toId: "complexity_and_constraints",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "array_string_basics",
-    toId: "arrays_and_strings",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "hash_map_lookup",
-    toId: "hash_map_and_set",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "two_pointers_pair_scan",
-    toId: "two_pointers",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "sliding_window_positive",
-    toId: "sliding_window",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "prefix_sums_range_reasoning",
-    toId: "prefix_sums",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "stack_nested_structure",
-    toId: "stack",
-  },
-  {
-    axisId: "roadmap_node",
-    fromId: "binary_search_sorted_input",
-    toId: "binary_search",
-  },
-  {
-    axisId: "pattern_variant",
-    fromId: "hash_map_average_lookup",
-    toId: "lookup_by_value",
-  },
-  {
-    axisId: "pattern_variant",
-    fromId: "variable_size_positive_window",
-    toId: "variable_size_positive_numbers",
-  },
-  {
-    axisId: "pattern_variant",
-    fromId: "sorted_pair_two_pointers",
-    toId: "pair_scan_sorted_input",
-  },
-] as const satisfies readonly AlgorithmCurriculumAlias[];
-
-export function resolveAlgorithmCurriculumAlias(
-  axisId: AlgorithmCurriculumAliasAxis,
-  id: string,
-): string {
-  return ALGORITHM_CURRICULUM_ID_ALIASES.find(
-    (alias) => alias.axisId === axisId && alias.fromId === id,
-  )?.toId ?? id;
-}
 
 export type AlgorithmApproachStep = {
   description: string;

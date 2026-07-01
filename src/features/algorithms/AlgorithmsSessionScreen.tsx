@@ -644,7 +644,7 @@ function buildTrainingAttemptResponse(
 ): TrainingAttemptResponse {
   if (check.type === "complexity_pair") {
     return {
-      kind: "complexity_analysis",
+      kind: "complexity_check",
       selectedComplexityAnswer: complexityAnswer,
     };
   }

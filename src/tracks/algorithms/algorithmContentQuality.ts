@@ -1,6 +1,5 @@
 import {
   isAlgorithmMistakeType,
-  resolveAlgorithmCurriculumAlias,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
 import type { AlgorithmRoadmapTrack } from "./algorithmRoadmap";
@@ -54,10 +53,11 @@ export type AlgorithmContentQualityIssueCode =
   | "unknown_primary_skill"
   | "unknown_secondary_skill"
   | "unknown_micro_check_skill"
-  | "unknown_roadmap_node"
+  | "active_item_references_unknown_roadmap_node"
+  | "active_item_on_unavailable_roadmap_node"
   | "unknown_taxonomy_ref"
-  | "available_roadmap_node_below_minimum_demo_items"
-  | "enabled_session_mode_missing_item_type";
+  | "available_roadmap_node_below_minimum_active_items"
+  | "selectable_item_unsupported_by_enabled_mode";
 
 export type AlgorithmContentQualityIssue = {
   code: AlgorithmContentQualityIssueCode;
@@ -132,8 +132,8 @@ export function validateAlgorithmCurriculum(input: {
   const issues = validateAlgorithmTrainingItems(input.items).issues;
   const activeItems = input.items.filter((item) => item.status === "active");
   const skillAtomIds = new Set<string>(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
-  const roadmapNodeIds = new Set(input.roadmap.nodes.map((node) => node.id));
-  const activeItemTypes = new Set(activeItems.map((item) => item.type));
+  const roadmapNodesById = new Map(input.roadmap.nodes.map((node) => [node.id, node]));
+  const selectableActiveItemTypes = new Set<string>();
 
   for (const item of activeItems) {
     if (!skillAtomIds.has(item.primarySkillAtomId)) {
@@ -169,13 +169,24 @@ export function validateAlgorithmCurriculum(input: {
       }
     }
 
-    if (!item.roadmapNodeId || !roadmapNodeIds.has(resolveAlgorithmCurriculumAlias("roadmap_node", item.roadmapNodeId))) {
+    const roadmapNode = item.roadmapNodeId ? roadmapNodesById.get(item.roadmapNodeId) : undefined;
+
+    if (!roadmapNode) {
       addIssue(
         issues,
-        "unknown_roadmap_node",
+        "active_item_references_unknown_roadmap_node",
         `Algorithm item references unknown roadmap node: ${String(item.roadmapNodeId)}.`,
         item.id,
       );
+    } else if (roadmapNode.status !== "available") {
+      addIssue(
+        issues,
+        "active_item_on_unavailable_roadmap_node",
+        `Active algorithm item references unavailable roadmap node: ${roadmapNode.id}.`,
+        item.id,
+      );
+    } else {
+      selectableActiveItemTypes.add(item.type);
     }
 
     validateTaxonomyRefs(item, issues);
@@ -187,21 +198,21 @@ export function validateAlgorithmCurriculum(input: {
     }
 
     const itemCount = activeItems.filter((item) => item.roadmapNodeId === node.id).length;
-    if (itemCount < node.minimumDemoItemCount) {
+    if (itemCount < node.minimumActiveItemCount) {
       addIssue(
         issues,
-        "available_roadmap_node_below_minimum_demo_items",
-        `Available roadmap node ${node.id} has ${itemCount} active demo items; expected at least ${node.minimumDemoItemCount}.`,
+        "available_roadmap_node_below_minimum_active_items",
+        `Available roadmap node ${node.id} has ${itemCount} active items; expected at least ${node.minimumActiveItemCount}.`,
       );
     }
   }
 
-  for (const itemType of activeItemTypes) {
+  for (const itemType of selectableActiveItemTypes) {
     if (!input.enabledSessionModes.some((mode) => mode.supportedItemTypes.includes(itemType))) {
       addIssue(
         issues,
-        "enabled_session_mode_missing_item_type",
-        `No enabled Algorithms session mode supports active item type: ${itemType}.`,
+        "selectable_item_unsupported_by_enabled_mode",
+        `No enabled Algorithms session mode supports selectable item type: ${itemType}.`,
       );
     }
   }

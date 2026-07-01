@@ -6,7 +6,7 @@ import {
 } from "./algorithmRoadmap";
 import {
   ALGORITHM_TRAINING_ITEMS,
-  getSeededAlgorithmRoadmapNodes,
+  getRoadmapNodesWithActiveItems,
 } from "./algorithmItems";
 import type { AlgorithmTrainingItem } from "./algorithmContentTypes";
 import {
@@ -43,15 +43,15 @@ export function buildAlgorithmProgressFacts(
   items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
 ): AlgorithmProgressFacts {
-  const seededItems = items.filter((item) => item.roadmapNodeId);
-  const seededItemIds = new Set(seededItems.map((item) => item.id));
+  const activeRoadmapItems = items.filter((item) => item.roadmapNodeId);
+  const activeRoadmapItemIds = new Set(activeRoadmapItems.map((item) => item.id));
   const algorithmAttempts = attempts.filter(
-    (attempt) => attempt.trackId === "algorithms" && seededItemIds.has(attempt.itemId),
+    (attempt) => attempt.trackId === "algorithms" && activeRoadmapItemIds.has(attempt.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
-  const nodeProgress = getSeededAlgorithmRoadmapNodes()
+  const nodeProgress = getRoadmapNodesWithActiveItems()
     .filter((node) => roadmapNodes.some((candidate) => candidate.id === node.id))
-    .map((node) => buildNodeProgress(node, seededItems, latestAttemptByItemId));
+    .map((node) => buildNodeProgress(node, activeRoadmapItems, latestAttemptByItemId));
   const activeNode = getActiveNode(nodeProgress);
   const statusCounts = countLatestStatuses(latestAttemptByItemId);
 
@@ -111,7 +111,7 @@ function getActiveNode(
   const finalNode = nodeProgress[nodeProgress.length - 1];
 
   if (!finalNode) {
-    throw new Error("No seeded Algorithms roadmap nodes are available.");
+    throw new Error("No Algorithms roadmap nodes with active items are available.");
   }
 
   return finalNode;

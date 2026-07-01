@@ -1,15 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import * as algorithmsModel from "../src/tracks/algorithms";
 import {
   ALGORITHMS_TRACK_ID,
   getEnabledSessionModes,
   getTrackDefinition,
 } from "../src/domain";
+import type { TrainingItem } from "../src/domain/training";
 import {
   ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
-  ALGORITHM_CURRICULUM_ID_ALIASES,
   ALGORITHM_EVIDENCE_LEVELS,
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MISTAKE_TYPES,
@@ -22,10 +23,11 @@ import {
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
   ALGORITHM_TRAINING_ITEMS,
+  createAlgorithmsContentAdapter,
   getAlgorithmTrainingItemsForRoadmapNode,
   getFirstUsableAlgorithmRoadmapNode,
+  getSelectableAlgorithmTrainingItems,
   isAlgorithmRoadmapNodeSelectable,
-  resolveAlgorithmCurriculumAlias,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapTrack,
   type AlgorithmTrainingItem,
@@ -82,6 +84,22 @@ const requiredVariantsByFamily = {
   two_pointers: ["opposite_ends", "same_direction", "pair_scan_sorted_input", "partitioning", "duplicate_skipping"],
 } as const;
 
+const oldAlgorithmIds = [
+  oldId("complexity", "basics"),
+  oldId("array", "string", "basics"),
+  oldId("hash", "map", "lookup"),
+  oldId("two", "pointers", "pair", "scan"),
+  oldId("sliding", "window", "positive"),
+  oldId("prefix", "sums", "range", "reasoning"),
+  oldId("stack", "nested", "structure"),
+  oldId("binary", "search", "sorted", "input"),
+  oldId("strategy", "selection", "basics"),
+  oldId("hash", "map", "average", "lookup"),
+  oldId("variable", "size", "positive", "window"),
+  oldId("sorted", "pair", "two", "pointers"),
+  oldId("sorted", "two", "pointers", "pair", "scan"),
+] as const;
+
 test("Algorithms curriculum taxonomy exposes the target real pattern families", () => {
   assert.deepEqual(
     ALGORITHM_PATTERN_FAMILIES.map((family) => family.id),
@@ -117,13 +135,24 @@ test("Algorithms curriculum taxonomy exposes required variants by family", () =>
   }
 });
 
-test("Algorithms curriculum alias mapping preserves migrated ids", () => {
-  assert.equal(resolveAlgorithmCurriculumAlias("pattern_family", "complexity_basics"), "complexity_and_constraints");
-  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "array_string_basics"), "arrays_and_strings");
-  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "hash_map_lookup"), "hash_map_and_set");
-  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "two_pointers_pair_scan"), "two_pointers");
-  assert.equal(resolveAlgorithmCurriculumAlias("pattern_variant", "variable_size_positive_window"), "variable_size_positive_numbers");
-  assert.ok(ALGORITHM_CURRICULUM_ID_ALIASES.length >= 4);
+test("Algorithms curriculum exports canonical ids only", () => {
+  assert.equal(exportName("resolveAlgorithm", "Curriculum", "Alias") in algorithmsModel, false);
+  assert.equal(exportName("ALGORITHM", "CURRICULUM", "ID", "ALIASES") in algorithmsModel, false);
+  assert.equal(exportName("Algorithm", "Curriculum", "Alias") in algorithmsModel, false);
+
+  const serializedModel = JSON.stringify([
+    ALGORITHM_APPROACH_TEMPLATES,
+    ALGORITHM_PATTERN_FAMILIES,
+    ALGORITHM_PATTERN_VARIANTS,
+    ALGORITHM_PROBLEM_ARCHETYPES,
+    ALGORITHM_SKILL_ATOMS,
+    ALGORITHM_ROADMAP,
+    ALGORITHM_TRAINING_ITEMS,
+  ]);
+
+  for (const oldId of oldAlgorithmIds) {
+    assert.equal(serializedModel.includes(oldId), false, oldId);
+  }
 });
 
 test("Algorithms skill atoms model trainable reasoning actions", () => {
@@ -158,7 +187,7 @@ test("Algorithms skill atoms model trainable reasoning actions", () => {
   }
 });
 
-test("Algorithms roadmap separates demo-available, planned, future, and mixed practice", () => {
+test("Algorithms roadmap separates available, planned, future, and mixed practice", () => {
   const availableNodeIds = ALGORITHM_ROADMAP.nodes
     .filter((node) => node.status === "available")
     .map((node) => node.id);
@@ -187,11 +216,11 @@ test("Algorithms roadmap separates demo-available, planned, future, and mixed pr
   assert.equal(mixedPractice.kind, "mixed_practice");
   assert.equal(mixedPractice.learningStage, "mixed_interview_practice");
   assert.notEqual(mixedPractice.status, "available");
-  assert.equal(mixedPractice.minimumDemoItemCount, 0);
+  assert.equal(mixedPractice.minimumActiveItemCount, 0);
 
-  for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.releaseScope === "future")) {
+  for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.status !== "available")) {
     assert.notEqual(node.status, "available", node.id);
-    assert.equal(node.minimumDemoItemCount, 0, node.id);
+    assert.equal(node.minimumActiveItemCount, 0, node.id);
   }
 
   assert.deepEqual(validateAlgorithmRoadmap(ALGORITHM_ROADMAP).issues, []);
@@ -207,7 +236,7 @@ test("Algorithms roadmap references and prerequisites resolve", () => {
 
   for (const node of getRoadmapNodes()) {
     for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
-      const prerequisite = nodesById.get(resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId));
+      const prerequisite = nodesById.get(prerequisiteNodeId);
       assert.ok(prerequisite, `${node.id}:${prerequisiteNodeId}`);
       assert.ok(prerequisite.order < node.order, `${prerequisiteNodeId} should come before ${node.id}`);
     }
@@ -219,7 +248,7 @@ test("Algorithms roadmap references and prerequisites resolve", () => {
   }
 });
 
-test("Algorithms seed content is migrated without deleting valid item ids", () => {
+test("Algorithms existing content preserves valid item ids on canonical refs", () => {
   const itemIds = new Set(ALGORITHM_TRAINING_ITEMS.map((item) => item.id));
 
   for (const itemId of [
@@ -265,11 +294,72 @@ test("Algorithms session selection excludes planned and future roadmap nodes", (
     const activeItemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
 
     if (node.status === "available") {
-      assert.equal(isAlgorithmRoadmapNodeSelectable(node), activeItemCount >= node.minimumDemoItemCount, node.id);
+      assert.equal(isAlgorithmRoadmapNodeSelectable(node), activeItemCount >= node.minimumActiveItemCount, node.id);
       continue;
     }
 
     assert.equal(isAlgorithmRoadmapNodeSelectable(node), false, node.id);
+  }
+});
+
+test("Algorithms adapter mode selection excludes active items on unavailable roadmap nodes", () => {
+  const plannedItem = {
+    ...makeBaseAlgorithmItem({
+      id: "algorithm-planned-node-fixture-001",
+      roadmapNodeId: "mixed_pattern_practice",
+      status: "active",
+      staticMicroChecks: [makeStaticMicroCheck()],
+      type: "approach_naming",
+    }),
+  };
+  const adapter = createAlgorithmsContentAdapter([
+    ...ALGORITHM_TRAINING_ITEMS,
+    plannedItem as AlgorithmTrainingItem & TrainingItem,
+  ]);
+  const modeItems = adapter.getItemsForMode("algorithms-roadmap-basics");
+
+  assert.equal(modeItems.some((item) => item.id === plannedItem.id), false);
+  assert.equal(getSelectableAlgorithmTrainingItems().every((item) => item.status === "active"), true);
+});
+
+test("Algorithms curriculum validation rejects active items on unknown or unavailable roadmap nodes", () => {
+  const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
+  const unknownNodeItem = makeBaseAlgorithmItem({
+    id: "algorithm-unknown-node-fixture-001",
+    roadmapNodeId: "missing_node",
+    status: "active",
+    staticMicroChecks: [makeStaticMicroCheck()],
+  });
+  const unavailableNodeItem = makeBaseAlgorithmItem({
+    id: "algorithm-unavailable-node-fixture-001",
+    roadmapNodeId: "mixed_pattern_practice",
+    status: "active",
+    staticMicroChecks: [makeStaticMicroCheck()],
+  });
+
+  const issueCodes = validateAlgorithmCurriculum({
+    enabledSessionModes: track.sessionModes.filter((mode) => mode.enabled),
+    items: [...ALGORITHM_TRAINING_ITEMS, unknownNodeItem, unavailableNodeItem],
+    roadmap: ALGORITHM_ROADMAP,
+  }).issues.map((issue) => issue.code);
+
+  assert.ok(issueCodes.includes("active_item_references_unknown_roadmap_node"));
+  assert.ok(issueCodes.includes("active_item_on_unavailable_roadmap_node"));
+});
+
+test("Algorithms session mode supported item types are canonical and known", () => {
+  const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
+  const knownItemTypes = new Set<string>([
+    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+  ]);
+
+  for (const mode of track.sessionModes) {
+    for (const itemType of mode.supportedItemTypes) {
+      assert.ok(knownItemTypes.has(itemType), `${mode.id}:${itemType}`);
+      assert.notEqual(itemType, oldId("complexity", "analysis"));
+    }
   }
 });
 
@@ -375,6 +465,14 @@ function issueCodes(item: unknown): string[] {
   return validateAlgorithmTrainingItem(item)
     .issues.map((issue) => issue.code)
     .sort();
+}
+
+function oldId(...parts: string[]): string {
+  return parts.join("_");
+}
+
+function exportName(...parts: string[]): string {
+  return parts.join("");
 }
 
 function getRoadmapNodes(): readonly AlgorithmRoadmapNode[] {

@@ -11,7 +11,7 @@ import {
   buildTopicRoadmapNodes,
 } from "../src/features/practice/practiceFlowModel";
 
-test("Practice modes stay aligned while disabling algorithm mock practice", () => {
+test("Practice modes stay aligned while disabling unavailable algorithm practice", () => {
   const cloudModes = buildPracticeModes(getTrackDefinition(CLOUD_CERTIFICATION_TRACK_ID));
   const algorithmModes = buildPracticeModes(getTrackDefinition(ALGORITHMS_TRACK_ID));
 

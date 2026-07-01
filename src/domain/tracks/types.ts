@@ -50,7 +50,6 @@ export type TrainingItemType =
   | "interview_simulation_problem"
   | "full_code_editor"
   | "pattern_identification"
-  | "complexity_analysis"
   | "solution_comparison"
   | "mistake_review"
   | "freeform_reflection";

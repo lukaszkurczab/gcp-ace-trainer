@@ -27,7 +27,7 @@ export type TrainingAttemptResponse =
       selectedStrategyId: string;
     }
   | {
-      kind: "complexity_analysis";
+      kind: "complexity_check";
       selectedComplexityAnswer: ComplexityAnswer;
     }
   | {

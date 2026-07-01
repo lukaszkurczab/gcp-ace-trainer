@@ -237,7 +237,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
   );
 });
 
-test("Algorithms node completion is based on seeded item attempts", () => {
+test("Algorithms node completion is based on active roadmap item attempts", () => {
   const model = buildProgressTabModel({
     activeTrackId: "algorithms",
     analytics: makeAnalytics(),

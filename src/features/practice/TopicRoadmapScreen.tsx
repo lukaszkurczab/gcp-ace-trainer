@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
-  Button,
   Icon,
   Screen,
   type IconName,
@@ -36,7 +35,7 @@ type RoadmapRow =
   | { kind: "center"; topic: TopicRoadmapNodeModel }
   | { kind: "split"; left: TopicRoadmapNodeModel; right: TopicRoadmapNodeModel };
 
-const TAB_BAR_RESERVED_HEIGHT = 232;
+const TAB_BAR_RESERVED_HEIGHT = 112;
 const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
 
@@ -77,7 +76,6 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
   const rows = useMemo(() => buildRoadmapRows(topics), [topics]);
   const resolvedSelectedTopicId = selectedTopicId ?? getDefaultSelectedTopicId(topics);
-  const selectedTopic = topics.find((topic) => topic.id === resolvedSelectedTopicId);
 
   function selectTopic(topic: TopicRoadmapNodeModel) {
     if (!topic.enabled) {
@@ -87,18 +85,18 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     setSelectedTopicId(topic.id);
   }
 
-  function confirmSelectedTopic() {
-    if (!selectedTopic?.enabled) {
-      return;
-    }
-
-    navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: selectedTopic.id });
+  function returnToPracticeHub() {
+    navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: resolvedSelectedTopicId });
   }
 
   return (
     <View style={styles.shell}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppStackHeader navigation={navigation} showBack />
+        <AppStackHeader
+          navigation={navigation}
+          onBackPress={returnToPracticeHub}
+          showBack
+        />
 
         <View style={styles.intro}>
           <Text style={styles.title}>Choose topic</Text>
@@ -148,21 +146,6 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
           </View>
         </View>
       </Screen>
-      <View style={styles.selectionBar}>
-        <View style={styles.selectionCopy}>
-          <Text style={styles.selectionEyebrow}>Selected topic</Text>
-          <Text numberOfLines={1} style={styles.selectionTitle}>
-            {selectedTopic?.title ?? "Choose an available topic"}
-          </Text>
-        </View>
-        <Button
-          disabled={!selectedTopic?.enabled}
-          onPress={confirmSelectedTopic}
-          style={styles.selectionButton}
-        >
-          Use topic
-        </Button>
-      </View>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
@@ -327,7 +310,7 @@ function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
     return styles.nodeCircleLocked;
   }
 
-  if (isActiveTopic(topic, selected)) {
+  if (selected) {
     return styles.nodeCircleActive;
   }
 
@@ -339,7 +322,7 @@ function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean): string {
     return colors.dark.textMuted;
   }
 
-  if (isActiveTopic(topic, selected)) {
+  if (selected) {
     return colors.dark.textPrimary;
   }
 
@@ -351,15 +334,11 @@ function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
     return styles.nodeLabelLocked;
   }
 
-  if (isActiveTopic(topic, selected)) {
+  if (selected) {
     return styles.nodeLabelCurrent;
   }
 
   return styles.nodeLabelAvailable;
-}
-
-function isActiveTopic(topic: TopicRoadmapNodeModel, selected: boolean): boolean {
-  return selected || topic.status === "current" || topic.status === "completed";
 }
 
 function formatNodeLabel(topic: TopicRoadmapNodeModel): string {
@@ -526,37 +505,5 @@ const styles = StyleSheet.create({
   },
   nodeLabelLocked: {
     color: colors.dark.textMuted,
-  },
-  selectionBar: {
-    alignItems: "center",
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    bottom: 96,
-    flexDirection: "row",
-    gap: spacing.md,
-    left: 0,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    position: "absolute",
-    right: 0,
-  },
-  selectionCopy: {
-    flex: 1,
-    gap: spacing.xxs,
-    minWidth: 0,
-  },
-  selectionEyebrow: {
-    ...typography.caption,
-    color: colors.dark.textMuted,
-    textTransform: "uppercase",
-  },
-  selectionTitle: {
-    ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
-  },
-  selectionButton: {
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
   },
 });

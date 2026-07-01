@@ -44,7 +44,7 @@ export type TrainingStrategyResponseSpec = {
 export type TrainingComplexityDimension = "time" | "space";
 
 export type TrainingComplexityResponseSpec = {
-  kind: "complexity_analysis";
+  kind: "complexity_check";
   answerFormat: "big_o" | "classification" | "freeform";
   dimensions: TrainingComplexityDimension[];
   choices?: TrainingItemOption[];
@@ -99,7 +99,7 @@ export type AlgorithmsStrategyChoiceTrainingItem = TrainingItemBase & {
 
 export type AlgorithmsComplexityAnalysisTrainingItem = TrainingItemBase & {
   responseSpec: TrainingComplexityResponseSpec;
-  type: "complexity_analysis";
+  type: "complexity_check";
 };
 
 export type AlgorithmsSolutionComparisonTrainingItem = TrainingItemBase & {

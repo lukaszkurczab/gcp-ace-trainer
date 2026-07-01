@@ -148,7 +148,7 @@ const algorithmsTrack: TrackDefinition = {
       scoringType: "mixed",
       supportedItemTypes: [
         "strategy_choice",
-        "complexity_analysis",
+        "complexity_check",
         "solution_comparison",
       ],
       title: "Strategy practice",

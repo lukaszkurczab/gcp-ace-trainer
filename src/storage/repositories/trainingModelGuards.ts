@@ -110,7 +110,7 @@ function isTrainingAttemptResponse(value: unknown): value is TrainingAttemptResp
     return typeof value.selectedStrategyId === "string";
   }
 
-  if (value.kind === "complexity_analysis") {
+  if (value.kind === "complexity_check") {
     return isRecord(value.selectedComplexityAnswer);
   }
 

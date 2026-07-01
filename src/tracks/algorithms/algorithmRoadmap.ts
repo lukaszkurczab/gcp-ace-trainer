@@ -4,7 +4,6 @@ import {
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MVP_TRAINING_ITEM_TYPES,
   ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-  resolveAlgorithmCurriculumAlias,
   type AlgorithmApproachId,
   type AlgorithmLearningStage,
   type AlgorithmPatternFamilyId,
@@ -34,11 +33,6 @@ export type AlgorithmRoadmapStatus =
   | "locked"
   | "coming_later";
 
-export type AlgorithmRoadmapReleaseScope =
-  | "demo_available"
-  | "planned_content"
-  | "future";
-
 export type AlgorithmRoadmapPrerequisite = {
   nodeId: AlgorithmRoadmapNodeId;
   reason: string;
@@ -57,7 +51,7 @@ export type AlgorithmRoadmapNode = {
   label: string;
   learningObjectives: readonly AlgorithmRoadmapLearningObjective[];
   learningStage: AlgorithmLearningStage;
-  minimumDemoItemCount: number;
+  minimumActiveItemCount: number;
   order: number;
   patternVariantIds?: readonly string[];
   prerequisiteNodeIds: readonly AlgorithmRoadmapNodeId[];
@@ -65,7 +59,6 @@ export type AlgorithmRoadmapNode = {
   primaryPatternFamilyId?: AlgorithmPatternFamilyId;
   problemArchetypeIds?: readonly string[];
   recommendedItemTypes: readonly AlgorithmTrainingItemType[];
-  releaseScope: AlgorithmRoadmapReleaseScope;
   shortDescription: string;
   skillAtomIds?: readonly string[];
   status: AlgorithmRoadmapStatus;
@@ -98,8 +91,8 @@ export type AlgorithmRoadmapQualityIssueCode =
   | "unknown_problem_archetype_id"
   | "unknown_skill_atom_id"
   | "unknown_recommended_item_type"
-  | "available_node_missing_demo_policy"
-  | "non_available_node_with_demo_policy"
+  | "available_node_missing_minimum_active_items"
+  | "unavailable_node_with_minimum_active_items"
   | "mixed_practice_marked_beginner"
   | "forbidden_visible_term";
 
@@ -176,7 +169,7 @@ const algorithmRoadmapNodes = [
     skillAtomIds: ["choose_lookup_key"],
   }),
   makeNode({
-    approachIds: ["sorted_two_pointers_pair_scan"],
+    approachIds: ["pair_scan_sorted_input"],
     id: "two_pointers",
     kind: "mechanics",
     label: "Two pointers",
@@ -340,12 +333,11 @@ const algorithmRoadmapNodes = [
       kind: "later",
       label,
       learningStage: "pattern_mechanics",
-      minimumDemoItemCount: 0,
+      minimumActiveItemCount: 0,
       order: 16 + index,
       prerequisiteNodeIds: ["strategy_selection_core"],
       primaryPatternFamilyId: id as AlgorithmPatternFamilyId,
       recommendedItemTypes: mvpItemTypes,
-      releaseScope: "future",
       status: "coming_later",
     }),
   ),
@@ -358,7 +350,7 @@ const algorithmRoadmapNodes = [
       "Practice interleaving only after multiple families have prior exposure.",
     ],
     learningStage: "mixed_interview_practice",
-    minimumDemoItemCount: 0,
+    minimumActiveItemCount: 0,
     order: 27,
     prerequisiteNodeIds: [
       "strategy_selection_core",
@@ -367,7 +359,6 @@ const algorithmRoadmapNodes = [
       "contrast_sliding_window_vs_prefix_sums",
     ],
     recommendedItemTypes: ["strategy_choice", "solution_comparison", "edge_case_drill"],
-    releaseScope: "planned_content",
     shortDescription: "Later interleaved practice mode after mechanics and contrast exposure.",
     status: "planned",
   }),
@@ -375,7 +366,7 @@ const algorithmRoadmapNodes = [
 
 const algorithmRoadmapEdges = algorithmRoadmapNodes.flatMap((node) =>
   node.prerequisiteNodeIds.map((prerequisiteNodeId) => ({
-    fromNodeId: resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId),
+    fromNodeId: prerequisiteNodeId,
     reason: "Roadmap sequence prerequisite.",
     toNodeId: node.id,
   })),
@@ -485,13 +476,12 @@ function makeNode(input: AlgorithmRoadmapNodeInput): AlgorithmRoadmapNode {
     label: input.label,
     learningObjectives,
     learningStage: input.learningStage ?? "pattern_mechanics",
-    minimumDemoItemCount: input.minimumDemoItemCount ?? 1,
+    minimumActiveItemCount: input.minimumActiveItemCount ?? 1,
     order: input.order,
     prerequisiteNodeIds: input.prerequisiteNodeIds ?? ["complexity_and_constraints"],
     recommendedItemTypes: input.recommendedItemTypes ?? mvpItemTypes,
-    releaseScope: input.releaseScope ?? "demo_available",
     shortDescription: input.shortDescription ??
-      `Technical demo node for ${input.label}; release-quality content requires a later content pack.`,
+      `Practice ${input.label} reasoning with active checks before implementation details.`,
     status: input.status ?? "available",
     ...(input.approachIds ? { approachIds: input.approachIds } : {}),
     ...(input.patternVariantIds ? { patternVariantIds: input.patternVariantIds } : {}),
@@ -538,8 +528,7 @@ function validateRoadmapRefs(
   issues: AlgorithmRoadmapQualityIssue[],
 ): void {
   for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
-    const canonicalPrerequisiteId = resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId);
-    const prerequisiteNode = nodesById.get(canonicalPrerequisiteId);
+    const prerequisiteNode = nodesById.get(prerequisiteNodeId);
 
     if (!prerequisiteNode) {
       issues.push({
@@ -622,18 +611,18 @@ function validateRoadmapPolicy(
   node: AlgorithmRoadmapNode,
   issues: AlgorithmRoadmapQualityIssue[],
 ): void {
-  if (node.status === "available" && node.minimumDemoItemCount < 1) {
+  if (node.status === "available" && node.minimumActiveItemCount < 1) {
     issues.push({
-      code: "available_node_missing_demo_policy",
-      message: `Available roadmap node must define a technical demo item threshold: ${node.id}.`,
+      code: "available_node_missing_minimum_active_items",
+      message: `Available roadmap node must define a minimum active item threshold: ${node.id}.`,
       nodeId: node.id,
     });
   }
 
-  if (node.status !== "available" && node.minimumDemoItemCount > 0) {
+  if (node.status !== "available" && node.minimumActiveItemCount > 0) {
     issues.push({
-      code: "non_available_node_with_demo_policy",
-      message: `Unavailable roadmap node must not require demo content: ${node.id}.`,
+      code: "unavailable_node_with_minimum_active_items",
+      message: `Unavailable roadmap node must not require active session content: ${node.id}.`,
       nodeId: node.id,
     });
   }

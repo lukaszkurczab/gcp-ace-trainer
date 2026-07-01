@@ -110,7 +110,7 @@ function makeAlgorithmAttempt(): TrainingAttempt {
     itemType: "complexity_check",
     modeId: "algorithms-roadmap-basics",
     response: {
-      kind: "complexity_analysis",
+      kind: "complexity_check",
       selectedComplexityAnswer: {
         space: "O(n)",
         time: "O(n)",

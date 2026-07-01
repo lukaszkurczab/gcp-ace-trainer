@@ -10,16 +10,23 @@ type AppStackHeaderProps = {
     goBack: () => void;
     navigate: (name: string, params?: object) => void;
   };
+  onBackPress?: () => void;
   showBack?: boolean;
   subtitle?: string;
 };
 
 export function AppStackHeader({
   navigation,
+  onBackPress,
   showBack = false,
   subtitle,
 }: AppStackHeaderProps) {
   function goBack() {
+    if (onBackPress) {
+      onBackPress();
+      return;
+    }
+
     if (navigation.canGoBack()) {
       navigation.goBack();
       return;

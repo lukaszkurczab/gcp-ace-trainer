@@ -87,7 +87,7 @@ export const ALGORITHM_APPROACH_TEMPLATES = [
     ],
     contentVersion: ALGORITHM_CONTENT_VERSION,
     description: "Move inward over sorted input while comparison to the target decides which side can advance.",
-    id: "sorted_two_pointers_pair_scan",
+    id: "pair_scan_sorted_input",
     invariants: [
       {
         description: "Pairs outside the current left and right boundary have already been ruled out.",

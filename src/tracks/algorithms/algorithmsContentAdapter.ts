@@ -1,7 +1,11 @@
 import { ALGORITHMS_TRACK_ID, getTrackDefinition } from "../../domain";
 import type { TrainingItem, TrainingItemId, TrainingSessionModeId } from "../../domain/training";
 import type { TrackContentAdapter } from "../types";
-import { ALGORITHM_TRAINING_ITEMS } from "./algorithmItems";
+import {
+  ALGORITHM_TRAINING_ITEMS,
+  isAlgorithmTrainingItemSelectable,
+} from "./algorithmItems";
+import type { AlgorithmTrainingItem } from "./algorithmContentTypes";
 
 const algorithmsTrack = getTrackDefinition(ALGORITHMS_TRACK_ID);
 
@@ -22,10 +26,19 @@ export function createAlgorithmsContentAdapter(
         throw new Error(`Unknown Algorithms mode id: ${modeId}`);
       }
 
-      return algorithmsItems.filter((item) => mode.supportedItemTypes.includes(item.type));
+      return algorithmsItems.filter(
+        (item): item is AlgorithmTrainingItem & TrainingItem =>
+          isAlgorithmTrainingItem(item) &&
+          isAlgorithmTrainingItemSelectable(item) &&
+          mode.supportedItemTypes.includes(item.type),
+      );
     },
     trackId: ALGORITHMS_TRACK_ID,
   };
 }
 
 export const algorithmsContentAdapter = createAlgorithmsContentAdapter();
+
+function isAlgorithmTrainingItem(item: TrainingItem): item is AlgorithmTrainingItem & TrainingItem {
+  return item.trackId === ALGORITHMS_TRACK_ID && "status" in item && "primarySkillAtomId" in item;
+}

@@ -138,7 +138,7 @@ test("Algorithms adapter exists for algorithms", () => {
   assert.equal(adapter.content.getItems().length, ALGORITHM_TRAINING_ITEMS.length);
 });
 
-test("Algorithms scoring can score a seeded static item", () => {
+test("Algorithms scoring can score an active static item", () => {
   const item = ALGORITHM_TRAINING_ITEMS.find((candidate) => candidate.id === "alg-hash-map-primer-001");
   const scoring = createAlgorithmsScoringAdapter();
 
