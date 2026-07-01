@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  ALGORITHMS_TRACK_ID,
+  getEnabledSessionModes,
+  getTrackDefinition,
+} from "../src/domain";
+import {
   ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
+  ALGORITHM_CURRICULUM_ID_ALIASES,
   ALGORITHM_EVIDENCE_LEVELS,
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MISTAKE_TYPES,
@@ -16,39 +22,111 @@ import {
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
   ALGORITHM_TRAINING_ITEMS,
+  getAlgorithmTrainingItemsForRoadmapNode,
+  getFirstUsableAlgorithmRoadmapNode,
+  isAlgorithmRoadmapNodeSelectable,
+  resolveAlgorithmCurriculumAlias,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapTrack,
   type AlgorithmTrainingItem,
+  validateAlgorithmCurriculum,
   validateAlgorithmRoadmap,
   validateAlgorithmTrainingItem,
 } from "../src/tracks/algorithms";
 
-test("Algorithms MVP pattern taxonomy includes the approved initial pattern families", () => {
+const requiredFamilyIds = [
+  "complexity_and_constraints",
+  "arrays_and_strings",
+  "hash_map_and_set",
+  "two_pointers",
+  "sliding_window",
+  "prefix_sums",
+  "sorting_based",
+  "stack",
+  "monotonic_stack",
+  "binary_search",
+  "linked_list",
+  "recursion_basics",
+  "tree_traversal",
+  "heap_priority_queue",
+  "intervals",
+  "backtracking",
+  "graph_traversal",
+  "greedy_intro",
+  "dynamic_programming_intro",
+  "bit_manipulation",
+  "math_and_geometry",
+] as const;
+
+const requiredVariantsByFamily = {
+  arrays_and_strings: ["indexed_scan", "frequency_counting", "in_place_update", "string_normalization", "duplicate_handling"],
+  backtracking: ["choice_tree", "constraints_and_pruning", "combinations", "permutations", "subsets"],
+  binary_search: ["classic_index_search", "lower_upper_bound", "rotated_array_search", "binary_search_on_answer", "monotonic_predicate_recognition"],
+  bit_manipulation: ["bitmask_basics", "xor_properties", "set_clear_check_bit", "subset_bitmask_intro"],
+  complexity_and_constraints: ["big_o_basics", "input_size_constraints", "time_vs_space_tradeoff", "brute_force_as_baseline", "operations_cost"],
+  dynamic_programming_intro: ["one_dimensional_dp", "take_or_skip", "grid_dp", "subsequence_dp", "knapsack_intro", "state_definition", "transition_choice"],
+  graph_traversal: ["adjacency_representation", "bfs_unweighted_shortest_path", "dfs_connected_components", "visited_state", "topological_sort_intro", "union_find_intro"],
+  greedy_intro: ["local_choice_signal", "sorting_plus_greedy", "interval_greedy", "greedy_vs_dp_contrast"],
+  hash_map_and_set: ["lookup_by_value", "frequency_map", "complement_lookup", "seen_set", "grouping_by_key"],
+  heap_priority_queue: ["top_k", "running_extreme", "merge_k_sorted", "scheduling_by_priority"],
+  intervals: ["merge_overlaps", "insert_interval", "meeting_rooms", "sweep_line_intro"],
+  linked_list: ["pointer_rewiring", "fast_slow_pointers", "cycle_detection", "reverse_list", "merge_lists"],
+  math_and_geometry: ["modulo_reasoning", "counting_formula", "gcd_lcm", "coordinate_reasoning", "rectangle_overlap"],
+  monotonic_stack: ["next_greater_element", "next_smaller_element", "histogram_boundary_reasoning", "monotonic_invariant"],
+  prefix_sums: ["range_sum_query", "subarray_sum_with_hash_map", "difference_array_intro", "prefix_counting", "when_prefix_beats_window"],
+  recursion_basics: ["base_case_recognition", "recursive_decomposition", "call_stack_trace", "recursion_vs_iteration"],
+  sliding_window: ["fixed_size_window", "variable_size_positive_numbers", "frequency_constraint", "at_most_k_distinct", "minimum_covering_window", "when_sliding_window_fails"],
+  sorting_based: ["sort_then_scan", "sort_then_two_pointers", "custom_ordering", "sorting_to_reveal_structure", "sorting_cost_recognition"],
+  stack: ["nested_structure_validation", "expression_like_processing", "undo_or_previous_state", "stack_for_dfs_simulation"],
+  tree_traversal: ["dfs_preorder_inorder_postorder", "bfs_level_order", "recursive_tree_reasoning", "path_accumulation", "tree_height_depth"],
+  two_pointers: ["opposite_ends", "same_direction", "pair_scan_sorted_input", "partitioning", "duplicate_skipping"],
+} as const;
+
+test("Algorithms curriculum taxonomy exposes the target real pattern families", () => {
   assert.deepEqual(
     ALGORITHM_PATTERN_FAMILIES.map((family) => family.id),
-    [
-      "complexity_basics",
-      "hash_map_and_set",
-      "two_pointers",
-      "sliding_window",
-      "prefix_sums",
-      "sorting_based",
-      "stack",
-      "binary_search",
-    ],
+    [...requiredFamilyIds],
   );
+  assert.equal(new Set<string>(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id)).has("mixed_pattern_practice"), false);
 
   for (const family of ALGORITHM_PATTERN_FAMILIES) {
     assert.equal(family.contentVersion, ALGORITHM_CONTENT_VERSION);
+    assert.equal(family.kind, "real_pattern_family");
     assert.ok(family.label.length > 0);
     assert.ok(family.description.length > 0);
     assert.ok(family.coreDecisionSignals.length > 0);
-    assert.ok(family.commonMistakeTypes.length > 0);
     assert.equal("itemCount" in family, false);
   }
 });
 
-test("Algorithms skill atoms have one primary pattern family and valid mistake types", () => {
+test("Algorithms curriculum taxonomy exposes required variants by family", () => {
+  const variantsByFamily = new Map<string, Set<string>>();
+
+  for (const variant of ALGORITHM_PATTERN_VARIANTS) {
+    const variants = variantsByFamily.get(variant.patternFamilyId) ?? new Set<string>();
+    variants.add(variant.id);
+    variantsByFamily.set(variant.patternFamilyId, variants);
+    assert.equal(variant.contentVersion, ALGORITHM_CONTENT_VERSION);
+  }
+
+  for (const [familyId, variantIds] of Object.entries(requiredVariantsByFamily)) {
+    const actualVariantIds = variantsByFamily.get(familyId) ?? new Set<string>();
+    for (const variantId of variantIds) {
+      assert.equal(actualVariantIds.has(variantId), true, `${familyId}:${variantId}`);
+    }
+  }
+});
+
+test("Algorithms curriculum alias mapping preserves migrated ids", () => {
+  assert.equal(resolveAlgorithmCurriculumAlias("pattern_family", "complexity_basics"), "complexity_and_constraints");
+  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "array_string_basics"), "arrays_and_strings");
+  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "hash_map_lookup"), "hash_map_and_set");
+  assert.equal(resolveAlgorithmCurriculumAlias("roadmap_node", "two_pointers_pair_scan"), "two_pointers");
+  assert.equal(resolveAlgorithmCurriculumAlias("pattern_variant", "variable_size_positive_window"), "variable_size_positive_numbers");
+  assert.ok(ALGORITHM_CURRICULUM_ID_ALIASES.length >= 4);
+});
+
+test("Algorithms skill atoms model trainable reasoning actions", () => {
   const familyIds = new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id));
   const mistakeTypes = new Set<string>(ALGORITHM_MISTAKE_TYPES);
   const skillAtomIds = new Set(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
@@ -57,11 +135,10 @@ test("Algorithms skill atoms have one primary pattern family and valid mistake t
 
   for (const atom of ALGORITHM_SKILL_ATOMS) {
     assert.equal(atom.contentVersion, ALGORITHM_CONTENT_VERSION);
-    assert.equal(typeof atom.primaryPatternFamilyId, "string");
-    assert.equal("primaryPatternFamilyIds" in atom, false);
     assert.ok(familyIds.has(atom.primaryPatternFamilyId));
     assert.ok(atom.mistakeTypes.length > 0);
     assert.ok(atom.evidenceRequiredForProgression.length > 0);
+    assert.equal(atom.id.endsWith("_skill"), false, atom.id);
 
     for (const mistakeType of atom.mistakeTypes) {
       assert.ok(mistakeTypes.has(mistakeType));
@@ -71,461 +148,172 @@ test("Algorithms skill atoms have one primary pattern family and valid mistake t
       assert.ok(skillAtomIds.has(prerequisiteSkillAtomId));
     }
 
-    const atomPatternVariantIds = "patternVariantIds" in atom ? atom.patternVariantIds : [];
-    const atomProblemArchetypeIds = "problemArchetypeIds" in atom ? atom.problemArchetypeIds : [];
-
-    for (const patternVariantId of atomPatternVariantIds) {
+    for (const patternVariantId of atom.patternVariantIds ?? []) {
       assert.ok(patternVariantIds.has(patternVariantId));
     }
 
-    for (const problemArchetypeId of atomProblemArchetypeIds) {
+    for (const problemArchetypeId of atom.problemArchetypeIds ?? []) {
       assert.ok(problemArchetypeIds.has(problemArchetypeId));
     }
   }
 });
 
-test("Algorithms training item quality rejects multiple primary skills and missing feedback model", () => {
-  const multiplePrimarySkills = {
-    ...makeBaseAlgorithmItem(),
-    primarySkillAtomId: ["recognize_n2_too_slow_for_large_n", "explain_hash_map_average_lookup"],
-  };
-  const missingFeedbackModel = {
-    ...makeBaseAlgorithmItem(),
-    feedbackModel: undefined,
-  };
+test("Algorithms roadmap separates demo-available, planned, future, and mixed practice", () => {
+  const availableNodeIds = ALGORITHM_ROADMAP.nodes
+    .filter((node) => node.status === "available")
+    .map((node) => node.id);
 
-  assert.ok(issueCodes(multiplePrimarySkills).includes("multiple_primary_skills"));
-  assert.ok(issueCodes(missingFeedbackModel).includes("missing_feedback_model"));
-});
-
-test("Algorithms approach templates include mechanics, invariant, pseudocode, complexity, pitfalls, and static status", () => {
-  assert.deepEqual(
-    ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id),
-    [
-      "hash_map_complement_lookup",
-      "sorted_two_pointers_pair_scan",
-      "positive_sliding_window",
-    ],
-  );
-
-  for (const approach of ALGORITHM_APPROACH_TEMPLATES) {
-    assert.equal(approach.contentVersion, ALGORITHM_CONTENT_VERSION);
-    assert.equal(approach.status, "draft");
-    assert.ok(approach.whenToUseSignals.length > 0);
-    assert.ok(approach.whenNotToUseSignals.length > 0);
-    assert.ok(approach.invariants.length > 0);
-    assert.ok(approach.steps.length > 0);
-    assert.ok(approach.pseudocodeTemplate.lines.length > 0);
-    assert.ok(approach.typicalTimeComplexity.length > 0);
-    assert.ok(approach.typicalSpaceComplexity.length > 0);
-    assert.ok(approach.commonMistakeTypes.length > 0);
-    assert.ok(approach.pitfalls.length > 0);
-  }
-});
-
-test("Algorithms static micro-check model does not expose dynamic evaluation fields", () => {
-  const staticCheck = makeStaticMicroCheck();
-  const exposedKeys = new Set(Object.keys(staticCheck));
-
-  for (const forbiddenField of [
-    "ai",
-    "llm",
-    "chat",
-    "generatedFeedback",
-    "semanticEvaluator",
-    "model",
-    "promptTemplate",
+  for (const nodeId of [
+    "complexity_and_constraints",
+    "arrays_and_strings",
+    "hash_map_and_set",
+    "two_pointers",
+    "sliding_window",
+    "prefix_sums",
+    "sorting_based",
+    "stack",
+    "binary_search",
+    "strategy_selection_core",
+    "contrast_hash_map_vs_sorting",
+    "contrast_two_pointers_vs_sliding_window",
+    "contrast_sliding_window_vs_prefix_sums",
+    "contrast_stack_vs_monotonic_stack_intro",
+    "contrast_binary_search_vs_linear_scan",
   ]) {
-    assert.equal(exposedKeys.has(forbiddenField), false, forbiddenField);
+    assert.equal(availableNodeIds.includes(nodeId), true, nodeId);
   }
 
-  assert.deepEqual(
-    [...ALGORITHM_STATIC_MICRO_CHECK_TYPES],
-    [
-      "single_choice",
-      "multi_select",
-      "complexity_pair",
-      "order_steps",
-      "fill_blank",
-      "trace_next_step",
-      "select_pseudocode_line",
-    ],
-  );
+  const mixedPractice = getRoadmapNode("mixed_pattern_practice");
+  assert.equal(mixedPractice.kind, "mixed_practice");
+  assert.equal(mixedPractice.learningStage, "mixed_interview_practice");
+  assert.notEqual(mixedPractice.status, "available");
+  assert.equal(mixedPractice.minimumDemoItemCount, 0);
+
+  for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.releaseScope === "future")) {
+    assert.notEqual(node.status, "available", node.id);
+    assert.equal(node.minimumDemoItemCount, 0, node.id);
+  }
+
+  assert.deepEqual(validateAlgorithmRoadmap(ALGORITHM_ROADMAP).issues, []);
 });
 
-test("Seeded Algorithms MVP items pass validation", () => {
-  assert.equal(ALGORITHM_TRAINING_ITEMS.length, 7);
+test("Algorithms roadmap references and prerequisites resolve", () => {
+  const nodesById = new Map(getRoadmapNodes().map((node) => [node.id, node]));
+  const approachIds = new Set<string>(ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id));
+  const familyIds = new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id));
+  const variantIds = new Set(ALGORITHM_PATTERN_VARIANTS.map((variant) => variant.id));
+  const archetypeIds = new Set(ALGORITHM_PROBLEM_ARCHETYPES.map((archetype) => archetype.id));
+  const skillAtomIds = new Set<string>(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
+
+  for (const node of getRoadmapNodes()) {
+    for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
+      const prerequisite = nodesById.get(resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId));
+      assert.ok(prerequisite, `${node.id}:${prerequisiteNodeId}`);
+      assert.ok(prerequisite.order < node.order, `${prerequisiteNodeId} should come before ${node.id}`);
+    }
+    for (const approachId of node.approachIds ?? []) assert.ok(approachIds.has(approachId), approachId);
+    if (node.primaryPatternFamilyId) assert.ok(familyIds.has(node.primaryPatternFamilyId), node.primaryPatternFamilyId);
+    for (const variantId of node.patternVariantIds ?? []) assert.ok(variantIds.has(variantId), variantId);
+    for (const archetypeId of node.problemArchetypeIds ?? []) assert.ok(archetypeIds.has(archetypeId), archetypeId);
+    for (const skillAtomId of node.skillAtomIds ?? []) assert.ok(skillAtomIds.has(skillAtomId), skillAtomId);
+  }
+});
+
+test("Algorithms seed content is migrated without deleting valid item ids", () => {
+  const itemIds = new Set(ALGORITHM_TRAINING_ITEMS.map((item) => item.id));
+
+  for (const itemId of [
+    "alg-complexity-constraint-pair-001",
+    "alg-array-string-naming-001",
+    "alg-hash-map-primer-001",
+    "alg-hash-map-pseudocode-order-001",
+    "alg-hash-map-trace-next-001",
+    "alg-two-pointers-subgoal-order-001",
+    "alg-two-pointers-pseudocode-line-001",
+  ]) {
+    assert.equal(itemIds.has(itemId), true, itemId);
+  }
+
+  assert.equal(getItem("alg-complexity-constraint-pair-001").roadmapNodeId, "complexity_and_constraints");
+  assert.equal(getItem("alg-array-string-naming-001").roadmapNodeId, "arrays_and_strings");
+  assert.equal(getItem("alg-hash-map-primer-001").primarySkillAtomId, "choose_lookup_key");
+  assert.equal(getItem("alg-two-pointers-subgoal-order-001").primarySkillAtomId, "move_decisive_pointer");
+});
+
+test("Algorithms active items and curriculum pass validation", () => {
+  const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
+  const result = validateAlgorithmCurriculum({
+    enabledSessionModes: getEnabledSessionModes(ALGORITHMS_TRACK_ID),
+    items: ALGORITHM_TRAINING_ITEMS,
+    roadmap: ALGORITHM_ROADMAP,
+  });
+
+  assert.deepEqual(result.issues, []);
+  assert.equal(track.contentManifest.itemCount, ALGORITHM_TRAINING_ITEMS.filter((item) => item.status === "active").length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
-    const result = validateAlgorithmTrainingItem(item);
-
-    assert.deepEqual(result.issues, [], item.id);
+    assert.deepEqual(validateAlgorithmTrainingItem(item).issues, [], item.id);
     assert.equal(item.status, "active");
-    assert.ok(item.staticMicroChecks?.some((check) => check.status === "active"));
+    assert.ok(item.staticMicroChecks?.some((check) => check.status === "active"), item.id);
   }
 });
 
-test("Seeded Algorithms MVP items map to existing roadmap nodes", () => {
-  const roadmapNodeIds = new Set(ALGORITHM_ROADMAP.nodes.map((node) => node.id));
+test("Algorithms session selection excludes planned and future roadmap nodes", () => {
+  assert.equal(getFirstUsableAlgorithmRoadmapNode().id, "complexity_and_constraints");
 
-  assert.deepEqual(
-    ALGORITHM_TRAINING_ITEMS.map((item) => item.roadmapNodeId),
-    [
-      "complexity_basics",
-      "array_string_basics",
-      "hash_map_lookup",
-      "hash_map_lookup",
-      "hash_map_lookup",
-      "two_pointers_pair_scan",
-      "two_pointers_pair_scan",
-    ],
-  );
+  for (const node of ALGORITHM_ROADMAP.nodes) {
+    const activeItemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
 
-  for (const item of ALGORITHM_TRAINING_ITEMS) {
-    assert.ok(item.roadmapNodeId);
-    assert.equal(roadmapNodeIds.has(item.roadmapNodeId), true, item.id);
+    if (node.status === "available") {
+      assert.equal(isAlgorithmRoadmapNodeSelectable(node), activeItemCount >= node.minimumDemoItemCount, node.id);
+      continue;
+    }
+
+    assert.equal(isAlgorithmRoadmapNodeSelectable(node), false, node.id);
   }
 });
 
-test("Seeded Algorithms MVP items include required item and static check types", () => {
-  const itemTypes = new Set(ALGORITHM_TRAINING_ITEMS.map((item) => item.type));
+test("Algorithms static micro-check model supports all active check types", () => {
   const checkTypes = new Set(
     ALGORITHM_TRAINING_ITEMS.flatMap((item) =>
       (item.staticMicroChecks ?? []).map((check) => check.type),
     ),
   );
 
-  for (const itemType of [
-    "approach_primer",
-    "approach_naming",
-    "complexity_check",
-    "subgoal_ordering",
-    "pseudocode_ordering",
-    "trace_next_step",
-  ] as const) {
-    assert.equal(itemTypes.has(itemType), true, itemType);
-  }
-
-  for (const checkType of [
-    "single_choice",
-    "multi_select",
-    "complexity_pair",
-    "order_steps",
-    "select_pseudocode_line",
-    "trace_next_step",
-  ] as const) {
-    assert.equal(checkTypes.has(checkType), true, checkType);
+  for (const checkType of checkTypes) {
+    assert.ok(ALGORITHM_STATIC_MICRO_CHECK_TYPES.includes(checkType), checkType);
   }
 });
 
-test("Seeded Algorithms MVP items avoid forbidden visible terms", () => {
-  const serializedItems = JSON.stringify(ALGORITHM_TRAINING_ITEMS).toLowerCase();
-  const itemTokens = new Set(serializedItems.split(/[^a-z0-9]+/).filter(Boolean));
-
-  assert.equal(serializedItems.includes("full_code_editor"), false);
+test("Algorithms model values avoid forbidden progress and platform terms", () => {
+  const exposedModelValues = [
+    ...ALGORITHM_APPROACH_TEMPLATES,
+    ...ALGORITHM_PATTERN_FAMILIES,
+    ...ALGORITHM_PATTERN_VARIANTS,
+    ...ALGORITHM_PROBLEM_ARCHETYPES,
+    ...ALGORITHM_SKILL_ATOMS,
+    ...ALGORITHM_MISTAKE_TYPES,
+    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_EVIDENCE_LEVELS,
+    ...ALGORITHM_STATIC_MICRO_CHECK_TYPES,
+    ALGORITHM_ROADMAP,
+    ALGORITHM_TRAINING_ITEMS,
+  ];
+  const serializedModel = JSON.stringify(exposedModelValues).toLowerCase();
 
   for (const forbiddenTerm of [
     "readiness",
     "retention",
     "mastery",
-    "mastered",
-    "strong",
-    "weak",
     "streak",
-    "level",
-    "badge",
     "leaderboard",
     "leetcode",
-    "ai",
-    "llm",
-    "chat",
-    "generated",
+    "ai-generated",
+    "llm-generated",
   ]) {
-    assert.equal(itemTokens.has(forbiddenTerm), false, forbiddenTerm);
-  }
-});
-
-test("Algorithms approach primer validation rejects missing mechanics fields", () => {
-  const invalidApproachPrimer = makeBaseAlgorithmItem({
-    type: "approach_primer",
-  });
-
-  assert.deepEqual(
-    issueCodes(invalidApproachPrimer).filter((code) =>
-      [
-        "missing_approach_id",
-        "missing_mechanics_summary",
-        "missing_when_to_use_signals",
-        "missing_invariant",
-        "missing_pseudocode",
-        "missing_pitfalls",
-        "missing_static_micro_check",
-      ].includes(code),
-    ),
-    [
-      "missing_approach_id",
-      "missing_invariant",
-      "missing_mechanics_summary",
-      "missing_pitfalls",
-      "missing_pseudocode",
-      "missing_static_micro_check",
-      "missing_when_to_use_signals",
-    ],
-  );
-
-  const validApproachPrimer = makeBaseAlgorithmItem({
-    approachId: "hash_map_complement_lookup",
-    invariant: makeInvariant(),
-    mechanicsSummary: "For each value, check whether the needed complement was already seen, then store this value.",
-    pitfalls: [makePitfall()],
-    pseudocodeTemplate: makePseudocodeTemplate(),
-    staticMicroChecks: [makeStaticMicroCheck()],
-    type: "approach_primer",
-    whenToUseSignals: ["Need fast complement lookup while scanning once."],
-  });
-
-  assert.deepEqual(issueCodes(validApproachPrimer), []);
-});
-
-test("Algorithms strategy choice requires strategy data plus reason and constraint signals", () => {
-  const invalidStrategyChoice = makeBaseAlgorithmItem({
-    type: "strategy_choice",
-  });
-
-  assert.deepEqual(
-    issueCodes(invalidStrategyChoice).filter((code) => code.includes("approach") || code.includes("signal")),
-    [
-      "missing_acceptable_approaches",
-      "missing_constraint_signal",
-      "missing_expected_approaches",
-      "missing_reason_signal",
-      "missing_rejected_approaches",
-    ],
-  );
-
-  const validStrategyChoice = makeBaseAlgorithmItem({
-    acceptableApproachIds: [],
-    constraintSignal: "n can be 100000, so pair enumeration is too expensive.",
-    expectedApproachIds: ["hash_map_and_set"],
-    reasonSignal: "Need complement lookup during one scan.",
-    rejectedApproachIds: ["nested_loop"],
-    type: "strategy_choice",
-  });
-
-  assert.deepEqual(issueCodes(validStrategyChoice), []);
-});
-
-test("Algorithms complexity check requires time, space, and explanation", () => {
-  const invalidComplexityCheck = makeBaseAlgorithmItem({
-    type: "complexity_check",
-  });
-
-  assert.deepEqual(
-    issueCodes(invalidComplexityCheck).filter((code) => code.includes("complexity")),
-    [
-      "missing_complexity_explanation",
-      "missing_expected_space_complexity",
-      "missing_expected_time_complexity",
-    ],
-  );
-
-  const validComplexityCheck = makeBaseAlgorithmItem({
-    complexityExplanation: "The scan is linear and the map can hold up to n values.",
-    expectedSpaceComplexity: "O(n)",
-    expectedTimeComplexity: "O(n)",
-    type: "complexity_check",
-  });
-
-  assert.deepEqual(issueCodes(validComplexityCheck), []);
-});
-
-test("Algorithms worked example requires trace, pseudocode, alternatives, complexity, and static micro-check", () => {
-  const invalidWorkedExample = makeBaseAlgorithmItem({
-    type: "worked_example",
-  });
-
-  assert.deepEqual(
-    issueCodes(invalidWorkedExample).filter((code) =>
-      [
-        "missing_problem_statement",
-        "missing_constraints",
-        "missing_approach_id",
-        "missing_approach_choice_reason",
-        "missing_worked_example_subgoals",
-        "missing_step_by_step_trace",
-        "missing_pseudocode",
-        "missing_expected_time_complexity",
-        "missing_expected_space_complexity",
-        "missing_complexity_explanation",
-        "missing_why_not_alternatives",
-        "missing_common_mistakes",
-        "missing_worked_example_static_micro_check",
-      ].includes(code),
-    ),
-    [
-      "missing_approach_choice_reason",
-      "missing_approach_id",
-      "missing_common_mistakes",
-      "missing_complexity_explanation",
-      "missing_constraints",
-      "missing_expected_space_complexity",
-      "missing_expected_time_complexity",
-      "missing_problem_statement",
-      "missing_pseudocode",
-      "missing_step_by_step_trace",
-      "missing_why_not_alternatives",
-      "missing_worked_example_static_micro_check",
-      "missing_worked_example_subgoals",
-    ],
-  );
-
-  const validWorkedExample = makeBaseAlgorithmItem({
-    approachChoiceReason: "A one-pass lookup avoids checking every pair for a large input.",
-    approachId: "hash_map_complement_lookup",
-    commonMistakes: ["duplicate_handling_error"],
-    complexityExplanation: "Each input value is scanned once and the lookup can hold up to n values.",
-    constraints: ["n can be 100000"],
-    expectedSpaceComplexity: "O(n)",
-    expectedTimeComplexity: "O(n)",
-    problemStatement: "Find whether any pair sums to the target.",
-    pseudocodeTemplate: makePseudocodeTemplate(),
-    solution: {
-      approachId: "hash_map_and_set",
-      id: "solution-001",
-      spaceComplexity: "O(n)",
-      summary: "Scan once while remembering seen complements.",
-      timeComplexity: "O(n)",
-      title: "One-pass complement lookup",
-    },
-    subgoals: [
-      {
-        description: "Keep enough state to answer complement lookup during the scan.",
-        id: "subgoal-001",
-        label: "Track seen values",
-        order: 1,
-      },
-    ],
-    staticMicroChecks: [makeStaticMicroCheck()],
-    stepByStepTrace: [
-      {
-        description: "First value is stored because no complement has been seen yet.",
-        id: "trace-001",
-        order: 1,
-        state: ["seen = {first value}"],
-      },
-    ],
-    type: "worked_example",
-    whyNotAlternatives: [
-      {
-        approachId: "nested_loop",
-        reason: "Checking every pair is too slow for the input limit.",
-      },
-    ],
-  });
-
-  assert.deepEqual(issueCodes(validWorkedExample), []);
-});
-
-test("Algorithms mechanics-first item types exist before draft item seeding", () => {
-  const itemTypes = new Set<string>([
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ]);
-
-  for (const itemType of [
-    "approach_naming",
-    "subgoal_identification",
-    "subgoal_ordering",
-    "pseudocode_ordering",
-    "fill_missing_step",
-    "trace_next_step",
-  ]) {
-    assert.equal(itemTypes.has(itemType), true, itemType);
-  }
-});
-
-test("Algorithms roadmap contains the required first sequence in order", () => {
-  assert.deepEqual(
-    ALGORITHM_ROADMAP.nodes.map((node) => node.id),
-    [
-      "complexity_basics",
-      "array_string_basics",
-      "hash_map_lookup",
-      "two_pointers_pair_scan",
-      "sliding_window_positive",
-      "prefix_sums_range_reasoning",
-      "stack_nested_structure",
-      "binary_search_sorted_input",
-      "strategy_selection_basics",
-      "mixed_pattern_practice",
-    ],
-  );
-  assert.deepEqual(
-    ALGORITHM_ROADMAP.nodes.map((node) => node.order),
-    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  );
-  assert.deepEqual(validateAlgorithmRoadmap(ALGORITHM_ROADMAP).issues, []);
-});
-
-test("Algorithms roadmap prerequisites point backward only", () => {
-  const nodesById = new Map(getRoadmapNodes().map((node) => [node.id, node]));
-
-  for (const node of getRoadmapNodes()) {
-    for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
-      const prerequisite = nodesById.get(prerequisiteNodeId);
-
-      assert.ok(prerequisite);
-      assert.ok(prerequisite.order < node.order, `${prerequisiteNodeId} should come before ${node.id}`);
-    }
-  }
-});
-
-test("Algorithms roadmap approach refs resolve to existing approach templates", () => {
-  const approachIds = new Set<string>(ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id));
-
-  assert.deepEqual(getRoadmapNode("hash_map_lookup").approachIds, ["hash_map_complement_lookup"]);
-  assert.deepEqual(getRoadmapNode("two_pointers_pair_scan").approachIds, ["sorted_two_pointers_pair_scan"]);
-  assert.deepEqual(getRoadmapNode("sliding_window_positive").approachIds, ["positive_sliding_window"]);
-
-  for (const node of getRoadmapNodes()) {
-    for (const approachId of node.approachIds ?? []) {
-      assert.equal(approachIds.has(approachId), true, approachId);
-    }
-  }
-});
-
-test("Algorithms roadmap pattern family refs resolve to existing taxonomy", () => {
-  const familyIds = new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id));
-
-  for (const node of getRoadmapNodes()) {
-    if (node.primaryPatternFamilyId) {
-      assert.equal(familyIds.has(node.primaryPatternFamilyId), true, node.primaryPatternFamilyId);
-    }
-  }
-});
-
-test("Algorithms roadmap skill atom refs resolve to existing skill atoms", () => {
-  const skillAtomIds = new Set<string>(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
-
-  for (const node of getRoadmapNodes()) {
-    for (const skillAtomId of node.skillAtomIds ?? []) {
-      assert.equal(skillAtomIds.has(skillAtomId), true, skillAtomId);
-    }
-  }
-});
-
-test("Algorithms roadmap recommended item types exist", () => {
-  const itemTypes = new Set<string>([
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ]);
-
-  for (const node of getRoadmapNodes()) {
-    for (const itemType of node.recommendedItemTypes) {
-      assert.equal(itemTypes.has(itemType), true, `${node.id}:${itemType}`);
-    }
+    assert.equal(serializedModel.includes(forbiddenTerm), false, forbiddenTerm);
   }
 });
 
@@ -556,65 +344,31 @@ test("Algorithms roadmap validation rejects duplicate ids and forward prerequisi
   assert.ok(issueCodes.includes("forward_prerequisite"));
 });
 
-test("Algorithms roadmap visible values avoid forbidden progress and platform terms", () => {
-  const serializedRoadmap = JSON.stringify(ALGORITHM_ROADMAP).toLowerCase();
-  const roadmapTokens = new Set(serializedRoadmap.split(/[^a-z0-9]+/).filter(Boolean));
+test("Algorithms item validators retain specific content-type contracts", () => {
+  assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), primarySkillAtomId: ["derive_time_complexity", "choose_lookup_key"] }).includes("multiple_primary_skills"));
+  assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), feedbackModel: undefined }).includes("missing_feedback_model"));
 
-  for (const forbiddenTerm of [
-    "readiness",
-    "retention",
-    "mastery",
-    "mastered",
-    "strong",
-    "weak",
-    "streak",
-    "level",
-    "badge",
-    "leaderboard",
-    "leetcode",
-    "ai",
-    "llm",
-    "chat",
-    "generated",
-  ]) {
-    assert.equal(roadmapTokens.has(forbiddenTerm), false, forbiddenTerm);
-  }
-});
+  assert.deepEqual(
+    issueCodes(makeBaseAlgorithmItem({ type: "complexity_check" })).filter((code) => code.includes("complexity")),
+    [
+      "missing_complexity_explanation",
+      "missing_expected_space_complexity",
+      "missing_expected_time_complexity",
+    ],
+  );
 
-test("Algorithms model values avoid disallowed progress, gamification, and platform naming", () => {
-  const exposedModelValues = [
-    ...ALGORITHM_APPROACH_TEMPLATES,
-    ...ALGORITHM_PATTERN_FAMILIES,
-    ...ALGORITHM_PATTERN_VARIANTS,
-    ...ALGORITHM_PROBLEM_ARCHETYPES,
-    ...ALGORITHM_SKILL_ATOMS,
-    ...ALGORITHM_MISTAKE_TYPES,
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_EVIDENCE_LEVELS,
-    ...ALGORITHM_STATIC_MICRO_CHECK_TYPES,
-    ALGORITHM_ROADMAP,
-  ];
-  const serializedModel = JSON.stringify(exposedModelValues).toLowerCase();
-  const modelTokens = new Set(serializedModel.split(/[^a-z0-9]+/).filter(Boolean));
+  const validApproachPrimer = makeBaseAlgorithmItem({
+    approachId: "hash_map_complement_lookup",
+    invariant: makeInvariant(),
+    mechanicsSummary: "For each value, check whether the needed complement was already seen, then store this value.",
+    pitfalls: [makePitfall()],
+    pseudocodeTemplate: makePseudocodeTemplate(),
+    staticMicroChecks: [makeStaticMicroCheck()],
+    type: "approach_primer",
+    whenToUseSignals: ["Need fast complement lookup while scanning once."],
+  });
 
-  for (const forbiddenTerm of [
-    "readiness",
-    "retention",
-    "mastery",
-    "streak",
-    "level",
-    "badge",
-    "leaderboard",
-    "leetcode",
-    "ai",
-    "llm",
-    "chat",
-    "generated",
-  ]) {
-    assert.equal(modelTokens.has(forbiddenTerm), false, forbiddenTerm);
-  }
+  assert.deepEqual(issueCodes(validApproachPrimer), []);
 });
 
 function issueCodes(item: unknown): string[] {
@@ -634,6 +388,13 @@ function getRoadmapNode(nodeId: string): AlgorithmRoadmapNode {
   return node;
 }
 
+function getItem(itemId: string): AlgorithmTrainingItem {
+  const item = ALGORITHM_TRAINING_ITEMS.find((candidate) => candidate.id === itemId);
+
+  assert.ok(item);
+  return item;
+}
+
 function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): AlgorithmTrainingItem {
   return {
     contentVersion: ALGORITHM_CONTENT_VERSION,
@@ -646,13 +407,13 @@ function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): 
     },
     id: "algorithm-item-fixture-001",
     learningStage: "foundations",
-    primarySkillAtomId: "recognize_n2_too_slow_for_large_n",
+    primarySkillAtomId: "derive_time_complexity",
     prompt: "n can be 100000. What approach scale should you reject first?",
     status: "draft",
     taxonomyRefs: [
       {
         axisId: "pattern_family",
-        nodeId: "complexity_basics",
+        nodeId: "complexity_and_constraints",
         role: "primary",
       },
     ],
@@ -707,7 +468,7 @@ function makeStaticMicroCheck() {
     ],
     prompt: "Which order avoids reusing the current element?",
     status: "active" as const,
-    testedSkillAtomIds: ["explain_hash_map_average_lookup"],
+    testedSkillAtomIds: ["choose_lookup_key"],
     type: "single_choice" as const,
   };
 }

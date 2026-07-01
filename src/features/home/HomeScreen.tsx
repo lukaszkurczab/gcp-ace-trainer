@@ -1,13 +1,11 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
-  BottomTabBar,
   Screen,
-  type BottomTabBarItem,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
@@ -17,12 +15,9 @@ import {
 } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
-  clearActiveExamSession,
-  getActiveExamSession,
   getActiveTrackId,
   getAttempts,
   getPracticeHistory,
-  getQuestions,
   getStorageIssues,
   getTrainingAttempts,
   type LocalStorageIssue,
@@ -32,26 +27,18 @@ import {
   loadCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
 } from "../../tracks/cloud-certification";
-import type {
-  ActiveExamSession,
-  AttemptSummary,
-  PracticeAnswerRecord,
-  Question,
-} from "../../types";
+import type { AttemptSummary, PracticeAnswerRecord } from "../../types";
 import type { TrainingAttempt } from "../../domain/training";
 import { buildAnalyticsData } from "../analytics/analyticsService";
-import { createExamSession } from "../exam/examService";
-import { DEFAULT_QUESTION_BANK } from "../questions/defaultQuestionBank";
-import { buildQuestionBankSummary } from "../questions/questionBankStats";
+import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
+import { buildPracticeSessionConfig } from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
-import { PracticeTab } from "./tabs/PracticeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 import {
   CLEAR_LOCAL_HISTORY_CONFIRMATION,
   clearPatternlyLocalHistory,
 } from "./localReset";
-import { MAIN_TAB_ITEMS } from "./shellModel";
 import type { ShellTab } from "./types";
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -60,32 +47,33 @@ type HomeScreenProps = NativeStackScreenProps<
 >;
 
 type ShellData = {
-  activeSession: ActiveExamSession | null;
   attempts: AttemptSummary[];
   cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
-  questions: Question[];
   storageIssues: readonly LocalStorageIssue[];
   trainingAttempts: TrainingAttempt[];
 };
 
-const tabs: readonly BottomTabBarItem<ShellTab>[] = MAIN_TAB_ITEMS;
-
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
-export function HomeScreen({ navigation }: HomeScreenProps) {
-  const [activeTab, setActiveTab] = useState<ShellTab>("home");
+type HomeShellTab = Exclude<ShellTab, "practice">;
+
+export function HomeScreen({ navigation, route }: HomeScreenProps) {
+  const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId>(DEFAULT_TRACK_ID);
-  const [isStartingExam, setIsStartingExam] = useState(false);
   const [data, setData] = useState<ShellData>({
-    activeSession: null,
     attempts: [],
     cloudProgress: null,
     practiceHistory: [],
-    questions: DEFAULT_QUESTION_BANK,
     storageIssues: [],
     trainingAttempts: [],
   });
+
+  useEffect(() => {
+    if (route.params?.initialTab) {
+      setActiveTab(route.params.initialTab);
+    }
+  }, [route.params?.initialTab]);
 
   useFocusEffect(
     useCallback(() => {
@@ -94,16 +82,12 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       async function loadShellData() {
         const [
           savedTrackId,
-          savedQuestions,
-          savedSession,
           savedAttempts,
           savedPracticeHistory,
           cloudProgress,
           trainingAttemptsResult,
         ] = await Promise.all([
           getActiveTrackId(),
-          getQuestions(),
-          getActiveExamSession(),
           getAttempts(),
           getPracticeHistory(),
           loadCloudCertificationProgressViewModel(),
@@ -113,11 +97,9 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         if (isActive) {
           setActiveTrackId(savedTrackId);
           setData({
-            activeSession: savedSession,
             attempts: savedAttempts,
             cloudProgress,
             practiceHistory: savedPracticeHistory,
-            questions: savedQuestions,
             storageIssues: getStorageIssues(),
             trainingAttempts: trainingAttemptsResult.value,
           });
@@ -133,56 +115,10 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   );
 
   const activeTrack = getTrackDefinition(activeTrackId);
-  const bankSummary = buildQuestionBankSummary(data.questions);
   const analytics = useMemo(
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-
-  async function startExam() {
-    if (!bankSummary.examReady || isStartingExam) {
-      return;
-    }
-
-    setIsStartingExam(true);
-    const result = await createExamSession();
-    setIsStartingExam(false);
-
-    if (!result.ok) {
-      Alert.alert("Exam not ready", result.reason);
-      return;
-    }
-
-    setData((current) => ({
-      ...current,
-      activeSession: result.session,
-      storageIssues: getStorageIssues(),
-    }));
-    navigation.navigate(ROUTES.EXAM);
-  }
-
-  function discardActiveExam() {
-    Alert.alert(
-      "Discard active exam?",
-      "This removes the in-progress Cloud Certification exam session.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Discard",
-          style: "destructive",
-          onPress: () => {
-            void clearActiveExamSession().then(() =>
-              setData((current) => ({
-                ...current,
-                activeSession: null,
-                storageIssues: getStorageIssues(),
-              })),
-            );
-          },
-        },
-      ],
-    );
-  }
 
   function clearAllLocalData() {
     Alert.alert(
@@ -196,11 +132,9 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           onPress: () => {
             void clearPatternlyLocalHistory().then(() =>
               setData({
-                activeSession: null,
                 attempts: [],
                 cloudProgress: null,
                 practiceHistory: [],
-                questions: DEFAULT_QUESTION_BANK,
                 storageIssues: getStorageIssues(),
                 trainingAttempts: [],
               }),
@@ -222,19 +156,20 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           <HomeTab
             activeTrack={activeTrack}
             analytics={analytics}
-            onChangeFocus={() => navigation.navigate(ROUTES.SELECT_TRACK)}
-            onOpenPractice={() => setActiveTab("practice")}
-            onStartLearning={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
-          />
-        ) : null}
-        {activeTab === "practice" ? (
-          <PracticeTab
-            activeSession={data.activeSession}
-            activeTrack={activeTrack}
-            bankReady={bankSummary.examReady}
-            navigation={navigation}
-            onDiscardExam={discardActiveExam}
-            onStartExam={startExam}
+            onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
+            onStartMode={(mode, topicId) =>
+              navigation.navigate(
+                ROUTES.PRACTICE_SESSION,
+                buildPracticeSessionConfig({
+                  mode,
+                  source: "home",
+                  topicId,
+                  trackId: activeTrack.id,
+                }),
+              )
+            }
+            trainingAttempts={data.trainingAttempts}
           />
         ) : null}
         {activeTab === "progress" ? (
@@ -255,11 +190,10 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           />
         ) : null}
       </Screen>
-      <BottomTabBar
+      <AppBottomNavigation
         activeId={activeTab}
-        items={tabs}
-        onChange={setActiveTab}
-        testID="main-tab-bar"
+        navigation={navigation}
+        onHomeTabChange={setActiveTab}
       />
     </View>
   );

@@ -1,233 +1,402 @@
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useMemo, useState } from "react";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, DomainAccent, ProgressBar, Screen, SectionHeader } from "../../components";
-import { EXAM_BLUEPRINT, EXAM_DURATION_MINUTES, EXAM_QUESTION_COUNT, ROUTES, TRAINING_PASS_THRESHOLD } from "../../constants";
+import { Button, Card, Screen, SectionHeader } from "../../components";
+import { ROUTES } from "../../constants/routes";
+import { DEFAULT_TRACK_ID, getTrackDefinition, type TrackId } from "../../domain";
+import type { TrainingAttempt } from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
-import { getQuestions } from "../../storage";
+import { getActiveTrackId, getTrainingAttempts } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
-import type { ExamDomain, Question } from "../../types";
-import { getDomainLabel } from "../../utils";
-import { getPracticeDomainCounts, type PracticeQuestionCount } from "./practiceService";
+import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
+import { AppStackHeader } from "../navigation/AppStackHeader";
+import {
+  buildTopicRoadmapNodes,
+  getCurrentPracticeTopic,
+  type PracticeTopic,
+} from "./practiceFlowModel";
+import {
+  buildPracticeSessionConfig,
+  DEFAULT_FEEDBACK_MODE,
+  DEFAULT_PRACTICE_SESSION_LENGTH,
+  type PracticeFeedbackMode,
+  type PracticeSessionLength,
+} from "./sessionConfig";
 
-type PracticeSetupScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SETUP>;
+type PracticeSetupScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  typeof ROUTES.PRACTICE_SETUP
+>;
 
-const countOptions: PracticeQuestionCount[] = [10, 20, "all"];
+const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
+const TAB_BAR_RESERVED_HEIGHT = 128;
 
-export function PracticeSetupScreen({ navigation }: PracticeSetupScreenProps) {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [selectedDomain, setSelectedDomain] = useState<ExamDomain | null>(null);
-  const [questionCount, setQuestionCount] = useState<PracticeQuestionCount>(10);
+export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
+  const [activeTrackId, setActiveTrackId] = useState<TrackId>(
+    route.params?.trackId ?? DEFAULT_TRACK_ID,
+  );
+  const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
+  const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
+    route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
+  );
+  const [feedbackMode, setFeedbackMode] = useState<PracticeFeedbackMode>(
+    route.params?.feedbackMode ?? DEFAULT_FEEDBACK_MODE,
+  );
+  const [reviewBehaviorEnabled, setReviewBehaviorEnabled] = useState(
+    route.params?.reviewBehaviorEnabled ?? false,
+  );
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
 
-      async function loadQuestions() {
-        const savedQuestions = await getQuestions();
+      async function loadData() {
+        const [savedTrackId, trainingAttemptsResult] = await Promise.all([
+          getActiveTrackId(),
+          getTrainingAttempts(),
+        ]);
 
         if (isActive) {
-          setQuestions(savedQuestions);
-          setSelectedDomain((current) => current ?? getPracticeDomainCounts(savedQuestions).find((item) => item.count > 0)?.domain ?? null);
+          setActiveTrackId(route.params?.trackId ?? savedTrackId);
+          setTrainingAttempts(trainingAttemptsResult.value);
         }
       }
 
-      void loadQuestions();
+      void loadData();
 
       return () => {
         isActive = false;
       };
-    }, [])
+    }, [route.params?.trackId]),
   );
 
-  const domainCounts = useMemo(() => getPracticeDomainCounts(questions), [questions]);
-  const selectedDomainCount = domainCounts.find((item) => item.domain === selectedDomain)?.count ?? 0;
-  const maxDomainCount = Math.max(1, ...domainCounts.map((item) => item.count));
-  const canStart = selectedDomain !== null && selectedDomainCount > 0;
+  useEffect(() => {
+    if (feedbackMode === "atSessionEnd") {
+      setReviewBehaviorEnabled(false);
+    }
+  }, [feedbackMode]);
+
+  const activeTrack = getTrackDefinition(route.params?.trackId ?? activeTrackId);
+  const topic = resolvePracticeTopic({
+    activeTrackId: activeTrack.id,
+    routeTopicId: route.params?.topicId,
+    trainingAttempts,
+  });
+
+  function startSession() {
+    navigation.navigate(
+      ROUTES.PRACTICE_SESSION,
+      buildPracticeSessionConfig({
+        feedbackMode,
+        mode: route.params?.mode ?? "default",
+        reviewBehaviorEnabled,
+        sessionLength,
+        source: "practiceSetup",
+        topicId: topic.id,
+        trackId: activeTrack.id,
+      }),
+    );
+  }
 
   return (
-    <Screen
-      footer={
-        <Button
-          disabled={!canStart}
-          onPress={() => {
-            if (selectedDomain) {
-              navigation.navigate(ROUTES.PRACTICE_SESSION, { domain: selectedDomain, questionCount });
-            }
-          }}
-        >
-          Start Practice
-        </Button>
-      }
-    >
-      <Card>
-        <SectionHeader title="Practice by Domain" subtitle="Focused sessions with immediate feedback after each answer." />
-      </Card>
+    <View style={styles.shell}>
+      <Screen edges={["top"]} style={styles.screenContent}>
+        <AppStackHeader
+          navigation={navigation}
+          showBack
+          subtitle={activeTrack.title}
+        />
 
-      <Card>
-        <SectionHeader title="Domain" subtitle="Choose one domain for this practice session." tight />
-        <View style={styles.list}>
-          {domainCounts.map((item) => {
-            const isSelected = selectedDomain === item.domain;
-            const isEmpty = item.count === 0;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ disabled: isEmpty, selected: isSelected }}
-                disabled={isEmpty}
-                key={item.domain}
-                onPress={() => setSelectedDomain(item.domain)}
-                style={({ pressed }) => [
-                  styles.domainCard,
-                  isSelected ? styles.domainCardSelected : null,
-                  isEmpty ? styles.domainCardDisabled : null,
-                  pressed && !isEmpty ? styles.pressed : null
-                ]}
-              >
-                <DomainAccent tone={getDomainAccentTone(item.domain)} />
-                <View style={styles.domainCopy}>
-                  <View style={styles.domainHeader}>
-                    <Text style={styles.domainLabel}>{getDomainLabel(item.domain)}</Text>
-                    <Badge label={isEmpty ? "Empty" : `${item.count} available`} tone={isEmpty ? "neutral" : "info"} />
-                  </View>
-                  <ProgressBar progress={item.count / maxDomainCount} tone={isEmpty ? "info" : "primary"} />
-                  <Text style={styles.domainMeta}>
-                    Blueprint target: {EXAM_BLUEPRINT[item.domain]} questions. {isEmpty ? "Import questions before practicing this domain." : "Ready for focused practice."}
-                  </Text>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
-      </Card>
-
-      <Card>
-        <SectionHeader title="Practice Settings" subtitle="Exam defaults are shown here for context; practice remains untimed." tight />
-        <View style={styles.settingsGrid}>
-          <SettingMetric label="Exam default" value={`${EXAM_QUESTION_COUNT} q`} />
-          <SettingMetric label="Time limit" value={`${EXAM_DURATION_MINUTES} min`} />
-          <SettingMetric label="Local threshold" value={`${TRAINING_PASS_THRESHOLD}%`} />
-        </View>
-        <Text style={styles.helperText}>The threshold is only a local training benchmark, not an official passing score.</Text>
-        <View style={styles.countRow}>
-          {countOptions.map((option) => (
-            <Button
-              key={option}
-              onPress={() => setQuestionCount(option)}
-              style={styles.countButton}
-              variant={questionCount === option ? "primary" : "secondary"}
-            >
-              {option === "all" ? "All" : String(option)}
-            </Button>
-          ))}
-        </View>
-        {selectedDomain ? (
-          <Text style={styles.helperText}>
-            {questionCount === "all" ? selectedDomainCount : Math.min(questionCount, selectedDomainCount)} question
-            {Math.min(questionCount === "all" ? selectedDomainCount : questionCount, selectedDomainCount) === 1 ? "" : "s"} available for this session.
+        <View style={styles.intro}>
+          <Text style={styles.title}>Practice setup</Text>
+          <Text style={styles.subtitle}>
+            Configure the next session for {topic.title}.
           </Text>
-        ) : null}
-      </Card>
-    </Screen>
-  );
-}
+        </View>
 
-function SettingMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.settingMetric}>
-      <Text style={styles.settingValue}>{value}</Text>
-      <Text style={styles.settingLabel}>{label}</Text>
+        <View style={styles.section}>
+          <SectionHeader title="Session length" tight />
+          <View style={styles.lengthGrid}>
+            {sessionLengths.map((length) => (
+              <SelectableOption
+                key={length}
+                label={String(length)}
+                meta="Questions"
+                onPress={() => setSessionLength(length)}
+                selected={sessionLength === length}
+              />
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <SectionHeader title="Feedback mode" tight />
+          <SelectablePanel
+            detail="Correctness and explanation are shown after every question."
+            label="After each answer"
+            onPress={() => setFeedbackMode("afterEachAnswer")}
+            selected={feedbackMode === "afterEachAnswer"}
+          />
+          <SelectablePanel
+            detail="Correctness is hidden until the final summary and review."
+            label="At session end"
+            onPress={() => setFeedbackMode("atSessionEnd")}
+            selected={feedbackMode === "atSessionEnd"}
+          />
+        </View>
+
+        {feedbackMode === "afterEachAnswer" ? (
+          <Card style={styles.reviewCard}>
+            <View style={styles.reviewCopy}>
+              <Text style={styles.reviewTitle}>Review behavior</Text>
+              <Text style={styles.subtitle}>
+                Add missed items to an end-of-session correction pass. Extra review questions are tracked separately from normal stats.
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="switch"
+              accessibilityState={{ checked: reviewBehaviorEnabled }}
+              onPress={() => setReviewBehaviorEnabled((current) => !current)}
+              style={[
+                styles.switchTrack,
+                reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
+              ]}
+            >
+              <View
+                style={[
+                  styles.switchThumb,
+                  reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
+                ]}
+              />
+            </Pressable>
+          </Card>
+        ) : null}
+
+        <View style={styles.actions}>
+          <Button onPress={startSession}>Start session</Button>
+          <Button onPress={() => navigation.goBack()} variant="secondary">
+            Back
+          </Button>
+        </View>
+      </Screen>
+      <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
 }
 
-function getDomainAccentTone(domain: ExamDomain) {
-  switch (domain) {
-    case "setup_environment":
-      return "purple";
-    case "planning_implementation":
-      return "teal";
-    case "operations":
-      return "orange";
-    case "access_security":
-      return "info";
+type SelectableOptionProps = {
+  label: string;
+  meta: string;
+  onPress: () => void;
+  selected: boolean;
+};
+
+function SelectableOption({ label, meta, onPress, selected }: SelectableOptionProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.lengthOption,
+        selected ? styles.selectedOption : null,
+        pressed ? styles.pressed : null,
+      ]}
+    >
+      <Text style={[styles.lengthValue, selected ? styles.selectedText : null]}>{label}</Text>
+      <Text style={styles.optionMeta}>{meta}</Text>
+    </Pressable>
+  );
+}
+
+type SelectablePanelProps = {
+  detail: string;
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+};
+
+function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.panel,
+        selected ? styles.selectedOption : null,
+        pressed ? styles.pressed : null,
+      ]}
+    >
+      <View style={styles.panelCopy}>
+        <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
+        <Text style={styles.subtitle}>{detail}</Text>
+      </View>
+      <View style={[styles.radio, selected ? styles.radioSelected : null]}>
+        {selected ? <View style={styles.radioDot} /> : null}
+      </View>
+    </Pressable>
+  );
+}
+
+function resolvePracticeTopic(input: {
+  activeTrackId: TrackId;
+  routeTopicId?: string;
+  trainingAttempts: readonly TrainingAttempt[];
+}): PracticeTopic {
+  if (input.routeTopicId) {
+    const node = buildTopicRoadmapNodes(input).find(
+      (candidate) => candidate.id === input.routeTopicId,
+    );
+
+    if (node) {
+      return {
+        detail: node.detail,
+        id: node.id,
+        title: node.title,
+      };
+    }
   }
+
+  return getCurrentPracticeTopic(
+    getTrackDefinition(input.activeTrackId),
+    input.trainingAttempts,
+  );
 }
 
 const styles = StyleSheet.create({
-  list: {
-    gap: spacing.md
+  shell: {
+    backgroundColor: colors.dark.background,
+    flex: 1,
   },
-  domainCard: {
+  screenContent: {
+    paddingBottom: TAB_BAR_RESERVED_HEIGHT,
+  },
+  intro: {
+    gap: spacing.sm,
+  },
+  title: {
+    ...typography.title,
+    color: colors.dark.textPrimary,
+  },
+  subtitle: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+  },
+  section: {
+    gap: spacing.md,
+  },
+  lengthGrid: {
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  lengthOption: {
     alignItems: "center",
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.borderStrong,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flex: 1,
+    gap: spacing.xs,
+    minHeight: 92,
+    justifyContent: "center",
+    padding: spacing.md,
+  },
+  selectedOption: {
+    backgroundColor: colors.dark.primarySoft,
+    borderColor: colors.dark.primary,
+  },
+  pressed: {
+    opacity: 0.82,
+  },
+  lengthValue: {
+    ...typography.heading,
+    color: colors.dark.textSecondary,
+    fontVariant: ["tabular-nums"],
+  },
+  selectedText: {
+    color: colors.dark.textPrimary,
+  },
+  optionMeta: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+    textTransform: "uppercase",
+  },
+  panel: {
+    alignItems: "center",
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.borderStrong,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 104,
-    padding: spacing.lg
+    minHeight: 92,
+    padding: spacing.lg,
   },
-  domainCardSelected: {
-    backgroundColor: colors.dark.primarySoft,
-    borderColor: colors.dark.primary
-  },
-  domainCardDisabled: {
-    opacity: 0.62
-  },
-  pressed: {
-    opacity: 0.84
-  },
-  domainCopy: {
+  panelCopy: {
     flex: 1,
-    gap: spacing.sm
+    gap: spacing.xs,
   },
-  domainHeader: {
-    alignItems: "flex-start",
-    gap: spacing.xs
-  },
-  domainLabel: {
+  panelTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary
+    color: colors.dark.textSecondary,
   },
-  domainMeta: {
-    ...typography.caption,
-    color: colors.dark.textSecondary
+  radio: {
+    alignItems: "center",
+    borderColor: colors.dark.borderStrong,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    height: 28,
+    justifyContent: "center",
+    width: 28,
   },
-  settingsGrid: {
+  radioSelected: {
+    borderColor: colors.dark.primary,
+  },
+  radioDot: {
+    backgroundColor: colors.dark.primary,
+    borderRadius: radius.pill,
+    height: 12,
+    width: 12,
+  },
+  reviewCard: {
+    alignItems: "center",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md
+    justifyContent: "space-between",
   },
-  settingMetric: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    minWidth: "30%",
-    padding: spacing.md
+  reviewCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    paddingRight: spacing.md,
   },
-  settingValue: {
+  reviewTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary
+    color: colors.dark.textPrimary,
   },
-  settingLabel: {
-    ...typography.caption,
-    color: colors.dark.textSecondary
+  switchTrack: {
+    backgroundColor: colors.dark.borderStrong,
+    borderRadius: radius.pill,
+    height: 32,
+    justifyContent: "center",
+    padding: 4,
+    width: 56,
   },
-  countRow: {
-    flexDirection: "row",
-    gap: spacing.md
+  switchTrackEnabled: {
+    backgroundColor: colors.dark.primary,
   },
-  countButton: {
-    flex: 1
+  switchThumb: {
+    backgroundColor: colors.dark.textPrimary,
+    borderRadius: radius.pill,
+    height: 24,
+    width: 24,
   },
-  helperText: {
-    ...typography.body,
-    color: colors.dark.textSecondary
-  }
+  switchThumbEnabled: {
+    transform: [{ translateX: 24 }],
+  },
+  actions: {
+    gap: spacing.md,
+    marginTop: spacing.xl,
+  },
 });

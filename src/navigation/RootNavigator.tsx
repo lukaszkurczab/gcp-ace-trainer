@@ -1,16 +1,17 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { ROUTES } from "../constants/routes";
-import { AlgorithmsSessionScreen } from "../features/algorithms/AlgorithmsSessionScreen";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
+import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
 import { ResultScreen } from "../features/exam/ResultScreen";
+import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { colors } from "../theme";
 import type { RootStackParamList } from "./types";
 
@@ -36,7 +37,17 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.SELECT_TRACK}
         component={SelectTrackScreen}
-        options={{ title: "Choose track" }}
+        options={{ headerShown: false, title: "Choose track" }}
+      />
+      <Stack.Screen
+        name={ROUTES.PRACTICE_HUB}
+        component={PracticeHubScreen}
+        options={{ headerShown: false, title: "Practice Hub" }}
+      />
+      <Stack.Screen
+        name={ROUTES.TOPIC_ROADMAP}
+        component={TopicRoadmapScreen}
+        options={{ headerShown: false, title: "Topic Roadmap" }}
       />
       <Stack.Screen
         name={ROUTES.EXAM}
@@ -61,17 +72,12 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.PRACTICE_SETUP}
         component={PracticeSetupScreen}
-        options={{ title: "Practice by Domain" }}
+        options={{ headerShown: false, title: "Practice Setup" }}
       />
       <Stack.Screen
         name={ROUTES.PRACTICE_SESSION}
         component={PracticeSessionScreen}
         options={{ headerShown: false, title: "Practice Session" }}
-      />
-      <Stack.Screen
-        name={ROUTES.ALGORITHMS_SESSION}
-        component={AlgorithmsSessionScreen}
-        options={{ headerShown: false, title: "Algorithms Session" }}
       />
       <Stack.Screen
         name={ROUTES.MISTAKES_REVIEW}

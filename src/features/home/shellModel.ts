@@ -34,17 +34,17 @@ export const MAIN_TAB_ITEMS: readonly ShellTabItem[] = [
 
 export const HOME_PRIMARY_CTA: VisibleCta = {
   label: "Start learning",
-  route: ROUTES.PRACTICE_SETUP,
+  route: ROUTES.PRACTICE_HUB,
 };
 
 export const HOME_CHANGE_FOCUS_CTA: VisibleCta = {
-  label: "Change focus",
+  label: "Change track",
   route: ROUTES.SELECT_TRACK,
 };
 
 export const PRACTICE_PRIMARY_CTA: VisibleCta = {
   label: "Start session",
-  route: ROUTES.PRACTICE_SETUP,
+  route: ROUTES.PRACTICE_HUB,
 };
 
 export const PRACTICE_EXAM_CTA: VisibleCta = {

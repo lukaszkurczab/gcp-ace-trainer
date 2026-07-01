@@ -13,17 +13,32 @@ export const ALGORITHM_LEARNING_STAGES = [
 export type AlgorithmLearningStage = (typeof ALGORITHM_LEARNING_STAGES)[number];
 
 export const ALGORITHM_PATTERN_FAMILY_IDS = [
-  "complexity_basics",
+  "complexity_and_constraints",
+  "arrays_and_strings",
   "hash_map_and_set",
   "two_pointers",
   "sliding_window",
   "prefix_sums",
   "sorting_based",
   "stack",
+  "monotonic_stack",
   "binary_search",
+  "linked_list",
+  "recursion_basics",
+  "tree_traversal",
+  "heap_priority_queue",
+  "intervals",
+  "backtracking",
+  "graph_traversal",
+  "greedy_intro",
+  "dynamic_programming_intro",
+  "bit_manipulation",
+  "math_and_geometry",
 ] as const;
 
 export type AlgorithmPatternFamilyId = (typeof ALGORITHM_PATTERN_FAMILY_IDS)[number];
+
+export type AlgorithmPatternFamilyKind = "real_pattern_family" | "synthetic_practice_grouping";
 
 export const ALGORITHM_MISTAKE_TYPES = [
   "wrong_approach",
@@ -111,6 +126,7 @@ export type AlgorithmTaxonomyAxis =
   | "pattern_family"
   | "pattern_variant"
   | "problem_archetype"
+  | "skill_atom"
   | "data_structure"
   | "constraint_signal"
   | "decision_signal"
@@ -130,7 +146,9 @@ export type AlgorithmPatternFamily = {
   description: string;
   entryLearningStage: AlgorithmLearningStage;
   id: AlgorithmPatternFamilyId;
+  kind?: AlgorithmPatternFamilyKind;
   label: string;
+  prerequisiteLearningStageIds?: readonly AlgorithmLearningStage[];
   prerequisitePatternFamilyIds: readonly AlgorithmPatternFamilyId[];
 };
 
@@ -142,7 +160,9 @@ export type AlgorithmPatternVariant = {
   label: string;
   learningStage: AlgorithmLearningStage;
   patternFamilyId: AlgorithmPatternFamilyId;
+  prerequisiteLearningStageIds?: readonly AlgorithmLearningStage[];
   prerequisitePatternFamilyIds: readonly AlgorithmPatternFamilyId[];
+  prerequisitePatternVariantIds?: readonly string[];
 };
 
 export type AlgorithmProblemArchetype = {
@@ -162,10 +182,94 @@ export type AlgorithmSkillAtom = {
   label: string;
   mistakeTypes: readonly AlgorithmMistakeType[];
   patternVariantIds?: readonly string[];
+  prerequisiteLearningStageIds?: readonly AlgorithmLearningStage[];
   primaryPatternFamilyId: AlgorithmPatternFamilyId;
   problemArchetypeIds?: readonly string[];
   prerequisiteSkillAtomIds: readonly string[];
 };
+
+export type AlgorithmCurriculumAliasAxis =
+  | "pattern_family"
+  | "pattern_variant"
+  | "roadmap_node";
+
+export type AlgorithmCurriculumAlias = {
+  axisId: AlgorithmCurriculumAliasAxis;
+  fromId: string;
+  toId: string;
+};
+
+export const ALGORITHM_CURRICULUM_ID_ALIASES = [
+  {
+    axisId: "pattern_family",
+    fromId: "complexity_basics",
+    toId: "complexity_and_constraints",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "complexity_basics",
+    toId: "complexity_and_constraints",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "array_string_basics",
+    toId: "arrays_and_strings",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "hash_map_lookup",
+    toId: "hash_map_and_set",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "two_pointers_pair_scan",
+    toId: "two_pointers",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "sliding_window_positive",
+    toId: "sliding_window",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "prefix_sums_range_reasoning",
+    toId: "prefix_sums",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "stack_nested_structure",
+    toId: "stack",
+  },
+  {
+    axisId: "roadmap_node",
+    fromId: "binary_search_sorted_input",
+    toId: "binary_search",
+  },
+  {
+    axisId: "pattern_variant",
+    fromId: "hash_map_average_lookup",
+    toId: "lookup_by_value",
+  },
+  {
+    axisId: "pattern_variant",
+    fromId: "variable_size_positive_window",
+    toId: "variable_size_positive_numbers",
+  },
+  {
+    axisId: "pattern_variant",
+    fromId: "sorted_pair_two_pointers",
+    toId: "pair_scan_sorted_input",
+  },
+] as const satisfies readonly AlgorithmCurriculumAlias[];
+
+export function resolveAlgorithmCurriculumAlias(
+  axisId: AlgorithmCurriculumAliasAxis,
+  id: string,
+): string {
+  return ALGORITHM_CURRICULUM_ID_ALIASES.find(
+    (alias) => alias.axisId === axisId && alias.fromId === id,
+  )?.toId ?? id;
+}
 
 export type AlgorithmApproachStep = {
   description: string;

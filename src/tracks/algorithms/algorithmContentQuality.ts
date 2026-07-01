@@ -1,7 +1,15 @@
 import {
   isAlgorithmMistakeType,
+  resolveAlgorithmCurriculumAlias,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
+import type { AlgorithmRoadmapTrack } from "./algorithmRoadmap";
+import {
+  ALGORITHM_PATTERN_FAMILIES,
+  ALGORITHM_PATTERN_VARIANTS,
+  ALGORITHM_PROBLEM_ARCHETYPES,
+  ALGORITHM_SKILL_ATOMS,
+} from "./algorithmTaxonomy";
 
 export type AlgorithmContentQualityIssueCode =
   | "invalid_item"
@@ -42,7 +50,14 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_complexity_explanation"
   | "missing_worked_example_subgoals"
   | "missing_worked_example_solution"
-  | "missing_worked_example_static_micro_check";
+  | "missing_worked_example_static_micro_check"
+  | "unknown_primary_skill"
+  | "unknown_secondary_skill"
+  | "unknown_micro_check_skill"
+  | "unknown_roadmap_node"
+  | "unknown_taxonomy_ref"
+  | "available_roadmap_node_below_minimum_demo_items"
+  | "enabled_session_mode_missing_item_type";
 
 export type AlgorithmContentQualityIssue = {
   code: AlgorithmContentQualityIssueCode;
@@ -106,6 +121,97 @@ export function validateAlgorithmTrainingItems(
   };
 }
 
+export function validateAlgorithmCurriculum(input: {
+  enabledSessionModes: readonly {
+    id: string;
+    supportedItemTypes: readonly string[];
+  }[];
+  items: readonly AlgorithmTrainingItem[];
+  roadmap: AlgorithmRoadmapTrack;
+}): AlgorithmContentQualityResult {
+  const issues = validateAlgorithmTrainingItems(input.items).issues;
+  const activeItems = input.items.filter((item) => item.status === "active");
+  const skillAtomIds = new Set<string>(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
+  const roadmapNodeIds = new Set(input.roadmap.nodes.map((node) => node.id));
+  const activeItemTypes = new Set(activeItems.map((item) => item.type));
+
+  for (const item of activeItems) {
+    if (!skillAtomIds.has(item.primarySkillAtomId)) {
+      addIssue(
+        issues,
+        "unknown_primary_skill",
+        `Algorithm item references unknown primary skill atom: ${item.primarySkillAtomId}.`,
+        item.id,
+      );
+    }
+
+    for (const secondarySkillAtomId of item.secondarySkillAtomIds ?? []) {
+      if (!skillAtomIds.has(secondarySkillAtomId)) {
+        addIssue(
+          issues,
+          "unknown_secondary_skill",
+          `Algorithm item references unknown secondary skill atom: ${secondarySkillAtomId}.`,
+          item.id,
+        );
+      }
+    }
+
+    for (const check of item.staticMicroChecks ?? []) {
+      for (const testedSkillAtomId of check.testedSkillAtomIds) {
+        if (!skillAtomIds.has(testedSkillAtomId)) {
+          addIssue(
+            issues,
+            "unknown_micro_check_skill",
+            `Algorithm micro-check references unknown skill atom: ${testedSkillAtomId}.`,
+            item.id,
+          );
+        }
+      }
+    }
+
+    if (!item.roadmapNodeId || !roadmapNodeIds.has(resolveAlgorithmCurriculumAlias("roadmap_node", item.roadmapNodeId))) {
+      addIssue(
+        issues,
+        "unknown_roadmap_node",
+        `Algorithm item references unknown roadmap node: ${String(item.roadmapNodeId)}.`,
+        item.id,
+      );
+    }
+
+    validateTaxonomyRefs(item, issues);
+  }
+
+  for (const node of input.roadmap.nodes) {
+    if (node.status !== "available") {
+      continue;
+    }
+
+    const itemCount = activeItems.filter((item) => item.roadmapNodeId === node.id).length;
+    if (itemCount < node.minimumDemoItemCount) {
+      addIssue(
+        issues,
+        "available_roadmap_node_below_minimum_demo_items",
+        `Available roadmap node ${node.id} has ${itemCount} active demo items; expected at least ${node.minimumDemoItemCount}.`,
+      );
+    }
+  }
+
+  for (const itemType of activeItemTypes) {
+    if (!input.enabledSessionModes.some((mode) => mode.supportedItemTypes.includes(itemType))) {
+      addIssue(
+        issues,
+        "enabled_session_mode_missing_item_type",
+        `No enabled Algorithms session mode supports active item type: ${itemType}.`,
+      );
+    }
+  }
+
+  return {
+    issues,
+    valid: issues.length === 0,
+  };
+}
+
 export function assertValidAlgorithmTrainingItem(
   item: AlgorithmTrainingItem,
 ): asserts item is AlgorithmTrainingItem {
@@ -149,8 +255,57 @@ function validateBaseTrainingItemContract(
     addIssue(issues, "missing_content_version", "Algorithm item must include contentVersion.", itemId);
   }
 
+  if (item.status === "active" && !hasActiveStaticMicroCheck(item)) {
+    addIssue(issues, "missing_static_micro_check", "Active algorithm item requires at least one active static micro-check.", itemId);
+  }
+
   if (item.staticMicroChecks !== undefined) {
     validateStaticMicroChecks(item.staticMicroChecks, issues, itemId);
+  }
+}
+
+function validateTaxonomyRefs(
+  item: AlgorithmTrainingItem,
+  issues: AlgorithmContentQualityIssue[],
+): void {
+  const taxonomyIdsByAxis: Partial<Record<string, ReadonlySet<string>>> = {
+    learning_stage: new Set([
+      "foundations",
+      "pattern_mechanics",
+      "guided_application",
+      "strategy_selection",
+      "contrast_practice",
+      "independent_attempt",
+      "mixed_interview_practice",
+    ]),
+    pattern_family: new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id)),
+    pattern_variant: new Set(ALGORITHM_PATTERN_VARIANTS.map((variant) => variant.id)),
+    problem_archetype: new Set(ALGORITHM_PROBLEM_ARCHETYPES.map((archetype) => archetype.id)),
+    skill_atom: new Set(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id)),
+  };
+
+  for (const taxonomyRef of item.taxonomyRefs) {
+    if (taxonomyRef.axisId === "mistake_type") {
+      if (!isAlgorithmMistakeType(taxonomyRef.nodeId)) {
+        addIssue(
+          issues,
+          "unknown_taxonomy_ref",
+          `Algorithm item references unknown mistake taxonomy node: ${taxonomyRef.nodeId}.`,
+          item.id,
+        );
+      }
+      continue;
+    }
+
+    const knownIds = taxonomyIdsByAxis[taxonomyRef.axisId];
+    if (knownIds && !knownIds.has(taxonomyRef.nodeId)) {
+      addIssue(
+        issues,
+        "unknown_taxonomy_ref",
+        `Algorithm item references unknown ${taxonomyRef.axisId} taxonomy node: ${taxonomyRef.nodeId}.`,
+        item.id,
+      );
+    }
   }
 }
 

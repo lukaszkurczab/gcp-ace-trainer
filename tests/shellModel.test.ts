@@ -21,20 +21,20 @@ test("bottom navigation labels stay canonical", () => {
   assert.equal(labels.includes("Stats"), false);
 });
 
-test("primary Home and Practice CTAs route to Cloud practice setup", () => {
+test("primary Home and Practice CTAs route to Practice Hub", () => {
   assert.deepEqual(HOME_PRIMARY_CTA, {
     label: "Start learning",
-    route: ROUTES.PRACTICE_SETUP,
+    route: ROUTES.PRACTICE_HUB,
   });
   assert.deepEqual(PRACTICE_PRIMARY_CTA, {
     label: "Start session",
-    route: ROUTES.PRACTICE_SETUP,
+    route: ROUTES.PRACTICE_HUB,
   });
 });
 
-test("Home change focus CTA routes to track selection", () => {
+test("Home change track CTA routes to track selection", () => {
   assert.deepEqual(HOME_CHANGE_FOCUS_CTA, {
-    label: "Change focus",
+    label: "Change track",
     route: ROUTES.SELECT_TRACK,
   });
 });

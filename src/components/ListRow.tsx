@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
 
@@ -8,7 +8,7 @@ type ListRowProps = {
   leading?: ReactNode;
   meta?: string;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   title: string;
   trailing?: ReactNode;
   variant?: "card" | "grouped";

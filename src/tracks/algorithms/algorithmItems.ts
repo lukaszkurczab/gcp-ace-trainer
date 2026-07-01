@@ -2,8 +2,11 @@ import type { TrainingItem } from "../../domain/training";
 import { ALGORITHM_APPROACH_TEMPLATES } from "./algorithmApproaches";
 import {
   ALGORITHM_CONTENT_VERSION,
+  resolveAlgorithmCurriculumAlias,
   type AlgorithmApproachId,
   type AlgorithmApproachTemplate,
+  type AlgorithmMistakeType,
+  type AlgorithmPatternFamilyId,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
 import {
@@ -34,10 +37,10 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-complexity-constraint-pair-001",
     learningStage: "foundations",
-    primarySkillAtomId: "recognize_n2_too_slow_for_large_n",
+    primarySkillAtomId: "derive_time_complexity",
     prompt:
       "n can be 100000. You scan once and keep a lookup of values seen so far. What time and space cost should you expect?",
-    roadmapNodeId: "complexity_basics",
+    roadmapNodeId: "complexity_and_constraints",
     status: "active",
     staticMicroChecks: [
       {
@@ -51,14 +54,14 @@ export const ALGORITHM_TRAINING_ITEMS = [
         mistakeTypes: ["complexity_mismatch", "constraint_ignored"],
         prompt: "Choose the time and space pair for a one-pass lookup scan.",
         status: "active",
-        testedSkillAtomIds: ["recognize_n2_too_slow_for_large_n"],
+        testedSkillAtomIds: ["derive_time_complexity"],
         type: "complexity_pair",
       },
     ],
     taxonomyRefs: [
       {
         axisId: "pattern_family",
-        nodeId: "complexity_basics",
+        nodeId: "complexity_and_constraints",
         role: "primary",
       },
       {
@@ -83,10 +86,10 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-array-string-naming-001",
     learningStage: "foundations",
-    primarySkillAtomId: "recognize_n2_too_slow_for_large_n",
+    primarySkillAtomId: "track_index_boundary",
     prompt:
       "A string task compares each character with its neighbor in one left-to-right pass. Which mechanics describe the work?",
-    roadmapNodeId: "array_string_basics",
+    roadmapNodeId: "arrays_and_strings",
     status: "active",
     staticMicroChecks: [
       {
@@ -103,14 +106,14 @@ export const ALGORITHM_TRAINING_ITEMS = [
         ],
         prompt: "Select the mechanics that match the one-pass neighbor comparison.",
         status: "active",
-        testedSkillAtomIds: ["recognize_n2_too_slow_for_large_n"],
+        testedSkillAtomIds: ["track_index_boundary"],
         type: "multi_select",
       },
     ],
     taxonomyRefs: [
       {
         axisId: "pattern_family",
-        nodeId: "complexity_basics",
+        nodeId: "arrays_and_strings",
         role: "primary",
       },
     ],
@@ -135,12 +138,12 @@ export const ALGORITHM_TRAINING_ITEMS = [
     mechanicsSummary:
       "For each value, derive the needed complement, check prior lookup state, then store the current value for later positions.",
     pitfalls: hashMapComplementLookup.pitfalls,
-    primarySkillAtomId: "explain_hash_map_average_lookup",
+    primarySkillAtomId: "choose_lookup_key",
     prompt:
       "For target pair lookup, which action order prevents reusing the same input element?",
     pseudocodeTemplate: hashMapComplementLookup.pseudocodeTemplate,
-    roadmapNodeId: "hash_map_lookup",
-    secondarySkillAtomIds: ["recognize_n2_too_slow_for_large_n"],
+    roadmapNodeId: "hash_map_and_set",
+    secondarySkillAtomIds: ["derive_time_complexity"],
     status: "active",
     staticMicroChecks: [
       {
@@ -156,7 +159,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         ],
         prompt: "Choose the safe order for one-pass complement lookup.",
         status: "active",
-        testedSkillAtomIds: ["explain_hash_map_average_lookup"],
+        testedSkillAtomIds: ["choose_lookup_key"],
         type: "single_choice",
       },
     ],
@@ -190,11 +193,11 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-hash-map-pseudocode-order-001",
     learningStage: "pattern_mechanics",
-    primarySkillAtomId: "explain_hash_map_average_lookup",
+    primarySkillAtomId: "choose_lookup_key",
     prompt:
       "Order the pseudocode for one-pass complement lookup.",
     pseudocodeTemplate: hashMapComplementLookup.pseudocodeTemplate,
-    roadmapNodeId: "hash_map_lookup",
+    roadmapNodeId: "hash_map_and_set",
     status: "active",
     staticMicroChecks: [
       {
@@ -220,7 +223,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         ],
         prompt: "Tap the steps in the correct order.",
         status: "active",
-        testedSkillAtomIds: ["explain_hash_map_average_lookup"],
+        testedSkillAtomIds: ["choose_lookup_key"],
         type: "order_steps",
       },
     ],
@@ -252,10 +255,10 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-hash-map-trace-next-001",
     learningStage: "pattern_mechanics",
-    primarySkillAtomId: "explain_hash_map_average_lookup",
+    primarySkillAtomId: "choose_lookup_key",
     prompt:
       "Target is 9. Seen values are {2}. The current value is 7. What happens next?",
-    roadmapNodeId: "hash_map_lookup",
+    roadmapNodeId: "hash_map_and_set",
     status: "active",
     staticMicroChecks: [
       {
@@ -271,7 +274,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         ],
         prompt: "Choose the next trace step.",
         status: "active",
-        testedSkillAtomIds: ["explain_hash_map_average_lookup"],
+        testedSkillAtomIds: ["choose_lookup_key"],
         type: "trace_next_step",
       },
     ],
@@ -311,10 +314,10 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-two-pointers-subgoal-order-001",
     learningStage: "pattern_mechanics",
-    primarySkillAtomId: "choose_two_pointers_for_sorted_pair_condition",
+    primarySkillAtomId: "move_decisive_pointer",
     prompt:
       "Order the subgoals for finding a target pair in a sorted array with two boundaries.",
-    roadmapNodeId: "two_pointers_pair_scan",
+    roadmapNodeId: "two_pointers",
     status: "active",
     staticMicroChecks: [
       {
@@ -338,7 +341,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         ],
         prompt: "Tap the subgoals in order.",
         status: "active",
-        testedSkillAtomIds: ["choose_two_pointers_for_sorted_pair_condition"],
+        testedSkillAtomIds: ["move_decisive_pointer"],
         type: "order_steps",
       },
     ],
@@ -371,11 +374,11 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
     id: "alg-two-pointers-pseudocode-line-001",
     learningStage: "pattern_mechanics",
-    primarySkillAtomId: "choose_two_pointers_for_sorted_pair_condition",
+    primarySkillAtomId: "move_decisive_pointer",
     prompt:
       "In a sorted array, left + right is less than target. Which pseudocode line runs next?",
     pseudocodeTemplate: sortedTwoPointersPairScan.pseudocodeTemplate,
-    roadmapNodeId: "two_pointers_pair_scan",
+    roadmapNodeId: "two_pointers",
     status: "active",
     staticMicroChecks: [
       {
@@ -390,7 +393,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
         })),
         prompt: "Select the pseudocode line that matches the next move.",
         status: "active",
-        testedSkillAtomIds: ["choose_two_pointers_for_sorted_pair_condition"],
+        testedSkillAtomIds: ["move_decisive_pointer"],
         type: "select_pseudocode_line",
       },
     ],
@@ -410,10 +413,124 @@ export const ALGORITHM_TRAINING_ITEMS = [
     trackId: "algorithms",
     type: "pseudocode_ordering",
   },
+  makeSingleChoiceDemoItem({
+    correctText: "Keep a range state and move boundaries only when the invariant says to shrink.",
+    familyId: "sliding_window",
+    id: "alg-demo-sliding-window-invariant-001",
+    mistakeTypes: ["invariant_missing", "invariant_broken"],
+    nodeId: "sliding_window",
+    prompt: "A contiguous positive-number range grows past its allowed sum. Which reasoning should guide the next move?",
+    skillAtomId: "maintain_window_invariant",
+    title: "Identify the window invariant",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+    familyId: "prefix_sums",
+    id: "alg-demo-prefix-window-failure-001",
+    mistakeTypes: ["negative_numbers_assumption_error", "wrong_approach"],
+    nodeId: "prefix_sums",
+    prompt: "A subarray-sum task allows negative values. Which signal should make you question a simple sum window?",
+    skillAtomId: "detect_window_failure_signal",
+    title: "Detect when a window fails",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Sorting may reveal structure, but its cost and any lost original-position requirement must be checked.",
+    familyId: "sorting_based",
+    id: "alg-demo-sorting-tradeoff-001",
+    mistakeTypes: ["complexity_mismatch", "constraint_ignored"],
+    nodeId: "sorting_based",
+    prompt: "Before sorting an input to simplify comparisons, what tradeoff should you check first?",
+    skillAtomId: "recognize_sorting_tradeoff",
+    title: "Recognize sorting tradeoff",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Use the most recent unresolved opening state to decide whether the next closing token is valid.",
+    familyId: "stack",
+    id: "alg-demo-stack-unresolved-state-001",
+    mistakeTypes: ["data_structure_mismatch", "cannot_trace_algorithm"],
+    nodeId: "stack",
+    prompt: "A nested-structure scan sees a closing token. Which state should control the next decision?",
+    skillAtomId: "use_last_unresolved_state",
+    title: "Use last unresolved state",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "A repeated yes/no boundary lets each check discard part of the ordered search space.",
+    familyId: "binary_search",
+    id: "alg-demo-binary-search-predicate-001",
+    mistakeTypes: ["wrong_approach", "off_by_one"],
+    nodeId: "binary_search",
+    prompt: "Which signal makes binary search more appropriate than scanning each position?",
+    skillAtomId: "identify_monotonic_predicate",
+    title: "Identify a monotonic predicate",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Choose the approach by matching problem signals to required state, then justify the tradeoff.",
+    familyId: "hash_map_and_set",
+    id: "alg-demo-strategy-core-001",
+    mistakeTypes: ["wrong_approach", "cannot_explain_why"],
+    nodeId: "strategy_selection_core",
+    prompt: "When several familiar approaches could fit, what should decide the strategy?",
+    skillAtomId: "choose_lookup_key",
+    title: "Choose from core approaches",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Use lookup when preserving original relationships matters more than ordering the whole input.",
+    familyId: "hash_map_and_set",
+    id: "alg-demo-contrast-hash-sorting-001",
+    mistakeTypes: ["wrong_approach", "data_structure_mismatch"],
+    nodeId: "contrast_hash_map_vs_sorting",
+    prompt: "A pair task needs fast membership checks and original positions still matter. Which contrast signal is strongest?",
+    skillAtomId: "choose_lookup_key",
+    title: "Contrast lookup with sorting",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Use window reasoning only when the answer is a contiguous range with maintainable state.",
+    familyId: "sliding_window",
+    id: "alg-demo-contrast-pointers-window-001",
+    mistakeTypes: ["wrong_approach", "invariant_missing"],
+    nodeId: "contrast_two_pointers_vs_sliding_window",
+    prompt: "What separates a sliding-window problem from a two-boundary pair scan?",
+    skillAtomId: "maintain_window_invariant",
+    title: "Contrast pointers with window",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Prefix sums handle range totals when window movement no longer gives a safe invariant.",
+    familyId: "prefix_sums",
+    id: "alg-demo-contrast-window-prefix-001",
+    mistakeTypes: ["negative_numbers_assumption_error", "invariant_broken"],
+    nodeId: "contrast_sliding_window_vs_prefix_sums",
+    prompt: "Which signal should push a range-sum problem away from sliding window and toward prefix state?",
+    skillAtomId: "detect_window_failure_signal",
+    title: "Contrast window with prefix sums",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+    familyId: "monotonic_stack",
+    id: "alg-demo-contrast-stack-monotonic-001",
+    mistakeTypes: ["invariant_missing", "cannot_trace_algorithm"],
+    nodeId: "contrast_stack_vs_monotonic_stack_intro",
+    prompt: "What makes a monotonic stack different from a basic last-in-first-out stack?",
+    skillAtomId: "maintain_monotonic_stack_invariant",
+    title: "Contrast stack variants",
+  }),
+  makeSingleChoiceDemoItem({
+    correctText: "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
+    familyId: "binary_search",
+    id: "alg-demo-contrast-binary-linear-001",
+    mistakeTypes: ["wrong_approach", "constraint_ignored"],
+    nodeId: "contrast_binary_search_vs_linear_scan",
+    prompt: "What must be true before replacing a linear scan with binary search?",
+    skillAtomId: "identify_monotonic_predicate",
+    title: "Contrast binary search with scan",
+  }),
 ] as const satisfies readonly (AlgorithmTrainingItem & TrainingItem)[];
 
 export function getAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
   return ALGORITHM_TRAINING_ITEMS;
+}
+
+export function getActiveAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
+  return ALGORITHM_TRAINING_ITEMS.filter((item) => item.status === "active");
 }
 
 export function getAlgorithmTrainingItemById(itemId: string): AlgorithmTrainingItem | undefined {
@@ -423,20 +540,28 @@ export function getAlgorithmTrainingItemById(itemId: string): AlgorithmTrainingI
 export function getAlgorithmTrainingItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
 ): readonly AlgorithmTrainingItem[] {
-  return ALGORITHM_TRAINING_ITEMS.filter((item) => item.roadmapNodeId === nodeId);
+  const canonicalNodeId = resolveAlgorithmCurriculumAlias("roadmap_node", nodeId);
+  return getActiveAlgorithmTrainingItems().filter((item) => item.roadmapNodeId === canonicalNodeId);
 }
 
 export function getSeededAlgorithmRoadmapNodes(): readonly AlgorithmRoadmapNode[] {
-  const seededNodeIds = new Set<string>(ALGORITHM_TRAINING_ITEMS.map((item) => item.roadmapNodeId));
+  const seededNodeIds = new Set<string>(
+    getActiveAlgorithmTrainingItems()
+      .map((item) => item.roadmapNodeId)
+      .filter((nodeId): nodeId is string => typeof nodeId === "string"),
+  );
   return ALGORITHM_ROADMAP.nodes.filter((node) => seededNodeIds.has(node.id));
 }
 
-export function getFirstUsableAlgorithmRoadmapNode(): AlgorithmRoadmapNode {
-  const node = ALGORITHM_ROADMAP.nodes.find(
-    (candidate) =>
-      candidate.status === "available" &&
-      getAlgorithmTrainingItemsForRoadmapNode(candidate.id).length > 0,
+export function isAlgorithmRoadmapNodeSelectable(node: AlgorithmRoadmapNode): boolean {
+  return (
+    node.status === "available" &&
+    getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumDemoItemCount
   );
+}
+
+export function getFirstUsableAlgorithmRoadmapNode(): AlgorithmRoadmapNode {
+  const node = ALGORITHM_ROADMAP.nodes.find(isAlgorithmRoadmapNodeSelectable);
 
   if (!node) {
     throw new Error("No usable Algorithms roadmap node has seeded items.");
@@ -463,4 +588,64 @@ function requiredFirst<T>(items: readonly T[], label: string): T {
   }
 
   return item;
+}
+
+function makeSingleChoiceDemoItem(input: {
+  correctText: string;
+  familyId: AlgorithmPatternFamilyId;
+  id: string;
+  mistakeTypes: readonly AlgorithmMistakeType[];
+  nodeId: AlgorithmRoadmapNodeId;
+  prompt: string;
+  skillAtomId: string;
+  title: string;
+}): AlgorithmTrainingItem & TrainingItem {
+  return {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    feedbackModel: {
+      decisionSignal: input.prompt,
+      mentalModelCorrection: input.correctText,
+      mistakeTypes: input.mistakeTypes,
+      nextAction: "Practice one more item that asks for the deciding signal before implementation details.",
+      result: "diagnostic",
+    },
+    id: input.id,
+    learningStage: "strategy_selection",
+    primarySkillAtomId: input.skillAtomId,
+    prompt: input.prompt,
+    roadmapNodeId: input.nodeId,
+    status: "active",
+    staticMicroChecks: [
+      {
+        correctAnswer: "expected_signal",
+        feedback: input.correctText,
+        id: `${input.id}-check`,
+        mistakeTypes: input.mistakeTypes,
+        options: [
+          { id: "expected_signal", text: input.correctText },
+          { id: "label_only", text: "Choose by matching the nearest pattern label only." },
+          { id: "implementation_first", text: "Start coding first and infer the strategy later." },
+        ],
+        prompt: "Choose the reasoning signal that should guide the strategy.",
+        status: "active",
+        testedSkillAtomIds: [input.skillAtomId],
+        type: "single_choice",
+      },
+    ],
+    taxonomyRefs: [
+      {
+        axisId: "pattern_family",
+        nodeId: input.familyId,
+        role: "primary",
+      },
+      {
+        axisId: "skill_atom",
+        nodeId: input.skillAtomId,
+        role: "primary",
+      },
+    ],
+    title: input.title,
+    trackId: "algorithms",
+    type: "approach_naming",
+  };
 }

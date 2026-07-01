@@ -8,7 +8,7 @@ import type { Confidence, ExamDomain, MistakeReason, PracticeAnswerRecord, Quest
 import { writeThroughPracticeAnswerRecord } from "../../tracks/cloud-certification";
 import { areOptionSetsEqual, shuffleArray } from "../../utils";
 
-export type PracticeQuestionCount = 10 | 20 | "all";
+export type PracticeQuestionCount = 10 | 20 | 40 | "all";
 
 export type PracticeDomainCount = {
   domain: ExamDomain;

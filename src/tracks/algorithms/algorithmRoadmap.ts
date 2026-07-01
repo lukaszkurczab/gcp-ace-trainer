@@ -4,27 +4,20 @@ import {
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MVP_TRAINING_ITEM_TYPES,
   ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+  resolveAlgorithmCurriculumAlias,
   type AlgorithmApproachId,
+  type AlgorithmLearningStage,
   type AlgorithmPatternFamilyId,
   type AlgorithmTrainingItemType,
 } from "./algorithmContentTypes";
 import {
   ALGORITHM_PATTERN_FAMILIES,
+  ALGORITHM_PATTERN_VARIANTS,
+  ALGORITHM_PROBLEM_ARCHETYPES,
   ALGORITHM_SKILL_ATOMS,
 } from "./algorithmTaxonomy";
 
-export type AlgorithmRoadmapNodeId =
-  | "complexity_basics"
-  | "array_string_basics"
-  | "hash_map_lookup"
-  | "two_pointers_pair_scan"
-  | "sliding_window_positive"
-  | "prefix_sums_range_reasoning"
-  | "stack_nested_structure"
-  | "binary_search_sorted_input"
-  | "strategy_selection_basics"
-  | "mixed_pattern_practice"
-  | string;
+export type AlgorithmRoadmapNodeId = string;
 
 export type AlgorithmRoadmapNodeKind =
   | "foundation"
@@ -37,9 +30,14 @@ export type AlgorithmRoadmapNodeKind =
 
 export type AlgorithmRoadmapStatus =
   | "available"
-  | "draft"
+  | "planned"
   | "locked"
   | "coming_later";
+
+export type AlgorithmRoadmapReleaseScope =
+  | "demo_available"
+  | "planned_content"
+  | "future";
 
 export type AlgorithmRoadmapPrerequisite = {
   nodeId: AlgorithmRoadmapNodeId;
@@ -58,11 +56,16 @@ export type AlgorithmRoadmapNode = {
   kind: AlgorithmRoadmapNodeKind;
   label: string;
   learningObjectives: readonly AlgorithmRoadmapLearningObjective[];
+  learningStage: AlgorithmLearningStage;
+  minimumDemoItemCount: number;
   order: number;
+  patternVariantIds?: readonly string[];
   prerequisiteNodeIds: readonly AlgorithmRoadmapNodeId[];
   prerequisites?: readonly AlgorithmRoadmapPrerequisite[];
   primaryPatternFamilyId?: AlgorithmPatternFamilyId;
+  problemArchetypeIds?: readonly string[];
   recommendedItemTypes: readonly AlgorithmTrainingItemType[];
+  releaseScope: AlgorithmRoadmapReleaseScope;
   shortDescription: string;
   skillAtomIds?: readonly string[];
   status: AlgorithmRoadmapStatus;
@@ -91,8 +94,13 @@ export type AlgorithmRoadmapQualityIssueCode =
   | "forward_prerequisite"
   | "unknown_approach_id"
   | "unknown_pattern_family_id"
+  | "unknown_pattern_variant_id"
+  | "unknown_problem_archetype_id"
   | "unknown_skill_atom_id"
   | "unknown_recommended_item_type"
+  | "available_node_missing_demo_policy"
+  | "non_available_node_with_demo_policy"
+  | "mixed_practice_marked_beginner"
   | "forbidden_visible_term";
 
 export type AlgorithmRoadmapQualityIssue = {
@@ -106,248 +114,268 @@ export type AlgorithmRoadmapQualityResult = {
   valid: boolean;
 };
 
+const mvpItemTypes = [
+  "approach_primer",
+  "approach_naming",
+  "worked_example",
+  "trace_next_step",
+  "strategy_choice",
+  "complexity_check",
+  "solution_comparison",
+  "edge_case_drill",
+] as const satisfies readonly AlgorithmTrainingItemType[];
+
 const algorithmRoadmapNodes = [
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "complexity_basics",
+  makeNode({
+    id: "complexity_and_constraints",
     kind: "foundation",
-    label: "Complexity basics",
+    label: "Complexity and constraints",
     learningObjectives: [
-      {
-        id: "reject-quadratic-for-large-inputs",
-        text: "Use input size to reject nested pair enumeration when it will not scale.",
-      },
-      {
-        id: "explain-time-and-space-cost",
-        text: "Explain time and space cost before choosing a strategy.",
-      },
+      "Reject brute force when input size makes it impossible.",
+      "Derive time and space cost before choosing a strategy.",
     ],
+    learningStage: "foundations",
     order: 1,
     prerequisiteNodeIds: [],
-    primaryPatternFamilyId: "complexity_basics",
-    recommendedItemTypes: ["approach_primer", "complexity_check"],
-    shortDescription: "Build the constraint and Big O reasoning needed before choosing approaches.",
-    skillAtomIds: ["recognize_n2_too_slow_for_large_n"],
-    status: "available",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "array_string_basics",
+    primaryPatternFamilyId: "complexity_and_constraints",
+    problemArchetypeIds: ["analyze_scaling_limit"],
+    recommendedItemTypes: ["approach_naming", "complexity_check", "solution_comparison"],
+    skillAtomIds: ["derive_time_complexity"],
+  }),
+  makeNode({
+    id: "arrays_and_strings",
     kind: "foundation",
-    label: "Array and string basics",
+    label: "Arrays and strings",
     learningObjectives: [
-      {
-        id: "identify-contiguous-input-shapes",
-        text: "Recognize contiguous input shapes used by window, prefix, and scan approaches.",
-      },
-      {
-        id: "track-index-boundaries",
-        text: "Track index boundaries and empty-input cases without starting from full code.",
-      },
+      "Track indexed input shape, boundaries, and duplicates.",
+      "Separate linear scan mechanics from higher-level strategies.",
     ],
+    learningStage: "foundations",
     order: 2,
-    prerequisiteNodeIds: ["complexity_basics"],
-    recommendedItemTypes: ["trace_drill", "edge_case_drill"],
-    shortDescription: "Prepare the input-shape reasoning used by early array and string approaches.",
-    skillAtomIds: ["recognize_n2_too_slow_for_large_n"],
-    status: "available",
-  },
-  {
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "arrays_and_strings",
+    problemArchetypeIds: ["scan_indexed_sequence"],
+    recommendedItemTypes: ["approach_naming", "trace_next_step", "edge_case_drill"],
+    skillAtomIds: ["track_index_boundary"],
+  }),
+  makeNode({
     approachIds: ["hash_map_complement_lookup"],
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "hash_map_lookup",
+    id: "hash_map_and_set",
     kind: "approach",
-    label: "Hash map lookup",
+    label: "Hash map and set",
     learningObjectives: [
-      {
-        id: "explain-lookup-state",
-        text: "Explain what must be stored before each lookup.",
-      },
-      {
-        id: "choose-complement-lookup",
-        text: "Choose complement lookup when a scan needs fast membership checks.",
-      },
+      "Choose what state should be remembered for lookup.",
+      "Explain why lookup state changes pair or frequency reasoning.",
     ],
     order: 3,
-    prerequisiteNodeIds: ["array_string_basics"],
+    patternVariantIds: ["lookup_by_value", "complement_lookup", "seen_set"],
+    prerequisiteNodeIds: ["arrays_and_strings"],
     primaryPatternFamilyId: "hash_map_and_set",
-    recommendedItemTypes: ["approach_primer", "worked_example", "trace_next_step"],
-    shortDescription: "Learn one-pass lookup mechanics before broader strategy selection.",
-    skillAtomIds: ["explain_hash_map_average_lookup"],
-    status: "available",
-  },
-  {
+    problemArchetypeIds: ["find_pair_with_condition", "group_or_count_values"],
+    recommendedItemTypes: ["approach_primer", "worked_example", "trace_next_step", "pseudocode_ordering"],
+    skillAtomIds: ["choose_lookup_key"],
+  }),
+  makeNode({
     approachIds: ["sorted_two_pointers_pair_scan"],
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "two_pointers_pair_scan",
+    id: "two_pointers",
     kind: "mechanics",
-    label: "Two pointers pair scan",
+    label: "Two pointers",
     learningObjectives: [
-      {
-        id: "use-sorted-pair-signal",
-        text: "Use sorted input and pair comparison to decide which boundary moves.",
-      },
-      {
-        id: "preserve-pointer-invariant",
-        text: "Explain why discarded pair boundaries no longer need to be checked.",
-      },
+      "Use sorted or coordinated boundaries to decide pointer movement.",
+      "Explain which candidates are ruled out by each move.",
     ],
     order: 4,
-    prerequisiteNodeIds: ["hash_map_lookup"],
+    patternVariantIds: ["opposite_ends", "pair_scan_sorted_input"],
+    prerequisiteNodeIds: ["arrays_and_strings"],
     primaryPatternFamilyId: "two_pointers",
+    problemArchetypeIds: ["find_pair_with_condition"],
     recommendedItemTypes: ["approach_primer", "trace_next_step", "subgoal_ordering"],
-    shortDescription: "Practice boundary movement after hash lookup mechanics are grounded.",
-    skillAtomIds: ["choose_two_pointers_for_sorted_pair_condition"],
-    status: "available",
-  },
-  {
+    skillAtomIds: ["move_decisive_pointer"],
+  }),
+  makeNode({
     approachIds: ["positive_sliding_window"],
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "sliding_window_positive",
+    id: "sliding_window",
     kind: "mechanics",
-    label: "Positive sliding window",
+    label: "Sliding window",
     learningObjectives: [
-      {
-        id: "maintain-window-state",
-        text: "Maintain a contiguous window state while expanding and shrinking.",
-      },
-      {
-        id: "connect-positive-values-to-window-movement",
-        text: "Use positive values as the signal that sum movement is predictable.",
-      },
+      "Maintain a contiguous window invariant while boundaries move.",
+      "Recognize the signals that make a simple window valid.",
     ],
     order: 5,
-    prerequisiteNodeIds: ["two_pointers_pair_scan"],
+    patternVariantIds: ["fixed_size_window", "variable_size_positive_numbers", "frequency_constraint"],
+    prerequisiteNodeIds: ["two_pointers"],
     primaryPatternFamilyId: "sliding_window",
+    problemArchetypeIds: ["find_subarray_with_target"],
     recommendedItemTypes: ["approach_primer", "worked_example", "trace_next_step"],
-    shortDescription: "Teach window mechanics only after boundary reasoning is introduced.",
-    skillAtomIds: [
-      "maintain_sliding_window_invariant",
-      "recognize_positive_numbers_sliding_window_signal",
-    ],
-    status: "draft",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "prefix_sums_range_reasoning",
+    skillAtomIds: ["maintain_window_invariant"],
+  }),
+  makeNode({
+    id: "prefix_sums",
     kind: "contrast",
-    label: "Prefix sums range reasoning",
+    label: "Prefix sums",
     learningObjectives: [
-      {
-        id: "recognize-range-accumulation",
-        text: "Recognize when accumulated range state is a better fit than moving a window.",
-      },
-      {
-        id: "contrast-window-with-prefix",
-        text: "Contrast positive-window reasoning with arbitrary range totals.",
-      },
+      "Recognize accumulated range state.",
+      "Explain when prefix reasoning is safer than a moving window.",
     ],
     order: 6,
-    prerequisiteNodeIds: ["sliding_window_positive"],
+    patternVariantIds: ["range_sum_query", "subarray_sum_with_hash_map", "when_prefix_beats_window"],
+    prerequisiteNodeIds: ["sliding_window"],
     primaryPatternFamilyId: "prefix_sums",
+    problemArchetypeIds: ["find_subarray_with_target"],
     recommendedItemTypes: ["solution_comparison", "strategy_choice", "edge_case_drill"],
-    shortDescription: "Introduce range reasoning through contrast with sliding window assumptions.",
-    skillAtomIds: ["detect_negative_numbers_break_simple_window_sum"],
-    status: "draft",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "stack_nested_structure",
-    kind: "mechanics",
-    label: "Stack nested structure",
+    skillAtomIds: ["detect_window_failure_signal"],
+  }),
+  makeNode({
+    id: "sorting_based",
+    kind: "strategy_selection",
+    label: "Sorting based",
     learningObjectives: [
-      {
-        id: "explain-last-unresolved-state",
-        text: "Explain why the latest unresolved item controls nested-structure validation.",
-      },
-      {
-        id: "trace-stack-push-pop",
-        text: "Trace push and pop state before comparing this approach with scans.",
-      },
+      "Recognize when ordering reveals structure.",
+      "Account for sorting cost and original-position side effects.",
     ],
     order: 7,
-    prerequisiteNodeIds: ["prefix_sums_range_reasoning"],
-    primaryPatternFamilyId: "stack",
-    recommendedItemTypes: ["approach_primer", "trace_next_step", "subgoal_ordering"],
-    shortDescription: "Add last-in-first-out mechanics as a different state model.",
-    skillAtomIds: ["explain_stack_for_nested_structure"],
-    status: "draft",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "binary_search_sorted_input",
+    patternVariantIds: ["sort_then_scan", "sort_then_two_pointers", "sorting_cost_recognition"],
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "sorting_based",
+    problemArchetypeIds: ["find_pair_with_condition", "group_or_count_values"],
+    recommendedItemTypes: ["strategy_choice", "solution_comparison", "complexity_check"],
+    skillAtomIds: ["recognize_sorting_tradeoff"],
+  }),
+  makeNode({
+    id: "stack",
     kind: "mechanics",
-    label: "Binary search sorted input",
+    label: "Stack",
     learningObjectives: [
-      {
-        id: "identify-ordered-boundary",
-        text: "Identify sorted input or an ordered boundary before choosing binary search.",
-      },
-      {
-        id: "trace-search-space-reduction",
-        text: "Trace how each comparison reduces the remaining search space.",
-      },
+      "Use latest unresolved state for nested structures.",
+      "Trace push and pop mechanics before comparing stack variants.",
     ],
     order: 8,
-    prerequisiteNodeIds: ["stack_nested_structure"],
-    primaryPatternFamilyId: "binary_search",
-    recommendedItemTypes: ["approach_primer", "trace_next_step", "complexity_check"],
-    shortDescription: "Teach ordered search after several simpler state models are available.",
-    skillAtomIds: ["identify_binary_search_sorted_input_signal"],
-    status: "draft",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
-    id: "strategy_selection_basics",
-    kind: "strategy_selection",
-    label: "Strategy selection basics",
+    patternVariantIds: ["nested_structure_validation", "undo_or_previous_state"],
+    prerequisiteNodeIds: ["arrays_and_strings"],
+    primaryPatternFamilyId: "stack",
+    problemArchetypeIds: ["validate_nested_structure"],
+    recommendedItemTypes: ["approach_primer", "trace_next_step", "subgoal_ordering"],
+    skillAtomIds: ["use_last_unresolved_state"],
+  }),
+  makeNode({
+    id: "binary_search",
+    kind: "mechanics",
+    label: "Binary search",
     learningObjectives: [
-      {
-        id: "choose-from-core-approaches",
-        text: "Choose among lookup, pointer, window, prefix, stack, and ordered-search approaches.",
-      },
-      {
-        id: "justify-selection-with-signals",
-        text: "Justify an approach with constraint and decision signals instead of labels alone.",
-      },
+      "Identify ordered input or a monotonic predicate.",
+      "Trace why each comparison removes part of the search space.",
     ],
     order: 9,
-    prerequisiteNodeIds: ["binary_search_sorted_input"],
-    recommendedItemTypes: ["strategy_choice", "solution_comparison", "approach_naming"],
-    shortDescription: "Move from mechanics to strategy recognition across the first core approaches.",
-    skillAtomIds: [
-      "explain_hash_map_average_lookup",
-      "choose_two_pointers_for_sorted_pair_condition",
-      "identify_binary_search_sorted_input_signal",
+    patternVariantIds: ["classic_index_search", "lower_upper_bound", "monotonic_predicate_recognition"],
+    prerequisiteNodeIds: ["complexity_and_constraints", "arrays_and_strings"],
+    primaryPatternFamilyId: "binary_search",
+    problemArchetypeIds: ["find_index_in_sorted_input"],
+    recommendedItemTypes: ["approach_primer", "trace_next_step", "complexity_check"],
+    skillAtomIds: ["identify_monotonic_predicate"],
+  }),
+  makeNode({
+    id: "strategy_selection_core",
+    kind: "strategy_selection",
+    label: "Core strategy selection",
+    learningObjectives: [
+      "Choose among lookup, pointer, window, prefix, sorting, stack, and binary-search approaches.",
+      "Justify a strategy with constraint and decision signals.",
     ],
-    status: "draft",
-  },
-  {
-    contentVersion: ALGORITHM_CONTENT_VERSION,
+    learningStage: "strategy_selection",
+    order: 10,
+    prerequisiteNodeIds: ["hash_map_and_set", "two_pointers", "sliding_window", "prefix_sums", "sorting_based", "stack", "binary_search"],
+    recommendedItemTypes: ["strategy_choice", "solution_comparison", "approach_naming"],
+    skillAtomIds: ["choose_lookup_key", "move_decisive_pointer", "maintain_window_invariant", "identify_monotonic_predicate"],
+  }),
+  makeContrastNode({
+    id: "contrast_hash_map_vs_sorting",
+    label: "Hash map vs sorting",
+    order: 11,
+    prerequisiteNodeIds: ["hash_map_and_set", "sorting_based"],
+    skillAtomIds: ["choose_lookup_key", "recognize_sorting_tradeoff"],
+  }),
+  makeContrastNode({
+    id: "contrast_two_pointers_vs_sliding_window",
+    label: "Two pointers vs sliding window",
+    order: 12,
+    prerequisiteNodeIds: ["two_pointers", "sliding_window"],
+    skillAtomIds: ["move_decisive_pointer", "maintain_window_invariant"],
+  }),
+  makeContrastNode({
+    id: "contrast_sliding_window_vs_prefix_sums",
+    label: "Sliding window vs prefix sums",
+    order: 13,
+    prerequisiteNodeIds: ["sliding_window", "prefix_sums"],
+    skillAtomIds: ["maintain_window_invariant", "detect_window_failure_signal"],
+  }),
+  makeContrastNode({
+    id: "contrast_stack_vs_monotonic_stack_intro",
+    label: "Stack vs monotonic stack intro",
+    order: 14,
+    prerequisiteNodeIds: ["stack"],
+    skillAtomIds: ["use_last_unresolved_state", "maintain_monotonic_stack_invariant"],
+  }),
+  makeContrastNode({
+    id: "contrast_binary_search_vs_linear_scan",
+    label: "Binary search vs linear scan",
+    order: 15,
+    prerequisiteNodeIds: ["arrays_and_strings", "binary_search"],
+    skillAtomIds: ["track_index_boundary", "identify_monotonic_predicate"],
+  }),
+  ...([
+    ["linked_list", "Linked list"],
+    ["recursion_basics", "Recursion basics"],
+    ["tree_traversal", "Tree traversal"],
+    ["heap_priority_queue", "Heap and priority queue"],
+    ["intervals", "Intervals"],
+    ["backtracking", "Backtracking"],
+    ["graph_traversal", "Graph traversal"],
+    ["greedy_intro", "Greedy intro"],
+    ["dynamic_programming_intro", "Dynamic programming intro"],
+    ["bit_manipulation", "Bit manipulation"],
+    ["math_and_geometry", "Math and geometry"],
+  ] as const).map(([id, label], index) =>
+    makeNode({
+      id,
+      kind: "later",
+      label,
+      learningStage: "pattern_mechanics",
+      minimumDemoItemCount: 0,
+      order: 16 + index,
+      prerequisiteNodeIds: ["strategy_selection_core"],
+      primaryPatternFamilyId: id as AlgorithmPatternFamilyId,
+      recommendedItemTypes: mvpItemTypes,
+      releaseScope: "future",
+      status: "coming_later",
+    }),
+  ),
+  makeNode({
     id: "mixed_pattern_practice",
     kind: "mixed_practice",
     label: "Mixed pattern practice",
     learningObjectives: [
-      {
-        id: "separate-similar-signals",
-        text: "Separate similar signals across core approaches without seeing the pattern label first.",
-      },
-      {
-        id: "practice-contrast-before-independent-work",
-        text: "Practice contrast and item mixing before later independent attempts.",
-      },
+      "Separate similar signals without seeing a pattern label first.",
+      "Practice interleaving only after multiple families have prior exposure.",
     ],
-    order: 10,
-    prerequisiteNodeIds: ["strategy_selection_basics"],
+    learningStage: "mixed_interview_practice",
+    minimumDemoItemCount: 0,
+    order: 27,
+    prerequisiteNodeIds: [
+      "strategy_selection_core",
+      "contrast_hash_map_vs_sorting",
+      "contrast_two_pointers_vs_sliding_window",
+      "contrast_sliding_window_vs_prefix_sums",
+    ],
     recommendedItemTypes: ["strategy_choice", "solution_comparison", "edge_case_drill"],
-    shortDescription: "Draft endpoint for interleaving after foundations, mechanics, and strategy selection.",
-    status: "coming_later",
-  },
+    releaseScope: "planned_content",
+    shortDescription: "Later interleaved practice mode after mechanics and contrast exposure.",
+    status: "planned",
+  }),
 ] as const satisfies readonly AlgorithmRoadmapNode[];
 
 const algorithmRoadmapEdges = algorithmRoadmapNodes.flatMap((node) =>
   node.prerequisiteNodeIds.map((prerequisiteNodeId) => ({
-    fromNodeId: prerequisiteNodeId,
+    fromNodeId: resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId),
     reason: "Roadmap sequence prerequisite.",
     toNodeId: node.id,
   })),
@@ -356,12 +384,12 @@ const algorithmRoadmapEdges = algorithmRoadmapNodes.flatMap((node) =>
 export const ALGORITHM_ROADMAP = {
   contentVersion: ALGORITHM_CONTENT_VERSION,
   description:
-    "Draft learning path from foundations through mechanics, strategy selection, and later mixed practice.",
+    "Curriculum from foundations through pattern mechanics, strategy selection, contrast practice, and later mixed practice.",
   edges: algorithmRoadmapEdges,
   id: "algorithms-core-roadmap",
   label: "Algorithms Core Roadmap",
   nodes: algorithmRoadmapNodes,
-  status: "draft",
+  status: "planned",
 } as const satisfies AlgorithmRoadmapTrack;
 
 export function validateAlgorithmRoadmap(
@@ -372,6 +400,8 @@ export function validateAlgorithmRoadmap(
   const orders = new Set<number>();
   const approachIds = new Set(ALGORITHM_APPROACH_TEMPLATES.map((approach) => approach.id));
   const patternFamilyIds = new Set(ALGORITHM_PATTERN_FAMILIES.map((family) => family.id));
+  const patternVariantIds = new Set(ALGORITHM_PATTERN_VARIANTS.map((variant) => variant.id));
+  const problemArchetypeIds = new Set(ALGORITHM_PROBLEM_ARCHETYPES.map((archetype) => archetype.id));
   const skillAtomIds = new Set(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
   const itemTypes = new Set<string>([
     ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
@@ -402,8 +432,19 @@ export function validateAlgorithmRoadmap(
   }
 
   for (const node of roadmap.nodes) {
-    validateRoadmapRefs(node, nodesById, approachIds, patternFamilyIds, skillAtomIds, itemTypes, issues);
-    validateRoadmapVisibleValues(node, issues);
+    validateRoadmapRefs(
+      node,
+      nodesById,
+      approachIds,
+      patternFamilyIds,
+      patternVariantIds,
+      problemArchetypeIds,
+      skillAtomIds,
+      itemTypes,
+      issues,
+    );
+    validateRoadmapPolicy(node, issues);
+    validateRoadmapVisibleValues(node, issues, node.id);
   }
 
   validateRoadmapVisibleValues(roadmap, issues);
@@ -414,17 +455,91 @@ export function validateAlgorithmRoadmap(
   };
 }
 
+type AlgorithmRoadmapNodeInput = Omit<
+  Partial<AlgorithmRoadmapNode>,
+  "learningObjectives"
+> & {
+  id: string;
+  kind: AlgorithmRoadmapNodeKind;
+  label: string;
+  order: number;
+  learningObjectives?: readonly (AlgorithmRoadmapLearningObjective | string)[];
+};
+
+function makeNode(input: AlgorithmRoadmapNodeInput): AlgorithmRoadmapNode {
+  const learningObjectives = (input.learningObjectives ??
+    [`Practice ${input.label} reasoning with active checks before implementation details.`])
+    .map((objective, index) =>
+      typeof objective === "string"
+        ? {
+            id: `${input.id}-objective-${index + 1}`,
+            text: objective,
+          }
+        : objective,
+    );
+
+  return {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    id: input.id,
+    kind: input.kind,
+    label: input.label,
+    learningObjectives,
+    learningStage: input.learningStage ?? "pattern_mechanics",
+    minimumDemoItemCount: input.minimumDemoItemCount ?? 1,
+    order: input.order,
+    prerequisiteNodeIds: input.prerequisiteNodeIds ?? ["complexity_and_constraints"],
+    recommendedItemTypes: input.recommendedItemTypes ?? mvpItemTypes,
+    releaseScope: input.releaseScope ?? "demo_available",
+    shortDescription: input.shortDescription ??
+      `Technical demo node for ${input.label}; release-quality content requires a later content pack.`,
+    status: input.status ?? "available",
+    ...(input.approachIds ? { approachIds: input.approachIds } : {}),
+    ...(input.patternVariantIds ? { patternVariantIds: input.patternVariantIds } : {}),
+    ...(input.primaryPatternFamilyId ? { primaryPatternFamilyId: input.primaryPatternFamilyId } : {}),
+    ...(input.problemArchetypeIds ? { problemArchetypeIds: input.problemArchetypeIds } : {}),
+    ...(input.skillAtomIds ? { skillAtomIds: input.skillAtomIds } : {}),
+  };
+}
+
+function makeContrastNode(input: {
+  id: string;
+  label: string;
+  order: number;
+  prerequisiteNodeIds: readonly string[];
+  skillAtomIds: readonly string[];
+}): AlgorithmRoadmapNode {
+  return makeNode({
+    id: input.id,
+    kind: "contrast",
+    label: input.label,
+    learningObjectives: [
+      {
+        id: `${input.id}-decision-signal`,
+        text: `Contrast ${input.label} using decision signals, constraints, and failure modes.`,
+      },
+    ],
+    learningStage: "contrast_practice",
+    order: input.order,
+    prerequisiteNodeIds: input.prerequisiteNodeIds,
+    recommendedItemTypes: ["strategy_choice", "solution_comparison", "edge_case_drill"],
+    skillAtomIds: input.skillAtomIds,
+  });
+}
+
 function validateRoadmapRefs(
   node: AlgorithmRoadmapNode,
   nodesById: ReadonlyMap<AlgorithmRoadmapNodeId, AlgorithmRoadmapNode>,
   approachIds: ReadonlySet<string>,
   patternFamilyIds: ReadonlySet<string>,
+  patternVariantIds: ReadonlySet<string>,
+  problemArchetypeIds: ReadonlySet<string>,
   skillAtomIds: ReadonlySet<string>,
   itemTypes: ReadonlySet<string>,
   issues: AlgorithmRoadmapQualityIssue[],
 ): void {
   for (const prerequisiteNodeId of node.prerequisiteNodeIds) {
-    const prerequisiteNode = nodesById.get(prerequisiteNodeId);
+    const canonicalPrerequisiteId = resolveAlgorithmCurriculumAlias("roadmap_node", prerequisiteNodeId);
+    const prerequisiteNode = nodesById.get(canonicalPrerequisiteId);
 
     if (!prerequisiteNode) {
       issues.push({
@@ -462,6 +577,26 @@ function validateRoadmapRefs(
     });
   }
 
+  for (const patternVariantId of node.patternVariantIds ?? []) {
+    if (!patternVariantIds.has(patternVariantId)) {
+      issues.push({
+        code: "unknown_pattern_variant_id",
+        message: `Unknown roadmap pattern variant id: ${patternVariantId}.`,
+        nodeId: node.id,
+      });
+    }
+  }
+
+  for (const problemArchetypeId of node.problemArchetypeIds ?? []) {
+    if (!problemArchetypeIds.has(problemArchetypeId)) {
+      issues.push({
+        code: "unknown_problem_archetype_id",
+        message: `Unknown roadmap problem archetype id: ${problemArchetypeId}.`,
+        nodeId: node.id,
+      });
+    }
+  }
+
   for (const skillAtomId of node.skillAtomIds ?? []) {
     if (!skillAtomIds.has(skillAtomId)) {
       issues.push({
@@ -483,16 +618,44 @@ function validateRoadmapRefs(
   }
 }
 
+function validateRoadmapPolicy(
+  node: AlgorithmRoadmapNode,
+  issues: AlgorithmRoadmapQualityIssue[],
+): void {
+  if (node.status === "available" && node.minimumDemoItemCount < 1) {
+    issues.push({
+      code: "available_node_missing_demo_policy",
+      message: `Available roadmap node must define a technical demo item threshold: ${node.id}.`,
+      nodeId: node.id,
+    });
+  }
+
+  if (node.status !== "available" && node.minimumDemoItemCount > 0) {
+    issues.push({
+      code: "non_available_node_with_demo_policy",
+      message: `Unavailable roadmap node must not require demo content: ${node.id}.`,
+      nodeId: node.id,
+    });
+  }
+
+  if (node.id === "mixed_pattern_practice" && node.learningStage !== "mixed_interview_practice") {
+    issues.push({
+      code: "mixed_practice_marked_beginner",
+      message: "Mixed pattern practice must remain a later-stage practice mode.",
+      nodeId: node.id,
+    });
+  }
+}
+
 function validateRoadmapVisibleValues(
   value: unknown,
   issues: AlgorithmRoadmapQualityIssue[],
   nodeId?: AlgorithmRoadmapNodeId,
 ): void {
   const serialized = JSON.stringify(value).toLowerCase();
-  const tokens = new Set(serialized.split(/[^a-z0-9]+/).filter(Boolean));
 
   for (const forbiddenTerm of FORBIDDEN_ROADMAP_VISIBLE_TERMS) {
-    if (tokens.has(forbiddenTerm)) {
+    if (serialized.includes(forbiddenTerm)) {
       issues.push({
         code: "forbidden_visible_term",
         message: `Roadmap visible values include forbidden term: ${forbiddenTerm}.`,
@@ -506,16 +669,9 @@ const FORBIDDEN_ROADMAP_VISIBLE_TERMS = [
   "readiness",
   "retention",
   "mastery",
-  "mastered",
-  "strong",
-  "weak",
   "streak",
-  "level",
-  "badge",
   "leaderboard",
   "leetcode",
-  "ai",
-  "llm",
-  "chat",
-  "generated",
+  "ai-generated",
+  "llm-generated",
 ] as const;

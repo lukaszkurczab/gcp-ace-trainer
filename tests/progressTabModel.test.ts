@@ -187,7 +187,7 @@ test("Algorithms progress shows empty local facts before attempts", () => {
     ],
   );
   assert.deepEqual(model.activitySummary, {
-    detail: "Active roadmap node: Complexity basics.",
+    detail: "Active roadmap node: Complexity and constraints.",
     label: "Items completed",
     value: 0,
   });
@@ -221,7 +221,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
 
   assert.equal(model.hasData, true);
   assert.deepEqual(model.activitySummary, {
-    detail: "Active roadmap node: Array and string basics.",
+    detail: "Active roadmap node: Arrays and strings.",
     label: "Items completed",
     value: 1,
   });
@@ -254,8 +254,8 @@ test("Algorithms node completion is based on seeded item attempts", () => {
       }),
     ],
   });
-  const complexityNode = model.performanceScores.find((score) => score.id === "complexity_basics");
-  const hashNode = model.performanceScores.find((score) => score.id === "hash_map_lookup");
+  const complexityNode = model.performanceScores.find((score) => score.id === "complexity_and_constraints");
+  const hashNode = model.performanceScores.find((score) => score.id === "hash_map_and_set");
 
   assert.equal(complexityNode?.detail, "1/1 items completed");
   assert.equal(complexityNode?.percent, 100);

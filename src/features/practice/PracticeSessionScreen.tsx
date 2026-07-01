@@ -6,35 +6,62 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
+import { ALGORITHMS_TRACK_ID } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
 import type { Question } from "../../types";
-import { areOptionSetsEqual, getDomainLabel } from "../../utils";
+import { areOptionSetsEqual } from "../../utils";
+import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
 import {
   loadPracticeQuestions,
   savePracticeAnswer,
   setQuestionNeedsReview,
 } from "./practiceService";
 import { canCheckAnswer } from "./practiceSessionModel";
+import { getCloudDomainForTopicId } from "./sessionConfig";
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
+  if (route.params.trackId === ALGORITHMS_TRACK_ID) {
+    return (
+      <AlgorithmsSessionScreen
+        navigation={navigation}
+        nodeId={route.params.topicId}
+        sessionConfig={route.params}
+      />
+    );
+  }
+
+  return <CloudPracticeSessionScreen navigation={navigation} route={route} />;
+}
+
+function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [needsReview, setNeedsReview] = useState(false);
+  const [completedAnswers, setCompletedAnswers] = useState<CompletedAnswer[]>([]);
+  const [isReviewPass, setIsReviewPass] = useState(false);
+  const [sessionComplete, setSessionComplete] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
 
       async function loadSessionQuestions() {
-        const loadedQuestions = await loadPracticeQuestions(route.params.domain, route.params.questionCount);
+        const loadedQuestions = await loadPracticeQuestions(
+          getCloudDomainForTopicId(route.params.topicId),
+          route.params.sessionLength,
+        );
 
         if (isActive) {
           setQuestions(loadedQuestions);
+          setCurrentIndex(0);
+          setCompletedAnswers([]);
+          setIsReviewPass(false);
+          setSessionComplete(false);
           resetQuestionState();
         }
       }
@@ -44,7 +71,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       return () => {
         isActive = false;
       };
-    }, [route.params.domain, route.params.questionCount])
+    }, [route.params.sessionLength, route.params.topicId])
   );
 
   const currentQuestion = questions[currentIndex];
@@ -82,10 +109,36 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       return;
     }
 
-    await savePracticeAnswer({
+    const answer: CompletedAnswer = {
+      isCorrect,
       question: currentQuestion,
       selectedOptionIds,
-    });
+    };
+
+    const nextCompletedAnswers = isReviewPass
+      ? completedAnswers
+      : [...completedAnswers, answer];
+
+    if (!isReviewPass) {
+      await savePracticeAnswer({
+        question: currentQuestion,
+        selectedOptionIds,
+      });
+
+      setCompletedAnswers(nextCompletedAnswers);
+    }
+
+    if (route.params.feedbackMode === "atSessionEnd") {
+      if (currentIndex >= questions.length - 1) {
+        setSessionComplete(true);
+        return;
+      }
+
+      setCurrentIndex((current) => current + 1);
+      resetQuestionState();
+      return;
+    }
+
     setIsSubmitted(true);
   }
 
@@ -101,7 +154,21 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
   function goNext() {
     if (currentIndex >= questions.length - 1) {
-      navigation.navigate(ROUTES.PRACTICE_SETUP);
+      if (!isReviewPass && route.params.reviewBehaviorEnabled) {
+        const missedQuestions = completedAnswers
+          .filter((answer) => !answer.isCorrect)
+          .map((answer) => answer.question);
+
+        if (missedQuestions.length > 0) {
+          setQuestions(missedQuestions);
+          setCurrentIndex(0);
+          setIsReviewPass(true);
+          resetQuestionState();
+          return;
+        }
+      }
+
+      setSessionComplete(true);
       return;
     }
 
@@ -114,17 +181,35 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       <Screen>
         <EmptyState
           title="No practice questions"
-          description="Import questions for this domain or select another domain before starting practice."
-          actionLabel="Choose Domain"
-          onActionPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
+          description="No questions are available for this topic yet."
+          actionLabel="Back to Practice"
+          onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
         />
       </Screen>
     );
   }
 
+  if (sessionComplete) {
+    return (
+      <SessionSummary
+        answers={completedAnswers}
+        feedbackMode={route.params.feedbackMode}
+        onBackToPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: route.params.topicId })}
+      />
+    );
+  }
+
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
   const progress = (currentIndex + 1) / questions.length;
-  const canSubmit = canCheckAnswer(selectedOptionIds, isSubmitted);
+  const immediateFeedback = route.params.feedbackMode === "afterEachAnswer";
+  const canSubmit = immediateFeedback
+    ? canCheckAnswer(selectedOptionIds, isSubmitted)
+    : selectedOptionIds.length > 0;
+  const primaryActionLabel = immediateFeedback
+    ? "Check Answer"
+    : currentIndex >= questions.length - 1
+      ? "Finish Session"
+      : "Next Question";
 
   return (
     <Screen
@@ -140,7 +225,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
             </>
           ) : (
             <Button disabled={!canSubmit} onPress={() => void submitAnswer()}>
-              Check Answer
+              {primaryActionLabel}
             </Button>
           )}
         </View>
@@ -150,7 +235,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         <Pressable
           accessibilityLabel="Close practice session"
           accessibilityRole="button"
-          onPress={() => navigation.navigate(ROUTES.PRACTICE_SETUP)}
+          onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: route.params.topicId })}
           style={({ pressed }) => [styles.closeButton, pressed ? styles.optionPressed : null]}
         >
           <Icon name="close" size={18} />
@@ -165,7 +250,9 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
       <Card style={styles.questionCard}>
         <View style={styles.questionAccent} />
-        <Text style={styles.questionEyebrow}>Cloud Certification</Text>
+        <Text style={styles.questionEyebrow}>
+          {isReviewPass ? "Review behavior" : formatSessionMode(route.params.mode)}
+        </Text>
         <Text style={styles.questionText}>{currentQuestion.question}</Text>
         <View style={styles.metaRow}>
           <Badge label={currentQuestion.type === "single" ? "Single choice" : "Multiple select"} tone="neutral" />
@@ -186,14 +273,14 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
               style={({ pressed }) => [
                 styles.optionCard,
                 isSelected ? styles.optionSelected : null,
-                isSubmitted && isCorrectOption ? styles.optionCorrect : null,
-                isSubmitted && isSelected && !isCorrectOption ? styles.optionIncorrect : null,
+                immediateFeedback && isSubmitted && isCorrectOption ? styles.optionCorrect : null,
+                immediateFeedback && isSubmitted && isSelected && !isCorrectOption ? styles.optionIncorrect : null,
                 pressed && !isSubmitted ? styles.optionPressed : null
               ]}
             >
               <OptionMarker
-                correct={isSubmitted && isCorrectOption}
-                incorrect={isSubmitted && isSelected && !isCorrectOption}
+                correct={immediateFeedback && isSubmitted && isCorrectOption}
+                incorrect={immediateFeedback && isSubmitted && isSelected && !isCorrectOption}
                 selected={isSelected}
                 type={currentQuestion.type}
               />
@@ -203,11 +290,80 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         })}
       </View>
 
-      {isSubmitted ? (
+      {immediateFeedback && isSubmitted ? (
         <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
       ) : null}
 
     </Screen>
+  );
+}
+
+type CompletedAnswer = {
+  isCorrect: boolean;
+  question: Question;
+  selectedOptionIds: string[];
+};
+
+type SessionSummaryProps = {
+  answers: readonly CompletedAnswer[];
+  feedbackMode: string;
+  onBackToPractice: () => void;
+};
+
+function SessionSummary({ answers, feedbackMode, onBackToPractice }: SessionSummaryProps) {
+  const correctCount = answers.filter((answer) => answer.isCorrect).length;
+  const incorrectCount = answers.length - correctCount;
+
+  return (
+    <Screen
+      edges={["top", "bottom"]}
+      footer={<Button onPress={onBackToPractice}>Back to Practice</Button>}
+    >
+      <View style={styles.sessionTopBar}>
+        <Text style={styles.sessionBrand}>Patternly</Text>
+      </View>
+
+      <Card variant="tonal" style={styles.summaryCard}>
+        <Text style={styles.questionEyebrow}>Session summary</Text>
+        <SectionHeader
+          title="Practice complete"
+          subtitle={
+            feedbackMode === "atSessionEnd"
+              ? "Review correctness and explanations from this session."
+              : "Review your session results."
+          }
+          tight
+        />
+        <View style={styles.summaryGrid}>
+          <SummaryMetric label="Answered" value={answers.length} />
+          <SummaryMetric label="Correct" value={correctCount} />
+          <SummaryMetric label="Review" value={incorrectCount} />
+        </View>
+      </Card>
+
+      {answers.map((answer, index) => (
+        <Card key={`${answer.question.id}-${index}`} variant={answer.isCorrect ? "success" : "warning"}>
+          <SectionHeader
+            title={`Question ${index + 1}`}
+            subtitle={answer.question.question}
+            action={<Badge label={answer.isCorrect ? "Correct" : "Review"} tone={answer.isCorrect ? "success" : "warning"} />}
+            tight
+          />
+          <DiagnosticSection label="Selected answer" value={getOptionText(answer.question, answer.selectedOptionIds)} />
+          <DiagnosticSection label="Correct answer" value={getOptionText(answer.question, answer.question.correctOptionIds)} />
+          <DiagnosticSection label="Explanation" value={answer.question.explanation} />
+        </Card>
+      ))}
+    </Screen>
+  );
+}
+
+function SummaryMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <View style={styles.summaryMetric}>
+      <Text style={styles.summaryValue}>{value}</Text>
+      <Text style={styles.summaryLabel}>{label}</Text>
+    </View>
   );
 }
 
@@ -312,6 +468,18 @@ function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
   }
 
   return Array.isArray(value) ? value : [value];
+}
+
+function formatSessionMode(value: string): string {
+  if (value === "weakArea") {
+    return "Weak area";
+  }
+
+  if (value === "default") {
+    return "Practice";
+  }
+
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
 const styles = StyleSheet.create({
@@ -463,5 +631,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm
+  },
+  summaryCard: {
+    gap: spacing.lg
+  },
+  summaryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.md
+  },
+  summaryMetric: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    minWidth: 96,
+    padding: spacing.md
+  },
+  summaryValue: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+    fontVariant: ["tabular-nums"]
+  },
+  summaryLabel: {
+    ...typography.caption,
+    color: colors.dark.textSecondary
   }
 });

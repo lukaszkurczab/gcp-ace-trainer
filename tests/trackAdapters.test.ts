@@ -135,7 +135,7 @@ test("Algorithms adapter exists for algorithms", () => {
   assert.equal(adapter.content.trackId, ALGORITHMS_TRACK_ID);
   assert.equal(adapter.scoring.trackId, ALGORITHMS_TRACK_ID);
   assert.equal(adapter.review.trackId, ALGORITHMS_TRACK_ID);
-  assert.equal(adapter.content.getItems().length, 7);
+  assert.equal(adapter.content.getItems().length, ALGORITHM_TRAINING_ITEMS.length);
 });
 
 test("Algorithms scoring can score a seeded static item", () => {

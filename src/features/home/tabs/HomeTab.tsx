@@ -10,46 +10,44 @@ import {
   SectionHeader,
 } from "../../../components";
 import type { TrackDefinition } from "../../../domain";
+import type { TrainingAttempt } from "../../../domain/training";
 import { colors, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import {
-  buildHomeTabModel,
-  isCloudHomePracticeAction,
-} from "./homeTabModel";
+import type { PracticeSessionMode } from "../../practice/sessionConfig";
+import { buildHomeTabModel } from "./homeTabModel";
 
 type HomeTabProps = {
   activeTrack: TrackDefinition;
   analytics: AnalyticsData;
-  onChangeFocus: () => void;
-  onOpenPractice: () => void;
-  onStartLearning: () => void;
+  onChangeTrack: () => void;
+  onStartLearning: (topicId: string) => void;
+  onStartMode: (mode: PracticeSessionMode, topicId: string) => void;
+  trainingAttempts: readonly TrainingAttempt[];
 };
 
 export function HomeTab({
   activeTrack,
   analytics,
-  onChangeFocus,
-  onOpenPractice,
+  onChangeTrack,
   onStartLearning,
+  onStartMode,
+  trainingAttempts,
 }: HomeTabProps) {
-  const model = buildHomeTabModel({ activeTrack, analytics });
-  const onPrimaryPress = isCloudHomePracticeAction(model)
-    ? onStartLearning
-    : onOpenPractice;
+  const model = buildHomeTabModel({ activeTrack, analytics, trainingAttempts });
 
   return (
     <>
       <Card style={styles.focusStrip}>
         <View style={styles.focusCopy}>
-          <Text style={styles.eyebrow}>Current focus</Text>
+          <Text style={styles.eyebrow}>Current track</Text>
           <Text style={styles.focusTitle}>{model.focusTitle}</Text>
         </View>
         <Pressable
           accessibilityRole="button"
-          onPress={onChangeFocus}
+          onPress={onChangeTrack}
           style={({ pressed }) => [styles.changeFocusButton, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.changeFocusText}>Change focus</Text>
+          <Text style={styles.changeFocusText}>Change track</Text>
           <Icon color={colors.dark.accentPurple} name="chevron-right" size={18} />
         </Pressable>
       </Card>
@@ -61,24 +59,30 @@ export function HomeTab({
           subtitle={model.heroSubtitle}
           tight
         />
-        <Button onPress={onPrimaryPress}>
+        <Button onPress={() => onStartLearning(model.topicId)}>
           {model.primaryLabel}
         </Button>
       </Card>
 
-      <View style={styles.section}>
-        <SectionHeader title="Recommended today" tight />
-        {model.recommendations.map((item, index) => (
-          <ListRow
-            detail={item.detail}
-            key={item.title}
-            leading={<IconTile name={item.icon} tone={item.tone} />}
-            style={index === 0 ? styles.recommendedPrimary : undefined}
-            title={item.title}
-            trailing={<Badge label={item.label} tone={index === 0 ? "info" : "neutral"} />}
-          />
-        ))}
-      </View>
+      {model.recommendations.length > 0 ? (
+        <View style={styles.section}>
+          <SectionHeader title="Recommended today" tight />
+          {model.recommendations.map((item, index) => (
+            <ListRow
+              detail={item.unavailableReason ?? item.detail}
+              key={item.title}
+              leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
+              onPress={item.enabled ? () => onStartMode(item.mode, model.topicId) : undefined}
+              style={[
+                index === 0 ? styles.recommendedPrimary : undefined,
+                item.enabled ? undefined : styles.unavailableRow,
+              ]}
+              title={item.title}
+              trailing={<Badge label={item.label} tone={item.enabled ? "info" : "neutral"} />}
+            />
+          ))}
+        </View>
+      ) : null}
     </>
   );
 }
@@ -129,5 +133,8 @@ const styles = StyleSheet.create({
   },
   recommendedPrimary: {
     borderColor: colors.dark.primary,
+  },
+  unavailableRow: {
+    opacity: 0.62,
   },
 });

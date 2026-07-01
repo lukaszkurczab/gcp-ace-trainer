@@ -1,4 +1,4 @@
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -25,6 +25,7 @@ import type {
   TrainingSession,
 } from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
+import type { PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
   addTrainingAttempt,
   addTrainingSession,
@@ -39,6 +40,7 @@ import {
   getAlgorithmAttemptStatus,
   getAlgorithmTrainingItemsForRoadmapNode,
   getFirstUsableAlgorithmRoadmapNode,
+  isAlgorithmRoadmapNodeSelectable,
   scoreAlgorithmStaticMicroCheck,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
@@ -47,10 +49,11 @@ import {
   type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
 
-type AlgorithmsSessionScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  typeof ROUTES.ALGORITHMS_SESSION
->;
+type AlgorithmsSessionScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+  nodeId?: string;
+  sessionConfig?: PracticeSessionRouteParams;
+};
 
 type ComplexityDimension = "time" | "space";
 
@@ -64,7 +67,7 @@ type SessionSummary = {
 
 const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
 
-export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSessionScreenProps) {
+export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessionScreenProps) {
   const [node, setNode] = useState<AlgorithmRoadmapNode>(() => getFirstUsableAlgorithmRoadmapNode());
   const [items, setItems] = useState<readonly AlgorithmTrainingItem[]>([]);
   const [session, setSession] = useState<TrainingSession | null>(null);
@@ -77,7 +80,7 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const nextNode = resolveSessionNode(route.params?.nodeId);
+    const nextNode = resolveSessionNode(nodeId);
     const nextItems = getAlgorithmTrainingItemsForRoadmapNode(nextNode.id);
     const startedAt = new Date().toISOString();
     const nextSession = createTrainingSession({
@@ -104,7 +107,7 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
         setStorageMessage("The session is running, but local session storage reported an issue.");
       }
     });
-  }, [route.params?.nodeId]);
+  }, [nodeId]);
 
   const currentItem = items[currentIndex];
   const currentCheck = useMemo(
@@ -227,9 +230,9 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
     return (
       <Screen
         edges={["top", "bottom"]}
-        footer={<Button onPress={() => navigation.navigate(ROUTES.HOME)}>Back to Home</Button>}
+        footer={<Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })}>Back to Practice</Button>}
       >
-        <SessionTopBar onClose={() => navigation.navigate(ROUTES.HOME)} />
+        <SessionTopBar onClose={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })} />
         <Card variant="tonal" style={styles.summaryCard}>
           <Text style={styles.heroEyebrow}>Session summary</Text>
           <SectionHeader
@@ -255,8 +258,8 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
         <EmptyState
           title="No Algorithms items"
           description="No static items are available for this roadmap node."
-          actionLabel="Back to Home"
-          onActionPress={() => navigation.navigate(ROUTES.HOME)}
+          actionLabel="Back to Practice"
+          onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })}
         />
       </Screen>
     );
@@ -277,7 +280,7 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
         )
       }
     >
-      <SessionTopBar onClose={() => navigation.navigate(ROUTES.HOME)} />
+      <SessionTopBar onClose={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })} />
 
       <View style={styles.progressBlock}>
         <Text style={styles.itemCount}>Item {currentIndex + 1} of {items.length}</Text>
@@ -288,17 +291,23 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
       </View>
 
       <Card style={styles.itemCard}>
-        <Text style={styles.heroEyebrow}>Algorithms</Text>
-        <SectionHeader
-          title={currentItem.title}
-          subtitle={currentItem.prompt}
-          action={<Badge label={node.label} tone="primary" />}
-          tight
-        />
-        <View style={styles.metaRow}>
-          <Badge label={formatItemType(currentItem.type)} tone="neutral" />
-          <Badge label={formatItemType(currentCheck.type)} tone="info" />
-        </View>
+        {currentCheck.type === "trace_next_step" ? (
+          <TraceDrillPrompt check={currentCheck} item={currentItem} node={node} />
+        ) : (
+          <>
+            <Text style={styles.heroEyebrow}>Algorithms</Text>
+            <SectionHeader
+              title={currentItem.title}
+              subtitle={currentItem.prompt}
+              action={<Badge label={node.label} tone="primary" />}
+              tight
+            />
+            <View style={styles.metaRow}>
+              <Badge label={formatItemType(currentItem.type)} tone="neutral" />
+              <Badge label={formatItemType(currentCheck.type)} tone="info" />
+            </View>
+          </>
+        )}
       </Card>
 
       <Card style={styles.answerCard}>
@@ -315,11 +324,53 @@ export function AlgorithmsSessionScreen({ navigation, route }: AlgorithmsSession
       </Card>
 
       {checkedScore ? (
-        <FeedbackCard score={checkedScore} />
+        <FeedbackCard check={currentCheck} item={currentItem} score={checkedScore} />
       ) : null}
 
       {storageMessage ? <StorageNotice message={storageMessage} /> : null}
     </Screen>
+  );
+}
+
+type TraceDrillPromptProps = {
+  check: AlgorithmStaticMicroCheck;
+  item: AlgorithmTrainingItem;
+  node: AlgorithmRoadmapNode;
+};
+
+function TraceDrillPrompt({ check, item, node }: TraceDrillPromptProps) {
+  const traceStep = item.stepByStepTrace?.[0];
+  const stateLines = traceStep?.state ?? [];
+
+  return (
+    <>
+      <Text style={styles.heroEyebrow}>TRACE DRILL</Text>
+      <SectionHeader
+        title="Trace the Algorithm"
+        subtitle={item.prompt}
+        action={<Badge label={node.label} tone="primary" />}
+        tight
+      />
+
+      {stateLines.length > 0 ? (
+        <View style={styles.tracePanel}>
+          <Text style={styles.tracePanelLabel}>Current state</Text>
+          <View style={styles.traceStateWrap}>
+            {stateLines.map((line) => (
+              <Text key={line} style={styles.traceStateChip}>{line}</Text>
+            ))}
+          </View>
+          {traceStep?.description ? (
+            <Text style={styles.traceDescription}>{traceStep.description}</Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      <View style={styles.traceQuestion}>
+        <Text style={styles.tracePanelLabel}>Question</Text>
+        <Text style={styles.traceQuestionText}>{check.prompt || "What happens next?"}</Text>
+      </View>
+    </>
   );
 }
 
@@ -493,10 +544,12 @@ function OptionButton({ label, onPress, selected, submitted }: OptionButtonProps
 }
 
 type FeedbackCardProps = {
+  check: AlgorithmStaticMicroCheck;
+  item: AlgorithmTrainingItem;
   score: AlgorithmStaticCheckScore;
 };
 
-function FeedbackCard({ score }: FeedbackCardProps) {
+function FeedbackCard({ check, item, score }: FeedbackCardProps) {
   return (
     <Card variant={score.status === "correct" ? "success" : "warning"}>
       <SectionHeader
@@ -505,6 +558,12 @@ function FeedbackCard({ score }: FeedbackCardProps) {
         tight
       />
       <Text style={styles.feedbackText}>{score.feedback}</Text>
+      {check.type === "trace_next_step" ? (
+        <View style={styles.traceFeedback}>
+          <Text style={styles.feedbackText}>{item.feedbackModel.decisionSignal}</Text>
+          <Text style={styles.feedbackText}>{item.feedbackModel.nextAction}</Text>
+        </View>
+      ) : null}
       {score.mistakeTypes.length > 0 ? (
         <Text style={styles.feedbackText}>
           Review: {score.mistakeTypes.map(formatItemType).join(", ")}
@@ -543,7 +602,7 @@ function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
 
   const selectedNode = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === nodeId);
 
-  if (selectedNode && getAlgorithmTrainingItemsForRoadmapNode(selectedNode.id).length > 0) {
+  if (selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode)) {
     return selectedNode;
   }
 
@@ -682,6 +741,46 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.sm,
   },
+  tracePanel: {
+    backgroundColor: colors.dark.elevatedSurface,
+    borderColor: colors.dark.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  tracePanelLabel: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+    textTransform: "uppercase",
+  },
+  traceStateWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  traceStateChip: {
+    ...typography.small,
+    backgroundColor: colors.dark.background,
+    borderColor: colors.dark.borderStrong,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    color: colors.dark.textPrimary,
+    fontFamily: "monospace",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  traceDescription: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+  },
+  traceQuestion: {
+    gap: spacing.xs,
+  },
+  traceQuestionText: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
   options: {
     gap: spacing.md,
   },
@@ -767,6 +866,9 @@ const styles = StyleSheet.create({
   feedbackText: {
     ...typography.body,
     color: colors.dark.textPrimary,
+  },
+  traceFeedback: {
+    gap: spacing.xs,
   },
   summaryCard: {
     gap: spacing.xl,

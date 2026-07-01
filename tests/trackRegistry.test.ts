@@ -10,6 +10,7 @@ import {
   getTrackDefinitions,
   isTrackId,
 } from "../src/domain";
+import { ALGORITHM_TRAINING_ITEMS } from "../src/tracks";
 
 test("track registry exposes the commercial MVP track set", () => {
   const tracks = getTrackDefinitions();
@@ -28,7 +29,7 @@ test("cloud certification is active and algorithms is explicit draft", () => {
   assert.equal(cloud.status, "active");
   assert.equal(algorithms.status, "draft");
   assert.equal(algorithms.title, "Algorithms");
-  assert.equal(algorithms.contentManifest.itemCount, 7);
+  assert.equal(algorithms.contentManifest.itemCount, ALGORITHM_TRAINING_ITEMS.length);
   assert.ok(getEnabledSessionModes(cloud.id).length > 0);
   assert.equal(getEnabledSessionModes(algorithms.id).length, 1);
   assert.deepEqual(
