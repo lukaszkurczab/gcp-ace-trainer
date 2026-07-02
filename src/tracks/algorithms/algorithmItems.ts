@@ -1495,6 +1495,7 @@ export const ALGORITHM_TRAINING_ITEMS = [
     },
   ]),
   ...makeExpandedAlgorithmContentItems(),
+  ...makeProductionBaselineAlgorithmContentItems(),
 ] as const satisfies readonly (AlgorithmTrainingItem & TrainingItem)[];
 
 export function getAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
@@ -1587,6 +1588,7 @@ type CoreContentItemInput = {
   complexityExplanation?: string;
   correctText: string;
   correctIds?: readonly string[];
+  difficulty?: AlgorithmTrainingItem["difficulty"];
   expectedSpaceComplexity?: AlgorithmComplexityClass;
   expectedTimeComplexity?: AlgorithmComplexityClass;
   familyId: AlgorithmPatternFamilyId;
@@ -1612,6 +1614,392 @@ type CoreContentItemInput = {
   };
   wrongTexts?: readonly string[];
 };
+
+type ProductionBaselineItemType =
+  | "approach_naming"
+  | "complexity_check"
+  | "edge_case_drill"
+  | "solution_comparison"
+  | "strategy_choice";
+
+type ProductionBaselineCase = {
+  complexityExplanation: string;
+  comparisonSignal: string;
+  costSignal: string;
+  edgeSignal: string;
+  patternSignal: string;
+  situation: string;
+  space: AlgorithmComplexityClass;
+  strategySignal: string;
+  time: AlgorithmComplexityClass;
+  variantId: string;
+  wrongTexts: readonly string[];
+};
+
+type ProductionBaselineNodeSpec = {
+  cases: readonly ProductionBaselineCase[];
+  familyId: AlgorithmPatternFamilyId;
+  idPrefix: string;
+  itemCount: number;
+  mistakeTypes: readonly AlgorithmMistakeType[];
+  nodeId: AlgorithmRoadmapNodeId;
+  secondarySkillAtomIds?: readonly string[];
+  skillAtomId: string;
+  titlePrefix: string;
+};
+
+function getProductionBaselineNodeSpecs(): readonly ProductionBaselineNodeSpec[] {
+  return [
+  {
+    cases: [
+      makeProductionCase("A nightly import compares every record with every later record.", "Reject repeated pair enumeration before implementation details.", "The pattern signal is growth from nested comparisons.", "Nested pair checks grow quadratically while storing only counters.", "A one-pass stateful plan avoids repeated scans at the cost of memory.", "Review the assumption that one outer loop makes the whole plan linear.", "O(n^2)", "O(1)", "big_o_basics"),
+      makeProductionCase("A fixed list receives thousands of range-total queries.", "Preprocess reusable accumulated state instead of recomputing each range.", "The pattern signal is repeated work over the same input.", "Prefix preparation scans once and stores one total per position.", "Preprocessing is stronger when many queries reuse the same sequence.", "Review treating every query as isolated when the input is reused.", "O(n)", "O(n)", "operations_cost"),
+      makeProductionCase("A stream only needs the current best adjacent gap.", "Keep constant scan state when no later lookup is needed.", "The signal is a linear scan with a small running summary.", "One pass with a current best value is linear and constant space.", "Constant state is stronger than storing history when history is never queried.", "Review storing all earlier values without a later access signal.", "O(n)", "O(1)", "operations_cost"),
+      makeProductionCase("A validator repeatedly asks whether an id was seen before.", "Spend lookup memory to avoid repeated membership scans.", "The signal is membership lookup under a large input limit.", "A seen set scan is linear time and can store n ids.", "Lookup state trades space for avoiding nested repeated scans.", "Review avoiding all memory even when repeated scans dominate.", "O(n)", "O(n)", "time_vs_space_tradeoff"),
+      makeProductionCase("A sorted search halves the candidate range after each check.", "Recognize logarithmic shrinking instead of linear scanning.", "The signal is ordered elimination.", "Halving candidates costs logarithmic time with bound variables only.", "Halving is stronger only when each comparison discards an ordered side.", "Review calling a halving plan linear because it still uses a loop.", "O(log n)", "O(1)", "input_size_constraints"),
+    ],
+    familyId: "complexity_and_constraints",
+    idPrefix: "alg-prod-complexity",
+    itemCount: 19,
+    mistakeTypes: ["complexity_mismatch", "constraint_ignored"],
+    nodeId: "complexity_and_constraints",
+    skillAtomId: "derive_time_complexity",
+    titlePrefix: "Production complexity baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A string scan reads the previous character before deciding whether to merge runs.", "Guard the first position before reading a neighbor.", "The pattern signal is indexed boundary tracking.", "A single neighbor scan is linear and constant space.", "Boundary-aware scanning is safer than sorting when local order matters.", "Review reading index -1 on empty or length-one input.", "O(n)", "O(1)", "indexed_scan"),
+      makeProductionCase("An array compacts accepted values while preserving their relative order.", "Use a write boundary and a read index moving forward.", "The pattern signal is same-direction indexed state.", "Each element is read once and accepted values reuse the input space.", "A write boundary preserves order better than sorting accepted values.", "Review overwriting before the read position has been processed.", "O(n)", "O(1)", "in_place_update"),
+      makeProductionCase("Two strings match only when each character appears the same number of times.", "Track counts because multiplicity changes the answer.", "The pattern signal is frequency-sensitive string state.", "Counting characters scans both strings and stores bounded or distinct counts.", "Counts are stronger than presence when duplicates matter.", "Review using a set when two copies must be distinguished.", "O(n)", "O(n)", "frequency_counting"),
+      makeProductionCase("A phrase comparison ignores spaces and letter case.", "Normalize the input before comparing semantic equality.", "The pattern signal is string normalization before comparison.", "Normalization scans the characters and stores normalized output if not done in place.", "Normalization is stronger than raw comparison when formatting is irrelevant.", "Review comparing raw strings after the prompt says formatting differs.", "O(n)", "O(n)", "string_normalization"),
+      makeProductionCase("A sorted array should collapse duplicate values into one copy.", "Process the first occurrence, then skip later equal values safely.", "The pattern signal is duplicate handling at an index boundary.", "A single pass can rewrite unique values with constant extra state.", "Duplicate-aware scanning is stronger than blind copying.", "Review skipping the first occurrence before it is recorded.", "O(n)", "O(1)", "duplicate_handling"),
+    ],
+    familyId: "arrays_and_strings",
+    idPrefix: "alg-prod-array-string",
+    itemCount: 25,
+    mistakeTypes: ["edge_case_missed", "off_by_one"],
+    nodeId: "arrays_and_strings",
+    skillAtomId: "track_index_boundary",
+    titlePrefix: "Production array-string baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A pair task asks whether the current value has a prior complement.", "Check the needed complement in prior state before storing the current value.", "The pattern signal is complement lookup during one scan.", "Each value is scanned once and lookup state can grow to n values.", "Complement lookup is stronger than repeated pair scans at large input size.", "Review storing first when one element cannot pair with itself.", "O(n)", "O(n)", "complement_lookup"),
+      makeProductionCase("Two inventories match only if every sku count is equal.", "Use a frequency map because presence alone loses multiplicity.", "The pattern signal is count lookup by key.", "Counting scans the entries and stores one count per distinct sku.", "Frequency maps are stronger than sets when duplicate counts matter.", "Review replacing counts with presence when duplicates affect correctness.", "O(n)", "O(n)", "frequency_map"),
+      makeProductionCase("Events should be grouped by the same normalized day.", "Use the derived day as the map key and append matching events.", "The pattern signal is grouping by a derived key.", "Each event is assigned once and buckets can store all events.", "Grouping keys avoid comparing each event with every prior group.", "Review choosing an unstable key such as insertion order.", "O(n)", "O(n)", "grouping_by_key"),
+      makeProductionCase("A stream asks whether a tag has appeared earlier.", "Use a seen set when only membership matters.", "The pattern signal is prior membership state.", "The scan is linear and the set can store each distinct tag.", "A set is simpler than a map when counts and payloads are irrelevant.", "Review tracking only the previous tag when older tags still matter.", "O(n)", "O(n)", "seen_set"),
+      makeProductionCase("A lookup derives a compact code from each record before matching.", "Store the derived lookup key, not the whole comparison history.", "The pattern signal is lookup by derived value.", "One pass computes keys and stores the distinct keys needed later.", "Derived-key lookup is stronger than raw record comparison.", "Review using the full record as a key when the prompt defines equivalence differently.", "O(n)", "O(n)", "lookup_by_value"),
+    ],
+    familyId: "hash_map_and_set",
+    idPrefix: "alg-prod-hash",
+    itemCount: 24,
+    mistakeTypes: ["data_structure_mismatch", "duplicate_handling_error"],
+    nodeId: "hash_map_and_set",
+    skillAtomId: "choose_lookup_key",
+    titlePrefix: "Production hash lookup baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A sorted list needs two values whose sum reaches a target.", "Move the boundary ruled out by the current comparison.", "The pattern signal is sorted opposite-end pair elimination.", "Each boundary moves inward at most n total steps.", "Pair boundaries beat a window because the answer is two values, not a range.", "Review moving both boundaries without proving what was ruled out.", "O(n)", "O(1)", "pair_scan_sorted_input"),
+      makeProductionCase("An unsorted pair task returns values and does not require original positions.", "Sorting can create the ordered signal needed for a pair scan.", "The pattern signal is sort-then-two-boundaries.", "Sorting dominates the linear scan after ordering.", "Sort-then-scan is acceptable only when output semantics survive sorting.", "Review sorting when original adjacency or positions must be preserved.", "O(n log n)", "O(1)", "pair_scan_sorted_input"),
+      makeProductionCase("A compacting routine keeps accepted items at the front.", "Use same-direction pointers: one reads, one writes the accepted boundary.", "The pattern signal is coordinated read and write indexes.", "Each item is read once and writes reuse existing storage.", "Same-direction pointers preserve order better than opposite-end swapping.", "Review advancing the write boundary for rejected items.", "O(n)", "O(1)", "same_direction"),
+      makeProductionCase("A sorted pair scan must return each value pair once.", "Skip duplicate boundary values only after the current pair value is processed.", "The pattern signal is duplicate-aware boundary movement.", "The scan remains linear because duplicates are skipped in one direction.", "Duplicate skipping protects output uniqueness without extra lookup state.", "Review skipping the first occurrence before checking it.", "O(n)", "O(1)", "duplicate_skipping"),
+      makeProductionCase("A partition puts small values before large values.", "Maintain a boundary for the processed side while the read index advances.", "The pattern signal is partitioning with coordinated pointers.", "One scan partitions in linear time with constant extra state.", "Partition pointers are stronger than sorting when only a boundary split is needed.", "Review swapping values after the boundary invariant has already been broken.", "O(n)", "O(1)", "partitioning"),
+    ],
+    familyId: "two_pointers",
+    idPrefix: "alg-prod-two-pointers",
+    itemCount: 18,
+    mistakeTypes: ["wrong_approach", "off_by_one"],
+    nodeId: "two_pointers",
+    secondarySkillAtomIds: ["recognize_sorting_tradeoff"],
+    skillAtomId: "move_decisive_pointer",
+    titlePrefix: "Production two-pointer baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("Positive readings need the shortest contiguous range above a limit.", "Expand right, then shrink left while the positive-sum invariant allows it.", "The pattern signal is a maintainable positive contiguous window.", "Each boundary moves forward at most once.", "A positive window is stronger than prefix lookup when shrink direction is predictable.", "Review recording a range before restoring its validity condition.", "O(n)", "O(1)", "variable_size_positive_numbers"),
+      makeProductionCase("Daily totals ask for the best block of exactly k adjacent days.", "Use a fixed-size window that swaps one outgoing value for one incoming value.", "The pattern signal is fixed-size overlap.", "Each value enters and leaves the window once.", "A rolling window avoids recomputing each block from scratch.", "Review forgetting to remove the outgoing value.", "O(n)", "O(1)", "fixed_size_window"),
+      makeProductionCase("A substring remains valid while it has at most three distinct symbols.", "Maintain frequency counts for the current window.", "The pattern signal is a contiguous range with count-based validity.", "The scan is linear and count state grows with distinct symbols in the window.", "Window counts beat sorting each substring because validity changes incrementally.", "Review tracking length only when distinct counts decide validity.", "O(n)", "O(n)", "frequency_constraint"),
+      makeProductionCase("A longest segment allows at most k category changes.", "Shrink from the left only when the tracked category count breaks the rule.", "The pattern signal is at-most-k state over a contiguous range.", "Both boundaries move forward through the sequence once.", "At-most-k windows are stronger than pair scans because every candidate is a range.", "Review resetting the whole window after every violation.", "O(n)", "O(n)", "at_most_k_distinct"),
+      makeProductionCase("A covering substring must include required symbols.", "Track missing requirements and shrink only after the cover is satisfied.", "The pattern signal is minimum covering window state.", "A window with counts scans linearly but stores required symbol state.", "Covering-window state is stronger than raw two pointers because validity depends on counts.", "Review shrinking before the required cover exists.", "O(n)", "O(n)", "minimum_covering_window"),
+    ],
+    familyId: "sliding_window",
+    idPrefix: "alg-prod-window",
+    itemCount: 24,
+    mistakeTypes: ["invariant_missing", "invariant_broken"],
+    nodeId: "sliding_window",
+    secondarySkillAtomIds: ["choose_lookup_key"],
+    skillAtomId: "maintain_window_invariant",
+    titlePrefix: "Production sliding-window baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A range-sum task allows credits and refunds below zero.", "Use prefix totals because simple shrink movement is not reliable.", "The pattern signal is signed contiguous sum reasoning.", "One scan stores prefix totals for lookup.", "Prefix lookup is stronger than a positive window when signs can change direction.", "Review applying a positive-only window after negative values are allowed.", "O(n)", "O(n)", "when_prefix_beats_window"),
+      makeProductionCase("Many queries ask for totals between two indexes in the same array.", "Prepare prefix totals so each range uses accumulated endpoints.", "The pattern signal is repeated range queries.", "Prefix preprocessing is linear time and linear space.", "Preprocessing beats recomputing each range when query count is large.", "Review forgetting the empty prefix for ranges starting at index zero.", "O(n)", "O(n)", "range_sum_query"),
+      makeProductionCase("A scan must detect whether any subarray reaches a target sum.", "Store earlier prefix totals and check current minus target.", "The pattern signal is prefix lookup by needed prior total.", "Each prefix is processed once and stored for later checks.", "Prefix lookup handles signed values better than a simple moving sum window.", "Review adding the target instead of subtracting it from the current prefix.", "O(n)", "O(n)", "subarray_sum_with_hash_map"),
+      makeProductionCase("Many operations add a value across a range, then final values are read once.", "Use difference-style accumulation instead of updating every covered index each time.", "The pattern signal is batched range updates.", "Range operations update boundaries, then one prefix pass reconstructs values.", "Difference accumulation is stronger when updates are numerous and reads are delayed.", "Review applying every update to every covered index without checking operation count.", "O(n)", "O(n)", "difference_array_intro"),
+      makeProductionCase("A count is needed for ranges ending at each index.", "Track prefix frequencies, not just the latest prefix total.", "The pattern signal is counting prior accumulated states.", "A frequency map of prefixes grows with distinct prefix totals.", "Prefix counting is stronger than keeping one previous total when many starts can match.", "Review overwriting prefix totals when multiple prior starts matter.", "O(n)", "O(n)", "prefix_counting"),
+    ],
+    familyId: "prefix_sums",
+    idPrefix: "alg-prod-prefix",
+    itemCount: 20,
+    mistakeTypes: ["negative_numbers_assumption_error", "wrong_approach"],
+    nodeId: "prefix_sums",
+    secondarySkillAtomIds: ["maintain_window_invariant"],
+    skillAtomId: "detect_window_failure_signal",
+    titlePrefix: "Production prefix baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("Nested tags must close in the reverse order they opened.", "Use the latest unresolved opener as the next required match.", "The pattern signal is last-in-first-out unresolved state.", "Each token is pushed or popped once, and openers can fill the stack.", "A stack is stronger than a counter when token type and order matter.", "Review accepting equal counts while nesting order is wrong.", "O(n)", "O(n)", "nested_structure_validation"),
+      makeProductionCase("An editor undo command restores the most recent pending operation.", "Use stack state because newest unresolved work is restored first.", "The pattern signal is previous-state restoration.", "Each operation is pushed and popped at most once.", "Stack state is stronger than queue state when newest work resolves first.", "Review resolving the oldest pending operation first.", "O(n)", "O(n)", "undo_or_previous_state"),
+      makeProductionCase("A parser starts with a closing marker before any opener.", "Reject immediately because there is no unresolved opener to match.", "The pattern signal is empty-stack close detection.", "The scan is linear and stack space depends on unmatched openers.", "Explicit mismatch checks beat count-only validation.", "Review treating an empty stack as valid before reading the close.", "O(n)", "O(n)", "nested_structure_validation"),
+      makeProductionCase("A deeply nested structure must be traversed without recursive calls.", "Use an explicit stack to model pending traversal state.", "The pattern signal is replacing call-stack state explicitly.", "Each node is pushed and popped once.", "An explicit stack is safer than recursion when depth can be large.", "Review relying on recursion after the prompt warns about depth.", "O(n)", "O(n)", "stack_for_dfs_simulation"),
+      makeProductionCase("Expression-like tokens need the most recent operator context.", "Push context when entering a nested segment and pop it when closing.", "The pattern signal is nested context restoration.", "Each token is processed once and context can grow with nesting depth.", "Context stack state is stronger than global state when nesting changes meaning.", "Review storing one global operator when nested context can override it.", "O(n)", "O(n)", "expression_like_processing"),
+    ],
+    familyId: "stack",
+    idPrefix: "alg-prod-stack",
+    itemCount: 15,
+    mistakeTypes: ["data_structure_mismatch", "edge_case_missed"],
+    nodeId: "stack",
+    skillAtomId: "use_last_unresolved_state",
+    titlePrefix: "Production stack baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A sorted catalog needs the first price at least a limit.", "Use lower-bound search and preserve the first valid candidate.", "The pattern signal is an ordered true/false boundary.", "Each check halves the remaining indexes.", "Binary search is stronger than scanning when each comparison discards a side.", "Review stopping at any valid middle when the first valid index is required.", "O(log n)", "O(1)", "lower_upper_bound"),
+      makeProductionCase("A sorted list is checked for one exact value.", "Use classic index search because comparison rules out one half.", "The pattern signal is sorted exact lookup.", "The search halves candidates and stores only bounds.", "Index binary search is stronger than lookup when the ordered list is already available.", "Review moving the wrong boundary after a less-than comparison.", "O(log n)", "O(1)", "classic_index_search"),
+      makeProductionCase("A capacity is feasible, and every larger capacity is also feasible.", "Search answer space only because feasibility is monotonic.", "The pattern signal is monotonic feasibility over candidate answers.", "Logarithmic candidate checks multiplied by the check cost dominate.", "Answer-space search is stronger than scanning every capacity when feasibility is monotonic.", "Review binary searching when valid and invalid candidates alternate.", "O(n log n)", "O(1)", "binary_search_on_answer"),
+      makeProductionCase("A rotated sorted list still reveals one ordered half at each step.", "Use rotated-search logic only while an ordered half can be identified.", "The pattern signal is partial order after a pivot.", "Each step discards one ordered half.", "Rotated search is stronger than linear scan when the ordered half is reliable.", "Review treating the list as unordered without checking the ordered half.", "O(log n)", "O(1)", "rotated_array_search"),
+      makeProductionCase("A condition changes from false to true once across indexes.", "Keep the half that can still contain the boundary answer.", "The pattern signal is monotonic predicate preservation.", "Boundary search is logarithmic with constant bound state.", "Predicate search is stronger than exact search when the answer is the transition point.", "Review discarding the first true candidate during updates.", "O(log n)", "O(1)", "monotonic_predicate_recognition"),
+    ],
+    familyId: "binary_search",
+    idPrefix: "alg-prod-binary",
+    itemCount: 20,
+    mistakeTypes: ["wrong_approach", "off_by_one"],
+    nodeId: "binary_search",
+    skillAtomId: "identify_monotonic_predicate",
+    titlePrefix: "Production binary-search baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("A task asks for prior membership, not ordering.", "Choose lookup state before considering sorting or boundaries.", "The pattern signal is membership state.", "Lookup selection usually scans once and stores prior values.", "Lookup beats binary search when no ordered boundary is available.", "Review choosing the most recently practiced pattern instead of the prompt signal.", "O(n)", "O(n)", "lookup_by_value"),
+      makeProductionCase("A task asks for a contiguous segment with maintainable validity.", "Choose window state and define the invariant before coding.", "The pattern signal is contiguous range state.", "A valid window usually moves each boundary forward once.", "Window reasoning beats pair pointers when the candidate is a range.", "Review treating every two-index solution as the same pattern.", "O(n)", "O(n)", "frequency_constraint"),
+      makeProductionCase("A signed range-sum task asks whether any subarray matches a target.", "Choose prefix lookup rather than a positive-only window.", "The pattern signal is accumulated range state under mixed signs.", "Prefix lookup scans once with stored prior totals.", "Prefix state beats a moving window when shrink direction can fail.", "Review ignoring signs in the input constraints.", "O(n)", "O(n)", "when_prefix_beats_window"),
+      makeProductionCase("A sorted input asks for the first position satisfying a condition.", "Choose binary search because an ordered boundary can be preserved.", "The pattern signal is ordered elimination.", "The search is logarithmic when the check is constant.", "Binary search beats linear scan only after proving the boundary.", "Review halving without a monotonic predicate.", "O(log n)", "O(1)", "monotonic_predicate_recognition"),
+      makeProductionCase("Nested tokens must resolve the newest opener first.", "Choose stack state because latest unresolved context controls correctness.", "The pattern signal is last unresolved state.", "Stack validation scans once and stores unmatched openers.", "Stack state beats counters when type and order both matter.", "Review using a set when resolution order matters.", "O(n)", "O(n)", "nested_structure_validation"),
+    ],
+    familyId: "hash_map_and_set",
+    idPrefix: "alg-prod-strategy",
+    itemCount: 19,
+    mistakeTypes: ["wrong_approach", "cannot_explain_why"],
+    nodeId: "strategy_selection_core",
+    secondarySkillAtomIds: ["maintain_window_invariant", "identify_monotonic_predicate"],
+    skillAtomId: "choose_lookup_key",
+    titlePrefix: "Production strategy-selection baseline",
+  },
+  {
+    cases: [
+      makeProductionCase("One prompt asks for a pair of values; another asks for a contiguous range.", "Separate pair-boundary reasoning from window invariants.", "The pattern signal is candidate shape before mechanics.", "Both plans can be linear, but they store different state.", "Candidate shape is a stronger decision signal than seeing two indexes.", "Review choosing by pattern label instead of output shape.", "O(n)", "O(1)", "pair_scan_sorted_input"),
+      makeProductionCase("One range-sum prompt has only positives; another allows negative values.", "Use value signs to separate window from prefix reasoning.", "The pattern signal is whether boundary movement is predictable.", "Positive windows can be constant space; prefix lookup can need linear state.", "Value signs decide the safer range strategy.", "Review applying the positive-window invariant to mixed signs.", "O(n)", "O(n)", "when_prefix_beats_window"),
+      makeProductionCase("One task needs fast membership; another needs the first true sorted position.", "Separate lookup state from ordered-boundary search.", "The pattern signal is state lookup versus ordered elimination.", "Lookup is often linear with memory; binary search is logarithmic on ordered input.", "The stronger plan depends on whether prior state or order answers the question.", "Review sorting or hashing before naming the actual decision signal.", "O(n)", "O(n)", "lookup_by_value"),
+      makeProductionCase("One task validates brackets; another asks for next greater values.", "Separate basic stack resolution from monotonic stack ordering.", "The pattern signal is whether unresolved state needs an ordering invariant.", "Both stack variants scan once and can store unresolved items.", "A monotonic invariant is needed only when future values resolve ordered boundaries.", "Review using a plain stack when next greater ordering is required.", "O(n)", "O(n)", "monotonic_invariant"),
+      makeProductionCase("A sort would simplify comparison, but original neighbor relationships are required.", "Reject sorting when it changes the output contract.", "The pattern signal is output semantics, not just comparison convenience.", "Sorting adds O(n log n) time and can destroy original adjacency.", "Preserving the contract beats a mechanically convenient ordering step.", "Review accepting a strategy before checking what the answer must return.", "O(n log n)", "O(1)", "sorting_cost_recognition"),
+    ],
+    familyId: "arrays_and_strings",
+    idPrefix: "alg-prod-mixed",
+    itemCount: 25,
+    mistakeTypes: ["wrong_approach", "constraint_ignored"],
+    nodeId: "mixed_pattern_practice",
+    secondarySkillAtomIds: ["detect_window_failure_signal", "move_decisive_pointer"],
+    skillAtomId: "track_index_boundary",
+    titlePrefix: "Production mixed-practice baseline",
+  },
+  ];
+}
+
+function makeProductionBaselineAlgorithmContentItems(): readonly (AlgorithmTrainingItem & TrainingItem)[] {
+  const typePlan = buildProductionBaselineTypePlan();
+  let globalIndex = 0;
+
+  return getProductionBaselineNodeSpecs().flatMap((spec) =>
+    Array.from({ length: spec.itemCount }, (_, nodeIndex) => {
+      const itemType = typePlan[globalIndex];
+      if (!itemType) {
+        throw new Error("Production baseline type plan is shorter than requested item count.");
+      }
+
+      const item = makeProductionBaselineCoreItem(spec, itemType, nodeIndex, globalIndex);
+      globalIndex += 1;
+      return item;
+    }),
+  );
+}
+
+function makeProductionBaselineCoreItem(
+  spec: ProductionBaselineNodeSpec,
+  itemType: ProductionBaselineItemType,
+  nodeIndex: number,
+  globalIndex: number,
+): AlgorithmTrainingItem & TrainingItem {
+  const itemNumber = nodeIndex + 1;
+  const baselineCase = spec.cases[nodeIndex % spec.cases.length];
+
+  if (!baselineCase) {
+    throw new Error(`Production baseline node has no cases: ${spec.nodeId}`);
+  }
+
+  const twist = getProductionConstraintTwist(nodeIndex);
+  const id = `${spec.idPrefix}-${String(itemNumber).padStart(3, "0")}`;
+  const prompt = makeProductionPrompt(itemType, baselineCase, twist);
+
+  return makeCoreContentItem({
+    checkType: itemType === "complexity_check" ? "complexity_pair" : undefined,
+    complexityAnswer: itemType === "complexity_check"
+      ? {
+          space: baselineCase.space,
+          time: baselineCase.time,
+        }
+      : undefined,
+    complexityExplanation: itemType === "complexity_check" ? baselineCase.complexityExplanation : undefined,
+    correctText: getProductionCorrectText(itemType, baselineCase),
+    difficulty: getProductionDifficulty(globalIndex),
+    expectedSpaceComplexity: itemType === "complexity_check" ? baselineCase.space : undefined,
+    expectedTimeComplexity: itemType === "complexity_check" ? baselineCase.time : undefined,
+    familyId: spec.familyId,
+    id,
+    itemType,
+    mistakeTypes: spec.mistakeTypes,
+    nodeId: spec.nodeId,
+    prompt,
+    secondarySkillAtomIds: spec.secondarySkillAtomIds,
+    skillAtomId: spec.skillAtomId,
+    title: `${spec.titlePrefix} ${itemNumber}`,
+    variantId: baselineCase.variantId,
+    wrongTexts: baselineCase.wrongTexts,
+  });
+}
+
+function buildProductionBaselineTypePlan(): ProductionBaselineItemType[] {
+  const remaining: Record<ProductionBaselineItemType, number> = {
+    approach_naming: 40,
+    complexity_check: 51,
+    edge_case_drill: 18,
+    solution_comparison: 20,
+    strategy_choice: 80,
+  };
+  const cycle: readonly ProductionBaselineItemType[] = [
+    "strategy_choice",
+    "complexity_check",
+    "approach_naming",
+    "edge_case_drill",
+    "strategy_choice",
+    "complexity_check",
+    "solution_comparison",
+    "strategy_choice",
+    "approach_naming",
+    "complexity_check",
+  ];
+  const plan: ProductionBaselineItemType[] = [];
+
+  while (Object.values(remaining).some((count) => count > 0)) {
+    for (const itemType of cycle) {
+      if (remaining[itemType] <= 0) {
+        continue;
+      }
+
+      plan.push(itemType);
+      remaining[itemType] -= 1;
+    }
+  }
+
+  return plan;
+}
+
+function makeProductionCase(
+  situation: string,
+  strategySignal: string,
+  patternSignal: string,
+  costSignal: string,
+  comparisonSignal: string,
+  edgeSignal: string,
+  time: AlgorithmComplexityClass,
+  space: AlgorithmComplexityClass,
+  variantId: string,
+): ProductionBaselineCase {
+  return {
+    complexityExplanation: costSignal,
+    comparisonSignal,
+    costSignal,
+    edgeSignal,
+    patternSignal,
+    situation,
+    space,
+    strategySignal,
+    time,
+    variantId,
+    wrongTexts: [
+      "Choose the most familiar label before checking the constraint.",
+      "Start with implementation details before naming the required state.",
+    ],
+  };
+}
+
+function makeProductionPrompt(
+  itemType: ProductionBaselineItemType,
+  baselineCase: ProductionBaselineCase,
+  twist: string,
+): string {
+  const prefix = `${baselineCase.situation} ${twist}`;
+
+  if (itemType === "complexity_check") {
+    return `${prefix} What time and extra space should you expect?`;
+  }
+
+  if (itemType === "solution_comparison") {
+    return `${prefix} Which comparison is decisive?`;
+  }
+
+  if (itemType === "edge_case_drill") {
+    return `${prefix} What mistake should be reviewed?`;
+  }
+
+  if (itemType === "approach_naming") {
+    return `${prefix} Which pattern signal should be named first?`;
+  }
+
+  return `${prefix} Which strategy signal should guide the choice?`;
+}
+
+function getProductionCorrectText(
+  itemType: ProductionBaselineItemType,
+  baselineCase: ProductionBaselineCase,
+): string {
+  if (itemType === "approach_naming") return baselineCase.patternSignal;
+  if (itemType === "complexity_check") return baselineCase.costSignal;
+  if (itemType === "edge_case_drill") return baselineCase.edgeSignal;
+  if (itemType === "solution_comparison") return baselineCase.comparisonSignal;
+  return baselineCase.strategySignal;
+}
+
+function getProductionConstraintTwist(index: number): string {
+  return [
+    "The input can be large.",
+    "Original order must be preserved.",
+    "Duplicate values are allowed.",
+    "Empty input is valid.",
+    "The same input is queried many times.",
+    "Extra memory is acceptable only if it changes scaling.",
+    "The answer asks for values, not code.",
+    "The edge case appears at the first or last position.",
+  ][index % 8] as string;
+}
+
+function getProductionDifficulty(index: number): AlgorithmTrainingItem["difficulty"] {
+  if (index < 70) return "easy";
+  if (index < 170) return "medium";
+  return "hard";
+}
 
 function makeExpandedAlgorithmContentItems(): readonly (AlgorithmTrainingItem & TrainingItem)[] {
   return makeCoreContentItems([
@@ -3102,6 +3490,7 @@ function makeCoreContentItem(input: CoreContentItemInput): AlgorithmTrainingItem
       nextAction: "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       result: "diagnostic",
     },
+    difficulty: input.difficulty,
     id: input.id,
     learningStage,
     primarySkillAtomId: input.skillAtomId,

@@ -101,7 +101,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 157;
+const expectedActiveAlgorithmItemCount = 366;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
@@ -232,7 +232,7 @@ test("Algorithms roadmap separates available, planned, future, and mixed practic
   assert.equal(mixedPractice.kind, "mixed_practice");
   assert.equal(mixedPractice.learningStage, "mixed_interview_practice");
   assert.equal(mixedPractice.status, "available");
-  assert.equal(mixedPractice.minimumActiveItemCount, 10);
+  assert.equal(mixedPractice.minimumActiveItemCount, 35);
 
   for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.status !== "available")) {
     assert.notEqual(node.status, "available", node.id);
@@ -296,8 +296,8 @@ test("Algorithms active items and curriculum pass validation", () => {
 
   assert.deepEqual(result.issues, []);
   assert.equal(activeItems.length, expectedActiveAlgorithmItemCount);
-  assert.ok(activeItems.length >= 140);
-  assert.ok(activeItems.length <= 180);
+  assert.ok(activeItems.length >= 360);
+  assert.ok(activeItems.length <= 400);
   assert.equal(track.contentManifest.itemCount, activeItems.length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
