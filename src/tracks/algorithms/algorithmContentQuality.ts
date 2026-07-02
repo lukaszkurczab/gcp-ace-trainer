@@ -56,6 +56,7 @@ export type AlgorithmContentQualityIssueCode =
   | "active_item_references_unknown_roadmap_node"
   | "active_item_on_unavailable_roadmap_node"
   | "unknown_taxonomy_ref"
+  | "forbidden_model_term"
   | "available_roadmap_node_below_minimum_active_items"
   | "selectable_item_unsupported_by_enabled_mode";
 
@@ -69,6 +70,28 @@ export type AlgorithmContentQualityResult = {
   issues: AlgorithmContentQualityIssue[];
   valid: boolean;
 };
+
+export const ALGORITHM_FORBIDDEN_MODEL_TERMS = [
+  "readiness",
+  "retention",
+  "mastery",
+  "streak",
+  "leaderboard",
+  "leetcode",
+  "ai-generated",
+  "llm-generated",
+  "mock",
+  "demo",
+  "legacy",
+  "compatibility",
+  "migration",
+  "alias",
+  "temporary",
+  "provisional",
+  "placeholder",
+  "fallback",
+  "draft",
+] as const;
 
 export function validateAlgorithmTrainingItem(item: unknown): AlgorithmContentQualityResult {
   const issues: AlgorithmContentQualityIssue[] = [];
@@ -87,6 +110,7 @@ export function validateAlgorithmTrainingItem(item: unknown): AlgorithmContentQu
 
   const itemId = readOptionalString(item.id);
   validateBaseTrainingItemContract(item, issues, itemId);
+  validateAlgorithmVisibleValues(item, issues, itemId);
 
   if (item.type === "approach_primer") {
     validateApproachPrimerContract(item, issues, itemId);
@@ -315,6 +339,25 @@ function validateTaxonomyRefs(
         "unknown_taxonomy_ref",
         `Algorithm item references unknown ${taxonomyRef.axisId} taxonomy node: ${taxonomyRef.nodeId}.`,
         item.id,
+      );
+    }
+  }
+}
+
+function validateAlgorithmVisibleValues(
+  value: unknown,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  const serialized = JSON.stringify(value).toLowerCase();
+
+  for (const forbiddenTerm of ALGORITHM_FORBIDDEN_MODEL_TERMS) {
+    if (serialized.includes(forbiddenTerm)) {
+      addIssue(
+        issues,
+        "forbidden_model_term",
+        `Algorithm content includes blocked term: ${forbiddenTerm}.`,
+        itemId,
       );
     }
   }

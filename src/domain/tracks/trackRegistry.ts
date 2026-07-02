@@ -107,7 +107,7 @@ const algorithmsTrack: TrackDefinition = {
       "pseudocode_ordering",
     ],
     trackId: ALGORITHMS_TRACK_ID,
-    version: "algorithms-core-draft",
+    version: "algorithms-core",
   },
   defaultSessionModeId: "algorithms-roadmap-basics",
   description:
@@ -156,7 +156,7 @@ const algorithmsTrack: TrackDefinition = {
     },
   ],
   shortTitle: "Algorithms",
-  status: "draft",
+  status: "active",
   subtitle: "Pattern and strategy track",
   taxonomy: {
     primaryAxis: {

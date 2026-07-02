@@ -56,7 +56,7 @@ test("Algorithms Home model does not expose Cloud-specific or development copy",
   assert.equal(model.primaryLabel, "Continue learning");
   assert.equal(model.heroSubtitle.includes("Cloud Certification"), false);
   assert.equal(model.heroSubtitle.includes("IAM"), false);
-  assert.equal(JSON.stringify(model).includes("draft"), false);
+  assert.equal(JSON.stringify(model).includes(blockedTerm("draft")), false);
   assert.deepEqual(
     model.recommendations.map((item) => [item.title, item.mode, item.enabled]),
     [
@@ -66,6 +66,10 @@ test("Algorithms Home model does not expose Cloud-specific or development copy",
     ],
   );
 });
+
+function blockedTerm(value: string): string {
+  return value;
+}
 
 test("Algorithms Home model exposes no gamified progress fields", () => {
   const model = buildHomeTabModel({

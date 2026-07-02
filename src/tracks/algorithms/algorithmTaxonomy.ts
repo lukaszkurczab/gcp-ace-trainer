@@ -481,7 +481,6 @@ function makeFamily(
       ? "foundations"
       : "pattern_mechanics",
     id,
-    kind: "real_pattern_family",
     label: copy.label,
     prerequisiteLearningStageIds: id === "complexity_and_constraints" ? [] : ["foundations"],
     prerequisitePatternFamilyIds,

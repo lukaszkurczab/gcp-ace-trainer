@@ -78,7 +78,7 @@ test("Cloud Certification multiple-choice item can be represented as a TrainingI
 
 test("Algorithms pattern-identification item can be represented as a TrainingItem", () => {
   const item: TrainingItem = {
-    contentVersion: "algorithms-core-draft",
+    contentVersion: "algorithms-core",
     difficulty: "easy",
     estimatedTimeSeconds: 120,
     id: "algo-pattern-001",

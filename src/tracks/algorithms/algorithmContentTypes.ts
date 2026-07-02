@@ -1,4 +1,4 @@
-export const ALGORITHM_CONTENT_VERSION = "algorithms-core-draft";
+export const ALGORITHM_CONTENT_VERSION = "algorithms-core";
 
 export const ALGORITHM_LEARNING_STAGES = [
   "foundations",
@@ -37,8 +37,6 @@ export const ALGORITHM_PATTERN_FAMILY_IDS = [
 ] as const;
 
 export type AlgorithmPatternFamilyId = (typeof ALGORITHM_PATTERN_FAMILY_IDS)[number];
-
-export type AlgorithmPatternFamilyKind = "real_pattern_family" | "synthetic_practice_grouping";
 
 export const ALGORITHM_MISTAKE_TYPES = [
   "wrong_approach",
@@ -113,7 +111,7 @@ export type AlgorithmTrainingItemType =
   | AlgorithmSecondStageTrainingItemType
   | AlgorithmLaterTrainingItemType;
 
-export type AlgorithmContentStatus = "draft" | "active" | "disabled";
+export type AlgorithmContentStatus = "active" | "disabled";
 
 export type AlgorithmApproachId =
   | "hash_map_complement_lookup"
@@ -146,7 +144,6 @@ export type AlgorithmPatternFamily = {
   description: string;
   entryLearningStage: AlgorithmLearningStage;
   id: AlgorithmPatternFamilyId;
-  kind?: AlgorithmPatternFamilyKind;
   label: string;
   prerequisiteLearningStageIds?: readonly AlgorithmLearningStage[];
   prerequisitePatternFamilyIds: readonly AlgorithmPatternFamilyId[];

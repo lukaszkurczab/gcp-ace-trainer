@@ -12,6 +12,7 @@ import {
   ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
   ALGORITHM_EVIDENCE_LEVELS,
+  ALGORITHM_FORBIDDEN_MODEL_TERMS,
   ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MISTAKE_TYPES,
   ALGORITHM_MVP_TRAINING_ITEM_TYPES,
@@ -109,7 +110,7 @@ test("Algorithms curriculum taxonomy exposes the target real pattern families", 
 
   for (const family of ALGORITHM_PATTERN_FAMILIES) {
     assert.equal(family.contentVersion, ALGORITHM_CONTENT_VERSION);
-    assert.equal(family.kind, "real_pattern_family");
+    assert.equal("kind" in family, false);
     assert.ok(family.label.length > 0);
     assert.ok(family.description.length > 0);
     assert.ok(family.coreDecisionSignals.length > 0);
@@ -287,6 +288,19 @@ test("Algorithms active items and curriculum pass validation", () => {
   }
 });
 
+test("Algorithms content uses production status and version naming", () => {
+  const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
+
+  assert.equal(ALGORITHM_CONTENT_VERSION, "algorithms-core");
+  assert.equal(ALGORITHM_CONTENT_VERSION.includes(blockedTerm("draft")), false);
+  assert.equal(track.status, "active");
+  assert.equal(track.contentManifest.version, ALGORITHM_CONTENT_VERSION);
+
+  for (const approach of ALGORITHM_APPROACH_TEMPLATES) {
+    assert.equal(approach.status, "active", approach.id);
+  }
+});
+
 test("Algorithms session selection excludes planned and future roadmap nodes", () => {
   assert.equal(getFirstUsableAlgorithmRoadmapNode().id, "complexity_and_constraints");
 
@@ -393,16 +407,7 @@ test("Algorithms model values avoid forbidden progress and platform terms", () =
   ];
   const serializedModel = JSON.stringify(exposedModelValues).toLowerCase();
 
-  for (const forbiddenTerm of [
-    "readiness",
-    "retention",
-    "mastery",
-    "streak",
-    "leaderboard",
-    "leetcode",
-    "ai-generated",
-    "llm-generated",
-  ]) {
+  for (const forbiddenTerm of ALGORITHM_FORBIDDEN_MODEL_TERMS) {
     assert.equal(serializedModel.includes(forbiddenTerm), false, forbiddenTerm);
   }
 });
@@ -475,6 +480,10 @@ function exportName(...parts: string[]): string {
   return parts.join("");
 }
 
+function blockedTerm(value: string): string {
+  return value;
+}
+
 function getRoadmapNodes(): readonly AlgorithmRoadmapNode[] {
   return ALGORITHM_ROADMAP.nodes;
 }
@@ -507,7 +516,7 @@ function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): 
     learningStage: "foundations",
     primarySkillAtomId: "derive_time_complexity",
     prompt: "n can be 100000. What approach scale should you reject first?",
-    status: "draft",
+    status: "disabled",
     taxonomyRefs: [
       {
         axisId: "pattern_family",

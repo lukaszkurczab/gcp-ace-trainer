@@ -22,12 +22,12 @@ test("track registry exposes the commercial MVP track set", () => {
   );
 });
 
-test("cloud certification is active and algorithms is explicit draft", () => {
+test("cloud certification and algorithms are active tracks", () => {
   const cloud = getTrackDefinition(CLOUD_CERTIFICATION_TRACK_ID);
   const algorithms = getTrackDefinition(ALGORITHMS_TRACK_ID);
 
   assert.equal(cloud.status, "active");
-  assert.equal(algorithms.status, "draft");
+  assert.equal(algorithms.status, "active");
   assert.equal(algorithms.title, "Algorithms");
   assert.equal(algorithms.contentManifest.itemCount, ALGORITHM_TRAINING_ITEMS.length);
   assert.ok(getEnabledSessionModes(cloud.id).length > 0);

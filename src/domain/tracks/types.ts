@@ -7,7 +7,7 @@ export type TrackCategory =
   | "language"
   | "other";
 
-export type TrackStatus = "active" | "draft" | "archived";
+export type TrackStatus = "active" | "archived";
 
 export type SessionModeType =
   | "practice"

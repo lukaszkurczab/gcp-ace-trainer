@@ -9,6 +9,7 @@ import {
   type AlgorithmPatternFamilyId,
   type AlgorithmTrainingItemType,
 } from "./algorithmContentTypes";
+import { ALGORITHM_FORBIDDEN_MODEL_TERMS } from "./algorithmContentQuality";
 import {
   ALGORITHM_PATTERN_FAMILIES,
   ALGORITHM_PATTERN_VARIANTS,
@@ -643,7 +644,7 @@ function validateRoadmapVisibleValues(
 ): void {
   const serialized = JSON.stringify(value).toLowerCase();
 
-  for (const forbiddenTerm of FORBIDDEN_ROADMAP_VISIBLE_TERMS) {
+  for (const forbiddenTerm of ALGORITHM_FORBIDDEN_MODEL_TERMS) {
     if (serialized.includes(forbiddenTerm)) {
       issues.push({
         code: "forbidden_visible_term",
@@ -653,14 +654,3 @@ function validateRoadmapVisibleValues(
     }
   }
 }
-
-const FORBIDDEN_ROADMAP_VISIBLE_TERMS = [
-  "readiness",
-  "retention",
-  "mastery",
-  "streak",
-  "leaderboard",
-  "leetcode",
-  "ai-generated",
-  "llm-generated",
-] as const;

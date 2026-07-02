@@ -226,7 +226,7 @@ test("scores an Algorithms fixture attempt through the Algorithms adapter", () =
   const scored = scoreTrainingAttempt({
     adapter: {
       content: {
-        getContentVersion: () => "algorithms-core-draft",
+        getContentVersion: () => "algorithms-core",
         getItemById: (itemId) => (itemId === item.id ? item : undefined),
         getItems: () => [item],
         getItemsForMode: () => [item],
@@ -345,7 +345,7 @@ function makeThreeItemSession(): TrainingSession {
 
 function makeAlgorithmsStrategyItem(): TrainingItem {
   return {
-    contentVersion: "algorithms-core-draft",
+    contentVersion: "algorithms-core",
     id: "algo-session-strategy-001",
     prompt: "Choose the best strategy for finding a pair sum in a sorted array.",
     responseSpec: {

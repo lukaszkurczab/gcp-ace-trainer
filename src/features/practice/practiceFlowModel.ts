@@ -271,8 +271,8 @@ export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeMo
     },
     {
       detail: practiceAvailable
-        ? "Mock exam/test mode for certification readiness."
-        : "Mock exam mode is not available for Algorithms yet.",
+        ? "Assessment-style session for the selected certification track."
+        : "Assessment-style practice is not available for Algorithms yet.",
       enabled: practiceAvailable,
       icon: "clipboard",
       mode: "practice",

@@ -46,7 +46,7 @@ export const ALGORITHM_APPROACH_TEMPLATES = [
         { id: "line-6", indentationLevel: 0, order: 6, text: "return no-answer result if no match is found" },
       ],
     },
-    status: "draft",
+    status: "active",
     steps: [
       {
         description: "Identify what value or fact must be found quickly for each scanned value.",
@@ -121,7 +121,7 @@ export const ALGORITHM_APPROACH_TEMPLATES = [
         { id: "line-6", indentationLevel: 1, order: 6, text: "otherwise move right backward" },
       ],
     },
-    status: "draft",
+    status: "active",
     steps: [
       {
         description: "Confirm sorted order is available or can be introduced without breaking the required answer.",
@@ -201,7 +201,7 @@ export const ALGORITHM_APPROACH_TEMPLATES = [
         { id: "line-6", indentationLevel: 1, order: 6, text: "update best answer from the valid window" },
       ],
     },
-    status: "draft",
+    status: "active",
     steps: [
       {
         description: "Define the state that represents the current contiguous range.",
