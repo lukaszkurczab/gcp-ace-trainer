@@ -5,6 +5,7 @@ import type { CloudCertificationProgressViewModel } from "../src/tracks";
 import { buildProgressTabModel } from "../src/features/home/tabs/progressTabModel";
 import type { AnalyticsData } from "../src/features/analytics/analyticsService";
 import type { TrainingAttempt } from "../src/domain/training";
+import { getAlgorithmTrainingItemsForRoadmapNode } from "../src/tracks/algorithms";
 
 test("canonical Cloud progress maps to ProgressTab metrics", () => {
   const model = buildProgressTabModel({
@@ -175,7 +176,10 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   assert.equal(model.reviewQueueCopy, "Algorithms review queue is not active for this MVP.");
   assert.equal(model.reviewActionLabel, "Algorithms review is not active for this MVP.");
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
-  assert.equal(model.performanceScores[0]?.detail, "0/6 items completed");
+  assert.equal(
+    model.performanceScores[0]?.detail,
+    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} items completed`,
+  );
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
@@ -257,10 +261,13 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   const complexityNode = model.performanceScores.find((score) => score.id === "complexity_and_constraints");
   const hashNode = model.performanceScores.find((score) => score.id === "hash_map_and_set");
 
-  assert.equal(complexityNode?.detail, "1/6 items completed");
-  assert.equal(complexityNode?.percent, 17);
-  assert.equal(hashNode?.detail, "1/6 items completed");
-  assert.equal(hashNode?.percent, 17);
+  const complexityItemCount = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length;
+  const hashItemCount = getAlgorithmTrainingItemsForRoadmapNode("hash_map_and_set").length;
+
+  assert.equal(complexityNode?.detail, `1/${complexityItemCount} items completed`);
+  assert.equal(complexityNode?.percent, Math.round((1 / complexityItemCount) * 100));
+  assert.equal(hashNode?.detail, `1/${hashItemCount} items completed`);
+  assert.equal(hashNode?.percent, Math.round((1 / hashItemCount) * 100));
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [

@@ -361,7 +361,7 @@ const algorithmRoadmapNodes = [
       "Practice interleaving only after multiple families have prior exposure.",
     ],
     learningStage: "mixed_interview_practice",
-    minimumActiveItemCount: 0,
+    minimumActiveItemCount: 10,
     order: 27,
     prerequisiteNodeIds: [
       "strategy_selection_core",
@@ -370,8 +370,8 @@ const algorithmRoadmapNodes = [
       "contrast_sliding_window_vs_prefix_sums",
     ],
     recommendedItemTypes: ["strategy_choice", "solution_comparison", "edge_case_drill"],
-    shortDescription: "Later interleaved practice mode after mechanics and contrast exposure.",
-    status: "planned",
+    shortDescription: "Interleaved practice mode after mechanics and contrast exposure.",
+    status: "available",
   }),
 ] as const satisfies readonly AlgorithmRoadmapNode[];
 

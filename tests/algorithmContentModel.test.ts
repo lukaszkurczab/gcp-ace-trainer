@@ -101,7 +101,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 67;
+const expectedActiveAlgorithmItemCount = 157;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
@@ -231,8 +231,8 @@ test("Algorithms roadmap separates available, planned, future, and mixed practic
   const mixedPractice = getRoadmapNode("mixed_pattern_practice");
   assert.equal(mixedPractice.kind, "mixed_practice");
   assert.equal(mixedPractice.learningStage, "mixed_interview_practice");
-  assert.notEqual(mixedPractice.status, "available");
-  assert.equal(mixedPractice.minimumActiveItemCount, 0);
+  assert.equal(mixedPractice.status, "available");
+  assert.equal(mixedPractice.minimumActiveItemCount, 10);
 
   for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.status !== "available")) {
     assert.notEqual(node.status, "available", node.id);
@@ -296,8 +296,8 @@ test("Algorithms active items and curriculum pass validation", () => {
 
   assert.deepEqual(result.issues, []);
   assert.equal(activeItems.length, expectedActiveAlgorithmItemCount);
-  assert.ok(activeItems.length >= 60);
-  assert.ok(activeItems.length <= 80);
+  assert.ok(activeItems.length >= 140);
+  assert.ok(activeItems.length <= 180);
   assert.equal(track.contentManifest.itemCount, activeItems.length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
@@ -400,7 +400,7 @@ test("Algorithms adapter mode selection excludes active items on unavailable roa
   const plannedItem = {
     ...makeBaseAlgorithmItem({
       id: "algorithm-planned-node-fixture-001",
-      roadmapNodeId: "mixed_pattern_practice",
+      roadmapNodeId: "linked_list",
       status: "active",
       staticMicroChecks: [makeStaticMicroCheck()],
       type: "approach_naming",
@@ -426,7 +426,7 @@ test("Algorithms curriculum validation rejects active items on unknown or unavai
   });
   const unavailableNodeItem = makeBaseAlgorithmItem({
     id: "algorithm-unavailable-node-fixture-001",
-    roadmapNodeId: "mixed_pattern_practice",
+    roadmapNodeId: "linked_list",
     status: "active",
     staticMicroChecks: [makeStaticMicroCheck()],
   });
