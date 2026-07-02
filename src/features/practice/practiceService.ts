@@ -31,13 +31,20 @@ export function getPracticeDomainCounts(questions: readonly Question[]): Practic
 export async function loadPracticeQuestions(domain: ExamDomain, questionCount: PracticeQuestionCount): Promise<Question[]> {
   const questions = await getQuestions();
   const domainQuestions = questions.filter((question) => question.domain === domain);
-  const shuffled = shuffleArray(domainQuestions);
+  const shuffled = shuffleArray(domainQuestions).map(shuffleQuestionOptions);
 
   if (questionCount === "all") {
     return shuffled;
   }
 
   return shuffled.slice(0, questionCount);
+}
+
+export function shuffleQuestionOptions(question: Question): Question {
+  return {
+    ...question,
+    options: shuffleArray(question.options),
+  };
 }
 
 export async function savePracticeAnswer(input: {

@@ -337,17 +337,23 @@ export function buildTopicRoadmapNodes(input: {
   }
 
   const progress = buildAlgorithmProgressFacts(input.trainingAttempts);
+  const completedNodeIds = new Set(
+    progress.nodeProgress
+      .filter((node) => node.status === "completed")
+      .map((node) => node.nodeId),
+  );
 
   return ALGORITHM_ROADMAP.nodes.map((node) => {
     const itemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
-    const enabled = node.status === "available" && itemCount > 0;
     const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
     const isCurrent = progress.activeRoadmapNode.id === node.id;
+    const prerequisitesMet = node.prerequisiteNodeIds.every((nodeId) => completedNodeIds.has(nodeId));
+    const enabled = node.status === "available" && itemCount > 0 && (isCurrent || prerequisitesMet || nodeProgress?.status === "completed");
     const status = getAlgorithmTopicStatus(node.status, enabled, isCurrent, nodeProgress?.status);
 
     return {
       detail: itemCount > 0
-        ? `${node.shortDescription} ${itemCount} ${itemCount === 1 ? "item" : "items"} available.`
+        ? `${node.shortDescription} ${itemCount} ${itemCount === 1 ? "item" : "items"} available. Unlock requires ${nodeProgress?.unlockRequiredItemCount ?? Math.min(10, itemCount)} attempts with at least 70% score.`
         : node.shortDescription,
       enabled,
       id: node.id,
@@ -376,6 +382,10 @@ function getAlgorithmTopicStatus(
 ): TopicRoadmapNodeModel["status"] {
   if (progressStatus === "completed") {
     return "completed";
+  }
+
+  if (roadmapStatus !== "available") {
+    return roadmapStatus === "coming_later" ? "later" : "locked";
   }
 
   if (isCurrent) {

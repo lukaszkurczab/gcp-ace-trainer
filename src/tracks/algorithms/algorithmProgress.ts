@@ -21,7 +21,9 @@ export type AlgorithmRoadmapNodeProgress = {
   itemCount: number;
   label: string;
   nodeId: AlgorithmRoadmapNodeId;
+  scorePercent: number;
   status: AlgorithmRoadmapNodeProgressStatus;
+  unlockRequiredItemCount: number;
 };
 
 export type AlgorithmProgressFacts = {
@@ -76,27 +78,60 @@ function buildNodeProgress(
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
 ): AlgorithmRoadmapNodeProgress {
   const nodeItems = items.filter((item) => item.roadmapNodeId === node.id);
-  const completedItemCount = nodeItems.filter((item) => latestAttemptByItemId.has(item.id)).length;
+  const latestNodeAttempts = nodeItems.flatMap((item) => {
+    const attempt = latestAttemptByItemId.get(item.id);
+    return attempt ? [attempt] : [];
+  });
+  const completedItemCount = latestNodeAttempts.length;
   const itemCount = nodeItems.length;
+  const scorePercent = getNodeScorePercent(latestNodeAttempts);
+  const unlockRequiredItemCount = getNodeUnlockRequiredItemCount(itemCount);
 
   return {
     completedItemCount,
     itemCount,
     label: node.label,
     nodeId: node.id,
-    status: getNodeStatus(completedItemCount, itemCount),
+    scorePercent,
+    status: getNodeStatus(completedItemCount, unlockRequiredItemCount, scorePercent),
+    unlockRequiredItemCount,
   };
 }
 
 function getNodeStatus(
   completedItemCount: number,
-  itemCount: number,
+  unlockRequiredItemCount: number,
+  scorePercent: number,
 ): AlgorithmRoadmapNodeProgressStatus {
-  if (itemCount > 0 && completedItemCount >= itemCount) {
+  if (
+    unlockRequiredItemCount > 0 &&
+    completedItemCount >= unlockRequiredItemCount &&
+    scorePercent >= 70
+  ) {
     return "completed";
   }
 
   return completedItemCount > 0 ? "started" : "not_started";
+}
+
+function getNodeUnlockRequiredItemCount(itemCount: number): number {
+  return Math.min(10, itemCount);
+}
+
+function getNodeScorePercent(attempts: readonly TrainingAttempt[]): number {
+  if (attempts.length === 0) {
+    return 0;
+  }
+
+  const earnedPoints = attempts.reduce((sum, attempt) => {
+    const status = getAlgorithmAttemptStatus(attempt.result);
+
+    if (status === "correct") return sum + 1;
+    if (status === "partial") return sum + 0.5;
+    return sum;
+  }, 0);
+
+  return Math.round((earnedPoints / attempts.length) * 100);
 }
 
 function getActiveNode(

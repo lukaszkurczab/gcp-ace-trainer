@@ -40,8 +40,10 @@ import {
   getAlgorithmAttemptStatus,
   getAlgorithmTrainingItemsForRoadmapNode,
   getFirstUsableAlgorithmRoadmapNode,
+  getShuffledAlgorithmStaticCheckOptions,
   isAlgorithmRoadmapNodeSelectable,
   scoreAlgorithmStaticMicroCheck,
+  selectAlgorithmSessionItemsForRoadmapNode,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
   type AlgorithmStaticCheckScore,
@@ -82,7 +84,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
 
   useEffect(() => {
     const nextNode = resolveSessionNode(nodeId);
-    const nextItems = getAlgorithmTrainingItemsForRoadmapNode(nextNode.id);
+    const nextItems = selectAlgorithmSessionItemsForRoadmapNode({
+      nodeId: nextNode.id,
+      sessionLength: sessionConfig?.sessionLength ?? 20,
+    });
     const startedAt = new Date().toISOString();
     const nextSession = createTrainingSession({
       itemRefs: nextItems.map((item) => ({
@@ -114,6 +119,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
   const currentCheck = useMemo(
     () => currentItem ? getActiveAlgorithmStaticMicroCheck(currentItem) : null,
     [currentItem],
+  );
+  const currentCheckOptions = useMemo(
+    () => currentCheck ? getShuffledAlgorithmStaticCheckOptions(currentCheck) : [],
+    [currentCheck?.id],
   );
   const progress = items.length > 0 ? (currentIndex + 1) / items.length : 0;
   const canCheck = currentCheck ? hasAnswer(currentCheck, selectedOptionIds, complexityAnswer) : false;
@@ -315,6 +324,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
         <SectionHeader title="Answer" subtitle={currentCheck.prompt} tight />
         <AnswerControl
           check={currentCheck}
+          checkOptions={currentCheckOptions}
           complexityAnswer={complexityAnswer}
           onResetOrder={() => setSelectedOptionIds([])}
           onSelectComplexity={selectComplexity}
@@ -398,6 +408,7 @@ function SessionTopBar({ onClose }: SessionTopBarProps) {
 
 type AnswerControlProps = {
   check: AlgorithmStaticMicroCheck;
+  checkOptions: readonly NonNullable<AlgorithmStaticMicroCheck["options"]>[number][];
   complexityAnswer: ComplexityAnswer;
   onResetOrder: () => void;
   onSelectComplexity: (dimension: ComplexityDimension, value: string) => void;
@@ -408,6 +419,7 @@ type AnswerControlProps = {
 
 function AnswerControl({
   check,
+  checkOptions,
   complexityAnswer,
   onResetOrder,
   onSelectComplexity,
@@ -435,7 +447,7 @@ function AnswerControl({
   }
 
   if (check.type === "order_steps") {
-    const remainingOptions = (check.options ?? []).filter((option) => !selectedOptionIds.includes(option.id));
+    const remainingOptions = checkOptions.filter((option) => !selectedOptionIds.includes(option.id));
 
     return (
       <View style={styles.options}>
@@ -468,7 +480,7 @@ function AnswerControl({
 
   return (
     <View style={styles.options}>
-      {(check.options ?? []).map((option) => (
+      {checkOptions.map((option) => (
         <OptionButton
           key={option.id}
           label={option.text}
