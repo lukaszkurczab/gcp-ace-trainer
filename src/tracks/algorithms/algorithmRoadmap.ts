@@ -129,6 +129,7 @@ const algorithmRoadmapNodes = [
       "Derive time and space cost before choosing a strategy.",
     ],
     learningStage: "foundations",
+    minimumActiveItemCount: 4,
     order: 1,
     prerequisiteNodeIds: [],
     primaryPatternFamilyId: "complexity_and_constraints",
@@ -145,6 +146,7 @@ const algorithmRoadmapNodes = [
       "Separate linear scan mechanics from higher-level strategies.",
     ],
     learningStage: "foundations",
+    minimumActiveItemCount: 4,
     order: 2,
     prerequisiteNodeIds: ["complexity_and_constraints"],
     primaryPatternFamilyId: "arrays_and_strings",
@@ -161,6 +163,7 @@ const algorithmRoadmapNodes = [
       "Choose what state should be remembered for lookup.",
       "Explain why lookup state changes pair or frequency reasoning.",
     ],
+    minimumActiveItemCount: 4,
     order: 3,
     patternVariantIds: ["lookup_by_value", "complement_lookup", "seen_set"],
     prerequisiteNodeIds: ["arrays_and_strings"],
@@ -178,6 +181,7 @@ const algorithmRoadmapNodes = [
       "Use sorted or coordinated boundaries to decide pointer movement.",
       "Explain which candidates are ruled out by each move.",
     ],
+    minimumActiveItemCount: 4,
     order: 4,
     patternVariantIds: ["opposite_ends", "pair_scan_sorted_input"],
     prerequisiteNodeIds: ["arrays_and_strings"],
@@ -195,6 +199,7 @@ const algorithmRoadmapNodes = [
       "Maintain a contiguous window invariant while boundaries move.",
       "Recognize the signals that make a simple window valid.",
     ],
+    minimumActiveItemCount: 4,
     order: 5,
     patternVariantIds: ["fixed_size_window", "variable_size_positive_numbers", "frequency_constraint"],
     prerequisiteNodeIds: ["two_pointers"],
@@ -211,6 +216,7 @@ const algorithmRoadmapNodes = [
       "Recognize accumulated range state.",
       "Explain when prefix reasoning is safer than a moving window.",
     ],
+    minimumActiveItemCount: 4,
     order: 6,
     patternVariantIds: ["range_sum_query", "subarray_sum_with_hash_map", "when_prefix_beats_window"],
     prerequisiteNodeIds: ["sliding_window"],
@@ -227,6 +233,7 @@ const algorithmRoadmapNodes = [
       "Recognize when ordering reveals structure.",
       "Account for sorting cost and original-position side effects.",
     ],
+    minimumActiveItemCount: 4,
     order: 7,
     patternVariantIds: ["sort_then_scan", "sort_then_two_pointers", "sorting_cost_recognition"],
     prerequisiteNodeIds: ["complexity_and_constraints"],
@@ -243,6 +250,7 @@ const algorithmRoadmapNodes = [
       "Use latest unresolved state for nested structures.",
       "Trace push and pop mechanics before comparing stack variants.",
     ],
+    minimumActiveItemCount: 4,
     order: 8,
     patternVariantIds: ["nested_structure_validation", "undo_or_previous_state"],
     prerequisiteNodeIds: ["arrays_and_strings"],
@@ -259,6 +267,7 @@ const algorithmRoadmapNodes = [
       "Identify ordered input or a monotonic predicate.",
       "Trace why each comparison removes part of the search space.",
     ],
+    minimumActiveItemCount: 4,
     order: 9,
     patternVariantIds: ["classic_index_search", "lower_upper_bound", "monotonic_predicate_recognition"],
     prerequisiteNodeIds: ["complexity_and_constraints", "arrays_and_strings"],
@@ -276,6 +285,7 @@ const algorithmRoadmapNodes = [
       "Justify a strategy with constraint and decision signals.",
     ],
     learningStage: "strategy_selection",
+    minimumActiveItemCount: 4,
     order: 10,
     prerequisiteNodeIds: ["hash_map_and_set", "two_pointers", "sliding_window", "prefix_sums", "sorting_based", "stack", "binary_search"],
     recommendedItemTypes: ["strategy_choice", "solution_comparison", "approach_naming"],
@@ -495,6 +505,7 @@ function makeNode(input: AlgorithmRoadmapNodeInput): AlgorithmRoadmapNode {
 function makeContrastNode(input: {
   id: string;
   label: string;
+  minimumActiveItemCount?: number;
   order: number;
   prerequisiteNodeIds: readonly string[];
   skillAtomIds: readonly string[];
@@ -510,6 +521,7 @@ function makeContrastNode(input: {
       },
     ],
     learningStage: "contrast_practice",
+    minimumActiveItemCount: input.minimumActiveItemCount ?? 2,
     order: input.order,
     prerequisiteNodeIds: input.prerequisiteNodeIds,
     recommendedItemTypes: ["strategy_choice", "solution_comparison", "edge_case_drill"],

@@ -101,6 +101,21 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
+const expectedActiveAlgorithmItemCount = 67;
+
+const requiredActiveAlgorithmItemTypes = [
+  "approach_naming",
+  "approach_primer",
+  "worked_example",
+  "trace_next_step",
+  "strategy_choice",
+  "complexity_check",
+  "solution_comparison",
+  "edge_case_drill",
+  "subgoal_ordering",
+  "pseudocode_ordering",
+] as const;
+
 test("Algorithms curriculum taxonomy exposes the target real pattern families", () => {
   assert.deepEqual(
     ALGORITHM_PATTERN_FAMILIES.map((family) => family.id),
@@ -272,6 +287,7 @@ test("Algorithms existing content preserves valid item ids on canonical refs", (
 
 test("Algorithms active items and curriculum pass validation", () => {
   const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
+  const activeItems = getActiveAlgorithmItems();
   const result = validateAlgorithmCurriculum({
     enabledSessionModes: getEnabledSessionModes(ALGORITHMS_TRACK_ID),
     items: ALGORITHM_TRAINING_ITEMS,
@@ -279,12 +295,76 @@ test("Algorithms active items and curriculum pass validation", () => {
   });
 
   assert.deepEqual(result.issues, []);
-  assert.equal(track.contentManifest.itemCount, ALGORITHM_TRAINING_ITEMS.filter((item) => item.status === "active").length);
+  assert.equal(activeItems.length, expectedActiveAlgorithmItemCount);
+  assert.ok(activeItems.length >= 60);
+  assert.ok(activeItems.length <= 80);
+  assert.equal(track.contentManifest.itemCount, activeItems.length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
     assert.deepEqual(validateAlgorithmTrainingItem(item).issues, [], item.id);
     assert.equal(item.status, "active");
     assert.ok(item.staticMicroChecks?.some((check) => check.status === "active"), item.id);
+  }
+});
+
+test("Algorithms active item count covers every available roadmap node minimum", () => {
+  const countsByNode = getActiveItemCountsByRoadmapNode();
+
+  for (const node of ALGORITHM_ROADMAP.nodes) {
+    const activeItemCount = countsByNode.get(node.id) ?? 0;
+
+    if (node.status !== "available") {
+      assert.equal(activeItemCount, 0, node.id);
+      continue;
+    }
+
+    assert.ok(
+      activeItemCount >= node.minimumActiveItemCount,
+      `${node.id} has ${activeItemCount}; expected at least ${node.minimumActiveItemCount}`,
+    );
+  }
+});
+
+test("Algorithms active items expose canonical roadmap, taxonomy, feedback, and check contracts", () => {
+  const availableNodeIds = new Set(
+    ALGORITHM_ROADMAP.nodes.filter((node) => node.status === "available").map((node) => node.id),
+  );
+
+  for (const item of getActiveAlgorithmItems()) {
+    assert.equal(typeof item.primarySkillAtomId, "string", item.id);
+    assert.ok(item.primarySkillAtomId.length > 0, item.id);
+    assert.ok((item.secondarySkillAtomIds?.length ?? 0) <= 2, item.id);
+    assert.ok(item.roadmapNodeId, item.id);
+    assert.ok(availableNodeIds.has(item.roadmapNodeId), item.id);
+    assert.ok(
+      item.taxonomyRefs.some((ref) => ref.axisId === "pattern_family" && ref.role === "primary"),
+      item.id,
+    );
+    assert.ok(
+      item.taxonomyRefs.some(
+        (ref) => ref.axisId === "skill_atom" && ref.nodeId === item.primarySkillAtomId && ref.role === "primary",
+      ),
+      item.id,
+    );
+    assert.ok(item.staticMicroChecks?.some((check) => check.status === "active"), item.id);
+    assert.ok(item.feedbackModel.decisionSignal.length > 0, item.id);
+    assert.ok(item.feedbackModel.mistakeTypes.length > 0, item.id);
+    assert.ok(item.feedbackModel.nextAction.length > 0, item.id);
+  }
+});
+
+test("Algorithms active content uses every supported core item type and enabled modes support selectable types", () => {
+  const activeItemTypes = new Set(getActiveAlgorithmItems().map((item) => item.type));
+  const enabledModeItemTypes = new Set(
+    getEnabledSessionModes(ALGORITHMS_TRACK_ID).flatMap((mode) => mode.supportedItemTypes),
+  );
+
+  for (const itemType of requiredActiveAlgorithmItemTypes) {
+    assert.ok(activeItemTypes.has(itemType), itemType);
+  }
+
+  for (const itemType of activeItemTypes) {
+    assert.ok(enabledModeItemTypes.has(itemType), itemType);
   }
 });
 
@@ -500,6 +580,21 @@ function getItem(itemId: string): AlgorithmTrainingItem {
 
   assert.ok(item);
   return item;
+}
+
+function getActiveAlgorithmItems(): readonly AlgorithmTrainingItem[] {
+  return ALGORITHM_TRAINING_ITEMS.filter((item) => item.status === "active");
+}
+
+function getActiveItemCountsByRoadmapNode(): ReadonlyMap<string, number> {
+  const counts = new Map<string, number>();
+
+  for (const item of getActiveAlgorithmItems()) {
+    assert.ok(item.roadmapNodeId, item.id);
+    counts.set(item.roadmapNodeId, (counts.get(item.roadmapNodeId) ?? 0) + 1);
+  }
+
+  return counts;
 }
 
 function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): AlgorithmTrainingItem {

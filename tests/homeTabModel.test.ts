@@ -52,7 +52,7 @@ test("Algorithms Home model does not expose Cloud-specific or development copy",
   });
 
   assert.equal(model.focusTitle, "Algorithms");
-  assert.equal(model.heroTitle, "Arrays and strings");
+  assert.equal(model.heroTitle, "Complexity and constraints");
   assert.equal(model.primaryLabel, "Continue learning");
   assert.equal(model.heroSubtitle.includes("Cloud Certification"), false);
   assert.equal(model.heroSubtitle.includes("IAM"), false);

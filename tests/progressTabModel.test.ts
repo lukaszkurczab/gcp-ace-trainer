@@ -175,7 +175,7 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   assert.equal(model.reviewQueueCopy, "Algorithms review queue is not active for this MVP.");
   assert.equal(model.reviewActionLabel, "Algorithms review is not active for this MVP.");
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
-  assert.equal(model.performanceScores[0]?.detail, "0/1 items completed");
+  assert.equal(model.performanceScores[0]?.detail, "0/6 items completed");
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
@@ -221,7 +221,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
 
   assert.equal(model.hasData, true);
   assert.deepEqual(model.activitySummary, {
-    detail: "Active roadmap node: Arrays and strings.",
+    detail: "Active roadmap node: Complexity and constraints.",
     label: "Items completed",
     value: 1,
   });
@@ -232,7 +232,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
       ["Partial", 0],
       ["Incorrect", 0],
       ["Nodes started", 1],
-      ["Nodes completed", 1],
+      ["Nodes completed", 0],
     ],
   );
 });
@@ -257,10 +257,10 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   const complexityNode = model.performanceScores.find((score) => score.id === "complexity_and_constraints");
   const hashNode = model.performanceScores.find((score) => score.id === "hash_map_and_set");
 
-  assert.equal(complexityNode?.detail, "1/1 items completed");
-  assert.equal(complexityNode?.percent, 100);
-  assert.equal(hashNode?.detail, "1/3 items completed");
-  assert.equal(hashNode?.percent, 33);
+  assert.equal(complexityNode?.detail, "1/6 items completed");
+  assert.equal(complexityNode?.percent, 17);
+  assert.equal(hashNode?.detail, "1/6 items completed");
+  assert.equal(hashNode?.percent, 17);
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
@@ -268,7 +268,7 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
       ["Partial", 0],
       ["Incorrect", 1],
       ["Nodes started", 2],
-      ["Nodes completed", 1],
+      ["Nodes completed", 0],
     ],
   );
 });

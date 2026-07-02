@@ -17,6 +17,7 @@ import {
   savePracticeAnswer,
   setQuestionNeedsReview,
 } from "./practiceService";
+import { resetToPracticeHubAfterSession } from "./practiceNavigation";
 import { canCheckAnswer } from "./practiceSessionModel";
 import { getCloudDomainForTopicId } from "./sessionConfig";
 
@@ -183,7 +184,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
           title="No practice questions"
           description="No questions are available for this topic yet."
           actionLabel="Back to Practice"
-          onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)}
+          onActionPress={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)}
         />
       </Screen>
     );
@@ -194,7 +195,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
       <SessionSummary
         answers={completedAnswers}
         feedbackMode={route.params.feedbackMode}
-        onBackToPractice={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: route.params.topicId })}
+        onBackToPractice={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)}
       />
     );
   }
@@ -235,7 +236,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         <Pressable
           accessibilityLabel="Close practice session"
           accessibilityRole="button"
-          onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: route.params.topicId })}
+          onPress={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)}
           style={({ pressed }) => [styles.closeButton, pressed ? styles.optionPressed : null]}
         >
           <Icon name="close" size={18} />

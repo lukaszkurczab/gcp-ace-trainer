@@ -91,7 +91,7 @@ const algorithmsTrack: TrackDefinition = {
   accentMutedColor: "#F1ECFF",
   category: "algorithms",
   contentManifest: {
-    itemCount: 18,
+    itemCount: 67,
     source: "local_static",
     supportedItemTypes: [
       "approach_primer",

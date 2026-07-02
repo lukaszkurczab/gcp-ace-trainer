@@ -12,7 +12,6 @@ import {
   Screen,
   SectionHeader,
 } from "../../components";
-import { ROUTES } from "../../constants/routes";
 import {
   ALGORITHMS_TRACK_ID,
   completeTrainingSession,
@@ -48,6 +47,7 @@ import {
   type AlgorithmStaticMicroCheck,
   type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
+import { resetToPracticeHubAfterSession } from "../practice/practiceNavigation";
 
 type AlgorithmsSessionScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList>;
@@ -230,9 +230,9 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
     return (
       <Screen
         edges={["top", "bottom"]}
-        footer={<Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })}>Back to Practice</Button>}
+        footer={<Button onPress={() => resetToPracticeHubAfterSession(navigation, node.id)}>Back to Practice</Button>}
       >
-        <SessionTopBar onClose={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })} />
+        <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
         <Card variant="tonal" style={styles.summaryCard}>
           <Text style={styles.heroEyebrow}>Session summary</Text>
           <SectionHeader
@@ -259,7 +259,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
           title="No Algorithms items"
           description="No static items are available for this roadmap node."
           actionLabel="Back to Practice"
-          onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })}
+          onActionPress={() => resetToPracticeHubAfterSession(navigation, node.id)}
         />
       </Screen>
     );
@@ -280,7 +280,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
         )
       }
     >
-      <SessionTopBar onClose={() => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId: node.id })} />
+      <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
 
       <View style={styles.progressBlock}>
         <Text style={styles.itemCount}>Item {currentIndex + 1} of {items.length}</Text>
