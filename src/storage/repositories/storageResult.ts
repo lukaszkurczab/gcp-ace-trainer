@@ -113,3 +113,14 @@ export function mergeRepositoryIssues(
 ): LocalStorageIssue[] {
   return results.flatMap((result) => result.issues ?? []);
 }
+
+export function mergeRepositoryReadWriteResult<T>(
+  readResult: StorageRepositoryResult<unknown>,
+  writeResult: StorageRepositoryResult<T>,
+): StorageRepositoryResult<T> {
+  const issues = mergeRepositoryIssues(readResult, writeResult);
+
+  return writeResult.ok
+    ? successRepositoryResult(writeResult.value, issues)
+    : failedRepositoryResult(writeResult.value, issues);
+}

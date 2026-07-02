@@ -82,6 +82,36 @@ test("adding a training attempt preserves existing attempts", async () => {
   );
 });
 
+test("adding a training attempt recovers from corrupt stored attempt history", async () => {
+  const added = makeTrainingAttempt("attempt-recovered-001");
+  await AsyncStorage.setItem(STORAGE_KEYS.TRAINING_ATTEMPTS, "{");
+
+  const result = await addTrainingAttempt(added);
+  const read = await getTrainingAttempts();
+
+  assert.equal(result.ok, true);
+  assert.equal(result.issues?.[0]?.operation, "parse");
+  assert.equal(result.issues?.[0]?.key, STORAGE_KEYS.TRAINING_ATTEMPTS);
+  assert.deepEqual(
+    read.value.map((attempt) => attempt.id),
+    ["attempt-recovered-001"],
+  );
+});
+
+test("adding a training attempt reports a real write failure", async () => {
+  patchAsyncStorage({
+    setItem: async () => {
+      throw new Error("attempt storage unavailable");
+    },
+  });
+
+  const result = await addTrainingAttempt(makeTrainingAttempt("attempt-write-failure-001"));
+
+  assert.equal(result.ok, false);
+  assert.equal(result.issues[0]?.operation, "write");
+  assert.equal(result.issues[0]?.message, "attempt storage unavailable");
+});
+
 test("review queue repository can add multiple review items and clear them", async () => {
   const first = makeReviewQueueItem("review-storage-001", "attempt-storage-001");
   const second = makeReviewQueueItem("review-storage-002", "attempt-storage-002");

@@ -2,7 +2,7 @@ import type { TrackId } from "../../domain";
 import type { UserProgress } from "../../domain/training";
 import {
   failedRepositoryResult,
-  mergeRepositoryIssues,
+  mergeRepositoryReadWriteResult,
   readRepositoryJson,
   removeRepositoryJson,
   successRepositoryResult,
@@ -37,9 +37,8 @@ export async function saveUserProgress(
     ...existing.value.filter((item) => item.trackId !== progress.trackId),
   ];
   const saved = await writeRepositoryJson(TRAINING_USER_PROGRESS_KEY, nextProgress);
-  const issues = mergeRepositoryIssues(existing, saved);
 
-  return issues.length > 0 ? failedRepositoryResult(saved.value, issues) : successRepositoryResult(saved.value);
+  return mergeRepositoryReadWriteResult(existing, saved);
 }
 
 export async function clearUserProgress(): Promise<StorageRepositoryResult<void>> {

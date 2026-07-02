@@ -1,10 +1,8 @@
 import type { ReviewQueueItem } from "../../domain/training";
 import {
-  failedRepositoryResult,
-  mergeRepositoryIssues,
+  mergeRepositoryReadWriteResult,
   readRepositoryJson,
   removeRepositoryJson,
-  successRepositoryResult,
   writeRepositoryJson,
   type StorageRepositoryResult,
 } from "./storageResult";
@@ -28,9 +26,8 @@ export async function addReviewQueueItems(
   const existing = await getReviewQueueItems();
   const reviewQueueItems = [...items, ...existing.value];
   const saved = await saveReviewQueueItems(reviewQueueItems);
-  const issues = mergeRepositoryIssues(existing, saved);
 
-  return issues.length > 0 ? failedRepositoryResult(saved.value, issues) : successRepositoryResult(saved.value);
+  return mergeRepositoryReadWriteResult(existing, saved);
 }
 
 export async function clearReviewQueueItems(): Promise<StorageRepositoryResult<void>> {

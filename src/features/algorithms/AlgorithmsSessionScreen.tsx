@@ -30,6 +30,7 @@ import {
   addTrainingSession,
   getTrainingSessions,
   saveTrainingSessions,
+  type LocalStorageIssue,
 } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
 import {
@@ -104,7 +105,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
 
     void addTrainingSession(nextSession).then((result) => {
       if (!result.ok) {
-        setStorageMessage("The session is running, but local session storage reported an issue.");
+        setStorageMessage(formatStorageFailure("The session is running, but it was not saved locally", result.issues));
       }
     });
   }, [nodeId]);
@@ -187,7 +188,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
     const result = await addTrainingAttempt(attempt);
 
     if (!result.ok) {
-      setStorageMessage("The answer was checked, but local attempt storage reported an issue.");
+      setStorageMessage(formatStorageFailure("The answer was checked, but this attempt was not saved locally", result.issues));
     }
 
     setAttempts((current) => [attempt, ...current]);
@@ -213,8 +214,11 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
       ];
       const saveResult = await saveTrainingSessions(nextSessions);
 
-      if (!sessionsResult.ok || !saveResult.ok) {
-        setStorageMessage("The summary is available, but local session completion storage reported an issue.");
+      if (!saveResult.ok) {
+        setStorageMessage(formatStorageFailure(
+          "The summary is available, but session completion was not saved locally",
+          saveResult.issues,
+        ));
       }
 
       setSession(completed.session);
@@ -296,13 +300,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
         ) : (
           <>
             <Text style={styles.heroEyebrow}>Algorithms</Text>
-            <SectionHeader
-              title={currentItem.title}
-              subtitle={currentItem.prompt}
-              action={<Badge label={node.label} tone="primary" />}
-              tight
-            />
-            <View style={styles.metaRow}>
+            <Text style={styles.itemTitle}>{currentItem.title}</Text>
+            <Text style={styles.itemPrompt}>{currentItem.prompt}</Text>
+            <View style={styles.itemBadgeRow}>
+              <Badge label={node.label} tone="primary" />
               <Badge label={formatItemType(currentItem.type)} tone="neutral" />
               <Badge label={formatItemType(currentCheck.type)} tone="info" />
             </View>
@@ -345,12 +346,13 @@ function TraceDrillPrompt({ check, item, node }: TraceDrillPromptProps) {
   return (
     <>
       <Text style={styles.heroEyebrow}>TRACE DRILL</Text>
-      <SectionHeader
-        title="Trace the Algorithm"
-        subtitle={item.prompt}
-        action={<Badge label={node.label} tone="primary" />}
-        tight
-      />
+      <Text style={styles.itemTitle}>Trace the Algorithm</Text>
+      <Text style={styles.itemPrompt}>{item.prompt}</Text>
+      <View style={styles.itemBadgeRow}>
+        <Badge label={node.label} tone="primary" />
+        <Badge label={formatItemType(item.type)} tone="neutral" />
+        <Badge label={formatItemType(check.type)} tone="info" />
+      </View>
 
       {stateLines.length > 0 ? (
         <View style={styles.tracePanel}>
@@ -595,6 +597,17 @@ function StorageNotice({ message }: { message: string }) {
   );
 }
 
+function formatStorageFailure(prefix: string, issues?: readonly LocalStorageIssue[]): string {
+  const writeIssue = issues?.find((issue) => issue.operation === "write");
+  const issue = writeIssue ?? issues?.[0];
+
+  if (!issue) {
+    return `${prefix}.`;
+  }
+
+  return `${prefix}: ${issue.operation} failed for ${issue.key}. ${issue.message}`;
+}
+
 function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
   if (!nodeId) {
     return getFirstUsableAlgorithmRoadmapNode();
@@ -726,7 +739,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   itemCard: {
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   answerCard: {
     gap: spacing.lg,
@@ -736,7 +749,15 @@ const styles = StyleSheet.create({
     color: colors.dark.primary,
     textTransform: "uppercase",
   },
-  metaRow: {
+  itemTitle: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+  },
+  itemPrompt: {
+    ...typography.body,
+    color: colors.dark.textSecondary,
+  },
+  itemBadgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,

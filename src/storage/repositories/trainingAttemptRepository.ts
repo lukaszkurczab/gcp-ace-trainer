@@ -1,10 +1,8 @@
 import type { TrainingAttempt } from "../../domain/training";
 import {
-  failedRepositoryResult,
-  mergeRepositoryIssues,
+  mergeRepositoryReadWriteResult,
   readRepositoryJson,
   removeRepositoryJson,
-  successRepositoryResult,
   writeRepositoryJson,
   type StorageRepositoryResult,
 } from "./storageResult";
@@ -28,9 +26,8 @@ export async function addTrainingAttempt(
   const existing = await getTrainingAttempts();
   const attempts = [attempt, ...existing.value];
   const saved = await saveTrainingAttempts(attempts);
-  const issues = mergeRepositoryIssues(existing, saved);
 
-  return issues.length > 0 ? failedRepositoryResult(saved.value, issues) : successRepositoryResult(saved.value);
+  return mergeRepositoryReadWriteResult(existing, saved);
 }
 
 export async function clearTrainingAttempts(): Promise<StorageRepositoryResult<void>> {
