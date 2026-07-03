@@ -4,7 +4,11 @@ import {
   type TrackDefinition,
 } from "../../../domain";
 import type { ReviewQueueItem, TrainingAttempt } from "../../../domain/training";
-import { buildAlgorithmProgressFacts } from "../../../tracks/algorithms";
+import {
+  buildAlgorithmProgressFacts,
+  buildAlgorithmWeakAreaRecommendation,
+  type AlgorithmRoadmapNodeProgressStatus,
+} from "../../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type {
   AttemptSummary,
@@ -37,8 +41,48 @@ export type ProgressTabPerformanceScore = {
   total: number;
 };
 
+export type AlgorithmsProgressNodeModel = {
+  completedItemCount: number;
+  evidenceLabel: "Limited evidence" | "Needs review" | "Strong recent signal";
+  id: string;
+  itemCount: number;
+  label: string;
+  percent: number;
+  status: AlgorithmRoadmapNodeProgressStatus;
+};
+
+export type AlgorithmsProgressSignal = {
+  detail: string;
+  id: string;
+  label: string;
+  tone: "warning" | "danger" | "success" | "info";
+};
+
+export type AlgorithmsProgressRecommendation = {
+  detail: string;
+  label: string;
+  mode: "review" | "weakArea" | "practice" | "drill";
+};
+
+export type AlgorithmsProgressViewModel = {
+  currentRoadmapNode: {
+    id: string;
+    label: string;
+  };
+  dueReviewCount: number;
+  nodes: AlgorithmsProgressNodeModel[];
+  recommendation: AlgorithmsProgressRecommendation;
+  resultCounts: {
+    correct: number;
+    incorrect: number;
+    partial: number;
+  };
+  signals: AlgorithmsProgressSignal[];
+};
+
 export type ProgressTabModel = {
   activitySummary: ProgressTabActivitySummary;
+  algorithmsProgress?: AlgorithmsProgressViewModel;
   hasData: boolean;
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
@@ -55,6 +99,7 @@ export type BuildProgressTabModelInput = {
   analytics: AnalyticsData;
   attempts: readonly AttemptSummary[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
+  now?: string;
   practiceHistory: readonly PracticeAnswerRecord[];
   reviewQueueItems?: readonly ReviewQueueItem[];
   trainingAttempts?: readonly TrainingAttempt[];
@@ -66,7 +111,11 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
   }
 
   if (input.activeTrackId === ALGORITHMS_TRACK_ID) {
-    return buildAlgorithmsProgressTabModel(input.trainingAttempts ?? [], input.reviewQueueItems ?? []);
+    return buildAlgorithmsProgressTabModel(
+      input.trainingAttempts ?? [],
+      input.reviewQueueItems ?? [],
+      input.now ?? new Date().toISOString(),
+    );
   }
 
   return buildLegacyProgressTabModel(input);
@@ -121,16 +170,25 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
 function buildAlgorithmsProgressTabModel(
   trainingAttempts: readonly TrainingAttempt[],
   reviewQueueItems: readonly ReviewQueueItem[],
+  now: string,
 ): ProgressTabModel {
   const facts = buildAlgorithmProgressFacts(trainingAttempts);
-  const reviewQueueCount = reviewQueueItems.filter((item) => item.trackId === ALGORITHMS_TRACK_ID).length;
+  const algorithmsReviewItems = reviewQueueItems.filter((item) => item.trackId === ALGORITHMS_TRACK_ID);
+  const dueReviewCount = algorithmsReviewItems.filter((item) => item.dueAt <= now).length;
+  const algorithmsProgress = buildAlgorithmsProgressViewModel({
+    dueReviewCount,
+    facts,
+    reviewQueueItems: algorithmsReviewItems,
+    trainingAttempts,
+  });
 
   return {
     activitySummary: {
-      detail: `Active roadmap node: ${facts.activeRoadmapNode.label}.`,
+      detail: `Current roadmap node: ${facts.activeRoadmapNode.label}.`,
       label: "Items completed",
       value: facts.itemsCompleted,
     },
+    algorithmsProgress,
     hasData: facts.itemsCompleted > 0,
     metrics: [
       {
@@ -161,26 +219,186 @@ function buildAlgorithmsProgressTabModel(
     ],
     performanceScores: facts.nodeProgress.map((node) => ({
       correct: node.completedItemCount,
-      detail: `${node.completedItemCount}/${node.itemCount} items completed`,
+      detail: `${node.completedItemCount}/${node.itemCount} items completed. ${getNodeEvidenceLabel(node)}.`,
       id: node.nodeId,
       label: node.label,
       percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
       total: node.itemCount,
     })),
     performanceSectionTitle: "Roadmap nodes",
-    reviewActionEnabled: reviewQueueCount > 0,
-    reviewActionLabel: reviewQueueCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
-    reviewQueueCount,
-    reviewQueueCopy: formatAlgorithmsReviewQueueCopy(reviewQueueCount),
+    reviewActionEnabled: dueReviewCount > 0,
+    reviewActionLabel: dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
+    reviewQueueCount: dueReviewCount,
+    reviewQueueCopy: formatAlgorithmsReviewQueueCopy(dueReviewCount, algorithmsReviewItems.length),
   };
 }
 
-function formatAlgorithmsReviewQueueCopy(count: number): string {
-  if (count === 0) {
+function buildAlgorithmsProgressViewModel(input: {
+  dueReviewCount: number;
+  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  reviewQueueItems: readonly ReviewQueueItem[];
+  trainingAttempts: readonly TrainingAttempt[];
+}): AlgorithmsProgressViewModel {
+  return {
+    currentRoadmapNode: input.facts.activeRoadmapNode,
+    dueReviewCount: input.dueReviewCount,
+    nodes: input.facts.nodeProgress.map((node) => ({
+      completedItemCount: node.completedItemCount,
+      evidenceLabel: getNodeEvidenceLabel(node),
+      id: node.nodeId,
+      itemCount: node.itemCount,
+      label: node.label,
+      percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
+      status: node.status,
+    })),
+    recommendation: buildAlgorithmsProgressRecommendation(input),
+    resultCounts: {
+      correct: input.facts.correctCount,
+      incorrect: input.facts.incorrectCount,
+      partial: input.facts.partialCount,
+    },
+    signals: buildAlgorithmsProgressSignals(input),
+  };
+}
+
+function buildAlgorithmsProgressRecommendation(input: {
+  dueReviewCount: number;
+  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  reviewQueueItems: readonly ReviewQueueItem[];
+  trainingAttempts: readonly TrainingAttempt[];
+}): AlgorithmsProgressRecommendation {
+  if (input.dueReviewCount > 0) {
+    return {
+      detail: "Review due items before starting new work.",
+      label: "Review missed items",
+      mode: "review",
+    };
+  }
+
+  if (input.facts.incorrectCount + input.facts.partialCount >= 2) {
+    return {
+      detail: "Focus on the weakest roadmap node from local attempts.",
+      label: "Start Weak area",
+      mode: "weakArea",
+    };
+  }
+
+  if (input.facts.itemsCompleted > 0 && input.facts.incorrectCount === 0 && input.facts.partialCount === 0) {
+    return {
+      detail: "Interleave unlocked nodes after a strong recent signal.",
+      label: "Start Mixed practice",
+      mode: "practice",
+    };
+  }
+
+  return {
+    detail: `Continue ${input.facts.activeRoadmapNode.label}.`,
+    label: "Continue current roadmap node",
+    mode: "drill",
+  };
+}
+
+function buildAlgorithmsProgressSignals(input: {
+  dueReviewCount: number;
+  facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  reviewQueueItems: readonly ReviewQueueItem[];
+  trainingAttempts: readonly TrainingAttempt[];
+}): AlgorithmsProgressSignal[] {
+  const signals: AlgorithmsProgressSignal[] = [];
+  const weakRecommendation = buildAlgorithmWeakAreaRecommendation(
+    input.trainingAttempts,
+    undefined,
+    undefined,
+    input.facts.activeRoadmapNode.id,
+  );
+  const weakNode = input.facts.nodeProgress.find((node) => node.nodeId === weakRecommendation.selectedRoadmapNodeId);
+  const repeatedMistakeCount = input.reviewQueueItems.filter((item) =>
+    item.reasons.includes("repeated_mistake"),
+  ).length;
+
+  if (input.dueReviewCount > 0) {
+    signals.push({
+      detail: `${input.dueReviewCount} due ${input.dueReviewCount === 1 ? "item" : "items"} in the local review queue.`,
+      id: "due-review",
+      label: "Needs review",
+      tone: "warning",
+    });
+  }
+
+  if (repeatedMistakeCount > 0) {
+    signals.push({
+      detail: `${repeatedMistakeCount} ${repeatedMistakeCount === 1 ? "item has" : "items have"} repeated mistake evidence.`,
+      id: "repeated-mistake",
+      label: "Repeated mistake",
+      tone: "danger",
+    });
+  }
+
+  if (input.facts.incorrectCount + input.facts.partialCount > 0 && weakNode) {
+    signals.push({
+      detail: `${weakNode.label}${weakRecommendation.selectedMistakeTypes.length > 0
+        ? `: ${weakRecommendation.selectedMistakeTypes.map(formatAlgorithmSignalLabel).join(", ")}`
+        : ""}`,
+      id: `weak-node:${weakNode.nodeId}`,
+      label: "Needs review",
+      tone: "warning",
+    });
+  }
+
+  if (signals.length === 0 && input.facts.itemsCompleted > 0) {
+    signals.push({
+      detail: `${input.facts.correctCount} correct latest ${input.facts.correctCount === 1 ? "item" : "items"} recorded.`,
+      id: "strong-recent-signal",
+      label: "Strong recent signal",
+      tone: "success",
+    });
+  }
+
+  if (signals.length === 0) {
+    signals.push({
+      detail: "Complete a few Algorithms items to show weak areas and review signals.",
+      id: "limited-evidence",
+      label: "Limited evidence",
+      tone: "info",
+    });
+  }
+
+  return signals;
+}
+
+function getNodeEvidenceLabel(node: {
+  completedItemCount: number;
+  scorePercent: number;
+}): AlgorithmsProgressNodeModel["evidenceLabel"] {
+  if (node.completedItemCount === 0) {
+    return "Limited evidence";
+  }
+
+  if (node.scorePercent >= 70) {
+    return "Strong recent signal";
+  }
+
+  return "Needs review";
+}
+
+function formatAlgorithmSignalLabel(value: string): string {
+  return value.split("_").map(capitalize).join(" ");
+}
+
+function capitalize(value: string): string {
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+}
+
+function formatAlgorithmsReviewQueueCopy(dueCount: number, totalCount: number): string {
+  if (dueCount === 0 && totalCount === 0) {
     return "No Algorithms review items right now.";
   }
 
-  return `${count} Algorithms ${count === 1 ? "item needs" : "items need"} review.`;
+  if (dueCount === 0) {
+    return `${totalCount} scheduled Algorithms ${totalCount === 1 ? "item is" : "items are"} not due yet.`;
+  }
+
+  return `${dueCount} due Algorithms ${dueCount === 1 ? "item needs" : "items need"} review.`;
 }
 
 function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {

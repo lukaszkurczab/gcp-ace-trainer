@@ -178,7 +178,7 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
   assert.equal(
     model.performanceScores[0]?.detail,
-    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} items completed`,
+    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} items completed. Limited evidence.`,
   );
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
@@ -191,7 +191,7 @@ test("Algorithms progress shows empty local facts before attempts", () => {
     ],
   );
   assert.deepEqual(model.activitySummary, {
-    detail: "Active roadmap node: Complexity and constraints.",
+    detail: "Current roadmap node: Complexity and constraints.",
     label: "Items completed",
     value: 0,
   });
@@ -225,7 +225,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
 
   assert.equal(model.hasData, true);
   assert.deepEqual(model.activitySummary, {
-    detail: "Active roadmap node: Complexity and constraints.",
+    detail: "Current roadmap node: Complexity and constraints.",
     label: "Items completed",
     value: 1,
   });
@@ -267,12 +267,12 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   const complexityItemCount = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length;
   const hashItemCount = getAlgorithmTrainingItemsForRoadmapNode("hash_map_and_set").length;
 
-  assert.equal(complexityNode?.detail, `1/${complexityItemCount} items completed`);
+  assert.equal(complexityNode?.detail, `1/${complexityItemCount} items completed. Strong recent signal.`);
   assert.equal(complexityNode?.percent, Math.round((1 / complexityItemCount) * 100));
-  assert.equal(hashNode?.detail, `1/${hashItemCount} items completed`);
+  assert.equal(hashNode?.detail, `1/${hashItemCount} items completed. Needs review.`);
   assert.equal(hashNode?.percent, Math.round((1 / hashItemCount) * 100));
   assert.equal(model.reviewQueueCount, 1);
-  assert.equal(model.reviewQueueCopy, "1 Algorithms item needs review.");
+  assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
   assert.equal(model.reviewActionEnabled, true);
   assert.equal(model.reviewActionLabel, "Open review queue");
   assert.deepEqual(
@@ -287,11 +287,134 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   );
 });
 
+test("Algorithms progress selects the active roadmap node from completed prerequisites", () => {
+  const completedComplexityAttempts = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints")
+    .slice(0, 10)
+    .map((item) => makeAlgorithmAttempt(item.id, {
+      isCorrect: true,
+      kind: "correctness",
+    }));
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    trainingAttempts: completedComplexityAttempts,
+  });
+
+  assert.equal(model.algorithmsProgress?.currentRoadmapNode.id, "arrays_and_strings");
+  assert.equal(model.algorithmsProgress?.currentRoadmapNode.label, "Arrays and strings");
+});
+
+test("Algorithms progress detects weak roadmap and repeated mistake signals", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-repeated-mistake-001", "alg-hash-map-primer-001", {
+        reasons: ["incorrect_attempt", "repeated_mistake"],
+      }),
+    ],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+        isCorrect: false,
+        kind: "correctness",
+      }),
+    ],
+  });
+
+  assert.ok(model.algorithmsProgress?.signals.some((signal) =>
+    signal.label === "Repeated mistake" &&
+    signal.detail.includes("repeated mistake"),
+  ));
+  assert.ok(model.algorithmsProgress?.signals.some((signal) =>
+    signal.label === "Needs review" &&
+    signal.detail.includes("Hash map and set"),
+  ));
+});
+
+test("Algorithms progress counts due review items only", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-due-001", "alg-hash-map-primer-001", {
+        dueAt: "2026-07-03T09:00:00.000Z",
+      }),
+      makeAlgorithmReviewQueueItem("review-future-001", "alg-array-string-naming-001", {
+        dueAt: "2026-07-04T09:00:00.000Z",
+      }),
+    ],
+  });
+
+  assert.equal(model.algorithmsProgress?.dueReviewCount, 1);
+  assert.equal(model.reviewQueueCount, 1);
+  assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
+  assert.equal(model.reviewActionEnabled, true);
+});
+
+test("Algorithms progress recommends the next useful mode from evidence", () => {
+  const dueModel = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-due-001", "alg-hash-map-primer-001"),
+    ],
+  });
+  const weakModel = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+        isCorrect: false,
+        kind: "correctness",
+      }),
+      makeAlgorithmAttempt("alg-array-string-naming-001", {
+        earnedPoints: 1,
+        isCorrect: false,
+        kind: "partial_credit",
+        maxPoints: 2,
+      }),
+    ],
+  });
+  const strongModel = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+        isCorrect: true,
+        kind: "correctness",
+      }),
+    ],
+  });
+
+  assert.equal(dueModel.algorithmsProgress?.recommendation.mode, "review");
+  assert.equal(weakModel.algorithmsProgress?.recommendation.mode, "weakArea");
+  assert.equal(strongModel.algorithmsProgress?.recommendation.mode, "practice");
+});
+
 test("Algorithms review count uses the canonical review queue, not inferred misses", () => {
   const model = buildProgressTabModel({
     activeTrackId: "algorithms",
     analytics: makeAnalytics(),
     attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     reviewQueueItems: [],
     trainingAttempts: [
@@ -380,7 +503,11 @@ function makeAlgorithmAttempt(
   };
 }
 
-function makeAlgorithmReviewQueueItem(id: string, itemId: string): ReviewQueueItem {
+function makeAlgorithmReviewQueueItem(
+  id: string,
+  itemId: string,
+  overrides: Partial<ReviewQueueItem> = {},
+): ReviewQueueItem {
   return {
     createdAt: "2026-01-01T10:00:00.000Z",
     dueAt: "2026-01-02T10:00:00.000Z",
@@ -390,5 +517,6 @@ function makeAlgorithmReviewQueueItem(id: string, itemId: string): ReviewQueueIt
     reasons: ["incorrect_attempt"],
     sourceAttemptId: `attempt:${id}`,
     trackId: "algorithms",
+    ...overrides,
   };
 }

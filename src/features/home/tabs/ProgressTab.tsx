@@ -116,6 +116,61 @@ export function ProgressTab({
         </Card>
       </View>
 
+      {progress.algorithmsProgress ? (
+        <View style={styles.section}>
+          <SectionHeader title="Algorithms focus" tight />
+          <Card style={styles.algorithmsCard}>
+            <View style={styles.algorithmsHeader}>
+              <View style={styles.activityCopy}>
+                <Text style={styles.performanceTitle}>Current roadmap node</Text>
+                <Text style={styles.activityValue}>
+                  {progress.algorithmsProgress.currentRoadmapNode.label}
+                </Text>
+                <Text style={styles.mutedText}>
+                  {progress.algorithmsProgress.recommendation.detail}
+                </Text>
+              </View>
+              <Badge label={progress.algorithmsProgress.recommendation.label} tone="info" />
+            </View>
+            <View style={styles.metricRow}>
+              <MetricCard
+                label="Items completed"
+                tone="primary"
+                value={progress.activitySummary.value}
+              />
+              <MetricCard
+                label="Due review"
+                tone={progress.algorithmsProgress.dueReviewCount > 0 ? "warning" : "neutral"}
+                value={progress.algorithmsProgress.dueReviewCount}
+              />
+              <MetricCard
+                label="Correct"
+                tone="success"
+                value={progress.algorithmsProgress.resultCounts.correct}
+              />
+              <MetricCard
+                label="Partial"
+                tone="info"
+                value={progress.algorithmsProgress.resultCounts.partial}
+              />
+              <MetricCard
+                label="Incorrect"
+                tone="warning"
+                value={progress.algorithmsProgress.resultCounts.incorrect}
+              />
+            </View>
+            <View style={styles.signalList}>
+              {progress.algorithmsProgress.signals.map((signal) => (
+                <View key={signal.id} style={styles.signalRow}>
+                  <Badge label={signal.label} tone={signal.tone} />
+                  <Text style={styles.mutedText}>{signal.detail}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
+        </View>
+      ) : null}
+
       <View style={styles.section}>
         <SectionHeader title={progress.performanceSectionTitle} tight />
         {progress.performanceScores.length > 0 ? (
@@ -253,9 +308,29 @@ const styles = StyleSheet.create({
     color: colors.dark.textPrimary,
     fontVariant: ["tabular-nums"],
   },
+  algorithmsCard: {
+    gap: spacing.lg,
+  },
+  algorithmsHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
   mutedText: {
     ...typography.small,
     color: colors.dark.textSecondary,
+  },
+  signalList: {
+    gap: spacing.md,
+  },
+  signalRow: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.sm,
+    padding: spacing.md,
   },
   warningBanner: {
     backgroundColor: colors.dark.warningSoft,
