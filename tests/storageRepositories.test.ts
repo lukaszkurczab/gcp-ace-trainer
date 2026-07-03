@@ -19,6 +19,7 @@ import {
   clearReviewQueueItems,
   clearTrainingSessions,
   getAllUserProgress,
+  getDueReviewQueueItems,
   getReviewQueueItems,
   getTrainingAttempts,
   getTrainingSessions,
@@ -114,7 +115,9 @@ test("adding a training attempt reports a real write failure", async () => {
 
 test("review queue repository can add multiple review items and clear them", async () => {
   const first = makeReviewQueueItem("review-storage-001", "attempt-storage-001");
-  const second = makeReviewQueueItem("review-storage-002", "attempt-storage-002");
+  const second = makeReviewQueueItem("review-storage-002", "attempt-storage-002", {
+    itemId: "training-item-storage-002",
+  });
 
   const added = await addReviewQueueItems([first, second]);
   const read = await getReviewQueueItems();
@@ -126,6 +129,173 @@ test("review queue repository can add multiple review items and clear them", asy
     ["review-storage-001", "review-storage-002"],
   );
   assert.equal(cleared.ok, true);
+});
+
+test("review queue repository stores the first incorrect Algorithms attempt", async () => {
+  const item = makeReviewQueueItem("review-algorithms-first-001", "attempt-algorithms-first-001", {
+    itemId: "alg-hash-map-primer-001",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  const added = await addReviewQueueItems([item]);
+  const read = await getReviewQueueItems();
+
+  assert.equal(added.ok, true);
+  assert.equal(read.value.length, 1);
+  assert.equal(read.value[0]?.trackId, ALGORITHMS_TRACK_ID);
+  assert.equal(read.value[0]?.itemId, "alg-hash-map-primer-001");
+  assert.deepEqual(read.value[0]?.reasons, ["incorrect_attempt"]);
+});
+
+test("review queue repository merges repeated incorrect attempts by track and item", async () => {
+  const first = makeReviewQueueItem("review-repeat-001", "attempt-repeat-001", {
+    itemId: "alg-hash-map-primer-001",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const second = makeReviewQueueItem("review-repeat-002", "attempt-repeat-002", {
+    dueAt: "2026-07-01T10:05:00.000Z",
+    itemId: "alg-hash-map-primer-001",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([first]);
+  await addReviewQueueItems([second]);
+  const read = await getReviewQueueItems();
+
+  assert.equal(read.value.length, 1);
+  assert.equal(read.value[0]?.id, first.id);
+  assert.equal(read.value[0]?.sourceAttemptId, "attempt-repeat-002");
+  assert.deepEqual(read.value[0]?.reasons, ["incorrect_attempt", "repeated_mistake"]);
+  assert.equal(read.value[0]?.dueAt, "2026-06-30T10:05:00.000Z");
+});
+
+test("review queue repository merges reasons without duplicates", async () => {
+  const partial = makeReviewQueueItem("review-reasons-001", "attempt-reasons-001", {
+    itemId: "alg-hash-map-primer-001",
+    priority: "normal",
+    reasons: ["partial_credit"],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const incorrect = makeReviewQueueItem("review-reasons-002", "attempt-reasons-002", {
+    itemId: "alg-hash-map-primer-001",
+    reasons: ["incorrect_attempt"],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([partial]);
+  await addReviewQueueItems([incorrect]);
+  await addReviewQueueItems([incorrect]);
+  const read = await getReviewQueueItems();
+
+  assert.deepEqual(read.value[0]?.reasons, ["partial_credit", "incorrect_attempt", "repeated_mistake"]);
+});
+
+test("review queue repository merges mistake refs without duplicates", async () => {
+  const first = makeReviewQueueItem("review-mistakes-001", "attempt-mistakes-001", {
+    itemId: "alg-hash-map-primer-001",
+    mistakeTypeRefs: [
+      {
+        axisId: "mistake_type",
+        nodeId: "wrong_approach",
+        role: "mistake_type",
+        trackId: ALGORITHMS_TRACK_ID,
+      },
+    ],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const second = makeReviewQueueItem("review-mistakes-002", "attempt-mistakes-002", {
+    itemId: "alg-hash-map-primer-001",
+    mistakeTypeRefs: [
+      {
+        axisId: "mistake_type",
+        nodeId: "wrong_approach",
+        role: "mistake_type",
+        trackId: ALGORITHMS_TRACK_ID,
+      },
+      {
+        axisId: "mistake_type",
+        nodeId: "complexity_mismatch",
+        role: "mistake_type",
+        trackId: ALGORITHMS_TRACK_ID,
+      },
+    ],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([first]);
+  await addReviewQueueItems([second]);
+  const read = await getReviewQueueItems();
+
+  assert.deepEqual(
+    read.value[0]?.mistakeTypeRefs?.map((ref) => ref.nodeId),
+    ["wrong_approach", "complexity_mismatch"],
+  );
+});
+
+test("review queue repository preserves or raises priority without delaying due date", async () => {
+  const high = makeReviewQueueItem("review-priority-001", "attempt-priority-001", {
+    dueAt: "2026-06-30T10:05:00.000Z",
+    itemId: "alg-hash-map-primer-001",
+    priority: "high",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const normal = makeReviewQueueItem("review-priority-002", "attempt-priority-002", {
+    dueAt: "2026-07-02T10:05:00.000Z",
+    itemId: "alg-hash-map-primer-001",
+    priority: "normal",
+    reasons: ["partial_credit"],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const urgent = makeReviewQueueItem("review-priority-003", "attempt-priority-003", {
+    dueAt: "2026-07-01T10:05:00.000Z",
+    itemId: "alg-hash-map-primer-001",
+    priority: "urgent",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([high]);
+  await addReviewQueueItems([normal]);
+  await addReviewQueueItems([urgent]);
+  const read = await getReviewQueueItems();
+
+  assert.equal(read.value[0]?.priority, "urgent");
+  assert.equal(read.value[0]?.dueAt, "2026-06-30T10:05:00.000Z");
+});
+
+test("review queue repository selects due items for a track", async () => {
+  const dueHigh = makeReviewQueueItem("review-due-001", "attempt-due-001", {
+    createdAt: "2026-06-29T10:05:00.000Z",
+    dueAt: "2026-06-30T10:05:00.000Z",
+    itemId: "alg-hash-map-primer-001",
+    priority: "high",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const dueUrgent = makeReviewQueueItem("review-due-002", "attempt-due-002", {
+    createdAt: "2026-06-29T10:06:00.000Z",
+    dueAt: "2026-06-30T10:04:00.000Z",
+    itemId: "alg-two-pointers-primer-001",
+    priority: "urgent",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const future = makeReviewQueueItem("review-due-003", "attempt-due-003", {
+    dueAt: "2026-07-02T10:05:00.000Z",
+    itemId: "alg-window-primer-001",
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const cloud = makeReviewQueueItem("review-due-004", "attempt-due-004", {
+    dueAt: "2026-06-30T10:05:00.000Z",
+    itemId: "cloud-question-001",
+    trackId: CLOUD_CERTIFICATION_TRACK_ID,
+  });
+
+  await addReviewQueueItems([dueHigh, dueUrgent, future, cloud]);
+  const due = await getDueReviewQueueItems(ALGORITHMS_TRACK_ID, "2026-06-30T10:05:00.000Z");
+
+  assert.equal(due.ok, true);
+  assert.deepEqual(
+    due.value.map((item) => item.id),
+    ["review-due-002", "review-due-001"],
+  );
 });
 
 test("user progress repository can save and read progress per track", async () => {
@@ -222,7 +392,11 @@ function makeTrainingAttempt(id: string): TrainingAttempt {
   };
 }
 
-function makeReviewQueueItem(id: string, sourceAttemptId: string): ReviewQueueItem {
+function makeReviewQueueItem(
+  id: string,
+  sourceAttemptId: string,
+  overrides: Partial<ReviewQueueItem> = {},
+): ReviewQueueItem {
   return {
     createdAt: "2026-06-29T10:05:00.000Z",
     dueAt: "2026-06-30T10:05:00.000Z",
@@ -232,6 +406,7 @@ function makeReviewQueueItem(id: string, sourceAttemptId: string): ReviewQueueIt
     reasons: ["incorrect_attempt"],
     sourceAttemptId,
     trackId: CLOUD_CERTIFICATION_TRACK_ID,
+    ...overrides,
   };
 }
 

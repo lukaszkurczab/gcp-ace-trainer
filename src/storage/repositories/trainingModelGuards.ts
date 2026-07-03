@@ -66,7 +66,16 @@ function isReviewQueueItem(value: unknown): value is ReviewQueueItem {
     typeof value.dueAt === "string" &&
     isReviewPriority(value.priority) &&
     Array.isArray(value.reasons) &&
-    value.reasons.every((reason) => typeof reason === "string")
+    value.reasons.every(isReviewReason) &&
+    (value.lastReviewedAt === undefined || typeof value.lastReviewedAt === "string") &&
+    (value.mistakeTypeRefs === undefined || (
+      Array.isArray(value.mistakeTypeRefs) &&
+      value.mistakeTypeRefs.every(isTrainingItemTaxonomyRef)
+    )) &&
+    (value.taxonomyRefs === undefined || (
+      Array.isArray(value.taxonomyRefs) &&
+      value.taxonomyRefs.every(isTrainingItemTaxonomyRef)
+    ))
   );
 }
 
@@ -131,6 +140,32 @@ function isTrainingSessionStatus(value: unknown): boolean {
 
 function isReviewPriority(value: unknown): boolean {
   return value === "low" || value === "normal" || value === "high" || value === "urgent";
+}
+
+function isReviewReason(value: unknown): boolean {
+  return (
+    value === "incorrect_attempt" ||
+    value === "partial_credit" ||
+    value === "low_confidence" ||
+    value === "repeated_mistake" ||
+    value === "manual" ||
+    value === "due_spacing"
+  );
+}
+
+function isTrainingItemTaxonomyRef(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.axisId === "string" &&
+    typeof value.nodeId === "string" &&
+    (value.role === undefined ||
+      value.role === "primary" ||
+      value.role === "secondary" ||
+      value.role === "prerequisite" ||
+      value.role === "mistake_type") &&
+    (value.trackId === undefined || (typeof value.trackId === "string" && isTrackId(value.trackId))) &&
+    (value.weight === undefined || typeof value.weight === "number")
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -24,6 +24,7 @@ import {
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
   ALGORITHM_TRAINING_ITEMS,
+  buildAlgorithmWeakAreaRecommendation,
   createAlgorithmsContentAdapter,
   getAlgorithmTrainingItemsForRoadmapNode,
   getFirstUsableAlgorithmRoadmapNode,
@@ -541,15 +542,34 @@ test("Algorithms weak area mode selects the weakest evidenced roadmap node", () 
   assert.deepEqual(selected.map((item) => item.id), ["weak-arrays", "weak-arrays-extra"]);
 });
 
-test("Algorithms weak area mode falls back to current roadmap node without enough evidence", () => {
+test("Algorithms weak area mode weights incorrect attempts above partial attempts", () => {
+  const weakItems = [
+    makeSelectableAlgorithmItem("weak-partial-a", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-partial-b", "arrays_and_strings", "complexity_check"),
+    makeSelectableAlgorithmItem("weak-incorrect", "hash_map_and_set", "trace_next_step"),
+  ];
+  const recommendation = buildAlgorithmWeakAreaRecommendation(
+    [
+      makeSelectionAttempt("attempt-partial-001", "weak-partial-a", "partial"),
+      makeSelectionAttempt("attempt-partial-002", "weak-partial-b", "partial"),
+      makeSelectionAttempt("attempt-incorrect-001", "weak-incorrect", "incorrect"),
+    ],
+    weakItems,
+    ALGORITHM_ROADMAP.nodes,
+    "arrays_and_strings",
+  );
+
+  assert.equal(recommendation.selectedRoadmapNodeId, "hash_map_and_set");
+  assert.deepEqual(recommendation.candidateItemIds, ["weak-incorrect"]);
+});
+
+test("Algorithms weak area mode falls back to current roadmap node without attempts", () => {
   const weakItems = [
     makeSelectableAlgorithmItem("weak-fallback-current", "hash_map_and_set", "trace_next_step"),
     makeSelectableAlgorithmItem("weak-fallback-arrays", "arrays_and_strings", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
-    attempts: [
-      makeSelectionAttempt("attempt-one-off-001", "weak-fallback-arrays", false),
-    ],
+    attempts: [],
     contentAdapter: makeSelectionAdapter(weakItems),
     mode: "weakArea",
     nodeId: "hash_map_and_set",
@@ -559,23 +579,110 @@ test("Algorithms weak area mode falls back to current roadmap node without enoug
   assert.deepEqual(selected.map((item) => item.id), ["weak-fallback-current"]);
 });
 
-test("Algorithms practice mode mixes selectable items from unlocked roadmap nodes", () => {
-  const practiceItems = [
-    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
-    makeSelectableAlgorithmItem("practice-arrays", "arrays_and_strings", "trace_next_step"),
-    makeSelectableAlgorithmItem("practice-hash-locked", "hash_map_and_set", "trace_next_step"),
+test("Algorithms weak area mode selects active available items only", () => {
+  const weakItems = [
+    makeSelectableAlgorithmItem("weak-active", "arrays_and_strings", "trace_next_step"),
+    makeAlgorithmSelectionItem("weak-disabled", "arrays_and_strings", "trace_next_step", "disabled"),
+    makeSelectableAlgorithmItem("weak-unavailable", "linked_list", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-current", "hash_map_and_set", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
     attempts: [
-      makeSelectionAttempt("attempt-complexity-complete-001", "practice-complexity", true),
+      makeSelectionAttempt("attempt-disabled-001", "weak-disabled", "incorrect"),
+      makeSelectionAttempt("attempt-unavailable-001", "weak-unavailable", "incorrect"),
+      makeSelectionAttempt("attempt-active-001", "weak-active", "incorrect"),
     ],
+    contentAdapter: makeSelectionAdapter(weakItems),
+    mode: "weakArea",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["weak-active"]);
+});
+
+test("Algorithms practice mode excludes unavailable roadmap nodes", () => {
+  const practiceItems = [
+    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
+    makeSelectableAlgorithmItem("practice-linked-unavailable", "linked_list", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [],
     contentAdapter: makeSelectionAdapter(practiceItems),
     mode: "practice",
     nodeId: "complexity_and_constraints",
     sessionLength: 10,
   });
 
-  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity", "practice-arrays"]);
+  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity"]);
+});
+
+test("Algorithms practice mode includes multiple unlocked nodes and item types when available", () => {
+  const practiceItems = [
+    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
+    makeSelectableAlgorithmItem("practice-arrays-trace", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-arrays-edge", "arrays_and_strings", "edge_case_drill"),
+    makeSelectableAlgorithmItem("practice-hash-trace", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-hash-primer", "hash_map_and_set", "approach_primer"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-complexity-complete-001", "practice-complexity", "correct"),
+      makeSelectionAttempt("attempt-arrays-complete-001", "practice-arrays-trace", "correct"),
+    ],
+    contentAdapter: makeSelectionAdapter(practiceItems),
+    mode: "practice",
+    nodeId: "complexity_and_constraints",
+    sessionLength: 5,
+  });
+
+  assert.ok(new Set(selected.map((item) => item.roadmapNodeId)).size >= 2);
+  assert.ok(new Set(selected.map((item) => item.type)).size >= 2);
+  assert.ok(selected.some((item) => item.roadmapNodeId === "complexity_and_constraints"));
+});
+
+test("Algorithms practice mode represents weak nodes when attempt evidence exists", () => {
+  const practiceItems = [
+    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
+    makeSelectableAlgorithmItem("practice-arrays", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-hash-weak", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-hash-extra", "hash_map_and_set", "approach_primer"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-complexity-complete-001", "practice-complexity", "correct"),
+      makeSelectionAttempt("attempt-arrays-complete-001", "practice-arrays", "correct"),
+      makeSelectionAttempt("attempt-hash-missed-001", "practice-hash-weak", "incorrect"),
+    ],
+    contentAdapter: makeSelectionAdapter(practiceItems),
+    mode: "practice",
+    nodeId: "complexity_and_constraints",
+    sessionLength: 3,
+  });
+
+  assert.equal(selected[0]?.id, "practice-hash-weak");
+  assert.ok(selected.some((item) => item.roadmapNodeId === "complexity_and_constraints"));
+});
+
+test("Algorithms practice mode respects session length", () => {
+  const practiceItems = [
+    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
+    makeSelectableAlgorithmItem("practice-arrays-trace", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-arrays-edge", "arrays_and_strings", "edge_case_drill"),
+    makeSelectableAlgorithmItem("practice-hash", "hash_map_and_set", "approach_primer"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-complexity-complete-001", "practice-complexity", "correct"),
+      makeSelectionAttempt("attempt-arrays-complete-001", "practice-arrays-trace", "correct"),
+    ],
+    contentAdapter: makeSelectionAdapter(practiceItems),
+    mode: "practice",
+    nodeId: "complexity_and_constraints",
+    sessionLength: 2,
+  });
+
+  assert.equal(selected.length, 2);
 });
 
 test("Algorithms default mode keeps current roadmap node selection", () => {
@@ -856,10 +963,19 @@ function makeSelectableAlgorithmItem(
   roadmapNodeId: string,
   type: AlgorithmTrainingItem["type"],
 ): AlgorithmTrainingItem {
+  return makeAlgorithmSelectionItem(id, roadmapNodeId, type, "active");
+}
+
+function makeAlgorithmSelectionItem(
+  id: string,
+  roadmapNodeId: string,
+  type: AlgorithmTrainingItem["type"],
+  status: AlgorithmTrainingItem["status"],
+): AlgorithmTrainingItem {
   return makeBaseAlgorithmItem({
     id,
     roadmapNodeId,
-    status: "active",
+    status,
     staticMicroChecks: [makeStaticMicroCheck()],
     type,
   });
@@ -883,8 +999,12 @@ function makeSelectionAdapter(items: readonly AlgorithmTrainingItem[]) {
 function makeSelectionAttempt(
   id: string,
   itemId: string,
-  isCorrect: boolean,
+  result: boolean | "correct" | "partial" | "incorrect",
 ): TrainingAttempt {
+  const status = typeof result === "boolean"
+    ? result ? "correct" : "incorrect"
+    : result;
+
   return {
     answeredAt: "2026-07-03T08:00:00.000Z",
     id,
@@ -895,10 +1015,27 @@ function makeSelectionAttempt(
       kind: "option_selection",
       selectedOptionIds: ["check_before_store"],
     },
-    result: {
-      isCorrect,
-      kind: "correctness",
-    },
+    result: status === "partial"
+      ? {
+          earnedPoints: 1,
+          isCorrect: false,
+          kind: "partial_credit",
+          maxPoints: 2,
+        }
+      : {
+          isCorrect: status === "correct",
+          kind: "correctness",
+        },
+    mistakeTypeRefs: status === "correct"
+      ? undefined
+      : [
+          {
+            axisId: "mistake_type",
+            nodeId: "duplicate_handling_error",
+            role: "mistake_type",
+            trackId: ALGORITHMS_TRACK_ID,
+          },
+        ],
     trackId: ALGORITHMS_TRACK_ID,
   };
 }

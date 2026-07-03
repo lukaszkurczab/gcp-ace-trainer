@@ -1,4 +1,5 @@
 import type { TrainingAttempt } from "../../domain/training";
+import type { TrainingItemTaxonomyRef } from "../../domain/training";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
@@ -40,6 +41,13 @@ export type AlgorithmProgressFacts = {
   roadmapNodesStarted: number;
 };
 
+export type AlgorithmWeakAreaRecommendation = {
+  candidateItemIds: readonly string[];
+  reasonLabel: string;
+  selectedMistakeTypes: readonly string[];
+  selectedRoadmapNodeId: AlgorithmRoadmapNodeId;
+};
+
 export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
   items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
@@ -69,6 +77,44 @@ export function buildAlgorithmProgressFacts(
     partialCount: statusCounts.partial,
     roadmapNodesCompleted: nodeProgress.filter((node) => node.status === "completed").length,
     roadmapNodesStarted: nodeProgress.filter((node) => node.status !== "not_started").length,
+  };
+}
+
+export function buildAlgorithmWeakAreaRecommendation(
+  attempts: readonly TrainingAttempt[],
+  items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
+  roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
+  fallbackRoadmapNodeId?: AlgorithmRoadmapNodeId,
+): AlgorithmWeakAreaRecommendation {
+  const selectableItems = getSelectableItems(items, roadmapNodes);
+  const fallbackNodeId = getFallbackRoadmapNodeId(selectableItems, roadmapNodes, fallbackRoadmapNodeId);
+  const latestAttemptByItemId = getLatestAttemptByItemId(
+    attempts.filter((attempt) => attempt.trackId === "algorithms"),
+  );
+  const statsByNodeId = buildWeakAreaStats(selectableItems, latestAttemptByItemId);
+  const selectedStats = [...statsByNodeId.values()]
+    .filter((stats) => stats.weakScore > 0)
+    .sort((left, right) =>
+      right.weakScore - left.weakScore ||
+      right.incorrectCount - left.incorrectCount ||
+      right.partialCount - left.partialCount ||
+      getRoadmapNodeOrder(left.nodeId, roadmapNodes) - getRoadmapNodeOrder(right.nodeId, roadmapNodes),
+    )[0];
+  const selectedNodeId = selectedStats?.nodeId ?? fallbackNodeId;
+  const selectedNode = roadmapNodes.find((node) => node.id === selectedNodeId);
+  const selectedMistakeTypes = selectedStats ? getTopMistakeTypes(selectedStats.mistakeTypeCounts) : [];
+  const candidateItemIds = getWeakAreaCandidateItemIds({
+    items: selectableItems,
+    missedItemTypes: selectedStats?.missedItemTypes ?? new Set(),
+    roadmapNodeId: selectedNodeId,
+    selectedMistakeTypes,
+  });
+
+  return {
+    candidateItemIds,
+    reasonLabel: `Weak area: ${selectedNode?.label ?? selectedNodeId}`,
+    selectedMistakeTypes,
+    selectedRoadmapNodeId: selectedNodeId,
   };
 }
 
@@ -187,4 +233,176 @@ function countLatestStatuses(
   }
 
   return counts;
+}
+
+type WeakAreaNodeStats = {
+  incorrectCount: number;
+  missedItemTypes: Set<AlgorithmTrainingItem["type"]>;
+  mistakeTypeCounts: Map<string, number>;
+  nodeId: AlgorithmRoadmapNodeId;
+  partialCount: number;
+  weakScore: number;
+};
+
+function getSelectableItems(
+  items: readonly AlgorithmTrainingItem[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+): readonly AlgorithmTrainingItem[] {
+  const availableNodeIds = new Set(
+    roadmapNodes
+      .filter((node) => node.status === "available")
+      .map((node) => node.id),
+  );
+
+  return items.filter((item) =>
+    item.status === "active" &&
+    typeof item.roadmapNodeId === "string" &&
+    availableNodeIds.has(item.roadmapNodeId as AlgorithmRoadmapNodeId),
+  );
+}
+
+function getFallbackRoadmapNodeId(
+  selectableItems: readonly AlgorithmTrainingItem[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+  fallbackRoadmapNodeId?: AlgorithmRoadmapNodeId,
+): AlgorithmRoadmapNodeId {
+  if (
+    fallbackRoadmapNodeId &&
+    selectableItems.some((item) => item.roadmapNodeId === fallbackRoadmapNodeId)
+  ) {
+    return fallbackRoadmapNodeId;
+  }
+
+  const firstSelectableNode = roadmapNodes.find((node) =>
+    node.status === "available" &&
+    selectableItems.some((item) => item.roadmapNodeId === node.id),
+  );
+
+  if (!firstSelectableNode) {
+    throw new Error("No selectable Algorithms weak-area items are available.");
+  }
+
+  return firstSelectableNode.id;
+}
+
+function buildWeakAreaStats(
+  items: readonly AlgorithmTrainingItem[],
+  latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
+): Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats> {
+  const itemById = new Map(items.map((item) => [item.id, item]));
+  const statsByNodeId = new Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats>();
+
+  for (const [itemId, attempt] of latestAttemptByItemId) {
+    const item = itemById.get(itemId);
+    const nodeId = item?.roadmapNodeId as AlgorithmRoadmapNodeId | undefined;
+    const status = getAlgorithmAttemptStatus(attempt.result);
+
+    if (!item || !nodeId || !status || status === "correct") {
+      continue;
+    }
+
+    const stats = getOrCreateWeakAreaNodeStats(statsByNodeId, nodeId);
+    const mistakeTypeRefs = attempt.mistakeTypeRefs ?? [];
+    const baseScore = status === "incorrect" ? 3 : 1;
+
+    stats.weakScore += baseScore;
+    stats.missedItemTypes.add(item.type);
+
+    if (status === "incorrect") {
+      stats.incorrectCount += 1;
+    } else {
+      stats.partialCount += 1;
+    }
+
+    for (const mistakeType of getMistakeTypeIds(mistakeTypeRefs)) {
+      const nextCount = (stats.mistakeTypeCounts.get(mistakeType) ?? 0) + 1;
+      stats.mistakeTypeCounts.set(mistakeType, nextCount);
+
+      if (nextCount > 1) {
+        stats.weakScore += 1;
+      }
+    }
+  }
+
+  return statsByNodeId;
+}
+
+function getOrCreateWeakAreaNodeStats(
+  statsByNodeId: Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats>,
+  nodeId: AlgorithmRoadmapNodeId,
+): WeakAreaNodeStats {
+  const current = statsByNodeId.get(nodeId);
+
+  if (current) {
+    return current;
+  }
+
+  const next: WeakAreaNodeStats = {
+    incorrectCount: 0,
+    missedItemTypes: new Set(),
+    mistakeTypeCounts: new Map(),
+    nodeId,
+    partialCount: 0,
+    weakScore: 0,
+  };
+
+  statsByNodeId.set(nodeId, next);
+  return next;
+}
+
+function getMistakeTypeIds(refs: readonly TrainingItemTaxonomyRef[]): readonly string[] {
+  return refs
+    .filter((ref) => ref.role === "mistake_type" || ref.axisId === "mistake_type")
+    .map((ref) => ref.nodeId);
+}
+
+function getTopMistakeTypes(mistakeTypeCounts: ReadonlyMap<string, number>): readonly string[] {
+  return [...mistakeTypeCounts.entries()]
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .map(([mistakeType]) => mistakeType)
+    .slice(0, 3);
+}
+
+function getWeakAreaCandidateItemIds(input: {
+  items: readonly AlgorithmTrainingItem[];
+  missedItemTypes: ReadonlySet<AlgorithmTrainingItem["type"]>;
+  roadmapNodeId: AlgorithmRoadmapNodeId;
+  selectedMistakeTypes: readonly string[];
+}): readonly string[] {
+  const selectedMistakeTypes = new Set(input.selectedMistakeTypes);
+
+  return input.items
+    .filter((item) => item.roadmapNodeId === input.roadmapNodeId)
+    .map((item, index) => ({
+      index,
+      item,
+      score:
+        (input.missedItemTypes.has(item.type) ? 2 : 0) +
+        (hasMistakeTypeOverlap(item, selectedMistakeTypes) ? 1 : 0),
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((entry) => entry.item.id);
+}
+
+function hasMistakeTypeOverlap(
+  item: AlgorithmTrainingItem,
+  selectedMistakeTypes: ReadonlySet<string>,
+): boolean {
+  if (selectedMistakeTypes.size === 0) {
+    return false;
+  }
+
+  const itemMistakeTypes = [
+    ...(item.feedbackModel?.mistakeTypes ?? []),
+    ...((item.staticMicroChecks ?? []).flatMap((check) => check.mistakeTypes)),
+  ];
+
+  return itemMistakeTypes.some((mistakeType) => selectedMistakeTypes.has(mistakeType));
+}
+
+function getRoadmapNodeOrder(
+  nodeId: AlgorithmRoadmapNodeId,
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+): number {
+  return roadmapNodes.find((node) => node.id === nodeId)?.order ?? Number.MAX_SAFE_INTEGER;
 }

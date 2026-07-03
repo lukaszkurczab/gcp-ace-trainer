@@ -12,6 +12,7 @@ import {
   Screen,
   SectionHeader,
 } from "../../components";
+import { ROUTES } from "../../constants/routes";
 import {
   ALGORITHMS_TRACK_ID,
   completeTrainingSession,
@@ -20,7 +21,6 @@ import {
 import type {
   ComplexityAnswer,
   TrainingAttempt,
-  TrainingAttemptResponse,
   TrainingSession,
 } from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
@@ -32,6 +32,7 @@ import {
   getReviewQueueItems,
   getTrainingSessions,
   getTrainingAttempts,
+  removeReviewQueueItem,
   saveTrainingSessions,
   type LocalStorageIssue,
 } from "../../storage";
@@ -40,14 +41,10 @@ import {
   ALGORITHMS_SESSION_MODE_ID,
   ALGORITHM_ROADMAP,
   getActiveAlgorithmStaticMicroCheck,
-  getAlgorithmAttemptStatus,
   getFirstUsableAlgorithmRoadmapNode,
   getShuffledAlgorithmStaticCheckOptions,
   isAlgorithmRoadmapNodeSelectable,
-  scoreAlgorithmStaticMicroCheck,
-  createAlgorithmsReviewQueueItems,
   selectAlgorithmSessionItems,
-  type AlgorithmComplexityPairAnswer,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
   type AlgorithmStaticCheckScore,
@@ -55,6 +52,26 @@ import {
   type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
 import { resetToPracticeHubAfterSession } from "../practice/practiceNavigation";
+import { buildPracticeSessionConfig, type PracticeSessionMode } from "../practice/sessionConfig";
+import {
+  buildAlgorithmsSummaryActions,
+  buildAlgorithmsSessionSummary,
+  buildAlgorithmsReviewQueueUpdate,
+  buildAlgorithmsSubmission,
+  formatAlgorithmItemType,
+  formatAlgorithmStatus,
+  getAlgorithmsCommonTrapText,
+  getAlgorithmsComplexityText,
+  getAlgorithmsCorrectAnswerText,
+  getAlgorithmsFeedbackState,
+  getAlgorithmsPatternSignalText,
+  getAlgorithmsRecognizedPatternText,
+  getAlgorithmsWeakerAnswerNotes,
+  type AlgorithmsSubmission,
+  type AlgorithmsSummaryAction,
+  type AlgorithmsSummaryReviewQueueState,
+  type AlgorithmsSessionSummary,
+} from "./algorithmsSessionModel";
 
 type AlgorithmsSessionScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList>;
@@ -63,17 +80,6 @@ type AlgorithmsSessionScreenProps = {
 };
 
 type ComplexityDimension = "time" | "space";
-
-type SessionSummary = {
-  completed: number;
-  correct: number;
-  currentRoadmapNode: string;
-  incorrect: number;
-  needsReview: readonly string[];
-  partial: number;
-  recommendedNext: readonly string[];
-  strong: readonly string[];
-};
 
 const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
 
@@ -86,9 +92,14 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [complexityAnswer, setComplexityAnswer] = useState<ComplexityAnswer>({});
   const [checkedScore, setCheckedScore] = useState<AlgorithmStaticCheckScore | null>(null);
   const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
-  const [summary, setSummary] = useState<SessionSummary | null>(null);
+  const [summary, setSummary] = useState<AlgorithmsSessionSummary | null>(null);
+  const [summaryReviewQueueState, setSummaryReviewQueueState] = useState<AlgorithmsSummaryReviewQueueState>({
+    items: [],
+    now: new Date(0).toISOString(),
+  });
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -133,6 +144,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         setCurrentIndex(0);
         setAttempts([]);
         setSummary(null);
+        setSummaryReviewQueueState({
+          items: [],
+          now: startedAt,
+        });
         resetAnswerState();
         setIsLoading(false);
         return;
@@ -155,6 +170,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       setCurrentIndex(0);
       setAttempts([]);
       setSummary(null);
+      setSummaryReviewQueueState({
+        items: [],
+        now: startedAt,
+      });
       resetAnswerState();
       setIsLoading(false);
 
@@ -183,6 +202,11 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   );
   const progress = items.length > 0 ? (currentIndex + 1) / items.length : 0;
   const canCheck = currentCheck ? hasAnswer(currentCheck, selectedOptionIds, complexityAnswer) : false;
+  const feedbackMode = sessionConfig?.feedbackMode ?? "afterEachAnswer";
+  const feedbackState = getAlgorithmsFeedbackState(feedbackMode, checkedScore);
+  const summaryActions = summary
+    ? buildAlgorithmsSummaryActions(summary, sessionConfig, summaryReviewQueueState)
+    : [];
 
   function resetAnswerState() {
     setSelectedOptionIds([]);
@@ -226,53 +250,50 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }
 
   async function checkAnswer() {
-    if (!currentItem || !currentCheck || !session || !canCheck) {
+    if (!currentItem || !currentCheck || !session || !canCheck || isSubmitting) {
       return;
     }
 
-    const answer = getSubmittedAnswer(currentCheck, selectedOptionIds, complexityAnswer);
-    const score = scoreAlgorithmStaticMicroCheck(currentCheck, answer);
+    setIsSubmitting(true);
     const answeredAt = new Date().toISOString();
-    const attempt: TrainingAttempt = {
+    const submission = buildAlgorithmsSubmission({
       answeredAt,
-      feedbackSignals: [score.status === "correct" ? "correct" : "review_recommended"],
-      id: `attempt:${session.id}:${currentItem.id}:${answeredAt}`,
-      itemId: currentItem.id,
-      itemType: currentItem.type,
-      mistakeTypeRefs: score.mistakeTypes.map((mistakeType) => ({
-        axisId: "mistake_type",
-        nodeId: mistakeType,
-        role: "mistake_type",
-        trackId: ALGORITHMS_TRACK_ID,
-      })),
-      modeId: session.modeId,
-      response: buildTrainingAttemptResponse(currentCheck, selectedOptionIds, complexityAnswer),
-      result: score.result,
-      sessionId: session.id,
-      trackId: ALGORITHMS_TRACK_ID,
-    };
-    const result = await addTrainingAttempt(attempt);
-    const reviewQueueItems = createAlgorithmsReviewQueueItems(attempt, undefined, {
-      now: answeredAt,
+      check: currentCheck,
+      complexityAnswer,
+      item: currentItem,
+      selectedOptionIds,
+      session,
     });
+    const result = await addTrainingAttempt(submission.attempt);
 
     if (!result.ok) {
       setStorageMessage(formatStorageFailure("The answer was checked, but this attempt was not saved locally", result.issues));
     }
 
-    if (reviewQueueItems.length > 0) {
-      const reviewResult = await addReviewQueueItems([...reviewQueueItems]);
+    if (sessionConfig?.mode === "review") {
+      await saveReviewQueueUpdate(submission);
+    } else if (submission.reviewQueueItems.length > 0) {
+      const reviewResult = await addReviewQueueItems([...submission.reviewQueueItems]);
 
       if (!reviewResult.ok) {
         setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
       }
     }
 
-    setAttempts((current) => [attempt, ...current]);
-    setCheckedScore(score);
+    const nextAttempts = [submission.attempt, ...attempts];
+    setAttempts(nextAttempts);
+
+    if (feedbackMode === "atSessionEnd") {
+      await goNext(nextAttempts);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setCheckedScore(submission.score);
+    setIsSubmitting(false);
   }
 
-  async function goNext() {
+  async function goNext(nextAttempts = attempts) {
     if (!session) {
       return;
     }
@@ -280,7 +301,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     if (currentIndex >= items.length - 1) {
       const completedAt = new Date().toISOString();
       const completed = completeTrainingSession({
-        attempts,
+        attempts: nextAttempts,
         completedAt,
         session,
       });
@@ -298,8 +319,23 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         ));
       }
 
+      const reviewQueueResult = await getReviewQueueItems();
+
+      if (!reviewQueueResult.ok) {
+        setStorageMessage(formatStorageFailure(
+          "The summary actions are using available review data, but the review queue could not be fully loaded",
+          reviewQueueResult.issues,
+        ));
+      }
+
+      setSummaryReviewQueueState({
+        items: reviewQueueResult.value,
+        now: completedAt,
+      });
       setSession(completed.session);
-      setSummary(buildSessionSummary(attempts, items, node.label));
+      setSummary(buildAlgorithmsSessionSummary(nextAttempts, items, node.label, {
+        mode: sessionConfig?.mode ?? "default",
+      }));
       return;
     }
 
@@ -307,12 +343,53 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     resetAnswerState();
   }
 
+  async function saveReviewQueueUpdate(submission: AlgorithmsSubmission) {
+    const update = buildAlgorithmsReviewQueueUpdate(submission);
+
+    if (update.action === "clear") {
+      const reviewResult = await removeReviewQueueItem(update.trackId, update.itemId);
+
+      if (!reviewResult.ok) {
+        setStorageMessage(formatStorageFailure("The answer was checked, but review queue clearing was not saved locally", reviewResult.issues));
+      }
+      return;
+    }
+
+    if (update.action === "keep" && update.reviewQueueItems.length > 0) {
+      const reviewResult = await addReviewQueueItems([...update.reviewQueueItems]);
+
+      if (!reviewResult.ok) {
+        setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
+      }
+    }
+  }
+
+  function handleSummaryAction(action: AlgorithmsSummaryAction) {
+    if (action.kind === "viewProgress") {
+      navigation.navigate(ROUTES.HOME, { initialTab: "progress" });
+      return;
+    }
+
+    startSummarySession(getSummaryActionMode(action));
+  }
+
+  function startSummarySession(mode: PracticeSessionMode) {
+    navigation.navigate(
+      ROUTES.PRACTICE_SESSION,
+      buildPracticeSessionConfig({
+        feedbackMode: mode === "practice" ? "atSessionEnd" : "afterEachAnswer",
+        mode,
+        sessionLength: mode === "practice" ? 40 : 20,
+        source: mode === "default" ? "practiceHub" : "modeShortcut",
+        topicId: node.id,
+        trackId: ALGORITHMS_TRACK_ID,
+      }),
+    );
+  }
+
   if (summary) {
     return (
-      <Screen
-        edges={["top", "bottom"]}
-        footer={<Button onPress={() => resetToPracticeHubAfterSession(navigation, node.id)}>Back to Practice</Button>}
-      >
+      <Screen edges={["top", "bottom"]}>
         <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
         <Card variant="tonal" style={styles.summaryCard}>
           <Text style={styles.heroEyebrow}>Session summary</Text>
@@ -329,11 +406,74 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
           </View>
         </Card>
         <Card style={styles.diagnosisCard}>
+          <SectionHeader title="Next action" subtitle="Choose the next step from this result." tight />
+          <View style={styles.summaryActions}>
+            {summaryActions.map((action) => (
+              <View key={action.kind} style={styles.summaryAction}>
+                <Button
+                  onPress={() => handleSummaryAction(action)}
+                  variant={action.priority === "primary" ? "primary" : "secondary"}
+                >
+                  {action.label}
+                </Button>
+                <Text style={styles.summaryActionDetail}>{action.detail}</Text>
+              </View>
+            ))}
+          </View>
+        </Card>
+        {summary.reviewSession ? (
+          <Card style={styles.diagnosisCard}>
+            <SectionHeader title="Review outcome" subtitle="Queue updates from this review session." tight />
+            <View style={styles.summaryGrid}>
+              <SummaryMetric label="Cleared items" value={summary.reviewSession.clearedItems} />
+              <SummaryMetric label="Still needs review" value={summary.reviewSession.stillNeedsReview} />
+            </View>
+            <FeedbackSection title="Next suggested action" text={summary.reviewSession.nextSuggestedAction} />
+          </Card>
+        ) : null}
+        <Card style={styles.diagnosisCard}>
           <SectionHeader title="Diagnosis" subtitle="Use this to choose the next review target." tight />
           <DiagnosticList title="Strong" items={summary.strong} emptyText="No strong pattern signal recorded yet." />
           <DiagnosticList title="Needs review" items={summary.needsReview} emptyText="No review target from this session." />
           <DiagnosticList title="Recommended next" items={summary.recommendedNext} emptyText="Continue with the current roadmap node." />
         </Card>
+        {feedbackMode === "atSessionEnd" ? (
+          <>
+            <Card style={styles.diagnosisCard}>
+              <SectionHeader
+                title="Item review"
+                subtitle="Review answers, explanations, patterns, and next targets from this session."
+                tight
+              />
+            </Card>
+            {summary.reviewItems.map((reviewItem, index) => (
+              <Card
+                key={`${reviewItem.itemId}-${index}`}
+                variant={reviewItem.result === "correct" ? "success" : "warning"}
+              >
+                <SectionHeader
+                  title={`Item ${index + 1}: ${reviewItem.title}`}
+                  action={
+                    <Badge
+                      label={formatAlgorithmStatus(reviewItem.result)}
+                      tone={reviewItem.result === "correct" ? "success" : "warning"}
+                    />
+                  }
+                  tight
+                />
+                <FeedbackSection title="Selected answer" text={reviewItem.selectedAnswer} />
+                <FeedbackSection title="Correct answer" text={reviewItem.correctAnswer} />
+                <FeedbackSection title="Result" text={formatAlgorithmStatus(reviewItem.result)} />
+                <FeedbackSection title="Explanation" text={reviewItem.explanation} />
+                <FeedbackSection title="Recognized pattern" text={reviewItem.recognizedPattern} />
+                <FeedbackSection title="Why this pattern" text={reviewItem.whyThisPattern} />
+                {reviewItem.complexity ? <FeedbackSection title="Complexity" text={reviewItem.complexity} /> : null}
+                <FeedbackSection title="Common trap" text={reviewItem.commonTrap} />
+                <FeedbackSection title="Next review target" text={reviewItem.nextReviewTarget} />
+              </Card>
+            ))}
+          </>
+        ) : null}
         {storageMessage ? <StorageNotice message={storageMessage} /> : null}
       </Screen>
     );
@@ -370,13 +510,15 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     <Screen
       edges={["top", "bottom"]}
       footer={
-        checkedScore ? (
+        feedbackState.hasSubmittedAnswer ? (
           <Button onPress={() => void goNext()}>
             {currentIndex >= items.length - 1 ? "Finish Session" : "Next Item"}
           </Button>
         ) : (
-          <Button disabled={!canCheck} onPress={() => void checkAnswer()}>
-            Check Answer
+          <Button disabled={!canCheck || isSubmitting} onPress={() => void checkAnswer()}>
+            {feedbackMode === "atSessionEnd"
+              ? currentIndex >= items.length - 1 ? "Finish Session" : "Next Item"
+              : "Check Answer"}
           </Button>
         )
       }
@@ -384,10 +526,16 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
 
       <View style={styles.progressBlock}>
+        {sessionConfig?.mode === "practice" ? (
+          <Text style={styles.itemCount}>Mixed practice</Text>
+        ) : null}
+        {sessionConfig?.mode === "weakArea" ? (
+          <Text style={styles.itemCount}>Weak area: {node.label}</Text>
+        ) : null}
         <Text style={styles.itemCount}>Item {currentIndex + 1} of {items.length}</Text>
         <ProgressBar
           progress={progress}
-          tone={checkedScore ? getProgressTone(checkedScore.status) : "primary"}
+          tone={feedbackState.showImmediateFeedback && checkedScore ? getProgressTone(checkedScore.status) : "primary"}
         />
       </View>
 
@@ -401,8 +549,8 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
             <Text style={styles.itemPrompt}>{currentItem.prompt}</Text>
             <View style={styles.itemBadgeRow}>
               <Badge label={node.label} tone="primary" />
-              <Badge label={formatItemType(currentItem.type)} tone="neutral" />
-              <Badge label={formatItemType(currentCheck.type)} tone="info" />
+              <Badge label={formatAlgorithmItemType(currentItem.type)} tone="neutral" />
+              <Badge label={formatAlgorithmItemType(currentCheck.type)} tone="info" />
             </View>
           </>
         )}
@@ -418,11 +566,11 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
           onSelectComplexity={selectComplexity}
           onSelectOption={selectOption}
           selectedOptionIds={selectedOptionIds}
-          submitted={checkedScore !== null}
+          submitted={feedbackState.hasSubmittedAnswer || isSubmitting}
         />
       </Card>
 
-      {checkedScore ? (
+      {feedbackState.showImmediateFeedback && checkedScore ? (
         <FeedbackCard check={currentCheck} item={currentItem} score={checkedScore} />
       ) : null}
 
@@ -448,8 +596,8 @@ function TraceDrillPrompt({ check, item, node }: TraceDrillPromptProps) {
       <Text style={styles.itemPrompt}>{item.prompt}</Text>
       <View style={styles.itemBadgeRow}>
         <Badge label={node.label} tone="primary" />
-        <Badge label={formatItemType(item.type)} tone="neutral" />
-        <Badge label={formatItemType(check.type)} tone="info" />
+        <Badge label={formatAlgorithmItemType(item.type)} tone="neutral" />
+        <Badge label={formatAlgorithmItemType(check.type)} tone="info" />
       </View>
 
       {stateLines.length > 0 ? (
@@ -653,30 +801,30 @@ type FeedbackCardProps = {
 };
 
 function FeedbackCard({ check, item, score }: FeedbackCardProps) {
-  const correctAnswerText = getCorrectAnswerText(check);
-  const weakerAnswerNotes = getWeakerAnswerNotes(check, item);
-  const complexityText = getComplexityText(item);
-  const commonTrap = getCommonTrapText(item, score);
+  const correctAnswerText = getAlgorithmsCorrectAnswerText(check);
+  const weakerAnswerNotes = getAlgorithmsWeakerAnswerNotes(check, item);
+  const complexityText = getAlgorithmsComplexityText(item);
+  const commonTrap = getAlgorithmsCommonTrapText(item, score);
 
   return (
     <Card variant={score.status === "correct" ? "success" : "warning"}>
       <SectionHeader
         title="Feedback"
-        action={<Badge label={formatStatus(score.status)} tone={score.status === "correct" ? "success" : "warning"} />}
+        action={<Badge label={formatAlgorithmStatus(score.status)} tone={score.status === "correct" ? "success" : "warning"} />}
         tight
       />
-      <FeedbackSection title="Result" text={formatStatus(score.status)} />
+      <FeedbackSection title="Result" text={formatAlgorithmStatus(score.status)} />
       <FeedbackSection title="Correct answer" text={correctAnswerText} />
       <FeedbackSection title="Why this answer is correct" text={score.feedback} />
-      <FeedbackSection title="Recognized pattern" text={getRecognizedPatternText(item)} />
-      <FeedbackSection title="Why this pattern" text={getPatternSignalText(item)} />
+      <FeedbackSection title="Recognized pattern" text={getAlgorithmsRecognizedPatternText(item)} />
+      <FeedbackSection title="Why this pattern" text={getAlgorithmsPatternSignalText(item)} />
       {weakerAnswerNotes.length > 0 ? (
         <FeedbackSection title="Why other answers are weaker" items={weakerAnswerNotes} />
       ) : null}
       {complexityText ? <FeedbackSection title="Complexity" text={complexityText} /> : null}
       <FeedbackSection title="Common trap" text={commonTrap} />
       {score.mistakeTypes.length > 0 ? (
-        <FeedbackSection title="Review signal" text={score.mistakeTypes.map(formatItemType).join(", ")} />
+        <FeedbackSection title="Review signal" text={score.mistakeTypes.map(formatAlgorithmItemType).join(", ")} />
       ) : null}
       <FeedbackSection title="Next review target" text={item.feedbackModel.nextAction} />
     </Card>
@@ -800,6 +948,13 @@ function getEmptySessionStateCopy(mode: PracticeSessionRouteParams["mode"]): {
   };
 }
 
+function getSummaryActionMode(action: AlgorithmsSummaryAction): PracticeSessionMode {
+  if (action.kind === "reviewMissed") return "review";
+  if (action.kind === "startWeakArea") return "weakArea";
+  if (action.kind === "startMixedPractice") return "practice";
+  return "default";
+}
+
 function hasAnswer(
   check: AlgorithmStaticMicroCheck,
   selectedOptionIds: readonly string[],
@@ -812,236 +967,12 @@ function hasAnswer(
   return selectedOptionIds.length > 0;
 }
 
-function getSubmittedAnswer(
-  check: AlgorithmStaticMicroCheck,
-  selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
-) {
-  if (check.type === "complexity_pair") {
-    return complexityAnswer;
-  }
-
-  if (check.type === "single_choice" || check.type === "select_pseudocode_line" || check.type === "trace_next_step") {
-    return selectedOptionIds[0] ?? "";
-  }
-
-  return selectedOptionIds;
-}
-
-function buildTrainingAttemptResponse(
-  check: AlgorithmStaticMicroCheck,
-  selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
-): TrainingAttemptResponse {
-  if (check.type === "complexity_pair") {
-    return {
-      kind: "complexity_check",
-      selectedComplexityAnswer: complexityAnswer,
-    };
-  }
-
-  return {
-    kind: "option_selection",
-    selectedOptionIds: [...selectedOptionIds],
-  };
-}
-
-function getCorrectAnswerText(check: AlgorithmStaticMicroCheck): string {
-  if (check.type === "complexity_pair" && isComplexityPairAnswer(check.correctAnswer)) {
-    return `Time ${check.correctAnswer.time}, space ${check.correctAnswer.space}`;
-  }
-
-  if (Array.isArray(check.correctAnswer)) {
-    return check.correctAnswer.map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`).join("\n");
-  }
-
-  if (typeof check.correctAnswer === "string") {
-    return getOptionText(check, check.correctAnswer);
-  }
-
-  return "No static answer available.";
-}
-
-function getRecognizedPatternText(item: AlgorithmTrainingItem): string {
-  const taxonomyPattern = item.taxonomyRefs.find((ref) => ref.axisId === "pattern_family");
-
-  return formatItemType(item.roadmapNodeId ?? taxonomyPattern?.nodeId ?? item.primarySkillAtomId);
-}
-
-function getPatternSignalText(item: AlgorithmTrainingItem): string {
-  return item.reasonSignal ??
-    item.constraintSignal ??
-    item.approachChoiceReason ??
-    item.feedbackModel.decisionSignal;
-}
-
-function getComplexityText(item: AlgorithmTrainingItem): string | undefined {
-  const complexityParts = [
-    item.expectedTimeComplexity ? `Time ${item.expectedTimeComplexity}` : undefined,
-    item.expectedSpaceComplexity ? `space ${item.expectedSpaceComplexity}` : undefined,
-  ].filter((part): part is string => Boolean(part));
-
-  if (complexityParts.length === 0 && !item.complexityExplanation && !item.solution?.complexityExplanation) {
-    return undefined;
-  }
-
-  return [
-    complexityParts.join(", "),
-    item.complexityExplanation ?? item.solution?.complexityExplanation,
-  ].filter(Boolean).join(". ");
-}
-
-function getCommonTrapText(
-  item: AlgorithmTrainingItem,
-  score: AlgorithmStaticCheckScore,
-): string {
-  const pitfall = item.pitfalls?.[0]?.description;
-  const alternative = item.whyNotAlternatives?.[0]?.reason;
-  const mistakeTypes = score.mistakeTypes.length > 0
-    ? `Review ${score.mistakeTypes.map(formatItemType).join(", ")}.`
-    : undefined;
-
-  return pitfall ??
-    alternative ??
-    mistakeTypes ??
-    item.feedbackModel.mentalModelCorrection;
-}
-
-function getWeakerAnswerNotes(
-  check: AlgorithmStaticMicroCheck,
-  item: AlgorithmTrainingItem,
-): readonly string[] {
-  const correctIds = getCorrectAnswerIds(check.correctAnswer);
-  const weakerOptions = (check.options ?? [])
-    .filter((option) => !correctIds.has(option.id))
-    .slice(0, 3)
-    .map((option) => `${option.text}: does not match the signal "${item.feedbackModel.decisionSignal}".`);
-
-  if (weakerOptions.length > 0) {
-    return weakerOptions;
-  }
-
-  return (item.whyNotAlternatives ?? [])
-    .slice(0, 3)
-    .map((alternative) => alternative.reason);
-}
-
-function getCorrectAnswerIds(answer: AlgorithmStaticMicroCheck["correctAnswer"]): ReadonlySet<string> {
-  if (Array.isArray(answer)) {
-    return new Set(answer);
-  }
-
-  if (typeof answer === "string") {
-    return new Set([answer]);
-  }
-
-  return new Set();
-}
-
-function isComplexityPairAnswer(
-  value: AlgorithmStaticMicroCheck["correctAnswer"],
-): value is AlgorithmComplexityPairAnswer {
-  return typeof value === "object" && !Array.isArray(value) && "space" in value && "time" in value;
-}
-
-function buildSessionSummary(
-  attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmTrainingItem[],
-  nodeLabel: string,
-): SessionSummary {
-  const statuses = attempts.map((attempt) => getAlgorithmAttemptStatus(attempt.result));
-  const itemById = new Map(items.map((item) => [item.id, item]));
-  const reviewedAttempts = attempts
-    .map((attempt) => ({
-      attempt,
-      item: itemById.get(attempt.itemId),
-      status: getAlgorithmAttemptStatus(attempt.result),
-    }))
-    .filter((entry): entry is { attempt: TrainingAttempt; item: AlgorithmTrainingItem; status: AlgorithmScoringStatus } =>
-      Boolean(entry.item && entry.status),
-    );
-  const missedAttempts = reviewedAttempts.filter((entry) => entry.status !== "correct");
-
-  return {
-    completed: attempts.length,
-    correct: statuses.filter((status) => status === "correct").length,
-    currentRoadmapNode: nodeLabel,
-    incorrect: statuses.filter((status) => status === "incorrect").length,
-    needsReview: uniqueStrings(
-      missedAttempts.map((entry) => `${getRecognizedPatternText(entry.item)}: ${getAttemptReviewSignal(entry)}`),
-    ).slice(0, 4),
-    partial: statuses.filter((status) => status === "partial").length,
-    recommendedNext: buildRecommendedNext(missedAttempts),
-    strong: uniqueStrings(
-      reviewedAttempts
-        .filter((entry) => entry.status === "correct")
-        .map((entry) => getRecognizedPatternText(entry.item)),
-    ).slice(0, 4),
-  };
-}
-
-function getAttemptReviewSignal(entry: {
-  attempt: TrainingAttempt;
-  item: AlgorithmTrainingItem;
-  status: AlgorithmScoringStatus;
-}): string {
-  const mistakeType = entry.attempt.mistakeTypeRefs?.[0]?.nodeId;
-
-  if (mistakeType) {
-    return formatItemType(mistakeType);
-  }
-
-  return entry.item.feedbackModel.mentalModelCorrection;
-}
-
-function buildRecommendedNext(
-  missedAttempts: readonly {
-    attempt: TrainingAttempt;
-    item: AlgorithmTrainingItem;
-    status: AlgorithmScoringStatus;
-  }[],
-): readonly string[] {
-  if (missedAttempts.length === 0) {
-    return ["Continue with the next roadmap session."];
-  }
-
-  const missedStrategyCount = missedAttempts.filter((entry) => entry.item.type === "strategy_choice").length;
-  const recommendations = missedStrategyCount > 0
-    ? [`Review ${missedStrategyCount} missed strategy ${missedStrategyCount === 1 ? "item" : "items"}.`]
-    : [];
-
-  return uniqueStrings([
-    ...recommendations,
-    ...missedAttempts.map((entry) => entry.item.feedbackModel.nextAction),
-  ]).slice(0, 3);
-}
-
-function uniqueStrings(values: readonly string[]): string[] {
-  return [...new Set(values.filter((value) => value.trim().length > 0))];
-}
-
 function getProgressTone(status: AlgorithmScoringStatus): "primary" | "success" | "warning" {
   return status === "correct" ? "success" : "warning";
 }
 
 function getOptionText(check: AlgorithmStaticMicroCheck, optionId: string): string {
   return check.options?.find((option) => option.id === optionId)?.text ?? optionId;
-}
-
-function formatItemType(value: string): string {
-  return value.split("_").map(capitalize).join(" ");
-}
-
-function formatStatus(status: AlgorithmScoringStatus): string {
-  if (status === "partial") {
-    return "Partial";
-  }
-
-  return capitalize(status);
-}
-
-function capitalize(value: string): string {
-  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }
 
 const styles = StyleSheet.create({
@@ -1270,6 +1201,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.md,
+  },
+  summaryActions: {
+    gap: spacing.md,
+  },
+  summaryAction: {
+    gap: spacing.xs,
+  },
+  summaryActionDetail: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
   },
   summaryMetric: {
     backgroundColor: colors.dark.surface,
