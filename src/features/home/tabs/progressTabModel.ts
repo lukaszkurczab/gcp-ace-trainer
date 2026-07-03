@@ -3,7 +3,7 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
-import type { TrainingAttempt } from "../../../domain/training";
+import type { ReviewQueueItem, TrainingAttempt } from "../../../domain/training";
 import { buildAlgorithmProgressFacts } from "../../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type {
@@ -43,7 +43,7 @@ export type ProgressTabModel = {
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
   performanceSectionTitle: "Performance by domain" | "Performance areas" | "Roadmap nodes";
-  reviewActionEnabled: false;
+  reviewActionEnabled: boolean;
   reviewActionLabel: string;
   reviewQueueCount: number;
   reviewQueueCopy: string;
@@ -56,6 +56,7 @@ export type BuildProgressTabModelInput = {
   attempts: readonly AttemptSummary[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   practiceHistory: readonly PracticeAnswerRecord[];
+  reviewQueueItems?: readonly ReviewQueueItem[];
   trainingAttempts?: readonly TrainingAttempt[];
 };
 
@@ -65,7 +66,7 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
   }
 
   if (input.activeTrackId === ALGORITHMS_TRACK_ID) {
-    return buildAlgorithmsProgressTabModel(input.trainingAttempts ?? []);
+    return buildAlgorithmsProgressTabModel(input.trainingAttempts ?? [], input.reviewQueueItems ?? []);
   }
 
   return buildLegacyProgressTabModel(input);
@@ -109,8 +110,8 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
         total: score.totalAttempts,
       })),
     performanceSectionTitle: "Performance by domain",
-    reviewActionEnabled: false,
-    reviewActionLabel: "Review from Progress is not available yet.",
+    reviewActionEnabled: progress.dueReviewCount > 0,
+    reviewActionLabel: progress.dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount: progress.dueReviewCount,
     reviewQueueCopy: formatCanonicalReviewQueueCopy(progress.dueReviewCount, progress.highPriorityReviewCount),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
@@ -119,8 +120,10 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
 
 function buildAlgorithmsProgressTabModel(
   trainingAttempts: readonly TrainingAttempt[],
+  reviewQueueItems: readonly ReviewQueueItem[],
 ): ProgressTabModel {
   const facts = buildAlgorithmProgressFacts(trainingAttempts);
+  const reviewQueueCount = reviewQueueItems.filter((item) => item.trackId === ALGORITHMS_TRACK_ID).length;
 
   return {
     activitySummary: {
@@ -165,11 +168,19 @@ function buildAlgorithmsProgressTabModel(
       total: node.itemCount,
     })),
     performanceSectionTitle: "Roadmap nodes",
-    reviewActionEnabled: false,
-    reviewActionLabel: "Algorithms review is not active for this MVP.",
-    reviewQueueCount: 0,
-    reviewQueueCopy: "Algorithms review queue is not active for this MVP.",
+    reviewActionEnabled: reviewQueueCount > 0,
+    reviewActionLabel: reviewQueueCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
+    reviewQueueCount,
+    reviewQueueCopy: formatAlgorithmsReviewQueueCopy(reviewQueueCount),
   };
+}
+
+function formatAlgorithmsReviewQueueCopy(count: number): string {
+  if (count === 0) {
+    return "No Algorithms review items right now.";
+  }
+
+  return `${count} Algorithms ${count === 1 ? "item needs" : "items need"} review.`;
 }
 
 function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
@@ -214,8 +225,8 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
       input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID
         ? "Performance by domain"
         : "Performance areas",
-    reviewActionEnabled: false,
-    reviewActionLabel: "Review from Progress is not available yet.",
+    reviewActionEnabled: reviewQueueCount > 0,
+    reviewActionLabel: reviewQueueCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount,
     reviewQueueCopy: formatLegacyReviewQueueCopy(reviewQueueCount),
   };

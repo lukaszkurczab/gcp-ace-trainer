@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { ALGORITHMS_TRACK_ID } from "../src/domain";
+import type { ReviewQueueItem } from "../src/domain/training";
 import { buildReviewQueueScreenModel } from "../src/features/review/reviewQueueModel";
+import { buildTrackReviewQueueViewModel } from "../src/features/review/reviewQueueService";
 import type {
-  CloudCertificationReviewViewItem,
-  CloudCertificationReviewViewModel,
-} from "../src/tracks";
+  ReviewQueueViewItem,
+  ReviewQueueViewModel,
+} from "../src/features/review/reviewQueueModel";
+import { createAlgorithmsContentAdapter, ALGORITHM_TRAINING_ITEMS } from "../src/tracks/algorithms";
 
 test("review queue model maps due canonical items into display rows", () => {
   const model = buildReviewQueueScreenModel(
@@ -77,6 +81,7 @@ test("review queue model exposes an honest empty state for an empty canonical qu
   assert.deepEqual(model.upcomingRows, []);
   assert.equal(model.emptyTitle, "No review items yet");
   assert.match(model.emptyDescription, /local review queue/);
+  assert.match(model.emptyDescription, /Cloud Certification/);
 });
 
 test("review queue model exposes degraded queue warnings without fake metrics", () => {
@@ -94,9 +99,31 @@ test("review queue model exposes degraded queue warnings without fake metrics", 
   assert.equal("level" in model, false);
 });
 
+test("track review queue view model joins Algorithms review items to Algorithms content", () => {
+  const viewModel = buildTrackReviewQueueViewModel({
+    contentAdapter: createAlgorithmsContentAdapter(ALGORITHM_TRAINING_ITEMS),
+    now: "2026-06-30T12:00:00.000Z",
+    reviewQueueItems: [
+      makeAlgorithmsReviewQueueItem({
+        dueAt: "2026-06-30T11:00:00.000Z",
+        itemId: "alg-hash-map-primer-001",
+        priority: "high",
+      }),
+    ],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const model = buildReviewQueueScreenModel(viewModel);
+
+  assert.equal(viewModel.trackTitle, "Algorithms");
+  assert.equal(model.totalCount, 1);
+  assert.equal(model.dueRows[0]?.status, "overdue");
+  assert.equal(model.dueRows[0]?.title.length > 0, true);
+  assert.notEqual(model.dueRows[0]?.taxonomyLabel, "Cloud Certification");
+});
+
 function makeReviewViewModel(
-  overrides: Partial<CloudCertificationReviewViewModel> = {},
-): CloudCertificationReviewViewModel {
+  overrides: Partial<ReviewQueueViewModel> = {},
+): ReviewQueueViewModel {
   return {
     degraded: false,
     dueItems: [],
@@ -105,6 +132,7 @@ function makeReviewViewModel(
     ok: true,
     overdueItems: [],
     totalItems: 0,
+    trackTitle: "Cloud Certification",
     upcomingItems: [],
     ...overrides,
   };
@@ -118,12 +146,12 @@ function makeReviewItem(
     isOverdue?: boolean;
     itemId?: string;
     mistakeTypeNodeId?: string;
-    priority?: CloudCertificationReviewViewItem["priority"];
+    priority?: ReviewQueueViewItem["priority"];
     prompt?: string;
-    reasons?: CloudCertificationReviewViewItem["reasons"];
+    reasons?: ReviewQueueViewItem["reasons"];
     taxonomyNodeId?: string;
   } = {},
-): CloudCertificationReviewViewItem {
+): ReviewQueueViewItem {
   return {
     dueAt: overrides.dueAt ?? "2026-06-30T12:00:00.000Z",
     id,
@@ -154,5 +182,29 @@ function makeReviewItem(
           },
         ]
       : [],
+  };
+}
+
+function makeAlgorithmsReviewQueueItem(
+  overrides: Partial<ReviewQueueItem> = {},
+): ReviewQueueItem {
+  return {
+    createdAt: "2026-06-29T12:00:00.000Z",
+    dueAt: "2026-06-30T12:00:00.000Z",
+    id: "review:attempt-algorithms-review-001",
+    itemId: "alg-hash-map-primer-001",
+    mistakeTypeRefs: [
+      {
+        axisId: "mistake_type",
+        nodeId: "wrong_approach",
+        role: "mistake_type",
+        trackId: ALGORITHMS_TRACK_ID,
+      },
+    ],
+    priority: "normal",
+    reasons: ["incorrect_attempt"],
+    sourceAttemptId: "attempt-algorithms-review-001",
+    trackId: ALGORITHMS_TRACK_ID,
+    ...overrides,
   };
 }

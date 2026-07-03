@@ -10,13 +10,14 @@ import {
   Screen,
   SectionHeader,
 } from "../../components";
-import { loadCloudCertificationReviewViewModel } from "../../tracks";
+import { getActiveTrackId } from "../../storage";
 import { colors, spacing, typography } from "../../theme";
 import {
   buildReviewQueueScreenModel,
   type ReviewQueueRow,
   type ReviewQueueScreenModel,
 } from "./reviewQueueModel";
+import { loadTrackReviewQueueViewModel } from "./reviewQueueService";
 
 export function MistakesReviewScreen() {
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);
@@ -30,7 +31,8 @@ export function MistakesReviewScreen() {
       async function loadReviewQueue() {
         setLoading(true);
 
-        const viewModel = await loadCloudCertificationReviewViewModel();
+        const activeTrackId = await getActiveTrackId();
+        const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
         const nextModel = buildReviewQueueScreenModel(viewModel);
 
         if (isActive) {
@@ -63,7 +65,7 @@ export function MistakesReviewScreen() {
       <Card>
         <SectionHeader
           title="Review queue"
-          subtitle="Canonical Cloud Certification items scheduled from local practice."
+          subtitle={model ? `${model.trackTitle} items scheduled from local practice.` : "Items scheduled from local practice."}
         />
         {model?.warning ? (
           <View style={styles.warningBanner}>
@@ -83,7 +85,7 @@ export function MistakesReviewScreen() {
         <Card>
           <EmptyState
             title="Loading review queue"
-            description="Reading local Cloud Certification review data."
+            description="Reading local review data for the active track."
           />
         </Card>
       ) : null}

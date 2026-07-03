@@ -11,7 +11,7 @@ import {
   buildTopicRoadmapNodes,
 } from "../src/features/practice/practiceFlowModel";
 
-test("Practice modes stay aligned while disabling unavailable algorithm practice", () => {
+test("Practice modes stay aligned while keeping Algorithms practice active", () => {
   const cloudModes = buildPracticeModes(getTrackDefinition(CLOUD_CERTIFICATION_TRACK_ID));
   const algorithmModes = buildPracticeModes(getTrackDefinition(ALGORITHMS_TRACK_ID));
 
@@ -24,7 +24,13 @@ test("Practice modes stay aligned while disabling unavailable algorithm practice
     ["learn", "drill", "review", "weakArea", "practice"],
   );
   assert.equal(cloudModes.find((mode) => mode.mode === "practice")?.enabled, true);
-  assert.equal(algorithmModes.find((mode) => mode.mode === "practice")?.enabled, false);
+  assert.equal(algorithmModes.find((mode) => mode.mode === "practice")?.enabled, true);
+
+  const algorithmCopy = JSON.stringify(algorithmModes).toLowerCase();
+  assert.equal(algorithmCopy.includes(blockedTerm("mock")), false);
+  assert.equal(algorithmCopy.includes(blockedTerm("readiness")), false);
+  assert.equal(algorithmCopy.includes(blockedTerm("draft")), false);
+  assert.equal(algorithmCopy.includes("certification"), false);
 });
 
 test("Topic roadmap model does not expose development status copy", () => {

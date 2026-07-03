@@ -62,9 +62,11 @@ test("Algorithms Home model does not expose Cloud-specific or development copy",
     [
       ["Review", "review", true],
       ["Weak area", "weakArea", true],
-      ["Practice", "practice", false],
+      ["Practice", "practice", true],
     ],
   );
+  assert.equal(JSON.stringify(model).toLowerCase().includes(blockedTerm("mock")), false);
+  assert.equal(JSON.stringify(model).toLowerCase().includes("certification"), false);
 });
 
 function blockedTerm(value: string): string {

@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import {
   Badge,
+  Button,
   Card,
   EmptyState,
   IconTile,
@@ -13,7 +14,7 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
-import type { TrainingAttempt } from "../../../domain/training";
+import type { ReviewQueueItem, TrainingAttempt } from "../../../domain/training";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import { colors, spacing, typography } from "../../../theme";
 import type {
@@ -29,7 +30,9 @@ type ProgressTabProps = {
   attempts: AttemptSummary[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
+  reviewQueueItems?: readonly ReviewQueueItem[];
   trainingAttempts?: TrainingAttempt[];
+  onOpenReviewQueue?: () => void;
 };
 
 export function ProgressTab({
@@ -38,7 +41,9 @@ export function ProgressTab({
   attempts,
   cloudProgress,
   practiceHistory,
+  reviewQueueItems = [],
   trainingAttempts = [],
+  onOpenReviewQueue,
 }: ProgressTabProps) {
   const progress = buildProgressTabModel({
     activeTrackId: activeTrack.id,
@@ -46,6 +51,7 @@ export function ProgressTab({
     attempts,
     cloudProgress,
     practiceHistory,
+    reviewQueueItems,
     trainingAttempts,
   });
 
@@ -73,11 +79,17 @@ export function ProgressTab({
             <Text style={styles.warningText}>{progress.warning}</Text>
           </View>
         ) : null}
-        <View style={styles.unavailableAction}>
-          <Text style={styles.unavailableActionText}>
+        {progress.reviewActionEnabled && onOpenReviewQueue ? (
+          <Button onPress={onOpenReviewQueue} variant="secondary">
             {progress.reviewActionLabel}
-          </Text>
-        </View>
+          </Button>
+        ) : (
+          <View style={styles.unavailableAction}>
+            <Text style={styles.unavailableActionText}>
+              {progress.reviewActionLabel}
+            </Text>
+          </View>
+        )}
       </Card>
 
       <View style={styles.section}>

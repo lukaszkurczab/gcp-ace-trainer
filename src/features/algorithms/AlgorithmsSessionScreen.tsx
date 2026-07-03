@@ -27,6 +27,7 @@ import type { RootStackParamList } from "../../navigation";
 import type { PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
   addTrainingAttempt,
+  addReviewQueueItems,
   addTrainingSession,
   getTrainingSessions,
   saveTrainingSessions,
@@ -43,7 +44,9 @@ import {
   getShuffledAlgorithmStaticCheckOptions,
   isAlgorithmRoadmapNodeSelectable,
   scoreAlgorithmStaticMicroCheck,
+  createAlgorithmsReviewQueueItems,
   selectAlgorithmSessionItemsForRoadmapNode,
+  type AlgorithmComplexityPairAnswer,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
   type AlgorithmStaticCheckScore,
@@ -65,7 +68,10 @@ type SessionSummary = {
   correct: number;
   currentRoadmapNode: string;
   incorrect: number;
+  needsReview: readonly string[];
   partial: number;
+  recommendedNext: readonly string[];
+  strong: readonly string[];
 };
 
 const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
@@ -85,10 +91,23 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   useEffect(() => {
     const nextNode = resolveSessionNode(nodeId);
     const nextItems = selectAlgorithmSessionItemsForRoadmapNode({
+      modeId: ALGORITHMS_SESSION_MODE_ID,
       nodeId: nextNode.id,
       sessionLength: sessionConfig?.sessionLength ?? 20,
     });
     const startedAt = new Date().toISOString();
+
+    if (nextItems.length === 0) {
+      setNode(nextNode);
+      setItems([]);
+      setSession(null);
+      setCurrentIndex(0);
+      setAttempts([]);
+      setSummary(null);
+      resetAnswerState();
+      return;
+    }
+
     const nextSession = createTrainingSession({
       itemRefs: nextItems.map((item) => ({
         itemId: item.id,
@@ -195,9 +214,20 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       trackId: ALGORITHMS_TRACK_ID,
     };
     const result = await addTrainingAttempt(attempt);
+    const reviewQueueItems = createAlgorithmsReviewQueueItems(attempt, undefined, {
+      now: answeredAt,
+    });
 
     if (!result.ok) {
       setStorageMessage(formatStorageFailure("The answer was checked, but this attempt was not saved locally", result.issues));
+    }
+
+    if (reviewQueueItems.length > 0) {
+      const reviewResult = await addReviewQueueItems([...reviewQueueItems]);
+
+      if (!reviewResult.ok) {
+        setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
+      }
     }
 
     setAttempts((current) => [attempt, ...current]);
@@ -231,7 +261,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       }
 
       setSession(completed.session);
-      setSummary(buildSessionSummary(attempts, node.label));
+      setSummary(buildSessionSummary(attempts, items, node.label));
       return;
     }
 
@@ -250,7 +280,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
           <Text style={styles.heroEyebrow}>Session summary</Text>
           <SectionHeader
             title="Algorithms session complete"
-            subtitle={`Current roadmap node: ${summary.currentRoadmapNode}`}
+            subtitle={`Score: ${summary.correct}/${summary.completed} correct. Current roadmap node: ${summary.currentRoadmapNode}`}
             tight
           />
           <View style={styles.summaryGrid}>
@@ -259,6 +289,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
             <SummaryMetric label="Partial" value={summary.partial} />
             <SummaryMetric label="Incorrect" value={summary.incorrect} />
           </View>
+        </Card>
+        <Card style={styles.diagnosisCard}>
+          <SectionHeader title="Diagnosis" subtitle="Use this to choose the next review target." tight />
+          <DiagnosticList title="Strong" items={summary.strong} emptyText="No strong pattern signal recorded yet." />
+          <DiagnosticList title="Needs review" items={summary.needsReview} emptyText="No review target from this session." />
+          <DiagnosticList title="Recommended next" items={summary.recommendedNext} emptyText="Continue with the current roadmap node." />
         </Card>
         {storageMessage ? <StorageNotice message={storageMessage} /> : null}
       </Screen>
@@ -270,7 +306,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       <Screen>
         <EmptyState
           title="No Algorithms items"
-          description="No static items are available for this roadmap node."
+          description="No active training items are available for this mode and roadmap node."
           actionLabel="Back to Practice"
           onActionPress={() => resetToPracticeHubAfterSession(navigation, node.id)}
         />
@@ -565,26 +601,71 @@ type FeedbackCardProps = {
 };
 
 function FeedbackCard({ check, item, score }: FeedbackCardProps) {
+  const correctAnswerText = getCorrectAnswerText(check);
+  const weakerAnswerNotes = getWeakerAnswerNotes(check, item);
+  const complexityText = getComplexityText(item);
+  const commonTrap = getCommonTrapText(item, score);
+
   return (
     <Card variant={score.status === "correct" ? "success" : "warning"}>
       <SectionHeader
-        title={formatStatus(score.status)}
+        title="Feedback"
         action={<Badge label={formatStatus(score.status)} tone={score.status === "correct" ? "success" : "warning"} />}
         tight
       />
-      <Text style={styles.feedbackText}>{score.feedback}</Text>
-      {check.type === "trace_next_step" ? (
-        <View style={styles.traceFeedback}>
-          <Text style={styles.feedbackText}>{item.feedbackModel.decisionSignal}</Text>
-          <Text style={styles.feedbackText}>{item.feedbackModel.nextAction}</Text>
-        </View>
+      <FeedbackSection title="Result" text={formatStatus(score.status)} />
+      <FeedbackSection title="Correct answer" text={correctAnswerText} />
+      <FeedbackSection title="Why this answer is correct" text={score.feedback} />
+      <FeedbackSection title="Recognized pattern" text={getRecognizedPatternText(item)} />
+      <FeedbackSection title="Why this pattern" text={getPatternSignalText(item)} />
+      {weakerAnswerNotes.length > 0 ? (
+        <FeedbackSection title="Why other answers are weaker" items={weakerAnswerNotes} />
       ) : null}
+      {complexityText ? <FeedbackSection title="Complexity" text={complexityText} /> : null}
+      <FeedbackSection title="Common trap" text={commonTrap} />
       {score.mistakeTypes.length > 0 ? (
-        <Text style={styles.feedbackText}>
-          Review: {score.mistakeTypes.map(formatItemType).join(", ")}
-        </Text>
+        <FeedbackSection title="Review signal" text={score.mistakeTypes.map(formatItemType).join(", ")} />
       ) : null}
+      <FeedbackSection title="Next review target" text={item.feedbackModel.nextAction} />
     </Card>
+  );
+}
+
+type FeedbackSectionProps = {
+  items?: readonly string[];
+  text?: string;
+  title: string;
+};
+
+function FeedbackSection({ items, text, title }: FeedbackSectionProps) {
+  return (
+    <View style={styles.feedbackSection}>
+      <Text style={styles.feedbackSectionTitle}>{title}</Text>
+      {items
+        ? items.map((item) => (
+            <Text key={item} style={styles.feedbackText}>{item}</Text>
+          ))
+        : <Text style={styles.feedbackText}>{text}</Text>}
+    </View>
+  );
+}
+
+function DiagnosticList({
+  emptyText,
+  items,
+  title,
+}: {
+  emptyText: string;
+  items: readonly string[];
+  title: string;
+}) {
+  return (
+    <View style={styles.feedbackSection}>
+      <Text style={styles.feedbackSectionTitle}>{title}</Text>
+      {(items.length > 0 ? items : [emptyText]).map((item) => (
+        <Text key={item} style={styles.feedbackText}>{item}</Text>
+      ))}
+    </View>
   );
 }
 
@@ -681,19 +762,178 @@ function buildTrainingAttemptResponse(
   };
 }
 
+function getCorrectAnswerText(check: AlgorithmStaticMicroCheck): string {
+  if (check.type === "complexity_pair" && isComplexityPairAnswer(check.correctAnswer)) {
+    return `Time ${check.correctAnswer.time}, space ${check.correctAnswer.space}`;
+  }
+
+  if (Array.isArray(check.correctAnswer)) {
+    return check.correctAnswer.map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`).join("\n");
+  }
+
+  if (typeof check.correctAnswer === "string") {
+    return getOptionText(check, check.correctAnswer);
+  }
+
+  return "No static answer available.";
+}
+
+function getRecognizedPatternText(item: AlgorithmTrainingItem): string {
+  const taxonomyPattern = item.taxonomyRefs.find((ref) => ref.axisId === "pattern_family");
+
+  return formatItemType(item.roadmapNodeId ?? taxonomyPattern?.nodeId ?? item.primarySkillAtomId);
+}
+
+function getPatternSignalText(item: AlgorithmTrainingItem): string {
+  return item.reasonSignal ??
+    item.constraintSignal ??
+    item.approachChoiceReason ??
+    item.feedbackModel.decisionSignal;
+}
+
+function getComplexityText(item: AlgorithmTrainingItem): string | undefined {
+  const complexityParts = [
+    item.expectedTimeComplexity ? `Time ${item.expectedTimeComplexity}` : undefined,
+    item.expectedSpaceComplexity ? `space ${item.expectedSpaceComplexity}` : undefined,
+  ].filter((part): part is string => Boolean(part));
+
+  if (complexityParts.length === 0 && !item.complexityExplanation && !item.solution?.complexityExplanation) {
+    return undefined;
+  }
+
+  return [
+    complexityParts.join(", "),
+    item.complexityExplanation ?? item.solution?.complexityExplanation,
+  ].filter(Boolean).join(". ");
+}
+
+function getCommonTrapText(
+  item: AlgorithmTrainingItem,
+  score: AlgorithmStaticCheckScore,
+): string {
+  const pitfall = item.pitfalls?.[0]?.description;
+  const alternative = item.whyNotAlternatives?.[0]?.reason;
+  const mistakeTypes = score.mistakeTypes.length > 0
+    ? `Review ${score.mistakeTypes.map(formatItemType).join(", ")}.`
+    : undefined;
+
+  return pitfall ??
+    alternative ??
+    mistakeTypes ??
+    item.feedbackModel.mentalModelCorrection;
+}
+
+function getWeakerAnswerNotes(
+  check: AlgorithmStaticMicroCheck,
+  item: AlgorithmTrainingItem,
+): readonly string[] {
+  const correctIds = getCorrectAnswerIds(check.correctAnswer);
+  const weakerOptions = (check.options ?? [])
+    .filter((option) => !correctIds.has(option.id))
+    .slice(0, 3)
+    .map((option) => `${option.text}: does not match the signal "${item.feedbackModel.decisionSignal}".`);
+
+  if (weakerOptions.length > 0) {
+    return weakerOptions;
+  }
+
+  return (item.whyNotAlternatives ?? [])
+    .slice(0, 3)
+    .map((alternative) => alternative.reason);
+}
+
+function getCorrectAnswerIds(answer: AlgorithmStaticMicroCheck["correctAnswer"]): ReadonlySet<string> {
+  if (Array.isArray(answer)) {
+    return new Set(answer);
+  }
+
+  if (typeof answer === "string") {
+    return new Set([answer]);
+  }
+
+  return new Set();
+}
+
+function isComplexityPairAnswer(
+  value: AlgorithmStaticMicroCheck["correctAnswer"],
+): value is AlgorithmComplexityPairAnswer {
+  return typeof value === "object" && !Array.isArray(value) && "space" in value && "time" in value;
+}
+
 function buildSessionSummary(
   attempts: readonly TrainingAttempt[],
+  items: readonly AlgorithmTrainingItem[],
   nodeLabel: string,
 ): SessionSummary {
   const statuses = attempts.map((attempt) => getAlgorithmAttemptStatus(attempt.result));
+  const itemById = new Map(items.map((item) => [item.id, item]));
+  const reviewedAttempts = attempts
+    .map((attempt) => ({
+      attempt,
+      item: itemById.get(attempt.itemId),
+      status: getAlgorithmAttemptStatus(attempt.result),
+    }))
+    .filter((entry): entry is { attempt: TrainingAttempt; item: AlgorithmTrainingItem; status: AlgorithmScoringStatus } =>
+      Boolean(entry.item && entry.status),
+    );
+  const missedAttempts = reviewedAttempts.filter((entry) => entry.status !== "correct");
 
   return {
     completed: attempts.length,
     correct: statuses.filter((status) => status === "correct").length,
     currentRoadmapNode: nodeLabel,
     incorrect: statuses.filter((status) => status === "incorrect").length,
+    needsReview: uniqueStrings(
+      missedAttempts.map((entry) => `${getRecognizedPatternText(entry.item)}: ${getAttemptReviewSignal(entry)}`),
+    ).slice(0, 4),
     partial: statuses.filter((status) => status === "partial").length,
+    recommendedNext: buildRecommendedNext(missedAttempts),
+    strong: uniqueStrings(
+      reviewedAttempts
+        .filter((entry) => entry.status === "correct")
+        .map((entry) => getRecognizedPatternText(entry.item)),
+    ).slice(0, 4),
   };
+}
+
+function getAttemptReviewSignal(entry: {
+  attempt: TrainingAttempt;
+  item: AlgorithmTrainingItem;
+  status: AlgorithmScoringStatus;
+}): string {
+  const mistakeType = entry.attempt.mistakeTypeRefs?.[0]?.nodeId;
+
+  if (mistakeType) {
+    return formatItemType(mistakeType);
+  }
+
+  return entry.item.feedbackModel.mentalModelCorrection;
+}
+
+function buildRecommendedNext(
+  missedAttempts: readonly {
+    attempt: TrainingAttempt;
+    item: AlgorithmTrainingItem;
+    status: AlgorithmScoringStatus;
+  }[],
+): readonly string[] {
+  if (missedAttempts.length === 0) {
+    return ["Continue with the next roadmap session."];
+  }
+
+  const missedStrategyCount = missedAttempts.filter((entry) => entry.item.type === "strategy_choice").length;
+  const recommendations = missedStrategyCount > 0
+    ? [`Review ${missedStrategyCount} missed strategy ${missedStrategyCount === 1 ? "item" : "items"}.`]
+    : [];
+
+  return uniqueStrings([
+    ...recommendations,
+    ...missedAttempts.map((entry) => entry.item.feedbackModel.nextAction),
+  ]).slice(0, 3);
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values.filter((value) => value.trim().length > 0))];
 }
 
 function getProgressTone(status: AlgorithmScoringStatus): "primary" | "success" | "warning" {
@@ -924,11 +1164,23 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.dark.textPrimary,
   },
-  traceFeedback: {
+  feedbackSection: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
+    padding: spacing.md,
+  },
+  feedbackSectionTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
   },
   summaryCard: {
     gap: spacing.xl,
+  },
+  diagnosisCard: {
+    gap: spacing.md,
   },
   summaryGrid: {
     flexDirection: "row",

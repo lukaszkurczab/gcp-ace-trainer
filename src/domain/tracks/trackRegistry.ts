@@ -114,10 +114,10 @@ const algorithmsTrack: TrackDefinition = {
     "Pattern recognition, strategy choice, and complexity reasoning for algorithmic problem solving.",
   id: ALGORITHMS_TRACK_ID,
   legalNote: "Original training content for algorithmic problem solving.",
-  nextActionLabel: "Start Complexity basics",
+  nextActionLabel: "Start algorithms practice",
   sessionModes: [
     {
-      description: "Work through static roadmap items with immediate feedback.",
+      description: "Work through roadmap items with immediate diagnostic feedback.",
       enabled: true,
       feedbackTiming: "immediate",
       id: "algorithms-roadmap-basics",
@@ -136,7 +136,7 @@ const algorithmsTrack: TrackDefinition = {
         "subgoal_ordering",
         "pseudocode_ordering",
       ],
-      title: "Roadmap basics",
+      title: "Pattern basics",
       type: "pattern_drill",
     },
     {

@@ -3,10 +3,7 @@ import type {
   ReviewReason,
   TrainingItemTaxonomyRef,
 } from "../../domain/training";
-import type {
-  CloudCertificationReviewViewItem,
-  CloudCertificationReviewViewModel,
-} from "../../tracks";
+import type { LocalStorageIssue } from "../../storage/storageCodec";
 import type { ExamDomain } from "../../types";
 import { getDomainLabel } from "../../utils";
 
@@ -31,17 +28,42 @@ export type ReviewQueueScreenModel = {
   dueRows: ReviewQueueRow[];
   emptyDescription: string;
   emptyTitle: string;
+  trackTitle: string;
   totalCount: number;
   upcomingRows: ReviewQueueRow[];
   warning?: string;
 };
 
+export type ReviewQueueViewItem = {
+  dueAt: string;
+  id: string;
+  isDue: boolean;
+  isOverdue: boolean;
+  itemId: string;
+  mistakeTypeRefs: TrainingItemTaxonomyRef[];
+  priority: ReviewPriority;
+  prompt?: string;
+  reasons: ReviewReason[];
+  sourceAttemptId: string;
+  taxonomyRefs: TrainingItemTaxonomyRef[];
+};
+
+export type ReviewQueueViewModel = {
+  degraded: boolean;
+  dueItems: ReviewQueueViewItem[];
+  highPriorityItems: ReviewQueueViewItem[];
+  issues: readonly LocalStorageIssue[];
+  ok: boolean;
+  overdueItems: ReviewQueueViewItem[];
+  totalItems: number;
+  trackTitle: string;
+  upcomingItems: ReviewQueueViewItem[];
+};
+
 const EMPTY_TITLE = "No review items yet";
-const EMPTY_DESCRIPTION =
-  "Incorrect Cloud Certification practice answers will appear here after they are added to the local review queue.";
 
 export function buildReviewQueueScreenModel(
-  viewModel: CloudCertificationReviewViewModel,
+  viewModel: ReviewQueueViewModel,
 ): ReviewQueueScreenModel {
   const dueRows = dedupeRows([
     ...viewModel.overdueItems,
@@ -52,8 +74,9 @@ export function buildReviewQueueScreenModel(
   return {
     degraded: viewModel.degraded,
     dueRows,
-    emptyDescription: EMPTY_DESCRIPTION,
+    emptyDescription: `Incorrect or partial ${viewModel.trackTitle} answers will appear here after they are added to the local review queue.`,
     emptyTitle: EMPTY_TITLE,
+    trackTitle: viewModel.trackTitle,
     totalCount: viewModel.totalItems,
     upcomingRows: viewModel.upcomingItems.map(buildReviewQueueRow),
     warning: viewModel.degraded
@@ -62,7 +85,7 @@ export function buildReviewQueueScreenModel(
   };
 }
 
-function buildReviewQueueRow(item: CloudCertificationReviewViewItem): ReviewQueueRow {
+function buildReviewQueueRow(item: ReviewQueueViewItem): ReviewQueueRow {
   const title = item.prompt?.trim() || "Review item unavailable";
   const taxonomyLabel = formatPrimaryTaxonomyLabel(item.taxonomyRefs);
   const status = getRowStatus(item);
@@ -86,9 +109,9 @@ function buildReviewQueueRow(item: CloudCertificationReviewViewItem): ReviewQueu
 }
 
 function dedupeRows(
-  items: readonly CloudCertificationReviewViewItem[],
-): CloudCertificationReviewViewItem[] {
-  const byId = new Map<string, CloudCertificationReviewViewItem>();
+  items: readonly ReviewQueueViewItem[],
+): ReviewQueueViewItem[] {
+  const byId = new Map<string, ReviewQueueViewItem>();
 
   items.forEach((item) => {
     byId.set(item.id, item);
@@ -102,7 +125,7 @@ function dedupeRows(
   );
 }
 
-function getRowStatus(item: CloudCertificationReviewViewItem): ReviewQueueRowStatus {
+function getRowStatus(item: ReviewQueueViewItem): ReviewQueueRowStatus {
   if (!item.prompt) {
     return "unavailable";
   }
@@ -118,7 +141,7 @@ function getRowStatus(item: CloudCertificationReviewViewItem): ReviewQueueRowSta
   return "upcoming";
 }
 
-function getStatusRank(item: CloudCertificationReviewViewItem): number {
+function getStatusRank(item: ReviewQueueViewItem): number {
   const status = getRowStatus(item);
 
   switch (status) {

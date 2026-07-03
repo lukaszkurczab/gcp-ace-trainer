@@ -197,11 +197,9 @@ export function buildRecommendedPracticeModes(input: {
     return [];
   }
 
-  const practiceAvailable = input.activeTrack.id !== ALGORITHMS_TRACK_ID;
-
   return [
     {
-      detail: "Random questions from completed topics.",
+      detail: "Revisit recent misses from the current track.",
       enabled: true,
       icon: "rotate-ccw",
       label: "Review",
@@ -210,7 +208,7 @@ export function buildRecommendedPracticeModes(input: {
       tone: "primary",
     },
     {
-      detail: "Questions from areas that need more attention.",
+      detail: "Focus on areas where recent answers are weaker.",
       enabled: true,
       icon: "alert-triangle",
       label: "Weak area",
@@ -219,26 +217,21 @@ export function buildRecommendedPracticeModes(input: {
       tone: "warning",
     },
     {
-      detail: practiceAvailable
-        ? "Assessment-style session for the selected track."
-        : "Mock exam mode is not available for Algorithms yet.",
-      enabled: practiceAvailable,
+      detail: "Mixed practice session for the selected track.",
+      enabled: true,
       icon: "clipboard",
-      label: practiceAvailable ? "Practice" : "Unavailable",
+      label: "Practice",
       mode: "practice",
       title: "Practice",
-      tone: practiceAvailable ? "info" : "muted",
-      unavailableReason: practiceAvailable ? undefined : "Unavailable for Algorithms",
+      tone: "info",
     },
   ];
 }
 
 export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeModel[] {
-  const practiceAvailable = activeTrack.id !== ALGORITHMS_TRACK_ID;
-
   return [
     {
-      detail: "Guided explanations after each question with solving hints.",
+      detail: "Guided explanations after each item with solving hints.",
       enabled: true,
       icon: "book-open",
       mode: "learn",
@@ -254,7 +247,7 @@ export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeMo
       tone: "primary",
     },
     {
-      detail: "Random questions from completed topics.",
+      detail: "Revisit recent misses from the current track.",
       enabled: true,
       icon: "rotate-ccw",
       mode: "review",
@@ -270,15 +263,12 @@ export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeMo
       tone: "danger",
     },
     {
-      detail: practiceAvailable
-        ? "Assessment-style session for the selected certification track."
-        : "Assessment-style practice is not available for Algorithms yet.",
-      enabled: practiceAvailable,
+      detail: "Mixed item session for the selected track.",
+      enabled: true,
       icon: "clipboard",
       mode: "practice",
       title: "Practice",
-      tone: practiceAvailable ? "success" : "muted",
-      unavailableReason: practiceAvailable ? undefined : "Unavailable for Algorithms",
+      tone: "success",
     },
   ];
 }

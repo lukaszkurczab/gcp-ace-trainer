@@ -4,7 +4,7 @@ import test from "node:test";
 import type { CloudCertificationProgressViewModel } from "../src/tracks";
 import { buildProgressTabModel } from "../src/features/home/tabs/progressTabModel";
 import type { AnalyticsData } from "../src/features/analytics/analyticsService";
-import type { TrainingAttempt } from "../src/domain/training";
+import type { ReviewQueueItem, TrainingAttempt } from "../src/domain/training";
 import { getAlgorithmTrainingItemsForRoadmapNode } from "../src/tracks/algorithms";
 
 test("canonical Cloud progress maps to ProgressTab metrics", () => {
@@ -57,7 +57,7 @@ test("canonical due review count comes from the Cloud progress view model", () =
   assert.equal(model.reviewQueueCopy, "4 due items, 2 high priority.");
 });
 
-test("Progress review action remains explicitly unavailable from Progress", () => {
+test("Progress review action opens when review queue has due items", () => {
   const model = buildProgressTabModel({
     activeTrackId: "cloud-certification",
     analytics: makeAnalytics(),
@@ -68,8 +68,8 @@ test("Progress review action remains explicitly unavailable from Progress", () =
     practiceHistory: [],
   });
 
-  assert.equal(model.reviewActionEnabled, false);
-  assert.equal(model.reviewActionLabel, "Review from Progress is not available yet.");
+  assert.equal(model.reviewActionEnabled, true);
+  assert.equal(model.reviewActionLabel, "Open review queue");
 });
 
 test("canonical domain performance maps into ProgressTab scores", () => {
@@ -173,8 +173,8 @@ test("Algorithms progress shows empty local facts before attempts", () => {
 
   assert.equal(model.hasData, false);
   assert.equal(model.reviewQueueCount, 0);
-  assert.equal(model.reviewQueueCopy, "Algorithms review queue is not active for this MVP.");
-  assert.equal(model.reviewActionLabel, "Algorithms review is not active for this MVP.");
+  assert.equal(model.reviewQueueCopy, "No Algorithms review items right now.");
+  assert.equal(model.reviewActionLabel, "Review from Progress is not available yet.");
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
   assert.equal(
     model.performanceScores[0]?.detail,
@@ -247,6 +247,9 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
     analytics: makeAnalytics(),
     attempts: [],
     practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-algorithms-progress-001", "alg-hash-map-primer-001"),
+    ],
     trainingAttempts: [
       makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
         isCorrect: true,
@@ -268,6 +271,10 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   assert.equal(complexityNode?.percent, Math.round((1 / complexityItemCount) * 100));
   assert.equal(hashNode?.detail, `1/${hashItemCount} items completed`);
   assert.equal(hashNode?.percent, Math.round((1 / hashItemCount) * 100));
+  assert.equal(model.reviewQueueCount, 1);
+  assert.equal(model.reviewQueueCopy, "1 Algorithms item needs review.");
+  assert.equal(model.reviewActionEnabled, true);
+  assert.equal(model.reviewActionLabel, "Open review queue");
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [
@@ -278,6 +285,26 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
       ["Nodes completed", 0],
     ],
   );
+});
+
+test("Algorithms review count uses the canonical review queue, not inferred misses", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+    reviewQueueItems: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+        isCorrect: false,
+        kind: "correctness",
+      }),
+    ],
+  });
+
+  assert.equal(model.reviewQueueCount, 0);
+  assert.equal(model.reviewActionEnabled, false);
+  assert.equal(model.reviewQueueCopy, "No Algorithms review items right now.");
 });
 
 function makeCloudProgress(
@@ -349,6 +376,19 @@ function makeAlgorithmAttempt(
       selectedOptionIds: ["fixture"],
     },
     result,
+    trackId: "algorithms",
+  };
+}
+
+function makeAlgorithmReviewQueueItem(id: string, itemId: string): ReviewQueueItem {
+  return {
+    createdAt: "2026-01-01T10:00:00.000Z",
+    dueAt: "2026-01-02T10:00:00.000Z",
+    id,
+    itemId,
+    priority: "high",
+    reasons: ["incorrect_attempt"],
+    sourceAttemptId: `attempt:${id}`,
     trackId: "algorithms",
   };
 }

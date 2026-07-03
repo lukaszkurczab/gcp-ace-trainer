@@ -162,7 +162,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
                 </View>
                 <View style={styles.progressBlock}>
                   <View style={styles.progressHeader}>
-                    <Text style={styles.progressLabel}>{started ? "Progress" : "Readiness"}</Text>
+                    <Text style={styles.progressLabel}>{started ? "Progress" : "Not started"}</Text>
                     <Text style={styles.progressValue}>{progress}%</Text>
                   </View>
                   <ProgressBar progress={progress / 100} tone="primary" />

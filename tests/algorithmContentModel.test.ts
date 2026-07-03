@@ -29,6 +29,7 @@ import {
   getFirstUsableAlgorithmRoadmapNode,
   getSelectableAlgorithmTrainingItems,
   isAlgorithmRoadmapNodeSelectable,
+  selectAlgorithmSessionItemsForRoadmapNode,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapTrack,
   type AlgorithmTrainingItem,
@@ -414,6 +415,28 @@ test("Algorithms adapter mode selection excludes active items on unavailable roa
 
   assert.equal(modeItems.some((item) => item.id === plannedItem.id), false);
   assert.equal(getSelectableAlgorithmTrainingItems().every((item) => item.status === "active"), true);
+});
+
+test("Algorithms session selection uses mode-scoped adapter items", () => {
+  const item = getItem("alg-complexity-constraint-pair-001");
+  const selected = selectAlgorithmSessionItemsForRoadmapNode({
+    contentAdapter: {
+      getContentVersion: () => "algorithms-core",
+      getItemById: (itemId) => (itemId === item.id ? item as TrainingItem : undefined),
+      getItems: () => {
+        throw new Error("Session selection must not read the full content pool.");
+      },
+      getItemsForMode: (modeId) => {
+        assert.equal(modeId, "algorithms-roadmap-basics");
+        return [item as TrainingItem];
+      },
+      trackId: ALGORITHMS_TRACK_ID,
+    },
+    nodeId: "complexity_and_constraints",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((selectedItem) => selectedItem.id), [item.id]);
 });
 
 test("Algorithms curriculum validation rejects active items on unknown or unavailable roadmap nodes", () => {

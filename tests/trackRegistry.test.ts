@@ -35,11 +35,11 @@ test("cloud certification and algorithms are active tracks", () => {
   assert.deepEqual(
     algorithms.sessionModes.map((mode) => [mode.title, mode.enabled]),
     [
-      ["Roadmap basics", true],
+      ["Pattern basics", true],
       ["Strategy practice", false],
     ],
   );
-  assert.equal(algorithms.nextActionLabel, "Start Complexity basics");
+  assert.equal(algorithms.nextActionLabel, "Start algorithms practice");
 });
 
 test("track id guard rejects unknown values", () => {

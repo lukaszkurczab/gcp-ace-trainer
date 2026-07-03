@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { DEFAULT_TRACK_ID, getTrackDefinition, type TrackId } from "../../domain";
+import { ALGORITHMS_TRACK_ID, DEFAULT_TRACK_ID, getTrackDefinition, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveTrackId, getTrainingAttempts } from "../../storage";
@@ -79,6 +79,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   }, [feedbackMode]);
 
   const activeTrack = getTrackDefinition(route.params?.trackId ?? activeTrackId);
+  const itemNoun = activeTrack.id === ALGORITHMS_TRACK_ID ? "Items" : "Questions";
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
@@ -123,7 +124,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               <SelectableOption
                 key={length}
                 label={String(length)}
-                meta="Questions"
+                meta={itemNoun}
                 onPress={() => setSessionLength(length)}
                 selected={sessionLength === length}
               />
@@ -134,7 +135,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         <View style={styles.section}>
           <SectionHeader title="Feedback mode" tight />
           <SelectablePanel
-            detail="Correctness and explanation are shown after every question."
+            detail="Correctness and explanation are shown after every item."
             label="After each answer"
             onPress={() => setFeedbackMode("afterEachAnswer")}
             selected={feedbackMode === "afterEachAnswer"}
@@ -152,7 +153,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             <View style={styles.reviewCopy}>
               <Text style={styles.reviewTitle}>Review behavior</Text>
               <Text style={styles.subtitle}>
-                Add missed items to an end-of-session correction pass. Extra review questions are tracked separately from normal stats.
+                Add missed items to an end-of-session correction pass. Extra review items are tracked separately from normal stats.
               </Text>
             </View>
             <Pressable

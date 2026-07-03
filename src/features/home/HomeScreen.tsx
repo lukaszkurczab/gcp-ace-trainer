@@ -18,6 +18,7 @@ import {
   getActiveTrackId,
   getAttempts,
   getPracticeHistory,
+  getReviewQueueItems,
   getStorageIssues,
   getTrainingAttempts,
   type LocalStorageIssue,
@@ -28,7 +29,7 @@ import {
   type CloudCertificationProgressViewModel,
 } from "../../tracks/cloud-certification";
 import type { AttemptSummary, PracticeAnswerRecord } from "../../types";
-import type { TrainingAttempt } from "../../domain/training";
+import type { ReviewQueueItem, TrainingAttempt } from "../../domain/training";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { buildPracticeSessionConfig } from "../practice/sessionConfig";
@@ -50,6 +51,7 @@ type ShellData = {
   attempts: AttemptSummary[];
   cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: PracticeAnswerRecord[];
+  reviewQueueItems: ReviewQueueItem[];
   storageIssues: readonly LocalStorageIssue[];
   trainingAttempts: TrainingAttempt[];
 };
@@ -65,6 +67,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     attempts: [],
     cloudProgress: null,
     practiceHistory: [],
+    reviewQueueItems: [],
     storageIssues: [],
     trainingAttempts: [],
   });
@@ -85,12 +88,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           savedAttempts,
           savedPracticeHistory,
           cloudProgress,
+          reviewQueueItemsResult,
           trainingAttemptsResult,
         ] = await Promise.all([
           getActiveTrackId(),
           getAttempts(),
           getPracticeHistory(),
           loadCloudCertificationProgressViewModel(),
+          getReviewQueueItems(),
           getTrainingAttempts(),
         ]);
 
@@ -100,6 +105,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             attempts: savedAttempts,
             cloudProgress,
             practiceHistory: savedPracticeHistory,
+            reviewQueueItems: reviewQueueItemsResult.value,
             storageIssues: getStorageIssues(),
             trainingAttempts: trainingAttemptsResult.value,
           });
@@ -135,6 +141,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 attempts: [],
                 cloudProgress: null,
                 practiceHistory: [],
+                reviewQueueItems: [],
                 storageIssues: getStorageIssues(),
                 trainingAttempts: [],
               }),
@@ -178,7 +185,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             analytics={analytics}
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
+            onOpenReviewQueue={() => navigation.navigate(ROUTES.MISTAKES_REVIEW)}
             practiceHistory={data.practiceHistory}
+            reviewQueueItems={data.reviewQueueItems}
             trainingAttempts={data.trainingAttempts}
           />
         ) : null}

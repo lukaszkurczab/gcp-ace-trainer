@@ -9,6 +9,7 @@ import {
 import type { TrainingAttempt } from "../src/domain/training";
 import {
   createAlgorithmsScoringAdapter,
+  createAlgorithmsReviewAdapter,
   ALGORITHM_TRAINING_ITEMS,
   createCloudCertificationContentAdapter,
   createCloudCertificationReviewAdapter,
@@ -155,9 +156,80 @@ test("Algorithms scoring can score an active static item", () => {
   });
 });
 
+test("Algorithms review adapter creates review items for partial and incorrect attempts", () => {
+  const review = createAlgorithmsReviewAdapter();
+  const partialAttempt = makeAlgorithmsAttempt({
+    id: "attempt-algorithms-partial-review-001",
+    result: {
+      earnedPoints: 1,
+      kind: "partial_credit",
+      maxPoints: 2,
+    },
+  });
+  const incorrectAttempt = makeAlgorithmsAttempt({
+    id: "attempt-algorithms-incorrect-review-001",
+    result: {
+      isCorrect: false,
+      kind: "correctness",
+    },
+  });
+  const correctAttempt = makeAlgorithmsAttempt({
+    id: "attempt-algorithms-correct-review-001",
+    result: {
+      isCorrect: true,
+      kind: "correctness",
+    },
+  });
+
+  const partialItems = review.createReviewQueueItems(partialAttempt, undefined, {
+    dueAt: "2026-06-30T12:00:00.000Z",
+    now: "2026-06-29T12:00:00.000Z",
+  });
+  const incorrectItems = review.createReviewQueueItems(incorrectAttempt);
+
+  assert.equal(partialItems.length, 1);
+  assert.equal(partialItems[0]?.trackId, ALGORITHMS_TRACK_ID);
+  assert.equal(partialItems[0]?.priority, "normal");
+  assert.deepEqual(partialItems[0]?.reasons, ["partial_credit"]);
+  assert.equal(incorrectItems.length, 1);
+  assert.equal(incorrectItems[0]?.priority, "high");
+  assert.deepEqual(incorrectItems[0]?.reasons, ["incorrect_attempt"]);
+  assert.deepEqual(review.createReviewQueueItems(correctAttempt), []);
+});
+
 test("adapter registry rejects an unknown track id", () => {
   assert.throws(
     () => getTrackAdapter("gcp-ace-trainer" as TrackId),
     /Unknown track adapter id: gcp-ace-trainer/,
   );
 });
+
+function makeAlgorithmsAttempt(
+  overrides: Partial<TrainingAttempt> = {},
+): TrainingAttempt {
+  return {
+    answeredAt: "2026-06-29T12:00:00.000Z",
+    id: "attempt-algorithms-review-001",
+    itemId: "alg-hash-map-primer-001",
+    itemType: "approach_primer",
+    mistakeTypeRefs: [
+      {
+        axisId: "mistake_type",
+        nodeId: "wrong_approach",
+        role: "mistake_type",
+        trackId: ALGORITHMS_TRACK_ID,
+      },
+    ],
+    modeId: "algorithms-roadmap-basics",
+    response: {
+      kind: "option_selection",
+      selectedOptionIds: ["store_first"],
+    },
+    result: {
+      isCorrect: false,
+      kind: "correctness",
+    },
+    trackId: ALGORITHMS_TRACK_ID,
+    ...overrides,
+  };
+}
