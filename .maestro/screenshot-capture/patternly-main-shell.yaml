@@ -73,8 +73,8 @@ tags:
 - tapOn: "Practice"
 - waitForAnimationToEnd:
     timeout: 12000
-- assertVisible: "Algorithms is registered"
-- takeScreenshot: "06-practice-algorithms-draft"
+- assertVisible: "Current track: Algorithms"
+- takeScreenshot: "06-practice-algorithms"
 
 - tapOn: "Home"
 - waitForAnimationToEnd:

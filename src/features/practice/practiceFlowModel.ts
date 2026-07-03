@@ -396,7 +396,7 @@ function getAlgorithmTopicStatus(
     return "available";
   }
 
-  return roadmapStatus === "coming_later" ? "later" : "locked";
+  return "locked";
 }
 
 function formatTopicStatusLabel(status: TopicRoadmapNodeModel["status"]): string {

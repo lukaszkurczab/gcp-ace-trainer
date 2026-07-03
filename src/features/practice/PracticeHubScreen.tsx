@@ -271,12 +271,10 @@ const styles = StyleSheet.create({
     paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   topicStrip: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: spacing.md,
   },
   topicCopy: {
-    flex: 1,
     gap: spacing.xs,
   },
   eyebrow: {
@@ -293,6 +291,7 @@ const styles = StyleSheet.create({
     color: colors.dark.textSecondary,
   },
   compactButton: {
+    alignSelf: "flex-start",
     minHeight: 40,
     paddingHorizontal: spacing.md,
   },

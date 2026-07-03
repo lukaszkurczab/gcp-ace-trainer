@@ -1,0 +1,43 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly algorithmic practice path
+tags:
+  - algorithmic-path
+  - patternly
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F192.168.1.29%3A8081"
+- waitForAnimationToEnd:
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Close Algorithms session"
+    commands:
+      - tapOn: "Close Algorithms session"
+      - waitForAnimationToEnd:
+          timeout: 12000
+- assertVisible: "Patternly"
+- assertVisible: "Algorithms"
+
+- tapOn:
+    id: "main-tab-bar-practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Continue practice"
+- assertVisible: "Current track: Algorithms"
+
+- tapOn: "Start session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Patternly"
+- assertVisible: "ITEM 1 OF 20"
+- assertVisible: "Answer"
+
+- tapOn:
+    point: "50%,66%"
+- assertVisible:
+    enabled: true
+    text: "Check Answer"
+- tapOn: "Check Answer"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    text: "Correct|Partial|Incorrect"

@@ -70,7 +70,7 @@ type SessionSummary = {
 
 const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
 
-export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessionScreenProps) {
+export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: AlgorithmsSessionScreenProps) {
   const [node, setNode] = useState<AlgorithmRoadmapNode>(() => getFirstUsableAlgorithmRoadmapNode());
   const [items, setItems] = useState<readonly AlgorithmTrainingItem[]>([]);
   const [session, setSession] = useState<TrainingSession | null>(null);
@@ -113,7 +113,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId }: AlgorithmsSessio
         setStorageMessage(formatStorageFailure("The session is running, but it was not saved locally", result.issues));
       }
     });
-  }, [nodeId]);
+  }, [nodeId, sessionConfig?.sessionLength]);
 
   const currentItem = items[currentIndex];
   const currentCheck = useMemo(
@@ -522,6 +522,7 @@ function ComplexityChoiceGroup({
               pressed && !submitted ? styles.pressed : null,
             ]}
           >
+            <View style={[styles.choiceDot, selectedValue === choice ? styles.choiceDotSelected : null]} />
             <Text style={[styles.choiceText, selectedValue === choice ? styles.choiceTextSelected : null]}>
               {choice}
             </Text>
@@ -829,7 +830,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   optionSelected: {
+    backgroundColor: colors.dark.primarySoft,
     borderColor: colors.dark.primary,
+    borderWidth: 2,
   },
   optionMarker: {
     borderColor: colors.dark.borderStrong,
@@ -863,15 +866,23 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   choiceChip: {
+    alignItems: "center",
     backgroundColor: colors.dark.elevatedSurface,
     borderColor: colors.dark.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: spacing.sm,
+    minHeight: 48,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
   choiceChipSelected: {
+    backgroundColor: colors.dark.primarySoft,
     borderColor: colors.dark.primary,
+    borderWidth: 2,
+    paddingHorizontal: spacing.md - 1,
+    paddingVertical: spacing.sm - 1,
   },
   choiceText: {
     ...typography.small,
@@ -879,6 +890,19 @@ const styles = StyleSheet.create({
   },
   choiceTextSelected: {
     color: colors.dark.textPrimary,
+    fontWeight: "700",
+  },
+  choiceDot: {
+    backgroundColor: "transparent",
+    borderColor: colors.dark.borderStrong,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    height: 8,
+    width: 8,
+  },
+  choiceDotSelected: {
+    backgroundColor: colors.dark.primary,
+    borderColor: colors.dark.primary,
   },
   selectedOrder: {
     backgroundColor: colors.dark.surface,

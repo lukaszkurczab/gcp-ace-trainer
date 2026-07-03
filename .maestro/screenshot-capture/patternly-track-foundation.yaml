@@ -20,7 +20,7 @@ tags:
     point: "50%,64%"
 - waitForAnimationToEnd:
     timeout: 12000
-- takeScreenshot: "home-algorithms-draft"
+- takeScreenshot: "home-algorithms"
 
 - tapOn:
     point: "50%,58%"
