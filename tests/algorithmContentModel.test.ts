@@ -7,7 +7,7 @@ import {
   getEnabledSessionModes,
   getTrackDefinition,
 } from "../src/domain";
-import type { TrainingItem } from "../src/domain/training";
+import type { ReviewQueueItem, TrainingAttempt, TrainingItem } from "../src/domain/training";
 import {
   ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
@@ -29,6 +29,7 @@ import {
   getFirstUsableAlgorithmRoadmapNode,
   getSelectableAlgorithmTrainingItems,
   isAlgorithmRoadmapNodeSelectable,
+  selectAlgorithmSessionItems,
   selectAlgorithmSessionItemsForRoadmapNode,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapTrack,
@@ -439,6 +440,158 @@ test("Algorithms session selection uses mode-scoped adapter items", () => {
   assert.deepEqual(selected.map((selectedItem) => selectedItem.id), [item.id]);
 });
 
+test("Algorithms learn mode selects introductory items from the current roadmap node first", () => {
+  const learnItems = [
+    makeSelectableAlgorithmItem("learn-drill", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("learn-worked", "hash_map_and_set", "worked_example"),
+    makeSelectableAlgorithmItem("learn-naming", "hash_map_and_set", "approach_naming"),
+    makeSelectableAlgorithmItem("learn-primer", "hash_map_and_set", "approach_primer"),
+    makeSelectableAlgorithmItem("learn-other-node", "two_pointers", "approach_primer"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(learnItems),
+    mode: "learn",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(
+    selected.map((item) => item.id),
+    ["learn-primer", "learn-naming", "learn-worked"],
+  );
+});
+
+test("Algorithms drill mode selects active practice items from the current roadmap node", () => {
+  const drillItems = [
+    makeSelectableAlgorithmItem("drill-primer", "hash_map_and_set", "approach_primer"),
+    makeSelectableAlgorithmItem("drill-trace", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("drill-complexity", "hash_map_and_set", "complexity_check"),
+    makeSelectableAlgorithmItem("drill-edge", "hash_map_and_set", "edge_case_drill"),
+    makeSelectableAlgorithmItem("drill-pseudocode", "hash_map_and_set", "pseudocode_ordering"),
+    makeSelectableAlgorithmItem("drill-subgoal", "hash_map_and_set", "subgoal_ordering"),
+    makeSelectableAlgorithmItem("drill-other-node", "two_pointers", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(drillItems),
+    mode: "drill",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(
+    selected.map((item) => item.id),
+    ["drill-trace", "drill-complexity", "drill-edge", "drill-pseudocode", "drill-subgoal"],
+  );
+});
+
+test("Algorithms review mode selects due Algorithms review queue items", () => {
+  const reviewItems = [
+    makeSelectableAlgorithmItem("review-normal", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("review-high", "hash_map_and_set", "complexity_check"),
+    makeSelectableAlgorithmItem("review-future", "hash_map_and_set", "edge_case_drill"),
+    makeSelectableAlgorithmItem("review-cloud", "hash_map_and_set", "subgoal_ordering"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(reviewItems),
+    mode: "review",
+    nodeId: "hash_map_and_set",
+    now: "2026-07-03T10:00:00.000Z",
+    reviewQueueItems: [
+      makeReviewQueueItem("queue-normal", "review-normal", {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        priority: "normal",
+      }),
+      makeReviewQueueItem("queue-high", "review-high", {
+        dueAt: "2026-07-03T09:30:00.000Z",
+        priority: "high",
+      }),
+      makeReviewQueueItem("queue-future", "review-future", {
+        dueAt: "2026-07-04T09:00:00.000Z",
+        priority: "urgent",
+      }),
+      makeReviewQueueItem("queue-cloud", "review-cloud", {
+        trackId: "cloud-certification",
+      }),
+    ],
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["review-high", "review-normal"]);
+});
+
+test("Algorithms weak area mode selects the weakest evidenced roadmap node", () => {
+  const weakItems = [
+    makeSelectableAlgorithmItem("weak-current", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-arrays", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-arrays-extra", "arrays_and_strings", "complexity_check"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-weak-001", "weak-arrays", false),
+      makeSelectionAttempt("attempt-weak-002", "weak-arrays-extra", false),
+      makeSelectionAttempt("attempt-strong-001", "weak-current", true),
+      makeSelectionAttempt("attempt-strong-002", "weak-current", true),
+    ],
+    contentAdapter: makeSelectionAdapter(weakItems),
+    mode: "weakArea",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["weak-arrays", "weak-arrays-extra"]);
+});
+
+test("Algorithms weak area mode falls back to current roadmap node without enough evidence", () => {
+  const weakItems = [
+    makeSelectableAlgorithmItem("weak-fallback-current", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-fallback-arrays", "arrays_and_strings", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-one-off-001", "weak-fallback-arrays", false),
+    ],
+    contentAdapter: makeSelectionAdapter(weakItems),
+    mode: "weakArea",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["weak-fallback-current"]);
+});
+
+test("Algorithms practice mode mixes selectable items from unlocked roadmap nodes", () => {
+  const practiceItems = [
+    makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
+    makeSelectableAlgorithmItem("practice-arrays", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-hash-locked", "hash_map_and_set", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    attempts: [
+      makeSelectionAttempt("attempt-complexity-complete-001", "practice-complexity", true),
+    ],
+    contentAdapter: makeSelectionAdapter(practiceItems),
+    mode: "practice",
+    nodeId: "complexity_and_constraints",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity", "practice-arrays"]);
+});
+
+test("Algorithms default mode keeps current roadmap node selection", () => {
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter([
+      makeSelectableAlgorithmItem("default-current", "hash_map_and_set", "trace_next_step"),
+      makeSelectableAlgorithmItem("default-other", "two_pointers", "trace_next_step"),
+    ]),
+    mode: "default",
+    nodeId: "hash_map_and_set",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["default-current"]);
+});
+
 test("Algorithms curriculum validation rejects active items on unknown or unavailable roadmap nodes", () => {
   const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
   const unknownNodeItem = makeBaseAlgorithmItem({
@@ -695,5 +848,75 @@ function makeStaticMicroCheck() {
     status: "active" as const,
     testedSkillAtomIds: ["choose_lookup_key"],
     type: "single_choice" as const,
+  };
+}
+
+function makeSelectableAlgorithmItem(
+  id: string,
+  roadmapNodeId: string,
+  type: AlgorithmTrainingItem["type"],
+): AlgorithmTrainingItem {
+  return makeBaseAlgorithmItem({
+    id,
+    roadmapNodeId,
+    status: "active",
+    staticMicroChecks: [makeStaticMicroCheck()],
+    type,
+  });
+}
+
+function makeSelectionAdapter(items: readonly AlgorithmTrainingItem[]) {
+  const itemsById = new Map(items.map((item) => [item.id, item as TrainingItem]));
+
+  return {
+    getContentVersion: () => ALGORITHM_CONTENT_VERSION,
+    getItemById: (itemId: string) => itemsById.get(itemId),
+    getItems: () => items as readonly TrainingItem[],
+    getItemsForMode: (modeId: string) => {
+      assert.equal(modeId, "algorithms-roadmap-basics");
+      return items as readonly TrainingItem[];
+    },
+    trackId: ALGORITHMS_TRACK_ID,
+  };
+}
+
+function makeSelectionAttempt(
+  id: string,
+  itemId: string,
+  isCorrect: boolean,
+): TrainingAttempt {
+  return {
+    answeredAt: "2026-07-03T08:00:00.000Z",
+    id,
+    itemId,
+    itemType: "trace_next_step",
+    modeId: "algorithms-roadmap-basics",
+    response: {
+      kind: "option_selection",
+      selectedOptionIds: ["check_before_store"],
+    },
+    result: {
+      isCorrect,
+      kind: "correctness",
+    },
+    trackId: ALGORITHMS_TRACK_ID,
+  };
+}
+
+function makeReviewQueueItem(
+  id: string,
+  itemId: string,
+  overrides: Partial<ReviewQueueItem> = {},
+): ReviewQueueItem {
+  return {
+    createdAt: "2026-07-02T08:00:00.000Z",
+    dueAt: "2026-07-03T08:00:00.000Z",
+    id,
+    itemId,
+    priority: "normal",
+    reasons: ["incorrect_attempt"],
+    sourceAttemptId: `attempt:${id}`,
+    trackId: ALGORITHMS_TRACK_ID,
+    ...overrides,
   };
 }

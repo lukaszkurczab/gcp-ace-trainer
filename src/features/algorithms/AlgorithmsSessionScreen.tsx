@@ -29,7 +29,9 @@ import {
   addTrainingAttempt,
   addReviewQueueItems,
   addTrainingSession,
+  getReviewQueueItems,
   getTrainingSessions,
+  getTrainingAttempts,
   saveTrainingSessions,
   type LocalStorageIssue,
 } from "../../storage";
@@ -39,13 +41,12 @@ import {
   ALGORITHM_ROADMAP,
   getActiveAlgorithmStaticMicroCheck,
   getAlgorithmAttemptStatus,
-  getAlgorithmTrainingItemsForRoadmapNode,
   getFirstUsableAlgorithmRoadmapNode,
   getShuffledAlgorithmStaticCheckOptions,
   isAlgorithmRoadmapNodeSelectable,
   scoreAlgorithmStaticMicroCheck,
   createAlgorithmsReviewQueueItems,
-  selectAlgorithmSessionItemsForRoadmapNode,
+  selectAlgorithmSessionItems,
   type AlgorithmComplexityPairAnswer,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
@@ -87,52 +88,89 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const nextNode = resolveSessionNode(nodeId);
-    const nextItems = selectAlgorithmSessionItemsForRoadmapNode({
-      modeId: ALGORITHMS_SESSION_MODE_ID,
-      nodeId: nextNode.id,
-      sessionLength: sessionConfig?.sessionLength ?? 20,
-    });
-    const startedAt = new Date().toISOString();
+    let isActive = true;
 
-    if (nextItems.length === 0) {
-      setNode(nextNode);
-      setItems([]);
-      setSession(null);
+    async function loadSession() {
+      const nextNode = resolveSessionNode(nodeId);
+      const startedAt = new Date().toISOString();
+      setIsLoading(true);
+      setStorageMessage(null);
+
+      const [attemptsResult, reviewQueueResult] = await Promise.all([
+        getTrainingAttempts(),
+        getReviewQueueItems(),
+      ]);
+
+      if (!isActive) {
+        return;
+      }
+
+      const nextItems = selectAlgorithmSessionItems({
+        attempts: attemptsResult.value,
+        mode: sessionConfig?.mode ?? "default",
+        nodeId: nextNode.id,
+        now: startedAt,
+        reviewQueueItems: reviewQueueResult.value,
+        sessionLength: sessionConfig?.sessionLength ?? 20,
+      });
+      const nextDisplayNode = resolveDisplayNode(nextItems, nextNode, sessionConfig?.mode ?? "default");
+      const loadIssues = [
+        ...(attemptsResult.issues ?? []),
+        ...(reviewQueueResult.issues ?? []),
+      ];
+
+      if (loadIssues.length > 0) {
+        setStorageMessage(formatStorageFailure("The session is using available local data, but some progress data could not be loaded", loadIssues));
+      }
+
+      if (nextItems.length === 0) {
+        setNode(nextDisplayNode);
+        setItems([]);
+        setSession(null);
+        setCurrentIndex(0);
+        setAttempts([]);
+        setSummary(null);
+        resetAnswerState();
+        setIsLoading(false);
+        return;
+      }
+
+      const nextSession = createTrainingSession({
+        itemRefs: nextItems.map((item) => ({
+          itemId: item.id,
+          itemType: item.type,
+          trackId: ALGORITHMS_TRACK_ID,
+        })),
+        modeId: ALGORITHMS_SESSION_MODE_ID,
+        startedAt,
+        trackId: ALGORITHMS_TRACK_ID,
+      });
+
+      setNode(nextDisplayNode);
+      setItems(nextItems);
+      setSession(nextSession);
       setCurrentIndex(0);
       setAttempts([]);
       setSummary(null);
       resetAnswerState();
-      return;
+      setIsLoading(false);
+
+      void addTrainingSession(nextSession).then((result) => {
+        if (!result.ok) {
+          setStorageMessage(formatStorageFailure("The session is running, but it was not saved locally", result.issues));
+        }
+      });
     }
 
-    const nextSession = createTrainingSession({
-      itemRefs: nextItems.map((item) => ({
-        itemId: item.id,
-        itemType: item.type,
-        trackId: ALGORITHMS_TRACK_ID,
-      })),
-      modeId: ALGORITHMS_SESSION_MODE_ID,
-      startedAt,
-      trackId: ALGORITHMS_TRACK_ID,
-    });
+    void loadSession();
 
-    setNode(nextNode);
-    setItems(nextItems);
-    setSession(nextSession);
-    setCurrentIndex(0);
-    setAttempts([]);
-    setSummary(null);
-    resetAnswerState();
-
-    void addTrainingSession(nextSession).then((result) => {
-      if (!result.ok) {
-        setStorageMessage(formatStorageFailure("The session is running, but it was not saved locally", result.issues));
-      }
-    });
-  }, [nodeId, sessionConfig?.sessionLength]);
+    return () => {
+      isActive = false;
+    };
+  }, [nodeId, sessionConfig?.mode, sessionConfig?.sessionLength]);
 
   const currentItem = items[currentIndex];
   const currentCheck = useMemo(
@@ -301,15 +339,29 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     );
   }
 
-  if (!currentItem || !currentCheck) {
+  if (isLoading) {
     return (
       <Screen>
         <EmptyState
-          title="No Algorithms items"
-          description="No active training items are available for this mode and roadmap node."
+          title="Preparing Algorithms session"
+          description="Loading local progress and review items."
+        />
+      </Screen>
+    );
+  }
+
+  if (!currentItem || !currentCheck) {
+    const emptyState = getEmptySessionStateCopy(sessionConfig?.mode ?? "default");
+
+    return (
+      <Screen>
+        <EmptyState
+          title={emptyState.title}
+          description={emptyState.description}
           actionLabel="Back to Practice"
           onActionPress={() => resetToPracticeHubAfterSession(navigation, node.id)}
         />
+        {storageMessage ? <StorageNotice message={storageMessage} /> : null}
       </Screen>
     );
   }
@@ -714,6 +766,38 @@ function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
   }
 
   return getFirstUsableAlgorithmRoadmapNode();
+}
+
+function resolveDisplayNode(
+  items: readonly AlgorithmTrainingItem[],
+  fallbackNode: AlgorithmRoadmapNode,
+  mode: PracticeSessionRouteParams["mode"],
+): AlgorithmRoadmapNode {
+  if (mode !== "weakArea") {
+    return fallbackNode;
+  }
+
+  const selectedNodeId = items[0]?.roadmapNodeId;
+  const selectedNode = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === selectedNodeId);
+
+  return selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode) ? selectedNode : fallbackNode;
+}
+
+function getEmptySessionStateCopy(mode: PracticeSessionRouteParams["mode"]): {
+  description: string;
+  title: string;
+} {
+  if (mode === "review") {
+    return {
+      description: "No due Algorithms review items right now.",
+      title: "No review due",
+    };
+  }
+
+  return {
+    description: "No active training items are available for this mode and roadmap node.",
+    title: "No Algorithms items",
+  };
 }
 
 function hasAnswer(
