@@ -485,6 +485,44 @@ test("Algorithms drill mode selects active practice items from the current roadm
   );
 });
 
+test("Algorithms learn mode falls back to selectable current-node items when no learn items exist", () => {
+  const fallbackItems = [
+    makeSelectableAlgorithmItem("learn-fallback-strategy", "contrast_hash_map_vs_sorting", "solution_comparison"),
+    makeSelectableAlgorithmItem("learn-fallback-complexity", "contrast_hash_map_vs_sorting", "strategy_choice"),
+    makeSelectableAlgorithmItem("learn-fallback-other-node", "hash_map_and_set", "approach_primer"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(fallbackItems),
+    mode: "learn",
+    nodeId: "contrast_hash_map_vs_sorting",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(
+    selected.map((item) => item.id),
+    ["learn-fallback-strategy", "learn-fallback-complexity"],
+  );
+});
+
+test("Algorithms drill mode falls back to selectable current-node items when no drill items exist", () => {
+  const fallbackItems = [
+    makeSelectableAlgorithmItem("drill-fallback-comparison", "contrast_two_pointers_vs_sliding_window", "solution_comparison"),
+    makeSelectableAlgorithmItem("drill-fallback-strategy", "contrast_two_pointers_vs_sliding_window", "strategy_choice"),
+    makeSelectableAlgorithmItem("drill-fallback-other-node", "hash_map_and_set", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(fallbackItems),
+    mode: "drill",
+    nodeId: "contrast_two_pointers_vs_sliding_window",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(
+    selected.map((item) => item.id),
+    ["drill-fallback-comparison", "drill-fallback-strategy"],
+  );
+});
+
 test("Algorithms review mode selects due Algorithms review queue items", () => {
   const reviewItems = [
     makeSelectableAlgorithmItem("review-normal", "hash_map_and_set", "trace_next_step"),

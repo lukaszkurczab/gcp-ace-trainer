@@ -110,23 +110,26 @@ export function selectAlgorithmSessionItems(
   switch (input.mode) {
     case "learn":
       return takeSessionItems(
-        sortByTypePriority(
-          filterItemsForRoadmapNode(selectableItems, input.nodeId)
-            .filter((item) => LEARN_ITEM_TYPES.includes(item.type as typeof LEARN_ITEM_TYPES[number])),
-          LEARN_ITEM_TYPES,
-        ),
+        selectPreferredRoadmapNodeItems({
+          items: selectableItems,
+          nodeId: input.nodeId,
+          typePriority: LEARN_ITEM_TYPES,
+        }),
         input.sessionLength,
       );
     case "drill":
       return takeSessionItems(
-        sortByTypePriority(
-          filterItemsForRoadmapNode(selectableItems, input.nodeId)
-            .filter((item) => DRILL_ITEM_TYPES.includes(item.type as typeof DRILL_ITEM_TYPES[number])),
-          DRILL_ITEM_TYPES,
-        ),
+        selectPreferredRoadmapNodeItems({
+          items: selectableItems,
+          nodeId: input.nodeId,
+          typePriority: DRILL_ITEM_TYPES,
+        }),
         input.sessionLength,
       );
     case "review":
+      // sessionMisses is the immediate post-session correction path: it replays the
+      // supplied missed ids regardless of dueAt. dueQueue remains the spaced-review
+      // source and continues to require dueAt <= now.
       if (input.reviewSource === "sessionMisses") {
         return selectReviewItemsById({
           itemIds: input.reviewItemIds ?? [],
@@ -282,6 +285,21 @@ function filterItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
 ): readonly AlgorithmTrainingItem[] {
   return items.filter((item) => item.roadmapNodeId === nodeId);
+}
+
+function selectPreferredRoadmapNodeItems<TType extends string>(input: {
+  items: readonly AlgorithmTrainingItem[];
+  nodeId: AlgorithmRoadmapNodeId;
+  typePriority: readonly TType[];
+}): readonly AlgorithmTrainingItem[] {
+  const nodeItems = filterItemsForRoadmapNode(input.items, input.nodeId);
+  const preferredItems = nodeItems.filter((item) =>
+    input.typePriority.includes(item.type as TType),
+  );
+
+  return preferredItems.length > 0
+    ? sortByTypePriority(preferredItems, input.typePriority)
+    : nodeItems;
 }
 
 function sortByTypePriority<TType extends string>(

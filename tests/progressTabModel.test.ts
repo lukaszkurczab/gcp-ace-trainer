@@ -73,6 +73,20 @@ test("Progress review action opens when review queue has due items", () => {
   assert.deepEqual(model.reviewAction, { kind: "legacyMistakesReview" });
 });
 
+test("Cloud Certification due review keeps the legacy review action", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "cloud-certification",
+    analytics: makeAnalytics(),
+    attempts: [],
+    cloudProgress: makeCloudProgress({
+      dueReviewCount: 1,
+    }),
+    practiceHistory: [],
+  });
+
+  assert.equal(model.reviewAction?.kind, "legacyMistakesReview");
+});
+
 test("canonical domain performance maps into ProgressTab scores", () => {
   const model = buildProgressTabModel({
     activeTrackId: "cloud-certification",
@@ -300,6 +314,28 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
       ["Nodes completed", 0],
     ],
   );
+});
+
+test("Algorithms due review action routes to an Algorithms review practice session", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-algorithms-action-001", "alg-hash-map-primer-001", {
+        dueAt: "2026-07-03T09:00:00.000Z",
+      }),
+    ],
+    trainingAttempts: [],
+  });
+
+  assert.equal(model.reviewAction?.kind, "practiceSession");
+  assert.equal(model.reviewAction?.params.trackId, "algorithms");
+  assert.equal(model.reviewAction?.params.mode, "review");
+  assert.equal(model.reviewAction?.params.reviewSource, "dueQueue");
+  assert.equal(model.reviewAction?.params.feedbackMode, "afterEachAnswer");
 });
 
 test("Algorithms progress selects the active roadmap node from completed prerequisites", () => {
