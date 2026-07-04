@@ -1,0 +1,209 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "What makes a monotonic stack different from a basic last-in-first-out stack?",
+      "mentalModelCorrection": "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-contrast-stack-monotonic-001",
+    "learningStage": "contrast_practice",
+    "primarySkillAtomId": "maintain_monotonic_stack_invariant",
+    "prompt": "What makes a monotonic stack different from a basic last-in-first-out stack?",
+    "roadmapNodeId": "contrast_stack_vs_monotonic_stack_intro",
+    "secondarySkillAtomIds": [
+      "use_last_unresolved_state"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+        "id": "alg-contrast-stack-monotonic-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries."
+          },
+          {
+            "id": "wrong_1",
+            "text": "A monotonic stack ignores order among unresolved values."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A basic stack and monotonic stack always store identical state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_monotonic_stack_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "monotonic_stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_monotonic_stack_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Contrast stack variants",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "constraintSignal": "What makes a monotonic stack different from a basic last-in-first-out stack?",
+    "expectedApproachIds": [
+      "maintain_monotonic_stack_invariant"
+    ],
+    "reasonSignal": "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries."
+        },
+        {
+          "id": "wrong_1",
+          "text": "A monotonic stack ignores order among unresolved values."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A basic stack and monotonic stack always store identical state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for each value's next greater value. What separates the stack variants?",
+      "mentalModelCorrection": "Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-contrast-monotonic-basic-stack-001",
+    "learningStage": "contrast_practice",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "One task validates brackets; another asks for each value's next greater value. What separates the stack variants?",
+    "roadmapNodeId": "contrast_stack_vs_monotonic_stack_intro",
+    "secondarySkillAtomIds": [
+      "maintain_monotonic_stack_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements.",
+        "id": "alg-contrast-monotonic-basic-stack-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Both tasks only need the newest unresolved token type."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Next greater value does not need an ordering invariant."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Contrast basic and ordered stack state",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Both tasks only need the newest unresolved token type."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Next greater value does not need an ordering invariant."
+        }
+      ]
+    }
+  }
+]

@@ -9,6 +9,10 @@ import {
 } from "../src/domain";
 import type { ReviewQueueItem, TrainingAttempt, TrainingItem } from "../src/domain/training";
 import {
+  algorithmContentGroups,
+  algorithmContentItems,
+} from "../src/tracks/algorithms/content";
+import {
   ALGORITHM_APPROACH_TEMPLATES,
   ALGORITHM_CONTENT_VERSION,
   ALGORITHM_EVIDENCE_LEVELS,
@@ -286,6 +290,48 @@ test("Algorithms existing content preserves valid item ids on canonical refs", (
   assert.equal(getItem("alg-array-string-naming-001").roadmapNodeId, "arrays_and_strings");
   assert.equal(getItem("alg-hash-map-primer-001").primarySkillAtomId, "choose_lookup_key");
   assert.equal(getItem("alg-two-pointers-subgoal-order-001").primarySkillAtomId, "move_decisive_pointer");
+});
+
+test("Algorithms JSON content groups preserve the public item collection", () => {
+  assert.equal(algorithmContentItems.length, expectedActiveAlgorithmItemCount);
+  assert.deepEqual(
+    ALGORITHM_TRAINING_ITEMS.map((item) => item.id),
+    algorithmContentItems.map((item) => item.id),
+  );
+
+  const itemIds = new Set<string>();
+  const availableNodeIds = new Set(
+    ALGORITHM_ROADMAP.nodes.filter((node) => node.status === "available").map((node) => node.id),
+  );
+
+  for (const group of algorithmContentGroups) {
+    assert.equal(group.items.length, group.itemCount, group.roadmapNodeId);
+    assert.equal(availableNodeIds.has(group.roadmapNodeId), true, group.roadmapNodeId);
+
+    for (const item of group.items) {
+      assert.equal(item.trackId, "algorithms", item.id);
+      assert.equal(item.roadmapNodeId, group.roadmapNodeId, item.id);
+      assert.equal(itemIds.has(item.id), false, item.id);
+      itemIds.add(item.id);
+    }
+  }
+
+  assert.equal(itemIds.size, ALGORITHM_TRAINING_ITEMS.length);
+});
+
+test("Algorithms adapter reads the migrated content through the existing API", () => {
+  const adapter = createAlgorithmsContentAdapter();
+  const adapterItems = adapter.getItems();
+  const modeItems = adapter.getItemsForMode("algorithms-roadmap-basics");
+
+  assert.deepEqual(
+    adapterItems.map((item) => item.id),
+    ALGORITHM_TRAINING_ITEMS.map((item) => item.id),
+  );
+  assert.deepEqual(
+    modeItems.map((item) => item.id),
+    getSelectableAlgorithmTrainingItems().map((item) => item.id),
+  );
 });
 
 test("Algorithms active items and curriculum pass validation", () => {

@@ -1,0 +1,209 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "What must be true before replacing a linear scan with binary search?",
+      "mentalModelCorrection": "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-contrast-binary-linear-001",
+    "learningStage": "contrast_practice",
+    "primarySkillAtomId": "identify_monotonic_predicate",
+    "prompt": "What must be true before replacing a linear scan with binary search?",
+    "roadmapNodeId": "contrast_binary_search_vs_linear_scan",
+    "secondarySkillAtomIds": [
+      "track_index_boundary"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
+        "id": "alg-contrast-binary-linear-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Binary search is valid whenever the input is an array."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A scan is always worse even if no ordered boundary exists."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "identify_monotonic_predicate"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "binary_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "identify_monotonic_predicate",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_predicate_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Contrast binary search with scan",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "track_index_boundary"
+    ],
+    "constraintSignal": "What must be true before replacing a linear scan with binary search?",
+    "expectedApproachIds": [
+      "identify_monotonic_predicate"
+    ],
+    "reasonSignal": "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Binary search is valid whenever the input is an array."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A scan is always worse even if no ordered boundary exists."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A task asks whether any character is uppercase in an unsorted string. Why is binary search not the deciding strategy?",
+      "mentalModelCorrection": "Linear scan is appropriate when each position must be inspected or no comparison can discard a region.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-contrast-linear-binary-001",
+    "learningStage": "contrast_practice",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A task asks whether any character is uppercase in an unsorted string. Why is binary search not the deciding strategy?",
+    "roadmapNodeId": "contrast_binary_search_vs_linear_scan",
+    "secondarySkillAtomIds": [
+      "identify_monotonic_predicate"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Linear scan is appropriate when each position must be inspected or no comparison can discard a region.",
+        "id": "alg-contrast-linear-binary-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Linear scan is appropriate when each position must be inspected or no comparison can discard a region."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Uppercase checks create an ordered true/false boundary automatically."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Binary search can discard half of any string without a predicate."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Contrast scan with binary search",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Linear scan is appropriate when each position must be inspected or no comparison can discard a region."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Uppercase checks create an ordered true/false boundary automatically."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Binary search can discard half of any string without a predicate."
+        }
+      ]
+    }
+  }
+]

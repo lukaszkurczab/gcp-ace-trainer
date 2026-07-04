@@ -1,0 +1,2553 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nested-structure scan sees a closing token. Which state should control the next decision?",
+      "mentalModelCorrection": "Use the most recent unresolved opening state to decide whether the next closing token is valid.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-stack-unresolved-state-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A nested-structure scan sees a closing token. Which state should control the next decision?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use the most recent unresolved opening state to decide whether the next closing token is valid.",
+        "id": "alg-stack-unresolved-state-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use the most recent unresolved opening state to decide whether the next closing token is valid."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use the earliest unresolved opening token."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use a count only and ignore token type."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Use last unresolved state",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Stack top is '[' and the next token is ']'. What is the next step?",
+      "mentalModelCorrection": "Pop the most recent opening token because it matches the closing token.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-stack-trace-match-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Stack top is '[' and the next token is ']'. What is the next step?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Pop the most recent opening token because it matches the closing token.",
+        "id": "alg-stack-trace-match-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Pop the most recent opening token because it matches the closing token."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Push the closing token onto the stack."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Compare the closing token with the bottom of the stack."
+          }
+        ],
+        "prompt": "Choose the next trace step.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "trace_next_step"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace a matching close",
+    "trackId": "algorithms",
+    "type": "trace_next_step",
+    "stepByStepTrace": [
+      {
+        "description": "Pop the most recent opening token because it matches the closing token.",
+        "id": "alg-stack-trace-match-001-trace-001",
+        "order": 1,
+        "state": [
+          "Stack top is '[' and the next token is ']'. What is the next step?"
+        ]
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nested-token scan reads a closing token while the stack is empty. What should be diagnosed?",
+      "mentalModelCorrection": "An empty stack before a closing token means there is no unresolved opener to match.",
+      "mistakeTypes": [
+        "empty_input_error",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-stack-empty-close-edge-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A nested-token scan reads a closing token while the stack is empty. What should be diagnosed?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "An empty stack before a closing token means there is no unresolved opener to match.",
+        "id": "alg-stack-empty-close-edge-001-check",
+        "mistakeTypes": [
+          "empty_input_error",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "An empty stack before a closing token means there is no unresolved opener to match."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Treat the close as a new opener."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Skip the close because empty stack means valid so far."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "empty_input_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Handle empty stack close",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Order the pseudocode for nested-token validation.",
+      "mentalModelCorrection": "Push openers, compare each closer with the top, then require the stack to be empty at the end.",
+      "mistakeTypes": [
+        "subgoal_order_wrong",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-stack-pseudocode-order-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Order the pseudocode for nested-token validation.",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "create_stack",
+          "scan_tokens",
+          "push_open",
+          "match_close",
+          "check_empty"
+        ],
+        "feedback": "Push openers, compare each closer with the top, then require the stack to be empty at the end.",
+        "id": "alg-stack-pseudocode-order-001-check",
+        "mistakeTypes": [
+          "subgoal_order_wrong",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "create_stack",
+            "text": "Create an empty stack."
+          },
+          {
+            "id": "scan_tokens",
+            "text": "Scan tokens from left to right."
+          },
+          {
+            "id": "push_open",
+            "text": "Push each opening token."
+          },
+          {
+            "id": "match_close",
+            "text": "For a closing token, compare with the top opener and pop if it matches."
+          },
+          {
+            "id": "check_empty",
+            "text": "After scanning, accept only if no opener remains."
+          }
+        ],
+        "prompt": "Tap the steps in the correct order.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "order_steps"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "subgoal_order_wrong",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Order stack validation steps",
+    "trackId": "algorithms",
+    "type": "pseudocode_ordering"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Which signal points to stack state rather than queue-like state?",
+      "mentalModelCorrection": "A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-stack-strategy-signal-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Which signal points to stack state rather than queue-like state?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
+        "id": "alg-stack-strategy-signal-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A stack is appropriate when the newest unresolved state is the first state that must be resolved."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The oldest unresolved item must always be resolved first."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The input contains numbers, so stack state cannot apply."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose stack state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Which signal points to stack state rather than queue-like state?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A stack is appropriate when the newest unresolved state is the first state that must be resolved."
+        },
+        {
+          "id": "wrong_1",
+          "text": "The oldest unresolved item must always be resolved first."
+        },
+        {
+          "id": "wrong_2",
+          "text": "The input contains numbers, so stack state cannot apply."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A stream of nested tags must reject the first closing tag that does not match the most recent opener. Which state fits?",
+      "mentalModelCorrection": "Use a stack because the newest unmatched opener must be resolved first.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-strategy-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A stream of nested tags must reject the first closing tag that does not match the most recent opener. Which state fits?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a stack because the newest unmatched opener must be resolved first.",
+        "id": "alg-exp-stack-strategy-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a stack because the newest unmatched opener must be resolved first."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use a queue because the earliest opener should close first."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use a set because only tag presence matters."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose nested tag stack",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A stream of nested tags must reject the first closing tag that does not match the most recent opener. Which state fits?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Use a stack because the newest unmatched opener must be resolved first.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a stack because the newest unmatched opener must be resolved first."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use a queue because the earliest opener should close first."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use a set because only tag presence matters."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An editor command should undo the most recent unresolved operation first. Which signal supports stack mechanics?",
+      "mentalModelCorrection": "Use stack state when the latest previous state is the one that must be restored.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-strategy-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "An editor command should undo the most recent unresolved operation first. Which signal supports stack mechanics?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use stack state when the latest previous state is the one that must be restored.",
+        "id": "alg-exp-stack-strategy-002-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use stack state when the latest previous state is the one that must be restored."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use a frequency map because operations repeat."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use binary search because operation ids can be ordered."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose previous-state stack",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "An editor command should undo the most recent unresolved operation first. Which signal supports stack mechanics?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Use stack state when the latest previous state is the one that must be restored.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use stack state when the latest previous state is the one that must be restored."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use a frequency map because operations repeat."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use binary search because operation ids can be ordered."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A parser sees open and close markers with several marker types. What strategy protects nesting order?",
+      "mentalModelCorrection": "Push openers and match closers against the top, because nesting is last-in-first-out.",
+      "mistakeTypes": [
+        "cannot_explain_why",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-strategy-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A parser sees open and close markers with several marker types. What strategy protects nesting order?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Push openers and match closers against the top, because nesting is last-in-first-out.",
+        "id": "alg-exp-stack-strategy-003-check",
+        "mistakeTypes": [
+          "cannot_explain_why",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Push openers and match closers against the top, because nesting is last-in-first-out."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Count only the total number of opens and closes."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Match each closer with the oldest opener."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_explain_why",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose marker matching order",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A parser sees open and close markers with several marker types. What strategy protects nesting order?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Push openers and match closers against the top, because nesting is last-in-first-out.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Push openers and match closers against the top, because nesting is last-in-first-out."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Count only the total number of opens and closes."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Match each closer with the oldest opener."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A deeply nested structure must be traversed without relying on recursive calls. Which state should replace the call stack?",
+      "mentalModelCorrection": "Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
+      "mistakeTypes": [
+        "constraint_ignored",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-strategy-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A deeply nested structure must be traversed without relying on recursive calls. Which state should replace the call stack?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
+        "id": "alg-exp-stack-strategy-004-check",
+        "mistakeTypes": [
+          "constraint_ignored",
+          "data_structure_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use explicit stack traversal when recursive depth could exceed safe call-stack limits."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use recursive calls regardless of nesting depth."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use sorting because nested levels can be numbered."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "stack_for_dfs_simulation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "constraint_ignored",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose explicit traversal stack",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A deeply nested structure must be traversed without relying on recursive calls. Which state should replace the call stack?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use explicit stack traversal when recursive depth could exceed safe call-stack limits."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use recursive calls regardless of nesting depth."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use sorting because nested levels can be numbered."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A closing marker must compare with the most recent unmatched opener. Which pattern signal should be named?",
+      "mentalModelCorrection": "The pattern signal is latest unresolved state.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-identify-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A closing marker must compare with the most recent unmatched opener. Which pattern signal should be named?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is latest unresolved state.",
+        "id": "alg-exp-stack-identify-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is latest unresolved state."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The signal is earliest unresolved state."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The signal is numeric ordering of all tokens."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify latest-unresolved signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A token scan starts with a closing marker. Which edge signal should be named?",
+      "mentalModelCorrection": "A close with no opener is an immediate invalid state.",
+      "mistakeTypes": [
+        "empty_input_error",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-identify-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A token scan starts with a closing marker. Which edge signal should be named?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A close with no opener is an immediate invalid state.",
+        "id": "alg-exp-stack-identify-002-check",
+        "mistakeTypes": [
+          "empty_input_error",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A close with no opener is an immediate invalid state."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The close can be stored as an opener."
+          },
+          {
+            "id": "wrong_2",
+            "text": "An empty stack means the scan is always valid."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "empty_input_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify empty-stack close",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator scans tokens once and pushes unmatched openers. What time and extra space should you expect?",
+      "mentalModelCorrection": "Nested-token validation is linear time with linear worst-case stack space.",
+      "mistakeTypes": [
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-cost-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A validator scans tokens once and pushes unmatched openers. What time and extra space should you expect?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Nested-token validation is linear time with linear worst-case stack space.",
+        "id": "alg-exp-stack-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost nested-token validation",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each token is processed once, and the stack can hold all openers in the worst case.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A processor pushes operations and later pops them for undo. What cost should be expected over n operations?",
+      "mentalModelCorrection": "Undo-style stack processing is linear time with linear pending-state space.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-cost-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A processor pushes operations and later pops them for undo. What cost should be expected over n operations?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Undo-style stack processing is linear time with linear pending-state space.",
+        "id": "alg-exp-stack-cost-002-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "data_structure_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost undo stack processing",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each operation is pushed and popped at most once, while the stack may contain all pending operations.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Plan A stores opener types on a stack. Plan B only counts opens and closes. Which comparison explains the safer plan?",
+      "mentalModelCorrection": "A stack stores unresolved nested state; a counter loses which type must close next.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Plan A stores opener types on a stack. Plan B only counts opens and closes. Which comparison explains the safer plan?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A stack stores unresolved nested state; a counter loses which type must close next.",
+        "id": "alg-exp-stack-comparison-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A stack stores unresolved nested state; a counter loses which type must close next."
+          },
+          {
+            "id": "wrong_1",
+            "text": "A counter can always recover the latest opener type."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Token type does not matter in nested validation."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare stack with counter",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A stack stores unresolved nested state; a counter loses which type must close next."
+        },
+        {
+          "id": "wrong_1",
+          "text": "A counter can always recover the latest opener type."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Token type does not matter in nested validation."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator accepts any input with the same number of open and close markers. What issue should be reviewed?",
+      "mentalModelCorrection": "The mistake is treating total balance as enough when order and type also matter.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-stack-mistake-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A validator accepts any input with the same number of open and close markers. What issue should be reviewed?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is treating total balance as enough when order and type also matter.",
+        "id": "alg-exp-stack-mistake-001-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "data_structure_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is treating total balance as enough when order and type also matter."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Equal counts are enough for every nested structure."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Order only matters when markers are numeric."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Review balance-only validation",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Nested tags must close in the reverse order they opened. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use the latest unresolved opener as the next required match.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Nested tags must close in the reverse order they opened. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use the latest unresolved opener as the next required match.",
+        "id": "alg-prod-stack-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use the latest unresolved opener as the next required match."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 1",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Nested tags must close in the reverse order they opened. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Use the latest unresolved opener as the next required match.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use the latest unresolved opener as the next required match."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An editor undo command restores the most recent pending operation. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each operation is pushed and popped at most once.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "An editor undo command restores the most recent pending operation. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Each operation is pushed and popped at most once.",
+        "id": "alg-prod-stack-002-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 2",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each operation is pushed and popped at most once.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A parser starts with a closing marker before any opener. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is empty-stack close detection.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A parser starts with a closing marker before any opener. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is empty-stack close detection.",
+        "id": "alg-prod-stack-003-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is empty-stack close detection."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 3",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A deeply nested structure must be traversed without recursive calls. Empty input is valid. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review relying on recursion after the prompt warns about depth.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A deeply nested structure must be traversed without recursive calls. Empty input is valid. What mistake should be reviewed?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review relying on recursion after the prompt warns about depth.",
+        "id": "alg-prod-stack-004-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review relying on recursion after the prompt warns about depth."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "stack_for_dfs_simulation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 4",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Expression-like tokens need the most recent operator context. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Push context when entering a nested segment and pop it when closing.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-005",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Expression-like tokens need the most recent operator context. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Push context when entering a nested segment and pop it when closing.",
+        "id": "alg-prod-stack-005-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Push context when entering a nested segment and pop it when closing."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "expression_like_processing",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 5",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Expression-like tokens need the most recent operator context. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Push context when entering a nested segment and pop it when closing.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Push context when entering a nested segment and pop it when closing."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Nested tags must close in the reverse order they opened. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each token is pushed or popped once, and openers can fill the stack.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-006",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Nested tags must close in the reverse order they opened. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Each token is pushed or popped once, and openers can fill the stack.",
+        "id": "alg-prod-stack-006-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 6",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each token is pushed or popped once, and openers can fill the stack.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An editor undo command restores the most recent pending operation. The answer asks for values, not code. Which comparison is decisive?",
+      "mentalModelCorrection": "Stack state is stronger than queue state when newest work resolves first.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-007",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "An editor undo command restores the most recent pending operation. The answer asks for values, not code. Which comparison is decisive?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Stack state is stronger than queue state when newest work resolves first.",
+        "id": "alg-prod-stack-007-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Stack state is stronger than queue state when newest work resolves first."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 7",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Stack state is stronger than queue state when newest work resolves first."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A parser starts with a closing marker before any opener. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject immediately because there is no unresolved opener to match.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-008",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A parser starts with a closing marker before any opener. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject immediately because there is no unresolved opener to match.",
+        "id": "alg-prod-stack-008-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject immediately because there is no unresolved opener to match."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 8",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A parser starts with a closing marker before any opener. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Reject immediately because there is no unresolved opener to match.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject immediately because there is no unresolved opener to match."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A deeply nested structure must be traversed without recursive calls. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is replacing call-stack state explicitly.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-009",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A deeply nested structure must be traversed without recursive calls. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is replacing call-stack state explicitly.",
+        "id": "alg-prod-stack-009-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is replacing call-stack state explicitly."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "stack_for_dfs_simulation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 9",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Expression-like tokens need the most recent operator context. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each token is processed once and context can grow with nesting depth.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-010",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Expression-like tokens need the most recent operator context. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Each token is processed once and context can grow with nesting depth.",
+        "id": "alg-prod-stack-010-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "expression_like_processing",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 10",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each token is processed once and context can grow with nesting depth.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Nested tags must close in the reverse order they opened. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use the latest unresolved opener as the next required match.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-011",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Nested tags must close in the reverse order they opened. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use the latest unresolved opener as the next required match.",
+        "id": "alg-prod-stack-011-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use the latest unresolved opener as the next required match."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 11",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Nested tags must close in the reverse order they opened. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Use the latest unresolved opener as the next required match.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use the latest unresolved opener as the next required match."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An editor undo command restores the most recent pending operation. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each operation is pushed and popped at most once.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-012",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "An editor undo command restores the most recent pending operation. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Each operation is pushed and popped at most once.",
+        "id": "alg-prod-stack-012-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "undo_or_previous_state",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 12",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each operation is pushed and popped at most once.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A parser starts with a closing marker before any opener. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is empty-stack close detection.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-013",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A parser starts with a closing marker before any opener. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is empty-stack close detection.",
+        "id": "alg-prod-stack-013-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is empty-stack close detection."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 13",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A deeply nested structure must be traversed without recursive calls. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review relying on recursion after the prompt warns about depth.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-014",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A deeply nested structure must be traversed without recursive calls. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review relying on recursion after the prompt warns about depth.",
+        "id": "alg-prod-stack-014-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review relying on recursion after the prompt warns about depth."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "stack_for_dfs_simulation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 14",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Expression-like tokens need the most recent operator context. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Push context when entering a nested segment and pop it when closing.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-stack-015",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "Expression-like tokens need the most recent operator context. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "stack",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Push context when entering a nested segment and pop it when closing.",
+        "id": "alg-prod-stack-015-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Push context when entering a nested segment and pop it when closing."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "expression_like_processing",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production stack baseline 15",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Expression-like tokens need the most recent operator context. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Push context when entering a nested segment and pop it when closing.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Push context when entering a nested segment and pop it when closing."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  }
+]

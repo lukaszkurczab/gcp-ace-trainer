@@ -1,0 +1,3556 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed item mentions prior membership, a sorted list, and a contiguous range in different examples. What should decide each strategy?",
+      "mentalModelCorrection": "Use interleaving by naming the decisive signal before applying mechanics.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-strategy-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "choose_lookup_key",
+    "prompt": "A mixed item mentions prior membership, a sorted list, and a contiguous range in different examples. What should decide each strategy?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use interleaving by naming the decisive signal before applying mechanics.",
+        "id": "alg-exp-mixed-strategy-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use interleaving by naming the decisive signal before applying mechanics."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Apply the same pattern to every example in the set."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Choose the strategy whose name appears first."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "choose_lookup_key"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "hash_map_and_set",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "choose_lookup_key",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose by decisive mixed signal",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A mixed item mentions prior membership, a sorted list, and a contiguous range in different examples. What should decide each strategy?",
+    "expectedApproachIds": [
+      "choose_lookup_key"
+    ],
+    "reasonSignal": "Use interleaving by naming the decisive signal before applying mechanics.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use interleaving by naming the decisive signal before applying mechanics."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Apply the same pattern to every example in the set."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Choose the strategy whose name appears first."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A prompt asks for a longest valid adjacent segment after showing a sorted pair example earlier. Which signal should override recency?",
+      "mentalModelCorrection": "Choose window for contiguous validity, not merely because two boundaries are visible.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-strategy-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A prompt asks for a longest valid adjacent segment after showing a sorted pair example earlier. Which signal should override recency?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Choose window for contiguous validity, not merely because two boundaries are visible.",
+        "id": "alg-exp-mixed-strategy-002-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Choose window for contiguous validity, not merely because two boundaries are visible."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Reuse pair scan because it was practiced most recently."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Sort the segment before checking contiguity."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose window despite recent pair practice",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A prompt asks for a longest valid adjacent segment after showing a sorted pair example earlier. Which signal should override recency?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Choose window for contiguous validity, not merely because two boundaries are visible.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Choose window for contiguous validity, not merely because two boundaries are visible."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Reuse pair scan because it was practiced most recently."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Sort the segment before checking contiguity."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed range item includes negative adjustments. Which signal separates it from a positive sliding-window task?",
+      "mentalModelCorrection": "Choose prefix state when signed values break the window invariant.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-strategy-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A mixed range item includes negative adjustments. Which signal separates it from a positive sliding-window task?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Choose prefix state when signed values break the window invariant.",
+        "id": "alg-exp-mixed-strategy-003-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Choose prefix state when signed values break the window invariant."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use window mechanics for every contiguous sum."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ignore signs because the target is still numeric."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose prefix in mixed range task",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A mixed range item includes negative adjustments. Which signal separates it from a positive sliding-window task?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Choose prefix state when signed values break the window invariant.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Choose prefix state when signed values break the window invariant."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use window mechanics for every contiguous sum."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Ignore signs because the target is still numeric."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed item asks which prior token a closing token must match. Which signal separates it from lookup or sorting?",
+      "mentalModelCorrection": "Choose stack when the latest unresolved element controls the next valid action.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-strategy-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "use_last_unresolved_state",
+    "prompt": "A mixed item asks which prior token a closing token must match. Which signal separates it from lookup or sorting?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Choose stack when the latest unresolved element controls the next valid action.",
+        "id": "alg-exp-mixed-strategy-004-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Choose stack when the latest unresolved element controls the next valid action."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use a set because token types repeat."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use sorting because token order can be rearranged."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "use_last_unresolved_state"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "stack",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_last_unresolved_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "nested_structure_validation",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose stack in mixed task",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A mixed item asks which prior token a closing token must match. Which signal separates it from lookup or sorting?",
+    "expectedApproachIds": [
+      "use_last_unresolved_state"
+    ],
+    "reasonSignal": "Choose stack when the latest unresolved element controls the next valid action.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Choose stack when the latest unresolved element controls the next valid action."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use a set because token types repeat."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use sorting because token order can be rearranged."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "In mixed practice, what should you name before choosing among lookup, window, stack, and binary search?",
+      "mentalModelCorrection": "The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state.",
+      "mistakeTypes": [
+        "cannot_explain_why",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-identify-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "In mixed practice, what should you name before choosing among lookup, window, stack, and binary search?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state.",
+        "id": "alg-exp-mixed-identify-001-check",
+        "mistakeTypes": [
+          "cannot_explain_why",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Name the topic that appeared in the previous question."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Name the data type only and ignore state behavior."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_explain_why",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify mixed-practice signal type",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed item contains numbers but no ordered discard rule. Which binary-search signal is missing?",
+      "mentalModelCorrection": "A sorted boundary signal is different from mere numeric input.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-identify-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "identify_monotonic_predicate",
+    "prompt": "A mixed item contains numbers but no ordered discard rule. Which binary-search signal is missing?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A sorted boundary signal is different from mere numeric input.",
+        "id": "alg-exp-mixed-identify-002-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A sorted boundary signal is different from mere numeric input."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Numbers alone create a binary-search boundary."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Any comparison lets half the candidates be discarded."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "identify_monotonic_predicate"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "binary_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "identify_monotonic_predicate",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_predicate_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify missing ordered boundary",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed item resolves to a one-pass seen-set strategy. What cost should you expect?",
+      "mentalModelCorrection": "Even in mixed practice, lookup mechanics keep the same linear-time, linear-space profile.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-cost-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "choose_lookup_key",
+    "prompt": "A mixed item resolves to a one-pass seen-set strategy. What cost should you expect?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Even in mixed practice, lookup mechanics keep the same linear-time, linear-space profile.",
+        "id": "alg-exp-mixed-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "data_structure_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "choose_lookup_key"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "hash_map_and_set",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "choose_lookup_key",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "seen_set",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost mixed lookup selection",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A mixed lookup answer still scans once and stores seen state.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A mixed item resolves to a positive-number window. What cost should support the selection?",
+      "mentalModelCorrection": "A mixed item that resolves to a simple positive window remains linear time and constant extra space.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-cost-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A mixed item resolves to a positive-number window. What cost should support the selection?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A mixed item that resolves to a simple positive window remains linear time and constant extra space.",
+        "id": "alg-exp-mixed-cost-002-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "invariant_missing"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost mixed window selection",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A positive sliding window moves each boundary forward at most once.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two candidate plans are offered: a positive window and prefix lookup. The values can be below zero. Which comparison matters?",
+      "mentalModelCorrection": "The comparison should reject the strategy whose required invariant is absent.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Two candidate plans are offered: a positive window and prefix lookup. The values can be below zero. Which comparison matters?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The comparison should reject the strategy whose required invariant is absent.",
+        "id": "alg-exp-mixed-comparison-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The comparison should reject the strategy whose required invariant is absent."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Pick the strategy with less state even if its invariant is absent."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Both strategies rely on the same movement rule."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare mixed range strategies",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "The comparison should reject the strategy whose required invariant is absent."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Pick the strategy with less state even if its invariant is absent."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Both strategies rely on the same movement rule."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A learner applies the previous item's strategy to a new prompt with a different state signal. What should be reviewed?",
+      "mentalModelCorrection": "The mistake is carrying over the last practiced pattern instead of reading the new decision signal.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-mixed-mistake-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A learner applies the previous item's strategy to a new prompt with a different state signal. What should be reviewed?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is carrying over the last practiced pattern instead of reading the new decision signal.",
+        "id": "alg-exp-mixed-mistake-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is carrying over the last practiced pattern instead of reading the new decision signal."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Recent practice is a stronger signal than the current prompt."
+          },
+          {
+            "id": "wrong_2",
+            "text": "All array problems should share one strategy."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Review carry-over strategy error",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One prompt asks for a pair of values; another asks for a contiguous range. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is candidate shape before mechanics.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One prompt asks for a pair of values; another asks for a contiguous range. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is candidate shape before mechanics.",
+        "id": "alg-prod-mixed-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is candidate shape before mechanics."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 1",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One range-sum prompt has only positives; another allows negative values. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use value signs to separate window from prefix reasoning.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-002",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One range-sum prompt has only positives; another allows negative values. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use value signs to separate window from prefix reasoning.",
+        "id": "alg-prod-mixed-002-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use value signs to separate window from prefix reasoning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 2",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One range-sum prompt has only positives; another allows negative values. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use value signs to separate window from prefix reasoning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use value signs to separate window from prefix reasoning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task needs fast membership; another needs the first true sorted position. Duplicate values are allowed. Which comparison is decisive?",
+      "mentalModelCorrection": "The stronger plan depends on whether prior state or order answers the question.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-003",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task needs fast membership; another needs the first true sorted position. Duplicate values are allowed. Which comparison is decisive?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The stronger plan depends on whether prior state or order answers the question.",
+        "id": "alg-prod-mixed-003-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The stronger plan depends on whether prior state or order answers the question."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 3",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "The stronger plan depends on whether prior state or order answers the question."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for next greater values. Empty input is valid. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate basic stack resolution from monotonic stack ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-004",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task validates brackets; another asks for next greater values. Empty input is valid. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate basic stack resolution from monotonic stack ordering.",
+        "id": "alg-prod-mixed-004-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate basic stack resolution from monotonic stack ordering."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 4",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task validates brackets; another asks for next greater values. Empty input is valid. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate basic stack resolution from monotonic stack ordering.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate basic stack resolution from monotonic stack ordering."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is output semantics, not just comparison convenience.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-005",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is output semantics, not just comparison convenience.",
+        "id": "alg-prod-mixed-005-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is output semantics, not just comparison convenience."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sorting_cost_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 5",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One prompt asks for a pair of values; another asks for a contiguous range. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate pair-boundary reasoning from window invariants.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-006",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One prompt asks for a pair of values; another asks for a contiguous range. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate pair-boundary reasoning from window invariants.",
+        "id": "alg-prod-mixed-006-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate pair-boundary reasoning from window invariants."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 6",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One prompt asks for a pair of values; another asks for a contiguous range. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate pair-boundary reasoning from window invariants.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate pair-boundary reasoning from window invariants."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One range-sum prompt has only positives; another allows negative values. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use value signs to separate window from prefix reasoning.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-007",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One range-sum prompt has only positives; another allows negative values. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use value signs to separate window from prefix reasoning.",
+        "id": "alg-prod-mixed-007-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use value signs to separate window from prefix reasoning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 7",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One range-sum prompt has only positives; another allows negative values. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use value signs to separate window from prefix reasoning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use value signs to separate window from prefix reasoning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task needs fast membership; another needs the first true sorted position. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate lookup state from ordered-boundary search.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-008",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task needs fast membership; another needs the first true sorted position. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate lookup state from ordered-boundary search.",
+        "id": "alg-prod-mixed-008-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate lookup state from ordered-boundary search."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 8",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task needs fast membership; another needs the first true sorted position. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate lookup state from ordered-boundary search.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate lookup state from ordered-boundary search."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for next greater values. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate basic stack resolution from monotonic stack ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-009",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task validates brackets; another asks for next greater values. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate basic stack resolution from monotonic stack ordering.",
+        "id": "alg-prod-mixed-009-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate basic stack resolution from monotonic stack ordering."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 9",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task validates brackets; another asks for next greater values. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate basic stack resolution from monotonic stack ordering.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate basic stack resolution from monotonic stack ordering."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject sorting when it changes the output contract.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-010",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject sorting when it changes the output contract.",
+        "id": "alg-prod-mixed-010-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject sorting when it changes the output contract."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sorting_cost_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 10",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "A sort would simplify comparison, but original neighbor relationships are required. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Reject sorting when it changes the output contract.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject sorting when it changes the output contract."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One prompt asks for a pair of values; another asks for a contiguous range. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate pair-boundary reasoning from window invariants.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-011",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One prompt asks for a pair of values; another asks for a contiguous range. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate pair-boundary reasoning from window invariants.",
+        "id": "alg-prod-mixed-011-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate pair-boundary reasoning from window invariants."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 11",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One prompt asks for a pair of values; another asks for a contiguous range. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate pair-boundary reasoning from window invariants.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate pair-boundary reasoning from window invariants."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One range-sum prompt has only positives; another allows negative values. Empty input is valid. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use value signs to separate window from prefix reasoning.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-012",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One range-sum prompt has only positives; another allows negative values. Empty input is valid. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use value signs to separate window from prefix reasoning.",
+        "id": "alg-prod-mixed-012-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use value signs to separate window from prefix reasoning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 12",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One range-sum prompt has only positives; another allows negative values. Empty input is valid. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use value signs to separate window from prefix reasoning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use value signs to separate window from prefix reasoning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task needs fast membership; another needs the first true sorted position. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate lookup state from ordered-boundary search.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-013",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task needs fast membership; another needs the first true sorted position. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate lookup state from ordered-boundary search.",
+        "id": "alg-prod-mixed-013-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate lookup state from ordered-boundary search."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 13",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task needs fast membership; another needs the first true sorted position. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate lookup state from ordered-boundary search.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate lookup state from ordered-boundary search."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for next greater values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate basic stack resolution from monotonic stack ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-014",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task validates brackets; another asks for next greater values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate basic stack resolution from monotonic stack ordering.",
+        "id": "alg-prod-mixed-014-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate basic stack resolution from monotonic stack ordering."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 14",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task validates brackets; another asks for next greater values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate basic stack resolution from monotonic stack ordering.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate basic stack resolution from monotonic stack ordering."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject sorting when it changes the output contract.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-015",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject sorting when it changes the output contract.",
+        "id": "alg-prod-mixed-015-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject sorting when it changes the output contract."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sorting_cost_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 15",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "A sort would simplify comparison, but original neighbor relationships are required. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Reject sorting when it changes the output contract.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject sorting when it changes the output contract."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One prompt asks for a pair of values; another asks for a contiguous range. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate pair-boundary reasoning from window invariants.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-016",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One prompt asks for a pair of values; another asks for a contiguous range. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate pair-boundary reasoning from window invariants.",
+        "id": "alg-prod-mixed-016-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate pair-boundary reasoning from window invariants."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 16",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One prompt asks for a pair of values; another asks for a contiguous range. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate pair-boundary reasoning from window invariants.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate pair-boundary reasoning from window invariants."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One range-sum prompt has only positives; another allows negative values. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use value signs to separate window from prefix reasoning.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-017",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One range-sum prompt has only positives; another allows negative values. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use value signs to separate window from prefix reasoning.",
+        "id": "alg-prod-mixed-017-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use value signs to separate window from prefix reasoning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 17",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One range-sum prompt has only positives; another allows negative values. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use value signs to separate window from prefix reasoning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use value signs to separate window from prefix reasoning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task needs fast membership; another needs the first true sorted position. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate lookup state from ordered-boundary search.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-018",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task needs fast membership; another needs the first true sorted position. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate lookup state from ordered-boundary search.",
+        "id": "alg-prod-mixed-018-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate lookup state from ordered-boundary search."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 18",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task needs fast membership; another needs the first true sorted position. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate lookup state from ordered-boundary search.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate lookup state from ordered-boundary search."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for next greater values. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate basic stack resolution from monotonic stack ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-019",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task validates brackets; another asks for next greater values. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate basic stack resolution from monotonic stack ordering.",
+        "id": "alg-prod-mixed-019-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate basic stack resolution from monotonic stack ordering."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 19",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task validates brackets; another asks for next greater values. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate basic stack resolution from monotonic stack ordering.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate basic stack resolution from monotonic stack ordering."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. Empty input is valid. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject sorting when it changes the output contract.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-020",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. Empty input is valid. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject sorting when it changes the output contract.",
+        "id": "alg-prod-mixed-020-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject sorting when it changes the output contract."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sorting_cost_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 20",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "A sort would simplify comparison, but original neighbor relationships are required. Empty input is valid. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Reject sorting when it changes the output contract.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject sorting when it changes the output contract."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One prompt asks for a pair of values; another asks for a contiguous range. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate pair-boundary reasoning from window invariants.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-021",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One prompt asks for a pair of values; another asks for a contiguous range. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate pair-boundary reasoning from window invariants.",
+        "id": "alg-prod-mixed-021-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate pair-boundary reasoning from window invariants."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 21",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One prompt asks for a pair of values; another asks for a contiguous range. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate pair-boundary reasoning from window invariants.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate pair-boundary reasoning from window invariants."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One range-sum prompt has only positives; another allows negative values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use value signs to separate window from prefix reasoning.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-022",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One range-sum prompt has only positives; another allows negative values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use value signs to separate window from prefix reasoning.",
+        "id": "alg-prod-mixed-022-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use value signs to separate window from prefix reasoning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 22",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One range-sum prompt has only positives; another allows negative values. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use value signs to separate window from prefix reasoning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use value signs to separate window from prefix reasoning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task needs fast membership; another needs the first true sorted position. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate lookup state from ordered-boundary search.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-023",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task needs fast membership; another needs the first true sorted position. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate lookup state from ordered-boundary search.",
+        "id": "alg-prod-mixed-023-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate lookup state from ordered-boundary search."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "lookup_by_value",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 23",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task needs fast membership; another needs the first true sorted position. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate lookup state from ordered-boundary search.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate lookup state from ordered-boundary search."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One task validates brackets; another asks for next greater values. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Separate basic stack resolution from monotonic stack ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-024",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "One task validates brackets; another asks for next greater values. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Separate basic stack resolution from monotonic stack ordering.",
+        "id": "alg-prod-mixed-024-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Separate basic stack resolution from monotonic stack ordering."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "monotonic_invariant",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 24",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "One task validates brackets; another asks for next greater values. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Separate basic stack resolution from monotonic stack ordering.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Separate basic stack resolution from monotonic stack ordering."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject sorting when it changes the output contract.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "hard",
+    "id": "alg-prod-mixed-025",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "mixed_pattern_practice",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject sorting when it changes the output contract.",
+        "id": "alg-prod-mixed-025-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject sorting when it changes the output contract."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sorting_cost_recognition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production mixed-practice baseline 25",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "detect_window_failure_signal",
+      "move_decisive_pointer"
+    ],
+    "constraintSignal": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Reject sorting when it changes the output contract.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject sorting when it changes the output contract."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  }
+]

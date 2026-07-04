@@ -1,0 +1,3257 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Sorted pair comparison decides which boundary can move.",
+      "mentalModelCorrection": "Establish the sorted-boundary invariant before choosing pointer movement.",
+      "mistakeTypes": [
+        "subgoal_order_wrong",
+        "off_by_one"
+      ],
+      "nextAction": "Order the setup, comparison, and boundary movement steps.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-subgoal-order-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "Order the subgoals for finding a target pair in a sorted array with two boundaries.",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "confirm_sorted",
+          "set_boundaries",
+          "compare_pair",
+          "move_left_if_small",
+          "move_right_if_large"
+        ],
+        "feedback": "Confirm ordered input, set boundaries, compare the pair, then move the boundary ruled out by the comparison.",
+        "id": "alg-check-two-pointers-subgoal-order-001",
+        "mistakeTypes": [
+          "subgoal_order_wrong",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "confirm_sorted",
+            "text": "Confirm the input is sorted or can be ordered safely."
+          },
+          {
+            "id": "set_boundaries",
+            "text": "Set left to the first value and right to the last value."
+          },
+          {
+            "id": "compare_pair",
+            "text": "Compare the pair sum with the target."
+          },
+          {
+            "id": "move_left_if_small",
+            "text": "If the sum is too small, move left forward."
+          },
+          {
+            "id": "move_right_if_large",
+            "text": "If the sum is too large, move right backward."
+          }
+        ],
+        "prompt": "Tap the subgoals in order.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "order_steps"
+      }
+    ],
+    "subgoals": [
+      {
+        "description": "Confirm sorted order is available or can be introduced without breaking the required answer.",
+        "id": "confirm-ordering",
+        "label": "Confirm ordered input",
+        "order": 1
+      },
+      {
+        "description": "Start from opposite boundaries so each comparison can remove one side.",
+        "id": "initialize-boundaries",
+        "label": "Initialize boundaries",
+        "order": 2
+      },
+      {
+        "description": "Move the boundary that can no longer participate in a valid pair.",
+        "id": "advance-decisive-boundary",
+        "label": "Advance decisive boundary",
+        "order": 3
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "problem_archetype",
+        "nodeId": "find_pair_with_condition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      }
+    ],
+    "title": "Order sorted pair scan subgoals",
+    "trackId": "algorithms",
+    "type": "subgoal_ordering"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "When the pair is too small, the smaller boundary is the one that can improve the sum.",
+      "mentalModelCorrection": "Use the comparison result to pick the next pseudocode line.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "off_by_one"
+      ],
+      "nextAction": "Trace the same comparison with a sum that is too large.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-pseudocode-line-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "In a sorted array, left + right is less than target. Which pseudocode line runs next?",
+    "pseudocodeTemplate": {
+      "id": "sorted-two-pointers-pair-scan-pseudocode",
+      "language": "pseudocode",
+      "lines": [
+        {
+          "id": "line-1",
+          "indentationLevel": 0,
+          "order": 1,
+          "text": "set left to first index and right to last index"
+        },
+        {
+          "id": "line-2",
+          "indentationLevel": 0,
+          "order": 2,
+          "text": "while left is before right"
+        },
+        {
+          "id": "line-3",
+          "indentationLevel": 1,
+          "order": 3,
+          "text": "evaluate the pair at left and right"
+        },
+        {
+          "id": "line-4",
+          "indentationLevel": 1,
+          "order": 4,
+          "text": "if pair satisfies the condition, return or record answer"
+        },
+        {
+          "id": "line-5",
+          "indentationLevel": 1,
+          "order": 5,
+          "text": "if pair is too small, move left forward"
+        },
+        {
+          "id": "line-6",
+          "indentationLevel": 1,
+          "order": 6,
+          "text": "otherwise move right backward"
+        }
+      ]
+    },
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "line-5",
+        "feedback": "A sum that is too small rules out the current left value, so left moves forward.",
+        "id": "alg-check-two-pointers-line-001",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "line-1",
+            "text": "set left to first index and right to last index"
+          },
+          {
+            "id": "line-2",
+            "text": "while left is before right"
+          },
+          {
+            "id": "line-3",
+            "text": "evaluate the pair at left and right"
+          },
+          {
+            "id": "line-4",
+            "text": "if pair satisfies the condition, return or record answer"
+          },
+          {
+            "id": "line-5",
+            "text": "if pair is too small, move left forward"
+          },
+          {
+            "id": "line-6",
+            "text": "otherwise move right backward"
+          }
+        ],
+        "prompt": "Select the pseudocode line that matches the next move.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "select_pseudocode_line"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      }
+    ],
+    "title": "Select the next two-pointer line",
+    "trackId": "algorithms",
+    "type": "pseudocode_ordering"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "For a sorted pair-sum task, which comparison result tells the left boundary to move forward?",
+      "mentalModelCorrection": "When the pair sum is too small, the smaller boundary must move forward.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-primer-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "For a sorted pair-sum task, which comparison result tells the left boundary to move forward?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "When the pair sum is too small, the smaller boundary must move forward.",
+        "id": "alg-two-pointers-primer-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "When the pair sum is too small, the smaller boundary must move forward."
+          },
+          {
+            "id": "wrong_1",
+            "text": "When the pair sum is too small, move the larger boundary backward."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Move both boundaries after every comparison."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Sorted pair scan primer",
+    "trackId": "algorithms",
+    "type": "approach_primer",
+    "approachId": "pair_scan_sorted_input",
+    "invariant": {
+      "description": "Pairs outside the current left and right boundary have already been ruled out.",
+      "id": "ruled-out-boundaries-invariant",
+      "label": "Discarded boundaries stay impossible"
+    },
+    "mechanicsSummary": "Move inward over sorted input while comparison to the target decides which side can advance.",
+    "pitfalls": [
+      {
+        "description": "Applying the scan to unsorted input without sorting or preserving the answer condition.",
+        "id": "unsorted-input-pointer-scan",
+        "mistakeTypes": [
+          "constraint_ignored",
+          "wrong_approach"
+        ]
+      },
+      {
+        "description": "Moving the wrong pointer after comparing the pair value to the target.",
+        "id": "wrong-pointer-move",
+        "mistakeTypes": [
+          "invariant_broken",
+          "off_by_one"
+        ]
+      }
+    ],
+    "pseudocodeTemplate": {
+      "id": "sorted-two-pointers-pair-scan-pseudocode",
+      "language": "pseudocode",
+      "lines": [
+        {
+          "id": "line-1",
+          "indentationLevel": 0,
+          "order": 1,
+          "text": "set left to first index and right to last index"
+        },
+        {
+          "id": "line-2",
+          "indentationLevel": 0,
+          "order": 2,
+          "text": "while left is before right"
+        },
+        {
+          "id": "line-3",
+          "indentationLevel": 1,
+          "order": 3,
+          "text": "evaluate the pair at left and right"
+        },
+        {
+          "id": "line-4",
+          "indentationLevel": 1,
+          "order": 4,
+          "text": "if pair satisfies the condition, return or record answer"
+        },
+        {
+          "id": "line-5",
+          "indentationLevel": 1,
+          "order": 5,
+          "text": "if pair is too small, move left forward"
+        },
+        {
+          "id": "line-6",
+          "indentationLevel": 1,
+          "order": 6,
+          "text": "otherwise move right backward"
+        }
+      ]
+    },
+    "whenNotToUseSignals": [
+      "The pair relationship does not become easier after sorting.",
+      "The answer depends on original positions that sorting would destroy."
+    ],
+    "whenToUseSignals": [
+      "The input is sorted or can be sorted without losing the needed relationship.",
+      "A pair condition can decide whether the left or right boundary should move."
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Worked example: sorted widths are [1, 3, 4, 8, 10], target is 11. Which move follows the first comparison?",
+      "mentalModelCorrection": "1 + 10 equals 11, so the pair is found before either boundary moves.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-worked-shelf-gap-001",
+    "learningStage": "guided_application",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "Worked example: sorted widths are [1, 3, 4, 8, 10], target is 11. Which move follows the first comparison?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "1 + 10 equals 11, so the pair is found before either boundary moves.",
+        "id": "alg-two-pointers-worked-shelf-gap-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "1 + 10 equals 11, so the pair is found before either boundary moves."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Move left because the first value is the smallest."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Move right because the last value was used."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "opposite_ends",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Worked example: shelf pair scan",
+    "trackId": "algorithms",
+    "type": "worked_example",
+    "approachChoiceReason": "Sorted order lets each pair comparison decide whether a boundary can be discarded.",
+    "approachId": "pair_scan_sorted_input",
+    "commonMistakes": [
+      "cannot_trace_algorithm",
+      "off_by_one"
+    ],
+    "complexityExplanation": "Each boundary moves inward at most n total steps, with constant extra state.",
+    "constraints": [
+      "Widths are already sorted.",
+      "Two different shelves must be used."
+    ],
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)",
+    "problemStatement": "Given sorted shelf widths and a target width, find whether two different shelves fit exactly together.",
+    "pseudocodeTemplate": {
+      "id": "sorted-two-pointers-pair-scan-pseudocode",
+      "language": "pseudocode",
+      "lines": [
+        {
+          "id": "line-1",
+          "indentationLevel": 0,
+          "order": 1,
+          "text": "set left to first index and right to last index"
+        },
+        {
+          "id": "line-2",
+          "indentationLevel": 0,
+          "order": 2,
+          "text": "while left is before right"
+        },
+        {
+          "id": "line-3",
+          "indentationLevel": 1,
+          "order": 3,
+          "text": "evaluate the pair at left and right"
+        },
+        {
+          "id": "line-4",
+          "indentationLevel": 1,
+          "order": 4,
+          "text": "if pair satisfies the condition, return or record answer"
+        },
+        {
+          "id": "line-5",
+          "indentationLevel": 1,
+          "order": 5,
+          "text": "if pair is too small, move left forward"
+        },
+        {
+          "id": "line-6",
+          "indentationLevel": 1,
+          "order": 6,
+          "text": "otherwise move right backward"
+        }
+      ]
+    },
+    "solution": {
+      "approachId": "pair_scan_sorted_input",
+      "complexityExplanation": "Each boundary moves inward at most n total steps, with constant extra state.",
+      "id": "alg-two-pointers-worked-shelf-gap-001-solution",
+      "pseudocode": [
+        "set left to first index and right to last index",
+        "while left is before right",
+        "evaluate the pair at left and right",
+        "if pair satisfies the condition, return or record answer",
+        "if pair is too small, move left forward",
+        "otherwise move right backward"
+      ],
+      "spaceComplexity": "O(1)",
+      "subgoalIds": [
+        "confirm-ordering",
+        "initialize-boundaries",
+        "advance-decisive-boundary"
+      ],
+      "summary": "1 + 10 equals 11, so the pair is found before either boundary moves.",
+      "timeComplexity": "O(n)",
+      "title": "Worked example: shelf pair scan solution"
+    },
+    "stepByStepTrace": [
+      {
+        "description": "1 + 10 equals 11, so the pair is found before either boundary moves.",
+        "id": "alg-two-pointers-worked-shelf-gap-001-trace-001",
+        "order": 1,
+        "state": [
+          "Worked example: sorted widths are [1, 3, 4, 8, 10], target is 11. Which move follows the first comparison?"
+        ]
+      }
+    ],
+    "subgoals": [
+      {
+        "description": "Confirm sorted order is available or can be introduced without breaking the required answer.",
+        "id": "confirm-ordering",
+        "label": "Confirm ordered input",
+        "order": 1
+      },
+      {
+        "description": "Start from opposite boundaries so each comparison can remove one side.",
+        "id": "initialize-boundaries",
+        "label": "Initialize boundaries",
+        "order": 2
+      },
+      {
+        "description": "Move the boundary that can no longer participate in a valid pair.",
+        "id": "advance-decisive-boundary",
+        "label": "Advance decisive boundary",
+        "order": 3
+      }
+    ],
+    "whyNotAlternatives": [
+      {
+        "approachId": "label_only",
+        "reason": "A pattern label without the decision signal does not justify the mechanics."
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Sorted values are [2, 5, 9, 14], target is 12. left is 2 and right is 14. What happens next?",
+      "mentalModelCorrection": "Move the right boundary backward because the current pair sum is too large.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-trace-large-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "Sorted values are [2, 5, 9, 14], target is 12. left is 2 and right is 14. What happens next?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Move the right boundary backward because the current pair sum is too large.",
+        "id": "alg-two-pointers-trace-large-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Move the right boundary backward because the current pair sum is too large."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Move left forward because the left value is smaller."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Return the pair because both values are valid numbers."
+          }
+        ],
+        "prompt": "Choose the next trace step.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "trace_next_step"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "opposite_ends",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace a too-large pair",
+    "trackId": "algorithms",
+    "type": "trace_next_step",
+    "stepByStepTrace": [
+      {
+        "description": "Move the right boundary backward because the current pair sum is too large.",
+        "id": "alg-two-pointers-trace-large-001-trace-001",
+        "order": 1,
+        "state": [
+          "Sorted values are [2, 5, 9, 14], target is 12. left is 2 and right is 14. What happens next?"
+        ]
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A pair task is not sorted, but the answer only asks for the values, not original positions. What precondition makes a two-boundary scan plausible?",
+      "mentalModelCorrection": "Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-sorting-precondition-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A pair task is not sorted, but the answer only asks for the values, not original positions. What precondition makes a two-boundary scan plausible?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
+        "id": "alg-two-pointers-sorting-precondition-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Sorting can enable two pointers only if the answer does not require original order to remain untouched."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Two pointers require the original input to be unsorted."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A two-boundary scan works on any order if both ends are checked."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "sort_then_two_pointers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Check two-pointer preconditions",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "A pair task is not sorted, but the answer only asks for the values, not original positions. What precondition makes a two-boundary scan plausible?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Sorting can enable two pointers only if the answer does not require original order to remain untouched."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Two pointers require the original input to be unsorted."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A two-boundary scan works on any order if both ends are checked."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair scan must report unique value pairs. When is duplicate skipping safe?",
+      "mentalModelCorrection": "Skip repeated boundary values only after the current value has been processed.",
+      "mistakeTypes": [
+        "duplicate_handling_error",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-two-pointers-duplicate-edge-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair scan must report unique value pairs. When is duplicate skipping safe?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Skip repeated boundary values only after the current value has been processed.",
+        "id": "alg-two-pointers-duplicate-edge-001-check",
+        "mistakeTypes": [
+          "duplicate_handling_error",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Skip repeated boundary values only after the current value has been processed."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Skip every duplicate before checking the first occurrence."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Never skip duplicates, even after recording a pair."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_skipping",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "duplicate_handling_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Handle duplicate pointer values",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Sorted scores are scanned from both ends. A pair is too small for the target. Which strategy signal decides the next move?",
+      "mentalModelCorrection": "Move the boundary that can no longer participate in a valid pair.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-strategy-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "Sorted scores are scanned from both ends. A pair is too small for the target. Which strategy signal decides the next move?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Move the boundary that can no longer participate in a valid pair.",
+        "id": "alg-exp-two-pointers-strategy-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Move the boundary that can no longer participate in a valid pair."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Move the larger boundary because it is closer to the end."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Restart the scan from the middle after every mismatch."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the ruled-out boundary",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Sorted scores are scanned from both ends. A pair is too small for the target. Which strategy signal decides the next move?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Move the boundary that can no longer participate in a valid pair.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Move the boundary that can no longer participate in a valid pair."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Move the larger boundary because it is closer to the end."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Restart the scan from the middle after every mismatch."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted list of package weights needs two items closest to a limit. Which approach signal matters most?",
+      "mentalModelCorrection": "A two-boundary scan fits because sorted order lets each comparison discard candidates.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-strategy-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted list of package weights needs two items closest to a limit. Which approach signal matters most?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A two-boundary scan fits because sorted order lets each comparison discard candidates.",
+        "id": "alg-exp-two-pointers-strategy-002-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A two-boundary scan fits because sorted order lets each comparison discard candidates."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use a window because two indexes are visible."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use lookup state even though ordered elimination is available."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "opposite_ends",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose sorted pair boundaries",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A sorted list of package weights needs two items closest to a limit. Which approach signal matters most?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "A two-boundary scan fits because sorted order lets each comparison discard candidates.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A two-boundary scan fits because sorted order lets each comparison discard candidates."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use a window because two indexes are visible."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use lookup state even though ordered elimination is available."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A compacting scan keeps valid items at the front while another index reads every item. Which pointer shape fits?",
+      "mentalModelCorrection": "Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-strategy-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A compacting scan keeps valid items at the front while another index reads every item. Which pointer shape fits?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
+        "id": "alg-exp-two-pointers-strategy-003-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Same-direction pointers fit when one pointer explores and the other marks a processed boundary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use opposite ends because every two-pointer task starts at both ends."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use sorting even though the scan preserves input order."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "same_direction",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose same-direction pointers",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A compacting scan keeps valid items at the front while another index reads every item. Which pointer shape fits?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Same-direction pointers fit when one pointer explores and the other marks a processed boundary."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use opposite ends because every two-pointer task starts at both ends."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use sorting even though the scan preserves input order."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An unsorted pair task can return values, not positions. What makes sort-then-two-boundaries acceptable?",
+      "mentalModelCorrection": "Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
+      "mistakeTypes": [
+        "constraint_ignored",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-strategy-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "An unsorted pair task can return values, not positions. What makes sort-then-two-boundaries acceptable?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
+        "id": "alg-exp-two-pointers-strategy-004-check",
+        "mistakeTypes": [
+          "constraint_ignored",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Sorting can create the ordered signal only if the answer does not depend on original adjacency."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Original order must always be preserved for pair-value answers."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Two-boundary scans never need ordering."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "constraint_ignored",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose sorting before pair scan",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "An unsorted pair task can return values, not positions. What makes sort-then-two-boundaries acceptable?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Sorting can create the ordered signal only if the answer does not depend on original adjacency."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Original order must always be preserved for pair-value answers."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Two-boundary scans never need ordering."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A problem gives sorted numbers and asks for a pair whose sum meets a threshold. Which pattern signal is present?",
+      "mentalModelCorrection": "The signal is a sorted input plus a comparison that tells which side can be discarded.",
+      "mistakeTypes": [
+        "cannot_explain_why",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-identify-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A problem gives sorted numbers and asks for a pair whose sum meets a threshold. Which pattern signal is present?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is a sorted input plus a comparison that tells which side can be discarded.",
+        "id": "alg-exp-two-pointers-identify-001-check",
+        "mistakeTypes": [
+          "cannot_explain_why",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is a sorted input plus a comparison that tells which side can be discarded."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The signal is nested comparison because pairs are mentioned."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The signal is stack state because the latest value matters."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_explain_why",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify pair-scan signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair task should report unique value pairs. Which duplicate signal should be named?",
+      "mentalModelCorrection": "Duplicate skipping belongs after processing the current boundary value.",
+      "mistakeTypes": [
+        "duplicate_handling_error",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-identify-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair task should report unique value pairs. Which duplicate signal should be named?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Duplicate skipping belongs after processing the current boundary value.",
+        "id": "alg-exp-two-pointers-identify-002-check",
+        "mistakeTypes": [
+          "duplicate_handling_error",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Duplicate skipping belongs after processing the current boundary value."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Skip the first occurrence before checking it."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Duplicates cannot affect pair output."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_skipping",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "duplicate_handling_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify duplicate boundary signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan moves all accepted items before rejected items while preserving a boundary. Which pointer signal is this?",
+      "mentalModelCorrection": "Partitioning uses a write boundary and a read pointer moving in one direction.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-identify-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A scan moves all accepted items before rejected items while preserving a boundary. Which pointer signal is this?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Partitioning uses a write boundary and a read pointer moving in one direction.",
+        "id": "alg-exp-two-pointers-identify-003-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Partitioning uses a write boundary and a read pointer moving in one direction."
+          },
+          {
+            "id": "wrong_1",
+            "text": "It is an opposite-end sum scan."
+          },
+          {
+            "id": "wrong_2",
+            "text": "It requires a hash map because values are inspected."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "partitioning",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify partition boundary",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair scan moves left or right after each comparison. What time and extra space should you expect?",
+      "mentalModelCorrection": "A sorted two-boundary scan is linear time and constant extra space.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-cost-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair scan moves left or right after each comparison. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A sorted two-boundary scan is linear time and constant extra space.",
+        "id": "alg-exp-two-pointers-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost pair boundaries",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each boundary moves inward at most once through the sorted input.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Plan A compares two sorted boundaries for a pair. Plan B maintains a contiguous range. Which distinction explains the better fit?",
+      "mentalModelCorrection": "Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "Plan A compares two sorted boundaries for a pair. Plan B maintains a contiguous range. Which distinction explains the better fit?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant.",
+        "id": "alg-exp-two-pointers-comparison-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Both are identical because both mention left and right."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A window is always stronger when input is sorted."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare pair scan with window",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Both are identical because both mention left and right."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A window is always stronger when input is sorted."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A solution alternates moving left and right on each step, regardless of pair comparison. What should be reviewed?",
+      "mentalModelCorrection": "The mistake is moving a boundary without proving which candidates it rules out.",
+      "mistakeTypes": [
+        "cannot_explain_why",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-two-pointers-mistake-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A solution alternates moving left and right on each step, regardless of pair comparison. What should be reviewed?",
+    "roadmapNodeId": "two_pointers",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is moving a boundary without proving which candidates it rules out.",
+        "id": "alg-exp-two-pointers-mistake-001-check",
+        "mistakeTypes": [
+          "cannot_explain_why",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is moving a boundary without proving which candidates it rules out."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Alternating is always valid if the input is sorted."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The movement rule can be chosen after the scan finishes."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "opposite_ends",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_explain_why",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Review unjustified pointer movement",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted list needs two values whose sum reaches a target. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is sorted opposite-end pair elimination.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-two-pointers-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted list needs two values whose sum reaches a target. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is sorted opposite-end pair elimination.",
+        "id": "alg-prod-two-pointers-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is sorted opposite-end pair elimination."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 1",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An unsorted pair task returns values and does not require original positions. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Sorting dominates the linear scan after ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-two-pointers-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "An unsorted pair task returns values and does not require original positions. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n log n)"
+        },
+        "feedback": "Sorting dominates the linear scan after ordering.",
+        "id": "alg-prod-two-pointers-002-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 2",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Sorting dominates the linear scan after ordering.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n log n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A compacting routine keeps accepted items at the front. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A compacting routine keeps accepted items at the front. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "id": "alg-prod-two-pointers-003-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use same-direction pointers: one reads, one writes the accepted boundary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "same_direction",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 3",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "A compacting routine keeps accepted items at the front. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use same-direction pointers: one reads, one writes the accepted boundary."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair scan must return each value pair once. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "The scan remains linear because duplicates are skipped in one direction.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair scan must return each value pair once. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "The scan remains linear because duplicates are skipped in one direction.",
+        "id": "alg-prod-two-pointers-004-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_skipping",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 4",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "The scan remains linear because duplicates are skipped in one direction.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A partition puts small values before large values. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is partitioning with coordinated pointers.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-005",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A partition puts small values before large values. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is partitioning with coordinated pointers.",
+        "id": "alg-prod-two-pointers-005-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is partitioning with coordinated pointers."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "partitioning",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 5",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted list needs two values whose sum reaches a target. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review moving both boundaries without proving what was ruled out.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-006",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted list needs two values whose sum reaches a target. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review moving both boundaries without proving what was ruled out.",
+        "id": "alg-prod-two-pointers-006-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review moving both boundaries without proving what was ruled out."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 6",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An unsorted pair task returns values and does not require original positions. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Sorting can create the ordered signal needed for a pair scan.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-007",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "An unsorted pair task returns values and does not require original positions. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Sorting can create the ordered signal needed for a pair scan.",
+        "id": "alg-prod-two-pointers-007-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Sorting can create the ordered signal needed for a pair scan."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 7",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "An unsorted pair task returns values and does not require original positions. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Sorting can create the ordered signal needed for a pair scan.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Sorting can create the ordered signal needed for a pair scan."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A compacting routine keeps accepted items at the front. The edge case appears at the first or last position. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each item is read once and writes reuse existing storage.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-008",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A compacting routine keeps accepted items at the front. The edge case appears at the first or last position. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each item is read once and writes reuse existing storage.",
+        "id": "alg-prod-two-pointers-008-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "same_direction",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 8",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each item is read once and writes reuse existing storage.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair scan must return each value pair once. The input can be large. Which comparison is decisive?",
+      "mentalModelCorrection": "Duplicate skipping protects output uniqueness without extra lookup state.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-009",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair scan must return each value pair once. The input can be large. Which comparison is decisive?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Duplicate skipping protects output uniqueness without extra lookup state.",
+        "id": "alg-prod-two-pointers-009-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Duplicate skipping protects output uniqueness without extra lookup state."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_skipping",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 9",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Duplicate skipping protects output uniqueness without extra lookup state."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A partition puts small values before large values. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Maintain a boundary for the processed side while the read index advances.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-010",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A partition puts small values before large values. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Maintain a boundary for the processed side while the read index advances.",
+        "id": "alg-prod-two-pointers-010-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Maintain a boundary for the processed side while the read index advances."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "partitioning",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 10",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "A partition puts small values before large values. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Maintain a boundary for the processed side while the read index advances.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Maintain a boundary for the processed side while the read index advances."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted list needs two values whose sum reaches a target. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is sorted opposite-end pair elimination.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-011",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted list needs two values whose sum reaches a target. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is sorted opposite-end pair elimination.",
+        "id": "alg-prod-two-pointers-011-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is sorted opposite-end pair elimination."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 11",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An unsorted pair task returns values and does not require original positions. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "Sorting dominates the linear scan after ordering.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-012",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "An unsorted pair task returns values and does not require original positions. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n log n)"
+        },
+        "feedback": "Sorting dominates the linear scan after ordering.",
+        "id": "alg-prod-two-pointers-012-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 12",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Sorting dominates the linear scan after ordering.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n log n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A compacting routine keeps accepted items at the front. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-013",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A compacting routine keeps accepted items at the front. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "id": "alg-prod-two-pointers-013-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use same-direction pointers: one reads, one writes the accepted boundary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "same_direction",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 13",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "A compacting routine keeps accepted items at the front. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Use same-direction pointers: one reads, one writes the accepted boundary.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use same-direction pointers: one reads, one writes the accepted boundary."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted pair scan must return each value pair once. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "The scan remains linear because duplicates are skipped in one direction.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-014",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted pair scan must return each value pair once. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "The scan remains linear because duplicates are skipped in one direction.",
+        "id": "alg-prod-two-pointers-014-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_skipping",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 14",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "The scan remains linear because duplicates are skipped in one direction.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A partition puts small values before large values. The answer asks for values, not code. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is partitioning with coordinated pointers.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-015",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A partition puts small values before large values. The answer asks for values, not code. Which pattern signal should be named first?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is partitioning with coordinated pointers.",
+        "id": "alg-prod-two-pointers-015-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is partitioning with coordinated pointers."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "partitioning",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 15",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted list needs two values whose sum reaches a target. The edge case appears at the first or last position. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review moving both boundaries without proving what was ruled out.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-016",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A sorted list needs two values whose sum reaches a target. The edge case appears at the first or last position. What mistake should be reviewed?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review moving both boundaries without proving what was ruled out.",
+        "id": "alg-prod-two-pointers-016-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review moving both boundaries without proving what was ruled out."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 16",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An unsorted pair task returns values and does not require original positions. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Sorting can create the ordered signal needed for a pair scan.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-017",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "An unsorted pair task returns values and does not require original positions. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Sorting can create the ordered signal needed for a pair scan.",
+        "id": "alg-prod-two-pointers-017-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Sorting can create the ordered signal needed for a pair scan."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "pair_scan_sorted_input",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 17",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "constraintSignal": "An unsorted pair task returns values and does not require original positions. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "move_decisive_pointer"
+    ],
+    "reasonSignal": "Sorting can create the ordered signal needed for a pair scan.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Sorting can create the ordered signal needed for a pair scan."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A compacting routine keeps accepted items at the front. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each item is read once and writes reuse existing storage.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-two-pointers-018",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "move_decisive_pointer",
+    "prompt": "A compacting routine keeps accepted items at the front. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "two_pointers",
+    "secondarySkillAtomIds": [
+      "recognize_sorting_tradeoff"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each item is read once and writes reuse existing storage.",
+        "id": "alg-prod-two-pointers-018-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "move_decisive_pointer"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "two_pointers",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "move_decisive_pointer",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "same_direction",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production two-pointer baseline 18",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each item is read once and writes reuse existing storage.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  }
+]

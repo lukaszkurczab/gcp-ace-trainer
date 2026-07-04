@@ -1,0 +1,2938 @@
+[
+  {
+    "complexityExplanation": "A single scan visits each input value once. The lookup state can grow with the number of values seen so far.",
+    "contentVersion": "algorithms-core",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)",
+    "feedbackModel": {
+      "decisionSignal": "The input limit makes checking every pair too expensive.",
+      "mentalModelCorrection": "Use the constraint first, then choose mechanics that avoid nested pair enumeration.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Compare the cost of one scan with lookup state against checking every pair.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-constraint-pair-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "n can be 100000. You scan once and keep a lookup of values seen so far. What time and space cost should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "One pass is linear, and the lookup can store up to n values from the scan.",
+        "id": "alg-check-complexity-pair-001",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the time and space pair for a one-pass lookup scan.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      }
+    ],
+    "title": "Constraint-first cost check",
+    "trackId": "algorithms",
+    "type": "complexity_check"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An input can contain 100000 numbers, and a candidate plan compares each number with every later number. What signal matters first?",
+      "mentalModelCorrection": "For n near 100000, any plan that checks every pair performs far too many operations.",
+      "mistakeTypes": [
+        "brute_force_when_optimized_required",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-reject-quadratic-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "An input can contain 100000 numbers, and a candidate plan compares each number with every later number. What signal matters first?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "For n near 100000, any plan that checks every pair performs far too many operations.",
+        "id": "alg-complexity-reject-quadratic-001-check",
+        "mistakeTypes": [
+          "brute_force_when_optimized_required",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "For n near 100000, any plan that checks every pair performs far too many operations."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The pair checks are acceptable because the code is short."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The input values matter more than the number of pair checks."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "brute_force_when_optimized_required",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Reject an infeasible pair scan",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A routine checks every unordered pair in an array and stores only the best score. What are the time and extra space costs?",
+      "mentalModelCorrection": "Nested pair enumeration takes quadratic time and constant extra space.",
+      "mistakeTypes": [
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-nested-pairs-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A routine checks every unordered pair in an array and stores only the best score. What are the time and extra space costs?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n^2)"
+        },
+        "feedback": "Nested pair enumeration takes quadratic time and constant extra space.",
+        "id": "alg-complexity-nested-pairs-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost a nested pair routine",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "The outer position can pair with many later positions, so the total comparisons grow quadratically while only counters are stored.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n^2)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "One plan scans with a set of seen values; another repeats a scan for each value. What comparison explains the better scaling plan?",
+      "mentalModelCorrection": "A set trades extra memory for one pass when membership checks are the repeated operation.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-space-tradeoff-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "One plan scans with a set of seen values; another repeats a scan for each value. What comparison explains the better scaling plan?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A set trades extra memory for one pass when membership checks are the repeated operation.",
+        "id": "alg-complexity-space-tradeoff-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A set trades extra memory for one pass when membership checks are the repeated operation."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Avoid all extra memory even if repeated scans dominate runtime."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Choose the plan with fewer lines before estimating operation count."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare time and space tradeoff",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A set trades extra memory for one pass when membership checks are the repeated operation."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Avoid all extra memory even if repeated scans dominate runtime."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Choose the plan with fewer lines before estimating operation count."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A single loop over n strings calls a helper that scans the current string. What should you check before calling it linear in n?",
+      "mentalModelCorrection": "Count the loop body cost too; an expensive helper inside a scan can change the total cost.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-hidden-cost-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A single loop over n strings calls a helper that scans the current string. What should you check before calling it linear in n?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Count the loop body cost too; an expensive helper inside a scan can change the total cost.",
+        "id": "alg-complexity-hidden-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Count the loop body cost too; an expensive helper inside a scan can change the total cost."
+          },
+          {
+            "id": "wrong_1",
+            "text": "A single outer loop is always O(n) regardless of the work inside."
+          },
+          {
+            "id": "wrong_2",
+            "text": "String length does not matter once the loop count is known."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Notice hidden operation cost",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Order the reasoning steps for using constraints before choosing a strategy.",
+      "mentalModelCorrection": "Start from the input limit, estimate the repeated work, then choose a plan with acceptable growth.",
+      "mistakeTypes": [
+        "subgoal_order_wrong",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-complexity-subgoal-order-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "Order the reasoning steps for using constraints before choosing a strategy.",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "read_limit",
+          "count_repeated_work",
+          "estimate_growth",
+          "choose_viable_plan"
+        ],
+        "feedback": "Start from the input limit, estimate the repeated work, then choose a plan with acceptable growth.",
+        "id": "alg-complexity-subgoal-order-001-check",
+        "mistakeTypes": [
+          "subgoal_order_wrong",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "read_limit",
+            "text": "Read the largest input size."
+          },
+          {
+            "id": "count_repeated_work",
+            "text": "Count how often the repeated operation can run."
+          },
+          {
+            "id": "estimate_growth",
+            "text": "Translate the count into time and space growth."
+          },
+          {
+            "id": "choose_viable_plan",
+            "text": "Keep only plans whose growth fits the limit."
+          }
+        ],
+        "prompt": "Tap the steps in the correct order.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "order_steps"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "subgoal_order_wrong",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Order constraint reasoning",
+    "trackId": "algorithms",
+    "type": "subgoal_ordering"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A risk report compares every customer with every later customer, and n can reach 120000. Which signal should drive the first strategy decision?",
+      "mentalModelCorrection": "The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
+      "mistakeTypes": [
+        "constraint_ignored",
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-strategy-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A risk report compares every customer with every later customer, and n can reach 120000. Which signal should drive the first strategy decision?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
+        "id": "alg-exp-complexity-strategy-001-check",
+        "mistakeTypes": [
+          "constraint_ignored",
+          "complexity_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The repeated pair comparison is the limiting signal; reject it before comparing implementation details."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Start with the version that has the simplest loop to read."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ignore n until after the first implementation works."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "constraint_ignored",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Reject repeated customer comparisons",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A risk report compares every customer with every later customer, and n can reach 120000. Which signal should drive the first strategy decision?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "The repeated pair comparison is the limiting signal; reject it before comparing implementation details."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Start with the version that has the simplest loop to read."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Ignore n until after the first implementation works."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan repeatedly asks whether a previously seen code exists. What scaling signal supports extra lookup state?",
+      "mentalModelCorrection": "A lookup table is viable because the repeated operation is membership, not ordered traversal.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-strategy-002",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A scan repeatedly asks whether a previously seen code exists. What scaling signal supports extra lookup state?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A lookup table is viable because the repeated operation is membership, not ordered traversal.",
+        "id": "alg-exp-complexity-strategy-002-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A lookup table is viable because the repeated operation is membership, not ordered traversal."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use repeated scans because they avoid all extra state."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Sort first even though order is not part of the question."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose state for repeated membership",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A scan repeatedly asks whether a previously seen code exists. What scaling signal supports extra lookup state?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "A lookup table is viable because the repeated operation is membership, not ordered traversal.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A lookup table is viable because the repeated operation is membership, not ordered traversal."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use repeated scans because they avoid all extra state."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Sort first even though order is not part of the question."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array is fixed, but thousands of range-total queries arrive. Which cost signal should shape the plan?",
+      "mentalModelCorrection": "If query count is large, preprocessing can be cheaper than recomputing each range independently.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-strategy-003",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "An array is fixed, but thousands of range-total queries arrive. Which cost signal should shape the plan?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "If query count is large, preprocessing can be cheaper than recomputing each range independently.",
+        "id": "alg-exp-complexity-strategy-003-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "If query count is large, preprocessing can be cheaper than recomputing each range independently."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Treat each query as isolated even when the same array is reused."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Choose the plan with zero preparation regardless of query count."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Notice repeated query cost",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "An array is fixed, but thousands of range-total queries arrive. Which cost signal should shape the plan?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "If query count is large, preprocessing can be cheaper than recomputing each range independently.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "If query count is large, preprocessing can be cheaper than recomputing each range independently."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Treat each query as isolated even when the same array is reused."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Choose the plan with zero preparation regardless of query count."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan only tracks the largest gap between adjacent readings. What space signal should you recognize?",
+      "mentalModelCorrection": "When values arrive once and only the current best answer is needed, constant state may be enough.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-strategy-004",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A scan only tracks the largest gap between adjacent readings. What space signal should you recognize?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "When values arrive once and only the current best answer is needed, constant state may be enough.",
+        "id": "alg-exp-complexity-strategy-004-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "When values arrive once and only the current best answer is needed, constant state may be enough."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Store every earlier gap because the scan has seen many values."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Build a map even though no later membership lookup is needed."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Prefer constant scan state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A scan only tracks the largest gap between adjacent readings. What space signal should you recognize?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "When values arrive once and only the current best answer is needed, constant state may be enough.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "When values arrive once and only the current best answer is needed, constant state may be enough."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Store every earlier gap because the scan has seen many values."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Build a map even though no later membership lookup is needed."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A review compares one scan, sorted scan, and repeated halving. Which reasoning should label the approaches?",
+      "mentalModelCorrection": "The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs.",
+      "mistakeTypes": [
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-identify-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A review compares one scan, sorted scan, and repeated halving. Which reasoning should label the approaches?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs.",
+        "id": "alg-exp-complexity-identify-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Name the approach by the variable names used in the code."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Prefer the approach whose description is shortest."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify growth-rate signals",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A loop processes each log line and scans every character in that line. Which cost signal is easy to miss?",
+      "mentalModelCorrection": "The hidden cost is string length; total work depends on both number of strings and characters scanned.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-identify-002",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A loop processes each log line and scans every character in that line. Which cost signal is easy to miss?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The hidden cost is string length; total work depends on both number of strings and characters scanned.",
+        "id": "alg-exp-complexity-identify-002-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The hidden cost is string length; total work depends on both number of strings and characters scanned."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Only the number of log lines matters."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Character scans are constant because they are inside one loop."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify hidden input dimension",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A one-pass plan stores every distinct account id in a set. What space signal should be named?",
+      "mentalModelCorrection": "Memory grows with the number of distinct stored keys, not only with the number of loop variables.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-identify-003",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A one-pass plan stores every distinct account id in a set. What space signal should be named?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Memory grows with the number of distinct stored keys, not only with the number of loop variables.",
+        "id": "alg-exp-complexity-identify-003-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "data_structure_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Memory grows with the number of distinct stored keys, not only with the number of loop variables."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The plan is constant space because it has one set variable."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The set size is unrelated to input size."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify lookup space growth",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scanner visits every id once and inserts unseen ids into a set. What time and extra space should you expect?",
+      "mentalModelCorrection": "The scan is linear time, and the lookup state can grow linearly.",
+      "mistakeTypes": [
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-cost-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A scanner visits every id once and inserts unseen ids into a set. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "The scan is linear time, and the lookup state can grow linearly.",
+        "id": "alg-exp-complexity-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost a seen-id scanner",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each item is scanned once, and the set can grow to hold all distinct values.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Plan A scans prior items for each value. Plan B keeps a seen set. Which comparison explains why B scales better?",
+      "mentalModelCorrection": "The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-comparison-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "Plan A scans prior items for each value. Plan B keeps a seen set. Which comparison explains why B scales better?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes.",
+        "id": "alg-exp-complexity-comparison-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Plan A is better because it stores less state regardless of input size."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Both plans scale the same because both inspect values."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare repeated scan with lookup",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Plan A is better because it stores less state regardless of input size."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Both plans scale the same because both inspect values."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A teammate calls a nested comparison linear because the outer loop runs once per item. What reasoning error should you catch?",
+      "mentalModelCorrection": "The mistake is judging the outer loop alone; the inner scan still runs many times.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-complexity-mistake-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A teammate calls a nested comparison linear because the outer loop runs once per item. What reasoning error should you catch?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is judging the outer loop alone; the inner scan still runs many times.",
+        "id": "alg-exp-complexity-mistake-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is judging the outer loop alone; the inner scan still runs many times."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The code is linear if the inner loop has fewer lines."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Only memory growth matters for nested comparisons."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Catch outer-loop-only reasoning",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nightly import compares every record with every later record. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject repeated pair enumeration before implementation details.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A nightly import compares every record with every later record. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject repeated pair enumeration before implementation details.",
+        "id": "alg-prod-complexity-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject repeated pair enumeration before implementation details."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 1",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A nightly import compares every record with every later record. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Reject repeated pair enumeration before implementation details.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject repeated pair enumeration before implementation details."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed list receives thousands of range-total queries. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Prefix preparation scans once and stores one total per position.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-002",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A fixed list receives thousands of range-total queries. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Prefix preparation scans once and stores one total per position.",
+        "id": "alg-prod-complexity-002-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 2",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Prefix preparation scans once and stores one total per position.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A stream only needs the current best adjacent gap. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The signal is a linear scan with a small running summary.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-003",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A stream only needs the current best adjacent gap. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is a linear scan with a small running summary.",
+        "id": "alg-prod-complexity-003-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is a linear scan with a small running summary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 3",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator repeatedly asks whether an id was seen before. Empty input is valid. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review avoiding all memory even when repeated scans dominate.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-004",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A validator repeatedly asks whether an id was seen before. Empty input is valid. What mistake should be reviewed?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review avoiding all memory even when repeated scans dominate.",
+        "id": "alg-prod-complexity-004-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review avoiding all memory even when repeated scans dominate."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 4",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted search halves the candidate range after each check. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Recognize logarithmic shrinking instead of linear scanning.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-005",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A sorted search halves the candidate range after each check. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Recognize logarithmic shrinking instead of linear scanning.",
+        "id": "alg-prod-complexity-005-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Recognize logarithmic shrinking instead of linear scanning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 5",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A sorted search halves the candidate range after each check. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Recognize logarithmic shrinking instead of linear scanning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Recognize logarithmic shrinking instead of linear scanning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nightly import compares every record with every later record. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "Nested pair checks grow quadratically while storing only counters.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-006",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A nightly import compares every record with every later record. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n^2)"
+        },
+        "feedback": "Nested pair checks grow quadratically while storing only counters.",
+        "id": "alg-prod-complexity-006-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 6",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Nested pair checks grow quadratically while storing only counters.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n^2)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed list receives thousands of range-total queries. The answer asks for values, not code. Which comparison is decisive?",
+      "mentalModelCorrection": "Preprocessing is stronger when many queries reuse the same sequence.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-007",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A fixed list receives thousands of range-total queries. The answer asks for values, not code. Which comparison is decisive?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Preprocessing is stronger when many queries reuse the same sequence.",
+        "id": "alg-prod-complexity-007-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Preprocessing is stronger when many queries reuse the same sequence."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 7",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Preprocessing is stronger when many queries reuse the same sequence."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A stream only needs the current best adjacent gap. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Keep constant scan state when no later lookup is needed.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-008",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A stream only needs the current best adjacent gap. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Keep constant scan state when no later lookup is needed.",
+        "id": "alg-prod-complexity-008-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Keep constant scan state when no later lookup is needed."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 8",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A stream only needs the current best adjacent gap. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Keep constant scan state when no later lookup is needed.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Keep constant scan state when no later lookup is needed."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator repeatedly asks whether an id was seen before. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The signal is membership lookup under a large input limit.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-009",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A validator repeatedly asks whether an id was seen before. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is membership lookup under a large input limit.",
+        "id": "alg-prod-complexity-009-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is membership lookup under a large input limit."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 9",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted search halves the candidate range after each check. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Halving candidates costs logarithmic time with bound variables only.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-010",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A sorted search halves the candidate range after each check. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(log n)"
+        },
+        "feedback": "Halving candidates costs logarithmic time with bound variables only.",
+        "id": "alg-prod-complexity-010-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 10",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Halving candidates costs logarithmic time with bound variables only.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(log n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nightly import compares every record with every later record. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Reject repeated pair enumeration before implementation details.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-011",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A nightly import compares every record with every later record. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Reject repeated pair enumeration before implementation details.",
+        "id": "alg-prod-complexity-011-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Reject repeated pair enumeration before implementation details."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 11",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A nightly import compares every record with every later record. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Reject repeated pair enumeration before implementation details.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Reject repeated pair enumeration before implementation details."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed list receives thousands of range-total queries. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "Prefix preparation scans once and stores one total per position.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-012",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A fixed list receives thousands of range-total queries. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Prefix preparation scans once and stores one total per position.",
+        "id": "alg-prod-complexity-012-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 12",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Prefix preparation scans once and stores one total per position.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A stream only needs the current best adjacent gap. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The signal is a linear scan with a small running summary.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-013",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A stream only needs the current best adjacent gap. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is a linear scan with a small running summary.",
+        "id": "alg-prod-complexity-013-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is a linear scan with a small running summary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 13",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator repeatedly asks whether an id was seen before. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review avoiding all memory even when repeated scans dominate.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-014",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A validator repeatedly asks whether an id was seen before. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review avoiding all memory even when repeated scans dominate.",
+        "id": "alg-prod-complexity-014-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review avoiding all memory even when repeated scans dominate."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 14",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted search halves the candidate range after each check. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Recognize logarithmic shrinking instead of linear scanning.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-015",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A sorted search halves the candidate range after each check. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Recognize logarithmic shrinking instead of linear scanning.",
+        "id": "alg-prod-complexity-015-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Recognize logarithmic shrinking instead of linear scanning."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "input_size_constraints",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 15",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A sorted search halves the candidate range after each check. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Recognize logarithmic shrinking instead of linear scanning.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Recognize logarithmic shrinking instead of linear scanning."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A nightly import compares every record with every later record. The edge case appears at the first or last position. What time and extra space should you expect?",
+      "mentalModelCorrection": "Nested pair checks grow quadratically while storing only counters.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-016",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A nightly import compares every record with every later record. The edge case appears at the first or last position. What time and extra space should you expect?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n^2)"
+        },
+        "feedback": "Nested pair checks grow quadratically while storing only counters.",
+        "id": "alg-prod-complexity-016-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "big_o_basics",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 16",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Nested pair checks grow quadratically while storing only counters.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n^2)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed list receives thousands of range-total queries. The input can be large. Which comparison is decisive?",
+      "mentalModelCorrection": "Preprocessing is stronger when many queries reuse the same sequence.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-017",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A fixed list receives thousands of range-total queries. The input can be large. Which comparison is decisive?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Preprocessing is stronger when many queries reuse the same sequence.",
+        "id": "alg-prod-complexity-017-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Preprocessing is stronger when many queries reuse the same sequence."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 17",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Preprocessing is stronger when many queries reuse the same sequence."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A stream only needs the current best adjacent gap. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Keep constant scan state when no later lookup is needed.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-018",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A stream only needs the current best adjacent gap. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Keep constant scan state when no later lookup is needed.",
+        "id": "alg-prod-complexity-018-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Keep constant scan state when no later lookup is needed."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "operations_cost",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 18",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A stream only needs the current best adjacent gap. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "derive_time_complexity"
+    ],
+    "reasonSignal": "Keep constant scan state when no later lookup is needed.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Keep constant scan state when no later lookup is needed."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A validator repeatedly asks whether an id was seen before. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The signal is membership lookup under a large input limit.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "constraint_ignored"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-complexity-019",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "derive_time_complexity",
+    "prompt": "A validator repeatedly asks whether an id was seen before. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "complexity_and_constraints",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is membership lookup under a large input limit.",
+        "id": "alg-prod-complexity-019-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "constraint_ignored"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is membership lookup under a large input limit."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "derive_time_complexity"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "complexity_and_constraints",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "time_vs_space_tradeoff",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production complexity baseline 19",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  }
+]

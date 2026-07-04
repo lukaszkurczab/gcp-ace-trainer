@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitReturns": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true
   }
 }

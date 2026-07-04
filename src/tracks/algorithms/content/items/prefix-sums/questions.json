@@ -1,0 +1,3072 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A subarray-sum task allows negative values. Which signal should make you question a simple sum window?",
+      "mentalModelCorrection": "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prefix-window-failure-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A subarray-sum task allows negative values. Which signal should make you question a simple sum window?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+        "id": "alg-prefix-window-failure-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Negative values make shrinking the left boundary always increase the sum."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A window is always valid for any contiguous sum task."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Detect when a window fails",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A subarray-sum task allows negative values. Which signal should make you question a simple sum window?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Negative values make shrinking the left boundary always increase the sum."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A window is always valid for any contiguous sum task."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many queries ask for the total between two indexes in the same array. What state should be prepared?",
+      "mentalModelCorrection": "Store each prefix total so a range total can be computed from two accumulated values.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prefix-range-query-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many queries ask for the total between two indexes in the same array. What state should be prepared?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Store each prefix total so a range total can be computed from two accumulated values.",
+        "id": "alg-prefix-range-query-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Store each prefix total so a range total can be computed from two accumulated values."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Recompute each queried range from scratch without considering query count."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Keep only the largest element seen so far."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Name range-sum state",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Current prefix total is 11 and target subarray sum is 7. Which earlier prefix total would prove a matching range exists?",
+      "mentalModelCorrection": "Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "negative_numbers_assumption_error"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prefix-trace-needed-total-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Current prefix total is 11 and target subarray sum is 7. Which earlier prefix total would prove a matching range exists?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
+        "id": "alg-prefix-trace-needed-total-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "negative_numbers_assumption_error"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Look for an earlier prefix total of 4, because 11 minus target 7 equals 4."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Look for prefix total 18 because target should be added."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ignore earlier totals and only inspect the current element."
+          }
+        ],
+        "prompt": "Choose the next trace step.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "trace_next_step"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace needed prefix total",
+    "trackId": "algorithms",
+    "type": "trace_next_step",
+    "stepByStepTrace": [
+      {
+        "description": "Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
+        "id": "alg-prefix-trace-needed-total-001-trace-001",
+        "order": 1,
+        "state": [
+          "Current prefix total is 11 and target subarray sum is 7. Which earlier prefix total would prove a matching range exists?"
+        ]
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two range-sum plans are proposed for data that may rise and fall: moving sum window or prefix totals with lookup. Which comparison is decisive?",
+      "mentalModelCorrection": "A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prefix-vs-window-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Two range-sum plans are proposed for data that may rise and fall: moving sum window or prefix totals with lookup. Which comparison is decisive?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable.",
+        "id": "alg-prefix-vs-window-comparison-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The moving window is safer because it stores less state."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Negative values do not affect any contiguous range method."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare prefix with window",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "The moving window is safer because it stores less state."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Negative values do not affect any contiguous range method."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A prefix-total lookup should detect a target range that begins at index 0. Which edge state is needed?",
+      "mentalModelCorrection": "The empty prefix before index 0 must be represented so a valid range can start at the first element.",
+      "mistakeTypes": [
+        "empty_input_error",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prefix-empty-prefix-edge-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A prefix-total lookup should detect a target range that begins at index 0. Which edge state is needed?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The empty prefix before index 0 must be represented so a valid range can start at the first element.",
+        "id": "alg-prefix-empty-prefix-edge-001-check",
+        "mistakeTypes": [
+          "empty_input_error",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The empty prefix before index 0 must be represented so a valid range can start at the first element."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Only store prefixes after two elements have been scanned."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ranges starting at index 0 cannot be found by prefix state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "empty_input_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Handle range starting at zero",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A contiguous sum task allows credits and refunds, so values may be below zero. Which strategy signal matters?",
+      "mentalModelCorrection": "Use prefix totals because negative values can make simple shrink decisions unreliable.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-strategy-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A contiguous sum task allows credits and refunds, so values may be below zero. Which strategy signal matters?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use prefix totals because negative values can make simple shrink decisions unreliable.",
+        "id": "alg-exp-prefix-strategy-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use prefix totals because negative values can make simple shrink decisions unreliable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use a positive-number window because the target is a sum."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ignore signs and shrink whenever the total is too high."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose prefix for mixed signs",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A contiguous sum task allows credits and refunds, so values may be below zero. Which strategy signal matters?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Use prefix totals because negative values can make simple shrink decisions unreliable.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use prefix totals because negative values can make simple shrink decisions unreliable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use a positive-number window because the target is a sum."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Ignore signs and shrink whenever the total is too high."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed array receives many total-between-indexes queries. Which state should be prepared?",
+      "mentalModelCorrection": "Precompute prefix totals when many range queries reuse the same sequence.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-strategy-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A fixed array receives many total-between-indexes queries. Which state should be prepared?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Precompute prefix totals when many range queries reuse the same sequence.",
+        "id": "alg-exp-prefix-strategy-002-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "data_structure_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Precompute prefix totals when many range queries reuse the same sequence."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Recompute every range because each query is short to describe."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use a stack because queries have endpoints."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose range-query prefix state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A fixed array receives many total-between-indexes queries. Which state should be prepared?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Precompute prefix totals when many range queries reuse the same sequence.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Precompute prefix totals when many range queries reuse the same sequence."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Recompute every range because each query is short to describe."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use a stack because queries have endpoints."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan must detect whether any earlier range sums to a target, and values may be negative. What lookup state fits?",
+      "mentalModelCorrection": "Store earlier prefix totals so current total minus target can prove a matching subarray.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "negative_numbers_assumption_error"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-strategy-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A scan must detect whether any earlier range sums to a target, and values may be negative. What lookup state fits?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Store earlier prefix totals so current total minus target can prove a matching subarray.",
+        "id": "alg-exp-prefix-strategy-003-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "negative_numbers_assumption_error"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Store earlier prefix totals so current total minus target can prove a matching subarray."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Store only the current element because earlier totals cannot matter."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use a positive window even when shrink direction can fail."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose prefix lookup state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A scan must detect whether any earlier range sums to a target, and values may be negative. What lookup state fits?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Store earlier prefix totals so current total minus target can prove a matching subarray.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Store earlier prefix totals so current total minus target can prove a matching subarray."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Store only the current element because earlier totals cannot matter."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use a positive window even when shrink direction can fail."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many operations add a value across an index range, then final values are requested once. Which accumulated-state signal fits?",
+      "mentalModelCorrection": "A difference array fits when many range increments are applied before final values are read.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-strategy-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many operations add a value across an index range, then final values are requested once. Which accumulated-state signal fits?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A difference array fits when many range increments are applied before final values are read.",
+        "id": "alg-exp-prefix-strategy-004-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "complexity_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A difference array fits when many range increments are applied before final values are read."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Update every covered index for every operation without checking operation count."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use binary search because ranges have boundaries."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "difference_array_intro",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose difference-style accumulation",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Many operations add a value across an index range, then final values are requested once. Which accumulated-state signal fits?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "A difference array fits when many range increments are applied before final values are read.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A difference array fits when many range increments are applied before final values are read."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Update every covered index for every operation without checking operation count."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use binary search because ranges have boundaries."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A dashboard asks for totals over many date ranges in the same list. Which pattern signal should be named?",
+      "mentalModelCorrection": "The signal is repeated range totals; prefix state answers each range from accumulated endpoints.",
+      "mistakeTypes": [
+        "cannot_explain_why",
+        "data_structure_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-identify-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A dashboard asks for totals over many date ranges in the same list. Which pattern signal should be named?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is repeated range totals; prefix state answers each range from accumulated endpoints.",
+        "id": "alg-exp-prefix-identify-001-check",
+        "mistakeTypes": [
+          "cannot_explain_why",
+          "data_structure_mismatch"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is repeated range totals; prefix state answers each range from accumulated endpoints."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The signal is sorting because dates are ordered."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The signal is stack state because ranges are nested in the UI."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_explain_why",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify repeated range-total signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A prefix formula should handle ranges that start at the first element. Which boundary signal is needed?",
+      "mentalModelCorrection": "The empty prefix lets a range beginning at index zero be represented by the same formula.",
+      "mistakeTypes": [
+        "empty_input_error",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-identify-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A prefix formula should handle ranges that start at the first element. Which boundary signal is needed?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The empty prefix lets a range beginning at index zero be represented by the same formula.",
+        "id": "alg-exp-prefix-identify-002-check",
+        "mistakeTypes": [
+          "empty_input_error",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The empty prefix lets a range beginning at index zero be represented by the same formula."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Ranges must start after index zero."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The first prefix can be skipped because it has no previous value."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "empty_input_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify empty-prefix boundary",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A window sum may rise or fall after either boundary moves. Which signal suggests prefix reasoning instead?",
+      "mentalModelCorrection": "The failure signal is loss of monotonic behavior in the range total.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-identify-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A window sum may rise or fall after either boundary moves. Which signal suggests prefix reasoning instead?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The failure signal is loss of monotonic behavior in the range total.",
+        "id": "alg-exp-prefix-identify-003-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The failure signal is loss of monotonic behavior in the range total."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Every contiguous sum has predictable movement."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Prefix state only works for positive values."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify window failure signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A plan builds a prefix-total array for n values before answering range queries. What preprocessing cost should you expect?",
+      "mentalModelCorrection": "Prefix preprocessing is linear time and linear extra space.",
+      "mistakeTypes": [
+        "complexity_mismatch"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-cost-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A plan builds a prefix-total array for n values before answering range queries. What preprocessing cost should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Prefix preprocessing is linear time and linear extra space.",
+        "id": "alg-exp-prefix-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost prefix preprocessing",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Building prefix totals scans once and stores one accumulated value per position.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Plan A shrinks a window when the total is high. Plan B checks current prefix minus target in a map. Values can be negative. Which plan fits better?",
+      "mentalModelCorrection": "Prefix lookup is safer when value signs break the simple window invariant.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Plan A shrinks a window when the total is high. Plan B checks current prefix minus target in a map. Values can be negative. Which plan fits better?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Prefix lookup is safer when value signs break the simple window invariant.",
+        "id": "alg-exp-prefix-comparison-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Prefix lookup is safer when value signs break the simple window invariant."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Plan A is safer because it stores less state."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Value signs do not affect range-sum mechanics."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare prefix lookup with window",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Prefix lookup is safer when value signs break the simple window invariant."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Plan A is safer because it stores less state."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Value signs do not affect range-sum mechanics."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range-sum solution shrinks left whenever total exceeds target, but the input may contain refunds. What should be reviewed?",
+      "mentalModelCorrection": "The mistake is applying a positive-only window invariant after the prompt allows values below zero.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-prefix-mistake-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A range-sum solution shrinks left whenever total exceeds target, but the input may contain refunds. What should be reviewed?",
+    "roadmapNodeId": "prefix_sums",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is applying a positive-only window invariant after the prompt allows values below zero.",
+        "id": "alg-exp-prefix-mistake-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is applying a positive-only window invariant after the prompt allows values below zero."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Refunds make the shrink rule more reliable."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The target value alone decides whether a window is safe."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Review invalid positive-window assumption",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range-sum task allows credits and refunds below zero. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use prefix totals because simple shrink movement is not reliable.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A range-sum task allows credits and refunds below zero. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use prefix totals because simple shrink movement is not reliable.",
+        "id": "alg-prod-prefix-001-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use prefix totals because simple shrink movement is not reliable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 1",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A range-sum task allows credits and refunds below zero. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Use prefix totals because simple shrink movement is not reliable.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use prefix totals because simple shrink movement is not reliable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many queries ask for totals between two indexes in the same array. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "Prefix preprocessing is linear time and linear space.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many queries ask for totals between two indexes in the same array. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Prefix preprocessing is linear time and linear space.",
+        "id": "alg-prod-prefix-002-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 2",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Prefix preprocessing is linear time and linear space.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan must detect whether any subarray reaches a target sum. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is prefix lookup by needed prior total.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A scan must detect whether any subarray reaches a target sum. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is prefix lookup by needed prior total.",
+        "id": "alg-prod-prefix-003-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is prefix lookup by needed prior total."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 3",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many operations add a value across a range, then final values are read once. Empty input is valid. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review applying every update to every covered index without checking operation count.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many operations add a value across a range, then final values are read once. Empty input is valid. What mistake should be reviewed?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review applying every update to every covered index without checking operation count.",
+        "id": "alg-prod-prefix-004-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review applying every update to every covered index without checking operation count."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "difference_array_intro",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 4",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A count is needed for ranges ending at each index. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Track prefix frequencies, not just the latest prefix total.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-005",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A count is needed for ranges ending at each index. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Track prefix frequencies, not just the latest prefix total.",
+        "id": "alg-prod-prefix-005-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Track prefix frequencies, not just the latest prefix total."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 5",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A count is needed for ranges ending at each index. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Track prefix frequencies, not just the latest prefix total.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Track prefix frequencies, not just the latest prefix total."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range-sum task allows credits and refunds below zero. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "One scan stores prefix totals for lookup.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-006",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A range-sum task allows credits and refunds below zero. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "One scan stores prefix totals for lookup.",
+        "id": "alg-prod-prefix-006-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 6",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "One scan stores prefix totals for lookup.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many queries ask for totals between two indexes in the same array. The answer asks for values, not code. Which comparison is decisive?",
+      "mentalModelCorrection": "Preprocessing beats recomputing each range when query count is large.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-007",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many queries ask for totals between two indexes in the same array. The answer asks for values, not code. Which comparison is decisive?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Preprocessing beats recomputing each range when query count is large.",
+        "id": "alg-prod-prefix-007-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Preprocessing beats recomputing each range when query count is large."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 7",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Preprocessing beats recomputing each range when query count is large."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan must detect whether any subarray reaches a target sum. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Store earlier prefix totals and check current minus target.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-008",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A scan must detect whether any subarray reaches a target sum. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Store earlier prefix totals and check current minus target.",
+        "id": "alg-prod-prefix-008-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Store earlier prefix totals and check current minus target."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 8",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A scan must detect whether any subarray reaches a target sum. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Store earlier prefix totals and check current minus target.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Store earlier prefix totals and check current minus target."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many operations add a value across a range, then final values are read once. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is batched range updates.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-009",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many operations add a value across a range, then final values are read once. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is batched range updates.",
+        "id": "alg-prod-prefix-009-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is batched range updates."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "difference_array_intro",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 9",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A count is needed for ranges ending at each index. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "A frequency map of prefixes grows with distinct prefix totals.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-010",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A count is needed for ranges ending at each index. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "A frequency map of prefixes grows with distinct prefix totals.",
+        "id": "alg-prod-prefix-010-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 10",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A frequency map of prefixes grows with distinct prefix totals.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range-sum task allows credits and refunds below zero. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use prefix totals because simple shrink movement is not reliable.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-011",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A range-sum task allows credits and refunds below zero. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use prefix totals because simple shrink movement is not reliable.",
+        "id": "alg-prod-prefix-011-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use prefix totals because simple shrink movement is not reliable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 11",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A range-sum task allows credits and refunds below zero. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Use prefix totals because simple shrink movement is not reliable.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use prefix totals because simple shrink movement is not reliable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many queries ask for totals between two indexes in the same array. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "Prefix preprocessing is linear time and linear space.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-012",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many queries ask for totals between two indexes in the same array. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Prefix preprocessing is linear time and linear space.",
+        "id": "alg-prod-prefix-012-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 12",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Prefix preprocessing is linear time and linear space.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan must detect whether any subarray reaches a target sum. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is prefix lookup by needed prior total.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-013",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A scan must detect whether any subarray reaches a target sum. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is prefix lookup by needed prior total.",
+        "id": "alg-prod-prefix-013-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is prefix lookup by needed prior total."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 13",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many operations add a value across a range, then final values are read once. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review applying every update to every covered index without checking operation count.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-014",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many operations add a value across a range, then final values are read once. Extra memory is acceptable only if it changes scaling. What mistake should be reviewed?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review applying every update to every covered index without checking operation count.",
+        "id": "alg-prod-prefix-014-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review applying every update to every covered index without checking operation count."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "difference_array_intro",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 14",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A count is needed for ranges ending at each index. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Track prefix frequencies, not just the latest prefix total.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-015",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A count is needed for ranges ending at each index. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Track prefix frequencies, not just the latest prefix total.",
+        "id": "alg-prod-prefix-015-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Track prefix frequencies, not just the latest prefix total."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 15",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A count is needed for ranges ending at each index. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Track prefix frequencies, not just the latest prefix total.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Track prefix frequencies, not just the latest prefix total."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range-sum task allows credits and refunds below zero. The edge case appears at the first or last position. What time and extra space should you expect?",
+      "mentalModelCorrection": "One scan stores prefix totals for lookup.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-016",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A range-sum task allows credits and refunds below zero. The edge case appears at the first or last position. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "One scan stores prefix totals for lookup.",
+        "id": "alg-prod-prefix-016-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "when_prefix_beats_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 16",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "One scan stores prefix totals for lookup.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many queries ask for totals between two indexes in the same array. The input can be large. Which comparison is decisive?",
+      "mentalModelCorrection": "Preprocessing beats recomputing each range when query count is large.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-017",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many queries ask for totals between two indexes in the same array. The input can be large. Which comparison is decisive?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Preprocessing beats recomputing each range when query count is large.",
+        "id": "alg-prod-prefix-017-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Preprocessing beats recomputing each range when query count is large."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "range_sum_query",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 17",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Preprocessing beats recomputing each range when query count is large."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan must detect whether any subarray reaches a target sum. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Store earlier prefix totals and check current minus target.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-018",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A scan must detect whether any subarray reaches a target sum. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Store earlier prefix totals and check current minus target.",
+        "id": "alg-prod-prefix-018-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Store earlier prefix totals and check current minus target."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "subarray_sum_with_hash_map",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 18",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "constraintSignal": "A scan must detect whether any subarray reaches a target sum. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "detect_window_failure_signal"
+    ],
+    "reasonSignal": "Store earlier prefix totals and check current minus target.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Store earlier prefix totals and check current minus target."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Many operations add a value across a range, then final values are read once. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is batched range updates.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-019",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "Many operations add a value across a range, then final values are read once. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is batched range updates.",
+        "id": "alg-prod-prefix-019-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is batched range updates."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "difference_array_intro",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 19",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A count is needed for ranges ending at each index. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "A frequency map of prefixes grows with distinct prefix totals.",
+      "mistakeTypes": [
+        "negative_numbers_assumption_error",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-prefix-020",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "detect_window_failure_signal",
+    "prompt": "A count is needed for ranges ending at each index. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "prefix_sums",
+    "secondarySkillAtomIds": [
+      "maintain_window_invariant"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "A frequency map of prefixes grows with distinct prefix totals.",
+        "id": "alg-prod-prefix-020-check",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "detect_window_failure_signal"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "prefix_sums",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "detect_window_failure_signal",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "prefix_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "negative_numbers_assumption_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production prefix baseline 20",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A frequency map of prefixes grows with distinct prefix totals.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  }
+]

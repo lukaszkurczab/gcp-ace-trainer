@@ -1,0 +1,3686 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A positive-number range sum is over the limit after adding the right value. Which invariant action comes next?",
+      "mentalModelCorrection": "Remove left-side values until the current range satisfies the required condition again.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-primer-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A positive-number range sum is over the limit after adding the right value. Which invariant action comes next?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Remove left-side values until the current range satisfies the required condition again.",
+        "id": "alg-sliding-window-primer-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Remove left-side values until the current range satisfies the required condition again."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Record the current range before restoring the condition."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Move both boundaries to the next index immediately."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Positive window primer",
+    "trackId": "algorithms",
+    "type": "approach_primer",
+    "approachId": "positive_sliding_window",
+    "invariant": {
+      "description": "The current window state equals the values between the left and right boundaries.",
+      "id": "window-state-matches-boundaries",
+      "label": "Window state matches boundaries"
+    },
+    "mechanicsSummary": "Maintain a contiguous range over positive values while expanding and shrinking by a rule.",
+    "pitfalls": [
+      {
+        "description": "Using the same sum-window reasoning when negative values are allowed.",
+        "id": "negative-values-break-sum-window",
+        "mistakeTypes": [
+          "negative_numbers_assumption_error",
+          "wrong_approach"
+        ]
+      },
+      {
+        "description": "Updating the best answer before restoring the required window condition.",
+        "id": "recording-invalid-window",
+        "mistakeTypes": [
+          "invariant_broken",
+          "edge_case_missed"
+        ]
+      }
+    ],
+    "pseudocodeTemplate": {
+      "id": "positive-sliding-window-pseudocode",
+      "language": "pseudocode",
+      "lines": [
+        {
+          "id": "line-1",
+          "indentationLevel": 0,
+          "order": 1,
+          "text": "initialize left boundary, tracked state, and best answer"
+        },
+        {
+          "id": "line-2",
+          "indentationLevel": 0,
+          "order": 2,
+          "text": "for each right boundary in input"
+        },
+        {
+          "id": "line-3",
+          "indentationLevel": 1,
+          "order": 3,
+          "text": "add the right value to window state"
+        },
+        {
+          "id": "line-4",
+          "indentationLevel": 1,
+          "order": 4,
+          "text": "while window violates the condition"
+        },
+        {
+          "id": "line-5",
+          "indentationLevel": 2,
+          "order": 5,
+          "text": "remove the left value from window state and move left forward"
+        },
+        {
+          "id": "line-6",
+          "indentationLevel": 1,
+          "order": 6,
+          "text": "update best answer from the valid window"
+        }
+      ]
+    },
+    "whenNotToUseSignals": [
+      "The range values may be negative and the sum is no longer monotonic.",
+      "The task is about arbitrary pairs or non-contiguous elements."
+    ],
+    "whenToUseSignals": [
+      "The task asks for a contiguous range.",
+      "All range values are positive, so expanding and shrinking changes the tracked sum predictably."
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Worked example: readings are [2, 1, 5, 2], limit is 6. After adding 5, which range should be considered?",
+      "mentalModelCorrection": "The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-worked-sensor-range-001",
+    "learningStage": "guided_application",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Worked example: readings are [2, 1, 5, 2], limit is 6. After adding 5, which range should be considered?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+        "id": "alg-sliding-window-worked-sensor-range-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Discard 5 because adding it crossed the limit."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Reset the range after every reading."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Worked example: sensor window",
+    "trackId": "algorithms",
+    "type": "worked_example",
+    "approachChoiceReason": "Positive readings make expansion and shrinkage predictable for the range total.",
+    "approachId": "positive_sliding_window",
+    "commonMistakes": [
+      "invariant_missing",
+      "cannot_trace_algorithm"
+    ],
+    "complexityExplanation": "Each boundary moves forward through the readings at most once.",
+    "constraints": [
+      "All readings are positive.",
+      "The answer must be contiguous."
+    ],
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)",
+    "problemStatement": "Given positive sensor readings, find the shortest contiguous range whose total reaches at least a limit.",
+    "pseudocodeTemplate": {
+      "id": "positive-sliding-window-pseudocode",
+      "language": "pseudocode",
+      "lines": [
+        {
+          "id": "line-1",
+          "indentationLevel": 0,
+          "order": 1,
+          "text": "initialize left boundary, tracked state, and best answer"
+        },
+        {
+          "id": "line-2",
+          "indentationLevel": 0,
+          "order": 2,
+          "text": "for each right boundary in input"
+        },
+        {
+          "id": "line-3",
+          "indentationLevel": 1,
+          "order": 3,
+          "text": "add the right value to window state"
+        },
+        {
+          "id": "line-4",
+          "indentationLevel": 1,
+          "order": 4,
+          "text": "while window violates the condition"
+        },
+        {
+          "id": "line-5",
+          "indentationLevel": 2,
+          "order": 5,
+          "text": "remove the left value from window state and move left forward"
+        },
+        {
+          "id": "line-6",
+          "indentationLevel": 1,
+          "order": 6,
+          "text": "update best answer from the valid window"
+        }
+      ]
+    },
+    "solution": {
+      "approachId": "positive_sliding_window",
+      "complexityExplanation": "Each boundary moves forward through the readings at most once.",
+      "id": "alg-sliding-window-worked-sensor-range-001-solution",
+      "pseudocode": [
+        "initialize left boundary, tracked state, and best answer",
+        "for each right boundary in input",
+        "add the right value to window state",
+        "while window violates the condition",
+        "remove the left value from window state and move left forward",
+        "update best answer from the valid window"
+      ],
+      "spaceComplexity": "O(1)",
+      "subgoalIds": [
+        "define-window-state",
+        "expand-right-boundary",
+        "shrink-left-boundary",
+        "record-valid-window"
+      ],
+      "summary": "The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+      "timeComplexity": "O(n)",
+      "title": "Worked example: sensor window solution"
+    },
+    "stepByStepTrace": [
+      {
+        "description": "The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+        "id": "alg-sliding-window-worked-sensor-range-001-trace-001",
+        "order": 1,
+        "state": [
+          "Worked example: readings are [2, 1, 5, 2], limit is 6. After adding 5, which range should be considered?"
+        ]
+      }
+    ],
+    "subgoals": [
+      {
+        "description": "Define the state that represents the current contiguous range.",
+        "id": "define-window-state",
+        "label": "Define window state",
+        "order": 1
+      },
+      {
+        "description": "Expand the right boundary and update the state for the new value.",
+        "id": "expand-right-boundary",
+        "label": "Expand right boundary",
+        "order": 2
+      },
+      {
+        "description": "Shrink the left boundary until the required invariant is restored.",
+        "id": "shrink-left-boundary",
+        "label": "Restore invariant",
+        "order": 3
+      },
+      {
+        "description": "Record the answer only from a window that currently satisfies the condition.",
+        "id": "record-valid-window",
+        "label": "Record valid window",
+        "order": 4
+      }
+    ],
+    "whyNotAlternatives": [
+      {
+        "approachId": "label_only",
+        "reason": "A pattern label without the decision signal does not justify the mechanics."
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A contiguous positive-number range grows past its allowed sum. Which reasoning should guide the next move?",
+      "mentalModelCorrection": "Keep a range state and move boundaries only when the invariant says to shrink.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-invariant-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A contiguous positive-number range grows past its allowed sum. Which reasoning should guide the next move?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Keep a range state and move boundaries only when the invariant says to shrink.",
+        "id": "alg-sliding-window-invariant-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Keep a range state and move boundaries only when the invariant says to shrink."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Move the right boundary only; left never changes in a range task."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Ignore the current range state and restart from the next index."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify the window invariant",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Window values are [3, 4, 2], tracked sum is 9, and the allowed sum is at most 7. What is the next trace step?",
+      "mentalModelCorrection": "Remove the left value from the tracked sum and move left forward.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-trace-shrink-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Window values are [3, 4, 2], tracked sum is 9, and the allowed sum is at most 7. What is the next trace step?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Remove the left value from the tracked sum and move left forward.",
+        "id": "alg-sliding-window-trace-shrink-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Remove the left value from the tracked sum and move left forward."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Add another right value before changing the invalid window."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Record the invalid window as the best answer."
+          }
+        ],
+        "prompt": "Choose the next trace step.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "trace_next_step"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace a window shrink",
+    "trackId": "algorithms",
+    "type": "trace_next_step",
+    "stepByStepTrace": [
+      {
+        "description": "Remove the left value from the tracked sum and move left forward.",
+        "id": "alg-sliding-window-trace-shrink-001-trace-001",
+        "order": 1,
+        "state": [
+          "Window values are [3, 4, 2], tracked sum is 9, and the allowed sum is at most 7. What is the next trace step?"
+        ]
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Order the update steps for a fixed-size contiguous window.",
+      "mentalModelCorrection": "For fixed size k, remove the outgoing value exactly when the new value enters.",
+      "mistakeTypes": [
+        "off_by_one",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-fixed-size-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Order the update steps for a fixed-size contiguous window.",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "add_right",
+          "check_size",
+          "remove_left",
+          "record_size_k"
+        ],
+        "feedback": "For fixed size k, remove the outgoing value exactly when the new value enters.",
+        "id": "alg-sliding-window-fixed-size-001-check",
+        "mistakeTypes": [
+          "off_by_one",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "add_right",
+            "text": "Add the new right value to the window state."
+          },
+          {
+            "id": "check_size",
+            "text": "Check whether the window is now larger than k."
+          },
+          {
+            "id": "remove_left",
+            "text": "Remove the outgoing left value when size exceeds k."
+          },
+          {
+            "id": "record_size_k",
+            "text": "Record an answer only when the window size is k."
+          }
+        ],
+        "prompt": "Tap the steps in the correct order.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "order_steps"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Order fixed-window updates",
+    "trackId": "algorithms",
+    "type": "pseudocode_ordering"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A contiguous substring is valid only while it contains at most two distinct characters. What state should the window maintain?",
+      "mentalModelCorrection": "Use a frequency map inside the window when validity depends on counts of values in the current range.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-sliding-window-frequency-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A contiguous substring is valid only while it contains at most two distinct characters. What state should the window maintain?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a frequency map inside the window when validity depends on counts of values in the current range.",
+        "id": "alg-sliding-window-frequency-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a frequency map inside the window when validity depends on counts of values in the current range."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Only track the left and right indices; counts cannot affect validity."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Sort the substring every time the right boundary moves."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose window frequency state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A contiguous substring is valid only while it contains at most two distinct characters. What state should the window maintain?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Use a frequency map inside the window when validity depends on counts of values in the current range.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a frequency map inside the window when validity depends on counts of values in the current range."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Only track the left and right indices; counts cannot affect validity."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Sort the substring every time the right boundary moves."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings arrive in an array, and the task asks for the shortest contiguous range over a limit. Which signal supports a window?",
+      "mentalModelCorrection": "A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "wrong_approach"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-strategy-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings arrive in an array, and the task asks for the shortest contiguous range over a limit. Which signal supports a window?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
+        "id": "alg-exp-window-strategy-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "wrong_approach"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Use prefix lookup first because every range question requires it."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use pair boundaries because a range has two ends."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose positive range window",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "Positive readings arrive in an array, and the task asks for the shortest contiguous range over a limit. Which signal supports a window?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Use prefix lookup first because every range question requires it."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use pair boundaries because a range has two ends."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A task asks for the best total among every block of exactly k adjacent days. Which window shape fits?",
+      "mentalModelCorrection": "A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
+      "mistakeTypes": [
+        "off_by_one",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-strategy-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A task asks for the best total among every block of exactly k adjacent days. Which window shape fits?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
+        "id": "alg-exp-window-strategy-002-check",
+        "mistakeTypes": [
+          "off_by_one",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A fixed-size window fits because each step swaps one outgoing value for one incoming value."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Restart each block total from scratch without considering overlap."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Use binary search because k is a number."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose fixed-size window",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A task asks for the best total among every block of exactly k adjacent days. Which window shape fits?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "A fixed-size window fits because each step swaps one outgoing value for one incoming value."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Restart each block total from scratch without considering overlap."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Use binary search because k is a number."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring is valid while it has at most three distinct symbols. Which state should travel with the window?",
+      "mentalModelCorrection": "Maintain counts inside the current range when validity depends on distinct values.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-strategy-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring is valid while it has at most three distinct symbols. Which state should travel with the window?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Maintain counts inside the current range when validity depends on distinct values.",
+        "id": "alg-exp-window-strategy-003-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Maintain counts inside the current range when validity depends on distinct values."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Track only window length because symbols cannot affect validity."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Sort each current substring before checking it."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose distinct-count window state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A substring is valid while it has at most three distinct symbols. Which state should travel with the window?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Maintain counts inside the current range when validity depends on distinct values.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Maintain counts inside the current range when validity depends on distinct values."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Track only window length because symbols cannot affect validity."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Sort each current substring before checking it."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "After adding a right value, a positive sum window now satisfies the target. What strategy decision comes next?",
+      "mentalModelCorrection": "Shrink from the left only while the invariant says the current range is invalid or can be improved.",
+      "mistakeTypes": [
+        "invariant_broken",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-strategy-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "After adding a right value, a positive sum window now satisfies the target. What strategy decision comes next?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Shrink from the left only while the invariant says the current range is invalid or can be improved.",
+        "id": "alg-exp-window-strategy-004-check",
+        "mistakeTypes": [
+          "invariant_broken",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Shrink from the left only while the invariant says the current range is invalid or can be improved."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Reset the window after every success."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Keep expanding forever because success was reached once."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_broken",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose shrink timing",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "After adding a right value, a positive sum window now satisfies the target. What strategy decision comes next?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Shrink from the left only while the invariant says the current range is invalid or can be improved.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Shrink from the left only while the invariant says the current range is invalid or can be improved."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Reset the window after every success."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Keep expanding forever because success was reached once."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A problem asks for the longest adjacent segment that stays within a limit. Which pattern signal should be named?",
+      "mentalModelCorrection": "The signal is a contiguous range whose state changes predictably as boundaries move.",
+      "mistakeTypes": [
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-identify-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A problem asks for the longest adjacent segment that stays within a limit. Which pattern signal should be named?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The signal is a contiguous range whose state changes predictably as boundaries move.",
+        "id": "alg-exp-window-identify-001-check",
+        "mistakeTypes": [
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The signal is a contiguous range whose state changes predictably as boundaries move."
+          },
+          {
+            "id": "wrong_1",
+            "text": "The signal is pair lookup because the segment has endpoints."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The signal is sorting because limits are numeric."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify contiguous range signal",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A range is valid only while its total is at most a budget. What reasoning object should be named before coding?",
+      "mentalModelCorrection": "The invariant is what must remain true about the current range before recording an answer.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "cannot_explain_why"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-identify-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A range is valid only while its total is at most a budget. What reasoning object should be named before coding?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The invariant is what must remain true about the current range before recording an answer.",
+        "id": "alg-exp-window-identify-002-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "cannot_explain_why"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The invariant is what must remain true about the current range before recording an answer."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Only the final answer matters, not the current range condition."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The invariant can be inferred after all values are processed."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify window invariant",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A fixed-size average updates after each new value. Which update signal prevents the sum from growing incorrectly?",
+      "mentalModelCorrection": "The outgoing value must be removed when the window moves past it.",
+      "mistakeTypes": [
+        "off_by_one",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-identify-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A fixed-size average updates after each new value. Which update signal prevents the sum from growing incorrectly?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The outgoing value must be removed when the window moves past it.",
+        "id": "alg-exp-window-identify-003-check",
+        "mistakeTypes": [
+          "off_by_one",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The outgoing value must be removed when the window moves past it."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Keep every old value in the tracked sum."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Remove a random value once the window has size k."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Identify outgoing value update",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A window expands right and shrinks left over positive values. What time and extra space should you expect?",
+      "mentalModelCorrection": "A simple positive-number window is linear time and constant extra space.",
+      "mistakeTypes": [
+        "complexity_mismatch",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-cost-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A window expands right and shrinks left over positive values. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A simple positive-number window is linear time and constant extra space.",
+        "id": "alg-exp-window-cost-001-check",
+        "mistakeTypes": [
+          "complexity_mismatch",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Cost a positive window",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each boundary moves forward through the positive array at most once, with only current range state stored.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Plan A uses a positive-number window. Plan B stores all prefix totals. Which comparison supports A for this task?",
+      "mentalModelCorrection": "The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer.",
+      "mistakeTypes": [
+        "wrong_approach",
+        "invariant_missing"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-comparison-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Plan A uses a positive-number window. Plan B stores all prefix totals. Which comparison supports A for this task?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "detect_window_failure_signal"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer.",
+        "id": "alg-exp-window-comparison-001-check",
+        "mistakeTypes": [
+          "wrong_approach",
+          "invariant_missing"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Prefix state is always required for positive range totals."
+          },
+          {
+            "id": "wrong_2",
+            "text": "A window does not need any invariant."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Compare window with prefix state",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Prefix state is always required for positive range totals."
+        },
+        {
+          "id": "wrong_2",
+          "text": "A window does not need any invariant."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A solution updates the best answer immediately after the current range exceeds the allowed total. What should be reviewed?",
+      "mentalModelCorrection": "The mistake is recording an invalid range before restoring the invariant.",
+      "mistakeTypes": [
+        "invariant_broken",
+        "cannot_trace_algorithm"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-exp-window-mistake-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A solution updates the best answer immediately after the current range exceeds the allowed total. What should be reviewed?",
+    "roadmapNodeId": "sliding_window",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The mistake is recording an invalid range before restoring the invariant.",
+        "id": "alg-exp-window-mistake-001-check",
+        "mistakeTypes": [
+          "invariant_broken",
+          "cannot_trace_algorithm"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The mistake is recording an invalid range before restoring the invariant."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Invalid ranges are safe to record if they are long."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The invariant only matters after the loop ends."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_broken",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Review invalid range recording",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings need the shortest contiguous range above a limit. The input can be large. Which comparison is decisive?",
+      "mentalModelCorrection": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings need the shortest contiguous range above a limit. The input can be large. Which comparison is decisive?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "id": "alg-prod-window-001-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 1",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Daily totals ask for the best block of exactly k adjacent days. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-002",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Daily totals ask for the best block of exactly k adjacent days. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "id": "alg-prod-window-002-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 2",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "Daily totals ask for the best block of exactly k adjacent days. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring remains valid while it has at most three distinct symbols. Duplicate values are allowed. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is a contiguous range with count-based validity.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-003",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring remains valid while it has at most three distinct symbols. Duplicate values are allowed. Which pattern signal should be named first?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is a contiguous range with count-based validity.",
+        "id": "alg-prod-window-003-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is a contiguous range with count-based validity."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 3",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A longest segment allows at most k category changes. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "Both boundaries move forward through the sequence once.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-004",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A longest segment allows at most k category changes. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Both boundaries move forward through the sequence once.",
+        "id": "alg-prod-window-004-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "at_most_k_distinct",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 4",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Both boundaries move forward through the sequence once.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A covering substring must include required symbols. The same input is queried many times. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Track missing requirements and shrink only after the cover is satisfied.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-005",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A covering substring must include required symbols. The same input is queried many times. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Track missing requirements and shrink only after the cover is satisfied.",
+        "id": "alg-prod-window-005-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Track missing requirements and shrink only after the cover is satisfied."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "minimum_covering_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 5",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A covering substring must include required symbols. The same input is queried many times. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Track missing requirements and shrink only after the cover is satisfied.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Track missing requirements and shrink only after the cover is satisfied."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings need the shortest contiguous range above a limit. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each boundary moves forward at most once.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-006",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings need the shortest contiguous range above a limit. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each boundary moves forward at most once.",
+        "id": "alg-prod-window-006-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 6",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each boundary moves forward at most once.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Daily totals ask for the best block of exactly k adjacent days. The answer asks for values, not code. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is fixed-size overlap.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-007",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Daily totals ask for the best block of exactly k adjacent days. The answer asks for values, not code. Which pattern signal should be named first?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is fixed-size overlap.",
+        "id": "alg-prod-window-007-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is fixed-size overlap."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 7",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring remains valid while it has at most three distinct symbols. The edge case appears at the first or last position. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review tracking length only when distinct counts decide validity.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-008",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring remains valid while it has at most three distinct symbols. The edge case appears at the first or last position. What mistake should be reviewed?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review tracking length only when distinct counts decide validity.",
+        "id": "alg-prod-window-008-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review tracking length only when distinct counts decide validity."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 8",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A longest segment allows at most k category changes. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Shrink from the left only when the tracked category count breaks the rule.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-009",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A longest segment allows at most k category changes. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Shrink from the left only when the tracked category count breaks the rule.",
+        "id": "alg-prod-window-009-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Shrink from the left only when the tracked category count breaks the rule."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "at_most_k_distinct",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 9",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A longest segment allows at most k category changes. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Shrink from the left only when the tracked category count breaks the rule.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Shrink from the left only when the tracked category count breaks the rule."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A covering substring must include required symbols. Original order must be preserved. What time and extra space should you expect?",
+      "mentalModelCorrection": "A window with counts scans linearly but stores required symbol state.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-010",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A covering substring must include required symbols. Original order must be preserved. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "A window with counts scans linearly but stores required symbol state.",
+        "id": "alg-prod-window-010-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "minimum_covering_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 10",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A window with counts scans linearly but stores required symbol state.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings need the shortest contiguous range above a limit. Duplicate values are allowed. Which comparison is decisive?",
+      "mentalModelCorrection": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-011",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings need the shortest contiguous range above a limit. Duplicate values are allowed. Which comparison is decisive?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "id": "alg-prod-window-011-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 11",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Daily totals ask for the best block of exactly k adjacent days. Empty input is valid. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-012",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Daily totals ask for the best block of exactly k adjacent days. Empty input is valid. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "id": "alg-prod-window-012-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 12",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "Daily totals ask for the best block of exactly k adjacent days. Empty input is valid. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring remains valid while it has at most three distinct symbols. The same input is queried many times. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is a contiguous range with count-based validity.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-013",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring remains valid while it has at most three distinct symbols. The same input is queried many times. Which pattern signal should be named first?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is a contiguous range with count-based validity.",
+        "id": "alg-prod-window-013-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is a contiguous range with count-based validity."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 13",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A longest segment allows at most k category changes. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+      "mentalModelCorrection": "Both boundaries move forward through the sequence once.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-014",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A longest segment allows at most k category changes. Extra memory is acceptable only if it changes scaling. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Both boundaries move forward through the sequence once.",
+        "id": "alg-prod-window-014-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "at_most_k_distinct",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 14",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Both boundaries move forward through the sequence once.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A covering substring must include required symbols. The answer asks for values, not code. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Track missing requirements and shrink only after the cover is satisfied.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-015",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A covering substring must include required symbols. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Track missing requirements and shrink only after the cover is satisfied.",
+        "id": "alg-prod-window-015-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Track missing requirements and shrink only after the cover is satisfied."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "minimum_covering_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 15",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A covering substring must include required symbols. The answer asks for values, not code. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Track missing requirements and shrink only after the cover is satisfied.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Track missing requirements and shrink only after the cover is satisfied."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings need the shortest contiguous range above a limit. The edge case appears at the first or last position. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each boundary moves forward at most once.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-016",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings need the shortest contiguous range above a limit. The edge case appears at the first or last position. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each boundary moves forward at most once.",
+        "id": "alg-prod-window-016-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 16",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each boundary moves forward at most once.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Daily totals ask for the best block of exactly k adjacent days. The input can be large. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is fixed-size overlap.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-017",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Daily totals ask for the best block of exactly k adjacent days. The input can be large. Which pattern signal should be named first?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is fixed-size overlap.",
+        "id": "alg-prod-window-017-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is fixed-size overlap."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 17",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring remains valid while it has at most three distinct symbols. Original order must be preserved. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review tracking length only when distinct counts decide validity.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-018",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring remains valid while it has at most three distinct symbols. Original order must be preserved. What mistake should be reviewed?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review tracking length only when distinct counts decide validity.",
+        "id": "alg-prod-window-018-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review tracking length only when distinct counts decide validity."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 18",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A longest segment allows at most k category changes. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Shrink from the left only when the tracked category count breaks the rule.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-019",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A longest segment allows at most k category changes. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Shrink from the left only when the tracked category count breaks the rule.",
+        "id": "alg-prod-window-019-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Shrink from the left only when the tracked category count breaks the rule."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "at_most_k_distinct",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 19",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "A longest segment allows at most k category changes. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Shrink from the left only when the tracked category count breaks the rule.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Shrink from the left only when the tracked category count breaks the rule."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A covering substring must include required symbols. Empty input is valid. What time and extra space should you expect?",
+      "mentalModelCorrection": "A window with counts scans linearly but stores required symbol state.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-020",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A covering substring must include required symbols. Empty input is valid. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "A window with counts scans linearly but stores required symbol state.",
+        "id": "alg-prod-window-020-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "minimum_covering_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 20",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A window with counts scans linearly but stores required symbol state.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Positive readings need the shortest contiguous range above a limit. The same input is queried many times. Which comparison is decisive?",
+      "mentalModelCorrection": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-021",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Positive readings need the shortest contiguous range above a limit. The same input is queried many times. Which comparison is decisive?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "id": "alg-prod-window-021-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "variable_size_positive_numbers",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 21",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "A positive window is stronger than prefix lookup when shrink direction is predictable."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Daily totals ask for the best block of exactly k adjacent days. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-022",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "Daily totals ask for the best block of exactly k adjacent days. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "id": "alg-prod-window-022-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "fixed_size_window",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 22",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [
+      "choose_lookup_key"
+    ],
+    "constraintSignal": "Daily totals ask for the best block of exactly k adjacent days. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "maintain_window_invariant"
+    ],
+    "reasonSignal": "Use a fixed-size window that swaps one outgoing value for one incoming value.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a fixed-size window that swaps one outgoing value for one incoming value."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A substring remains valid while it has at most three distinct symbols. The answer asks for values, not code. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is a contiguous range with count-based validity.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-023",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A substring remains valid while it has at most three distinct symbols. The answer asks for values, not code. Which pattern signal should be named first?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is a contiguous range with count-based validity.",
+        "id": "alg-prod-window-023-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is a contiguous range with count-based validity."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_constraint",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 23",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A longest segment allows at most k category changes. The edge case appears at the first or last position. What time and extra space should you expect?",
+      "mentalModelCorrection": "Both boundaries move forward through the sequence once.",
+      "mistakeTypes": [
+        "invariant_missing",
+        "invariant_broken"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "medium",
+    "id": "alg-prod-window-024",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "maintain_window_invariant",
+    "prompt": "A longest segment allows at most k category changes. The edge case appears at the first or last position. What time and extra space should you expect?",
+    "roadmapNodeId": "sliding_window",
+    "secondarySkillAtomIds": [
+      "choose_lookup_key"
+    ],
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Both boundaries move forward through the sequence once.",
+        "id": "alg-prod-window-024-check",
+        "mistakeTypes": [
+          "invariant_missing",
+          "invariant_broken"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "maintain_window_invariant"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "sliding_window",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "maintain_window_invariant",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "at_most_k_distinct",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production sliding-window baseline 24",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Both boundaries move forward through the sequence once.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  }
+]

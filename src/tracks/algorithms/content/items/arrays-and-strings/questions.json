@@ -1,0 +1,2487 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "The mechanics are a left-to-right scan with index boundaries.",
+      "mentalModelCorrection": "Name the movement and state before choosing a larger strategy.",
+      "mistakeTypes": [
+        "constraint_ignored",
+        "edge_case_missed"
+      ],
+      "nextAction": "Separate scan mechanics from nested enumeration.",
+      "result": "diagnostic"
+    },
+    "id": "alg-array-string-naming-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string task compares each character with its neighbor in one left-to-right pass. Which mechanics describe the work?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "linear_scan",
+          "index_boundary"
+        ],
+        "feedback": "This is one pass over adjacent positions, so the useful names are scan and boundary tracking.",
+        "id": "alg-check-array-naming-001",
+        "mistakeTypes": [
+          "constraint_ignored",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "linear_scan",
+            "text": "Linear scan"
+          },
+          {
+            "id": "index_boundary",
+            "text": "Index boundary tracking"
+          },
+          {
+            "id": "nested_pair_enumeration",
+            "text": "Nested pair enumeration"
+          },
+          {
+            "id": "global_sorting",
+            "text": "Sorting before scanning"
+          }
+        ],
+        "prompt": "Select the mechanics that match the one-pass neighbor comparison.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "multi_select"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      }
+    ],
+    "title": "Name basic array and string mechanics",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan compares each character with nearby characters and must handle repeated characters. Which mechanics should be named first?",
+      "mentalModelCorrection": "Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-array-string-scan-signals-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan compares each character with nearby characters and must handle repeated characters. Which mechanics should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": [
+          "index_boundary",
+          "duplicate_state"
+        ],
+        "feedback": "Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics.",
+        "id": "alg-array-string-scan-signals-001-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "index_boundary",
+            "text": "Track the valid index boundary."
+          },
+          {
+            "id": "duplicate_state",
+            "text": "Track whether duplicates change the result."
+          },
+          {
+            "id": "discard_order",
+            "text": "Discard original order before scanning."
+          },
+          {
+            "id": "skip_empty",
+            "text": "Assume empty input cannot occur."
+          }
+        ],
+        "prompt": "Select every reasoning signal that applies.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "multi_select"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Name indexed scan signals",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A scan has just compared s[2] with s[1] in a five-character string. What is the next safe index move?",
+      "mentalModelCorrection": "Move to index 3 because index 2 was processed and the boundary remains within the string.",
+      "mistakeTypes": [
+        "cannot_trace_algorithm",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-array-string-trace-index-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A scan has just compared s[2] with s[1] in a five-character string. What is the next safe index move?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Move to index 3 because index 2 was processed and the boundary remains within the string.",
+        "id": "alg-array-string-trace-index-001-check",
+        "mistakeTypes": [
+          "cannot_trace_algorithm",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Move to index 3 because index 2 was processed and the boundary remains within the string."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Jump to index 4 because only the last character matters."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Move back to index 1 because it was used in the comparison."
+          }
+        ],
+        "prompt": "Choose the next trace step.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "trace_next_step"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace the next index",
+    "trackId": "algorithms",
+    "type": "trace_next_step",
+    "stepByStepTrace": [
+      {
+        "description": "Move to index 3 because index 2 was processed and the boundary remains within the string.",
+        "id": "alg-array-string-trace-index-001-trace-001",
+        "order": 1,
+        "state": [
+          "A scan has just compared s[2] with s[1] in a five-character string. What is the next safe index move?"
+        ]
+      }
+    ]
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A neighbor-comparison routine reads s[i - 1]. Which edge case must be handled before the loop body runs?",
+      "mentalModelCorrection": "Check empty and length-one inputs before reading a neighbor index.",
+      "mistakeTypes": [
+        "empty_input_error",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-array-string-edge-neighbor-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A neighbor-comparison routine reads s[i - 1]. Which edge case must be handled before the loop body runs?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Check empty and length-one inputs before reading a neighbor index.",
+        "id": "alg-array-string-edge-neighbor-001-check",
+        "mistakeTypes": [
+          "empty_input_error",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Check empty and length-one inputs before reading a neighbor index."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Only duplicate characters need a guard."
+          },
+          {
+            "id": "wrong_2",
+            "text": "The first index can always read the previous character."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "empty_input_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Guard neighbor access",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A task asks whether two short strings use the same characters with the same frequencies. Which state best matches the signal?",
+      "mentalModelCorrection": "Keep counts when the question depends on how many times each value appears.",
+      "mistakeTypes": [
+        "data_structure_mismatch",
+        "edge_case_missed"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "id": "alg-array-string-frequency-signal-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A task asks whether two short strings use the same characters with the same frequencies. Which state best matches the signal?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Keep counts when the question depends on how many times each value appears.",
+        "id": "alg-array-string-frequency-signal-001-check",
+        "mistakeTypes": [
+          "data_structure_mismatch",
+          "edge_case_missed"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Keep counts when the question depends on how many times each value appears."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Track only the first and last characters."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Sort positions by index distance before counting."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "data_structure_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose frequency state",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A task asks whether two short strings use the same characters with the same frequencies. Which state best matches the signal?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Keep counts when the question depends on how many times each value appears.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Keep counts when the question depends on how many times each value appears."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Track only the first and last characters."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Sort positions by index distance before counting."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan reads the previous character before deciding whether to merge runs. The input can be large. What time and extra space should you expect?",
+      "mentalModelCorrection": "A single neighbor scan is linear and constant space.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-001",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan reads the previous character before deciding whether to merge runs. The input can be large. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A single neighbor scan is linear and constant space.",
+        "id": "alg-prod-array-string-001-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 1",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A single neighbor scan is linear and constant space.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array compacts accepted values while preserving their relative order. Original order must be preserved. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a write boundary and a read index moving forward.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-002",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "An array compacts accepted values while preserving their relative order. Original order must be preserved. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a write boundary and a read index moving forward.",
+        "id": "alg-prod-array-string-002-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a write boundary and a read index moving forward."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 2",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "An array compacts accepted values while preserving their relative order. Original order must be preserved. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use a write boundary and a read index moving forward.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a write boundary and a read index moving forward."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two strings match only when each character appears the same number of times. Duplicate values are allowed. What time and extra space should you expect?",
+      "mentalModelCorrection": "Counting characters scans both strings and stores bounded or distinct counts.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-003",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "Two strings match only when each character appears the same number of times. Duplicate values are allowed. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Counting characters scans both strings and stores bounded or distinct counts.",
+        "id": "alg-prod-array-string-003-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 3",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Counting characters scans both strings and stores bounded or distinct counts.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A phrase comparison ignores spaces and letter case. Empty input is valid. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is string normalization before comparison.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-004",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A phrase comparison ignores spaces and letter case. Empty input is valid. Which pattern signal should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is string normalization before comparison.",
+        "id": "alg-prod-array-string-004-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is string normalization before comparison."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 4",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted array should collapse duplicate values into one copy. The same input is queried many times. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review skipping the first occurrence before it is recorded.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-005",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sorted array should collapse duplicate values into one copy. The same input is queried many times. What mistake should be reviewed?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review skipping the first occurrence before it is recorded.",
+        "id": "alg-prod-array-string-005-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review skipping the first occurrence before it is recorded."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 5",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan reads the previous character before deciding whether to merge runs. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Guard the first position before reading a neighbor.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-006",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan reads the previous character before deciding whether to merge runs. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Guard the first position before reading a neighbor.",
+        "id": "alg-prod-array-string-006-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Guard the first position before reading a neighbor."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 6",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A string scan reads the previous character before deciding whether to merge runs. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Guard the first position before reading a neighbor.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Guard the first position before reading a neighbor."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array compacts accepted values while preserving their relative order. The answer asks for values, not code. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each element is read once and accepted values reuse the input space.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-007",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "An array compacts accepted values while preserving their relative order. The answer asks for values, not code. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each element is read once and accepted values reuse the input space.",
+        "id": "alg-prod-array-string-007-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 7",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each element is read once and accepted values reuse the input space.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two strings match only when each character appears the same number of times. The edge case appears at the first or last position. Which comparison is decisive?",
+      "mentalModelCorrection": "Counts are stronger than presence when duplicates matter.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-008",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "Two strings match only when each character appears the same number of times. The edge case appears at the first or last position. Which comparison is decisive?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Counts are stronger than presence when duplicates matter.",
+        "id": "alg-prod-array-string-008-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Counts are stronger than presence when duplicates matter."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 8",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Counts are stronger than presence when duplicates matter."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A phrase comparison ignores spaces and letter case. The input can be large. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Normalize the input before comparing semantic equality.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-009",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A phrase comparison ignores spaces and letter case. The input can be large. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Normalize the input before comparing semantic equality.",
+        "id": "alg-prod-array-string-009-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Normalize the input before comparing semantic equality."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 9",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A phrase comparison ignores spaces and letter case. The input can be large. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Normalize the input before comparing semantic equality.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Normalize the input before comparing semantic equality."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted array should collapse duplicate values into one copy. Original order must be preserved. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is duplicate handling at an index boundary.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-010",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sorted array should collapse duplicate values into one copy. Original order must be preserved. Which pattern signal should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is duplicate handling at an index boundary.",
+        "id": "alg-prod-array-string-010-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is duplicate handling at an index boundary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 10",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan reads the previous character before deciding whether to merge runs. Duplicate values are allowed. What time and extra space should you expect?",
+      "mentalModelCorrection": "A single neighbor scan is linear and constant space.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-011",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan reads the previous character before deciding whether to merge runs. Duplicate values are allowed. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A single neighbor scan is linear and constant space.",
+        "id": "alg-prod-array-string-011-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 11",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A single neighbor scan is linear and constant space.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array compacts accepted values while preserving their relative order. Empty input is valid. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a write boundary and a read index moving forward.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-012",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "An array compacts accepted values while preserving their relative order. Empty input is valid. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a write boundary and a read index moving forward.",
+        "id": "alg-prod-array-string-012-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a write boundary and a read index moving forward."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 12",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "An array compacts accepted values while preserving their relative order. Empty input is valid. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use a write boundary and a read index moving forward.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a write boundary and a read index moving forward."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two strings match only when each character appears the same number of times. The same input is queried many times. What time and extra space should you expect?",
+      "mentalModelCorrection": "Counting characters scans both strings and stores bounded or distinct counts.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-013",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "Two strings match only when each character appears the same number of times. The same input is queried many times. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Counting characters scans both strings and stores bounded or distinct counts.",
+        "id": "alg-prod-array-string-013-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 13",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Counting characters scans both strings and stores bounded or distinct counts.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A phrase comparison ignores spaces and letter case. Extra memory is acceptable only if it changes scaling. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is string normalization before comparison.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-014",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A phrase comparison ignores spaces and letter case. Extra memory is acceptable only if it changes scaling. Which pattern signal should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is string normalization before comparison.",
+        "id": "alg-prod-array-string-014-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is string normalization before comparison."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 14",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted array should collapse duplicate values into one copy. The answer asks for values, not code. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review skipping the first occurrence before it is recorded.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-015",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sorted array should collapse duplicate values into one copy. The answer asks for values, not code. What mistake should be reviewed?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review skipping the first occurrence before it is recorded.",
+        "id": "alg-prod-array-string-015-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review skipping the first occurrence before it is recorded."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 15",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan reads the previous character before deciding whether to merge runs. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Guard the first position before reading a neighbor.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-016",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan reads the previous character before deciding whether to merge runs. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Guard the first position before reading a neighbor.",
+        "id": "alg-prod-array-string-016-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Guard the first position before reading a neighbor."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 16",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A string scan reads the previous character before deciding whether to merge runs. The edge case appears at the first or last position. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Guard the first position before reading a neighbor.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Guard the first position before reading a neighbor."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array compacts accepted values while preserving their relative order. The input can be large. What time and extra space should you expect?",
+      "mentalModelCorrection": "Each element is read once and accepted values reuse the input space.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-017",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "An array compacts accepted values while preserving their relative order. The input can be large. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "Each element is read once and accepted values reuse the input space.",
+        "id": "alg-prod-array-string-017-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 17",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Each element is read once and accepted values reuse the input space.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two strings match only when each character appears the same number of times. Original order must be preserved. Which comparison is decisive?",
+      "mentalModelCorrection": "Counts are stronger than presence when duplicates matter.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-018",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "Two strings match only when each character appears the same number of times. Original order must be preserved. Which comparison is decisive?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Counts are stronger than presence when duplicates matter.",
+        "id": "alg-prod-array-string-018-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Counts are stronger than presence when duplicates matter."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 18",
+    "trackId": "algorithms",
+    "type": "solution_comparison",
+    "responseSpec": {
+      "comparisonCriteria": [
+        "decision signal",
+        "constraint fit",
+        "state needed"
+      ],
+      "kind": "solution_comparison",
+      "solutions": [
+        {
+          "id": "expected_signal",
+          "text": "Counts are stronger than presence when duplicates matter."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A phrase comparison ignores spaces and letter case. Duplicate values are allowed. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Normalize the input before comparing semantic equality.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-019",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A phrase comparison ignores spaces and letter case. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Normalize the input before comparing semantic equality.",
+        "id": "alg-prod-array-string-019-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Normalize the input before comparing semantic equality."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 19",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "A phrase comparison ignores spaces and letter case. Duplicate values are allowed. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Normalize the input before comparing semantic equality.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Normalize the input before comparing semantic equality."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted array should collapse duplicate values into one copy. Empty input is valid. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is duplicate handling at an index boundary.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-020",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sorted array should collapse duplicate values into one copy. Empty input is valid. Which pattern signal should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is duplicate handling at an index boundary.",
+        "id": "alg-prod-array-string-020-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is duplicate handling at an index boundary."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 20",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A string scan reads the previous character before deciding whether to merge runs. The same input is queried many times. What time and extra space should you expect?",
+      "mentalModelCorrection": "A single neighbor scan is linear and constant space.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-021",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A string scan reads the previous character before deciding whether to merge runs. The same input is queried many times. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "A single neighbor scan is linear and constant space.",
+        "id": "alg-prod-array-string-021-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 21",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "A single neighbor scan is linear and constant space.",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "An array compacts accepted values while preserving their relative order. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+      "mentalModelCorrection": "Use a write boundary and a read index moving forward.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-022",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "An array compacts accepted values while preserving their relative order. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Use a write boundary and a read index moving forward.",
+        "id": "alg-prod-array-string-022-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Use a write boundary and a read index moving forward."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 22",
+    "trackId": "algorithms",
+    "type": "strategy_choice",
+    "acceptableApproachIds": [],
+    "constraintSignal": "An array compacts accepted values while preserving their relative order. Extra memory is acceptable only if it changes scaling. Which strategy signal should guide the choice?",
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
+    "reasonSignal": "Use a write boundary and a read index moving forward.",
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "responseSpec": {
+      "kind": "strategy_selection",
+      "strategies": [
+        {
+          "id": "expected_signal",
+          "text": "Use a write boundary and a read index moving forward."
+        },
+        {
+          "id": "wrong_1",
+          "text": "Choose the most familiar label before checking the constraint."
+        },
+        {
+          "id": "wrong_2",
+          "text": "Start with implementation details before naming the required state."
+        }
+      ]
+    }
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "Two strings match only when each character appears the same number of times. The answer asks for values, not code. What time and extra space should you expect?",
+      "mentalModelCorrection": "Counting characters scans both strings and stores bounded or distinct counts.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-023",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "Two strings match only when each character appears the same number of times. The answer asks for values, not code. What time and extra space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(n)",
+          "time": "O(n)"
+        },
+        "feedback": "Counting characters scans both strings and stores bounded or distinct counts.",
+        "id": "alg-prod-array-string-023-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "prompt": "Choose the expected time and space cost.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "complexity_pair"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "frequency_counting",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 23",
+    "trackId": "algorithms",
+    "type": "complexity_check",
+    "complexityExplanation": "Counting characters scans both strings and stores bounded or distinct counts.",
+    "expectedSpaceComplexity": "O(n)",
+    "expectedTimeComplexity": "O(n)"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A phrase comparison ignores spaces and letter case. The edge case appears at the first or last position. Which pattern signal should be named first?",
+      "mentalModelCorrection": "The pattern signal is string normalization before comparison.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-024",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A phrase comparison ignores spaces and letter case. The edge case appears at the first or last position. Which pattern signal should be named first?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "The pattern signal is string normalization before comparison.",
+        "id": "alg-prod-array-string-024-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "The pattern signal is string normalization before comparison."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 24",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "feedbackModel": {
+      "decisionSignal": "A sorted array should collapse duplicate values into one copy. The input can be large. What mistake should be reviewed?",
+      "mentalModelCorrection": "Review skipping the first occurrence before it is recorded.",
+      "mistakeTypes": [
+        "edge_case_missed",
+        "off_by_one"
+      ],
+      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
+      "result": "diagnostic"
+    },
+    "difficulty": "easy",
+    "id": "alg-prod-array-string-025",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A sorted array should collapse duplicate values into one copy. The input can be large. What mistake should be reviewed?",
+    "roadmapNodeId": "arrays_and_strings",
+    "status": "active",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "expected_signal",
+        "feedback": "Review skipping the first occurrence before it is recorded.",
+        "id": "alg-prod-array-string-025-check",
+        "mistakeTypes": [
+          "edge_case_missed",
+          "off_by_one"
+        ],
+        "options": [
+          {
+            "id": "expected_signal",
+            "text": "Review skipping the first occurrence before it is recorded."
+          },
+          {
+            "id": "wrong_1",
+            "text": "Choose the most familiar label before checking the constraint."
+          },
+          {
+            "id": "wrong_2",
+            "text": "Start with implementation details before naming the required state."
+          }
+        ],
+        "prompt": "Choose the reasoning signal that should guide the strategy.",
+        "status": "active",
+        "testedSkillAtomIds": [
+          "track_index_boundary"
+        ],
+        "type": "single_choice"
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Production array-string baseline 25",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  }
+]
