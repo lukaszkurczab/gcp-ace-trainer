@@ -31,11 +31,16 @@ test("cloud certification and algorithms are active tracks", () => {
   assert.equal(algorithms.title, "Algorithms");
   assert.equal(algorithms.contentManifest.itemCount, ALGORITHM_TRAINING_ITEMS.length);
   assert.ok(getEnabledSessionModes(cloud.id).length > 0);
-  assert.equal(getEnabledSessionModes(algorithms.id).length, 1);
+  assert.equal(getEnabledSessionModes(algorithms.id).length, 6);
   assert.deepEqual(
     algorithms.sessionModes.map((mode) => [mode.title, mode.enabled]),
     [
       ["Pattern basics", true],
+      ["Learn", true],
+      ["Drill", true],
+      ["Review", true],
+      ["Weak area", true],
+      ["Mixed practice", true],
       ["Strategy practice", false],
     ],
   );

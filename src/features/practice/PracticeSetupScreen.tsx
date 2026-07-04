@@ -24,6 +24,7 @@ import {
   type PracticeFeedbackMode,
   type PracticeSessionLength,
 } from "./sessionConfig";
+import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -80,6 +81,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
   const activeTrack = getTrackDefinition(route.params?.trackId ?? activeTrackId);
   const itemNoun = activeTrack.id === ALGORITHMS_TRACK_ID ? "Items" : "Questions";
+  const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
@@ -92,7 +94,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       buildPracticeSessionConfig({
         feedbackMode,
         mode: route.params?.mode ?? "default",
-        reviewBehaviorEnabled,
+        reviewBehaviorEnabled: activeTrack.id === ALGORITHMS_TRACK_ID ? false : reviewBehaviorEnabled,
         sessionLength,
         source: "practiceSetup",
         topicId: topic.id,
@@ -151,27 +153,29 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         {feedbackMode === "afterEachAnswer" ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
-              <Text style={styles.reviewTitle}>Review behavior</Text>
+              <Text style={styles.reviewTitle}>{reviewBehaviorCopy.title}</Text>
               <Text style={styles.subtitle}>
-                Add missed items to an end-of-session correction pass. Extra review items are tracked separately from normal stats.
+                {reviewBehaviorCopy.detail}
               </Text>
             </View>
-            <Pressable
-              accessibilityRole="switch"
-              accessibilityState={{ checked: reviewBehaviorEnabled }}
-              onPress={() => setReviewBehaviorEnabled((current) => !current)}
-              style={[
-                styles.switchTrack,
-                reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
-              ]}
-            >
-              <View
+            {reviewBehaviorCopy.showToggle ? (
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityState={{ checked: reviewBehaviorEnabled }}
+                onPress={() => setReviewBehaviorEnabled((current) => !current)}
                 style={[
-                  styles.switchThumb,
-                  reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
+                  styles.switchTrack,
+                  reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
                 ]}
-              />
-            </Pressable>
+              >
+                <View
+                  style={[
+                    styles.switchThumb,
+                    reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
+                  ]}
+                />
+              </Pressable>
+            ) : null}
           </Card>
         ) : null}
 

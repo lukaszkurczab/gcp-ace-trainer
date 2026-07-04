@@ -520,6 +520,78 @@ test("Algorithms review mode selects due Algorithms review queue items", () => {
   assert.deepEqual(selected.map((item) => item.id), ["review-high", "review-normal"]);
 });
 
+test("Algorithms session-miss review selects requested missed items before dueAt", () => {
+  const reviewItems = [
+    makeSelectableAlgorithmItem("review-session-miss", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("review-due-other", "hash_map_and_set", "complexity_check"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(reviewItems),
+    mode: "review",
+    nodeId: "hash_map_and_set",
+    now: "2026-07-03T10:00:00.000Z",
+    reviewItemIds: ["review-session-miss"],
+    reviewQueueItems: [
+      makeReviewQueueItem("queue-session-miss", "review-session-miss", {
+        dueAt: "2026-07-04T09:00:00.000Z",
+        priority: "normal",
+      }),
+      makeReviewQueueItem("queue-due-other", "review-due-other", {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        priority: "urgent",
+      }),
+    ],
+    reviewSource: "sessionMisses",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), ["review-session-miss"]);
+});
+
+test("Algorithms due review does not fall back to session missed ids before dueAt", () => {
+  const reviewItems = [
+    makeSelectableAlgorithmItem("review-future-requested", "hash_map_and_set", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(reviewItems),
+    mode: "review",
+    nodeId: "hash_map_and_set",
+    now: "2026-07-03T10:00:00.000Z",
+    reviewItemIds: ["review-future-requested"],
+    reviewQueueItems: [
+      makeReviewQueueItem("queue-future-requested", "review-future-requested", {
+        dueAt: "2026-07-04T09:00:00.000Z",
+      }),
+    ],
+    reviewSource: "dueQueue",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), []);
+});
+
+test("Algorithms session-miss review empty state reflects only the selected review source", () => {
+  const reviewItems = [
+    makeSelectableAlgorithmItem("review-due-other", "hash_map_and_set", "trace_next_step"),
+  ];
+  const selected = selectAlgorithmSessionItems({
+    contentAdapter: makeSelectionAdapter(reviewItems),
+    mode: "review",
+    nodeId: "hash_map_and_set",
+    now: "2026-07-03T10:00:00.000Z",
+    reviewItemIds: [],
+    reviewQueueItems: [
+      makeReviewQueueItem("queue-due-other", "review-due-other", {
+        dueAt: "2026-07-03T09:00:00.000Z",
+      }),
+    ],
+    reviewSource: "sessionMisses",
+    sessionLength: 10,
+  });
+
+  assert.deepEqual(selected.map((item) => item.id), []);
+});
+
 test("Algorithms weak area mode selects the weakest evidenced roadmap node", () => {
   const weakItems = [
     makeSelectableAlgorithmItem("weak-current", "hash_map_and_set", "trace_next_step"),

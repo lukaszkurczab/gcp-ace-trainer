@@ -70,6 +70,7 @@ test("Progress review action opens when review queue has due items", () => {
 
   assert.equal(model.reviewActionEnabled, true);
   assert.equal(model.reviewActionLabel, "Open review queue");
+  assert.deepEqual(model.reviewAction, { kind: "legacyMistakesReview" });
 });
 
 test("canonical domain performance maps into ProgressTab scores", () => {
@@ -275,6 +276,20 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
   assert.equal(model.reviewActionEnabled, true);
   assert.equal(model.reviewActionLabel, "Open review queue");
+  assert.deepEqual(model.reviewAction, {
+    kind: "practiceSession",
+    params: {
+      feedbackMode: "afterEachAnswer",
+      mode: "review",
+      reviewBehaviorEnabled: false,
+      reviewItemIds: undefined,
+      reviewSource: "dueQueue",
+      sessionLength: 20,
+      source: "modeShortcut",
+      topicId: "complexity_and_constraints",
+      trackId: "algorithms",
+    },
+  });
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
     [

@@ -7,9 +7,9 @@ import {
   buildAlgorithmsSummaryActions,
   buildAlgorithmsSessionSummary,
   buildAlgorithmsSubmission,
+  getAlgorithmsSessionModeIdForRouteMode,
   getAlgorithmsFeedbackState,
   type AlgorithmsSessionSummary,
-  type AlgorithmsSummaryReviewQueueState,
 } from "../src/features/algorithms/algorithmsSessionModel";
 import type { PracticeSessionRouteParams } from "../src/features/practice/sessionConfig";
 import {
@@ -191,32 +191,30 @@ test("Algorithms incorrect review attempt stays high priority with repeated mist
   );
 });
 
-test("Algorithms summary actions open review when queue has due or session-relevant items", () => {
-  const dueActions = buildAlgorithmsSummaryActions(
+test("Algorithms summary review action carries session missed item ids without due queue state", () => {
+  const actions = buildAlgorithmsSummaryActions(
     makeSummary({ incorrect: 1, reviewItems: [makeReviewItem("missed-item", "incorrect")] }),
     makeSessionConfig("practice"),
-    makeReviewQueueState([
-      { dueAt: "2026-07-03T09:00:00.000Z", itemId: "other-item", trackId: ALGORITHMS_TRACK_ID },
-    ]),
-  );
-  const relevantActions = buildAlgorithmsSummaryActions(
-    makeSummary({ incorrect: 1, reviewItems: [makeReviewItem("missed-item", "incorrect")] }),
-    makeSessionConfig("practice"),
-    makeReviewQueueState([
-      { dueAt: "2026-07-04T09:00:00.000Z", itemId: "missed-item", trackId: ALGORITHMS_TRACK_ID },
-    ]),
   );
 
-  assert.equal(dueActions[0]?.kind, "reviewMissed");
-  assert.equal(dueActions[0]?.priority, "primary");
-  assert.equal(relevantActions[0]?.kind, "reviewMissed");
+  assert.equal(actions[0]?.kind, "reviewMissed");
+  assert.equal(actions[0]?.priority, "primary");
+  assert.deepEqual(actions[0]?.reviewItemIds, ["missed-item"]);
+});
+
+test("Algorithms summary review action is not shown for unrelated due queue state without session misses", () => {
+  const actions = buildAlgorithmsSummaryActions(
+    makeSummary({ completed: 1, correct: 1, reviewItems: [makeReviewItem("correct-item", "correct")] }),
+    makeSessionConfig("practice"),
+  );
+
+  assert.equal(actions.some((action) => action.kind === "reviewMissed"), false);
 });
 
 test("Algorithms summary actions offer weak area after enough missed results", () => {
   const actions = buildAlgorithmsSummaryActions(
     makeSummary({ incorrect: 1, partial: 1 }),
     makeSessionConfig("drill"),
-    makeReviewQueueState([]),
   );
 
   assert.ok(actions.some((action) => action.kind === "startWeakArea"));
@@ -227,7 +225,6 @@ test("Algorithms summary actions offer mixed practice after a strong session", (
   const actions = buildAlgorithmsSummaryActions(
     makeSummary({ completed: 4, correct: 4 }),
     makeSessionConfig("default"),
-    makeReviewQueueState([]),
   );
 
   assert.equal(actions[0]?.kind, "startMixedPractice");
@@ -239,13 +236,51 @@ test("Algorithms summary actions stay on implemented routes only", () => {
   const actions = buildAlgorithmsSummaryActions(
     makeSummary({ completed: 2, correct: 1, incorrect: 1 }),
     makeSessionConfig("default"),
-    makeReviewQueueState([]),
   );
 
   assert.deepEqual(
     actions.map((action) => action.kind).sort(),
     ["continueRoadmap", "viewProgress"].sort(),
   );
+});
+
+test("Algorithms attempts preserve the route mode identity through session mode ids", () => {
+  const { check, item } = makeSubmissionFixture("single_choice");
+  const expectedModeIds: Record<PracticeSessionRouteParams["mode"], string> = {
+    default: "algorithms-roadmap-basics",
+    drill: "algorithms-drill",
+    learn: "algorithms-learn",
+    practice: "algorithms-mixed-practice",
+    review: "algorithms-review",
+    weakArea: "algorithms-weak-area",
+  };
+
+  for (const [mode, expectedModeId] of Object.entries(expectedModeIds) as [PracticeSessionRouteParams["mode"], string][]) {
+    const session = createTrainingSession({
+      id: `session-${mode}`,
+      itemRefs: [
+        {
+          itemId: item.id,
+          itemType: item.type,
+          trackId: ALGORITHMS_TRACK_ID,
+        },
+      ],
+      modeId: getAlgorithmsSessionModeIdForRouteMode(mode),
+      startedAt: "2026-07-03T09:00:00.000Z",
+      trackId: ALGORITHMS_TRACK_ID,
+    });
+    const submission = buildAlgorithmsSubmission({
+      answeredAt: "2026-07-03T10:00:00.000Z",
+      check,
+      complexityAnswer: {},
+      item,
+      selectedOptionIds: [String(check.correctAnswer)],
+      session,
+    });
+
+    assert.equal(session.modeId, expectedModeId);
+    assert.equal(submission.attempt.modeId, expectedModeId);
+  }
 });
 
 function makeSubmissionFixture(checkType: AlgorithmStaticMicroCheck["type"]): {
@@ -302,15 +337,6 @@ function makeSessionConfig(mode: PracticeSessionRouteParams["mode"]): PracticeSe
     source: mode === "default" ? "practiceHub" : "modeShortcut",
     topicId: "hash_map_and_set",
     trackId: ALGORITHMS_TRACK_ID,
-  };
-}
-
-function makeReviewQueueState(
-  items: AlgorithmsSummaryReviewQueueState["items"],
-): AlgorithmsSummaryReviewQueueState {
-  return {
-    items,
-    now: "2026-07-03T10:00:00.000Z",
   };
 }
 

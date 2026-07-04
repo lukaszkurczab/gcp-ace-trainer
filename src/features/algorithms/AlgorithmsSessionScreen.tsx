@@ -38,7 +38,6 @@ import {
 } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
 import {
-  ALGORITHMS_SESSION_MODE_ID,
   ALGORITHM_ROADMAP,
   getActiveAlgorithmStaticMicroCheck,
   getFirstUsableAlgorithmRoadmapNode,
@@ -56,6 +55,7 @@ import { buildPracticeSessionConfig, type PracticeSessionMode } from "../practic
 import {
   buildAlgorithmsSummaryActions,
   buildAlgorithmsSessionSummary,
+  getAlgorithmsSessionModeIdForRouteMode,
   buildAlgorithmsReviewQueueUpdate,
   buildAlgorithmsSubmission,
   formatAlgorithmItemType,
@@ -69,7 +69,6 @@ import {
   getAlgorithmsWeakerAnswerNotes,
   type AlgorithmsSubmission,
   type AlgorithmsSummaryAction,
-  type AlgorithmsSummaryReviewQueueState,
   type AlgorithmsSessionSummary,
 } from "./algorithmsSessionModel";
 
@@ -84,6 +83,7 @@ type ComplexityDimension = "time" | "space";
 const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
 
 export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: AlgorithmsSessionScreenProps) {
+  const reviewItemIdsKey = sessionConfig?.reviewItemIds?.join("|") ?? "";
   const [node, setNode] = useState<AlgorithmRoadmapNode>(() => getFirstUsableAlgorithmRoadmapNode());
   const [items, setItems] = useState<readonly AlgorithmTrainingItem[]>([]);
   const [session, setSession] = useState<TrainingSession | null>(null);
@@ -93,10 +93,6 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [checkedScore, setCheckedScore] = useState<AlgorithmStaticCheckScore | null>(null);
   const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
   const [summary, setSummary] = useState<AlgorithmsSessionSummary | null>(null);
-  const [summaryReviewQueueState, setSummaryReviewQueueState] = useState<AlgorithmsSummaryReviewQueueState>({
-    items: [],
-    now: new Date(0).toISOString(),
-  });
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,7 +120,9 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         mode: sessionConfig?.mode ?? "default",
         nodeId: nextNode.id,
         now: startedAt,
+        reviewItemIds: sessionConfig?.reviewItemIds,
         reviewQueueItems: reviewQueueResult.value,
+        reviewSource: sessionConfig?.reviewSource,
         sessionLength: sessionConfig?.sessionLength ?? 20,
       });
       const nextDisplayNode = resolveDisplayNode(nextItems, nextNode, sessionConfig?.mode ?? "default");
@@ -144,10 +142,6 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         setCurrentIndex(0);
         setAttempts([]);
         setSummary(null);
-        setSummaryReviewQueueState({
-          items: [],
-          now: startedAt,
-        });
         resetAnswerState();
         setIsLoading(false);
         return;
@@ -159,7 +153,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
           itemType: item.type,
           trackId: ALGORITHMS_TRACK_ID,
         })),
-        modeId: ALGORITHMS_SESSION_MODE_ID,
+        modeId: getAlgorithmsSessionModeIdForRouteMode(sessionConfig?.mode),
         startedAt,
         trackId: ALGORITHMS_TRACK_ID,
       });
@@ -170,10 +164,6 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       setCurrentIndex(0);
       setAttempts([]);
       setSummary(null);
-      setSummaryReviewQueueState({
-        items: [],
-        now: startedAt,
-      });
       resetAnswerState();
       setIsLoading(false);
 
@@ -189,7 +179,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     return () => {
       isActive = false;
     };
-  }, [nodeId, sessionConfig?.mode, sessionConfig?.sessionLength]);
+  }, [nodeId, reviewItemIdsKey, sessionConfig?.mode, sessionConfig?.reviewSource, sessionConfig?.sessionLength]);
 
   const currentItem = items[currentIndex];
   const currentCheck = useMemo(
@@ -205,7 +195,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const feedbackMode = sessionConfig?.feedbackMode ?? "afterEachAnswer";
   const feedbackState = getAlgorithmsFeedbackState(feedbackMode, checkedScore);
   const summaryActions = summary
-    ? buildAlgorithmsSummaryActions(summary, sessionConfig, summaryReviewQueueState)
+    ? buildAlgorithmsSummaryActions(summary, sessionConfig)
     : [];
 
   function resetAnswerState() {
@@ -319,19 +309,6 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         ));
       }
 
-      const reviewQueueResult = await getReviewQueueItems();
-
-      if (!reviewQueueResult.ok) {
-        setStorageMessage(formatStorageFailure(
-          "The summary actions are using available review data, but the review queue could not be fully loaded",
-          reviewQueueResult.issues,
-        ));
-      }
-
-      setSummaryReviewQueueState({
-        items: reviewQueueResult.value,
-        now: completedAt,
-      });
       setSession(completed.session);
       setSummary(buildAlgorithmsSessionSummary(nextAttempts, items, node.label, {
         mode: sessionConfig?.mode ?? "default",
@@ -374,11 +351,17 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }
 
   function startSummarySession(mode: PracticeSessionMode) {
+    const reviewItemIds = mode === "review"
+      ? summaryActions.find((action) => action.kind === "reviewMissed")?.reviewItemIds
+      : undefined;
+
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
         feedbackMode: mode === "practice" ? "atSessionEnd" : "afterEachAnswer",
         mode,
+        reviewItemIds,
+        reviewSource: mode === "review" ? "sessionMisses" : undefined,
         sessionLength: mode === "practice" ? 40 : 20,
         source: mode === "default" ? "practiceHub" : "modeShortcut",
         topicId: node.id,
@@ -937,7 +920,7 @@ function getEmptySessionStateCopy(mode: PracticeSessionRouteParams["mode"]): {
 } {
   if (mode === "review") {
     return {
-      description: "No due Algorithms review items right now.",
+      description: "No Algorithms review items are available for this review source right now.",
       title: "No review due",
     };
   }

@@ -22,7 +22,7 @@ import type {
   PracticeAnswerRecord,
 } from "../../../types";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { buildProgressTabModel } from "./progressTabModel";
+import { buildProgressTabModel, type ProgressReviewAction } from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDefinition;
@@ -32,7 +32,7 @@ type ProgressTabProps = {
   practiceHistory: PracticeAnswerRecord[];
   reviewQueueItems?: readonly ReviewQueueItem[];
   trainingAttempts?: TrainingAttempt[];
-  onOpenReviewQueue?: () => void;
+  onOpenReviewQueue?: (action: ProgressReviewAction) => void;
 };
 
 export function ProgressTab({
@@ -54,6 +54,7 @@ export function ProgressTab({
     reviewQueueItems,
     trainingAttempts,
   });
+  const reviewAction = progress.reviewAction;
 
   return (
     <>
@@ -79,8 +80,8 @@ export function ProgressTab({
             <Text style={styles.warningText}>{progress.warning}</Text>
           </View>
         ) : null}
-        {progress.reviewActionEnabled && onOpenReviewQueue ? (
-          <Button onPress={onOpenReviewQueue} variant="secondary">
+        {progress.reviewActionEnabled && reviewAction && onOpenReviewQueue ? (
+          <Button onPress={() => onOpenReviewQueue(reviewAction)} variant="secondary">
             {progress.reviewActionLabel}
           </Button>
         ) : (

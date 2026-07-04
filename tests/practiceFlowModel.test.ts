@@ -10,6 +10,7 @@ import {
   buildPracticeModes,
   buildTopicRoadmapNodes,
 } from "../src/features/practice/practiceFlowModel";
+import { getPracticeReviewBehaviorCopy } from "../src/features/practice/practiceSetupModel";
 
 test("Practice modes stay aligned while keeping Algorithms practice active", () => {
   const cloudModes = buildPracticeModes(getTrackDefinition(CLOUD_CERTIFICATION_TRACK_ID));
@@ -42,6 +43,16 @@ test("Topic roadmap model does not expose development status copy", () => {
 
   assert.equal(copy.includes(blockedTerm("draft")), false);
   assert.equal(nodes.some((node) => node.status === "locked" || node.status === "later"), true);
+});
+
+test("Practice setup review behavior copy matches track runtime contract", () => {
+  const algorithmsCopy = getPracticeReviewBehaviorCopy(ALGORITHMS_TRACK_ID);
+  const cloudCopy = getPracticeReviewBehaviorCopy(CLOUD_CERTIFICATION_TRACK_ID);
+
+  assert.equal(algorithmsCopy.showToggle, false);
+  assert.match(algorithmsCopy.detail, /Review queue automatically/);
+  assert.equal(cloudCopy.showToggle, true);
+  assert.match(cloudCopy.detail, /end-of-session correction pass/);
 });
 
 function blockedTerm(value: string): string {

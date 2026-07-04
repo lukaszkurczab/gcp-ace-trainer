@@ -10,6 +10,7 @@ import type {
 import type { PracticeFeedbackMode, PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
   createAlgorithmsReviewQueueItems,
+  getAlgorithmsTrainingSessionModeId,
   getAlgorithmAttemptStatus,
   scoreAlgorithmStaticMicroCheck,
   type AlgorithmComplexityPairAnswer,
@@ -78,11 +79,7 @@ export type AlgorithmsSummaryAction = {
   kind: AlgorithmsSummaryActionKind;
   label: string;
   priority: "primary" | "secondary";
-};
-
-export type AlgorithmsSummaryReviewQueueState = {
-  items: readonly Pick<ReviewQueueItem, "dueAt" | "itemId" | "trackId">[];
-  now: string;
+  reviewItemIds?: readonly string[];
 };
 
 export type AlgorithmsReviewQueueUpdate =
@@ -114,27 +111,23 @@ export function getAlgorithmsFeedbackState(
 export function buildAlgorithmsSummaryActions(
   summary: AlgorithmsSessionSummary,
   sessionConfig: Pick<PracticeSessionRouteParams, "mode"> | undefined,
-  reviewQueueState: AlgorithmsSummaryReviewQueueState,
 ): readonly AlgorithmsSummaryAction[] {
   const actions: AlgorithmsSummaryAction[] = [];
-  const missedItemIds = new Set(
+  const missedItemIds = uniqueStrings(
     summary.reviewItems
       .filter((item) => item.result !== "correct")
       .map((item) => item.itemId),
   );
-  const relevantReviewItemCount = reviewQueueState.items.filter((item) =>
-    item.trackId === ALGORITHMS_TRACK_ID &&
-    (item.dueAt <= reviewQueueState.now || missedItemIds.has(item.itemId)),
-  ).length;
   const missedCount = summary.incorrect + summary.partial;
   const hasStrongSession = summary.completed > 0 && summary.correct === summary.completed;
 
-  if (relevantReviewItemCount > 0) {
+  if (missedItemIds.length > 0) {
     actions.push({
-      detail: "Open due Algorithms review items.",
+      detail: "Review the missed items from this session.",
       kind: "reviewMissed",
       label: "Review missed items",
       priority: "primary",
+      reviewItemIds: missedItemIds,
     });
   }
 
@@ -170,6 +163,12 @@ export function buildAlgorithmsSummaryActions(
   });
 
   return actions;
+}
+
+export function getAlgorithmsSessionModeIdForRouteMode(
+  mode: PracticeSessionRouteParams["mode"] | undefined,
+): TrainingSession["modeId"] {
+  return getAlgorithmsTrainingSessionModeId(mode ?? "default");
 }
 
 export function buildAlgorithmsSubmission({

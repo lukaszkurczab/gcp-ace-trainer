@@ -17,6 +17,7 @@ import type {
 } from "../../../types";
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { buildPracticeSessionConfig, type PracticeSessionRouteParams } from "../../practice/sessionConfig";
 
 type MetricTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 
@@ -87,12 +88,22 @@ export type ProgressTabModel = {
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
   performanceSectionTitle: "Performance by domain" | "Performance areas" | "Roadmap nodes";
+  reviewAction?: ProgressReviewAction;
   reviewActionEnabled: boolean;
   reviewActionLabel: string;
   reviewQueueCount: number;
   reviewQueueCopy: string;
   warning?: string;
 };
+
+export type ProgressReviewAction =
+  | {
+      kind: "legacyMistakesReview";
+    }
+  | {
+      kind: "practiceSession";
+      params: PracticeSessionRouteParams;
+    };
 
 export type BuildProgressTabModelInput = {
   activeTrackId: TrackDefinition["id"];
@@ -159,6 +170,7 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
         total: score.totalAttempts,
       })),
     performanceSectionTitle: "Performance by domain",
+    reviewAction: progress.dueReviewCount > 0 ? { kind: "legacyMistakesReview" } : undefined,
     reviewActionEnabled: progress.dueReviewCount > 0,
     reviewActionLabel: progress.dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount: progress.dueReviewCount,
@@ -226,6 +238,19 @@ function buildAlgorithmsProgressTabModel(
       total: node.itemCount,
     })),
     performanceSectionTitle: "Roadmap nodes",
+    reviewAction: dueReviewCount > 0
+      ? {
+          kind: "practiceSession",
+          params: buildPracticeSessionConfig({
+            feedbackMode: "afterEachAnswer",
+            mode: "review",
+            reviewSource: "dueQueue",
+            source: "modeShortcut",
+            topicId: facts.activeRoadmapNode.id,
+            trackId: ALGORITHMS_TRACK_ID,
+          }),
+        }
+      : undefined,
     reviewActionEnabled: dueReviewCount > 0,
     reviewActionLabel: dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount: dueReviewCount,
@@ -443,6 +468,7 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
       input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID
         ? "Performance by domain"
         : "Performance areas",
+    reviewAction: reviewQueueCount > 0 ? { kind: "legacyMistakesReview" } : undefined,
     reviewActionEnabled: reviewQueueCount > 0,
     reviewActionLabel: reviewQueueCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount,

@@ -19,10 +19,14 @@ export type PracticeSessionLength = 10 | 20 | 40;
 
 export type PracticeFeedbackMode = "afterEachAnswer" | "atSessionEnd";
 
+export type PracticeReviewSource = "dueQueue" | "sessionMisses";
+
 export type PracticeSessionRouteParams = {
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
   reviewBehaviorEnabled: boolean;
+  reviewItemIds?: readonly string[];
+  reviewSource?: PracticeReviewSource;
   sessionLength: PracticeSessionLength;
   source: PracticeSessionSource;
   topicId: string;
@@ -51,6 +55,8 @@ export function buildPracticeSessionConfig(
     feedbackMode: input.feedbackMode ?? DEFAULT_FEEDBACK_MODE,
     mode: input.mode ?? "default",
     reviewBehaviorEnabled: input.reviewBehaviorEnabled ?? false,
+    reviewItemIds: input.reviewItemIds,
+    reviewSource: input.reviewSource,
     sessionLength: input.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
     source: input.source ?? "practiceHub",
     topicId: input.topicId,

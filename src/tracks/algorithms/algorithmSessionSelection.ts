@@ -22,13 +22,17 @@ export type AlgorithmPracticeSessionMode =
   | "practice"
   | "default";
 
+export type AlgorithmReviewSource = "dueQueue" | "sessionMisses";
+
 export type SelectAlgorithmSessionItemsInput = {
   attempts?: readonly TrainingAttempt[];
   contentAdapter?: TrackContentAdapter;
   mode: AlgorithmPracticeSessionMode;
   nodeId: AlgorithmRoadmapNodeId;
   now?: string;
+  reviewItemIds?: readonly string[];
   reviewQueueItems?: readonly ReviewQueueItem[];
+  reviewSource?: AlgorithmReviewSource;
   sessionLength: number;
 };
 
@@ -60,6 +64,21 @@ const reviewPriorityRank: Record<ReviewQueueItem["priority"], number> = {
   normal: 2,
   low: 3,
 };
+
+export const ALGORITHMS_SESSION_MODE_IDS = {
+  default: ALGORITHMS_SESSION_MODE_ID,
+  drill: "algorithms-drill",
+  learn: "algorithms-learn",
+  practice: "algorithms-mixed-practice",
+  review: "algorithms-review",
+  weakArea: "algorithms-weak-area",
+} as const satisfies Record<AlgorithmPracticeSessionMode, TrainingSessionModeId>;
+
+export function getAlgorithmsTrainingSessionModeId(
+  mode: AlgorithmPracticeSessionMode,
+): TrainingSessionModeId {
+  return ALGORITHMS_SESSION_MODE_IDS[mode];
+}
 
 export function selectAlgorithmSessionItemsForRoadmapNode(input: {
   contentAdapter?: TrackContentAdapter;
@@ -108,6 +127,14 @@ export function selectAlgorithmSessionItems(
         input.sessionLength,
       );
     case "review":
+      if (input.reviewSource === "sessionMisses") {
+        return selectReviewItemsById({
+          itemIds: input.reviewItemIds ?? [],
+          items: selectableItems,
+          sessionLength: input.sessionLength,
+        });
+      }
+
       return selectDueReviewItems({
         items: selectableItems,
         now: input.now ?? new Date().toISOString(),
@@ -287,6 +314,27 @@ function selectDueReviewItems(input: {
     .filter((item) => item.trackId === "algorithms" && item.dueAt <= input.now)
     .sort(compareReviewQueueItems)) {
     const item = itemById.get(reviewItem.itemId);
+
+    if (item && !selectedItemIds.has(item.id)) {
+      selectedItems.push(item);
+      selectedItemIds.add(item.id);
+    }
+  }
+
+  return takeSessionItems(selectedItems, input.sessionLength);
+}
+
+function selectReviewItemsById(input: {
+  itemIds: readonly string[];
+  items: readonly AlgorithmTrainingItem[];
+  sessionLength: number;
+}): readonly AlgorithmTrainingItem[] {
+  const itemById = new Map(input.items.map((item) => [item.id, item]));
+  const selectedItemIds = new Set<string>();
+  const selectedItems: AlgorithmTrainingItem[] = [];
+
+  for (const itemId of input.itemIds) {
+    const item = itemById.get(itemId);
 
     if (item && !selectedItemIds.has(item.id)) {
       selectedItems.push(item);
