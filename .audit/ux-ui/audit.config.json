@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "auditId": "patternly-core-flow-v1",
+  "projectName": "Patternly",
+  "executor": "maestro",
+  "app": {
+    "type": "mobile",
+    "appId": "com.lkurczab.gcpacetrainer",
+    "framework": "expo-react-native",
+    "launch": {
+      "requiresRunningMetro": true,
+      "devClientUrlEnv": "PATTERNLY_DEV_CLIENT_URL",
+      "defaultIosDevClientUrl": "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081",
+      "defaultAndroidDevClientUrl": "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081"
+    }
+  },
+  "platforms": [
+    "ios",
+    "android"
+  ],
+  "themes": [
+    {
+      "id": "dark",
+      "label": "Dark-first Focus Lab",
+      "source": "docs/adr/ADR-005-dark-first-focus-lab-ui.md",
+      "canonical": true
+    }
+  ],
+  "devices": [
+    {
+      "id": "ios-regular",
+      "platform": "ios",
+      "class": "regular-phone",
+      "orientation": "portrait",
+      "requiredForFirstAudit": true
+    },
+    {
+      "id": "android-regular",
+      "platform": "android",
+      "class": "regular-phone",
+      "orientation": "portrait",
+      "requiredForFirstAudit": false
+    }
+  ],
+  "outputDir": "docs/audits/ux-ui/patternly-core-flow-v1",
+  "flowsDir": ".audit/ux-ui/maestro/flows",
+  "helpersDir": ".audit/ux-ui/maestro/helpers",
+  "checklists": [
+    ".audit/ux-ui/checklists/patternly-core-screen-checklist.md"
+  ],
+  "forbiddenTerms": {
+    "sourceDocs": [
+      "docs/06-branding-and-style-direction.md",
+      "docs/07-content-guidelines.md"
+    ],
+    "terms": [
+      "official exam simulator",
+      "official exam questions",
+      "official Google exam result",
+      "Patternly by Google",
+      "endorsed by Google",
+      "Google endorsed",
+      "guaranteed pass",
+      "LeetCode replacement",
+      "LeetCode clone",
+      "coding interview platform",
+      "gamified learning app",
+      "cloud hero",
+      "You crushed it",
+      "Oopsie",
+      "Only champions",
+      "You failed this area",
+      "Become a LeetCode master",
+      "Crack every interview"
+    ]
+  },
+  "flows": [
+    {
+      "id": "core-app-flow-ios",
+      "platform": "ios",
+      "path": ".audit/ux-ui/maestro/flows/core-app-flow.ios.yaml",
+      "tags": [
+        "ux-ui-audit",
+        "core-flow",
+        "ios"
+      ],
+      "requiredForFirstAudit": true
+    },
+    {
+      "id": "core-app-flow-android",
+      "platform": "android",
+      "path": ".audit/ux-ui/maestro/flows/core-app-flow.android.yaml",
+      "tags": [
+        "ux-ui-audit",
+        "core-flow",
+        "android"
+      ],
+      "requiredForFirstAudit": false
+    }
+  ],
+  "states": [
+    "default",
+    "loading",
+    "empty",
+    "error",
+    "with-data",
+    "selected",
+    "completed",
+    "long-content",
+    "scroll"
+  ],
+  "screens": [
+    {
+      "id": "home-landing",
+      "label": "Home / landing screen",
+      "route": "Home",
+      "purpose": "Orient the learner around the active track and recommended next action.",
+      "selectors": [
+        {
+          "type": "text",
+          "value": "Patternly",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Current track",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "default",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "empty",
+          "required": true,
+          "capturedBy": "core-app-flow-ios",
+          "notes": "First-run local storage state is represented by zero local attempts."
+        },
+        {
+          "id": "with-data",
+          "required": true,
+          "capturedBy": "core-app-flow-ios",
+          "notes": "Captured after the flow records a local practice attempt."
+        },
+        {
+          "id": "loading",
+          "required": false,
+          "capturedBy": null,
+          "notes": "Current implementation performs async local reads without a dedicated loading surface."
+        },
+        {
+          "id": "error",
+          "required": false,
+          "capturedBy": null,
+          "notes": "Storage degradation is surfaced in Settings, not Home."
+        }
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "default",
+          "with-data"
+        ],
+        "strategy": "top-and-bottom"
+      }
+    },
+    {
+      "id": "main-navigation",
+      "label": "Main navigation screen",
+      "route": "Home shell bottom tabs",
+      "purpose": "Validate consistent movement between Home, Practice, Progress, and Settings.",
+      "selectors": [
+        {
+          "type": "testID",
+          "value": "main-tab-bar-home",
+          "stability": "stable"
+        },
+        {
+          "type": "testID",
+          "value": "main-tab-bar-practice",
+          "stability": "stable"
+        },
+        {
+          "type": "testID",
+          "value": "main-tab-bar-progress",
+          "stability": "stable"
+        },
+        {
+          "type": "testID",
+          "value": "main-tab-bar-settings",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "default",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "selected",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        }
+      ],
+      "scrollCapture": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "primary-task-setup",
+      "label": "Primary task setup screen",
+      "route": "PracticeSetup",
+      "purpose": "Configure session length, feedback mode, and review behavior before training.",
+      "selectors": [
+        {
+          "type": "text",
+          "value": "Practice setup",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Session length",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Feedback mode",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "default",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "selected",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "error",
+          "required": false,
+          "capturedBy": null,
+          "notes": "No validation error state exists because all controls have valid defaults."
+        }
+      ],
+      "selectorGaps": [
+        "Session length and feedback mode options rely on visible labels. Add non-user-facing testIDs if this flow becomes flaky."
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "default",
+          "selected"
+        ],
+        "strategy": "top-and-bottom"
+      }
+    },
+    {
+      "id": "primary-task-execution",
+      "label": "Primary task execution screen",
+      "route": "PracticeSession",
+      "purpose": "Answer a training item in the active Cloud Certification track.",
+      "selectors": [
+        {
+          "type": "accessibilityLabel",
+          "value": "Close practice session",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "ITEM 1 OF 10",
+          "stability": "session-dependent"
+        },
+        {
+          "type": "text",
+          "value": "Check Answer",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "default",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "selected",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "loading",
+          "required": false,
+          "capturedBy": null,
+          "notes": "Question loading falls through to the empty state if no questions exist."
+        },
+        {
+          "id": "empty",
+          "required": true,
+          "capturedBy": null,
+          "notes": "The app has a No practice questions state, but the first audit does not force missing content."
+        }
+      ],
+      "selectorGaps": [
+        "Answer options do not expose stable testIDs or accessibility labels containing option IDs; the first flow uses coordinates for selection."
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "default",
+          "selected"
+        ],
+        "strategy": "top-and-bottom"
+      }
+    },
+    {
+      "id": "feedback-result",
+      "label": "Feedback / result screen",
+      "route": "PracticeSession",
+      "purpose": "Show correctness, explanation, selected answer, correct answer, and diagnostic guidance after submission.",
+      "selectors": [
+        {
+          "type": "text",
+          "value": "Correct answer|Needs review",
+          "stability": "stable-regex"
+        },
+        {
+          "type": "text",
+          "value": "Explanation",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "completed",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "long-content",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        }
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "completed",
+          "long-content"
+        ],
+        "strategy": "top-middle-bottom"
+      }
+    },
+    {
+      "id": "summary-completion",
+      "label": "Summary / completion screen",
+      "route": "PracticeSession summary",
+      "purpose": "Summarize a completed practice session and expose the return action.",
+      "selectors": [
+        {
+          "type": "text",
+          "value": "Session summary",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Practice complete",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Back to Practice",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "completed",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "long-content",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        }
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "completed",
+          "long-content"
+        ],
+        "strategy": "top-middle-bottom"
+      }
+    },
+    {
+      "id": "progress-statistics",
+      "label": "Progress / statistics screen",
+      "route": "Home initialTab=progress",
+      "purpose": "Show review queue, practice activity, performance, and concrete local metrics.",
+      "selectors": [
+        {
+          "type": "testID",
+          "value": "main-tab-bar-progress",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Focus overview",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "empty",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "with-data",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "error",
+          "required": false,
+          "capturedBy": null,
+          "notes": "No dedicated progress error state exists for local storage failures."
+        }
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "empty",
+          "with-data"
+        ],
+        "strategy": "top-and-bottom"
+      }
+    },
+    {
+      "id": "settings",
+      "label": "Settings screen",
+      "route": "Home initialTab=settings",
+      "purpose": "Expose local workspace, preferences, privacy, legal safety, storage, and destructive local-data controls.",
+      "selectors": [
+        {
+          "type": "testID",
+          "value": "settings-screen",
+          "stability": "stable"
+        },
+        {
+          "type": "text",
+          "value": "Settings",
+          "stability": "stable"
+        }
+      ],
+      "states": [
+        {
+          "id": "default",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        },
+        {
+          "id": "error",
+          "required": true,
+          "capturedBy": null,
+          "notes": "Storage issue state exists in component logic but is not forced in the first audit."
+        },
+        {
+          "id": "long-content",
+          "required": true,
+          "capturedBy": "core-app-flow-ios"
+        }
+      ],
+      "scrollCapture": {
+        "enabled": true,
+        "states": [
+          "default",
+          "long-content"
+        ],
+        "strategy": "top-and-bottom"
+      }
+    }
+  ]
+}

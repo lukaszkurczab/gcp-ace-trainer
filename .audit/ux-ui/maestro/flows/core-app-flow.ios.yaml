@@ -1,0 +1,165 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly UX/UI audit core app flow iOS
+tags:
+  - ux-ui-audit
+  - core-flow
+  - ios
+---
+- runFlow:
+    file: ../helpers/launch-dev-client.yaml
+
+- assertVisible: "Patternly"
+- assertVisible: "Current track"
+- takeScreenshot: "010-home-default-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "011-home-default-scroll-bottom-dark-ios-regular"
+
+- tapOn:
+    id: "main-tab-bar-practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Continue practice"
+- assertVisible: "Start session"
+- takeScreenshot: "020-main-navigation-practice-selected-dark-ios-regular"
+
+- tapOn: "Manage settings"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Practice setup"
+- assertVisible: "Session length"
+- assertVisible: "Feedback mode"
+- takeScreenshot: "030-primary-task-setup-default-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "032-primary-task-setup-default-scroll-bottom-dark-ios-regular"
+- swipe:
+    direction: DOWN
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000
+- swipe:
+    direction: DOWN
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    point: "18%,34%"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: "031-primary-task-setup-selected-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "033-primary-task-setup-selected-scroll-bottom-dark-ios-regular"
+
+- tapOn: "Start session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Patternly"
+- assertVisible: "ITEM 1 OF 10"
+- assertVisible: "Check Answer"
+- takeScreenshot: "040-primary-task-execution-default-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "042-primary-task-execution-default-scroll-bottom-dark-ios-regular"
+- swipe:
+    direction: DOWN
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000
+- swipe:
+    direction: DOWN
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000
+
+- tapOn:
+    text: ".*"
+    below: "Choose"
+    index: 0
+- tapOn:
+    text: ".*"
+    below: "Choose"
+    index: 1
+- assertVisible:
+    enabled: true
+    text: "Check Answer"
+- takeScreenshot: "041-primary-task-execution-selected-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "043-primary-task-execution-selected-scroll-bottom-dark-ios-regular"
+
+- tapOn: "Check Answer"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Next Question"
+- takeScreenshot: "050-feedback-result-completed-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "051-feedback-result-scroll-bottom-dark-ios-regular"
+
+- tapOn: "Next Question"
+- waitForAnimationToEnd:
+    timeout: 12000
+- repeat:
+    times: 8
+    commands:
+      - tapOn:
+          text: ".*"
+          below: "Choose"
+          index: 0
+      - tapOn:
+          text: ".*"
+          below: "Choose"
+          index: 1
+      - tapOn: "Check Answer"
+      - waitForAnimationToEnd:
+          timeout: 12000
+      - tapOn: "Next Question"
+      - waitForAnimationToEnd:
+          timeout: 12000
+
+- tapOn:
+    text: ".*"
+    below: "Choose"
+    index: 0
+- tapOn:
+    text: ".*"
+    below: "Choose"
+    index: 1
+- tapOn: "Check Answer"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn: "Finish Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Session summary"
+- assertVisible: "Practice complete"
+- takeScreenshot: "060-summary-completion-completed-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "061-summary-completion-scroll-bottom-dark-ios-regular"
+
+- tapOn: "Back to Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn:
+    id: "main-tab-bar-progress"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Focus overview"
+- takeScreenshot: "070-progress-statistics-with-data-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "071-progress-statistics-scroll-bottom-dark-ios-regular"
+
+- tapOn:
+    id: "main-tab-bar-settings"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    id: "settings-screen"
+- takeScreenshot: "080-settings-default-dark-ios-regular"
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
+- takeScreenshot: "081-settings-scroll-bottom-dark-ios-regular"

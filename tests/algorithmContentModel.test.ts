@@ -10,6 +10,7 @@ import {
 import type { ReviewQueueItem, TrainingAttempt, TrainingItem } from "../src/domain/training";
 import {
   algorithmContentGroups,
+  algorithmContentManifest,
   algorithmContentItems,
 } from "../src/tracks/algorithms/content";
 import {
@@ -294,6 +295,7 @@ test("Algorithms existing content preserves valid item ids on canonical refs", (
 
 test("Algorithms JSON content groups preserve the public item collection", () => {
   assert.equal(algorithmContentItems.length, expectedActiveAlgorithmItemCount);
+  assert.equal(ALGORITHM_TRAINING_ITEMS.length, expectedActiveAlgorithmItemCount);
   assert.deepEqual(
     ALGORITHM_TRAINING_ITEMS.map((item) => item.id),
     algorithmContentItems.map((item) => item.id),
@@ -317,6 +319,56 @@ test("Algorithms JSON content groups preserve the public item collection", () =>
   }
 
   assert.equal(itemIds.size, ALGORITHM_TRAINING_ITEMS.length);
+});
+
+test("Algorithms content manifest stays synchronized with imported JSON groups", () => {
+  assert.equal(algorithmContentManifest.trackId, "algorithms");
+  assert.equal(algorithmContentManifest.contentVersion, ALGORITHM_CONTENT_VERSION);
+  assert.equal(algorithmContentManifest.itemCount, expectedActiveAlgorithmItemCount);
+
+  const groupsByRoadmapNodeId = new Map(
+    algorithmContentGroups.map((group) => [group.roadmapNodeId, group]),
+  );
+  const questionFiles = new Set<string>();
+  const folderNames = new Set<string>();
+
+  for (const manifestGroup of algorithmContentManifest.groups) {
+    const importedGroup = groupsByRoadmapNodeId.get(manifestGroup.roadmapNodeId);
+
+    assert.ok(importedGroup, manifestGroup.roadmapNodeId);
+    assert.equal(importedGroup.folderName, manifestGroup.folderName, manifestGroup.roadmapNodeId);
+    assert.equal(importedGroup.questionFile, manifestGroup.questionFile, manifestGroup.roadmapNodeId);
+    assert.equal(importedGroup.itemCount, manifestGroup.itemCount, manifestGroup.roadmapNodeId);
+    assert.equal(importedGroup.items.length, manifestGroup.itemCount, manifestGroup.roadmapNodeId);
+    assert.equal(questionFiles.has(manifestGroup.questionFile), false, manifestGroup.questionFile);
+    assert.equal(folderNames.has(manifestGroup.folderName), false, manifestGroup.folderName);
+    assert.equal(
+      manifestGroup.questionFile,
+      `items/${manifestGroup.folderName}/questions.json`,
+      manifestGroup.roadmapNodeId,
+    );
+
+    questionFiles.add(manifestGroup.questionFile);
+    folderNames.add(manifestGroup.folderName);
+  }
+
+  assert.equal(groupsByRoadmapNodeId.size, algorithmContentManifest.groups.length);
+});
+
+test("Algorithms manifest itemOrder exactly preserves the public item order", () => {
+  const orderedItemIds = algorithmContentManifest.itemOrder ?? [];
+  const uniqueOrderedItemIds = new Set(orderedItemIds);
+
+  assert.equal(orderedItemIds.length, expectedActiveAlgorithmItemCount);
+  assert.equal(uniqueOrderedItemIds.size, orderedItemIds.length);
+  assert.deepEqual(
+    orderedItemIds,
+    ALGORITHM_TRAINING_ITEMS.map((item) => item.id),
+  );
+
+  for (const item of ALGORITHM_TRAINING_ITEMS) {
+    assert.equal(uniqueOrderedItemIds.has(item.id), true, item.id);
+  }
 });
 
 test("Algorithms adapter reads the migrated content through the existing API", () => {

@@ -53,6 +53,7 @@ import {
 import { resetToPracticeHubAfterSession } from "../practice/practiceNavigation";
 import { buildPracticeSessionConfig, type PracticeSessionMode } from "../practice/sessionConfig";
 import {
+  buildAlgorithmsImmediateFeedbackModel,
   buildAlgorithmsSummaryActions,
   buildAlgorithmsSessionSummary,
   getAlgorithmsSessionModeIdForRouteMode,
@@ -60,13 +61,7 @@ import {
   buildAlgorithmsSubmission,
   formatAlgorithmItemType,
   formatAlgorithmStatus,
-  getAlgorithmsCommonTrapText,
-  getAlgorithmsComplexityText,
-  getAlgorithmsCorrectAnswerText,
   getAlgorithmsFeedbackState,
-  getAlgorithmsPatternSignalText,
-  getAlgorithmsRecognizedPatternText,
-  getAlgorithmsWeakerAnswerNotes,
   type AlgorithmsSubmission,
   type AlgorithmsSummaryAction,
   type AlgorithmsSessionSummary,
@@ -425,7 +420,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
             <Card style={styles.diagnosisCard}>
               <SectionHeader
                 title="Item review"
-                subtitle="Review answers, explanations, patterns, and next targets from this session."
+                subtitle="Review answers, key signals, rules, and traps from this session."
                 tight
               />
             </Card>
@@ -445,14 +440,14 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
                   tight
                 />
                 <FeedbackSection title="Selected answer" text={reviewItem.selectedAnswer} />
-                <FeedbackSection title="Correct answer" text={reviewItem.correctAnswer} />
+                <FeedbackSection title="Expected" text={reviewItem.correctAnswer} />
                 <FeedbackSection title="Result" text={formatAlgorithmStatus(reviewItem.result)} />
-                <FeedbackSection title="Explanation" text={reviewItem.explanation} />
-                <FeedbackSection title="Recognized pattern" text={reviewItem.recognizedPattern} />
-                <FeedbackSection title="Why this pattern" text={reviewItem.whyThisPattern} />
+                {shouldShowFeedbackText(reviewItem.explanation, reviewItem.correctAnswer) ? (
+                  <FeedbackSection title="Rule" text={reviewItem.explanation} />
+                ) : null}
+                <FeedbackSection title="Key signal" text={reviewItem.whyThisPattern} />
                 {reviewItem.complexity ? <FeedbackSection title="Complexity" text={reviewItem.complexity} /> : null}
                 <FeedbackSection title="Common trap" text={reviewItem.commonTrap} />
-                <FeedbackSection title="Next review target" text={reviewItem.nextReviewTarget} />
               </Card>
             ))}
           </>
@@ -492,6 +487,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   return (
     <Screen
       edges={["top", "bottom"]}
+      style={styles.sessionContent}
       footer={
         feedbackState.hasSubmittedAnswer ? (
           <Button onPress={() => void goNext()}>
@@ -554,7 +550,13 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       </Card>
 
       {feedbackState.showImmediateFeedback && checkedScore ? (
-        <FeedbackCard check={currentCheck} item={currentItem} score={checkedScore} />
+        <FeedbackCard
+          check={currentCheck}
+          complexityAnswer={complexityAnswer}
+          item={currentItem}
+          score={checkedScore}
+          selectedOptionIds={selectedOptionIds}
+        />
       ) : null}
 
       {storageMessage ? <StorageNotice message={storageMessage} /> : null}
@@ -779,38 +781,77 @@ function OptionButton({ label, onPress, selected, submitted }: OptionButtonProps
 
 type FeedbackCardProps = {
   check: AlgorithmStaticMicroCheck;
+  complexityAnswer: ComplexityAnswer;
   item: AlgorithmTrainingItem;
   score: AlgorithmStaticCheckScore;
+  selectedOptionIds: readonly string[];
 };
 
-function FeedbackCard({ check, item, score }: FeedbackCardProps) {
-  const correctAnswerText = getAlgorithmsCorrectAnswerText(check);
-  const weakerAnswerNotes = getAlgorithmsWeakerAnswerNotes(check, item);
-  const complexityText = getAlgorithmsComplexityText(item);
-  const commonTrap = getAlgorithmsCommonTrapText(item, score);
+function FeedbackCard({
+  check,
+  complexityAnswer,
+  item,
+  score,
+  selectedOptionIds,
+}: FeedbackCardProps) {
+  const [showDetails, setShowDetails] = useState(false);
+  const feedback = buildAlgorithmsImmediateFeedbackModel({
+    check,
+    complexityAnswer,
+    item,
+    score,
+    selectedOptionIds,
+  });
+  const hasDetails = Boolean(feedback.reasoning.commonTrap || feedback.reasoning.mistakeType);
 
   return (
-    <Card variant={score.status === "correct" ? "success" : "warning"}>
-      <SectionHeader
-        title="Feedback"
-        action={<Badge label={formatAlgorithmStatus(score.status)} tone={score.status === "correct" ? "success" : "warning"} />}
-        tight
-      />
-      <FeedbackSection title="Result" text={formatAlgorithmStatus(score.status)} />
-      <FeedbackSection title="Correct answer" text={correctAnswerText} />
-      <FeedbackSection title="Why this answer is correct" text={score.feedback} />
-      <FeedbackSection title="Recognized pattern" text={getAlgorithmsRecognizedPatternText(item)} />
-      <FeedbackSection title="Why this pattern" text={getAlgorithmsPatternSignalText(item)} />
-      {weakerAnswerNotes.length > 0 ? (
-        <FeedbackSection title="Why other answers are weaker" items={weakerAnswerNotes} />
+    <Card style={styles.feedbackCard}>
+      <View style={styles.feedbackHeader}>
+        <Text style={styles.feedbackTitle}>Feedback</Text>
+        <Badge label={feedback.statusLabel} tone={getFeedbackStatusTone(feedback.status)} />
+      </View>
+
+      <View style={styles.feedbackRows}>
+        <FeedbackRow title="Answer" text={feedback.answerSummary} />
+        <FeedbackRow title="Key signal" text={feedback.keySignal} />
+        <FeedbackRow title="Rule" text={feedback.rule} />
+      </View>
+
+      {hasDetails ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setShowDetails((current) => !current)}
+          style={({ pressed }) => [styles.reasoningToggle, pressed ? styles.pressed : null]}
+        >
+          <Text style={styles.reasoningToggleText}>{showDetails ? "Hide details" : "Show details"}</Text>
+        </Pressable>
       ) : null}
-      {complexityText ? <FeedbackSection title="Complexity" text={complexityText} /> : null}
-      <FeedbackSection title="Common trap" text={commonTrap} />
-      {score.mistakeTypes.length > 0 ? (
-        <FeedbackSection title="Review signal" text={score.mistakeTypes.map(formatAlgorithmItemType).join(", ")} />
+
+      {showDetails ? (
+        <View style={styles.reasoningPanel}>
+          {feedback.reasoning.commonTrap ? (
+            <FeedbackRow title="Common trap" text={feedback.reasoning.commonTrap} />
+          ) : null}
+          {feedback.reasoning.mistakeType ? (
+            <FeedbackRow title="Mistake type" text={feedback.reasoning.mistakeType} />
+          ) : null}
+        </View>
       ) : null}
-      <FeedbackSection title="Next review target" text={item.feedbackModel.nextAction} />
     </Card>
+  );
+}
+
+type FeedbackRowProps = {
+  text: string;
+  title: string;
+};
+
+function FeedbackRow({ text, title }: FeedbackRowProps) {
+  return (
+    <View style={styles.feedbackRow}>
+      <Text style={styles.feedbackRowTitle}>{title}</Text>
+      <Text style={styles.feedbackRowText}>{text}</Text>
+    </View>
   );
 }
 
@@ -954,11 +995,32 @@ function getProgressTone(status: AlgorithmScoringStatus): "primary" | "success" 
   return status === "correct" ? "success" : "warning";
 }
 
+function shouldShowFeedbackText(text: string, comparedWith: string): boolean {
+  return normalizeDisplayText(text) !== normalizeDisplayText(comparedWith);
+}
+
+function normalizeDisplayText(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[.!?]+$/g, "");
+}
+
+function getFeedbackStatusTone(status: AlgorithmScoringStatus): "success" | "warning" | "danger" {
+  if (status === "correct") return "success";
+  if (status === "partial") return "warning";
+  return "danger";
+}
+
 function getOptionText(check: AlgorithmStaticMicroCheck, optionId: string): string {
   return check.options?.find((option) => option.id === optionId)?.text ?? optionId;
 }
 
 const styles = StyleSheet.create({
+  sessionContent: {
+    paddingBottom: spacing.xxxl,
+  },
   sessionTopBar: {
     alignItems: "center",
     flexDirection: "row",
@@ -1157,6 +1219,56 @@ const styles = StyleSheet.create({
   mutedText: {
     ...typography.small,
     color: colors.dark.textSecondary,
+  },
+  feedbackCard: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.borderStrong,
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  feedbackHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  feedbackTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
+  feedbackRows: {
+    borderTopColor: colors.dark.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    paddingTop: spacing.md,
+  },
+  feedbackRow: {
+    gap: spacing.xs,
+  },
+  feedbackRowTitle: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+    textTransform: "uppercase",
+  },
+  feedbackRowText: {
+    ...typography.small,
+    color: colors.dark.textPrimary,
+  },
+  reasoningToggle: {
+    alignSelf: "flex-start",
+    borderRadius: radius.sm,
+    paddingVertical: spacing.xs,
+  },
+  reasoningToggleText: {
+    ...typography.small,
+    color: colors.dark.primary,
+    fontWeight: "600",
+  },
+  reasoningPanel: {
+    borderTopColor: colors.dark.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    paddingTop: spacing.md,
   },
   feedbackText: {
     ...typography.body,

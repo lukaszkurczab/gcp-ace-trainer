@@ -48,6 +48,20 @@ export type AlgorithmsSessionReviewItem = {
   whyThisPattern: string;
 };
 
+export type AlgorithmsImmediateReasoning = {
+  commonTrap?: string;
+  mistakeType?: string;
+};
+
+export type AlgorithmsImmediateFeedbackModel = {
+  answerSummary: string;
+  keySignal: string;
+  reasoning: AlgorithmsImmediateReasoning;
+  rule: string;
+  status: AlgorithmScoringStatus;
+  statusLabel: string;
+};
+
 export type AlgorithmsSessionSummary = {
   completed: number;
   correct: number;
@@ -105,6 +119,51 @@ export function getAlgorithmsFeedbackState(
   return {
     hasSubmittedAnswer: score !== null,
     showImmediateFeedback: feedbackMode === "afterEachAnswer" && score !== null,
+  };
+}
+
+export function buildAlgorithmsImmediateFeedbackModel({
+  check,
+  complexityAnswer = {},
+  item,
+  score,
+  selectedOptionIds = [],
+}: {
+  check: AlgorithmStaticMicroCheck;
+  complexityAnswer?: ComplexityAnswer;
+  item: AlgorithmTrainingItem;
+  score: AlgorithmStaticCheckScore;
+  selectedOptionIds?: readonly string[];
+}): AlgorithmsImmediateFeedbackModel {
+  const correctAnswer = getAlgorithmsCorrectAnswerText(check);
+  const selectedAnswer = getCurrentSelectedAnswerText(check, selectedOptionIds, complexityAnswer);
+  const keySignal = getAlgorithmsPatternSignalText(item);
+  const rule = getImmediateFeedbackRule({
+    correctAnswer,
+    explanation: score.feedback,
+    item,
+    keySignal,
+  });
+  const commonTrap = getAlgorithmsCommonTrapText(item, score);
+  const mistakeType = score.mistakeTypes.length > 0
+    ? score.mistakeTypes.map(formatAlgorithmItemType).join(", ")
+    : undefined;
+
+  return {
+    answerSummary: getImmediateAnswerSummary({
+      correctAnswer,
+      selectedAnswer,
+    }),
+    keySignal,
+    reasoning: {
+      commonTrap: isDuplicateFeedbackText(commonTrap, rule) || isDuplicateFeedbackText(commonTrap, mistakeType)
+        ? undefined
+        : commonTrap,
+      mistakeType,
+    },
+    rule,
+    status: score.status,
+    statusLabel: formatAlgorithmStatus(score.status),
   };
 }
 
@@ -485,6 +544,24 @@ function getSelectedAnswerText(
   return "Answer unavailable.";
 }
 
+function getCurrentSelectedAnswerText(
+  check: AlgorithmStaticMicroCheck,
+  selectedOptionIds: readonly string[],
+  complexityAnswer: ComplexityAnswer,
+): string {
+  if (check.type === "complexity_pair") {
+    return formatComplexityAnswer(complexityAnswer);
+  }
+
+  if (check.type === "order_steps") {
+    return selectedOptionIds
+      .map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`)
+      .join("\n");
+  }
+
+  return selectedOptionIds.map((optionId) => getOptionText(check, optionId)).join(", ");
+}
+
 function formatComplexityAnswer(answer: ComplexityAnswer): string {
   const values: Record<ComplexityDimension, string | undefined> = {
     space: answer.space,
@@ -545,6 +622,62 @@ function buildRecommendedNext(
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values.filter((value) => value.trim().length > 0))];
+}
+
+function getImmediateAnswerSummary({
+  correctAnswer,
+  selectedAnswer,
+}: {
+  correctAnswer: string;
+  selectedAnswer: string;
+}): string {
+  if (isDuplicateFeedbackText(selectedAnswer, correctAnswer)) {
+    return correctAnswer;
+  }
+
+  if (selectedAnswer.trim().length === 0) {
+    return `Expected: ${correctAnswer}`;
+  }
+
+  return `Your answer: ${selectedAnswer}\nExpected: ${correctAnswer}`;
+}
+
+function getImmediateFeedbackRule({
+  correctAnswer,
+  explanation,
+  item,
+  keySignal,
+}: {
+  correctAnswer: string;
+  explanation: string;
+  item: AlgorithmTrainingItem;
+  keySignal: string;
+}): string {
+  const candidates = [
+    item.feedbackModel.mentalModelCorrection,
+    explanation,
+  ];
+  const distinctRule = candidates.find((candidate) =>
+    !isDuplicateFeedbackText(candidate, correctAnswer) &&
+    !isDuplicateFeedbackText(candidate, keySignal),
+  );
+
+  return distinctRule ?? explanation;
+}
+
+function isDuplicateFeedbackText(left: string | undefined, right: string | undefined): boolean {
+  const normalizedLeft = normalizeFeedbackText(left);
+  const normalizedRight = normalizeFeedbackText(right);
+
+  return normalizedLeft.length > 0 && normalizedLeft === normalizedRight;
+}
+
+function normalizeFeedbackText(value: string | undefined): string {
+  return (value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[.!?]+$/g, "");
 }
 
 function uniqueReasons(values: readonly ReviewReason[]): ReviewReason[] {

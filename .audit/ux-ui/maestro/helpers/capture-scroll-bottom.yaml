@@ -1,0 +1,16 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly audit helper - capture scroll bottom
+tags:
+  - ux-ui-audit
+  - helper
+---
+- swipe:
+    direction: UP
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000
+- swipe:
+    direction: UP
+    duration: 600
+- waitForAnimationToEnd:
+    timeout: 8000

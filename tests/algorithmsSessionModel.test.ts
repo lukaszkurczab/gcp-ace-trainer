@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { ALGORITHMS_TRACK_ID, createTrainingSession } from "../src/domain";
 import {
+  buildAlgorithmsImmediateFeedbackModel,
   buildAlgorithmsReviewQueueUpdate,
   buildAlgorithmsSummaryActions,
   buildAlgorithmsSessionSummary,
@@ -15,6 +16,7 @@ import type { PracticeSessionRouteParams } from "../src/features/practice/sessio
 import {
   ALGORITHM_TRAINING_ITEMS,
   getActiveAlgorithmStaticMicroCheck,
+  type AlgorithmStaticCheckScore,
   type AlgorithmStaticMicroCheck,
   type AlgorithmTrainingItem,
 } from "../src/tracks/algorithms";
@@ -51,6 +53,110 @@ test("Algorithms atSessionEnd suppresses immediate feedback after scoring", () =
 
   assert.equal(state.hasSubmittedAnswer, true);
   assert.equal(state.showImmediateFeedback, false);
+});
+
+test("Algorithms immediate collapsed feedback model includes answer, key signal, and rule", () => {
+  const { check, item, session } = makeSubmissionFixture("single_choice");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T10:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: [String(check.correctAnswer)],
+    session,
+  });
+
+  const feedback = buildAlgorithmsImmediateFeedbackModel({
+    check,
+    item,
+    score: submission.score,
+    selectedOptionIds: [String(check.correctAnswer)],
+  });
+
+  assert.equal(feedback.status, "correct");
+  assert.equal(feedback.statusLabel, "Correct");
+  assert.notEqual(feedback.answerSummary, "");
+  assert.equal(feedback.answerSummary.includes("Expected:"), false);
+  assert.notEqual(feedback.keySignal, "");
+  assert.equal(feedback.rule, item.feedbackModel.mentalModelCorrection);
+});
+
+test("Algorithms immediate incorrect answer summary includes selected and expected answer", () => {
+  const { check, item, session } = makeSubmissionFixture("trace_next_step");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T10:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: ["not-the-correct-step"],
+    session,
+  });
+
+  const feedback = buildAlgorithmsImmediateFeedbackModel({
+    check,
+    item,
+    score: submission.score,
+    selectedOptionIds: ["not-the-correct-step"],
+  });
+
+  assert.equal(feedback.answerSummary.includes("Your answer:"), true);
+  assert.equal(feedback.answerSummary.includes("Expected:"), true);
+});
+
+test("Algorithms immediate details include trap and mistake type without exposing pattern labels", () => {
+  const { check, item, session } = makeSubmissionFixture("trace_next_step");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T10:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: ["not-the-correct-step"],
+    session,
+  });
+
+  const feedback = buildAlgorithmsImmediateFeedbackModel({
+    check,
+    item,
+    score: submission.score,
+    selectedOptionIds: ["not-the-correct-step"],
+  });
+
+  assert.notEqual(feedback.keySignal, "");
+  assert.notEqual(feedback.rule, "");
+  assert.notEqual(feedback.reasoning.commonTrap, "");
+  assert.notEqual(feedback.reasoning.mistakeType, "");
+});
+
+test("Algorithms immediate details deduplicate common trap and mistake type", () => {
+  const { check, item } = makeSubmissionFixture("single_choice");
+  const score: AlgorithmStaticCheckScore = {
+    feedback: check.feedback,
+    mistakeTypes: ["wrong_approach"],
+    result: {
+      isCorrect: false,
+      kind: "correctness",
+    },
+    status: "incorrect",
+  };
+  const duplicateTrapItem: AlgorithmTrainingItem = {
+    ...item,
+    pitfalls: [
+      {
+        description: " Wrong Approach. ",
+        id: "duplicate-review-signal",
+        mistakeTypes: ["wrong_approach"],
+      },
+    ],
+  };
+
+  const feedback = buildAlgorithmsImmediateFeedbackModel({
+    check,
+    item: duplicateTrapItem,
+    score,
+  });
+
+  assert.equal(feedback.reasoning.commonTrap, undefined);
+  assert.equal(feedback.reasoning.mistakeType, "Wrong Approach");
 });
 
 test("Algorithms atSessionEnd summary includes per-item feedback data", () => {

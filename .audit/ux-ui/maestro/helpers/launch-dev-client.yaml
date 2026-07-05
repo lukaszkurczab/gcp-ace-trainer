@@ -1,0 +1,24 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly audit helper - launch dev client
+tags:
+  - ux-ui-audit
+  - helper
+---
+- openLink: ${PATTERNLY_DEV_CLIENT_URL}
+- waitForAnimationToEnd:
+    timeout: 20000
+- runFlow:
+    when:
+      visible: "Close Algorithms session"
+    commands:
+      - tapOn: "Close Algorithms session"
+      - waitForAnimationToEnd:
+          timeout: 12000
+- runFlow:
+    when:
+      visible: "Close practice session"
+    commands:
+      - tapOn: "Close practice session"
+      - waitForAnimationToEnd:
+          timeout: 12000
+- assertVisible: "Patternly"
