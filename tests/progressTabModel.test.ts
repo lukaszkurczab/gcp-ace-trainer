@@ -457,6 +457,7 @@ test("Algorithms progress recommends the next useful mode from evidence", () => 
 
   assert.equal(dueModel.algorithmsProgress?.recommendation.mode, "review");
   assert.equal(weakModel.algorithmsProgress?.recommendation.mode, "weakArea");
+  assert.equal(weakModel.algorithmsProgress?.recommendation.label, "Practice weak area");
   assert.equal(strongModel.algorithmsProgress?.recommendation.mode, "practice");
 });
 

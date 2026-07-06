@@ -303,7 +303,7 @@ function buildAlgorithmsProgressRecommendation(input: {
   if (input.facts.incorrectCount + input.facts.partialCount >= 2) {
     return {
       detail: "Focus on the weakest roadmap node from local attempts.",
-      label: "Start Weak area",
+      label: "Practice weak area",
       mode: "weakArea",
     };
   }

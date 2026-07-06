@@ -62,6 +62,7 @@ import {
   formatAlgorithmItemType,
   formatAlgorithmStatus,
   getAlgorithmsFeedbackState,
+  hasAlgorithmsFeedbackDetails,
   type AlgorithmsSubmission,
   type AlgorithmsSummaryAction,
   type AlgorithmsSessionSummary,
@@ -812,14 +813,7 @@ function FeedbackCard({
     score,
     selectedOptionIds,
   });
-  const hasDetails = Boolean(
-    feedback.reasoning.answerSummary ||
-    feedback.reasoning.commonTrap ||
-    feedback.reasoning.complexity ||
-    feedback.reasoning.correctAnswerExplanation ||
-    feedback.reasoning.mistakeType ||
-    feedback.reasoning.weakerAnswerNotes.length > 0,
-  );
+  const hasDetails = hasAlgorithmsFeedbackDetails(feedback);
 
   return (
     <Card style={styles.feedbackCard}>

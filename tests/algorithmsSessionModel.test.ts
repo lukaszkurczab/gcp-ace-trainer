@@ -10,6 +10,7 @@ import {
   buildAlgorithmsSubmission,
   getAlgorithmsSessionModeIdForRouteMode,
   getAlgorithmsFeedbackState,
+  hasAlgorithmsFeedbackDetails,
   type AlgorithmsSessionSummary,
 } from "../src/features/algorithms/algorithmsSessionModel";
 import type { PracticeSessionRouteParams } from "../src/features/practice/sessionConfig";
@@ -130,6 +131,34 @@ test("Algorithms immediate details include trap and mistake type without exposin
   assert.equal(feedback.nextAction, item.feedbackModel.nextAction);
 });
 
+test("Algorithms feedback details require secondary details beyond answer summary", () => {
+  assert.equal(hasAlgorithmsFeedbackDetails({
+    answerSummary: "Expected: Use lookup.",
+    keySignal: "Prior membership is needed.",
+    nextAction: "Try one lookup drill.",
+    reasoning: {
+      answerSummary: "Expected: Use lookup.",
+      weakerAnswerNotes: [],
+    },
+    rule: "Use lookup when prior membership is needed.",
+    status: "incorrect",
+    statusLabel: "Incorrect",
+  }), false);
+  assert.equal(hasAlgorithmsFeedbackDetails({
+    answerSummary: "Expected: Use lookup.",
+    keySignal: "Prior membership is needed.",
+    nextAction: "Try one lookup drill.",
+    reasoning: {
+      answerSummary: "Expected: Use lookup.",
+      commonTrap: "Sorting hides the lookup signal.",
+      weakerAnswerNotes: [],
+    },
+    rule: "Use lookup when prior membership is needed.",
+    status: "incorrect",
+    statusLabel: "Incorrect",
+  }), true);
+});
+
 test("Algorithms immediate details deduplicate common trap and mistake type", () => {
   const { check, item } = makeSubmissionFixture("single_choice");
   const score: AlgorithmStaticCheckScore = {
@@ -204,6 +233,28 @@ test("Algorithms session summary identifies the top weak pattern and next action
   assert.match(summary.mainIssue?.recommendedNextAction ?? "", /short .* drill before mixed practice/);
   assert.ok(summary.mainIssue?.explanation.includes(summary.mainIssue.pattern));
   assert.deepEqual(summary.mainIssue?.itemIds, [item.id]);
+});
+
+test("Algorithms session summary avoids unclassified mistake copy when no mistake refs exist", () => {
+  const { check, item, session } = makeSubmissionFixture("trace_next_step");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T10:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: ["not-the-correct-step"],
+    session,
+  });
+  const attemptWithoutMistakeRefs = {
+    ...submission.attempt,
+    mistakeTypeRefs: undefined,
+  };
+
+  const summary = buildAlgorithmsSessionSummary([attemptWithoutMistakeRefs], [item], "Hash maps");
+
+  assert.equal(summary.mainIssue?.mistakeType, undefined);
+  assert.equal(summary.mainIssue?.explanation.includes("Unclassified mistake"), false);
+  assert.equal(summary.mainIssue?.recommendedNextAction, item.feedbackModel.nextAction);
 });
 
 test("Algorithms review queue receives incorrect attempts in both feedback modes", () => {
@@ -347,6 +398,7 @@ test("Algorithms summary actions offer weak area after enough missed results", (
 
   assert.ok(actions.some((action) => action.kind === "startWeakArea"));
   assert.equal(actions[0]?.kind, "startWeakArea");
+  assert.equal(actions[0]?.label, "Practice weak area");
 });
 
 test("Algorithms summary actions offer mixed practice after a strong session", () => {

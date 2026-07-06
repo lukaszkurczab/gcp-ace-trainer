@@ -1,4 +1,6 @@
 import {
+  ALGORITHM_DIFFICULTIES,
+  ALGORITHM_FEEDBACK_RESULTS,
   isAlgorithmMistakeType,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
@@ -18,6 +20,7 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_title"
   | "missing_prompt"
   | "missing_difficulty"
+  | "invalid_difficulty"
   | "missing_primary_skill"
   | "multiple_primary_skills"
   | "too_many_secondary_skills"
@@ -25,6 +28,7 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_taxonomy_refs"
   | "missing_feedback_model"
   | "missing_feedback_result"
+  | "invalid_feedback_result"
   | "missing_feedback_mental_model_correction"
   | "missing_feedback_decision_signal"
   | "generic_feedback_text"
@@ -294,6 +298,13 @@ function validateBaseTrainingItemContract(
 
   if (!isNonEmptyString(item.difficulty)) {
     addIssue(issues, "missing_difficulty", "Algorithm item must include difficulty.", itemId);
+  } else if (!(ALGORITHM_DIFFICULTIES as readonly string[]).includes(item.difficulty)) {
+    addIssue(
+      issues,
+      "invalid_difficulty",
+      `Algorithm item difficulty must be one of: ${ALGORITHM_DIFFICULTIES.join(", ")}.`,
+      itemId,
+    );
   }
 
   if (Array.isArray(item.primarySkillAtomId)) {
@@ -405,6 +416,13 @@ function validateFeedbackModel(
 ): void {
   if (!isNonEmptyString(feedbackModel.result)) {
     addIssue(issues, "missing_feedback_result", "feedbackModel.result is required.", itemId);
+  } else if (!(ALGORITHM_FEEDBACK_RESULTS as readonly string[]).includes(feedbackModel.result)) {
+    addIssue(
+      issues,
+      "invalid_feedback_result",
+      `feedbackModel.result must be one of: ${ALGORITHM_FEEDBACK_RESULTS.join(", ")}.`,
+      itemId,
+    );
   }
 
   if (!isNonEmptyString(feedbackModel.mentalModelCorrection)) {

@@ -1014,6 +1014,14 @@ test("Algorithms item validators retain specific content-type contracts", () => 
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), primarySkillAtomId: ["derive_time_complexity", "choose_lookup_key"] }).includes("multiple_primary_skills"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), feedbackModel: undefined }).includes("missing_feedback_model"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), difficulty: undefined }).includes("missing_difficulty"));
+  assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), difficulty: "basic" as never }).includes("invalid_difficulty"));
+  assert.ok(issueCodes({
+    ...makeBaseAlgorithmItem(),
+    feedbackModel: {
+      ...makeBaseAlgorithmItem().feedbackModel,
+      result: "almost_correct" as never,
+    },
+  }).includes("invalid_feedback_result"));
   assert.ok(issueCodes({
     ...makeBaseAlgorithmItem(),
     feedbackModel: {

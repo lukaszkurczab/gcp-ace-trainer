@@ -136,6 +136,18 @@ export function getAlgorithmsFeedbackState(
   };
 }
 
+export function hasAlgorithmsFeedbackDetails(
+  feedback: AlgorithmsImmediateFeedbackModel,
+): boolean {
+  return Boolean(
+    feedback.reasoning.commonTrap ||
+    feedback.reasoning.complexity ||
+    feedback.reasoning.correctAnswerExplanation ||
+    feedback.reasoning.mistakeType ||
+    feedback.reasoning.weakerAnswerNotes.length > 0,
+  );
+}
+
 export function buildAlgorithmsImmediateFeedbackModel({
   check,
   complexityAnswer = {},
@@ -214,7 +226,7 @@ export function buildAlgorithmsSummaryActions(
     actions.push({
       detail: "Focus on the patterns missed in this session.",
       kind: "startWeakArea",
-      label: "Start Weak area",
+      label: "Practice weak area",
       priority: "primary",
     });
   } else if (hasStrongSession && sessionConfig?.mode !== "practice") {
@@ -682,17 +694,19 @@ function buildSessionMainIssue(
     return undefined;
   }
 
-  const formattedMistake = mistakeType ? formatAlgorithmItemType(mistakeType) : "Unclassified mistake";
+  const formattedMistake = mistakeType ? formatAlgorithmItemType(mistakeType) : undefined;
+  const explanation = formattedMistake
+    ? `Most missed items pointed to ${pattern}. The recurring issue was ${formattedMistake.toLowerCase()}, so review the recognition signal before trying a larger mixed set.`
+    : `Most missed items pointed to ${pattern}. Review the recognition signal before trying a larger mixed set.`;
 
   return {
-    explanation: `Most missed items pointed to ${pattern}. The recurring issue was ${formattedMistake.toLowerCase()}, so review the recognition signal before trying a larger mixed set.`,
+    explanation,
     itemIds: uniqueStrings(patternStats.itemIds),
-    mistakeType: mistakeType ? formattedMistake : undefined,
+    mistakeType: formattedMistake,
     pattern,
     recommendedNextAction: buildMainIssueNextAction({
       fallbackAction: representativeItem.feedbackModel.nextAction,
       formattedMistake,
-      hasMistakeType: Boolean(mistakeType),
       pattern,
     }),
   };
@@ -700,11 +714,10 @@ function buildSessionMainIssue(
 
 function buildMainIssueNextAction(input: {
   fallbackAction: string;
-  formattedMistake: string;
-  hasMistakeType: boolean;
+  formattedMistake?: string;
   pattern: string;
 }): string {
-  if (!input.hasMistakeType) {
+  if (!input.formattedMistake) {
     return input.fallbackAction;
   }
 

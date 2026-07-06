@@ -113,6 +113,10 @@ export type AlgorithmTrainingItemType =
 
 export type AlgorithmContentStatus = "active" | "disabled";
 
+export const ALGORITHM_DIFFICULTIES = ["intro", "easy", "medium", "hard"] as const;
+
+export type AlgorithmDifficulty = (typeof ALGORITHM_DIFFICULTIES)[number];
+
 export type AlgorithmApproachId =
   | "hash_map_complement_lookup"
   | "pair_scan_sorted_input"
@@ -239,6 +243,13 @@ export type AlgorithmApproachTemplate = AlgorithmApproach;
 
 export type AlgorithmFeedbackResult = "correct" | "partial" | "incorrect" | "diagnostic";
 
+export const ALGORITHM_FEEDBACK_RESULTS = [
+  "correct",
+  "partial",
+  "incorrect",
+  "diagnostic",
+] as const satisfies readonly AlgorithmFeedbackResult[];
+
 export type AlgorithmFeedbackModel = {
   decisionSignal: string;
   details?: string;
@@ -338,7 +349,7 @@ export type AlgorithmTrainingItem = {
   constraintSignal?: string;
   constraints?: readonly string[];
   contentVersion: string;
-  difficulty?: "intro" | "easy" | "medium" | "hard";
+  difficulty?: AlgorithmDifficulty;
   expectedApproachIds?: readonly string[];
   expectedSpaceComplexity?: AlgorithmComplexityClass;
   expectedTimeComplexity?: AlgorithmComplexityClass;
