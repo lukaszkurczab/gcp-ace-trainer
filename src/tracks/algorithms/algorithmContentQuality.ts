@@ -12,6 +12,12 @@ import {
 
 export type AlgorithmContentQualityIssueCode =
   | "invalid_item"
+  | "missing_item_id"
+  | "missing_track_id"
+  | "missing_item_type"
+  | "missing_title"
+  | "missing_prompt"
+  | "missing_difficulty"
   | "missing_primary_skill"
   | "multiple_primary_skills"
   | "too_many_secondary_skills"
@@ -21,6 +27,9 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_feedback_result"
   | "missing_feedback_mental_model_correction"
   | "missing_feedback_decision_signal"
+  | "generic_feedback_text"
+  | "invalid_feedback_distractor_explanations"
+  | "missing_feedback_distractor_explanation"
   | "missing_feedback_mistake_types"
   | "invalid_feedback_mistake_type"
   | "missing_feedback_next_action"
@@ -262,6 +271,30 @@ function validateBaseTrainingItemContract(
   issues: AlgorithmContentQualityIssue[],
   itemId?: string,
 ): void {
+  if (!isNonEmptyString(item.id)) {
+    addIssue(issues, "missing_item_id", "Algorithm item must include a stable id.", itemId);
+  }
+
+  if (item.trackId !== "algorithms") {
+    addIssue(issues, "missing_track_id", "Algorithm item must set trackId to algorithms.", itemId);
+  }
+
+  if (!isNonEmptyString(item.type)) {
+    addIssue(issues, "missing_item_type", "Algorithm item must include type.", itemId);
+  }
+
+  if (!isNonEmptyString(item.title)) {
+    addIssue(issues, "missing_title", "Algorithm item must include title.", itemId);
+  }
+
+  if (!isNonEmptyString(item.prompt)) {
+    addIssue(issues, "missing_prompt", "Algorithm item must include prompt.", itemId);
+  }
+
+  if (!isNonEmptyString(item.difficulty)) {
+    addIssue(issues, "missing_difficulty", "Algorithm item must include difficulty.", itemId);
+  }
+
   if (Array.isArray(item.primarySkillAtomId)) {
     addIssue(issues, "multiple_primary_skills", "Algorithm item must have exactly one primary skill atom.", itemId);
   } else if (!isNonEmptyString(item.primarySkillAtomId)) {
@@ -283,7 +316,7 @@ function validateBaseTrainingItemContract(
   if (!isRecord(item.feedbackModel)) {
     addIssue(issues, "missing_feedback_model", "Algorithm item must include feedbackModel.", itemId);
   } else {
-    validateFeedbackModel(item.feedbackModel, issues, itemId);
+    validateFeedbackModel(item.feedbackModel, item.staticMicroChecks, issues, itemId);
   }
 
   if (!isNonEmptyString(item.contentVersion)) {
@@ -365,6 +398,7 @@ function validateAlgorithmVisibleValues(
 
 function validateFeedbackModel(
   feedbackModel: Record<string, unknown>,
+  staticMicroChecks: unknown,
   issues: AlgorithmContentQualityIssue[],
   itemId?: string,
 ): void {
@@ -379,10 +413,14 @@ function validateFeedbackModel(
       "feedbackModel.mentalModelCorrection is required.",
       itemId,
     );
+  } else if (isGenericFeedbackText(feedbackModel.mentalModelCorrection)) {
+    addIssue(issues, "generic_feedback_text", "feedbackModel.mentalModelCorrection is too generic.", itemId);
   }
 
   if (!isNonEmptyString(feedbackModel.decisionSignal)) {
     addIssue(issues, "missing_feedback_decision_signal", "feedbackModel.decisionSignal is required.", itemId);
+  } else if (isGenericFeedbackText(feedbackModel.decisionSignal)) {
+    addIssue(issues, "generic_feedback_text", "feedbackModel.decisionSignal is too generic.", itemId);
   }
 
   if (!Array.isArray(feedbackModel.mistakeTypes) || feedbackModel.mistakeTypes.length === 0) {
@@ -402,6 +440,73 @@ function validateFeedbackModel(
 
   if (!isNonEmptyString(feedbackModel.nextAction)) {
     addIssue(issues, "missing_feedback_next_action", "feedbackModel.nextAction is required.", itemId);
+  } else if (isGenericFeedbackText(feedbackModel.nextAction)) {
+    addIssue(issues, "generic_feedback_text", "feedbackModel.nextAction is too generic.", itemId);
+  }
+
+  validateDistractorExplanations(feedbackModel, staticMicroChecks, issues, itemId);
+}
+
+function validateDistractorExplanations(
+  feedbackModel: Record<string, unknown>,
+  staticMicroChecks: unknown,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  if (!Array.isArray(staticMicroChecks)) {
+    return;
+  }
+
+  const distractorExplanations = feedbackModel.distractorExplanations;
+
+  for (const check of staticMicroChecks) {
+    if (!isRecord(check) || check.status !== "active" || !Array.isArray(check.options)) {
+      continue;
+    }
+
+    const correctOptionIds = getCorrectOptionIds(check.correctAnswer);
+    if (correctOptionIds.size === 0) {
+      continue;
+    }
+
+    const distractorOptionIds = check.options
+      .filter((option): option is { id: string; text?: unknown } => isRecord(option) && isNonEmptyString(option.id))
+      .map((option) => option.id)
+      .filter((optionId) => !correctOptionIds.has(optionId));
+
+    if (distractorOptionIds.length === 0) {
+      continue;
+    }
+
+    if (!isRecord(distractorExplanations)) {
+      addIssue(
+        issues,
+        "invalid_feedback_distractor_explanations",
+        "feedbackModel.distractorExplanations must explain every incorrect option.",
+        itemId,
+      );
+      continue;
+    }
+
+    for (const optionId of distractorOptionIds) {
+      const explanation = distractorExplanations[optionId];
+
+      if (!isNonEmptyString(explanation)) {
+        addIssue(
+          issues,
+          "missing_feedback_distractor_explanation",
+          `feedbackModel.distractorExplanations must explain incorrect option ${optionId}.`,
+          itemId,
+        );
+      } else if (isGenericFeedbackText(explanation)) {
+        addIssue(
+          issues,
+          "generic_feedback_text",
+          `feedbackModel.distractorExplanations.${optionId} is too generic.`,
+          itemId,
+        );
+      }
+    }
   }
 }
 
@@ -623,11 +728,56 @@ function validateStaticMicroChecks(
       addIssue(issues, "invalid_static_micro_check", "Static micro-check is missing required static fields.", itemId);
     }
 
+    if (isNonEmptyString(check.feedback) && isGenericFeedbackText(check.feedback)) {
+      addIssue(issues, "generic_feedback_text", "Static micro-check feedback is too generic.", itemId);
+    }
+
+    if (Array.isArray(check.options)) {
+      validateStaticMicroCheckOptions(check, issues, itemId);
+    }
+
     if (
       Array.isArray(check.mistakeTypes) &&
       check.mistakeTypes.some((mistakeType) => !isAlgorithmMistakeType(mistakeType))
     ) {
       addIssue(issues, "invalid_static_micro_check", "Static micro-check includes an unsupported mistake type.", itemId);
+    }
+  }
+}
+
+function validateStaticMicroCheckOptions(
+  check: Record<string, unknown>,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  const options = check.options;
+  if (!Array.isArray(options)) {
+    return;
+  }
+
+  const optionIds = new Set<string>();
+
+  for (const option of options) {
+    if (!isRecord(option) || !isNonEmptyString(option.id) || !isNonEmptyString(option.text)) {
+      addIssue(issues, "invalid_static_micro_check", "Static micro-check options require id and text.", itemId);
+      continue;
+    }
+
+    if (optionIds.has(option.id)) {
+      addIssue(issues, "invalid_static_micro_check", `Static micro-check duplicates option id ${option.id}.`, itemId);
+    }
+
+    optionIds.add(option.id);
+  }
+
+  for (const correctOptionId of getCorrectOptionIds(check.correctAnswer)) {
+    if (!optionIds.has(correctOptionId)) {
+      addIssue(
+        issues,
+        "invalid_static_micro_check",
+        `Static micro-check correctAnswer references unknown option ${correctOptionId}.`,
+        itemId,
+      );
     }
   }
 }
@@ -669,10 +819,35 @@ function hasStaticAnswer(value: unknown): boolean {
   return isNonEmptyString(value) || isNonEmptyStringArray(value) || isComplexityPairAnswer(value);
 }
 
+function getCorrectOptionIds(value: unknown): ReadonlySet<string> {
+  if (isNonEmptyString(value)) {
+    return new Set([value]);
+  }
+
+  if (isNonEmptyStringArray(value)) {
+    return new Set(value);
+  }
+
+  return new Set();
+}
+
 function isComplexityPairAnswer(value: unknown): boolean {
   return (
     isRecord(value) &&
     isNonEmptyString(value.time) &&
     isNonEmptyString(value.space)
   );
+}
+
+function isGenericFeedbackText(value: string): boolean {
+  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ");
+
+  return [
+    "correct because this is correct",
+    "this is correct",
+    "that is correct",
+    "incorrect because this is incorrect",
+    "try again",
+    "good job",
+  ].includes(normalized);
 }

@@ -9,7 +9,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use window reasoning only when the answer is a contiguous range with maintainable state.",
+        "wrong_2": "Use the core rule instead: Use window reasoning only when the answer is a contiguous range with maintainable state."
+      }
     },
     "id": "alg-contrast-pointers-window-001",
     "learningStage": "contrast_practice",
@@ -104,7 +108,8 @@
           "text": "Contiguous range state and pair boundary state are equivalent."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,7 +121,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range.",
+        "wrong_2": "Use the core rule instead: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range."
+      }
     },
     "id": "alg-contrast-window-pointers-001",
     "learningStage": "contrast_practice",
@@ -204,6 +213,7 @@
           "text": "A window is better because it also has left and right boundaries."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   }
 ]

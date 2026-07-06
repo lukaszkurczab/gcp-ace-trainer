@@ -9,7 +9,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use interleaving by naming the decisive signal before applying mechanics.",
+        "wrong_2": "Use the core rule instead: Use interleaving by naming the decisive signal before applying mechanics."
+      }
     },
     "id": "alg-exp-mixed-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -99,7 +103,8 @@
           "text": "Choose the strategy whose name appears first."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -111,7 +116,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose window for contiguous validity, not merely because two boundaries are visible.",
+        "wrong_2": "Use the core rule instead: Choose window for contiguous validity, not merely because two boundaries are visible."
+      }
     },
     "id": "alg-exp-mixed-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -201,7 +210,8 @@
           "text": "Sort the segment before checking contiguity."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -213,7 +223,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose prefix state when signed values break the window invariant.",
+        "wrong_2": "Use the core rule instead: Choose prefix state when signed values break the window invariant."
+      }
     },
     "id": "alg-exp-mixed-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -308,7 +322,8 @@
           "text": "Ignore signs because the target is still numeric."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -320,7 +335,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose stack when the latest unresolved element controls the next valid action.",
+        "wrong_2": "Use the core rule instead: Choose stack when the latest unresolved element controls the next valid action."
+      }
     },
     "id": "alg-exp-mixed-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -410,7 +429,8 @@
           "text": "Use sorting because token order can be rearranged."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -422,7 +442,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state.",
+        "wrong_2": "Use the core rule instead: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state."
+      }
     },
     "id": "alg-exp-mixed-identify-001",
     "learningStage": "foundations",
@@ -485,7 +509,8 @@
     ],
     "title": "Identify mixed-practice signal type",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -497,7 +522,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A sorted boundary signal is different from mere numeric input.",
+        "wrong_2": "Use the core rule instead: A sorted boundary signal is different from mere numeric input."
+      }
     },
     "id": "alg-exp-mixed-identify-002",
     "learningStage": "pattern_mechanics",
@@ -560,7 +589,8 @@
     ],
     "title": "Identify missing ordered boundary",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -627,7 +657,8 @@
     "type": "complexity_check",
     "complexityExplanation": "A mixed lookup answer still scans once and stores seen state.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -694,7 +725,8 @@
     "type": "complexity_check",
     "complexityExplanation": "A positive sliding window moves each boundary forward at most once.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -706,7 +738,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The comparison should reject the strategy whose required invariant is absent.",
+        "wrong_2": "Use the core rule instead: The comparison should reject the strategy whose required invariant is absent."
+      }
     },
     "id": "alg-exp-mixed-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -794,7 +830,8 @@
           "text": "Both strategies rely on the same movement rule."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -806,7 +843,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is carrying over the last practiced pattern instead of reading the new decision signal.",
+        "wrong_2": "Use the core rule instead: The mistake is carrying over the last practiced pattern instead of reading the new decision signal."
+      }
     },
     "id": "alg-exp-mixed-mistake-001",
     "learningStage": "foundations",
@@ -869,7 +910,8 @@
     ],
     "title": "Review carry-over strategy error",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -881,7 +923,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is candidate shape before mechanics.",
+        "wrong_2": "Use the core rule instead: The pattern signal is candidate shape before mechanics."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-001",
@@ -961,7 +1007,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-002",
@@ -1071,7 +1121,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The stronger plan depends on whether prior state or order answers the question.",
+        "wrong_2": "Use the core rule instead: The stronger plan depends on whether prior state or order answers the question."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-003",
@@ -1173,7 +1227,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-004",
@@ -1283,7 +1341,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is output semantics, not just comparison convenience.",
+        "wrong_2": "Use the core rule instead: The pattern signal is output semantics, not just comparison convenience."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-005",
@@ -1363,7 +1425,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-006",
@@ -1473,7 +1539,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-007",
@@ -1583,7 +1653,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-008",
@@ -1693,7 +1767,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-009",
@@ -1803,7 +1881,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
+        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-010",
@@ -1913,7 +1995,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-011",
@@ -2023,7 +2109,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-012",
@@ -2133,7 +2223,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-013",
@@ -2243,7 +2337,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-014",
@@ -2353,7 +2451,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
+        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-015",
@@ -2463,7 +2565,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-016",
@@ -2573,7 +2679,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-017",
@@ -2683,7 +2793,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-018",
@@ -2793,7 +2907,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-019",
@@ -2903,7 +3021,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
+        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-020",
@@ -3013,7 +3135,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-021",
@@ -3123,7 +3249,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-022",
@@ -3233,7 +3363,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-023",
@@ -3343,7 +3477,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-024",
@@ -3453,7 +3591,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
+        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-mixed-025",

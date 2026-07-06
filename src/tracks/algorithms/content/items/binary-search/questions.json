@@ -9,7 +9,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A repeated yes/no boundary lets each check discard part of the ordered search space.",
+        "wrong_2": "Use the core rule instead: A repeated yes/no boundary lets each check discard part of the ordered search space."
+      }
     },
     "id": "alg-binary-search-predicate-001",
     "learningStage": "pattern_mechanics",
@@ -72,7 +76,8 @@
     ],
     "title": "Identify a monotonic predicate",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -84,7 +89,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Search the right half because all earlier values are too small after this comparison.",
+        "wrong_2": "Use the core rule instead: Search the right half because all earlier values are too small after this comparison."
+      }
     },
     "id": "alg-binary-search-trace-right-001",
     "learningStage": "pattern_mechanics",
@@ -157,7 +166,8 @@
           "Sorted values are [2, 4, 7, 9, 13]. The middle value 7 is less than target 9. What happens next?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -169,7 +179,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds.",
+        "wrong_2": "Use the core rule instead: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds."
+      }
     },
     "id": "alg-binary-search-boundary-edge-001",
     "learningStage": "pattern_mechanics",
@@ -232,7 +246,8 @@
     ],
     "title": "Check binary boundary updates",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -321,7 +336,8 @@
     ],
     "title": "Order predicate-search subgoals",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -386,7 +402,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each comparison discards about half of the remaining ordered search space while storing only bounds.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(log n)"
+    "expectedTimeComplexity": "O(log n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -398,7 +415,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Binary search fits when each check separates candidates into a rejected side and a possible side.",
+        "wrong_2": "Use the core rule instead: Binary search fits when each check separates candidates into a rejected side and a possible side."
+      }
     },
     "id": "alg-exp-binary-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -488,7 +509,8 @@
           "text": "Use a hash set because price values can be stored."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -500,7 +522,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Search the answer space only when feasibility is monotonic across candidate answers.",
+        "wrong_2": "Use the core rule instead: Search the answer space only when feasibility is monotonic across candidate answers."
+      }
     },
     "id": "alg-exp-binary-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -590,7 +616,8 @@
           "text": "Use stack state because capacity checks are repeated."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -602,7 +629,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Classic index search fits when sorted values let a comparison discard one side.",
+        "wrong_2": "Use the core rule instead: Classic index search fits when sorted values let a comparison discard one side."
+      }
     },
     "id": "alg-exp-binary-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -692,7 +723,8 @@
           "text": "Use a window because the list is contiguous."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -704,7 +736,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use rotated-array logic only when there is still an ordered half after each split.",
+        "wrong_2": "Use the core rule instead: Use rotated-array logic only when there is still an ordered half after each split."
+      }
     },
     "id": "alg-exp-binary-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -794,7 +830,8 @@
           "text": "Use a stack because a pivot is a previous state."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -806,7 +843,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is a monotonic predicate: once true, later candidates stay true.",
+        "wrong_2": "Use the core rule instead: The signal is a monotonic predicate: once true, later candidates stay true."
+      }
     },
     "id": "alg-exp-binary-identify-001",
     "learningStage": "pattern_mechanics",
@@ -869,7 +910,8 @@
     ],
     "title": "Identify monotonic feasibility",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -881,7 +923,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The boundary update must preserve the first possible answer.",
+        "wrong_2": "Use the core rule instead: The boundary update must preserve the first possible answer."
+      }
     },
     "id": "alg-exp-binary-identify-002",
     "learningStage": "pattern_mechanics",
@@ -944,7 +990,8 @@
     ],
     "title": "Identify boundary preservation",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1009,7 +1056,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each check removes about half of the candidate indexes and only bounds are stored.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(log n)"
+    "expectedTimeComplexity": "O(log n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1076,7 +1124,8 @@
     "type": "complexity_check",
     "complexityExplanation": "The search tries logarithmically many candidates, and each feasibility check scans n input values.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n log n)"
+    "expectedTimeComplexity": "O(n log n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1088,7 +1137,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer.",
+        "wrong_2": "Use the core rule instead: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer."
+      }
     },
     "id": "alg-exp-binary-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1173,7 +1226,8 @@
           "text": "Scanning is always required before checking for order."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1185,7 +1239,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is using binary search without proving an ordered boundary.",
+        "wrong_2": "Use the core rule instead: The mistake is using binary search without proving an ordered boundary."
+      }
     },
     "id": "alg-exp-binary-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1248,7 +1306,8 @@
     ],
     "title": "Review unordered halving",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1328,7 +1387,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available.",
+        "wrong_2": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-002",
@@ -1426,7 +1489,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Search answer space only because feasibility is monotonic.",
+        "wrong_2": "Use the core rule instead: Search answer space only because feasibility is monotonic."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-003",
@@ -1529,7 +1596,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is partial order after a pivot.",
+        "wrong_2": "Use the core rule instead: The pattern signal is partial order after a pivot."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-004",
@@ -1673,7 +1744,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate.",
+        "wrong_2": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-006",
@@ -1844,7 +1919,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers.",
+        "wrong_2": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-008",
@@ -1920,7 +1999,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review treating the list as unordered without checking the ordered half.",
+        "wrong_2": "Use the core rule instead: Review treating the list as unordered without checking the ordered half."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-009",
@@ -1996,7 +2079,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Keep the half that can still contain the boundary answer.",
+        "wrong_2": "Use the core rule instead: Keep the half that can still contain the boundary answer."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-010",
@@ -2167,7 +2254,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available.",
+        "wrong_2": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-012",
@@ -2265,7 +2356,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Search answer space only because feasibility is monotonic.",
+        "wrong_2": "Use the core rule instead: Search answer space only because feasibility is monotonic."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-013",
@@ -2368,7 +2463,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is partial order after a pivot.",
+        "wrong_2": "Use the core rule instead: The pattern signal is partial order after a pivot."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-014",
@@ -2512,7 +2611,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate.",
+        "wrong_2": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-016",
@@ -2683,7 +2786,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers.",
+        "wrong_2": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-018",
@@ -2759,7 +2866,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review treating the list as unordered without checking the ordered half.",
+        "wrong_2": "Use the core rule instead: Review treating the list as unordered without checking the ordered half."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-019",
@@ -2835,7 +2946,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Keep the half that can still contain the boundary answer.",
+        "wrong_2": "Use the core rule instead: Keep the half that can still contain the boundary answer."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-binary-020",

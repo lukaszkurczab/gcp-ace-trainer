@@ -9,7 +9,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Remove left-side values until the current range satisfies the required condition again.",
+        "wrong_2": "Use the core rule instead: Remove left-side values until the current range satisfies the required condition again."
+      }
     },
     "id": "alg-sliding-window-primer-001",
     "learningStage": "pattern_mechanics",
@@ -147,7 +151,8 @@
     "whenToUseSignals": [
       "The task asks for a contiguous range.",
       "All range values are positive, so expanding and shrinking changes the tracked sum predictably."
-    ]
+    ],
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -159,7 +164,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+        "wrong_2": "Use the core rule instead: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true."
+      }
     },
     "id": "alg-sliding-window-worked-sensor-range-001",
     "learningStage": "guided_application",
@@ -343,7 +352,8 @@
         "approachId": "label_only",
         "reason": "A pattern label without the decision signal does not justify the mechanics."
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -355,7 +365,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Keep a range state and move boundaries only when the invariant says to shrink.",
+        "wrong_2": "Use the core rule instead: Keep a range state and move boundaries only when the invariant says to shrink."
+      }
     },
     "id": "alg-sliding-window-invariant-001",
     "learningStage": "pattern_mechanics",
@@ -418,7 +432,8 @@
     ],
     "title": "Identify the window invariant",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -430,7 +445,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Remove the left value from the tracked sum and move left forward.",
+        "wrong_2": "Use the core rule instead: Remove the left value from the tracked sum and move left forward."
+      }
     },
     "id": "alg-sliding-window-trace-shrink-001",
     "learningStage": "pattern_mechanics",
@@ -503,7 +522,8 @@
           "Window values are [3, 4, 2], tracked sum is 9, and the allowed sum is at most 7. What is the next trace step?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -587,7 +607,8 @@
     ],
     "title": "Order fixed-window updates",
     "trackId": "algorithms",
-    "type": "pseudocode_ordering"
+    "type": "pseudocode_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -599,7 +620,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a frequency map inside the window when validity depends on counts of values in the current range.",
+        "wrong_2": "Use the core rule instead: Use a frequency map inside the window when validity depends on counts of values in the current range."
+      }
     },
     "id": "alg-sliding-window-frequency-001",
     "learningStage": "pattern_mechanics",
@@ -694,7 +719,8 @@
           "text": "Sort the substring every time the right boundary moves."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -706,7 +732,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
+        "wrong_2": "Use the core rule instead: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant."
+      }
     },
     "id": "alg-exp-window-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -796,7 +826,8 @@
           "text": "Use pair boundaries because a range has two ends."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -808,7 +839,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
+        "wrong_2": "Use the core rule instead: A fixed-size window fits because each step swaps one outgoing value for one incoming value."
+      }
     },
     "id": "alg-exp-window-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -898,7 +933,8 @@
           "text": "Use binary search because k is a number."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -910,7 +946,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Maintain counts inside the current range when validity depends on distinct values.",
+        "wrong_2": "Use the core rule instead: Maintain counts inside the current range when validity depends on distinct values."
+      }
     },
     "id": "alg-exp-window-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -1005,7 +1045,8 @@
           "text": "Sort each current substring before checking it."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1017,7 +1058,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Shrink from the left only while the invariant says the current range is invalid or can be improved.",
+        "wrong_2": "Use the core rule instead: Shrink from the left only while the invariant says the current range is invalid or can be improved."
+      }
     },
     "id": "alg-exp-window-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -1107,7 +1152,8 @@
           "text": "Keep expanding forever because success was reached once."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1118,7 +1164,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is a contiguous range whose state changes predictably as boundaries move.",
+        "wrong_2": "Use the core rule instead: The signal is a contiguous range whose state changes predictably as boundaries move."
+      }
     },
     "id": "alg-exp-window-identify-001",
     "learningStage": "pattern_mechanics",
@@ -1180,7 +1230,8 @@
     ],
     "title": "Identify contiguous range signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1192,7 +1243,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The invariant is what must remain true about the current range before recording an answer.",
+        "wrong_2": "Use the core rule instead: The invariant is what must remain true about the current range before recording an answer."
+      }
     },
     "id": "alg-exp-window-identify-002",
     "learningStage": "pattern_mechanics",
@@ -1255,7 +1310,8 @@
     ],
     "title": "Identify window invariant",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1267,7 +1323,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The outgoing value must be removed when the window moves past it.",
+        "wrong_2": "Use the core rule instead: The outgoing value must be removed when the window moves past it."
+      }
     },
     "id": "alg-exp-window-identify-003",
     "learningStage": "pattern_mechanics",
@@ -1330,7 +1390,8 @@
     ],
     "title": "Identify outgoing value update",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1397,7 +1458,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each boundary moves forward through the positive array at most once, with only current range state stored.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1409,7 +1471,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer.",
+        "wrong_2": "Use the core rule instead: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer."
+      }
     },
     "id": "alg-exp-window-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1497,7 +1563,8 @@
           "text": "A window does not need any invariant."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1509,7 +1576,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is recording an invalid range before restoring the invariant.",
+        "wrong_2": "Use the core rule instead: The mistake is recording an invalid range before restoring the invariant."
+      }
     },
     "id": "alg-exp-window-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1572,7 +1643,8 @@
     ],
     "title": "Review invalid range recording",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1584,7 +1656,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-001",
@@ -1685,7 +1761,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-002",
@@ -1793,7 +1873,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-003",
@@ -1943,7 +2027,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied.",
+        "wrong_2": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-005",
@@ -2122,7 +2210,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is fixed-size overlap.",
+        "wrong_2": "Use the core rule instead: The pattern signal is fixed-size overlap."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-007",
@@ -2201,7 +2293,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review tracking length only when distinct counts decide validity.",
+        "wrong_2": "Use the core rule instead: Review tracking length only when distinct counts decide validity."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-008",
@@ -2280,7 +2376,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule.",
+        "wrong_2": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-009",
@@ -2459,7 +2559,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-011",
@@ -2560,7 +2664,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-012",
@@ -2668,7 +2776,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-013",
@@ -2818,7 +2930,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied.",
+        "wrong_2": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-015",
@@ -2997,7 +3113,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is fixed-size overlap.",
+        "wrong_2": "Use the core rule instead: The pattern signal is fixed-size overlap."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-017",
@@ -3076,7 +3196,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review tracking length only when distinct counts decide validity.",
+        "wrong_2": "Use the core rule instead: Review tracking length only when distinct counts decide validity."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-018",
@@ -3155,7 +3279,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule.",
+        "wrong_2": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-019",
@@ -3334,7 +3462,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-021",
@@ -3435,7 +3567,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-022",
@@ -3543,7 +3679,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-window-023",

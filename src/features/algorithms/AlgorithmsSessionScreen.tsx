@@ -385,6 +385,16 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         </Card>
         <Card style={styles.diagnosisCard}>
           <SectionHeader title="Next action" subtitle="Choose the next step from this result." tight />
+          {summary.mainIssue ? (
+            <View style={styles.mainIssuePanel}>
+              <FeedbackSection title="Main issue" text={summary.mainIssue.pattern} />
+              {summary.mainIssue.mistakeType ? (
+                <FeedbackSection title="Mistake pattern" text={summary.mainIssue.mistakeType} />
+              ) : null}
+              <FeedbackSection title="Why it matters" text={summary.mainIssue.explanation} />
+              <FeedbackSection title="Recommended next" text={summary.mainIssue.recommendedNextAction} />
+            </View>
+          ) : null}
           <View style={styles.summaryActions}>
             {summaryActions.map((action) => (
               <View key={action.kind} style={styles.summaryAction}>
@@ -802,7 +812,14 @@ function FeedbackCard({
     score,
     selectedOptionIds,
   });
-  const hasDetails = Boolean(feedback.reasoning.commonTrap || feedback.reasoning.mistakeType);
+  const hasDetails = Boolean(
+    feedback.reasoning.answerSummary ||
+    feedback.reasoning.commonTrap ||
+    feedback.reasoning.complexity ||
+    feedback.reasoning.correctAnswerExplanation ||
+    feedback.reasoning.mistakeType ||
+    feedback.reasoning.weakerAnswerNotes.length > 0,
+  );
 
   return (
     <Card style={styles.feedbackCard}>
@@ -812,9 +829,9 @@ function FeedbackCard({
       </View>
 
       <View style={styles.feedbackRows}>
-        <FeedbackRow title="Answer" text={feedback.answerSummary} />
-        <FeedbackRow title="Key signal" text={feedback.keySignal} />
-        <FeedbackRow title="Rule" text={feedback.rule} />
+        <FeedbackRow title="Core reason" text={feedback.rule} />
+        <FeedbackRow title="Recognition signal" text={feedback.keySignal} />
+        <FeedbackRow title="Next action" text={feedback.nextAction} />
       </View>
 
       {hasDetails ? (
@@ -829,6 +846,16 @@ function FeedbackCard({
 
       {showDetails ? (
         <View style={styles.reasoningPanel}>
+          <FeedbackRow title="Answer" text={feedback.reasoning.answerSummary} />
+          {feedback.reasoning.correctAnswerExplanation ? (
+            <FeedbackRow title="Explanation" text={feedback.reasoning.correctAnswerExplanation} />
+          ) : null}
+          {feedback.reasoning.complexity ? (
+            <FeedbackRow title="Complexity" text={feedback.reasoning.complexity} />
+          ) : null}
+          {feedback.reasoning.weakerAnswerNotes.length > 0 ? (
+            <FeedbackRow title="Why other options are weaker" text={feedback.reasoning.weakerAnswerNotes.join("\n")} />
+          ) : null}
           {feedback.reasoning.commonTrap ? (
             <FeedbackRow title="Common trap" text={feedback.reasoning.commonTrap} />
           ) : null}
@@ -1299,6 +1326,9 @@ const styles = StyleSheet.create({
   },
   summaryActions: {
     gap: spacing.md,
+  },
+  mainIssuePanel: {
+    gap: spacing.sm,
   },
   summaryAction: {
     gap: spacing.xs,

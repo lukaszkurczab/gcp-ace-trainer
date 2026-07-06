@@ -9,7 +9,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use lookup when preserving original relationships matters more than ordering the whole input.",
+        "wrong_2": "Use the core rule instead: Use lookup when preserving original relationships matters more than ordering the whole input."
+      }
     },
     "id": "alg-contrast-hash-sorting-001",
     "learningStage": "contrast_practice",
@@ -104,7 +108,8 @@
           "text": "Original positions never affect pair tasks."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,7 +121,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant.",
+        "wrong_2": "Use the core rule instead: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant."
+      }
     },
     "id": "alg-contrast-sorting-hash-001",
     "learningStage": "contrast_practice",
@@ -204,6 +213,7 @@
           "text": "Avoid ordering even when adjacency is the actual signal."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   }
 ]

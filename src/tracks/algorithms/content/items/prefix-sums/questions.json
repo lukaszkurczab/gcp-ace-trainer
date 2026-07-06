@@ -9,7 +9,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+        "wrong_2": "Use the core rule instead: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior."
+      }
     },
     "id": "alg-prefix-window-failure-001",
     "learningStage": "pattern_mechanics",
@@ -104,7 +108,8 @@
           "text": "A window is always valid for any contiguous sum task."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,7 +121,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store each prefix total so a range total can be computed from two accumulated values.",
+        "wrong_2": "Use the core rule instead: Store each prefix total so a range total can be computed from two accumulated values."
+      }
     },
     "id": "alg-prefix-range-query-001",
     "learningStage": "pattern_mechanics",
@@ -179,7 +188,8 @@
     ],
     "title": "Name range-sum state",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -191,7 +201,11 @@
         "negative_numbers_assumption_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
+        "wrong_2": "Use the core rule instead: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4."
+      }
     },
     "id": "alg-prefix-trace-needed-total-001",
     "learningStage": "pattern_mechanics",
@@ -264,7 +278,8 @@
           "Current prefix total is 11 and target subarray sum is 7. Which earlier prefix total would prove a matching range exists?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -276,7 +291,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable.",
+        "wrong_2": "Use the core rule instead: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable."
+      }
     },
     "id": "alg-prefix-vs-window-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -364,7 +383,8 @@
           "text": "Negative values do not affect any contiguous range method."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -376,7 +396,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The empty prefix before index 0 must be represented so a valid range can start at the first element.",
+        "wrong_2": "Use the core rule instead: The empty prefix before index 0 must be represented so a valid range can start at the first element."
+      }
     },
     "id": "alg-prefix-empty-prefix-edge-001",
     "learningStage": "pattern_mechanics",
@@ -439,7 +463,8 @@
     ],
     "title": "Handle range starting at zero",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -451,7 +476,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use prefix totals because negative values can make simple shrink decisions unreliable.",
+        "wrong_2": "Use the core rule instead: Use prefix totals because negative values can make simple shrink decisions unreliable."
+      }
     },
     "id": "alg-exp-prefix-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -546,7 +575,8 @@
           "text": "Ignore signs and shrink whenever the total is too high."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -558,7 +588,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Precompute prefix totals when many range queries reuse the same sequence.",
+        "wrong_2": "Use the core rule instead: Precompute prefix totals when many range queries reuse the same sequence."
+      }
     },
     "id": "alg-exp-prefix-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -648,7 +682,8 @@
           "text": "Use a stack because queries have endpoints."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -660,7 +695,11 @@
         "negative_numbers_assumption_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store earlier prefix totals so current total minus target can prove a matching subarray.",
+        "wrong_2": "Use the core rule instead: Store earlier prefix totals so current total minus target can prove a matching subarray."
+      }
     },
     "id": "alg-exp-prefix-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -750,7 +789,8 @@
           "text": "Use a positive window even when shrink direction can fail."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -762,7 +802,11 @@
         "complexity_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A difference array fits when many range increments are applied before final values are read.",
+        "wrong_2": "Use the core rule instead: A difference array fits when many range increments are applied before final values are read."
+      }
     },
     "id": "alg-exp-prefix-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -852,7 +896,8 @@
           "text": "Use binary search because ranges have boundaries."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -864,7 +909,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is repeated range totals; prefix state answers each range from accumulated endpoints.",
+        "wrong_2": "Use the core rule instead: The signal is repeated range totals; prefix state answers each range from accumulated endpoints."
+      }
     },
     "id": "alg-exp-prefix-identify-001",
     "learningStage": "pattern_mechanics",
@@ -927,7 +976,8 @@
     ],
     "title": "Identify repeated range-total signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -939,7 +989,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The empty prefix lets a range beginning at index zero be represented by the same formula.",
+        "wrong_2": "Use the core rule instead: The empty prefix lets a range beginning at index zero be represented by the same formula."
+      }
     },
     "id": "alg-exp-prefix-identify-002",
     "learningStage": "pattern_mechanics",
@@ -1002,7 +1056,8 @@
     ],
     "title": "Identify empty-prefix boundary",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1014,7 +1069,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The failure signal is loss of monotonic behavior in the range total.",
+        "wrong_2": "Use the core rule instead: The failure signal is loss of monotonic behavior in the range total."
+      }
     },
     "id": "alg-exp-prefix-identify-003",
     "learningStage": "pattern_mechanics",
@@ -1077,7 +1136,8 @@
     ],
     "title": "Identify window failure signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1142,7 +1202,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Building prefix totals scans once and stores one accumulated value per position.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1154,7 +1215,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Prefix lookup is safer when value signs break the simple window invariant.",
+        "wrong_2": "Use the core rule instead: Prefix lookup is safer when value signs break the simple window invariant."
+      }
     },
     "id": "alg-exp-prefix-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1242,7 +1307,8 @@
           "text": "Value signs do not affect range-sum mechanics."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1254,7 +1320,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is applying a positive-only window invariant after the prompt allows values below zero.",
+        "wrong_2": "Use the core rule instead: The mistake is applying a positive-only window invariant after the prompt allows values below zero."
+      }
     },
     "id": "alg-exp-prefix-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1317,7 +1387,8 @@
     ],
     "title": "Review invalid positive-window assumption",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1329,7 +1400,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable.",
+        "wrong_2": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-001",
@@ -1508,7 +1583,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total.",
+        "wrong_2": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-003",
@@ -1587,7 +1666,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review applying every update to every covered index without checking operation count.",
+        "wrong_2": "Use the core rule instead: Review applying every update to every covered index without checking operation count."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-004",
@@ -1666,7 +1749,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total.",
+        "wrong_2": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-005",
@@ -1845,7 +1932,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large.",
+        "wrong_2": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-007",
@@ -1946,7 +2037,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store earlier prefix totals and check current minus target.",
+        "wrong_2": "Use the core rule instead: Store earlier prefix totals and check current minus target."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-008",
@@ -2054,7 +2149,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is batched range updates.",
+        "wrong_2": "Use the core rule instead: The pattern signal is batched range updates."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-009",
@@ -2204,7 +2303,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable.",
+        "wrong_2": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-011",
@@ -2383,7 +2486,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total.",
+        "wrong_2": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-013",
@@ -2462,7 +2569,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review applying every update to every covered index without checking operation count.",
+        "wrong_2": "Use the core rule instead: Review applying every update to every covered index without checking operation count."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-014",
@@ -2541,7 +2652,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total.",
+        "wrong_2": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-015",
@@ -2720,7 +2835,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large.",
+        "wrong_2": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-017",
@@ -2821,7 +2940,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store earlier prefix totals and check current minus target.",
+        "wrong_2": "Use the core rule instead: Store earlier prefix totals and check current minus target."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-018",
@@ -2929,7 +3052,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is batched range updates.",
+        "wrong_2": "Use the core rule instead: The pattern signal is batched range updates."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-prefix-019",

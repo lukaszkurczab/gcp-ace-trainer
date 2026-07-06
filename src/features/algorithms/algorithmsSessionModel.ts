@@ -49,13 +49,18 @@ export type AlgorithmsSessionReviewItem = {
 };
 
 export type AlgorithmsImmediateReasoning = {
+  answerSummary: string;
   commonTrap?: string;
+  complexity?: string;
+  correctAnswerExplanation?: string;
   mistakeType?: string;
+  weakerAnswerNotes: readonly string[];
 };
 
 export type AlgorithmsImmediateFeedbackModel = {
   answerSummary: string;
   keySignal: string;
+  nextAction: string;
   reasoning: AlgorithmsImmediateReasoning;
   rule: string;
   status: AlgorithmScoringStatus;
@@ -67,12 +72,21 @@ export type AlgorithmsSessionSummary = {
   correct: number;
   currentRoadmapNode: string;
   incorrect: number;
+  mainIssue?: AlgorithmsSessionMainIssue;
   needsReview: readonly string[];
   partial: number;
   recommendedNext: readonly string[];
   reviewSession?: AlgorithmsReviewSessionSummary;
   reviewItems: readonly AlgorithmsSessionReviewItem[];
   strong: readonly string[];
+};
+
+export type AlgorithmsSessionMainIssue = {
+  explanation: string;
+  itemIds: readonly string[];
+  mistakeType?: string;
+  pattern: string;
+  recommendedNextAction: string;
 };
 
 export type AlgorithmsReviewSessionSummary = {
@@ -137,6 +151,10 @@ export function buildAlgorithmsImmediateFeedbackModel({
 }): AlgorithmsImmediateFeedbackModel {
   const correctAnswer = getAlgorithmsCorrectAnswerText(check);
   const selectedAnswer = getCurrentSelectedAnswerText(check, selectedOptionIds, complexityAnswer);
+  const answerSummary = getImmediateAnswerSummary({
+    correctAnswer,
+    selectedAnswer,
+  });
   const keySignal = getAlgorithmsPatternSignalText(item);
   const rule = getImmediateFeedbackRule({
     correctAnswer,
@@ -150,16 +168,20 @@ export function buildAlgorithmsImmediateFeedbackModel({
     : undefined;
 
   return {
-    answerSummary: getImmediateAnswerSummary({
-      correctAnswer,
-      selectedAnswer,
-    }),
+    answerSummary,
     keySignal,
+    nextAction: item.feedbackModel.nextAction,
     reasoning: {
+      answerSummary,
       commonTrap: isDuplicateFeedbackText(commonTrap, rule) || isDuplicateFeedbackText(commonTrap, mistakeType)
         ? undefined
         : commonTrap,
+      complexity: getAlgorithmsComplexityText(item),
+      correctAnswerExplanation: isDuplicateFeedbackText(score.feedback, rule)
+        ? undefined
+        : score.feedback,
       mistakeType,
+      weakerAnswerNotes: getAlgorithmsWeakerAnswerNotes(check, item),
     },
     rule,
     status: score.status,
@@ -293,12 +315,14 @@ export function buildAlgorithmsSessionSummary(
       Boolean(entry.item && entry.status),
     );
   const missedAttempts = reviewedAttempts.filter((entry) => entry.status !== "correct");
+  const mainIssue = buildSessionMainIssue(missedAttempts);
 
   return {
     completed: attempts.length,
     correct: statuses.filter((status) => status === "correct").length,
     currentRoadmapNode: nodeLabel,
     incorrect: statuses.filter((status) => status === "incorrect").length,
+    mainIssue,
     needsReview: uniqueStrings(
       missedAttempts.map((entry) => `${getAlgorithmsRecognizedPatternText(entry.item)}: ${getAttemptReviewSignal(entry)}`),
     ).slice(0, 4),
@@ -409,10 +433,13 @@ export function getAlgorithmsWeakerAnswerNotes(
   item: AlgorithmTrainingItem,
 ): readonly string[] {
   const correctIds = getCorrectAnswerIds(check.correctAnswer);
+  const explanationsByOptionId = item.feedbackModel.distractorExplanations ?? {};
   const weakerOptions = (check.options ?? [])
     .filter((option) => !correctIds.has(option.id))
     .slice(0, 3)
-    .map((option) => `${option.text}: does not match the signal "${item.feedbackModel.decisionSignal}".`);
+    .map((option) =>
+      `${option.text}: ${explanationsByOptionId[option.id] ?? "No distractor explanation is authored for this option."}`,
+    );
 
   if (weakerOptions.length > 0) {
     return weakerOptions;
@@ -618,6 +645,55 @@ function buildRecommendedNext(
     ...recommendations,
     ...missedAttempts.map((entry) => entry.item.feedbackModel.nextAction),
   ]).slice(0, 3);
+}
+
+function buildSessionMainIssue(
+  missedAttempts: readonly {
+    attempt: TrainingAttempt;
+    item: AlgorithmTrainingItem;
+    status: AlgorithmScoringStatus;
+  }[],
+): AlgorithmsSessionMainIssue | undefined {
+  if (missedAttempts.length === 0) {
+    return undefined;
+  }
+
+  const patternCounts = new Map<string, { count: number; itemIds: string[] }>();
+  const mistakeTypeCounts = new Map<string, number>();
+
+  for (const entry of missedAttempts) {
+    const pattern = getAlgorithmsRecognizedPatternText(entry.item);
+    const currentPattern = patternCounts.get(pattern) ?? { count: 0, itemIds: [] };
+    currentPattern.count += entry.status === "incorrect" ? 2 : 1;
+    currentPattern.itemIds.push(entry.item.id);
+    patternCounts.set(pattern, currentPattern);
+
+    for (const mistakeType of entry.attempt.mistakeTypeRefs?.map((ref) => ref.nodeId) ?? []) {
+      mistakeTypeCounts.set(mistakeType, (mistakeTypeCounts.get(mistakeType) ?? 0) + 1);
+    }
+  }
+
+  const [pattern, patternStats] = [...patternCounts.entries()]
+    .sort((left, right) => right[1].count - left[1].count || left[0].localeCompare(right[0]))[0] ?? [];
+  const mistakeType = [...mistakeTypeCounts.entries()]
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0];
+  const representativeItem = missedAttempts.find((entry) =>
+    getAlgorithmsRecognizedPatternText(entry.item) === pattern,
+  )?.item ?? missedAttempts[0]?.item;
+
+  if (!pattern || !representativeItem || !patternStats) {
+    return undefined;
+  }
+
+  const formattedMistake = mistakeType ? formatAlgorithmItemType(mistakeType) : "Unclassified mistake";
+
+  return {
+    explanation: `Most missed items pointed to ${pattern}. The recurring issue was ${formattedMistake.toLowerCase()}, so review the recognition signal before trying a larger mixed set.`,
+    itemIds: uniqueStrings(patternStats.itemIds),
+    mistakeType: mistakeType ? formattedMistake : undefined,
+    pattern,
+    recommendedNextAction: representativeItem.feedbackModel.nextAction,
+  };
 }
 
 function uniqueStrings(values: readonly string[]): string[] {

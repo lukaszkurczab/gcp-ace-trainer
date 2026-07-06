@@ -101,7 +101,8 @@
     ],
     "title": "Order sorted pair scan subgoals",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -113,7 +114,14 @@
         "off_by_one"
       ],
       "nextAction": "Trace the same comparison with a sum that is too large.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "line-1": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
+        "line-2": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
+        "line-3": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
+        "line-4": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
+        "line-6": "Use the core rule instead: Use the comparison result to pick the next pseudocode line."
+      }
     },
     "id": "alg-two-pointers-pseudocode-line-001",
     "learningStage": "pattern_mechanics",
@@ -225,7 +233,8 @@
     ],
     "title": "Select the next two-pointer line",
     "trackId": "algorithms",
-    "type": "pseudocode_ordering"
+    "type": "pseudocode_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -237,7 +246,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: When the pair sum is too small, the smaller boundary must move forward.",
+        "wrong_2": "Use the core rule instead: When the pair sum is too small, the smaller boundary must move forward."
+      }
     },
     "id": "alg-two-pointers-primer-001",
     "learningStage": "pattern_mechanics",
@@ -375,7 +388,8 @@
     "whenToUseSignals": [
       "The input is sorted or can be sorted without losing the needed relationship.",
       "A pair condition can decide whether the left or right boundary should move."
-    ]
+    ],
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -387,7 +401,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: 1 + 10 equals 11, so the pair is found before either boundary moves.",
+        "wrong_2": "Use the core rule instead: 1 + 10 equals 11, so the pair is found before either boundary moves."
+      }
     },
     "id": "alg-two-pointers-worked-shelf-gap-001",
     "learningStage": "guided_application",
@@ -564,7 +582,8 @@
         "approachId": "label_only",
         "reason": "A pattern label without the decision signal does not justify the mechanics."
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -576,7 +595,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Move the right boundary backward because the current pair sum is too large.",
+        "wrong_2": "Use the core rule instead: Move the right boundary backward because the current pair sum is too large."
+      }
     },
     "id": "alg-two-pointers-trace-large-001",
     "learningStage": "pattern_mechanics",
@@ -649,7 +672,8 @@
           "Sorted values are [2, 5, 9, 14], target is 12. left is 2 and right is 14. What happens next?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -661,7 +685,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
+        "wrong_2": "Use the core rule instead: Sorting can enable two pointers only if the answer does not require original order to remain untouched."
+      }
     },
     "id": "alg-two-pointers-sorting-precondition-001",
     "learningStage": "pattern_mechanics",
@@ -756,7 +784,8 @@
           "text": "A two-boundary scan works on any order if both ends are checked."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -768,7 +797,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Skip repeated boundary values only after the current value has been processed.",
+        "wrong_2": "Use the core rule instead: Skip repeated boundary values only after the current value has been processed."
+      }
     },
     "id": "alg-two-pointers-duplicate-edge-001",
     "learningStage": "pattern_mechanics",
@@ -831,7 +864,8 @@
     ],
     "title": "Handle duplicate pointer values",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -843,7 +877,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Move the boundary that can no longer participate in a valid pair.",
+        "wrong_2": "Use the core rule instead: Move the boundary that can no longer participate in a valid pair."
+      }
     },
     "id": "alg-exp-two-pointers-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -933,7 +971,8 @@
           "text": "Restart the scan from the middle after every mismatch."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -945,7 +984,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A two-boundary scan fits because sorted order lets each comparison discard candidates.",
+        "wrong_2": "Use the core rule instead: A two-boundary scan fits because sorted order lets each comparison discard candidates."
+      }
     },
     "id": "alg-exp-two-pointers-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -1035,7 +1078,8 @@
           "text": "Use lookup state even though ordered elimination is available."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1047,7 +1091,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
+        "wrong_2": "Use the core rule instead: Same-direction pointers fit when one pointer explores and the other marks a processed boundary."
+      }
     },
     "id": "alg-exp-two-pointers-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -1137,7 +1185,8 @@
           "text": "Use sorting even though the scan preserves input order."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1149,7 +1198,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
+        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal only if the answer does not depend on original adjacency."
+      }
     },
     "id": "alg-exp-two-pointers-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -1244,7 +1297,8 @@
           "text": "Two-boundary scans never need ordering."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1256,7 +1310,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is a sorted input plus a comparison that tells which side can be discarded.",
+        "wrong_2": "Use the core rule instead: The signal is a sorted input plus a comparison that tells which side can be discarded."
+      }
     },
     "id": "alg-exp-two-pointers-identify-001",
     "learningStage": "pattern_mechanics",
@@ -1319,7 +1377,8 @@
     ],
     "title": "Identify pair-scan signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1331,7 +1390,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Duplicate skipping belongs after processing the current boundary value.",
+        "wrong_2": "Use the core rule instead: Duplicate skipping belongs after processing the current boundary value."
+      }
     },
     "id": "alg-exp-two-pointers-identify-002",
     "learningStage": "pattern_mechanics",
@@ -1394,7 +1457,8 @@
     ],
     "title": "Identify duplicate boundary signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1406,7 +1470,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Partitioning uses a write boundary and a read pointer moving in one direction.",
+        "wrong_2": "Use the core rule instead: Partitioning uses a write boundary and a read pointer moving in one direction."
+      }
     },
     "id": "alg-exp-two-pointers-identify-003",
     "learningStage": "pattern_mechanics",
@@ -1469,7 +1537,8 @@
     ],
     "title": "Identify partition boundary",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1536,7 +1605,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each boundary moves inward at most once through the sorted input.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1548,7 +1618,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant.",
+        "wrong_2": "Use the core rule instead: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant."
+      }
     },
     "id": "alg-exp-two-pointers-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1636,7 +1710,8 @@
           "text": "A window is always stronger when input is sorted."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1648,7 +1723,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is moving a boundary without proving which candidates it rules out.",
+        "wrong_2": "Use the core rule instead: The mistake is moving a boundary without proving which candidates it rules out."
+      }
     },
     "id": "alg-exp-two-pointers-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1711,7 +1790,8 @@
     ],
     "title": "Review unjustified pointer movement",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1723,7 +1803,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination.",
+        "wrong_2": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-two-pointers-001",
@@ -1873,7 +1957,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "wrong_2": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-003",
@@ -2052,7 +2140,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers.",
+        "wrong_2": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-005",
@@ -2131,7 +2223,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review moving both boundaries without proving what was ruled out.",
+        "wrong_2": "Use the core rule instead: Review moving both boundaries without proving what was ruled out."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-006",
@@ -2210,7 +2306,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan.",
+        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-007",
@@ -2389,7 +2489,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Duplicate skipping protects output uniqueness without extra lookup state.",
+        "wrong_2": "Use the core rule instead: Duplicate skipping protects output uniqueness without extra lookup state."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-009",
@@ -2490,7 +2594,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Maintain a boundary for the processed side while the read index advances.",
+        "wrong_2": "Use the core rule instead: Maintain a boundary for the processed side while the read index advances."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-010",
@@ -2598,7 +2706,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination.",
+        "wrong_2": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-011",
@@ -2748,7 +2860,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "wrong_2": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-013",
@@ -2927,7 +3043,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers.",
+        "wrong_2": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-015",
@@ -3006,7 +3126,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review moving both boundaries without proving what was ruled out.",
+        "wrong_2": "Use the core rule instead: Review moving both boundaries without proving what was ruled out."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-016",
@@ -3085,7 +3209,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan.",
+        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-two-pointers-017",

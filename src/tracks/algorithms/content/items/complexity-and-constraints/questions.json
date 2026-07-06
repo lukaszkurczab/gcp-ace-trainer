@@ -59,7 +59,8 @@
     ],
     "title": "Constraint-first cost check",
     "trackId": "algorithms",
-    "type": "complexity_check"
+    "type": "complexity_check",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -71,7 +72,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: For n near 100000, any plan that checks every pair performs far too many operations.",
+        "wrong_2": "Use the core rule instead: For n near 100000, any plan that checks every pair performs far too many operations."
+      }
     },
     "id": "alg-complexity-reject-quadratic-001",
     "learningStage": "foundations",
@@ -134,7 +139,8 @@
     ],
     "title": "Reject an infeasible pair scan",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -199,7 +205,8 @@
     "type": "complexity_check",
     "complexityExplanation": "The outer position can pair with many later positions, so the total comparisons grow quadratically while only counters are stored.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n^2)"
+    "expectedTimeComplexity": "O(n^2)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -211,7 +218,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A set trades extra memory for one pass when membership checks are the repeated operation.",
+        "wrong_2": "Use the core rule instead: A set trades extra memory for one pass when membership checks are the repeated operation."
+      }
     },
     "id": "alg-complexity-space-tradeoff-001",
     "learningStage": "foundations",
@@ -296,7 +307,8 @@
           "text": "Choose the plan with fewer lines before estimating operation count."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -308,7 +320,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Count the loop body cost too; an expensive helper inside a scan can change the total cost.",
+        "wrong_2": "Use the core rule instead: Count the loop body cost too; an expensive helper inside a scan can change the total cost."
+      }
     },
     "id": "alg-complexity-hidden-cost-001",
     "learningStage": "foundations",
@@ -371,7 +387,8 @@
     ],
     "title": "Notice hidden operation cost",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -455,7 +472,8 @@
     ],
     "title": "Order constraint reasoning",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -467,7 +485,11 @@
         "complexity_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
+        "wrong_2": "Use the core rule instead: The repeated pair comparison is the limiting signal; reject it before comparing implementation details."
+      }
     },
     "id": "alg-exp-complexity-strategy-001",
     "learningStage": "foundations",
@@ -557,7 +579,8 @@
           "text": "Ignore n until after the first implementation works."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -569,7 +592,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A lookup table is viable because the repeated operation is membership, not ordered traversal.",
+        "wrong_2": "Use the core rule instead: A lookup table is viable because the repeated operation is membership, not ordered traversal."
+      }
     },
     "id": "alg-exp-complexity-strategy-002",
     "learningStage": "foundations",
@@ -659,7 +686,8 @@
           "text": "Sort first even though order is not part of the question."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -671,7 +699,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: If query count is large, preprocessing can be cheaper than recomputing each range independently.",
+        "wrong_2": "Use the core rule instead: If query count is large, preprocessing can be cheaper than recomputing each range independently."
+      }
     },
     "id": "alg-exp-complexity-strategy-003",
     "learningStage": "foundations",
@@ -761,7 +793,8 @@
           "text": "Choose the plan with zero preparation regardless of query count."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -773,7 +806,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: When values arrive once and only the current best answer is needed, constant state may be enough.",
+        "wrong_2": "Use the core rule instead: When values arrive once and only the current best answer is needed, constant state may be enough."
+      }
     },
     "id": "alg-exp-complexity-strategy-004",
     "learningStage": "foundations",
@@ -863,7 +900,8 @@
           "text": "Build a map even though no later membership lookup is needed."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -874,7 +912,11 @@
         "complexity_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs.",
+        "wrong_2": "Use the core rule instead: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs."
+      }
     },
     "id": "alg-exp-complexity-identify-001",
     "learningStage": "foundations",
@@ -936,7 +978,8 @@
     ],
     "title": "Identify growth-rate signals",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -948,7 +991,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The hidden cost is string length; total work depends on both number of strings and characters scanned.",
+        "wrong_2": "Use the core rule instead: The hidden cost is string length; total work depends on both number of strings and characters scanned."
+      }
     },
     "id": "alg-exp-complexity-identify-002",
     "learningStage": "foundations",
@@ -1011,7 +1058,8 @@
     ],
     "title": "Identify hidden input dimension",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1023,7 +1071,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Memory grows with the number of distinct stored keys, not only with the number of loop variables.",
+        "wrong_2": "Use the core rule instead: Memory grows with the number of distinct stored keys, not only with the number of loop variables."
+      }
     },
     "id": "alg-exp-complexity-identify-003",
     "learningStage": "foundations",
@@ -1086,7 +1138,8 @@
     ],
     "title": "Identify lookup space growth",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1151,7 +1204,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each item is scanned once, and the set can grow to hold all distinct values.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1163,7 +1217,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes.",
+        "wrong_2": "Use the core rule instead: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes."
+      }
     },
     "id": "alg-exp-complexity-comparison-001",
     "learningStage": "foundations",
@@ -1248,7 +1306,8 @@
           "text": "Both plans scale the same because both inspect values."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1260,7 +1319,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is judging the outer loop alone; the inner scan still runs many times.",
+        "wrong_2": "Use the core rule instead: The mistake is judging the outer loop alone; the inner scan still runs many times."
+      }
     },
     "id": "alg-exp-complexity-mistake-001",
     "learningStage": "foundations",
@@ -1323,7 +1386,8 @@
     ],
     "title": "Catch outer-loop-only reasoning",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1335,7 +1399,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject repeated pair enumeration before implementation details.",
+        "wrong_2": "Use the core rule instead: Reject repeated pair enumeration before implementation details."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-001",
@@ -1506,7 +1574,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is a linear scan with a small running summary.",
+        "wrong_2": "Use the core rule instead: The signal is a linear scan with a small running summary."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-003",
@@ -1582,7 +1654,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate.",
+        "wrong_2": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-004",
@@ -1658,7 +1734,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning.",
+        "wrong_2": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-005",
@@ -1829,7 +1909,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence.",
+        "wrong_2": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-007",
@@ -1927,7 +2011,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Keep constant scan state when no later lookup is needed.",
+        "wrong_2": "Use the core rule instead: Keep constant scan state when no later lookup is needed."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-008",
@@ -2030,7 +2118,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is membership lookup under a large input limit.",
+        "wrong_2": "Use the core rule instead: The signal is membership lookup under a large input limit."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-009",
@@ -2174,7 +2266,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject repeated pair enumeration before implementation details.",
+        "wrong_2": "Use the core rule instead: Reject repeated pair enumeration before implementation details."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-011",
@@ -2345,7 +2441,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is a linear scan with a small running summary.",
+        "wrong_2": "Use the core rule instead: The signal is a linear scan with a small running summary."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-013",
@@ -2421,7 +2521,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate.",
+        "wrong_2": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-014",
@@ -2497,7 +2601,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning.",
+        "wrong_2": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-015",
@@ -2668,7 +2776,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence.",
+        "wrong_2": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-017",
@@ -2766,7 +2878,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Keep constant scan state when no later lookup is needed.",
+        "wrong_2": "Use the core rule instead: Keep constant scan state when no later lookup is needed."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-018",
@@ -2869,7 +2985,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The signal is membership lookup under a large input limit.",
+        "wrong_2": "Use the core rule instead: The signal is membership lookup under a large input limit."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-complexity-019",

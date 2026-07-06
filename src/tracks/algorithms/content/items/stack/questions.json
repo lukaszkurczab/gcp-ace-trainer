@@ -9,7 +9,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use the most recent unresolved opening state to decide whether the next closing token is valid.",
+        "wrong_2": "Use the core rule instead: Use the most recent unresolved opening state to decide whether the next closing token is valid."
+      }
     },
     "id": "alg-stack-unresolved-state-001",
     "learningStage": "pattern_mechanics",
@@ -72,7 +76,8 @@
     ],
     "title": "Use last unresolved state",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -83,7 +88,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Pop the most recent opening token because it matches the closing token.",
+        "wrong_2": "Use the core rule instead: Pop the most recent opening token because it matches the closing token."
+      }
     },
     "id": "alg-stack-trace-match-001",
     "learningStage": "pattern_mechanics",
@@ -155,7 +164,8 @@
           "Stack top is '[' and the next token is ']'. What is the next step?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -167,7 +177,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: An empty stack before a closing token means there is no unresolved opener to match.",
+        "wrong_2": "Use the core rule instead: An empty stack before a closing token means there is no unresolved opener to match."
+      }
     },
     "id": "alg-stack-empty-close-edge-001",
     "learningStage": "pattern_mechanics",
@@ -230,7 +244,8 @@
     ],
     "title": "Handle empty stack close",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -319,7 +334,8 @@
     ],
     "title": "Order stack validation steps",
     "trackId": "algorithms",
-    "type": "pseudocode_ordering"
+    "type": "pseudocode_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -331,7 +347,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
+        "wrong_2": "Use the core rule instead: A stack is appropriate when the newest unresolved state is the first state that must be resolved."
+      }
     },
     "id": "alg-stack-strategy-signal-001",
     "learningStage": "pattern_mechanics",
@@ -421,7 +441,8 @@
           "text": "The input contains numbers, so stack state cannot apply."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -433,7 +454,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a stack because the newest unmatched opener must be resolved first.",
+        "wrong_2": "Use the core rule instead: Use a stack because the newest unmatched opener must be resolved first."
+      }
     },
     "id": "alg-exp-stack-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -523,7 +548,8 @@
           "text": "Use a set because only tag presence matters."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -535,7 +561,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use stack state when the latest previous state is the one that must be restored.",
+        "wrong_2": "Use the core rule instead: Use stack state when the latest previous state is the one that must be restored."
+      }
     },
     "id": "alg-exp-stack-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -625,7 +655,8 @@
           "text": "Use binary search because operation ids can be ordered."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -637,7 +668,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Push openers and match closers against the top, because nesting is last-in-first-out.",
+        "wrong_2": "Use the core rule instead: Push openers and match closers against the top, because nesting is last-in-first-out."
+      }
     },
     "id": "alg-exp-stack-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -727,7 +762,8 @@
           "text": "Match each closer with the oldest opener."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -739,7 +775,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
+        "wrong_2": "Use the core rule instead: Use explicit stack traversal when recursive depth could exceed safe call-stack limits."
+      }
     },
     "id": "alg-exp-stack-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -829,7 +869,8 @@
           "text": "Use sorting because nested levels can be numbered."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -841,7 +882,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is latest unresolved state.",
+        "wrong_2": "Use the core rule instead: The pattern signal is latest unresolved state."
+      }
     },
     "id": "alg-exp-stack-identify-001",
     "learningStage": "pattern_mechanics",
@@ -904,7 +949,8 @@
     ],
     "title": "Identify latest-unresolved signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -916,7 +962,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A close with no opener is an immediate invalid state.",
+        "wrong_2": "Use the core rule instead: A close with no opener is an immediate invalid state."
+      }
     },
     "id": "alg-exp-stack-identify-002",
     "learningStage": "pattern_mechanics",
@@ -979,7 +1029,8 @@
     ],
     "title": "Identify empty-stack close",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1044,7 +1095,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each token is processed once, and the stack can hold all openers in the worst case.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1111,7 +1163,8 @@
     "type": "complexity_check",
     "complexityExplanation": "Each operation is pushed and popped at most once, while the stack may contain all pending operations.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1123,7 +1176,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A stack stores unresolved nested state; a counter loses which type must close next.",
+        "wrong_2": "Use the core rule instead: A stack stores unresolved nested state; a counter loses which type must close next."
+      }
     },
     "id": "alg-exp-stack-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1208,7 +1265,8 @@
           "text": "Token type does not matter in nested validation."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1220,7 +1278,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is treating total balance as enough when order and type also matter.",
+        "wrong_2": "Use the core rule instead: The mistake is treating total balance as enough when order and type also matter."
+      }
     },
     "id": "alg-exp-stack-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1283,7 +1345,8 @@
     ],
     "title": "Review balance-only validation",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1295,7 +1358,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use the latest unresolved opener as the next required match.",
+        "wrong_2": "Use the core rule instead: Use the latest unresolved opener as the next required match."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-001",
@@ -1466,7 +1533,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is empty-stack close detection.",
+        "wrong_2": "Use the core rule instead: The pattern signal is empty-stack close detection."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-003",
@@ -1542,7 +1613,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review relying on recursion after the prompt warns about depth.",
+        "wrong_2": "Use the core rule instead: Review relying on recursion after the prompt warns about depth."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-004",
@@ -1618,7 +1693,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Push context when entering a nested segment and pop it when closing.",
+        "wrong_2": "Use the core rule instead: Push context when entering a nested segment and pop it when closing."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-005",
@@ -1789,7 +1868,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Stack state is stronger than queue state when newest work resolves first.",
+        "wrong_2": "Use the core rule instead: Stack state is stronger than queue state when newest work resolves first."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-007",
@@ -1887,7 +1970,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Reject immediately because there is no unresolved opener to match.",
+        "wrong_2": "Use the core rule instead: Reject immediately because there is no unresolved opener to match."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-008",
@@ -1990,7 +2077,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is replacing call-stack state explicitly.",
+        "wrong_2": "Use the core rule instead: The pattern signal is replacing call-stack state explicitly."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-009",
@@ -2134,7 +2225,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use the latest unresolved opener as the next required match.",
+        "wrong_2": "Use the core rule instead: Use the latest unresolved opener as the next required match."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-011",
@@ -2305,7 +2400,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is empty-stack close detection.",
+        "wrong_2": "Use the core rule instead: The pattern signal is empty-stack close detection."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-013",
@@ -2381,7 +2480,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review relying on recursion after the prompt warns about depth.",
+        "wrong_2": "Use the core rule instead: Review relying on recursion after the prompt warns about depth."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-014",
@@ -2457,7 +2560,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Push context when entering a nested segment and pop it when closing.",
+        "wrong_2": "Use the core rule instead: Push context when entering a nested segment and pop it when closing."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-stack-015",

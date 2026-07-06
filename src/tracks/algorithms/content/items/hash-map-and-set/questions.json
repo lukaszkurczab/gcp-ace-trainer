@@ -10,7 +10,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Trace the check-before-store order on a small pair example.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "store_current_first": "Use the core rule instead: Check prior state before storing the current value when one element cannot be reused.",
+        "sort_then_lookup": "Use the core rule instead: Check prior state before storing the current value when one element cannot be reused."
+      }
     },
     "id": "alg-hash-map-primer-001",
     "invariant": {
@@ -144,7 +148,8 @@
     "whenToUseSignals": [
       "The task needs fast membership, count, or complement checks.",
       "A nested pair scan would be too slow for the input limit."
-    ]
+    ],
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -275,7 +280,8 @@
     ],
     "title": "Order complement lookup pseudocode",
     "trackId": "algorithms",
-    "type": "pseudocode_ordering"
+    "type": "pseudocode_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -287,7 +293,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Trace one more value and name the lookup state before the update.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "store_7": "Use the core rule instead: At each value, inspect the lookup before changing it.",
+        "move_right_pointer": "Use the core rule instead: At each value, inspect the lookup before changing it."
+      }
     },
     "id": "alg-hash-map-trace-next-001",
     "learningStage": "pattern_mechanics",
@@ -356,7 +366,8 @@
     ],
     "title": "Trace the next complement lookup step",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -368,7 +379,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: At value 2, the needed value 6 is already in seen state from an earlier position.",
+        "wrong_2": "Use the core rule instead: At value 2, the needed value 6 is already in seen state from an earlier position."
+      }
     },
     "id": "alg-hash-map-worked-badge-pair-001",
     "learningStage": "guided_application",
@@ -545,7 +560,8 @@
         "approachId": "label_only",
         "reason": "A pattern label without the decision signal does not justify the mechanics."
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -557,7 +573,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store the normalized key as the map key and append the original word to that key's group.",
+        "wrong_2": "Use the core rule instead: Store the normalized key as the map key and append the original word to that key's group."
+      }
     },
     "id": "alg-hash-map-group-key-001",
     "learningStage": "pattern_mechanics",
@@ -620,7 +640,8 @@
     ],
     "title": "Choose a grouping key",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -632,7 +653,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Record that 5 has now been seen, because the current value did not complete the condition.",
+        "wrong_2": "Use the core rule instead: Record that 5 has now been seen, because the current value did not complete the condition."
+      }
     },
     "id": "alg-hash-map-trace-store-001",
     "learningStage": "pattern_mechanics",
@@ -705,7 +730,8 @@
           "Target is 12. Seen values are {3, 8}. Current value is 5. The needed value is 7, which is not seen. What happens next?"
         ]
       }
-    ]
+    ],
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -717,7 +743,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Store the value needed for future membership checks, not the whole scanned prefix.",
+        "wrong_2": "Use the core rule instead: Store the value needed for future membership checks, not the whole scanned prefix."
+      }
     },
     "id": "alg-exp-hash-strategy-001",
     "learningStage": "pattern_mechanics",
@@ -807,7 +837,8 @@
           "text": "Track only the previous reading because older values cannot matter."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -819,7 +850,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use the normalized address as the key because grouping depends on equivalent forms.",
+        "wrong_2": "Use the core rule instead: Use the normalized address as the key because grouping depends on equivalent forms."
+      }
     },
     "id": "alg-exp-hash-strategy-002",
     "learningStage": "pattern_mechanics",
@@ -909,7 +944,8 @@
           "text": "Use the first raw character even when formatting differs."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -921,7 +957,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Check the needed complement against prior values before storing the current value.",
+        "wrong_2": "Use the core rule instead: Check the needed complement against prior values before storing the current value."
+      }
     },
     "id": "alg-exp-hash-strategy-003",
     "learningStage": "pattern_mechanics",
@@ -1011,7 +1051,8 @@
           "text": "Clear prior values after every failed complement check."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1023,7 +1064,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Count frequencies when equality depends on multiplicity, not just presence.",
+        "wrong_2": "Use the core rule instead: Count frequencies when equality depends on multiplicity, not just presence."
+      }
     },
     "id": "alg-exp-hash-strategy-004",
     "learningStage": "pattern_mechanics",
@@ -1113,7 +1158,8 @@
           "text": "Use two pointers without ordering or boundary signals."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1124,7 +1170,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is fast lookup by a derived key.",
+        "wrong_2": "Use the core rule instead: The pattern signal is fast lookup by a derived key."
+      }
     },
     "id": "alg-exp-hash-identify-001",
     "learningStage": "pattern_mechanics",
@@ -1186,7 +1236,8 @@
     ],
     "title": "Identify derived-key lookup",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1198,7 +1249,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The key should be the bucket identity; the value can store the records that share it.",
+        "wrong_2": "Use the core rule instead: The key should be the bucket identity; the value can store the records that share it."
+      }
     },
     "id": "alg-exp-hash-identify-002",
     "learningStage": "pattern_mechanics",
@@ -1261,7 +1316,8 @@
     ],
     "title": "Identify grouping key role",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1273,7 +1329,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A set is enough for presence; a map is needed when counts or payloads affect the answer.",
+        "wrong_2": "Use the core rule instead: A set is enough for presence; a map is needed when counts or payloads affect the answer."
+      }
     },
     "id": "alg-exp-hash-identify-003",
     "learningStage": "pattern_mechanics",
@@ -1336,7 +1396,8 @@
     ],
     "title": "Identify set versus map state",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1403,7 +1464,8 @@
     "type": "complexity_check",
     "complexityExplanation": "The scan touches each record once, and the frequency map may store every distinct key.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1415,7 +1477,11 @@
         "complexity_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The grouping key plan wins because it turns repeated comparisons into direct bucket access.",
+        "wrong_2": "Use the core rule instead: The grouping key plan wins because it turns repeated comparisons into direct bucket access."
+      }
     },
     "id": "alg-exp-hash-comparison-001",
     "learningStage": "pattern_mechanics",
@@ -1500,7 +1566,8 @@
           "text": "Both plans require the same comparisons after every record."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1512,7 +1579,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is losing multiplicity; duplicate values can change the answer.",
+        "wrong_2": "Use the core rule instead: The mistake is losing multiplicity; duplicate values can change the answer."
+      }
     },
     "id": "alg-exp-hash-mistake-001",
     "learningStage": "pattern_mechanics",
@@ -1575,7 +1646,8 @@
     ],
     "title": "Review lost duplicate counts",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1587,7 +1659,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-001",
@@ -1758,7 +1834,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-003",
@@ -1856,7 +1936,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
+        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-004",
@@ -1959,7 +2043,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is lookup by derived value.",
+        "wrong_2": "Use the core rule instead: The pattern signal is lookup by derived value."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-005",
@@ -2103,7 +2191,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity.",
+        "wrong_2": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-007",
@@ -2274,7 +2366,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is prior membership state.",
+        "wrong_2": "Use the core rule instead: The pattern signal is prior membership state."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-009",
@@ -2350,7 +2446,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently.",
+        "wrong_2": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-010",
@@ -2426,7 +2526,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-011",
@@ -2597,7 +2701,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-013",
@@ -2695,7 +2803,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
+        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-014",
@@ -2798,7 +2910,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is lookup by derived value.",
+        "wrong_2": "Use the core rule instead: The pattern signal is lookup by derived value."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-015",
@@ -2942,7 +3058,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity.",
+        "wrong_2": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-017",
@@ -3113,7 +3233,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is prior membership state.",
+        "wrong_2": "Use the core rule instead: The pattern signal is prior membership state."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-019",
@@ -3189,7 +3313,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently.",
+        "wrong_2": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-020",
@@ -3265,7 +3393,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-021",
@@ -3436,7 +3568,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-023",
@@ -3534,7 +3670,11 @@
         "duplicate_handling_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
+        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+      }
     },
     "difficulty": "easy",
     "id": "alg-prod-hash-024",

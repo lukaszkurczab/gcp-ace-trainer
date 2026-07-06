@@ -1013,6 +1013,22 @@ test("Algorithms roadmap validation rejects duplicate ids and forward prerequisi
 test("Algorithms item validators retain specific content-type contracts", () => {
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), primarySkillAtomId: ["derive_time_complexity", "choose_lookup_key"] }).includes("multiple_primary_skills"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), feedbackModel: undefined }).includes("missing_feedback_model"));
+  assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), difficulty: undefined }).includes("missing_difficulty"));
+  assert.ok(issueCodes({
+    ...makeBaseAlgorithmItem(),
+    feedbackModel: {
+      ...makeBaseAlgorithmItem().feedbackModel,
+      distractorExplanations: {},
+    },
+    staticMicroChecks: [makeStaticMicroCheck()],
+  }).includes("missing_feedback_distractor_explanation"));
+  assert.ok(issueCodes({
+    ...makeBaseAlgorithmItem(),
+    feedbackModel: {
+      ...makeBaseAlgorithmItem().feedbackModel,
+      mentalModelCorrection: "Correct because this is correct",
+    },
+  }).includes("generic_feedback_text"));
 
   assert.deepEqual(
     issueCodes(makeBaseAlgorithmItem({ type: "complexity_check" })).filter((code) => code.includes("complexity")),
@@ -1093,11 +1109,15 @@ function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): 
     contentVersion: ALGORITHM_CONTENT_VERSION,
     feedbackModel: {
       decisionSignal: "Large input means the approach must avoid nested pair enumeration.",
+      distractorExplanations: {
+        store_before_check: "Use the core rule instead: Check before storing when one input element cannot be reused.",
+      },
       mentalModelCorrection: "Use the constraint to reject direct enumeration before choosing a data structure.",
       mistakeTypes: ["complexity_mismatch"],
       nextAction: "Practice one complement-lookup item.",
       result: "diagnostic",
     },
+    difficulty: "intro",
     id: "algorithm-item-fixture-001",
     learningStage: "foundations",
     primarySkillAtomId: "derive_time_complexity",

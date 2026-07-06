@@ -241,6 +241,8 @@ export type AlgorithmFeedbackResult = "correct" | "partial" | "incorrect" | "dia
 
 export type AlgorithmFeedbackModel = {
   decisionSignal: string;
+  details?: string;
+  distractorExplanations?: Readonly<Record<string, string>>;
   mentalModelCorrection: string;
   mistakeTypes: readonly AlgorithmMistakeType[];
   nextAction: string;

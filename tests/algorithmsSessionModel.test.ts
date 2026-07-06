@@ -101,6 +101,7 @@ test("Algorithms immediate incorrect answer summary includes selected and expect
 
   assert.equal(feedback.answerSummary.includes("Your answer:"), true);
   assert.equal(feedback.answerSummary.includes("Expected:"), true);
+  assert.equal(feedback.reasoning.answerSummary, feedback.answerSummary);
 });
 
 test("Algorithms immediate details include trap and mistake type without exposing pattern labels", () => {
@@ -125,6 +126,8 @@ test("Algorithms immediate details include trap and mistake type without exposin
   assert.notEqual(feedback.rule, "");
   assert.notEqual(feedback.reasoning.commonTrap, "");
   assert.notEqual(feedback.reasoning.mistakeType, "");
+  assert.ok(feedback.reasoning.weakerAnswerNotes.length > 0);
+  assert.equal(feedback.nextAction, item.feedbackModel.nextAction);
 });
 
 test("Algorithms immediate details deduplicate common trap and mistake type", () => {
@@ -182,6 +185,25 @@ test("Algorithms atSessionEnd summary includes per-item feedback data", () => {
   assert.notEqual(reviewItem.whyThisPattern, "");
   assert.notEqual(reviewItem.commonTrap, "");
   assert.equal(reviewItem.nextReviewTarget, item.feedbackModel.nextAction);
+});
+
+test("Algorithms session summary identifies the top weak pattern and next action", () => {
+  const { check, item, session } = makeSubmissionFixture("trace_next_step");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T10:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: ["not-the-correct-step"],
+    session,
+  });
+
+  const summary = buildAlgorithmsSessionSummary([submission.attempt], [item], "Hash maps");
+
+  assert.equal(summary.mainIssue?.pattern, summary.reviewItems[0]?.recognizedPattern);
+  assert.equal(summary.mainIssue?.recommendedNextAction, item.feedbackModel.nextAction);
+  assert.ok(summary.mainIssue?.explanation.includes(summary.mainIssue.pattern));
+  assert.deepEqual(summary.mainIssue?.itemIds, [item.id]);
 });
 
 test("Algorithms review queue receives incorrect attempts in both feedback modes", () => {

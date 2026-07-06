@@ -9,7 +9,11 @@
         "invariant_broken"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Prefix sums handle range totals when window movement no longer gives a safe invariant.",
+        "wrong_2": "Use the core rule instead: Prefix sums handle range totals when window movement no longer gives a safe invariant."
+      }
     },
     "id": "alg-contrast-window-prefix-001",
     "learningStage": "contrast_practice",
@@ -104,7 +108,8 @@
           "text": "Prefix state cannot represent ranges that start later than index 0."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,7 +121,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid.",
+        "wrong_2": "Use the core rule instead: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid."
+      }
     },
     "id": "alg-contrast-prefix-window-001",
     "learningStage": "contrast_practice",
@@ -204,7 +213,8 @@
           "text": "Positive values make boundary movement unpredictable."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -216,7 +226,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: When values may lower the range total, prefix state avoids assuming shrink direction is predictable.",
+        "wrong_2": "Use the core rule instead: When values may lower the range total, prefix state avoids assuming shrink direction is predictable."
+      }
     },
     "id": "alg-contrast-window-prefix-negative-001",
     "learningStage": "contrast_practice",
@@ -282,6 +296,7 @@
     ],
     "title": "Contrast negative range values",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   }
 ]

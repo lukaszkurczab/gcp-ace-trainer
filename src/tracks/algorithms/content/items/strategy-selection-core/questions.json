@@ -9,7 +9,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose the approach by matching problem signals to required state, then justify the tradeoff.",
+        "wrong_2": "Use the core rule instead: Choose the approach by matching problem signals to required state, then justify the tradeoff."
+      }
     },
     "id": "alg-strategy-core-001",
     "learningStage": "strategy_selection",
@@ -99,7 +103,8 @@
           "text": "Choose the approach with the shortest pseudocode label."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -111,7 +116,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Fast membership points to lookup state; ordered elimination points to binary search.",
+        "wrong_2": "Use the core rule instead: Fast membership points to lookup state; ordered elimination points to binary search."
+      }
     },
     "id": "alg-strategy-membership-vs-ordered-001",
     "learningStage": "strategy_selection",
@@ -199,7 +208,8 @@
           "text": "Both tasks should sort first because sorting is a familiar setup."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -211,7 +221,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate.",
+        "wrong_2": "Use the core rule instead: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate."
+      }
     },
     "id": "alg-strategy-window-vs-pair-001",
     "learningStage": "strategy_selection",
@@ -306,7 +320,8 @@
           "text": "Contiguity does not affect strategy choice."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -318,7 +333,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: If sorting changes required output semantics, prefer state that preserves the needed relationship.",
+        "wrong_2": "Use the core rule instead: If sorting changes required output semantics, prefer state that preserves the needed relationship."
+      }
     },
     "id": "alg-strategy-sort-side-effect-001",
     "learningStage": "strategy_selection",
@@ -384,7 +403,8 @@
     ],
     "title": "Check strategy side effects",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -471,7 +491,8 @@
     ],
     "title": "Order strategy selection reasoning",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -483,7 +504,10 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "label": "Use the core rule instead: Membership lookup, contiguous-window state, and monotonic boundaries are decision signals; labels alone are not enough."
+      }
     },
     "id": "alg-strategy-name-signals-001",
     "learningStage": "strategy_selection",
@@ -558,7 +582,8 @@
     ],
     "title": "Name core strategy signals",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -570,7 +595,11 @@
         "data_structure_mismatch"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose lookup when the prompt asks for prior membership or complements.",
+        "wrong_2": "Use the core rule instead: Choose lookup when the prompt asks for prior membership or complements."
+      }
     },
     "id": "alg-exp-strategy-core-001",
     "learningStage": "strategy_selection",
@@ -660,7 +689,8 @@
           "text": "Choose stack state because earlier values exist."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -672,7 +702,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose sliding window when a contiguous range keeps a maintainable validity condition.",
+        "wrong_2": "Use the core rule instead: Choose sliding window when a contiguous range keeps a maintainable validity condition."
+      }
     },
     "id": "alg-exp-strategy-core-002",
     "learningStage": "strategy_selection",
@@ -762,7 +796,8 @@
           "text": "Choose sorting because counts are easier after ordering."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -774,7 +809,11 @@
         "negative_numbers_assumption_error"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules.",
+        "wrong_2": "Use the core rule instead: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules."
+      }
     },
     "id": "alg-exp-strategy-core-003",
     "learningStage": "strategy_selection",
@@ -864,7 +903,8 @@
           "text": "Choose stack state because ranges may nest."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -876,7 +916,11 @@
         "off_by_one"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose binary search only when a comparison or predicate discards an ordered side.",
+        "wrong_2": "Use the core rule instead: Choose binary search only when a comparison or predicate discards an ordered side."
+      }
     },
     "id": "alg-exp-strategy-core-004",
     "learningStage": "strategy_selection",
@@ -966,7 +1010,8 @@
           "text": "Choose stack state because checks are repeated."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -978,7 +1023,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item.",
+        "wrong_2": "Use the core rule instead: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item."
+      }
     },
     "id": "alg-exp-strategy-identify-001",
     "learningStage": "strategy_selection",
@@ -1041,7 +1090,8 @@
     ],
     "title": "Identify core decision signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1053,7 +1103,11 @@
         "wrong_approach"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Output requirements can reject a strategy even when its mechanics seem attractive.",
+        "wrong_2": "Use the core rule instead: Output requirements can reject a strategy even when its mechanics seem attractive."
+      }
     },
     "id": "alg-exp-strategy-identify-002",
     "learningStage": "strategy_selection",
@@ -1116,7 +1170,8 @@
     ],
     "title": "Identify strategy side effect",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1183,7 +1238,8 @@
     "type": "complexity_check",
     "complexityExplanation": "One scan plus lookup state is linear time and can store up to n values.",
     "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)"
+    "expectedTimeComplexity": "O(n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1250,7 +1306,8 @@
     "type": "complexity_check",
     "complexityExplanation": "An ordered boundary search stores only bounds and halves candidates.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(log n)"
+    "expectedTimeComplexity": "O(log n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1262,7 +1319,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Compare the decision signal, not just the surface shape; two indexes can mean different strategies.",
+        "wrong_2": "Use the core rule instead: Compare the decision signal, not just the surface shape; two indexes can mean different strategies."
+      }
     },
     "id": "alg-exp-strategy-comparison-001",
     "learningStage": "strategy_selection",
@@ -1350,7 +1411,8 @@
           "text": "The one with fewer assignments is always better."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1362,7 +1424,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The mistake is choosing by label familiarity instead of matching the prompt signal.",
+        "wrong_2": "Use the core rule instead: The mistake is choosing by label familiarity instead of matching the prompt signal."
+      }
     },
     "id": "alg-exp-strategy-mistake-001",
     "learningStage": "strategy_selection",
@@ -1425,7 +1491,8 @@
     ],
     "title": "Review label-first selection",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1509,7 +1576,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Window reasoning beats pair pointers when the candidate is a range.",
+        "wrong_2": "Use the core rule instead: Window reasoning beats pair pointers when the candidate is a range."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-strategy-002",
@@ -1611,7 +1682,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose prefix lookup rather than a positive-only window.",
+        "wrong_2": "Use the core rule instead: Choose prefix lookup rather than a positive-only window."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-strategy-003",
@@ -1721,7 +1796,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is ordered elimination.",
+        "wrong_2": "Use the core rule instead: The pattern signal is ordered elimination."
+      }
     },
     "difficulty": "medium",
     "id": "alg-prod-strategy-004",
@@ -1873,7 +1952,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose lookup state before considering sorting or boundaries.",
+        "wrong_2": "Use the core rule instead: Choose lookup state before considering sorting or boundaries."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-006",
@@ -1983,7 +2066,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is contiguous range state.",
+        "wrong_2": "Use the core rule instead: The pattern signal is contiguous range state."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-007",
@@ -2063,7 +2150,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Review ignoring signs in the input constraints.",
+        "wrong_2": "Use the core rule instead: Review ignoring signs in the input constraints."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-008",
@@ -2143,7 +2234,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved.",
+        "wrong_2": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-009",
@@ -2253,7 +2348,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Stack state beats counters when type and order both matter.",
+        "wrong_2": "Use the core rule instead: Stack state beats counters when type and order both matter."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-010",
@@ -2355,7 +2454,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose lookup state before considering sorting or boundaries.",
+        "wrong_2": "Use the core rule instead: Choose lookup state before considering sorting or boundaries."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-011",
@@ -2465,7 +2568,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is contiguous range state.",
+        "wrong_2": "Use the core rule instead: The pattern signal is contiguous range state."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-012",
@@ -2545,7 +2652,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose prefix lookup rather than a positive-only window.",
+        "wrong_2": "Use the core rule instead: Choose prefix lookup rather than a positive-only window."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-013",
@@ -2655,7 +2766,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is ordered elimination.",
+        "wrong_2": "Use the core rule instead: The pattern signal is ordered elimination."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-014",
@@ -2735,7 +2850,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose stack state because latest unresolved context controls correctness.",
+        "wrong_2": "Use the core rule instead: Choose stack state because latest unresolved context controls correctness."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-015",
@@ -2845,7 +2964,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Lookup beats binary search when no ordered boundary is available.",
+        "wrong_2": "Use the core rule instead: Lookup beats binary search when no ordered boundary is available."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-016",
@@ -2947,7 +3070,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose window state and define the invariant before coding.",
+        "wrong_2": "Use the core rule instead: Choose window state and define the invariant before coding."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-017",
@@ -3057,7 +3184,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: The pattern signal is accumulated range state under mixed signs.",
+        "wrong_2": "Use the core rule instead: The pattern signal is accumulated range state under mixed signs."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-018",
@@ -3137,7 +3268,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved.",
+        "wrong_2": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved."
+      }
     },
     "difficulty": "hard",
     "id": "alg-prod-strategy-019",

@@ -9,7 +9,11 @@
         "constraint_ignored"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked.",
+        "wrong_2": "Use the core rule instead: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked."
+      }
     },
     "id": "alg-sorting-tradeoff-001",
     "learningStage": "pattern_mechanics",
@@ -99,7 +103,8 @@
           "text": "Sorting has no cost compared with scanning."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -164,7 +169,8 @@
     "type": "complexity_check",
     "complexityExplanation": "The ordering step dominates the following linear scan when sorting in place is acceptable.",
     "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n log n)"
+    "expectedTimeComplexity": "O(n log n)",
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -176,7 +182,11 @@
         "cannot_explain_why"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Sort by the field that makes equal or overlapping records adjacent.",
+        "wrong_2": "Use the core rule instead: Sort by the field that makes equal or overlapping records adjacent."
+      }
     },
     "id": "alg-sorting-key-choice-001",
     "learningStage": "pattern_mechanics",
@@ -239,7 +249,8 @@
     ],
     "title": "Choose the sorting key",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "difficulty": "intro"
   },
   {
     "contentVersion": "algorithms-core",
@@ -251,7 +262,11 @@
         "edge_case_missed"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: If original indexes are required, keep them with the values before sorting.",
+        "wrong_2": "Use the core rule instead: If original indexes are required, keep them with the values before sorting."
+      }
     },
     "id": "alg-sorting-original-index-edge-001",
     "learningStage": "pattern_mechanics",
@@ -314,7 +329,8 @@
     ],
     "title": "Preserve original positions",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "difficulty": "easy"
   },
   {
     "contentVersion": "algorithms-core",
@@ -398,6 +414,7 @@
     ],
     "title": "Order sort-then-scan subgoals",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "difficulty": "medium"
   }
 ]

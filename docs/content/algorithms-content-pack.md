@@ -34,8 +34,10 @@ Content is grouped by `roadmapNodeId` so authoring, validation, and selectable p
 6. Use a globally unique `id`.
 7. Add taxonomy refs for the primary pattern family and primary skill atom.
 8. Add at least one active static micro-check for active items.
-9. Add the new item id to `manifest.json` `itemOrder` in the exact public order you want to preserve.
-10. Increase the matching group `itemCount` and top-level `itemCount`.
+9. Add `difficulty` using the Algorithms difficulty scale: `intro`, `easy`, `medium`, or `hard`.
+10. Add per-distractor feedback in `feedbackModel.distractorExplanations` for every incorrect option id in active option-based micro-checks.
+11. Add the new item id to `manifest.json` `itemOrder` in the exact public order you want to preserve.
+12. Increase the matching group `itemCount` and top-level `itemCount`.
 
 Run:
 
@@ -77,9 +79,23 @@ Every training item must include the base Algorithms content contract:
 - `primarySkillAtomId`
 - `taxonomyRefs`
 - `feedbackModel`
+- `difficulty`
 - `staticMicroChecks` for active items
 
 Item-type-specific fields are validated in `src/tracks/algorithms/algorithmContentQuality.ts`.
+
+## Feedback Model
+
+Algorithms feedback uses the existing `feedbackModel` as the canonical authoring contract. It maps to the layered feedback UI as follows:
+
+- `mentalModelCorrection` is the collapsed core reason.
+- `decisionSignal` is the recognition signal the learner should notice next time.
+- `nextAction` is the collapsed recommended review action.
+- `mistakeTypes` are stored on incorrect or partial attempts as `mistakeTypeRefs`.
+- `distractorExplanations` explains why each incorrect option is weaker.
+- Optional `details` can hold longer notes, but long explanation text should stay behind the feedback disclosure in the UI.
+
+Do not add generic feedback such as "Correct because this is correct" or copy-only answer reveals. Feedback should name the pattern signal, constraint, complexity tradeoff, invariant, edge case, or mistake type that mattered.
 
 ## Forbidden Terms
 
@@ -116,8 +132,11 @@ The content loader and tests validate:
 - group item counts
 - item `trackId`
 - item `roadmapNodeId`
+- item `difficulty`
 - globally unique item ids
 - active item roadmap availability
+- active option-based item distractor explanations
+- generic or empty feedback text
 - per-item Algorithms content quality
 - total item count
 - complete, unique `itemOrder`

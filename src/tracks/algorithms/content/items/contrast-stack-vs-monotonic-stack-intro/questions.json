@@ -9,7 +9,11 @@
         "cannot_trace_algorithm"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+        "wrong_2": "Use the core rule instead: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries."
+      }
     },
     "id": "alg-contrast-stack-monotonic-001",
     "learningStage": "contrast_practice",
@@ -104,7 +108,8 @@
           "text": "A basic stack and monotonic stack always store identical state."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,7 +121,11 @@
         "invariant_missing"
       ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic"
+      "result": "diagnostic",
+      "distractorExplanations": {
+        "wrong_1": "Use the core rule instead: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements.",
+        "wrong_2": "Use the core rule instead: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements."
+      }
     },
     "id": "alg-contrast-monotonic-basic-stack-001",
     "learningStage": "contrast_practice",
@@ -204,6 +213,7 @@
           "text": "Next greater value does not need an ordering invariant."
         }
       ]
-    }
+    },
+    "difficulty": "medium"
   }
 ]
