@@ -90,10 +90,12 @@ tags:
 - tapOn: "Check Answer"
 - waitForAnimationToEnd:
     timeout: 12000
-- assertVisible: "Next Question"
+- assertVisible:
+    text: "Correct answer|Needs review"
 - takeScreenshot: "050-feedback-result-completed-dark-ios-regular"
 - runFlow:
     file: ../helpers/capture-scroll-bottom.yaml
+- assertVisible: "Next Question"
 - takeScreenshot: "051-feedback-result-scroll-bottom-dark-ios-regular"
 
 - tapOn: "Next Question"
@@ -111,6 +113,8 @@ tags:
       - tapOn: "Check Answer"
       - waitForAnimationToEnd:
           timeout: 12000
+      - runFlow:
+          file: ../helpers/capture-scroll-bottom.yaml
       - tapOn: "Next Question"
       - waitForAnimationToEnd:
           timeout: 12000
@@ -124,6 +128,8 @@ tags:
 - tapOn: "Check Answer"
 - waitForAnimationToEnd:
     timeout: 12000
+- runFlow:
+    file: ../helpers/capture-scroll-bottom.yaml
 - tapOn: "Finish Practice"
 - waitForAnimationToEnd:
     timeout: 12000

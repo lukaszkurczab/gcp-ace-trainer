@@ -174,7 +174,11 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
     reviewActionEnabled: progress.dueReviewCount > 0,
     reviewActionLabel: progress.dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount: progress.dueReviewCount,
-    reviewQueueCopy: formatCanonicalReviewQueueCopy(progress.dueReviewCount, progress.highPriorityReviewCount),
+    reviewQueueCopy: formatCanonicalReviewQueueCopy(
+      progress.dueReviewCount,
+      progress.highPriorityReviewCount,
+      progress.scheduledReviewCount,
+    ),
     warning: progress.degraded ? "Some local progress data may be incomplete." : undefined,
   };
 }
@@ -476,8 +480,16 @@ function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): Progres
   };
 }
 
-function formatCanonicalReviewQueueCopy(dueCount: number, highPriorityCount: number): string {
+function formatCanonicalReviewQueueCopy(
+  dueCount: number,
+  highPriorityCount: number,
+  scheduledCount: number,
+): string {
   if (dueCount === 0) {
+    if (scheduledCount > 0) {
+      return `${scheduledCount} scheduled ${scheduledCount === 1 ? "item is" : "items are"} not due yet.`;
+    }
+
     return "No due review items right now.";
   }
 

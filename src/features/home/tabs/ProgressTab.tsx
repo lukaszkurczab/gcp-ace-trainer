@@ -68,7 +68,7 @@ export function ProgressTab({
       <Card variant="tonal" style={styles.reviewCard}>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewCopy}>
-            <Text style={styles.reviewTitle}>Review queue</Text>
+            <Text style={styles.reviewTitle}>Due review</Text>
             <Text style={styles.mutedText}>
               {progress.reviewQueueCopy}
             </Text>

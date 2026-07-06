@@ -211,26 +211,50 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     : currentIndex >= questions.length - 1
       ? "Finish Session"
       : "Next Question";
+  const canShowImmediateFeedback = immediateFeedback && isSubmitted;
+  const answerOptions = (
+    <View style={styles.options}>
+      {currentQuestion.options.map((option) => {
+        const isSelected = selectedOptionIds.includes(option.id);
+        const isCorrectOption = currentQuestion.correctOptionIds.includes(option.id);
+
+        return (
+          <Pressable
+            accessibilityRole={currentQuestion.type === "single" ? "radio" : "checkbox"}
+            key={option.id}
+            onPress={() => selectOption(option.id)}
+            style={({ pressed }) => [
+              styles.optionCard,
+              isSelected ? styles.optionSelected : null,
+              immediateFeedback && isSubmitted && isCorrectOption ? styles.optionCorrect : null,
+              immediateFeedback && isSubmitted && isSelected && !isCorrectOption ? styles.optionIncorrect : null,
+              pressed && !isSubmitted ? styles.optionPressed : null
+            ]}
+          >
+            <OptionMarker
+              correct={immediateFeedback && isSubmitted && isCorrectOption}
+              incorrect={immediateFeedback && isSubmitted && isSelected && !isCorrectOption}
+              selected={isSelected}
+              type={currentQuestion.type}
+            />
+            <Text style={styles.optionText}>{option.text}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
 
   return (
     <Screen
       edges={["top", "bottom"]}
-      footer={
+      footer={!canShowImmediateFeedback ? (
         <View style={styles.actions}>
-          {isSubmitted ? (
-            <>
-              <Button variant={needsReview ? "primary" : "ghost"} onPress={() => void toggleNeedsReview()}>
-                {needsReview ? "Marked Needs Review" : "Mark Needs Review"}
-              </Button>
-              <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
-            </>
-          ) : (
-            <Button disabled={!canSubmit} onPress={() => void submitAnswer()}>
-              {primaryActionLabel}
-            </Button>
-          )}
+          <Button disabled={!canSubmit} onPress={() => void submitAnswer()}>
+            {primaryActionLabel}
+          </Button>
         </View>
-      }
+      ) : undefined}
+      key={`${currentIndex}-${canShowImmediateFeedback ? "feedback" : "answer"}`}
     >
       <View style={styles.sessionTopBar}>
         <Pressable
@@ -249,50 +273,33 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         <ProgressBar progress={progress} tone={isSubmitted ? (isCorrect ? "success" : "warning") : "primary"} />
       </View>
 
-      <Card style={styles.questionCard}>
+      <Card style={canShowImmediateFeedback ? styles.questionCardSubmitted : styles.questionCard}>
         <View style={styles.questionAccent} />
         <Text style={styles.questionEyebrow}>
           {isReviewPass ? "Review behavior" : formatSessionMode(route.params.mode)}
         </Text>
-        <Text style={styles.questionText}>{currentQuestion.question}</Text>
+        <Text style={[styles.questionText, canShowImmediateFeedback ? styles.questionTextSubmitted : null]}>
+          {currentQuestion.question}
+        </Text>
         <View style={styles.metaRow}>
           <Badge label={currentQuestion.type === "single" ? "Single choice" : "Multiple select"} tone="neutral" />
           <Badge label={chooseLabel} tone="info" />
         </View>
       </Card>
 
-      <View style={styles.options}>
-        {currentQuestion.options.map((option) => {
-          const isSelected = selectedOptionIds.includes(option.id);
-          const isCorrectOption = currentQuestion.correctOptionIds.includes(option.id);
+      {!canShowImmediateFeedback ? answerOptions : null}
 
-          return (
-            <Pressable
-              accessibilityRole={currentQuestion.type === "single" ? "radio" : "checkbox"}
-              key={option.id}
-              onPress={() => selectOption(option.id)}
-              style={({ pressed }) => [
-                styles.optionCard,
-                isSelected ? styles.optionSelected : null,
-                immediateFeedback && isSubmitted && isCorrectOption ? styles.optionCorrect : null,
-                immediateFeedback && isSubmitted && isSelected && !isCorrectOption ? styles.optionIncorrect : null,
-                pressed && !isSubmitted ? styles.optionPressed : null
-              ]}
-            >
-              <OptionMarker
-                correct={immediateFeedback && isSubmitted && isCorrectOption}
-                incorrect={immediateFeedback && isSubmitted && isSelected && !isCorrectOption}
-                selected={isSelected}
-                type={currentQuestion.type}
-              />
-              <Text style={styles.optionText}>{option.text}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {immediateFeedback && isSubmitted ? (
-        <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
+      {canShowImmediateFeedback ? (
+        <>
+          <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
+          <View style={styles.inlineActions}>
+            <Button variant={needsReview ? "primary" : "ghost"} onPress={() => void toggleNeedsReview()}>
+              {needsReview ? "Marked Needs Review" : "Mark Needs Review"}
+            </Button>
+            <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
+          </View>
+          {answerOptions}
+        </>
       ) : null}
 
     </Screen>
@@ -338,7 +345,7 @@ function SessionSummary({ answers, feedbackMode, onBackToPractice }: SessionSumm
         <View style={styles.summaryGrid}>
           <SummaryMetric label="Answered" value={answers.length} />
           <SummaryMetric label="Correct" value={correctCount} />
-          <SummaryMetric label="Review" value={incorrectCount} />
+          <SummaryMetric label="Missed" value={incorrectCount} />
         </View>
       </Card>
 
@@ -347,7 +354,7 @@ function SessionSummary({ answers, feedbackMode, onBackToPractice }: SessionSumm
           <SectionHeader
             title={`Question ${index + 1}`}
             subtitle={answer.question.question}
-            action={<Badge label={answer.isCorrect ? "Correct" : "Review"} tone={answer.isCorrect ? "success" : "warning"} />}
+            action={<Badge label={answer.isCorrect ? "Correct" : "Missed"} tone={answer.isCorrect ? "success" : "warning"} />}
             tight
           />
           <DiagnosticSection label="Selected answer" value={getOptionText(answer.question, answer.selectedOptionIds)} />
@@ -384,9 +391,14 @@ function FeedbackCard({ question, selectedOptionIds, isCorrect }: FeedbackCardPr
         title={isCorrect ? "Correct answer" : "Needs review"}
         action={<Badge label={isCorrect ? "Correct" : "Review"} tone={isCorrect ? "success" : "warning"} />}
       />
+      <DiagnosticSection label="Core reason" value={question.explanation} />
+
+      {question.examSignals && question.examSignals.length > 0 ? (
+        <DiagnosticSection label="Recognition signals" value={question.examSignals.join(", ")} />
+      ) : null}
+
       <DiagnosticSection label="Selected answer" value={getOptionText(question, selectedOptionIds) || "No answer selected."} />
-      <DiagnosticSection label="Correct answer" value={getOptionText(question, question.correctOptionIds)} />
-      <DiagnosticSection label="Explanation" value={question.explanation} />
+      <DiagnosticSection label="Expected answer" value={getOptionText(question, question.correctOptionIds)} />
 
       {whyWrongEntries.length > 0 ? (
         <DiagnosticSection label="Why other options are wrong">
@@ -406,10 +418,6 @@ function FeedbackCard({ question, selectedOptionIds, isCorrect }: FeedbackCardPr
             </Text>
           ))}
         </DiagnosticSection>
-      ) : null}
-
-      {question.examSignals && question.examSignals.length > 0 ? (
-        <DiagnosticSection label="Exam signals" value={question.examSignals.join(", ")} />
       ) : null}
 
       {question.tags.length > 0 ? (
@@ -512,7 +520,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   questionCard: {
-    gap: spacing.lg,
+    gap: spacing.md,
+    overflow: "hidden",
+    paddingLeft: spacing.xxl,
+  },
+  questionCardSubmitted: {
+    gap: spacing.sm,
     overflow: "hidden",
     paddingLeft: spacing.xxl,
   },
@@ -538,8 +551,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   questionText: {
-    ...typography.title,
-    color: colors.dark.textPrimary
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+  },
+  questionTextSubmitted: {
+    ...typography.bodyStrong,
   },
   options: {
     gap: spacing.md
@@ -552,8 +568,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 72,
-    padding: spacing.lg
+    minHeight: 64,
+    padding: spacing.md
   },
   optionSelected: {
     backgroundColor: colors.dark.primarySoft,
@@ -608,6 +624,9 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.md
+  },
+  inlineActions: {
+    gap: spacing.md,
   },
   feedbackText: {
     ...typography.small,

@@ -55,6 +55,7 @@ export type CloudCertificationProgressViewModel = {
   practiceAttemptCount: number;
   recentAccuracy: CloudCertificationRecentAccuracySummary;
   repeatedMistakeTypes: CloudCertificationMistakeTypeCount[];
+  scheduledReviewCount: number;
   taxonomyPerformance: CloudCertificationTaxonomyPerformance[];
   totalAttempts: number;
   weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[];
@@ -119,6 +120,7 @@ export function buildCloudCertificationProgressViewModel(
     practiceAttemptCount: attempts.filter((attempt) => attempt.modeId === "cloud-practice").length,
     recentAccuracy: buildRecentAccuracy(attempts, recentAttemptCount),
     repeatedMistakeTypes: buildRepeatedMistakeTypes(attempts),
+    scheduledReviewCount: reviewQueueItems.length,
     taxonomyPerformance,
     totalAttempts: attempts.length,
     weakTaxonomyNodes: taxonomyPerformance

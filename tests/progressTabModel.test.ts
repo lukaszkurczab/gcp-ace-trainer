@@ -57,6 +57,23 @@ test("canonical due review count comes from the Cloud progress view model", () =
   assert.equal(model.reviewQueueCopy, "4 due items, 2 high priority.");
 });
 
+test("Cloud Progress distinguishes scheduled review from due review", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "cloud-certification",
+    analytics: makeAnalytics(),
+    attempts: [],
+    cloudProgress: makeCloudProgress({
+      dueReviewCount: 0,
+      scheduledReviewCount: 8,
+    }),
+    practiceHistory: [],
+  });
+
+  assert.equal(model.reviewQueueCount, 0);
+  assert.equal(model.reviewQueueCopy, "8 scheduled items are not due yet.");
+  assert.equal(model.reviewActionEnabled, false);
+});
+
 test("Progress review action opens when review queue has due items", () => {
   const model = buildProgressTabModel({
     activeTrackId: "cloud-certification",
@@ -508,6 +525,7 @@ function makeCloudProgress(
       windowAttemptCount: 10,
     },
     repeatedMistakeTypes: [],
+    scheduledReviewCount: 0,
     taxonomyPerformance: [],
     totalAttempts: 0,
     weakTaxonomyNodes: [],

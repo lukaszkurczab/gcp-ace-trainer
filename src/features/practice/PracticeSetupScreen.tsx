@@ -10,7 +10,6 @@ import type { TrainingAttempt } from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveTrackId, getTrainingAttempts } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
-import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import {
   buildTopicRoadmapNodes,
@@ -32,7 +31,6 @@ type PracticeSetupScreenProps = NativeStackScreenProps<
 >;
 
 const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
-const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
   const [activeTrackId, setActiveTrackId] = useState<TrackId>(
@@ -105,7 +103,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
   return (
     <View style={styles.shell}>
-      <Screen edges={["top"]} style={styles.screenContent}>
+      <Screen edges={["top", "bottom"]}>
         <AppStackHeader
           navigation={navigation}
           showBack
@@ -186,7 +184,6 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Button>
         </View>
       </Screen>
-      <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
 }
@@ -275,9 +272,6 @@ const styles = StyleSheet.create({
   shell: {
     backgroundColor: colors.dark.background,
     flex: 1,
-  },
-  screenContent: {
-    paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
   intro: {
     gap: spacing.sm,

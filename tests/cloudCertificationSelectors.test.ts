@@ -205,6 +205,24 @@ test("review selector returns due and high-priority items from canonical review 
   assert.deepEqual(viewModel.highPriorityItems.map((item) => item.id), ["review-overdue-001"]);
 });
 
+test("progress selector counts scheduled review items separately from due items", () => {
+  const viewModel = buildCloudCertificationProgressViewModel({
+    attempts: [],
+    now: "2026-06-29T12:00:00.000Z",
+    reviewQueueItems: [
+      makeReviewQueueItem("review-future-001", {
+        dueAt: "2026-06-30T12:00:00.000Z",
+      }),
+      makeReviewQueueItem("review-future-002", {
+        dueAt: "2026-07-01T12:00:00.000Z",
+      }),
+    ],
+  });
+
+  assert.equal(viewModel.dueReviewCount, 0);
+  assert.equal(viewModel.scheduledReviewCount, 2);
+});
+
 test("review selector joins canonical review item to Cloud content prompt and taxonomy", async () => {
   const question = makeQuestion({
     domain: "operations",
