@@ -267,19 +267,27 @@ export type AlgorithmSubgoal = {
   order: number;
 };
 
-export type AlgorithmComplexityClass =
-  | "O(1)"
-  | "O(log n)"
-  | "O(n)"
-  | "O(n log n)"
-  | "O(n^2)"
-  | "O(2^n)"
-  | "O(n!)"
-  | "other";
+export const ALGORITHM_COMPLEXITY_CLASSES = [
+  "O(1)",
+  "O(log n)",
+  "O(n)",
+  "O(n + m)",
+  "O(k)",
+  "O(n log n)",
+  "O(n log n + m log m)",
+  "O(n^2)",
+  "O(2^n)",
+  "O(n!)",
+] as const;
+
+export type AlgorithmComplexityClass = (typeof ALGORITHM_COMPLEXITY_CLASSES)[number];
+
+export type AlgorithmComplexityVariables = Readonly<Record<string, string>>;
 
 export type AlgorithmSolution = {
   approachId: string;
   complexityExplanation?: string;
+  complexityVariables?: AlgorithmComplexityVariables;
   id: string;
   pseudocode?: readonly string[];
   spaceComplexity?: AlgorithmComplexityClass;
@@ -353,6 +361,7 @@ export type AlgorithmTrainingItem = {
   expectedApproachIds?: readonly string[];
   expectedSpaceComplexity?: AlgorithmComplexityClass;
   expectedTimeComplexity?: AlgorithmComplexityClass;
+  complexityVariables?: AlgorithmComplexityVariables;
   feedbackModel: AlgorithmFeedbackModel;
   id: string;
   invariant?: AlgorithmInvariant;

@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   Badge,
@@ -173,7 +173,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             <Button onPress={() => startSession("default")}>
               Start session
             </Button>
-            <Button
+            <Pressable
+              accessibilityRole="button"
               onPress={() =>
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
@@ -185,10 +186,11 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                   }),
                 )
               }
-              variant="secondary"
+              style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
             >
-              Manage settings
-            </Button>
+              <Text style={styles.settingsActionText}>Manage settings</Text>
+              <Icon color={colors.dark.accentPurple} name="chevron-right" size={16} />
+            </Pressable>
           </View>
         </Card>
 
@@ -305,6 +307,23 @@ const styles = StyleSheet.create({
   },
   heroActions: {
     gap: spacing.md,
+  },
+  settingsAction: {
+    alignItems: "center",
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    gap: spacing.xs,
+    minHeight: 36,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  settingsActionPressed: {
+    opacity: 0.78,
+  },
+  settingsActionText: {
+    ...typography.small,
+    color: colors.dark.accentPurple,
+    fontWeight: "600",
   },
   section: {
     gap: spacing.md,

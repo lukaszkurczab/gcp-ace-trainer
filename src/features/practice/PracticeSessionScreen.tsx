@@ -350,7 +350,16 @@ function SessionSummary({ answers, feedbackMode, onBackToPractice }: SessionSumm
       </Card>
 
       {answers.map((answer, index) => (
-        <Card key={`${answer.question.id}-${index}`} variant={answer.isCorrect ? "success" : "warning"}>
+        <Card
+          key={`${answer.question.id}-${index}`}
+          style={answer.isCorrect ? styles.summaryAnswerCardCorrect : styles.summaryAnswerCardMissed}
+        >
+          <View
+            style={[
+              styles.summaryAnswerAccent,
+              answer.isCorrect ? styles.summaryAnswerAccentCorrect : styles.summaryAnswerAccentMissed,
+            ]}
+          />
           <SectionHeader
             title={`Question ${index + 1}`}
             subtitle={answer.question.question}
@@ -654,6 +663,31 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     gap: spacing.lg
+  },
+  summaryAnswerCardCorrect: {
+    borderColor: colors.dark.successSoft,
+    overflow: "hidden",
+    paddingLeft: spacing.xxl,
+  },
+  summaryAnswerCardMissed: {
+    borderColor: colors.dark.warningSoft,
+    overflow: "hidden",
+    paddingLeft: spacing.xxl,
+  },
+  summaryAnswerAccent: {
+    borderBottomRightRadius: radius.pill,
+    borderTopRightRadius: radius.pill,
+    bottom: spacing.lg,
+    left: 0,
+    position: "absolute",
+    top: spacing.lg,
+    width: 3,
+  },
+  summaryAnswerAccentCorrect: {
+    backgroundColor: colors.dark.success,
+  },
+  summaryAnswerAccentMissed: {
+    backgroundColor: colors.dark.warning,
   },
   summaryGrid: {
     flexDirection: "row",

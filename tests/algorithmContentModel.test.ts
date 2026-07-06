@@ -15,6 +15,7 @@ import {
 } from "../src/tracks/algorithms/content";
 import {
   ALGORITHM_APPROACH_TEMPLATES,
+  ALGORITHM_COMPLEXITY_CLASSES,
   ALGORITHM_CONTENT_VERSION,
   ALGORITHM_EVIDENCE_LEVELS,
   ALGORITHM_FORBIDDEN_MODEL_TERMS,
@@ -91,6 +92,74 @@ const requiredVariantsByFamily = {
   stack: ["nested_structure_validation", "expression_like_processing", "undo_or_previous_state", "stack_for_dfs_simulation"],
   tree_traversal: ["dfs_preorder_inorder_postorder", "bfs_level_order", "recursive_tree_reasoning", "path_accumulation", "tree_height_depth"],
   two_pointers: ["opposite_ends", "same_direction", "pair_scan_sorted_input", "partitioning", "duplicate_skipping"],
+} as const;
+
+const requiredSkillAtomIds = [
+  "derive_time_complexity",
+  "derive_space_complexity",
+  "compare_complexity_tradeoffs",
+  "track_index_boundary",
+  "recognize_adjacent_scan",
+  "diagnose_off_by_one",
+  "trace_scan_index",
+  "choose_frequency_state",
+  "distinguish_presence_from_count",
+  "diagnose_data_structure_mismatch",
+  "reason_about_frequency_counting_complexity",
+  "fixed_alphabet_complexity",
+  "apply_string_normalization",
+  "normalization_before_comparison",
+  "streaming_normalization_tradeoff",
+  "preserve_relative_order",
+  "use_read_write_boundary",
+  "reason_about_order_constraint",
+  "trace_write_boundary",
+  "distinguish_output_space",
+  "distinguish_output_contract",
+  "diagnose_duplicate_collapse",
+  "initialize_duplicate_collapse",
+  "avoid_unnecessary_state",
+  "choose_lookup_key",
+  "move_decisive_pointer",
+  "maintain_window_invariant",
+  "detect_window_failure_signal",
+  "recognize_sorting_tradeoff",
+  "use_last_unresolved_state",
+  "maintain_monotonic_stack_invariant",
+  "identify_monotonic_predicate",
+] as const;
+
+const expectedArrayStringPrimarySkills = {
+  "alg-array-string-naming-001": "track_index_boundary",
+  "alg-array-string-scan-signals-001": "track_index_boundary",
+  "alg-array-string-trace-index-001": "track_index_boundary",
+  "alg-array-string-edge-neighbor-001": "track_index_boundary",
+  "alg-array-string-frequency-signal-001": "choose_frequency_state",
+  "alg-prod-array-string-001": "track_index_boundary",
+  "alg-prod-array-string-002": "use_read_write_boundary",
+  "alg-prod-array-string-003": "reason_about_frequency_counting_complexity",
+  "alg-prod-array-string-004": "normalization_before_comparison",
+  "alg-prod-array-string-005": "diagnose_duplicate_collapse",
+  "alg-prod-array-string-006": "preserve_relative_order",
+  "alg-prod-array-string-007": "distinguish_output_space",
+  "alg-prod-array-string-008": "distinguish_presence_from_count",
+  "alg-prod-array-string-009": "apply_string_normalization",
+  "alg-prod-array-string-010": "initialize_duplicate_collapse",
+  "alg-prod-array-string-011": "reason_about_order_constraint",
+  "alg-prod-array-string-012": "track_index_boundary",
+  "alg-prod-array-string-013": "track_index_boundary",
+  "alg-prod-array-string-014": "distinguish_presence_from_count",
+  "alg-prod-array-string-015": "streaming_normalization_tradeoff",
+  "alg-prod-array-string-016": "diagnose_data_structure_mismatch",
+  "alg-prod-array-string-017": "track_index_boundary",
+  "alg-prod-array-string-018": "fixed_alphabet_complexity",
+  "alg-prod-array-string-019": "preserve_relative_order",
+  "alg-prod-array-string-020": "trace_write_boundary",
+  "alg-prod-array-string-021": "normalization_before_comparison",
+  "alg-prod-array-string-022": "choose_frequency_state",
+  "alg-prod-array-string-023": "track_index_boundary",
+  "alg-prod-array-string-024": "avoid_unnecessary_state",
+  "alg-prod-array-string-025": "distinguish_output_contract",
 } as const;
 
 const oldAlgorithmIds = [
@@ -209,6 +278,10 @@ test("Algorithms skill atoms model trainable reasoning actions", () => {
       assert.ok(problemArchetypeIds.has(problemArchetypeId));
     }
   }
+
+  for (const skillAtomId of requiredSkillAtomIds) {
+    assert.ok(skillAtomIds.has(skillAtomId), skillAtomId);
+  }
 });
 
 test("Algorithms roadmap separates available, planned, future, and mixed practice", () => {
@@ -291,6 +364,10 @@ test("Algorithms existing content preserves valid item ids on canonical refs", (
   assert.equal(getItem("alg-array-string-naming-001").roadmapNodeId, "arrays_and_strings");
   assert.equal(getItem("alg-hash-map-primer-001").primarySkillAtomId, "choose_lookup_key");
   assert.equal(getItem("alg-two-pointers-subgoal-order-001").primarySkillAtomId, "move_decisive_pointer");
+
+  for (const [itemId, skillAtomId] of Object.entries(expectedArrayStringPrimarySkills)) {
+    assert.equal(getItem(itemId).primarySkillAtomId, skillAtomId, itemId);
+  }
 });
 
 test("Algorithms JSON content groups preserve the public item collection", () => {
@@ -452,6 +529,69 @@ test("Algorithms active items expose canonical roadmap, taxonomy, feedback, and 
     assert.ok(item.feedbackModel.mistakeTypes.length > 0, item.id);
     assert.ok(item.feedbackModel.nextAction.length > 0, item.id);
   }
+});
+
+test("Algorithms complexity model supports target classes and variable explanations", () => {
+  const complexityClasses = ALGORITHM_COMPLEXITY_CLASSES as readonly string[];
+
+  assert.deepEqual(
+    ["O(n + m)", "O(k)", "O(n log n + m log m)"].filter(
+      (complexityClass) => !complexityClasses.includes(complexityClass),
+    ),
+    [],
+  );
+  assert.equal(complexityClasses.includes("other"), false);
+
+  const item = makeBaseAlgorithmItem({
+    complexityExplanation: "Compare both inputs once and store one bucket for each distinct character.",
+    complexityVariables: {
+      k: "number of distinct characters",
+      m: "length of the second input",
+      n: "length of the first input",
+    },
+    expectedSpaceComplexity: "O(k)",
+    expectedTimeComplexity: "O(n + m)",
+    staticMicroChecks: [
+      {
+        correctAnswer: {
+          space: "O(k)",
+          time: "O(n + m)",
+        },
+        feedback: "The scan touches both inputs once and the table grows with distinct characters.",
+        id: "complexity-target-check-001",
+        mistakeTypes: ["complexity_mismatch"] as const,
+        prompt: "Choose the expected time and space cost.",
+        status: "active",
+        testedSkillAtomIds: ["derive_time_complexity"],
+        type: "complexity_pair",
+      },
+    ],
+    type: "complexity_check",
+  });
+
+  assert.deepEqual(issueCodes(item), []);
+  assert.ok(issueCodes({
+    ...item,
+    expectedTimeComplexity: "O(n+m)" as never,
+  }).includes("invalid_complexity_class"));
+  assert.ok(issueCodes({
+    ...item,
+    complexityVariables: {
+      n: "",
+    },
+  }).includes("invalid_complexity_variables"));
+  assert.ok(issueCodes({
+    ...item,
+    staticMicroChecks: [
+      {
+        ...item.staticMicroChecks?.[0],
+        correctAnswer: {
+          space: "other",
+          time: "O(n)",
+        },
+      },
+    ],
+  }).includes("invalid_static_micro_check"));
 });
 
 test("Algorithms active content uses every supported core item type and enabled modes support selectable types", () => {
@@ -1012,6 +1152,21 @@ test("Algorithms roadmap validation rejects duplicate ids and forward prerequisi
 
 test("Algorithms item validators retain specific content-type contracts", () => {
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), primarySkillAtomId: ["derive_time_complexity", "choose_lookup_key"] }).includes("multiple_primary_skills"));
+  assert.ok(issueCodes({
+    ...makeBaseAlgorithmItem(),
+    taxonomyRefs: [
+      {
+        axisId: "pattern_family",
+        nodeId: "complexity_and_constraints",
+        role: "primary",
+      },
+      {
+        axisId: "skill_atom",
+        nodeId: "choose_lookup_key",
+        role: "primary",
+      },
+    ],
+  }).includes("primary_skill_taxonomy_mismatch"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), feedbackModel: undefined }).includes("missing_feedback_model"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), difficulty: undefined }).includes("missing_difficulty"));
   assert.ok(issueCodes({ ...makeBaseAlgorithmItem(), difficulty: "basic" as never }).includes("invalid_difficulty"));
@@ -1155,6 +1310,11 @@ function makeBaseAlgorithmItem(overrides: Partial<AlgorithmTrainingItem> = {}): 
       {
         axisId: "pattern_family",
         nodeId: "complexity_and_constraints",
+        role: "primary",
+      },
+      {
+        axisId: "skill_atom",
+        nodeId: "derive_time_complexity",
         role: "primary",
       },
     ],

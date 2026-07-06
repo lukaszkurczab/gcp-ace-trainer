@@ -1,4 +1,5 @@
 import {
+  ALGORITHM_COMPLEXITY_CLASSES,
   ALGORITHM_DIFFICULTIES,
   ALGORITHM_FEEDBACK_RESULTS,
   isAlgorithmMistakeType,
@@ -60,6 +61,8 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_common_mistakes"
   | "missing_expected_time_complexity"
   | "missing_expected_space_complexity"
+  | "invalid_complexity_class"
+  | "invalid_complexity_variables"
   | "missing_complexity_explanation"
   | "missing_worked_example_subgoals"
   | "missing_worked_example_solution"
@@ -67,6 +70,7 @@ export type AlgorithmContentQualityIssueCode =
   | "unknown_primary_skill"
   | "unknown_secondary_skill"
   | "unknown_micro_check_skill"
+  | "primary_skill_taxonomy_mismatch"
   | "active_item_references_unknown_roadmap_node"
   | "active_item_on_unavailable_roadmap_node"
   | "unknown_taxonomy_ref"
@@ -124,6 +128,8 @@ export function validateAlgorithmTrainingItem(item: unknown): AlgorithmContentQu
 
   const itemId = readOptionalString(item.id);
   validateBaseTrainingItemContract(item, issues, itemId);
+  validateTaxonomyRefs(item as AlgorithmTrainingItem, issues);
+  validateComplexityMetadata(item, issues, itemId);
   validateAlgorithmVisibleValues(item, issues, itemId);
 
   if (item.type === "approach_primer") {
@@ -226,8 +232,6 @@ export function validateAlgorithmCurriculum(input: {
     } else {
       selectableActiveItemTypes.add(item.type);
     }
-
-    validateTaxonomyRefs(item, issues);
   }
 
   for (const node of input.roadmap.nodes) {
@@ -387,6 +391,22 @@ function validateTaxonomyRefs(
       );
     }
   }
+
+  const primarySkillRefs = item.taxonomyRefs.filter(
+    (taxonomyRef) => taxonomyRef.axisId === "skill_atom" && taxonomyRef.role === "primary",
+  );
+
+  if (
+    primarySkillRefs.length !== 1 ||
+    primarySkillRefs[0]?.nodeId !== item.primarySkillAtomId
+  ) {
+    addIssue(
+      issues,
+      "primary_skill_taxonomy_mismatch",
+      "Algorithm item must include exactly one primary skill_atom taxonomy ref matching primarySkillAtomId.",
+      item.id,
+    );
+  }
 }
 
 function validateAlgorithmVisibleValues(
@@ -402,6 +422,68 @@ function validateAlgorithmVisibleValues(
         issues,
         "forbidden_model_term",
         `Algorithm content includes blocked term: ${forbiddenTerm}.`,
+        itemId,
+      );
+    }
+  }
+}
+
+function validateComplexityMetadata(
+  item: Record<string, unknown>,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  validateOptionalComplexityClass(item.expectedTimeComplexity, "expectedTimeComplexity", issues, itemId);
+  validateOptionalComplexityClass(item.expectedSpaceComplexity, "expectedSpaceComplexity", issues, itemId);
+  validateComplexityVariables(item.complexityVariables, issues, itemId);
+
+  if (isRecord(item.solution)) {
+    validateOptionalComplexityClass(item.solution.timeComplexity, "solution.timeComplexity", issues, itemId);
+    validateOptionalComplexityClass(item.solution.spaceComplexity, "solution.spaceComplexity", issues, itemId);
+    validateComplexityVariables(item.solution.complexityVariables, issues, itemId);
+  }
+}
+
+function validateOptionalComplexityClass(
+  value: unknown,
+  fieldName: string,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  if (value === undefined) {
+    return;
+  }
+
+  if (!isAlgorithmComplexityClass(value)) {
+    addIssue(
+      issues,
+      "invalid_complexity_class",
+      `${fieldName} must be one of: ${ALGORITHM_COMPLEXITY_CLASSES.join(", ")}.`,
+      itemId,
+    );
+  }
+}
+
+function validateComplexityVariables(
+  value: unknown,
+  issues: AlgorithmContentQualityIssue[],
+  itemId?: string,
+): void {
+  if (value === undefined) {
+    return;
+  }
+
+  if (!isRecord(value) || Object.keys(value).length === 0) {
+    addIssue(issues, "invalid_complexity_variables", "complexityVariables must be a non-empty object.", itemId);
+    return;
+  }
+
+  for (const [variableName, variableDescription] of Object.entries(value)) {
+    if (!isNonEmptyString(variableName) || !isNonEmptyString(variableDescription)) {
+      addIssue(
+        issues,
+        "invalid_complexity_variables",
+        "complexityVariables must map non-empty variable names to non-empty descriptions.",
         itemId,
       );
     }
@@ -776,6 +858,15 @@ function validateStaticMicroChecks(
     ) {
       addIssue(issues, "invalid_static_micro_check", "Static micro-check includes an unsupported mistake type.", itemId);
     }
+
+    if (check.type === "complexity_pair" && !isComplexityPairAnswer(check.correctAnswer)) {
+      addIssue(
+        issues,
+        "invalid_static_micro_check",
+        `Static micro-check complexity_pair answers must use supported complexity classes: ${ALGORITHM_COMPLEXITY_CLASSES.join(", ")}.`,
+        itemId,
+      );
+    }
   }
 }
 
@@ -868,9 +959,13 @@ function getCorrectOptionIds(value: unknown): ReadonlySet<string> {
 function isComplexityPairAnswer(value: unknown): boolean {
   return (
     isRecord(value) &&
-    isNonEmptyString(value.time) &&
-    isNonEmptyString(value.space)
+    isAlgorithmComplexityClass(value.time) &&
+    isAlgorithmComplexityClass(value.space)
   );
+}
+
+function isAlgorithmComplexityClass(value: unknown): boolean {
+  return (ALGORITHM_COMPLEXITY_CLASSES as readonly unknown[]).includes(value);
 }
 
 function isGenericFeedbackText(value: string): boolean {
