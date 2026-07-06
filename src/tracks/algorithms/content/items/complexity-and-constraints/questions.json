@@ -74,8 +74,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: For n near 100000, any plan that checks every pair performs far too many operations.",
-        "wrong_2": "Use the core rule instead: For n near 100000, any plan that checks every pair performs far too many operations."
+        "wrong_1": "This option leans on \"The pair checks are acceptable because the code is short\", but the useful rule is: For n near 100000, any plan that checks every pair performs far too many operations.",
+        "wrong_2": "This option leans on \"The input values matter more than the number of pair checks\", but the useful rule is: For n near 100000, any plan that checks every pair performs far too many operations."
       }
     },
     "id": "alg-complexity-reject-quadratic-001",
@@ -220,8 +220,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A set trades extra memory for one pass when membership checks are the repeated operation.",
-        "wrong_2": "Use the core rule instead: A set trades extra memory for one pass when membership checks are the repeated operation."
+        "wrong_1": "This option leans on \"Avoid all extra memory even if repeated scans dominate runtime\", but the useful rule is: A set trades extra memory for one pass when membership checks are the repeated operation.",
+        "wrong_2": "This option leans on \"Choose the plan with fewer lines before estimating operation count\", but the useful rule is: A set trades extra memory for one pass when membership checks are the repeated operation."
       }
     },
     "id": "alg-complexity-space-tradeoff-001",
@@ -322,8 +322,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Count the loop body cost too; an expensive helper inside a scan can change the total cost.",
-        "wrong_2": "Use the core rule instead: Count the loop body cost too; an expensive helper inside a scan can change the total cost."
+        "wrong_1": "This option leans on \"A single outer loop is always O(n) regardless of the work inside\", but the useful rule is: Count the loop body cost too; an expensive helper inside a scan can change the total cost.",
+        "wrong_2": "This option leans on \"String length does not matter once the loop count is known\", but the useful rule is: Count the loop body cost too; an expensive helper inside a scan can change the total cost."
       }
     },
     "id": "alg-complexity-hidden-cost-001",
@@ -487,8 +487,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
-        "wrong_2": "Use the core rule instead: The repeated pair comparison is the limiting signal; reject it before comparing implementation details."
+        "wrong_1": "This option leans on \"Start with the version that has the simplest loop to read\", but the useful rule is: The repeated pair comparison is the limiting signal; reject it before comparing implementation details.",
+        "wrong_2": "This option leans on \"Ignore n until after the first implementation works\", but the useful rule is: The repeated pair comparison is the limiting signal; reject it before comparing implementation details."
       }
     },
     "id": "alg-exp-complexity-strategy-001",
@@ -594,8 +594,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A lookup table is viable because the repeated operation is membership, not ordered traversal.",
-        "wrong_2": "Use the core rule instead: A lookup table is viable because the repeated operation is membership, not ordered traversal."
+        "wrong_1": "This option leans on \"Use repeated scans because they avoid all extra state\", but the useful rule is: A lookup table is viable because the repeated operation is membership, not ordered traversal.",
+        "wrong_2": "This option leans on \"Sort first even though order is not part of the question\", but the useful rule is: A lookup table is viable because the repeated operation is membership, not ordered traversal."
       }
     },
     "id": "alg-exp-complexity-strategy-002",
@@ -701,8 +701,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: If query count is large, preprocessing can be cheaper than recomputing each range independently.",
-        "wrong_2": "Use the core rule instead: If query count is large, preprocessing can be cheaper than recomputing each range independently."
+        "wrong_1": "This option leans on \"Treat each query as isolated even when the same array is reused\", but the useful rule is: If query count is large, preprocessing can be cheaper than recomputing each range independently.",
+        "wrong_2": "This option leans on \"Choose the plan with zero preparation regardless of query count\", but the useful rule is: If query count is large, preprocessing can be cheaper than recomputing each range independently."
       }
     },
     "id": "alg-exp-complexity-strategy-003",
@@ -808,8 +808,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: When values arrive once and only the current best answer is needed, constant state may be enough.",
-        "wrong_2": "Use the core rule instead: When values arrive once and only the current best answer is needed, constant state may be enough."
+        "wrong_1": "This option leans on \"Store every earlier gap because the scan has seen many values\", but the useful rule is: When values arrive once and only the current best answer is needed, constant state may be enough.",
+        "wrong_2": "This option leans on \"Build a map even though no later membership lookup is needed\", but the useful rule is: When values arrive once and only the current best answer is needed, constant state may be enough."
       }
     },
     "id": "alg-exp-complexity-strategy-004",
@@ -914,8 +914,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs.",
-        "wrong_2": "Use the core rule instead: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs."
+        "wrong_1": "This option leans on \"Name the approach by the variable names used in the code\", but the useful rule is: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs.",
+        "wrong_2": "This option leans on \"Prefer the approach whose description is shortest\", but the useful rule is: The main pattern signal is growth rate: one pass, nested loops, sorting, and halving have different costs."
       }
     },
     "id": "alg-exp-complexity-identify-001",
@@ -993,8 +993,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The hidden cost is string length; total work depends on both number of strings and characters scanned.",
-        "wrong_2": "Use the core rule instead: The hidden cost is string length; total work depends on both number of strings and characters scanned."
+        "wrong_1": "This option leans on \"Only the number of log lines matters\", but the useful rule is: The hidden cost is string length; total work depends on both number of strings and characters scanned.",
+        "wrong_2": "This option leans on \"Character scans are constant because they are inside one loop\", but the useful rule is: The hidden cost is string length; total work depends on both number of strings and characters scanned."
       }
     },
     "id": "alg-exp-complexity-identify-002",
@@ -1073,8 +1073,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Memory grows with the number of distinct stored keys, not only with the number of loop variables.",
-        "wrong_2": "Use the core rule instead: Memory grows with the number of distinct stored keys, not only with the number of loop variables."
+        "wrong_1": "This option leans on \"The plan is constant space because it has one set variable\", but the useful rule is: Memory grows with the number of distinct stored keys, not only with the number of loop variables.",
+        "wrong_2": "This option leans on \"The set size is unrelated to input size\", but the useful rule is: Memory grows with the number of distinct stored keys, not only with the number of loop variables."
       }
     },
     "id": "alg-exp-complexity-identify-003",
@@ -1219,8 +1219,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes.",
-        "wrong_2": "Use the core rule instead: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes."
+        "wrong_1": "This option leans on \"Plan A is better because it stores less state regardless of input size\", but the useful rule is: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes.",
+        "wrong_2": "This option leans on \"Both plans scale the same because both inspect values\", but the useful rule is: The lookup plan spends memory to avoid repeated scans, which is the decisive tradeoff at large input sizes."
       }
     },
     "id": "alg-exp-complexity-comparison-001",
@@ -1321,8 +1321,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is judging the outer loop alone; the inner scan still runs many times.",
-        "wrong_2": "Use the core rule instead: The mistake is judging the outer loop alone; the inner scan still runs many times."
+        "wrong_1": "This option leans on \"The code is linear if the inner loop has fewer lines\", but the useful rule is: The mistake is judging the outer loop alone; the inner scan still runs many times.",
+        "wrong_2": "This option leans on \"Only memory growth matters for nested comparisons\", but the useful rule is: The mistake is judging the outer loop alone; the inner scan still runs many times."
       }
     },
     "id": "alg-exp-complexity-mistake-001",
@@ -1401,8 +1401,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject repeated pair enumeration before implementation details.",
-        "wrong_2": "Use the core rule instead: Reject repeated pair enumeration before implementation details."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject repeated pair enumeration before implementation details.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject repeated pair enumeration before implementation details."
       }
     },
     "difficulty": "easy",
@@ -1576,8 +1576,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is a linear scan with a small running summary.",
-        "wrong_2": "Use the core rule instead: The signal is a linear scan with a small running summary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The signal is a linear scan with a small running summary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The signal is a linear scan with a small running summary."
       }
     },
     "difficulty": "easy",
@@ -1656,8 +1656,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate.",
-        "wrong_2": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review avoiding all memory even when repeated scans dominate.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review avoiding all memory even when repeated scans dominate."
       }
     },
     "difficulty": "easy",
@@ -1736,8 +1736,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning.",
-        "wrong_2": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Recognize logarithmic shrinking instead of linear scanning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Recognize logarithmic shrinking instead of linear scanning."
       }
     },
     "difficulty": "easy",
@@ -1911,8 +1911,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence.",
-        "wrong_2": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Preprocessing is stronger when many queries reuse the same sequence.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Preprocessing is stronger when many queries reuse the same sequence."
       }
     },
     "difficulty": "easy",
@@ -2013,8 +2013,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep constant scan state when no later lookup is needed.",
-        "wrong_2": "Use the core rule instead: Keep constant scan state when no later lookup is needed."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Keep constant scan state when no later lookup is needed.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Keep constant scan state when no later lookup is needed."
       }
     },
     "difficulty": "easy",
@@ -2120,8 +2120,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is membership lookup under a large input limit.",
-        "wrong_2": "Use the core rule instead: The signal is membership lookup under a large input limit."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The signal is membership lookup under a large input limit.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The signal is membership lookup under a large input limit."
       }
     },
     "difficulty": "easy",
@@ -2268,8 +2268,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject repeated pair enumeration before implementation details.",
-        "wrong_2": "Use the core rule instead: Reject repeated pair enumeration before implementation details."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject repeated pair enumeration before implementation details.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject repeated pair enumeration before implementation details."
       }
     },
     "difficulty": "easy",
@@ -2443,8 +2443,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is a linear scan with a small running summary.",
-        "wrong_2": "Use the core rule instead: The signal is a linear scan with a small running summary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The signal is a linear scan with a small running summary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The signal is a linear scan with a small running summary."
       }
     },
     "difficulty": "easy",
@@ -2523,8 +2523,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate.",
-        "wrong_2": "Use the core rule instead: Review avoiding all memory even when repeated scans dominate."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review avoiding all memory even when repeated scans dominate.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review avoiding all memory even when repeated scans dominate."
       }
     },
     "difficulty": "easy",
@@ -2603,8 +2603,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning.",
-        "wrong_2": "Use the core rule instead: Recognize logarithmic shrinking instead of linear scanning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Recognize logarithmic shrinking instead of linear scanning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Recognize logarithmic shrinking instead of linear scanning."
       }
     },
     "difficulty": "easy",
@@ -2778,8 +2778,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence.",
-        "wrong_2": "Use the core rule instead: Preprocessing is stronger when many queries reuse the same sequence."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Preprocessing is stronger when many queries reuse the same sequence.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Preprocessing is stronger when many queries reuse the same sequence."
       }
     },
     "difficulty": "easy",
@@ -2880,8 +2880,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep constant scan state when no later lookup is needed.",
-        "wrong_2": "Use the core rule instead: Keep constant scan state when no later lookup is needed."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Keep constant scan state when no later lookup is needed.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Keep constant scan state when no later lookup is needed."
       }
     },
     "difficulty": "easy",
@@ -2987,8 +2987,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is membership lookup under a large input limit.",
-        "wrong_2": "Use the core rule instead: The signal is membership lookup under a large input limit."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The signal is membership lookup under a large input limit.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The signal is membership lookup under a large input limit."
       }
     },
     "difficulty": "easy",

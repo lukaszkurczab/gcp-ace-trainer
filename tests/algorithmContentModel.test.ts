@@ -1029,6 +1029,26 @@ test("Algorithms item validators retain specific content-type contracts", () => 
       mentalModelCorrection: "Correct because this is correct",
     },
   }).includes("generic_feedback_text"));
+  assert.ok(issueCodes({
+    ...makeBaseAlgorithmItem(),
+    feedbackModel: {
+      ...makeBaseAlgorithmItem().feedbackModel,
+      distractorExplanations: {
+        sort_first: "Use the lookup invariant instead.",
+        store_before_check: "Use the lookup invariant instead.",
+      },
+    },
+    staticMicroChecks: [
+      {
+        ...makeStaticMicroCheck(),
+        options: [
+          { id: "check_before_store", text: "Check complement before storing the current value." },
+          { id: "store_before_check", text: "Store the current value before checking complement." },
+          { id: "sort_first", text: "Sort the input before checking complements." },
+        ],
+      },
+    ],
+  }).includes("duplicate_feedback_distractor_explanation"));
 
   assert.deepEqual(
     issueCodes(makeBaseAlgorithmItem({ type: "complexity_check" })).filter((code) => code.includes("complexity")),

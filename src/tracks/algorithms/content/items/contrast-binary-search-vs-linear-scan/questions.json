@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
-        "wrong_2": "Use the core rule instead: Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded."
+        "wrong_1": "This option leans on \"Binary search is valid whenever the input is an array\", but the useful rule is: Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded.",
+        "wrong_2": "This option leans on \"A scan is always worse even if no ordered boundary exists\", but the useful rule is: Binary search needs ordered elimination; a plain scan is safer when no boundary can be discarded."
       }
     },
     "id": "alg-contrast-binary-linear-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Linear scan is appropriate when each position must be inspected or no comparison can discard a region.",
-        "wrong_2": "Use the core rule instead: Linear scan is appropriate when each position must be inspected or no comparison can discard a region."
+        "wrong_1": "This option leans on \"Uppercase checks create an ordered true/false boundary automatically\", but the useful rule is: Linear scan is appropriate when each position must be inspected or no comparison can discard a region.",
+        "wrong_2": "This option leans on \"Binary search can discard half of any string without a predicate\", but the useful rule is: Linear scan is appropriate when each position must be inspected or no comparison can discard a region."
       }
     },
     "id": "alg-contrast-linear-binary-001",

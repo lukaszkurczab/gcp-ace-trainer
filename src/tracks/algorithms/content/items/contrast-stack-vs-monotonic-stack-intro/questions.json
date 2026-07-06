@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
-        "wrong_2": "Use the core rule instead: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries."
+        "wrong_1": "This option leans on \"A monotonic stack ignores order among unresolved values\", but the useful rule is: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries.",
+        "wrong_2": "This option leans on \"A basic stack and monotonic stack always store identical state\", but the useful rule is: A monotonic stack keeps unresolved elements ordered so future values can resolve boundaries."
       }
     },
     "id": "alg-contrast-stack-monotonic-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements.",
-        "wrong_2": "Use the core rule instead: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements."
+        "wrong_1": "This option leans on \"Both tasks only need the newest unresolved token type\", but the useful rule is: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements.",
+        "wrong_2": "This option leans on \"Next greater value does not need an ordering invariant\", but the useful rule is: Use a basic stack when only nesting order matters; add monotonic ordering when future larger or smaller values resolve waiting elements."
       }
     },
     "id": "alg-contrast-monotonic-basic-stack-001",

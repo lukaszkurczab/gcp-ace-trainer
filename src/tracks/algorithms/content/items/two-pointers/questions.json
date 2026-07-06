@@ -116,11 +116,11 @@
       "nextAction": "Trace the same comparison with a sum that is too large.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "line-1": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
-        "line-2": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
-        "line-3": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
-        "line-4": "Use the core rule instead: Use the comparison result to pick the next pseudocode line.",
-        "line-6": "Use the core rule instead: Use the comparison result to pick the next pseudocode line."
+        "line-1": "This option leans on \"set left to first index and right to last index\", but the useful rule is: Use the comparison result to pick the next pseudocode line.",
+        "line-2": "This option leans on \"while left is before right\", but the useful rule is: Use the comparison result to pick the next pseudocode line.",
+        "line-3": "This option leans on \"evaluate the pair at left and right\", but the useful rule is: Use the comparison result to pick the next pseudocode line.",
+        "line-4": "This option leans on \"if pair satisfies the condition, return or record answer\", but the useful rule is: Use the comparison result to pick the next pseudocode line.",
+        "line-6": "This option leans on \"otherwise move right backward\", but the useful rule is: Use the comparison result to pick the next pseudocode line."
       }
     },
     "id": "alg-two-pointers-pseudocode-line-001",
@@ -248,8 +248,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: When the pair sum is too small, the smaller boundary must move forward.",
-        "wrong_2": "Use the core rule instead: When the pair sum is too small, the smaller boundary must move forward."
+        "wrong_1": "This option leans on \"When the pair sum is too small, move the larger boundary backward\", but the useful rule is: When the pair sum is too small, the smaller boundary must move forward.",
+        "wrong_2": "This option leans on \"Move both boundaries after every comparison\", but the useful rule is: When the pair sum is too small, the smaller boundary must move forward."
       }
     },
     "id": "alg-two-pointers-primer-001",
@@ -403,8 +403,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: 1 + 10 equals 11, so the pair is found before either boundary moves.",
-        "wrong_2": "Use the core rule instead: 1 + 10 equals 11, so the pair is found before either boundary moves."
+        "wrong_1": "This option leans on \"Move left because the first value is the smallest\", but the useful rule is: 1 + 10 equals 11, so the pair is found before either boundary moves.",
+        "wrong_2": "This option leans on \"Move right because the last value was used\", but the useful rule is: 1 + 10 equals 11, so the pair is found before either boundary moves."
       }
     },
     "id": "alg-two-pointers-worked-shelf-gap-001",
@@ -597,8 +597,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Move the right boundary backward because the current pair sum is too large.",
-        "wrong_2": "Use the core rule instead: Move the right boundary backward because the current pair sum is too large."
+        "wrong_1": "This option leans on \"Move left forward because the left value is smaller\", but the useful rule is: Move the right boundary backward because the current pair sum is too large.",
+        "wrong_2": "This option leans on \"Return the pair because both values are valid numbers\", but the useful rule is: Move the right boundary backward because the current pair sum is too large."
       }
     },
     "id": "alg-two-pointers-trace-large-001",
@@ -687,8 +687,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
-        "wrong_2": "Use the core rule instead: Sorting can enable two pointers only if the answer does not require original order to remain untouched."
+        "wrong_1": "This option leans on \"Two pointers require the original input to be unsorted\", but the useful rule is: Sorting can enable two pointers only if the answer does not require original order to remain untouched.",
+        "wrong_2": "This option leans on \"A two-boundary scan works on any order if both ends are checked\", but the useful rule is: Sorting can enable two pointers only if the answer does not require original order to remain untouched."
       }
     },
     "id": "alg-two-pointers-sorting-precondition-001",
@@ -799,8 +799,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Skip repeated boundary values only after the current value has been processed.",
-        "wrong_2": "Use the core rule instead: Skip repeated boundary values only after the current value has been processed."
+        "wrong_1": "This option leans on \"Skip every duplicate before checking the first occurrence\", but the useful rule is: Skip repeated boundary values only after the current value has been processed.",
+        "wrong_2": "This option leans on \"Never skip duplicates, even after recording a pair\", but the useful rule is: Skip repeated boundary values only after the current value has been processed."
       }
     },
     "id": "alg-two-pointers-duplicate-edge-001",
@@ -879,8 +879,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Move the boundary that can no longer participate in a valid pair.",
-        "wrong_2": "Use the core rule instead: Move the boundary that can no longer participate in a valid pair."
+        "wrong_1": "This option leans on \"Move the larger boundary because it is closer to the end\", but the useful rule is: Move the boundary that can no longer participate in a valid pair.",
+        "wrong_2": "This option leans on \"Restart the scan from the middle after every mismatch\", but the useful rule is: Move the boundary that can no longer participate in a valid pair."
       }
     },
     "id": "alg-exp-two-pointers-strategy-001",
@@ -986,8 +986,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A two-boundary scan fits because sorted order lets each comparison discard candidates.",
-        "wrong_2": "Use the core rule instead: A two-boundary scan fits because sorted order lets each comparison discard candidates."
+        "wrong_1": "This option leans on \"Use a window because two indexes are visible\", but the useful rule is: A two-boundary scan fits because sorted order lets each comparison discard candidates.",
+        "wrong_2": "This option leans on \"Use lookup state even though ordered elimination is available\", but the useful rule is: A two-boundary scan fits because sorted order lets each comparison discard candidates."
       }
     },
     "id": "alg-exp-two-pointers-strategy-002",
@@ -1093,8 +1093,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
-        "wrong_2": "Use the core rule instead: Same-direction pointers fit when one pointer explores and the other marks a processed boundary."
+        "wrong_1": "This option leans on \"Use opposite ends because every two-pointer task starts at both ends\", but the useful rule is: Same-direction pointers fit when one pointer explores and the other marks a processed boundary.",
+        "wrong_2": "This option leans on \"Use sorting even though the scan preserves input order\", but the useful rule is: Same-direction pointers fit when one pointer explores and the other marks a processed boundary."
       }
     },
     "id": "alg-exp-two-pointers-strategy-003",
@@ -1200,8 +1200,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
-        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal only if the answer does not depend on original adjacency."
+        "wrong_1": "This option leans on \"Original order must always be preserved for pair-value answers\", but the useful rule is: Sorting can create the ordered signal only if the answer does not depend on original adjacency.",
+        "wrong_2": "This option leans on \"Two-boundary scans never need ordering\", but the useful rule is: Sorting can create the ordered signal only if the answer does not depend on original adjacency."
       }
     },
     "id": "alg-exp-two-pointers-strategy-004",
@@ -1312,8 +1312,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is a sorted input plus a comparison that tells which side can be discarded.",
-        "wrong_2": "Use the core rule instead: The signal is a sorted input plus a comparison that tells which side can be discarded."
+        "wrong_1": "This option leans on \"The signal is nested comparison because pairs are mentioned\", but the useful rule is: The signal is a sorted input plus a comparison that tells which side can be discarded.",
+        "wrong_2": "This option leans on \"The signal is stack state because the latest value matters\", but the useful rule is: The signal is a sorted input plus a comparison that tells which side can be discarded."
       }
     },
     "id": "alg-exp-two-pointers-identify-001",
@@ -1392,8 +1392,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Duplicate skipping belongs after processing the current boundary value.",
-        "wrong_2": "Use the core rule instead: Duplicate skipping belongs after processing the current boundary value."
+        "wrong_1": "This option leans on \"Skip the first occurrence before checking it\", but the useful rule is: Duplicate skipping belongs after processing the current boundary value.",
+        "wrong_2": "This option leans on \"Duplicates cannot affect pair output\", but the useful rule is: Duplicate skipping belongs after processing the current boundary value."
       }
     },
     "id": "alg-exp-two-pointers-identify-002",
@@ -1472,8 +1472,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Partitioning uses a write boundary and a read pointer moving in one direction.",
-        "wrong_2": "Use the core rule instead: Partitioning uses a write boundary and a read pointer moving in one direction."
+        "wrong_1": "This option leans on \"It is an opposite-end sum scan\", but the useful rule is: Partitioning uses a write boundary and a read pointer moving in one direction.",
+        "wrong_2": "This option leans on \"It requires a hash map because values are inspected\", but the useful rule is: Partitioning uses a write boundary and a read pointer moving in one direction."
       }
     },
     "id": "alg-exp-two-pointers-identify-003",
@@ -1620,8 +1620,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant.",
-        "wrong_2": "Use the core rule instead: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant."
+        "wrong_1": "This option leans on \"Both are identical because both mention left and right\", but the useful rule is: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant.",
+        "wrong_2": "This option leans on \"A window is always stronger when input is sorted\", but the useful rule is: Two pointers use pair comparisons to discard candidates; a window maintains one contiguous range invariant."
       }
     },
     "id": "alg-exp-two-pointers-comparison-001",
@@ -1725,8 +1725,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is moving a boundary without proving which candidates it rules out.",
-        "wrong_2": "Use the core rule instead: The mistake is moving a boundary without proving which candidates it rules out."
+        "wrong_1": "This option leans on \"Alternating is always valid if the input is sorted\", but the useful rule is: The mistake is moving a boundary without proving which candidates it rules out.",
+        "wrong_2": "This option leans on \"The movement rule can be chosen after the scan finishes\", but the useful rule is: The mistake is moving a boundary without proving which candidates it rules out."
       }
     },
     "id": "alg-exp-two-pointers-mistake-001",
@@ -1805,8 +1805,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination.",
-        "wrong_2": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is sorted opposite-end pair elimination.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is sorted opposite-end pair elimination."
       }
     },
     "difficulty": "easy",
@@ -1959,8 +1959,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary.",
-        "wrong_2": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use same-direction pointers: one reads, one writes the accepted boundary."
       }
     },
     "difficulty": "medium",
@@ -2142,8 +2142,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers.",
-        "wrong_2": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is partitioning with coordinated pointers.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is partitioning with coordinated pointers."
       }
     },
     "difficulty": "medium",
@@ -2225,8 +2225,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review moving both boundaries without proving what was ruled out.",
-        "wrong_2": "Use the core rule instead: Review moving both boundaries without proving what was ruled out."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review moving both boundaries without proving what was ruled out.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review moving both boundaries without proving what was ruled out."
       }
     },
     "difficulty": "medium",
@@ -2308,8 +2308,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan.",
-        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Sorting can create the ordered signal needed for a pair scan.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Sorting can create the ordered signal needed for a pair scan."
       }
     },
     "difficulty": "medium",
@@ -2491,8 +2491,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Duplicate skipping protects output uniqueness without extra lookup state.",
-        "wrong_2": "Use the core rule instead: Duplicate skipping protects output uniqueness without extra lookup state."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Duplicate skipping protects output uniqueness without extra lookup state.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Duplicate skipping protects output uniqueness without extra lookup state."
       }
     },
     "difficulty": "medium",
@@ -2596,8 +2596,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Maintain a boundary for the processed side while the read index advances.",
-        "wrong_2": "Use the core rule instead: Maintain a boundary for the processed side while the read index advances."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Maintain a boundary for the processed side while the read index advances.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Maintain a boundary for the processed side while the read index advances."
       }
     },
     "difficulty": "medium",
@@ -2708,8 +2708,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination.",
-        "wrong_2": "Use the core rule instead: The pattern signal is sorted opposite-end pair elimination."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is sorted opposite-end pair elimination.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is sorted opposite-end pair elimination."
       }
     },
     "difficulty": "medium",
@@ -2862,8 +2862,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary.",
-        "wrong_2": "Use the core rule instead: Use same-direction pointers: one reads, one writes the accepted boundary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use same-direction pointers: one reads, one writes the accepted boundary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use same-direction pointers: one reads, one writes the accepted boundary."
       }
     },
     "difficulty": "medium",
@@ -3045,8 +3045,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers.",
-        "wrong_2": "Use the core rule instead: The pattern signal is partitioning with coordinated pointers."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is partitioning with coordinated pointers.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is partitioning with coordinated pointers."
       }
     },
     "difficulty": "medium",
@@ -3128,8 +3128,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review moving both boundaries without proving what was ruled out.",
-        "wrong_2": "Use the core rule instead: Review moving both boundaries without proving what was ruled out."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review moving both boundaries without proving what was ruled out.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review moving both boundaries without proving what was ruled out."
       }
     },
     "difficulty": "medium",
@@ -3211,8 +3211,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan.",
-        "wrong_2": "Use the core rule instead: Sorting can create the ordered signal needed for a pair scan."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Sorting can create the ordered signal needed for a pair scan.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Sorting can create the ordered signal needed for a pair scan."
       }
     },
     "difficulty": "medium",

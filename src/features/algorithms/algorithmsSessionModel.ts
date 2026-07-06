@@ -210,32 +210,29 @@ export function buildAlgorithmsSummaryActions(
       priority: "primary",
       reviewItemIds: missedItemIds,
     });
-  }
-
-  if (missedCount >= MIN_MISSED_ITEMS_FOR_WEAK_AREA && sessionConfig?.mode !== "weakArea") {
+  } else if (missedCount >= MIN_MISSED_ITEMS_FOR_WEAK_AREA && sessionConfig?.mode !== "weakArea") {
     actions.push({
       detail: "Focus on the patterns missed in this session.",
       kind: "startWeakArea",
       label: "Start Weak area",
-      priority: actions.length === 0 ? "primary" : "secondary",
+      priority: "primary",
     });
-  }
-
-  if (hasStrongSession && sessionConfig?.mode !== "practice") {
+  } else if (hasStrongSession && sessionConfig?.mode !== "practice") {
     actions.push({
       detail: "Interleave unlocked Algorithms topics.",
       kind: "startMixedPractice",
       label: "Start Mixed practice",
-      priority: actions.length === 0 ? "primary" : "secondary",
+      priority: "primary",
+    });
+  } else {
+    actions.push({
+      detail: `Continue ${summary.currentRoadmapNode}.`,
+      kind: "continueRoadmap",
+      label: "Continue current roadmap node",
+      priority: "primary",
     });
   }
 
-  actions.push({
-    detail: `Continue ${summary.currentRoadmapNode}.`,
-    kind: "continueRoadmap",
-    label: "Continue current roadmap node",
-    priority: actions.length === 0 ? "primary" : "secondary",
-  });
   actions.push({
     detail: "Open progress details.",
     kind: "viewProgress",
@@ -692,8 +689,26 @@ function buildSessionMainIssue(
     itemIds: uniqueStrings(patternStats.itemIds),
     mistakeType: mistakeType ? formattedMistake : undefined,
     pattern,
-    recommendedNextAction: representativeItem.feedbackModel.nextAction,
+    recommendedNextAction: buildMainIssueNextAction({
+      fallbackAction: representativeItem.feedbackModel.nextAction,
+      formattedMistake,
+      hasMistakeType: Boolean(mistakeType),
+      pattern,
+    }),
   };
+}
+
+function buildMainIssueNextAction(input: {
+  fallbackAction: string;
+  formattedMistake: string;
+  hasMistakeType: boolean;
+  pattern: string;
+}): string {
+  if (!input.hasMistakeType) {
+    return input.fallbackAction;
+  }
+
+  return `Review ${input.pattern} with a short ${input.formattedMistake.toLowerCase()} drill before mixed practice.`;
 }
 
 function uniqueStrings(values: readonly string[]): string[] {

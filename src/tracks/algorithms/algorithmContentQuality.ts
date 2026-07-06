@@ -30,6 +30,7 @@ export type AlgorithmContentQualityIssueCode =
   | "generic_feedback_text"
   | "invalid_feedback_distractor_explanations"
   | "missing_feedback_distractor_explanation"
+  | "duplicate_feedback_distractor_explanation"
   | "missing_feedback_mistake_types"
   | "invalid_feedback_mistake_type"
   | "missing_feedback_next_action"
@@ -488,6 +489,8 @@ function validateDistractorExplanations(
       continue;
     }
 
+    const normalizedExplanations = new Set<string>();
+
     for (const optionId of distractorOptionIds) {
       const explanation = distractorExplanations[optionId];
 
@@ -505,6 +508,19 @@ function validateDistractorExplanations(
           `feedbackModel.distractorExplanations.${optionId} is too generic.`,
           itemId,
         );
+      } else {
+        const normalizedExplanation = normalizeFeedbackText(explanation);
+
+        if (normalizedExplanations.has(normalizedExplanation)) {
+          addIssue(
+            issues,
+            "duplicate_feedback_distractor_explanation",
+            "feedbackModel.distractorExplanations must explain each incorrect option distinctly.",
+            itemId,
+          );
+        }
+
+        normalizedExplanations.add(normalizedExplanation);
       }
     }
   }
@@ -840,7 +856,7 @@ function isComplexityPairAnswer(value: unknown): boolean {
 }
 
 function isGenericFeedbackText(value: string): boolean {
-  const normalized = value.trim().toLowerCase().replace(/\s+/g, " ");
+  const normalized = normalizeFeedbackText(value);
 
   return [
     "correct because this is correct",
@@ -850,4 +866,8 @@ function isGenericFeedbackText(value: string): boolean {
     "try again",
     "good job",
   ].includes(normalized);
+}
+
+function normalizeFeedbackText(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/g, "");
 }

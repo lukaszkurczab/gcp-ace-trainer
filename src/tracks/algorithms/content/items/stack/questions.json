@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use the most recent unresolved opening state to decide whether the next closing token is valid.",
-        "wrong_2": "Use the core rule instead: Use the most recent unresolved opening state to decide whether the next closing token is valid."
+        "wrong_1": "This option leans on \"Use the earliest unresolved opening token\", but the useful rule is: Use the most recent unresolved opening state to decide whether the next closing token is valid.",
+        "wrong_2": "This option leans on \"Use a count only and ignore token type\", but the useful rule is: Use the most recent unresolved opening state to decide whether the next closing token is valid."
       }
     },
     "id": "alg-stack-unresolved-state-001",
@@ -90,8 +90,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Pop the most recent opening token because it matches the closing token.",
-        "wrong_2": "Use the core rule instead: Pop the most recent opening token because it matches the closing token."
+        "wrong_1": "This option leans on \"Push the closing token onto the stack\", but the useful rule is: Pop the most recent opening token because it matches the closing token.",
+        "wrong_2": "This option leans on \"Compare the closing token with the bottom of the stack\", but the useful rule is: Pop the most recent opening token because it matches the closing token."
       }
     },
     "id": "alg-stack-trace-match-001",
@@ -179,8 +179,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: An empty stack before a closing token means there is no unresolved opener to match.",
-        "wrong_2": "Use the core rule instead: An empty stack before a closing token means there is no unresolved opener to match."
+        "wrong_1": "This option leans on \"Treat the close as a new opener\", but the useful rule is: An empty stack before a closing token means there is no unresolved opener to match.",
+        "wrong_2": "This option leans on \"Skip the close because empty stack means valid so far\", but the useful rule is: An empty stack before a closing token means there is no unresolved opener to match."
       }
     },
     "id": "alg-stack-empty-close-edge-001",
@@ -349,8 +349,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
-        "wrong_2": "Use the core rule instead: A stack is appropriate when the newest unresolved state is the first state that must be resolved."
+        "wrong_1": "This option leans on \"The oldest unresolved item must always be resolved first\", but the useful rule is: A stack is appropriate when the newest unresolved state is the first state that must be resolved.",
+        "wrong_2": "This option leans on \"The input contains numbers, so stack state cannot apply\", but the useful rule is: A stack is appropriate when the newest unresolved state is the first state that must be resolved."
       }
     },
     "id": "alg-stack-strategy-signal-001",
@@ -456,8 +456,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a stack because the newest unmatched opener must be resolved first.",
-        "wrong_2": "Use the core rule instead: Use a stack because the newest unmatched opener must be resolved first."
+        "wrong_1": "This option leans on \"Use a queue because the earliest opener should close first\", but the useful rule is: Use a stack because the newest unmatched opener must be resolved first.",
+        "wrong_2": "This option leans on \"Use a set because only tag presence matters\", but the useful rule is: Use a stack because the newest unmatched opener must be resolved first."
       }
     },
     "id": "alg-exp-stack-strategy-001",
@@ -563,8 +563,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use stack state when the latest previous state is the one that must be restored.",
-        "wrong_2": "Use the core rule instead: Use stack state when the latest previous state is the one that must be restored."
+        "wrong_1": "This option leans on \"Use a frequency map because operations repeat\", but the useful rule is: Use stack state when the latest previous state is the one that must be restored.",
+        "wrong_2": "This option leans on \"Use binary search because operation ids can be ordered\", but the useful rule is: Use stack state when the latest previous state is the one that must be restored."
       }
     },
     "id": "alg-exp-stack-strategy-002",
@@ -670,8 +670,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Push openers and match closers against the top, because nesting is last-in-first-out.",
-        "wrong_2": "Use the core rule instead: Push openers and match closers against the top, because nesting is last-in-first-out."
+        "wrong_1": "This option leans on \"Count only the total number of opens and closes\", but the useful rule is: Push openers and match closers against the top, because nesting is last-in-first-out.",
+        "wrong_2": "This option leans on \"Match each closer with the oldest opener\", but the useful rule is: Push openers and match closers against the top, because nesting is last-in-first-out."
       }
     },
     "id": "alg-exp-stack-strategy-003",
@@ -777,8 +777,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
-        "wrong_2": "Use the core rule instead: Use explicit stack traversal when recursive depth could exceed safe call-stack limits."
+        "wrong_1": "This option leans on \"Use recursive calls regardless of nesting depth\", but the useful rule is: Use explicit stack traversal when recursive depth could exceed safe call-stack limits.",
+        "wrong_2": "This option leans on \"Use sorting because nested levels can be numbered\", but the useful rule is: Use explicit stack traversal when recursive depth could exceed safe call-stack limits."
       }
     },
     "id": "alg-exp-stack-strategy-004",
@@ -884,8 +884,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is latest unresolved state.",
-        "wrong_2": "Use the core rule instead: The pattern signal is latest unresolved state."
+        "wrong_1": "This option leans on \"The signal is earliest unresolved state\", but the useful rule is: The pattern signal is latest unresolved state.",
+        "wrong_2": "This option leans on \"The signal is numeric ordering of all tokens\", but the useful rule is: The pattern signal is latest unresolved state."
       }
     },
     "id": "alg-exp-stack-identify-001",
@@ -964,8 +964,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A close with no opener is an immediate invalid state.",
-        "wrong_2": "Use the core rule instead: A close with no opener is an immediate invalid state."
+        "wrong_1": "This option leans on \"The close can be stored as an opener\", but the useful rule is: A close with no opener is an immediate invalid state.",
+        "wrong_2": "This option leans on \"An empty stack means the scan is always valid\", but the useful rule is: A close with no opener is an immediate invalid state."
       }
     },
     "id": "alg-exp-stack-identify-002",
@@ -1178,8 +1178,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A stack stores unresolved nested state; a counter loses which type must close next.",
-        "wrong_2": "Use the core rule instead: A stack stores unresolved nested state; a counter loses which type must close next."
+        "wrong_1": "This option leans on \"A counter can always recover the latest opener type\", but the useful rule is: A stack stores unresolved nested state; a counter loses which type must close next.",
+        "wrong_2": "This option leans on \"Token type does not matter in nested validation\", but the useful rule is: A stack stores unresolved nested state; a counter loses which type must close next."
       }
     },
     "id": "alg-exp-stack-comparison-001",
@@ -1280,8 +1280,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is treating total balance as enough when order and type also matter.",
-        "wrong_2": "Use the core rule instead: The mistake is treating total balance as enough when order and type also matter."
+        "wrong_1": "This option leans on \"Equal counts are enough for every nested structure\", but the useful rule is: The mistake is treating total balance as enough when order and type also matter.",
+        "wrong_2": "This option leans on \"Order only matters when markers are numeric\", but the useful rule is: The mistake is treating total balance as enough when order and type also matter."
       }
     },
     "id": "alg-exp-stack-mistake-001",
@@ -1360,8 +1360,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use the latest unresolved opener as the next required match.",
-        "wrong_2": "Use the core rule instead: Use the latest unresolved opener as the next required match."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use the latest unresolved opener as the next required match.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use the latest unresolved opener as the next required match."
       }
     },
     "difficulty": "medium",
@@ -1535,8 +1535,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is empty-stack close detection.",
-        "wrong_2": "Use the core rule instead: The pattern signal is empty-stack close detection."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is empty-stack close detection.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is empty-stack close detection."
       }
     },
     "difficulty": "medium",
@@ -1615,8 +1615,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review relying on recursion after the prompt warns about depth.",
-        "wrong_2": "Use the core rule instead: Review relying on recursion after the prompt warns about depth."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review relying on recursion after the prompt warns about depth.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review relying on recursion after the prompt warns about depth."
       }
     },
     "difficulty": "medium",
@@ -1695,8 +1695,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Push context when entering a nested segment and pop it when closing.",
-        "wrong_2": "Use the core rule instead: Push context when entering a nested segment and pop it when closing."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Push context when entering a nested segment and pop it when closing.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Push context when entering a nested segment and pop it when closing."
       }
     },
     "difficulty": "medium",
@@ -1870,8 +1870,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Stack state is stronger than queue state when newest work resolves first.",
-        "wrong_2": "Use the core rule instead: Stack state is stronger than queue state when newest work resolves first."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Stack state is stronger than queue state when newest work resolves first.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Stack state is stronger than queue state when newest work resolves first."
       }
     },
     "difficulty": "medium",
@@ -1972,8 +1972,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject immediately because there is no unresolved opener to match.",
-        "wrong_2": "Use the core rule instead: Reject immediately because there is no unresolved opener to match."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject immediately because there is no unresolved opener to match.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject immediately because there is no unresolved opener to match."
       }
     },
     "difficulty": "medium",
@@ -2079,8 +2079,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is replacing call-stack state explicitly.",
-        "wrong_2": "Use the core rule instead: The pattern signal is replacing call-stack state explicitly."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is replacing call-stack state explicitly.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is replacing call-stack state explicitly."
       }
     },
     "difficulty": "medium",
@@ -2227,8 +2227,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use the latest unresolved opener as the next required match.",
-        "wrong_2": "Use the core rule instead: Use the latest unresolved opener as the next required match."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use the latest unresolved opener as the next required match.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use the latest unresolved opener as the next required match."
       }
     },
     "difficulty": "medium",
@@ -2402,8 +2402,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is empty-stack close detection.",
-        "wrong_2": "Use the core rule instead: The pattern signal is empty-stack close detection."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is empty-stack close detection.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is empty-stack close detection."
       }
     },
     "difficulty": "medium",
@@ -2482,8 +2482,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review relying on recursion after the prompt warns about depth.",
-        "wrong_2": "Use the core rule instead: Review relying on recursion after the prompt warns about depth."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review relying on recursion after the prompt warns about depth.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review relying on recursion after the prompt warns about depth."
       }
     },
     "difficulty": "medium",
@@ -2562,8 +2562,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Push context when entering a nested segment and pop it when closing.",
-        "wrong_2": "Use the core rule instead: Push context when entering a nested segment and pop it when closing."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Push context when entering a nested segment and pop it when closing.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Push context when entering a nested segment and pop it when closing."
       }
     },
     "difficulty": "medium",

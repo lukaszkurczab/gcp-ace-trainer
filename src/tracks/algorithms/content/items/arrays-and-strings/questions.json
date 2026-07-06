@@ -11,8 +11,8 @@
       "nextAction": "Separate scan mechanics from nested enumeration.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "nested_pair_enumeration": "Use the core rule instead: Name the movement and state before choosing a larger strategy.",
-        "global_sorting": "Use the core rule instead: Name the movement and state before choosing a larger strategy."
+        "nested_pair_enumeration": "This option leans on \"Nested pair enumeration\", but the useful rule is: Name the movement and state before choosing a larger strategy.",
+        "global_sorting": "This option leans on \"Sorting before scanning\", but the useful rule is: Name the movement and state before choosing a larger strategy."
       }
     },
     "id": "alg-array-string-naming-001",
@@ -88,8 +88,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "discard_order": "Use the core rule instead: Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics.",
-        "skip_empty": "Use the core rule instead: Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics."
+        "discard_order": "This option leans on \"Discard original order before scanning\", but the useful rule is: Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics.",
+        "skip_empty": "This option leans on \"Assume empty input cannot occur\", but the useful rule is: Indexed scans should name boundary movement and duplicate-sensitive state before choosing larger mechanics."
       }
     },
     "id": "alg-array-string-scan-signals-001",
@@ -175,8 +175,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Move to index 3 because index 2 was processed and the boundary remains within the string.",
-        "wrong_2": "Use the core rule instead: Move to index 3 because index 2 was processed and the boundary remains within the string."
+        "wrong_1": "This option leans on \"Jump to index 4 because only the last character matters\", but the useful rule is: Move to index 3 because index 2 was processed and the boundary remains within the string.",
+        "wrong_2": "This option leans on \"Move back to index 1 because it was used in the comparison\", but the useful rule is: Move to index 3 because index 2 was processed and the boundary remains within the string."
       }
     },
     "id": "alg-array-string-trace-index-001",
@@ -265,8 +265,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Check empty and length-one inputs before reading a neighbor index.",
-        "wrong_2": "Use the core rule instead: Check empty and length-one inputs before reading a neighbor index."
+        "wrong_1": "This option leans on \"Only duplicate characters need a guard\", but the useful rule is: Check empty and length-one inputs before reading a neighbor index.",
+        "wrong_2": "This option leans on \"The first index can always read the previous character\", but the useful rule is: Check empty and length-one inputs before reading a neighbor index."
       }
     },
     "id": "alg-array-string-edge-neighbor-001",
@@ -345,8 +345,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep counts when the question depends on how many times each value appears.",
-        "wrong_2": "Use the core rule instead: Keep counts when the question depends on how many times each value appears."
+        "wrong_1": "This option leans on \"Track only the first and last characters\", but the useful rule is: Keep counts when the question depends on how many times each value appears.",
+        "wrong_2": "This option leans on \"Sort positions by index distance before counting\", but the useful rule is: Keep counts when the question depends on how many times each value appears."
       }
     },
     "id": "alg-array-string-frequency-signal-001",
@@ -520,8 +520,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a write boundary and a read index moving forward.",
-        "wrong_2": "Use the core rule instead: Use a write boundary and a read index moving forward."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a write boundary and a read index moving forward.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a write boundary and a read index moving forward."
       }
     },
     "difficulty": "easy",
@@ -695,8 +695,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is string normalization before comparison.",
-        "wrong_2": "Use the core rule instead: The pattern signal is string normalization before comparison."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is string normalization before comparison.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is string normalization before comparison."
       }
     },
     "difficulty": "easy",
@@ -775,8 +775,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review skipping the first occurrence before it is recorded.",
-        "wrong_2": "Use the core rule instead: Review skipping the first occurrence before it is recorded."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review skipping the first occurrence before it is recorded.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review skipping the first occurrence before it is recorded."
       }
     },
     "difficulty": "easy",
@@ -855,8 +855,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Guard the first position before reading a neighbor.",
-        "wrong_2": "Use the core rule instead: Guard the first position before reading a neighbor."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Guard the first position before reading a neighbor.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Guard the first position before reading a neighbor."
       }
     },
     "difficulty": "easy",
@@ -1030,8 +1030,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Counts are stronger than presence when duplicates matter.",
-        "wrong_2": "Use the core rule instead: Counts are stronger than presence when duplicates matter."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Counts are stronger than presence when duplicates matter.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Counts are stronger than presence when duplicates matter."
       }
     },
     "difficulty": "easy",
@@ -1132,8 +1132,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Normalize the input before comparing semantic equality.",
-        "wrong_2": "Use the core rule instead: Normalize the input before comparing semantic equality."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Normalize the input before comparing semantic equality.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Normalize the input before comparing semantic equality."
       }
     },
     "difficulty": "easy",
@@ -1239,8 +1239,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is duplicate handling at an index boundary.",
-        "wrong_2": "Use the core rule instead: The pattern signal is duplicate handling at an index boundary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is duplicate handling at an index boundary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is duplicate handling at an index boundary."
       }
     },
     "difficulty": "easy",
@@ -1387,8 +1387,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a write boundary and a read index moving forward.",
-        "wrong_2": "Use the core rule instead: Use a write boundary and a read index moving forward."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a write boundary and a read index moving forward.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a write boundary and a read index moving forward."
       }
     },
     "difficulty": "easy",
@@ -1562,8 +1562,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is string normalization before comparison.",
-        "wrong_2": "Use the core rule instead: The pattern signal is string normalization before comparison."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is string normalization before comparison.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is string normalization before comparison."
       }
     },
     "difficulty": "easy",
@@ -1642,8 +1642,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review skipping the first occurrence before it is recorded.",
-        "wrong_2": "Use the core rule instead: Review skipping the first occurrence before it is recorded."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review skipping the first occurrence before it is recorded.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review skipping the first occurrence before it is recorded."
       }
     },
     "difficulty": "easy",
@@ -1722,8 +1722,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Guard the first position before reading a neighbor.",
-        "wrong_2": "Use the core rule instead: Guard the first position before reading a neighbor."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Guard the first position before reading a neighbor.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Guard the first position before reading a neighbor."
       }
     },
     "difficulty": "easy",
@@ -1897,8 +1897,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Counts are stronger than presence when duplicates matter.",
-        "wrong_2": "Use the core rule instead: Counts are stronger than presence when duplicates matter."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Counts are stronger than presence when duplicates matter.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Counts are stronger than presence when duplicates matter."
       }
     },
     "difficulty": "easy",
@@ -1999,8 +1999,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Normalize the input before comparing semantic equality.",
-        "wrong_2": "Use the core rule instead: Normalize the input before comparing semantic equality."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Normalize the input before comparing semantic equality.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Normalize the input before comparing semantic equality."
       }
     },
     "difficulty": "easy",
@@ -2106,8 +2106,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is duplicate handling at an index boundary.",
-        "wrong_2": "Use the core rule instead: The pattern signal is duplicate handling at an index boundary."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is duplicate handling at an index boundary.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is duplicate handling at an index boundary."
       }
     },
     "difficulty": "easy",
@@ -2254,8 +2254,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a write boundary and a read index moving forward.",
-        "wrong_2": "Use the core rule instead: Use a write boundary and a read index moving forward."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a write boundary and a read index moving forward.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a write boundary and a read index moving forward."
       }
     },
     "difficulty": "easy",
@@ -2429,8 +2429,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is string normalization before comparison.",
-        "wrong_2": "Use the core rule instead: The pattern signal is string normalization before comparison."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is string normalization before comparison.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is string normalization before comparison."
       }
     },
     "difficulty": "easy",
@@ -2509,8 +2509,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review skipping the first occurrence before it is recorded.",
-        "wrong_2": "Use the core rule instead: Review skipping the first occurrence before it is recorded."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review skipping the first occurrence before it is recorded.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review skipping the first occurrence before it is recorded."
       }
     },
     "difficulty": "easy",

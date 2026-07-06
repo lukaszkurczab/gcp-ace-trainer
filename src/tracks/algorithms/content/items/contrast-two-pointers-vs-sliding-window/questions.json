@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use window reasoning only when the answer is a contiguous range with maintainable state.",
-        "wrong_2": "Use the core rule instead: Use window reasoning only when the answer is a contiguous range with maintainable state."
+        "wrong_1": "This option leans on \"Any solution with two indexes is a sliding window\", but the useful rule is: Use window reasoning only when the answer is a contiguous range with maintainable state.",
+        "wrong_2": "This option leans on \"Contiguous range state and pair boundary state are equivalent\", but the useful rule is: Use window reasoning only when the answer is a contiguous range with maintainable state."
       }
     },
     "id": "alg-contrast-pointers-window-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range.",
-        "wrong_2": "Use the core rule instead: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range."
+        "wrong_1": "This option leans on \"A contiguous range is implied by any sorted input\", but the useful rule is: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range.",
+        "wrong_2": "This option leans on \"A window is better because it also has left and right boundaries\", but the useful rule is: Two pointers are stronger when a pair comparison rules out one boundary without maintaining a whole range."
       }
     },
     "id": "alg-contrast-window-pointers-001",

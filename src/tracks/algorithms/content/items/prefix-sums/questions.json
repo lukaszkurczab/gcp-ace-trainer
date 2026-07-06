@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
-        "wrong_2": "Use the core rule instead: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior."
+        "wrong_1": "This option leans on \"Negative values make shrinking the left boundary always increase the sum\", but the useful rule is: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior.",
+        "wrong_2": "This option leans on \"A window is always valid for any contiguous sum task\", but the useful rule is: Use accumulated sums when a simple window cannot rely on predictable growth and shrink behavior."
       }
     },
     "id": "alg-prefix-window-failure-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store each prefix total so a range total can be computed from two accumulated values.",
-        "wrong_2": "Use the core rule instead: Store each prefix total so a range total can be computed from two accumulated values."
+        "wrong_1": "This option leans on \"Recompute each queried range from scratch without considering query count\", but the useful rule is: Store each prefix total so a range total can be computed from two accumulated values.",
+        "wrong_2": "This option leans on \"Keep only the largest element seen so far\", but the useful rule is: Store each prefix total so a range total can be computed from two accumulated values."
       }
     },
     "id": "alg-prefix-range-query-001",
@@ -203,8 +203,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
-        "wrong_2": "Use the core rule instead: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4."
+        "wrong_1": "This option leans on \"Look for prefix total 18 because target should be added\", but the useful rule is: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4.",
+        "wrong_2": "This option leans on \"Ignore earlier totals and only inspect the current element\", but the useful rule is: Look for an earlier prefix total of 4, because 11 minus target 7 equals 4."
       }
     },
     "id": "alg-prefix-trace-needed-total-001",
@@ -293,8 +293,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable.",
-        "wrong_2": "Use the core rule instead: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable."
+        "wrong_1": "This option leans on \"The moving window is safer because it stores less state\", but the useful rule is: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable.",
+        "wrong_2": "This option leans on \"Negative values do not affect any contiguous range method\", but the useful rule is: A prefix-sum plan handles negative values because it does not depend on shrink movement being predictable."
       }
     },
     "id": "alg-prefix-vs-window-comparison-001",
@@ -398,8 +398,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The empty prefix before index 0 must be represented so a valid range can start at the first element.",
-        "wrong_2": "Use the core rule instead: The empty prefix before index 0 must be represented so a valid range can start at the first element."
+        "wrong_1": "This option leans on \"Only store prefixes after two elements have been scanned\", but the useful rule is: The empty prefix before index 0 must be represented so a valid range can start at the first element.",
+        "wrong_2": "This option leans on \"Ranges starting at index 0 cannot be found by prefix state\", but the useful rule is: The empty prefix before index 0 must be represented so a valid range can start at the first element."
       }
     },
     "id": "alg-prefix-empty-prefix-edge-001",
@@ -478,8 +478,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use prefix totals because negative values can make simple shrink decisions unreliable.",
-        "wrong_2": "Use the core rule instead: Use prefix totals because negative values can make simple shrink decisions unreliable."
+        "wrong_1": "This option leans on \"Use a positive-number window because the target is a sum\", but the useful rule is: Use prefix totals because negative values can make simple shrink decisions unreliable.",
+        "wrong_2": "This option leans on \"Ignore signs and shrink whenever the total is too high\", but the useful rule is: Use prefix totals because negative values can make simple shrink decisions unreliable."
       }
     },
     "id": "alg-exp-prefix-strategy-001",
@@ -590,8 +590,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Precompute prefix totals when many range queries reuse the same sequence.",
-        "wrong_2": "Use the core rule instead: Precompute prefix totals when many range queries reuse the same sequence."
+        "wrong_1": "This option leans on \"Recompute every range because each query is short to describe\", but the useful rule is: Precompute prefix totals when many range queries reuse the same sequence.",
+        "wrong_2": "This option leans on \"Use a stack because queries have endpoints\", but the useful rule is: Precompute prefix totals when many range queries reuse the same sequence."
       }
     },
     "id": "alg-exp-prefix-strategy-002",
@@ -697,8 +697,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store earlier prefix totals so current total minus target can prove a matching subarray.",
-        "wrong_2": "Use the core rule instead: Store earlier prefix totals so current total minus target can prove a matching subarray."
+        "wrong_1": "This option leans on \"Store only the current element because earlier totals cannot matter\", but the useful rule is: Store earlier prefix totals so current total minus target can prove a matching subarray.",
+        "wrong_2": "This option leans on \"Use a positive window even when shrink direction can fail\", but the useful rule is: Store earlier prefix totals so current total minus target can prove a matching subarray."
       }
     },
     "id": "alg-exp-prefix-strategy-003",
@@ -804,8 +804,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A difference array fits when many range increments are applied before final values are read.",
-        "wrong_2": "Use the core rule instead: A difference array fits when many range increments are applied before final values are read."
+        "wrong_1": "This option leans on \"Update every covered index for every operation without checking operation count\", but the useful rule is: A difference array fits when many range increments are applied before final values are read.",
+        "wrong_2": "This option leans on \"Use binary search because ranges have boundaries\", but the useful rule is: A difference array fits when many range increments are applied before final values are read."
       }
     },
     "id": "alg-exp-prefix-strategy-004",
@@ -911,8 +911,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is repeated range totals; prefix state answers each range from accumulated endpoints.",
-        "wrong_2": "Use the core rule instead: The signal is repeated range totals; prefix state answers each range from accumulated endpoints."
+        "wrong_1": "This option leans on \"The signal is sorting because dates are ordered\", but the useful rule is: The signal is repeated range totals; prefix state answers each range from accumulated endpoints.",
+        "wrong_2": "This option leans on \"The signal is stack state because ranges are nested in the UI\", but the useful rule is: The signal is repeated range totals; prefix state answers each range from accumulated endpoints."
       }
     },
     "id": "alg-exp-prefix-identify-001",
@@ -991,8 +991,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The empty prefix lets a range beginning at index zero be represented by the same formula.",
-        "wrong_2": "Use the core rule instead: The empty prefix lets a range beginning at index zero be represented by the same formula."
+        "wrong_1": "This option leans on \"Ranges must start after index zero\", but the useful rule is: The empty prefix lets a range beginning at index zero be represented by the same formula.",
+        "wrong_2": "This option leans on \"The first prefix can be skipped because it has no previous value\", but the useful rule is: The empty prefix lets a range beginning at index zero be represented by the same formula."
       }
     },
     "id": "alg-exp-prefix-identify-002",
@@ -1071,8 +1071,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The failure signal is loss of monotonic behavior in the range total.",
-        "wrong_2": "Use the core rule instead: The failure signal is loss of monotonic behavior in the range total."
+        "wrong_1": "This option leans on \"Every contiguous sum has predictable movement\", but the useful rule is: The failure signal is loss of monotonic behavior in the range total.",
+        "wrong_2": "This option leans on \"Prefix state only works for positive values\", but the useful rule is: The failure signal is loss of monotonic behavior in the range total."
       }
     },
     "id": "alg-exp-prefix-identify-003",
@@ -1217,8 +1217,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Prefix lookup is safer when value signs break the simple window invariant.",
-        "wrong_2": "Use the core rule instead: Prefix lookup is safer when value signs break the simple window invariant."
+        "wrong_1": "This option leans on \"Plan A is safer because it stores less state\", but the useful rule is: Prefix lookup is safer when value signs break the simple window invariant.",
+        "wrong_2": "This option leans on \"Value signs do not affect range-sum mechanics\", but the useful rule is: Prefix lookup is safer when value signs break the simple window invariant."
       }
     },
     "id": "alg-exp-prefix-comparison-001",
@@ -1322,8 +1322,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is applying a positive-only window invariant after the prompt allows values below zero.",
-        "wrong_2": "Use the core rule instead: The mistake is applying a positive-only window invariant after the prompt allows values below zero."
+        "wrong_1": "This option leans on \"Refunds make the shrink rule more reliable\", but the useful rule is: The mistake is applying a positive-only window invariant after the prompt allows values below zero.",
+        "wrong_2": "This option leans on \"The target value alone decides whether a window is safe\", but the useful rule is: The mistake is applying a positive-only window invariant after the prompt allows values below zero."
       }
     },
     "id": "alg-exp-prefix-mistake-001",
@@ -1402,8 +1402,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable.",
-        "wrong_2": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use prefix totals because simple shrink movement is not reliable.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use prefix totals because simple shrink movement is not reliable."
       }
     },
     "difficulty": "medium",
@@ -1585,8 +1585,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total.",
-        "wrong_2": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is prefix lookup by needed prior total.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is prefix lookup by needed prior total."
       }
     },
     "difficulty": "medium",
@@ -1668,8 +1668,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review applying every update to every covered index without checking operation count.",
-        "wrong_2": "Use the core rule instead: Review applying every update to every covered index without checking operation count."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review applying every update to every covered index without checking operation count.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review applying every update to every covered index without checking operation count."
       }
     },
     "difficulty": "medium",
@@ -1751,8 +1751,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total.",
-        "wrong_2": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Track prefix frequencies, not just the latest prefix total.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Track prefix frequencies, not just the latest prefix total."
       }
     },
     "difficulty": "medium",
@@ -1934,8 +1934,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large.",
-        "wrong_2": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Preprocessing beats recomputing each range when query count is large.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Preprocessing beats recomputing each range when query count is large."
       }
     },
     "difficulty": "medium",
@@ -2039,8 +2039,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store earlier prefix totals and check current minus target.",
-        "wrong_2": "Use the core rule instead: Store earlier prefix totals and check current minus target."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Store earlier prefix totals and check current minus target.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Store earlier prefix totals and check current minus target."
       }
     },
     "difficulty": "medium",
@@ -2151,8 +2151,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is batched range updates.",
-        "wrong_2": "Use the core rule instead: The pattern signal is batched range updates."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is batched range updates.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is batched range updates."
       }
     },
     "difficulty": "medium",
@@ -2305,8 +2305,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable.",
-        "wrong_2": "Use the core rule instead: Use prefix totals because simple shrink movement is not reliable."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use prefix totals because simple shrink movement is not reliable.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use prefix totals because simple shrink movement is not reliable."
       }
     },
     "difficulty": "medium",
@@ -2488,8 +2488,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total.",
-        "wrong_2": "Use the core rule instead: The pattern signal is prefix lookup by needed prior total."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is prefix lookup by needed prior total.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is prefix lookup by needed prior total."
       }
     },
     "difficulty": "medium",
@@ -2571,8 +2571,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review applying every update to every covered index without checking operation count.",
-        "wrong_2": "Use the core rule instead: Review applying every update to every covered index without checking operation count."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review applying every update to every covered index without checking operation count.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review applying every update to every covered index without checking operation count."
       }
     },
     "difficulty": "medium",
@@ -2654,8 +2654,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total.",
-        "wrong_2": "Use the core rule instead: Track prefix frequencies, not just the latest prefix total."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Track prefix frequencies, not just the latest prefix total.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Track prefix frequencies, not just the latest prefix total."
       }
     },
     "difficulty": "medium",
@@ -2837,8 +2837,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large.",
-        "wrong_2": "Use the core rule instead: Preprocessing beats recomputing each range when query count is large."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Preprocessing beats recomputing each range when query count is large.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Preprocessing beats recomputing each range when query count is large."
       }
     },
     "difficulty": "medium",
@@ -2942,8 +2942,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store earlier prefix totals and check current minus target.",
-        "wrong_2": "Use the core rule instead: Store earlier prefix totals and check current minus target."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Store earlier prefix totals and check current minus target.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Store earlier prefix totals and check current minus target."
       }
     },
     "difficulty": "medium",
@@ -3054,8 +3054,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is batched range updates.",
-        "wrong_2": "Use the core rule instead: The pattern signal is batched range updates."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is batched range updates.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is batched range updates."
       }
     },
     "difficulty": "medium",

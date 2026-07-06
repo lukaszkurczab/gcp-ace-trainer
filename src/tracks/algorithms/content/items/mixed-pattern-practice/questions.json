@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use interleaving by naming the decisive signal before applying mechanics.",
-        "wrong_2": "Use the core rule instead: Use interleaving by naming the decisive signal before applying mechanics."
+        "wrong_1": "This option leans on \"Apply the same pattern to every example in the set\", but the useful rule is: Use interleaving by naming the decisive signal before applying mechanics.",
+        "wrong_2": "This option leans on \"Choose the strategy whose name appears first\", but the useful rule is: Use interleaving by naming the decisive signal before applying mechanics."
       }
     },
     "id": "alg-exp-mixed-strategy-001",
@@ -118,8 +118,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose window for contiguous validity, not merely because two boundaries are visible.",
-        "wrong_2": "Use the core rule instead: Choose window for contiguous validity, not merely because two boundaries are visible."
+        "wrong_1": "This option leans on \"Reuse pair scan because it was practiced most recently\", but the useful rule is: Choose window for contiguous validity, not merely because two boundaries are visible.",
+        "wrong_2": "This option leans on \"Sort the segment before checking contiguity\", but the useful rule is: Choose window for contiguous validity, not merely because two boundaries are visible."
       }
     },
     "id": "alg-exp-mixed-strategy-002",
@@ -225,8 +225,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose prefix state when signed values break the window invariant.",
-        "wrong_2": "Use the core rule instead: Choose prefix state when signed values break the window invariant."
+        "wrong_1": "This option leans on \"Use window mechanics for every contiguous sum\", but the useful rule is: Choose prefix state when signed values break the window invariant.",
+        "wrong_2": "This option leans on \"Ignore signs because the target is still numeric\", but the useful rule is: Choose prefix state when signed values break the window invariant."
       }
     },
     "id": "alg-exp-mixed-strategy-003",
@@ -337,8 +337,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose stack when the latest unresolved element controls the next valid action.",
-        "wrong_2": "Use the core rule instead: Choose stack when the latest unresolved element controls the next valid action."
+        "wrong_1": "This option leans on \"Use a set because token types repeat\", but the useful rule is: Choose stack when the latest unresolved element controls the next valid action.",
+        "wrong_2": "This option leans on \"Use sorting because token order can be rearranged\", but the useful rule is: Choose stack when the latest unresolved element controls the next valid action."
       }
     },
     "id": "alg-exp-mixed-strategy-004",
@@ -444,8 +444,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state.",
-        "wrong_2": "Use the core rule instead: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state."
+        "wrong_1": "This option leans on \"Name the topic that appeared in the previous question\", but the useful rule is: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state.",
+        "wrong_2": "This option leans on \"Name the data type only and ignore state behavior\", but the useful rule is: The pattern is identified by state behavior: lookup, moving range, ordered boundary, or latest unresolved state."
       }
     },
     "id": "alg-exp-mixed-identify-001",
@@ -524,8 +524,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A sorted boundary signal is different from mere numeric input.",
-        "wrong_2": "Use the core rule instead: A sorted boundary signal is different from mere numeric input."
+        "wrong_1": "This option leans on \"Numbers alone create a binary-search boundary\", but the useful rule is: A sorted boundary signal is different from mere numeric input.",
+        "wrong_2": "This option leans on \"Any comparison lets half the candidates be discarded\", but the useful rule is: A sorted boundary signal is different from mere numeric input."
       }
     },
     "id": "alg-exp-mixed-identify-002",
@@ -740,8 +740,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The comparison should reject the strategy whose required invariant is absent.",
-        "wrong_2": "Use the core rule instead: The comparison should reject the strategy whose required invariant is absent."
+        "wrong_1": "This option leans on \"Pick the strategy with less state even if its invariant is absent\", but the useful rule is: The comparison should reject the strategy whose required invariant is absent.",
+        "wrong_2": "This option leans on \"Both strategies rely on the same movement rule\", but the useful rule is: The comparison should reject the strategy whose required invariant is absent."
       }
     },
     "id": "alg-exp-mixed-comparison-001",
@@ -845,8 +845,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is carrying over the last practiced pattern instead of reading the new decision signal.",
-        "wrong_2": "Use the core rule instead: The mistake is carrying over the last practiced pattern instead of reading the new decision signal."
+        "wrong_1": "This option leans on \"Recent practice is a stronger signal than the current prompt\", but the useful rule is: The mistake is carrying over the last practiced pattern instead of reading the new decision signal.",
+        "wrong_2": "This option leans on \"All array problems should share one strategy\", but the useful rule is: The mistake is carrying over the last practiced pattern instead of reading the new decision signal."
       }
     },
     "id": "alg-exp-mixed-mistake-001",
@@ -925,8 +925,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is candidate shape before mechanics.",
-        "wrong_2": "Use the core rule instead: The pattern signal is candidate shape before mechanics."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is candidate shape before mechanics.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is candidate shape before mechanics."
       }
     },
     "difficulty": "hard",
@@ -1009,8 +1009,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
-        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use value signs to separate window from prefix reasoning."
       }
     },
     "difficulty": "hard",
@@ -1123,8 +1123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The stronger plan depends on whether prior state or order answers the question.",
-        "wrong_2": "Use the core rule instead: The stronger plan depends on whether prior state or order answers the question."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The stronger plan depends on whether prior state or order answers the question.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The stronger plan depends on whether prior state or order answers the question."
       }
     },
     "difficulty": "hard",
@@ -1229,8 +1229,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
-        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering."
       }
     },
     "difficulty": "hard",
@@ -1343,8 +1343,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is output semantics, not just comparison convenience.",
-        "wrong_2": "Use the core rule instead: The pattern signal is output semantics, not just comparison convenience."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is output semantics, not just comparison convenience.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is output semantics, not just comparison convenience."
       }
     },
     "difficulty": "hard",
@@ -1427,8 +1427,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
-        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate pair-boundary reasoning from window invariants."
       }
     },
     "difficulty": "hard",
@@ -1541,8 +1541,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
-        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use value signs to separate window from prefix reasoning."
       }
     },
     "difficulty": "hard",
@@ -1655,8 +1655,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
-        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate lookup state from ordered-boundary search."
       }
     },
     "difficulty": "hard",
@@ -1769,8 +1769,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
-        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering."
       }
     },
     "difficulty": "hard",
@@ -1883,8 +1883,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
-        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject sorting when it changes the output contract.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject sorting when it changes the output contract."
       }
     },
     "difficulty": "hard",
@@ -1997,8 +1997,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
-        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate pair-boundary reasoning from window invariants."
       }
     },
     "difficulty": "hard",
@@ -2111,8 +2111,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
-        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use value signs to separate window from prefix reasoning."
       }
     },
     "difficulty": "hard",
@@ -2225,8 +2225,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
-        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate lookup state from ordered-boundary search."
       }
     },
     "difficulty": "hard",
@@ -2339,8 +2339,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
-        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering."
       }
     },
     "difficulty": "hard",
@@ -2453,8 +2453,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
-        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject sorting when it changes the output contract.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject sorting when it changes the output contract."
       }
     },
     "difficulty": "hard",
@@ -2567,8 +2567,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
-        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate pair-boundary reasoning from window invariants."
       }
     },
     "difficulty": "hard",
@@ -2681,8 +2681,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
-        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use value signs to separate window from prefix reasoning."
       }
     },
     "difficulty": "hard",
@@ -2795,8 +2795,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
-        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate lookup state from ordered-boundary search."
       }
     },
     "difficulty": "hard",
@@ -2909,8 +2909,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
-        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering."
       }
     },
     "difficulty": "hard",
@@ -3023,8 +3023,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
-        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject sorting when it changes the output contract.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject sorting when it changes the output contract."
       }
     },
     "difficulty": "hard",
@@ -3137,8 +3137,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate pair-boundary reasoning from window invariants.",
-        "wrong_2": "Use the core rule instead: Separate pair-boundary reasoning from window invariants."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate pair-boundary reasoning from window invariants.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate pair-boundary reasoning from window invariants."
       }
     },
     "difficulty": "hard",
@@ -3251,8 +3251,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use value signs to separate window from prefix reasoning.",
-        "wrong_2": "Use the core rule instead: Use value signs to separate window from prefix reasoning."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use value signs to separate window from prefix reasoning.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use value signs to separate window from prefix reasoning."
       }
     },
     "difficulty": "hard",
@@ -3365,8 +3365,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate lookup state from ordered-boundary search.",
-        "wrong_2": "Use the core rule instead: Separate lookup state from ordered-boundary search."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate lookup state from ordered-boundary search.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate lookup state from ordered-boundary search."
       }
     },
     "difficulty": "hard",
@@ -3479,8 +3479,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering.",
-        "wrong_2": "Use the core rule instead: Separate basic stack resolution from monotonic stack ordering."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Separate basic stack resolution from monotonic stack ordering."
       }
     },
     "difficulty": "hard",
@@ -3593,8 +3593,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Reject sorting when it changes the output contract.",
-        "wrong_2": "Use the core rule instead: Reject sorting when it changes the output contract."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Reject sorting when it changes the output contract.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Reject sorting when it changes the output contract."
       }
     },
     "difficulty": "hard",

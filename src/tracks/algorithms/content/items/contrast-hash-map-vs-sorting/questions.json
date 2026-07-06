@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use lookup when preserving original relationships matters more than ordering the whole input.",
-        "wrong_2": "Use the core rule instead: Use lookup when preserving original relationships matters more than ordering the whole input."
+        "wrong_1": "This option leans on \"Sorting is always preferable when pairs are involved\", but the useful rule is: Use lookup when preserving original relationships matters more than ordering the whole input.",
+        "wrong_2": "This option leans on \"Original positions never affect pair tasks\", but the useful rule is: Use lookup when preserving original relationships matters more than ordering the whole input."
       }
     },
     "id": "alg-contrast-hash-sorting-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant.",
-        "wrong_2": "Use the core rule instead: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant."
+        "wrong_1": "This option leans on \"Use lookup only because lookup can store values\", but the useful rule is: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant.",
+        "wrong_2": "This option leans on \"Avoid ordering even when adjacency is the actual signal\", but the useful rule is: Sorting is stronger when adjacency after ordering directly reveals the needed relationship and original order is irrelevant."
       }
     },
     "id": "alg-contrast-sorting-hash-001",

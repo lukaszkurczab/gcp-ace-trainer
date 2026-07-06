@@ -12,8 +12,8 @@
       "nextAction": "Trace the check-before-store order on a small pair example.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "store_current_first": "Use the core rule instead: Check prior state before storing the current value when one element cannot be reused.",
-        "sort_then_lookup": "Use the core rule instead: Check prior state before storing the current value when one element cannot be reused."
+        "store_current_first": "This option leans on \"Store the current value before checking the complement\", but the useful rule is: Check prior state before storing the current value when one element cannot be reused.",
+        "sort_then_lookup": "This option leans on \"Sort the input before every lookup\", but the useful rule is: Check prior state before storing the current value when one element cannot be reused."
       }
     },
     "id": "alg-hash-map-primer-001",
@@ -295,8 +295,8 @@
       "nextAction": "Trace one more value and name the lookup state before the update.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "store_7": "Use the core rule instead: At each value, inspect the lookup before changing it.",
-        "move_right_pointer": "Use the core rule instead: At each value, inspect the lookup before changing it."
+        "store_7": "This option leans on \"Store 7 and continue without checking 2\", but the useful rule is: At each value, inspect the lookup before changing it.",
+        "move_right_pointer": "This option leans on \"Move a right boundary inward\", but the useful rule is: At each value, inspect the lookup before changing it."
       }
     },
     "id": "alg-hash-map-trace-next-001",
@@ -381,8 +381,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: At value 2, the needed value 6 is already in seen state from an earlier position.",
-        "wrong_2": "Use the core rule instead: At value 2, the needed value 6 is already in seen state from an earlier position."
+        "wrong_1": "This option leans on \"Store 2 first and pair it with itself\", but the useful rule is: At value 2, the needed value 6 is already in seen state from an earlier position.",
+        "wrong_2": "This option leans on \"Sort the badges before checking whether original positions still matter\", but the useful rule is: At value 2, the needed value 6 is already in seen state from an earlier position."
       }
     },
     "id": "alg-hash-map-worked-badge-pair-001",
@@ -575,8 +575,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store the normalized key as the map key and append the original word to that key's group.",
-        "wrong_2": "Use the core rule instead: Store the normalized key as the map key and append the original word to that key's group."
+        "wrong_1": "This option leans on \"Use the current index as the key because each word has one position\", but the useful rule is: Store the normalized key as the map key and append the original word to that key's group.",
+        "wrong_2": "This option leans on \"Use the first character only because it is quick to read\", but the useful rule is: Store the normalized key as the map key and append the original word to that key's group."
       }
     },
     "id": "alg-hash-map-group-key-001",
@@ -655,8 +655,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Record that 5 has now been seen, because the current value did not complete the condition.",
-        "wrong_2": "Use the core rule instead: Record that 5 has now been seen, because the current value did not complete the condition."
+        "wrong_1": "This option leans on \"Return a pair because 5 is now available\", but the useful rule is: Record that 5 has now been seen, because the current value did not complete the condition.",
+        "wrong_2": "This option leans on \"Clear the seen state because this value did not match\", but the useful rule is: Record that 5 has now been seen, because the current value did not complete the condition."
       }
     },
     "id": "alg-hash-map-trace-store-001",
@@ -745,8 +745,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Store the value needed for future membership checks, not the whole scanned prefix.",
-        "wrong_2": "Use the core rule instead: Store the value needed for future membership checks, not the whole scanned prefix."
+        "wrong_1": "This option leans on \"Keep a sorted copy because membership always needs ordering\", but the useful rule is: Store the value needed for future membership checks, not the whole scanned prefix.",
+        "wrong_2": "This option leans on \"Track only the previous reading because older values cannot matter\", but the useful rule is: Store the value needed for future membership checks, not the whole scanned prefix."
       }
     },
     "id": "alg-exp-hash-strategy-001",
@@ -852,8 +852,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use the normalized address as the key because grouping depends on equivalent forms.",
-        "wrong_2": "Use the core rule instead: Use the normalized address as the key because grouping depends on equivalent forms."
+        "wrong_1": "This option leans on \"Use insertion order as the key because it is stable\", but the useful rule is: Use the normalized address as the key because grouping depends on equivalent forms.",
+        "wrong_2": "This option leans on \"Use the first raw character even when formatting differs\", but the useful rule is: Use the normalized address as the key because grouping depends on equivalent forms."
       }
     },
     "id": "alg-exp-hash-strategy-002",
@@ -959,8 +959,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Check the needed complement against prior values before storing the current value.",
-        "wrong_2": "Use the core rule instead: Check the needed complement against prior values before storing the current value."
+        "wrong_1": "This option leans on \"Store the current value first, then immediately pair it with itself\", but the useful rule is: Check the needed complement against prior values before storing the current value.",
+        "wrong_2": "This option leans on \"Clear prior values after every failed complement check\", but the useful rule is: Check the needed complement against prior values before storing the current value."
       }
     },
     "id": "alg-exp-hash-strategy-003",
@@ -1066,8 +1066,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Count frequencies when equality depends on multiplicity, not just presence.",
-        "wrong_2": "Use the core rule instead: Count frequencies when equality depends on multiplicity, not just presence."
+        "wrong_1": "This option leans on \"Use a set because presence alone captures repeated counts\", but the useful rule is: Count frequencies when equality depends on multiplicity, not just presence.",
+        "wrong_2": "This option leans on \"Use two pointers without ordering or boundary signals\", but the useful rule is: Count frequencies when equality depends on multiplicity, not just presence."
       }
     },
     "id": "alg-exp-hash-strategy-004",
@@ -1172,8 +1172,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is fast lookup by a derived key.",
-        "wrong_2": "Use the core rule instead: The pattern signal is fast lookup by a derived key."
+        "wrong_1": "This option leans on \"Name it as ordering because the code is comparable\", but the useful rule is: The pattern signal is fast lookup by a derived key.",
+        "wrong_2": "This option leans on \"Name it as recursion because earlier state is reused\", but the useful rule is: The pattern signal is fast lookup by a derived key."
       }
     },
     "id": "alg-exp-hash-identify-001",
@@ -1251,8 +1251,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The key should be the bucket identity; the value can store the records that share it.",
-        "wrong_2": "Use the core rule instead: The key should be the bucket identity; the value can store the records that share it."
+        "wrong_1": "This option leans on \"The day is only a display label, not part of state\", but the useful rule is: The key should be the bucket identity; the value can store the records that share it.",
+        "wrong_2": "This option leans on \"The whole event list must be the key\", but the useful rule is: The key should be the bucket identity; the value can store the records that share it."
       }
     },
     "id": "alg-exp-hash-identify-002",
@@ -1331,8 +1331,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A set is enough for presence; a map is needed when counts or payloads affect the answer.",
-        "wrong_2": "Use the core rule instead: A set is enough for presence; a map is needed when counts or payloads affect the answer."
+        "wrong_1": "This option leans on \"Presence and frequency require identical state\", but the useful rule is: A set is enough for presence; a map is needed when counts or payloads affect the answer.",
+        "wrong_2": "This option leans on \"Counts can always be recovered from a set\", but the useful rule is: A set is enough for presence; a map is needed when counts or payloads affect the answer."
       }
     },
     "id": "alg-exp-hash-identify-003",
@@ -1479,8 +1479,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The grouping key plan wins because it turns repeated comparisons into direct bucket access.",
-        "wrong_2": "Use the core rule instead: The grouping key plan wins because it turns repeated comparisons into direct bucket access."
+        "wrong_1": "This option leans on \"Plan A is stronger because it avoids choosing a key\", but the useful rule is: The grouping key plan wins because it turns repeated comparisons into direct bucket access.",
+        "wrong_2": "This option leans on \"Both plans require the same comparisons after every record\", but the useful rule is: The grouping key plan wins because it turns repeated comparisons into direct bucket access."
       }
     },
     "id": "alg-exp-hash-comparison-001",
@@ -1581,8 +1581,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is losing multiplicity; duplicate values can change the answer.",
-        "wrong_2": "Use the core rule instead: The mistake is losing multiplicity; duplicate values can change the answer."
+        "wrong_1": "This option leans on \"A set stores duplicate counts automatically\", but the useful rule is: The mistake is losing multiplicity; duplicate values can change the answer.",
+        "wrong_2": "This option leans on \"Duplicates never affect lookup-based tasks\", but the useful rule is: The mistake is losing multiplicity; duplicate values can change the answer."
       }
     },
     "id": "alg-exp-hash-mistake-001",
@@ -1661,8 +1661,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
-        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Check the needed complement in prior state before storing the current value."
       }
     },
     "difficulty": "easy",
@@ -1836,8 +1836,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
-        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Grouping keys avoid comparing each event with every prior group."
       }
     },
     "difficulty": "easy",
@@ -1938,8 +1938,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
-        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a seen set when only membership matters.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a seen set when only membership matters."
       }
     },
     "difficulty": "easy",
@@ -2045,8 +2045,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is lookup by derived value.",
-        "wrong_2": "Use the core rule instead: The pattern signal is lookup by derived value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is lookup by derived value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is lookup by derived value."
       }
     },
     "difficulty": "easy",
@@ -2193,8 +2193,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity.",
-        "wrong_2": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a frequency map because presence alone loses multiplicity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a frequency map because presence alone loses multiplicity."
       }
     },
     "difficulty": "easy",
@@ -2368,8 +2368,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is prior membership state.",
-        "wrong_2": "Use the core rule instead: The pattern signal is prior membership state."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is prior membership state.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is prior membership state."
       }
     },
     "difficulty": "easy",
@@ -2448,8 +2448,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently.",
-        "wrong_2": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review using the full record as a key when the prompt defines equivalence differently.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review using the full record as a key when the prompt defines equivalence differently."
       }
     },
     "difficulty": "easy",
@@ -2528,8 +2528,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
-        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Check the needed complement in prior state before storing the current value."
       }
     },
     "difficulty": "easy",
@@ -2703,8 +2703,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
-        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Grouping keys avoid comparing each event with every prior group."
       }
     },
     "difficulty": "easy",
@@ -2805,8 +2805,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
-        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a seen set when only membership matters.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a seen set when only membership matters."
       }
     },
     "difficulty": "easy",
@@ -2912,8 +2912,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is lookup by derived value.",
-        "wrong_2": "Use the core rule instead: The pattern signal is lookup by derived value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is lookup by derived value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is lookup by derived value."
       }
     },
     "difficulty": "easy",
@@ -3060,8 +3060,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity.",
-        "wrong_2": "Use the core rule instead: Use a frequency map because presence alone loses multiplicity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a frequency map because presence alone loses multiplicity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a frequency map because presence alone loses multiplicity."
       }
     },
     "difficulty": "easy",
@@ -3235,8 +3235,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is prior membership state.",
-        "wrong_2": "Use the core rule instead: The pattern signal is prior membership state."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is prior membership state.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is prior membership state."
       }
     },
     "difficulty": "easy",
@@ -3315,8 +3315,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently.",
-        "wrong_2": "Use the core rule instead: Review using the full record as a key when the prompt defines equivalence differently."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review using the full record as a key when the prompt defines equivalence differently.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review using the full record as a key when the prompt defines equivalence differently."
       }
     },
     "difficulty": "easy",
@@ -3395,8 +3395,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Check the needed complement in prior state before storing the current value.",
-        "wrong_2": "Use the core rule instead: Check the needed complement in prior state before storing the current value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Check the needed complement in prior state before storing the current value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Check the needed complement in prior state before storing the current value."
       }
     },
     "difficulty": "easy",
@@ -3570,8 +3570,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group.",
-        "wrong_2": "Use the core rule instead: Grouping keys avoid comparing each event with every prior group."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Grouping keys avoid comparing each event with every prior group.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Grouping keys avoid comparing each event with every prior group."
       }
     },
     "difficulty": "easy",
@@ -3672,8 +3672,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a seen set when only membership matters.",
-        "wrong_2": "Use the core rule instead: Use a seen set when only membership matters."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a seen set when only membership matters.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a seen set when only membership matters."
       }
     },
     "difficulty": "easy",

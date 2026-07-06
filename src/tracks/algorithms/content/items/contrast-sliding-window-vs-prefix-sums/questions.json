@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Prefix sums handle range totals when window movement no longer gives a safe invariant.",
-        "wrong_2": "Use the core rule instead: Prefix sums handle range totals when window movement no longer gives a safe invariant."
+        "wrong_1": "This option leans on \"A moving window is always safe for every range sum\", but the useful rule is: Prefix sums handle range totals when window movement no longer gives a safe invariant.",
+        "wrong_2": "This option leans on \"Prefix state cannot represent ranges that start later than index 0\", but the useful rule is: Prefix sums handle range totals when window movement no longer gives a safe invariant."
       }
     },
     "id": "alg-contrast-window-prefix-001",
@@ -123,8 +123,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid.",
-        "wrong_2": "Use the core rule instead: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid."
+        "wrong_1": "This option leans on \"Prefix lookup is always required for every range total\", but the useful rule is: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid.",
+        "wrong_2": "This option leans on \"Positive values make boundary movement unpredictable\", but the useful rule is: A positive-only range with predictable expansion and shrink movement keeps the window invariant valid."
       }
     },
     "id": "alg-contrast-prefix-window-001",
@@ -228,8 +228,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: When values may lower the range total, prefix state avoids assuming shrink direction is predictable.",
-        "wrong_2": "Use the core rule instead: When values may lower the range total, prefix state avoids assuming shrink direction is predictable."
+        "wrong_1": "This option leans on \"Negative values make a positive-window invariant safer\", but the useful rule is: When values may lower the range total, prefix state avoids assuming shrink direction is predictable.",
+        "wrong_2": "This option leans on \"Range totals do not depend on value signs\", but the useful rule is: When values may lower the range total, prefix state avoids assuming shrink direction is predictable."
       }
     },
     "id": "alg-contrast-window-prefix-negative-001",

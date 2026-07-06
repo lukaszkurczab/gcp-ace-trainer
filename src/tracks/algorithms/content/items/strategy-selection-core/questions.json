@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose the approach by matching problem signals to required state, then justify the tradeoff.",
-        "wrong_2": "Use the core rule instead: Choose the approach by matching problem signals to required state, then justify the tradeoff."
+        "wrong_1": "This option leans on \"Choose the most recently practiced pattern\", but the useful rule is: Choose the approach by matching problem signals to required state, then justify the tradeoff.",
+        "wrong_2": "This option leans on \"Choose the approach with the shortest pseudocode label\", but the useful rule is: Choose the approach by matching problem signals to required state, then justify the tradeoff."
       }
     },
     "id": "alg-strategy-core-001",
@@ -118,8 +118,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Fast membership points to lookup state; ordered elimination points to binary search.",
-        "wrong_2": "Use the core rule instead: Fast membership points to lookup state; ordered elimination points to binary search."
+        "wrong_1": "This option leans on \"Both tasks should use the same scan because they mention values\", but the useful rule is: Fast membership points to lookup state; ordered elimination points to binary search.",
+        "wrong_2": "This option leans on \"Both tasks should sort first because sorting is a familiar setup\", but the useful rule is: Fast membership points to lookup state; ordered elimination points to binary search."
       }
     },
     "id": "alg-strategy-membership-vs-ordered-001",
@@ -223,8 +223,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate.",
-        "wrong_2": "Use the core rule instead: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate."
+        "wrong_1": "This option leans on \"Both use two indexes, so the same invariant always applies\", but the useful rule is: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate.",
+        "wrong_2": "This option leans on \"Contiguity does not affect strategy choice\", but the useful rule is: Use a window only for contiguous state; use pair pointers when two coordinated positions define the candidate."
       }
     },
     "id": "alg-strategy-window-vs-pair-001",
@@ -335,8 +335,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: If sorting changes required output semantics, prefer state that preserves the needed relationship.",
-        "wrong_2": "Use the core rule instead: If sorting changes required output semantics, prefer state that preserves the needed relationship."
+        "wrong_1": "This option leans on \"Sort anyway because original neighbors can be inferred from sorted order\", but the useful rule is: If sorting changes required output semantics, prefer state that preserves the needed relationship.",
+        "wrong_2": "This option leans on \"Ignore the output requirement until implementation\", but the useful rule is: If sorting changes required output semantics, prefer state that preserves the needed relationship."
       }
     },
     "id": "alg-strategy-sort-side-effect-001",
@@ -506,7 +506,7 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "label": "Use the core rule instead: Membership lookup, contiguous-window state, and monotonic boundaries are decision signals; labels alone are not enough."
+        "label": "This option leans on \"A familiar pattern label is enough without a signal\", but the useful rule is: Membership lookup, contiguous-window state, and monotonic boundaries are decision signals; labels alone are not enough."
       }
     },
     "id": "alg-strategy-name-signals-001",
@@ -597,8 +597,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose lookup when the prompt asks for prior membership or complements.",
-        "wrong_2": "Use the core rule instead: Choose lookup when the prompt asks for prior membership or complements."
+        "wrong_1": "This option leans on \"Choose binary search because values can be compared\", but the useful rule is: Choose lookup when the prompt asks for prior membership or complements.",
+        "wrong_2": "This option leans on \"Choose stack state because earlier values exist\", but the useful rule is: Choose lookup when the prompt asks for prior membership or complements."
       }
     },
     "id": "alg-exp-strategy-core-001",
@@ -704,8 +704,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose sliding window when a contiguous range keeps a maintainable validity condition.",
-        "wrong_2": "Use the core rule instead: Choose sliding window when a contiguous range keeps a maintainable validity condition."
+        "wrong_1": "This option leans on \"Choose two-boundary pair scan because the segment has ends\", but the useful rule is: Choose sliding window when a contiguous range keeps a maintainable validity condition.",
+        "wrong_2": "This option leans on \"Choose sorting because counts are easier after ordering\", but the useful rule is: Choose sliding window when a contiguous range keeps a maintainable validity condition."
       }
     },
     "id": "alg-exp-strategy-core-002",
@@ -811,8 +811,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules.",
-        "wrong_2": "Use the core rule instead: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules."
+        "wrong_1": "This option leans on \"Choose positive-window movement because every range has boundaries\", but the useful rule is: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules.",
+        "wrong_2": "This option leans on \"Choose stack state because ranges may nest\", but the useful rule is: Choose prefix sums when repeated range totals or signed subarray sums break simpler movement rules."
       }
     },
     "id": "alg-exp-strategy-core-003",
@@ -918,8 +918,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose binary search only when a comparison or predicate discards an ordered side.",
-        "wrong_2": "Use the core rule instead: Choose binary search only when a comparison or predicate discards an ordered side."
+        "wrong_1": "This option leans on \"Choose lookup because the candidate is a number\", but the useful rule is: Choose binary search only when a comparison or predicate discards an ordered side.",
+        "wrong_2": "This option leans on \"Choose stack state because checks are repeated\", but the useful rule is: Choose binary search only when a comparison or predicate discards an ordered side."
       }
     },
     "id": "alg-exp-strategy-core-004",
@@ -1025,8 +1025,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item.",
-        "wrong_2": "Use the core rule instead: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item."
+        "wrong_1": "This option leans on \"Identify the approach most recently practiced\", but the useful rule is: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item.",
+        "wrong_2": "This option leans on \"Identify the shortest answer choice\", but the useful rule is: The prompt signal is state type: membership, contiguous range, ordered boundary, or latest unresolved item."
       }
     },
     "id": "alg-exp-strategy-identify-001",
@@ -1105,8 +1105,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Output requirements can reject a strategy even when its mechanics seem attractive.",
-        "wrong_2": "Use the core rule instead: Output requirements can reject a strategy even when its mechanics seem attractive."
+        "wrong_1": "This option leans on \"Sorting is always safe when comparisons appear\", but the useful rule is: Output requirements can reject a strategy even when its mechanics seem attractive.",
+        "wrong_2": "This option leans on \"Output requirements can be checked after returning an answer\", but the useful rule is: Output requirements can reject a strategy even when its mechanics seem attractive."
       }
     },
     "id": "alg-exp-strategy-identify-002",
@@ -1321,8 +1321,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Compare the decision signal, not just the surface shape; two indexes can mean different strategies.",
-        "wrong_2": "Use the core rule instead: Compare the decision signal, not just the surface shape; two indexes can mean different strategies."
+        "wrong_1": "This option leans on \"They are equivalent because both have two variables\", but the useful rule is: Compare the decision signal, not just the surface shape; two indexes can mean different strategies.",
+        "wrong_2": "This option leans on \"The one with fewer assignments is always better\", but the useful rule is: Compare the decision signal, not just the surface shape; two indexes can mean different strategies."
       }
     },
     "id": "alg-exp-strategy-comparison-001",
@@ -1426,8 +1426,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is choosing by label familiarity instead of matching the prompt signal.",
-        "wrong_2": "Use the core rule instead: The mistake is choosing by label familiarity instead of matching the prompt signal."
+        "wrong_1": "This option leans on \"Familiarity is enough when the pattern name appears similar\", but the useful rule is: The mistake is choosing by label familiarity instead of matching the prompt signal.",
+        "wrong_2": "This option leans on \"Constraints only matter after implementation details\", but the useful rule is: The mistake is choosing by label familiarity instead of matching the prompt signal."
       }
     },
     "id": "alg-exp-strategy-mistake-001",
@@ -1578,8 +1578,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Window reasoning beats pair pointers when the candidate is a range.",
-        "wrong_2": "Use the core rule instead: Window reasoning beats pair pointers when the candidate is a range."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Window reasoning beats pair pointers when the candidate is a range.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Window reasoning beats pair pointers when the candidate is a range."
       }
     },
     "difficulty": "medium",
@@ -1684,8 +1684,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose prefix lookup rather than a positive-only window.",
-        "wrong_2": "Use the core rule instead: Choose prefix lookup rather than a positive-only window."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose prefix lookup rather than a positive-only window.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose prefix lookup rather than a positive-only window."
       }
     },
     "difficulty": "medium",
@@ -1798,8 +1798,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is ordered elimination.",
-        "wrong_2": "Use the core rule instead: The pattern signal is ordered elimination."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is ordered elimination.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is ordered elimination."
       }
     },
     "difficulty": "medium",
@@ -1954,8 +1954,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose lookup state before considering sorting or boundaries.",
-        "wrong_2": "Use the core rule instead: Choose lookup state before considering sorting or boundaries."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose lookup state before considering sorting or boundaries.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose lookup state before considering sorting or boundaries."
       }
     },
     "difficulty": "hard",
@@ -2068,8 +2068,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is contiguous range state.",
-        "wrong_2": "Use the core rule instead: The pattern signal is contiguous range state."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is contiguous range state.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is contiguous range state."
       }
     },
     "difficulty": "hard",
@@ -2152,8 +2152,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review ignoring signs in the input constraints.",
-        "wrong_2": "Use the core rule instead: Review ignoring signs in the input constraints."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review ignoring signs in the input constraints.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review ignoring signs in the input constraints."
       }
     },
     "difficulty": "hard",
@@ -2236,8 +2236,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved.",
-        "wrong_2": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose binary search because an ordered boundary can be preserved.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose binary search because an ordered boundary can be preserved."
       }
     },
     "difficulty": "hard",
@@ -2350,8 +2350,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Stack state beats counters when type and order both matter.",
-        "wrong_2": "Use the core rule instead: Stack state beats counters when type and order both matter."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Stack state beats counters when type and order both matter.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Stack state beats counters when type and order both matter."
       }
     },
     "difficulty": "hard",
@@ -2456,8 +2456,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose lookup state before considering sorting or boundaries.",
-        "wrong_2": "Use the core rule instead: Choose lookup state before considering sorting or boundaries."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose lookup state before considering sorting or boundaries.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose lookup state before considering sorting or boundaries."
       }
     },
     "difficulty": "hard",
@@ -2570,8 +2570,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is contiguous range state.",
-        "wrong_2": "Use the core rule instead: The pattern signal is contiguous range state."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is contiguous range state.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is contiguous range state."
       }
     },
     "difficulty": "hard",
@@ -2654,8 +2654,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose prefix lookup rather than a positive-only window.",
-        "wrong_2": "Use the core rule instead: Choose prefix lookup rather than a positive-only window."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose prefix lookup rather than a positive-only window.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose prefix lookup rather than a positive-only window."
       }
     },
     "difficulty": "hard",
@@ -2768,8 +2768,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is ordered elimination.",
-        "wrong_2": "Use the core rule instead: The pattern signal is ordered elimination."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is ordered elimination.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is ordered elimination."
       }
     },
     "difficulty": "hard",
@@ -2852,8 +2852,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose stack state because latest unresolved context controls correctness.",
-        "wrong_2": "Use the core rule instead: Choose stack state because latest unresolved context controls correctness."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose stack state because latest unresolved context controls correctness.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose stack state because latest unresolved context controls correctness."
       }
     },
     "difficulty": "hard",
@@ -2966,8 +2966,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Lookup beats binary search when no ordered boundary is available.",
-        "wrong_2": "Use the core rule instead: Lookup beats binary search when no ordered boundary is available."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Lookup beats binary search when no ordered boundary is available.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Lookup beats binary search when no ordered boundary is available."
       }
     },
     "difficulty": "hard",
@@ -3072,8 +3072,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose window state and define the invariant before coding.",
-        "wrong_2": "Use the core rule instead: Choose window state and define the invariant before coding."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose window state and define the invariant before coding.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose window state and define the invariant before coding."
       }
     },
     "difficulty": "hard",
@@ -3186,8 +3186,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is accumulated range state under mixed signs.",
-        "wrong_2": "Use the core rule instead: The pattern signal is accumulated range state under mixed signs."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is accumulated range state under mixed signs.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is accumulated range state under mixed signs."
       }
     },
     "difficulty": "hard",
@@ -3270,8 +3270,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved.",
-        "wrong_2": "Use the core rule instead: Choose binary search because an ordered boundary can be preserved."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Choose binary search because an ordered boundary can be preserved.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Choose binary search because an ordered boundary can be preserved."
       }
     },
     "difficulty": "hard",

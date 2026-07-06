@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A repeated yes/no boundary lets each check discard part of the ordered search space.",
-        "wrong_2": "Use the core rule instead: A repeated yes/no boundary lets each check discard part of the ordered search space."
+        "wrong_1": "This option leans on \"Any array can be halved even when checks give no ordered boundary\", but the useful rule is: A repeated yes/no boundary lets each check discard part of the ordered search space.",
+        "wrong_2": "This option leans on \"Binary search is chosen because the input is short\", but the useful rule is: A repeated yes/no boundary lets each check discard part of the ordered search space."
       }
     },
     "id": "alg-binary-search-predicate-001",
@@ -91,8 +91,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Search the right half because all earlier values are too small after this comparison.",
-        "wrong_2": "Use the core rule instead: Search the right half because all earlier values are too small after this comparison."
+        "wrong_1": "This option leans on \"Search the left half because smaller values come first\", but the useful rule is: Search the right half because all earlier values are too small after this comparison.",
+        "wrong_2": "This option leans on \"Stop because the middle value was checked\", but the useful rule is: Search the right half because all earlier values are too small after this comparison."
       }
     },
     "id": "alg-binary-search-trace-right-001",
@@ -181,8 +181,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds.",
-        "wrong_2": "Use the core rule instead: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds."
+        "wrong_1": "This option leans on \"Only the middle calculation can be wrong\", but the useful rule is: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds.",
+        "wrong_2": "This option leans on \"Boundary inclusiveness does not affect lower-bound searches\", but the useful rule is: The loop must preserve the candidate boundary, so the update rules must match inclusive or exclusive bounds."
       }
     },
     "id": "alg-binary-search-boundary-edge-001",
@@ -417,8 +417,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Binary search fits when each check separates candidates into a rejected side and a possible side.",
-        "wrong_2": "Use the core rule instead: Binary search fits when each check separates candidates into a rejected side and a possible side."
+        "wrong_1": "This option leans on \"Scan every price because a limit appears in the prompt\", but the useful rule is: Binary search fits when each check separates candidates into a rejected side and a possible side.",
+        "wrong_2": "This option leans on \"Use a hash set because price values can be stored\", but the useful rule is: Binary search fits when each check separates candidates into a rejected side and a possible side."
       }
     },
     "id": "alg-exp-binary-strategy-001",
@@ -524,8 +524,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Search the answer space only when feasibility is monotonic across candidate answers.",
-        "wrong_2": "Use the core rule instead: Search the answer space only when feasibility is monotonic across candidate answers."
+        "wrong_1": "This option leans on \"Use binary search even if valid and invalid capacities alternate\", but the useful rule is: Search the answer space only when feasibility is monotonic across candidate answers.",
+        "wrong_2": "This option leans on \"Use stack state because capacity checks are repeated\", but the useful rule is: Search the answer space only when feasibility is monotonic across candidate answers."
       }
     },
     "id": "alg-exp-binary-strategy-002",
@@ -631,8 +631,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Classic index search fits when sorted values let a comparison discard one side.",
-        "wrong_2": "Use the core rule instead: Classic index search fits when sorted values let a comparison discard one side."
+        "wrong_1": "This option leans on \"Use grouping because equal values can exist\", but the useful rule is: Classic index search fits when sorted values let a comparison discard one side.",
+        "wrong_2": "This option leans on \"Use a window because the list is contiguous\", but the useful rule is: Classic index search fits when sorted values let a comparison discard one side."
       }
     },
     "id": "alg-exp-binary-strategy-003",
@@ -738,8 +738,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use rotated-array logic only when there is still an ordered half after each split.",
-        "wrong_2": "Use the core rule instead: Use rotated-array logic only when there is still an ordered half after each split."
+        "wrong_1": "This option leans on \"Treat it as unordered because the first element is not smallest\", but the useful rule is: Use rotated-array logic only when there is still an ordered half after each split.",
+        "wrong_2": "This option leans on \"Use a stack because a pivot is a previous state\", but the useful rule is: Use rotated-array logic only when there is still an ordered half after each split."
       }
     },
     "id": "alg-exp-binary-strategy-004",
@@ -845,8 +845,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is a monotonic predicate: once true, later candidates stay true.",
-        "wrong_2": "Use the core rule instead: The signal is a monotonic predicate: once true, later candidates stay true."
+        "wrong_1": "This option leans on \"Feasibility that flips back and forth is enough\", but the useful rule is: The signal is a monotonic predicate: once true, later candidates stay true.",
+        "wrong_2": "This option leans on \"The signal is membership lookup because days have values\", but the useful rule is: The signal is a monotonic predicate: once true, later candidates stay true."
       }
     },
     "id": "alg-exp-binary-identify-001",
@@ -925,8 +925,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The boundary update must preserve the first possible answer.",
-        "wrong_2": "Use the core rule instead: The boundary update must preserve the first possible answer."
+        "wrong_1": "This option leans on \"Stop at the first acceptable middle without considering earlier candidates\", but the useful rule is: The boundary update must preserve the first possible answer.",
+        "wrong_2": "This option leans on \"Boundary rules do not affect first-position searches\", but the useful rule is: The boundary update must preserve the first possible answer."
       }
     },
     "id": "alg-exp-binary-identify-002",
@@ -1139,8 +1139,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer.",
-        "wrong_2": "Use the core rule instead: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer."
+        "wrong_1": "This option leans on \"Halving is safe even if the condition is unordered\", but the useful rule is: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer.",
+        "wrong_2": "This option leans on \"Scanning is always required before checking for order\", but the useful rule is: Binary search is stronger only when ordered elimination is valid; otherwise scan or lookup may be safer."
       }
     },
     "id": "alg-exp-binary-comparison-001",
@@ -1241,8 +1241,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is using binary search without proving an ordered boundary.",
-        "wrong_2": "Use the core rule instead: The mistake is using binary search without proving an ordered boundary."
+        "wrong_1": "This option leans on \"The middle value always rules out one half\", but the useful rule is: The mistake is using binary search without proving an ordered boundary.",
+        "wrong_2": "This option leans on \"Sorting and binary search are the same decision\", but the useful rule is: The mistake is using binary search without proving an ordered boundary."
       }
     },
     "id": "alg-exp-binary-mistake-001",
@@ -1389,8 +1389,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available.",
-        "wrong_2": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Index binary search is stronger than lookup when the ordered list is already available.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Index binary search is stronger than lookup when the ordered list is already available."
       }
     },
     "difficulty": "medium",
@@ -1491,8 +1491,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Search answer space only because feasibility is monotonic.",
-        "wrong_2": "Use the core rule instead: Search answer space only because feasibility is monotonic."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Search answer space only because feasibility is monotonic.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Search answer space only because feasibility is monotonic."
       }
     },
     "difficulty": "medium",
@@ -1598,8 +1598,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is partial order after a pivot.",
-        "wrong_2": "Use the core rule instead: The pattern signal is partial order after a pivot."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is partial order after a pivot.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is partial order after a pivot."
       }
     },
     "difficulty": "medium",
@@ -1746,8 +1746,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate.",
-        "wrong_2": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use lower-bound search and preserve the first valid candidate.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use lower-bound search and preserve the first valid candidate."
       }
     },
     "difficulty": "medium",
@@ -1921,8 +1921,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers.",
-        "wrong_2": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is monotonic feasibility over candidate answers.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is monotonic feasibility over candidate answers."
       }
     },
     "difficulty": "medium",
@@ -2001,8 +2001,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review treating the list as unordered without checking the ordered half.",
-        "wrong_2": "Use the core rule instead: Review treating the list as unordered without checking the ordered half."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review treating the list as unordered without checking the ordered half.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review treating the list as unordered without checking the ordered half."
       }
     },
     "difficulty": "medium",
@@ -2081,8 +2081,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep the half that can still contain the boundary answer.",
-        "wrong_2": "Use the core rule instead: Keep the half that can still contain the boundary answer."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Keep the half that can still contain the boundary answer.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Keep the half that can still contain the boundary answer."
       }
     },
     "difficulty": "medium",
@@ -2256,8 +2256,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available.",
-        "wrong_2": "Use the core rule instead: Index binary search is stronger than lookup when the ordered list is already available."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Index binary search is stronger than lookup when the ordered list is already available.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Index binary search is stronger than lookup when the ordered list is already available."
       }
     },
     "difficulty": "medium",
@@ -2358,8 +2358,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Search answer space only because feasibility is monotonic.",
-        "wrong_2": "Use the core rule instead: Search answer space only because feasibility is monotonic."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Search answer space only because feasibility is monotonic.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Search answer space only because feasibility is monotonic."
       }
     },
     "difficulty": "medium",
@@ -2465,8 +2465,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is partial order after a pivot.",
-        "wrong_2": "Use the core rule instead: The pattern signal is partial order after a pivot."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is partial order after a pivot.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is partial order after a pivot."
       }
     },
     "difficulty": "medium",
@@ -2613,8 +2613,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate.",
-        "wrong_2": "Use the core rule instead: Use lower-bound search and preserve the first valid candidate."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use lower-bound search and preserve the first valid candidate.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use lower-bound search and preserve the first valid candidate."
       }
     },
     "difficulty": "medium",
@@ -2788,8 +2788,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers.",
-        "wrong_2": "Use the core rule instead: The pattern signal is monotonic feasibility over candidate answers."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is monotonic feasibility over candidate answers.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is monotonic feasibility over candidate answers."
       }
     },
     "difficulty": "medium",
@@ -2868,8 +2868,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review treating the list as unordered without checking the ordered half.",
-        "wrong_2": "Use the core rule instead: Review treating the list as unordered without checking the ordered half."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review treating the list as unordered without checking the ordered half.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review treating the list as unordered without checking the ordered half."
       }
     },
     "difficulty": "medium",
@@ -2948,8 +2948,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep the half that can still contain the boundary answer.",
-        "wrong_2": "Use the core rule instead: Keep the half that can still contain the boundary answer."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Keep the half that can still contain the boundary answer.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Keep the half that can still contain the boundary answer."
       }
     },
     "difficulty": "medium",

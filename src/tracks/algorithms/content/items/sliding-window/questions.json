@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Remove left-side values until the current range satisfies the required condition again.",
-        "wrong_2": "Use the core rule instead: Remove left-side values until the current range satisfies the required condition again."
+        "wrong_1": "This option leans on \"Record the current range before restoring the condition\", but the useful rule is: Remove left-side values until the current range satisfies the required condition again.",
+        "wrong_2": "This option leans on \"Move both boundaries to the next index immediately\", but the useful rule is: Remove left-side values until the current range satisfies the required condition again."
       }
     },
     "id": "alg-sliding-window-primer-001",
@@ -166,8 +166,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
-        "wrong_2": "Use the core rule instead: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true."
+        "wrong_1": "This option leans on \"Discard 5 because adding it crossed the limit\", but the useful rule is: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true.",
+        "wrong_2": "This option leans on \"Reset the range after every reading\", but the useful rule is: The range [2, 1, 5] reaches the limit, then the left side can shrink while the condition remains true."
       }
     },
     "id": "alg-sliding-window-worked-sensor-range-001",
@@ -367,8 +367,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Keep a range state and move boundaries only when the invariant says to shrink.",
-        "wrong_2": "Use the core rule instead: Keep a range state and move boundaries only when the invariant says to shrink."
+        "wrong_1": "This option leans on \"Move the right boundary only; left never changes in a range task\", but the useful rule is: Keep a range state and move boundaries only when the invariant says to shrink.",
+        "wrong_2": "This option leans on \"Ignore the current range state and restart from the next index\", but the useful rule is: Keep a range state and move boundaries only when the invariant says to shrink."
       }
     },
     "id": "alg-sliding-window-invariant-001",
@@ -447,8 +447,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Remove the left value from the tracked sum and move left forward.",
-        "wrong_2": "Use the core rule instead: Remove the left value from the tracked sum and move left forward."
+        "wrong_1": "This option leans on \"Add another right value before changing the invalid window\", but the useful rule is: Remove the left value from the tracked sum and move left forward.",
+        "wrong_2": "This option leans on \"Record the invalid window as the best answer\", but the useful rule is: Remove the left value from the tracked sum and move left forward."
       }
     },
     "id": "alg-sliding-window-trace-shrink-001",
@@ -622,8 +622,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a frequency map inside the window when validity depends on counts of values in the current range.",
-        "wrong_2": "Use the core rule instead: Use a frequency map inside the window when validity depends on counts of values in the current range."
+        "wrong_1": "This option leans on \"Only track the left and right indices; counts cannot affect validity\", but the useful rule is: Use a frequency map inside the window when validity depends on counts of values in the current range.",
+        "wrong_2": "This option leans on \"Sort the substring every time the right boundary moves\", but the useful rule is: Use a frequency map inside the window when validity depends on counts of values in the current range."
       }
     },
     "id": "alg-sliding-window-frequency-001",
@@ -734,8 +734,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
-        "wrong_2": "Use the core rule instead: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant."
+        "wrong_1": "This option leans on \"Use prefix lookup first because every range question requires it\", but the useful rule is: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant.",
+        "wrong_2": "This option leans on \"Use pair boundaries because a range has two ends\", but the useful rule is: A positive-only contiguous range lets expansion and shrinkage maintain a reliable sum invariant."
       }
     },
     "id": "alg-exp-window-strategy-001",
@@ -841,8 +841,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
-        "wrong_2": "Use the core rule instead: A fixed-size window fits because each step swaps one outgoing value for one incoming value."
+        "wrong_1": "This option leans on \"Restart each block total from scratch without considering overlap\", but the useful rule is: A fixed-size window fits because each step swaps one outgoing value for one incoming value.",
+        "wrong_2": "This option leans on \"Use binary search because k is a number\", but the useful rule is: A fixed-size window fits because each step swaps one outgoing value for one incoming value."
       }
     },
     "id": "alg-exp-window-strategy-002",
@@ -948,8 +948,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Maintain counts inside the current range when validity depends on distinct values.",
-        "wrong_2": "Use the core rule instead: Maintain counts inside the current range when validity depends on distinct values."
+        "wrong_1": "This option leans on \"Track only window length because symbols cannot affect validity\", but the useful rule is: Maintain counts inside the current range when validity depends on distinct values.",
+        "wrong_2": "This option leans on \"Sort each current substring before checking it\", but the useful rule is: Maintain counts inside the current range when validity depends on distinct values."
       }
     },
     "id": "alg-exp-window-strategy-003",
@@ -1060,8 +1060,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Shrink from the left only while the invariant says the current range is invalid or can be improved.",
-        "wrong_2": "Use the core rule instead: Shrink from the left only while the invariant says the current range is invalid or can be improved."
+        "wrong_1": "This option leans on \"Reset the window after every success\", but the useful rule is: Shrink from the left only while the invariant says the current range is invalid or can be improved.",
+        "wrong_2": "This option leans on \"Keep expanding forever because success was reached once\", but the useful rule is: Shrink from the left only while the invariant says the current range is invalid or can be improved."
       }
     },
     "id": "alg-exp-window-strategy-004",
@@ -1166,8 +1166,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The signal is a contiguous range whose state changes predictably as boundaries move.",
-        "wrong_2": "Use the core rule instead: The signal is a contiguous range whose state changes predictably as boundaries move."
+        "wrong_1": "This option leans on \"The signal is pair lookup because the segment has endpoints\", but the useful rule is: The signal is a contiguous range whose state changes predictably as boundaries move.",
+        "wrong_2": "This option leans on \"The signal is sorting because limits are numeric\", but the useful rule is: The signal is a contiguous range whose state changes predictably as boundaries move."
       }
     },
     "id": "alg-exp-window-identify-001",
@@ -1245,8 +1245,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The invariant is what must remain true about the current range before recording an answer.",
-        "wrong_2": "Use the core rule instead: The invariant is what must remain true about the current range before recording an answer."
+        "wrong_1": "This option leans on \"Only the final answer matters, not the current range condition\", but the useful rule is: The invariant is what must remain true about the current range before recording an answer.",
+        "wrong_2": "This option leans on \"The invariant can be inferred after all values are processed\", but the useful rule is: The invariant is what must remain true about the current range before recording an answer."
       }
     },
     "id": "alg-exp-window-identify-002",
@@ -1325,8 +1325,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The outgoing value must be removed when the window moves past it.",
-        "wrong_2": "Use the core rule instead: The outgoing value must be removed when the window moves past it."
+        "wrong_1": "This option leans on \"Keep every old value in the tracked sum\", but the useful rule is: The outgoing value must be removed when the window moves past it.",
+        "wrong_2": "This option leans on \"Remove a random value once the window has size k\", but the useful rule is: The outgoing value must be removed when the window moves past it."
       }
     },
     "id": "alg-exp-window-identify-003",
@@ -1473,8 +1473,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer.",
-        "wrong_2": "Use the core rule instead: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer."
+        "wrong_1": "This option leans on \"Prefix state is always required for positive range totals\", but the useful rule is: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer.",
+        "wrong_2": "This option leans on \"A window does not need any invariant\", but the useful rule is: The window plan wins when positivity makes shrink direction predictable; otherwise prefix state may be safer."
       }
     },
     "id": "alg-exp-window-comparison-001",
@@ -1578,8 +1578,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The mistake is recording an invalid range before restoring the invariant.",
-        "wrong_2": "Use the core rule instead: The mistake is recording an invalid range before restoring the invariant."
+        "wrong_1": "This option leans on \"Invalid ranges are safe to record if they are long\", but the useful rule is: The mistake is recording an invalid range before restoring the invariant.",
+        "wrong_2": "This option leans on \"The invariant only matters after the loop ends\", but the useful rule is: The mistake is recording an invalid range before restoring the invariant."
       }
     },
     "id": "alg-exp-window-mistake-001",
@@ -1658,8 +1658,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
-        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable."
       }
     },
     "difficulty": "medium",
@@ -1763,8 +1763,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
-        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value."
       }
     },
     "difficulty": "medium",
@@ -1875,8 +1875,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
-        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is a contiguous range with count-based validity."
       }
     },
     "difficulty": "medium",
@@ -2029,8 +2029,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied.",
-        "wrong_2": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Track missing requirements and shrink only after the cover is satisfied.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Track missing requirements and shrink only after the cover is satisfied."
       }
     },
     "difficulty": "medium",
@@ -2212,8 +2212,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is fixed-size overlap.",
-        "wrong_2": "Use the core rule instead: The pattern signal is fixed-size overlap."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is fixed-size overlap.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is fixed-size overlap."
       }
     },
     "difficulty": "medium",
@@ -2295,8 +2295,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review tracking length only when distinct counts decide validity.",
-        "wrong_2": "Use the core rule instead: Review tracking length only when distinct counts decide validity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review tracking length only when distinct counts decide validity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review tracking length only when distinct counts decide validity."
       }
     },
     "difficulty": "medium",
@@ -2378,8 +2378,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule.",
-        "wrong_2": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Shrink from the left only when the tracked category count breaks the rule.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Shrink from the left only when the tracked category count breaks the rule."
       }
     },
     "difficulty": "medium",
@@ -2561,8 +2561,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
-        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable."
       }
     },
     "difficulty": "medium",
@@ -2666,8 +2666,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
-        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value."
       }
     },
     "difficulty": "medium",
@@ -2778,8 +2778,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
-        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is a contiguous range with count-based validity."
       }
     },
     "difficulty": "medium",
@@ -2932,8 +2932,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied.",
-        "wrong_2": "Use the core rule instead: Track missing requirements and shrink only after the cover is satisfied."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Track missing requirements and shrink only after the cover is satisfied.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Track missing requirements and shrink only after the cover is satisfied."
       }
     },
     "difficulty": "medium",
@@ -3115,8 +3115,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is fixed-size overlap.",
-        "wrong_2": "Use the core rule instead: The pattern signal is fixed-size overlap."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is fixed-size overlap.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is fixed-size overlap."
       }
     },
     "difficulty": "medium",
@@ -3198,8 +3198,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Review tracking length only when distinct counts decide validity.",
-        "wrong_2": "Use the core rule instead: Review tracking length only when distinct counts decide validity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Review tracking length only when distinct counts decide validity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Review tracking length only when distinct counts decide validity."
       }
     },
     "difficulty": "medium",
@@ -3281,8 +3281,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule.",
-        "wrong_2": "Use the core rule instead: Shrink from the left only when the tracked category count breaks the rule."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Shrink from the left only when the tracked category count breaks the rule.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Shrink from the left only when the tracked category count breaks the rule."
       }
     },
     "difficulty": "medium",
@@ -3464,8 +3464,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable.",
-        "wrong_2": "Use the core rule instead: A positive window is stronger than prefix lookup when shrink direction is predictable."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: A positive window is stronger than prefix lookup when shrink direction is predictable."
       }
     },
     "difficulty": "medium",
@@ -3569,8 +3569,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value.",
-        "wrong_2": "Use the core rule instead: Use a fixed-size window that swaps one outgoing value for one incoming value."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: Use a fixed-size window that swaps one outgoing value for one incoming value."
       }
     },
     "difficulty": "medium",
@@ -3681,8 +3681,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity.",
-        "wrong_2": "Use the core rule instead: The pattern signal is a contiguous range with count-based validity."
+        "wrong_1": "This option leans on \"Choose the most familiar label before checking the constraint\", but the useful rule is: The pattern signal is a contiguous range with count-based validity.",
+        "wrong_2": "This option leans on \"Start with implementation details before naming the required state\", but the useful rule is: The pattern signal is a contiguous range with count-based validity."
       }
     },
     "difficulty": "medium",

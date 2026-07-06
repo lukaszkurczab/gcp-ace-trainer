@@ -201,7 +201,7 @@ test("Algorithms session summary identifies the top weak pattern and next action
   const summary = buildAlgorithmsSessionSummary([submission.attempt], [item], "Hash maps");
 
   assert.equal(summary.mainIssue?.pattern, summary.reviewItems[0]?.recognizedPattern);
-  assert.equal(summary.mainIssue?.recommendedNextAction, item.feedbackModel.nextAction);
+  assert.match(summary.mainIssue?.recommendedNextAction ?? "", /short .* drill before mixed practice/);
   assert.ok(summary.mainIssue?.explanation.includes(summary.mainIssue.pattern));
   assert.deepEqual(summary.mainIssue?.itemIds, [item.id]);
 });
@@ -355,9 +355,9 @@ test("Algorithms summary actions offer mixed practice after a strong session", (
     makeSessionConfig("default"),
   );
 
-  assert.equal(actions[0]?.kind, "startMixedPractice");
-  assert.ok(actions.some((action) => action.kind === "continueRoadmap"));
-  assert.ok(actions.some((action) => action.kind === "viewProgress"));
+  assert.deepEqual(actions.map((action) => action.kind), ["startMixedPractice", "viewProgress"]);
+  assert.equal(actions[0]?.priority, "primary");
+  assert.equal(actions[1]?.priority, "secondary");
 });
 
 test("Algorithms summary actions stay on implemented routes only", () => {

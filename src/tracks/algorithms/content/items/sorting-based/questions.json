@@ -11,8 +11,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked.",
-        "wrong_2": "Use the core rule instead: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked."
+        "wrong_1": "This option leans on \"Sort whenever a comparison appears, regardless of required output\", but the useful rule is: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked.",
+        "wrong_2": "This option leans on \"Sorting has no cost compared with scanning\", but the useful rule is: Sorting may reveal structure, but its cost and any lost original-position requirement must be checked."
       }
     },
     "id": "alg-sorting-tradeoff-001",
@@ -184,8 +184,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: Sort by the field that makes equal or overlapping records adjacent.",
-        "wrong_2": "Use the core rule instead: Sort by the field that makes equal or overlapping records adjacent."
+        "wrong_1": "This option leans on \"Sort by the original row number because it is already available\", but the useful rule is: Sort by the field that makes equal or overlapping records adjacent.",
+        "wrong_2": "This option leans on \"Sort by a random stable label unrelated to grouping\", but the useful rule is: Sort by the field that makes equal or overlapping records adjacent."
       }
     },
     "id": "alg-sorting-key-choice-001",
@@ -264,8 +264,8 @@
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
-        "wrong_1": "Use the core rule instead: If original indexes are required, keep them with the values before sorting.",
-        "wrong_2": "Use the core rule instead: If original indexes are required, keep them with the values before sorting."
+        "wrong_1": "This option leans on \"Original positions can be recovered from sorted order alone\", but the useful rule is: If original indexes are required, keep them with the values before sorting.",
+        "wrong_2": "This option leans on \"Return sorted positions because they are easier to compute\", but the useful rule is: If original indexes are required, keep them with the values before sorting."
       }
     },
     "id": "alg-sorting-original-index-edge-001",
