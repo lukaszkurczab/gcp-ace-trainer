@@ -4,6 +4,7 @@ tags:
   - ux-ui-audit
   - helper
 ---
+- clearState
 - openLink: ${PATTERNLY_DEV_CLIENT_URL}
 - waitForAnimationToEnd:
     timeout: 20000

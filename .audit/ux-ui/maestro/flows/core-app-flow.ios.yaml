@@ -74,13 +74,11 @@ tags:
     timeout: 8000
 
 - tapOn:
-    text: ".*"
-    below: "Choose"
-    index: 0
+    point: "50%,63%"
 - tapOn:
-    text: ".*"
-    below: "Choose"
-    index: 1
+    point: "50%,68%"
+- tapOn:
+    point: "50%,76%"
 - assertVisible:
     enabled: true
     text: "Check Answer"
@@ -105,13 +103,11 @@ tags:
     times: 8
     commands:
       - tapOn:
-          text: ".*"
-          below: "Choose"
-          index: 0
+          point: "50%,63%"
       - tapOn:
-          text: ".*"
-          below: "Choose"
-          index: 1
+          point: "50%,68%"
+      - tapOn:
+          point: "50%,76%"
       - tapOn: "Check Answer"
       - waitForAnimationToEnd:
           timeout: 12000
@@ -120,13 +116,11 @@ tags:
           timeout: 12000
 
 - tapOn:
-    text: ".*"
-    below: "Choose"
-    index: 0
+    point: "50%,63%"
 - tapOn:
-    text: ".*"
-    below: "Choose"
-    index: 1
+    point: "50%,68%"
+- tapOn:
+    point: "50%,76%"
 - tapOn: "Check Answer"
 - waitForAnimationToEnd:
     timeout: 12000
