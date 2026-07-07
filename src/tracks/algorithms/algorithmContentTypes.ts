@@ -72,7 +72,7 @@ export const ALGORITHM_EVIDENCE_LEVELS = [
 
 export type AlgorithmEvidenceLevel = (typeof ALGORITHM_EVIDENCE_LEVELS)[number];
 
-export const ALGORITHM_MVP_TRAINING_ITEM_TYPES = [
+export const ALGORITHM_TRAINING_ITEM_TYPES = [
   "approach_primer",
   "approach_naming",
   "worked_example",
@@ -88,34 +88,11 @@ export const ALGORITHM_MVP_TRAINING_ITEM_TYPES = [
   "output_contract_reasoning",
   "constraint_change",
   "complexity_reasoning",
-] as const;
-
-export type AlgorithmMvpTrainingItemType = (typeof ALGORITHM_MVP_TRAINING_ITEM_TYPES)[number];
-
-export const ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES = [
-  "subgoal_identification",
   "subgoal_ordering",
-  "pseudocode_parsons",
   "pseudocode_ordering",
-  "faded_solution",
-  "fill_missing_step",
 ] as const;
 
-export type AlgorithmSecondStageTrainingItemType =
-  (typeof ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES)[number];
-
-export const ALGORITHM_LATER_TRAINING_ITEM_TYPES = [
-  "independent_attempt",
-  "interview_simulation_problem",
-  "full_code_editor",
-] as const;
-
-export type AlgorithmLaterTrainingItemType = (typeof ALGORITHM_LATER_TRAINING_ITEM_TYPES)[number];
-
-export type AlgorithmTrainingItemType =
-  | AlgorithmMvpTrainingItemType
-  | AlgorithmSecondStageTrainingItemType
-  | AlgorithmLaterTrainingItemType;
+export type AlgorithmTrainingItemType = (typeof ALGORITHM_TRAINING_ITEM_TYPES)[number];
 
 export type AlgorithmContentStatus = "active" | "disabled";
 

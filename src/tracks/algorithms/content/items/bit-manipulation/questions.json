@@ -1,0 +1,51 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "intro",
+    "feedbackModel": {
+      "decisionSignal": "The prompt asks about flags, parity, or compact subset state that can be represented with bits.",
+      "distractorExplanations": {
+        "string_scan": "A character scan does not use bit-level state.",
+        "heap_priority": "Priority order is unrelated to bit masks.",
+        "sort_first": "Sorting does not answer bit flag or parity questions."
+      },
+      "mentalModelCorrection": "Bit manipulation is useful when individual bits encode membership, parity, or compact state.",
+      "mistakeTypes": ["data_structure_mismatch", "wrong_approach"],
+      "nextAction": "Practice naming what each bit represents before using operators.",
+      "result": "diagnostic"
+    },
+    "id": "alg-bit-manipulation-naming-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "apply_bitmask_state",
+    "prompt": "A task represents a set of chosen options inside one integer mask. Which signal matters first?",
+    "roadmapNodeId": "bit_manipulation",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "bitmask_state",
+        "feedback": "A mask works when each bit has a clear state meaning.",
+        "id": "alg-bit-manipulation-naming-001-check",
+        "mistakeTypes": ["data_structure_mismatch", "wrong_approach"],
+        "options": [
+          { "id": "bitmask_state", "text": "Each bit represents a compact on/off state." },
+          { "id": "string_scan", "text": "Scan characters for adjacency." },
+          { "id": "heap_priority", "text": "Repeatedly extract the highest priority item." },
+          { "id": "sort_first", "text": "Sort values before checking any bits." }
+        ],
+        "prompt": "Choose the bit-manipulation signal.",
+        "status": "active",
+        "testedSkillAtomIds": ["apply_bitmask_state"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      { "axisId": "pattern_family", "nodeId": "bit_manipulation", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "apply_bitmask_state", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "bitmask_basics", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "data_structure_mismatch", "role": "mistake_type" }
+    ],
+    "title": "Name bitmask state",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  }
+]

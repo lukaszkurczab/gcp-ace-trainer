@@ -40,10 +40,7 @@ export function getRoadmapNodesWithActiveItems(): readonly AlgorithmRoadmapNode[
 }
 
 export function isAlgorithmRoadmapNodeSelectable(node: AlgorithmRoadmapNode): boolean {
-  return (
-    node.status === "available" &&
-    getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumActiveItemCount
-  );
+  return getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumActiveItemCount;
 }
 
 export function isAlgorithmTrainingItemSelectable(item: AlgorithmTrainingItem): boolean {

@@ -2,9 +2,7 @@ import {
   ALGORITHM_COMPLEXITY_CLASSES,
   ALGORITHM_DIFFICULTIES,
   ALGORITHM_FEEDBACK_RESULTS,
-  ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-  ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+  ALGORITHM_TRAINING_ITEM_TYPES,
   isAlgorithmMistakeType,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
@@ -76,7 +74,6 @@ export type AlgorithmContentQualityIssueCode =
   | "unknown_micro_check_skill"
   | "primary_skill_taxonomy_mismatch"
   | "active_item_references_unknown_roadmap_node"
-  | "active_item_on_unavailable_roadmap_node"
   | "unknown_taxonomy_ref"
   | "forbidden_model_term"
   | "available_roadmap_node_below_minimum_active_items"
@@ -226,23 +223,12 @@ export function validateAlgorithmCurriculum(input: {
         `Algorithm item references unknown roadmap node: ${String(item.roadmapNodeId)}.`,
         item.id,
       );
-    } else if (roadmapNode.status !== "available") {
-      addIssue(
-        issues,
-        "active_item_on_unavailable_roadmap_node",
-        `Active algorithm item references unavailable roadmap node: ${roadmapNode.id}.`,
-        item.id,
-      );
     } else {
       selectableActiveItemTypes.add(item.type);
     }
   }
 
   for (const node of input.roadmap.nodes) {
-    if (node.status !== "available") {
-      continue;
-    }
-
     const itemCount = activeItems.filter((item) => item.roadmapNodeId === node.id).length;
     if (itemCount < node.minimumActiveItemCount) {
       addIssue(
@@ -975,13 +961,7 @@ function isAlgorithmComplexityClass(value: unknown): boolean {
 }
 
 function isAlgorithmTrainingItemType(value: unknown): boolean {
-  return (
-    [
-      ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-      ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-      ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-    ] as readonly unknown[]
-  ).includes(value);
+  return (ALGORITHM_TRAINING_ITEM_TYPES as readonly unknown[]).includes(value);
 }
 
 function isGenericFeedbackText(value: string): boolean {

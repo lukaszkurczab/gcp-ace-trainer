@@ -1,9 +1,7 @@
 import { ALGORITHM_APPROACH_TEMPLATES } from "./algorithmApproaches";
 import {
   ALGORITHM_CONTENT_VERSION,
-  ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-  ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+  ALGORITHM_TRAINING_ITEM_TYPES,
   type AlgorithmApproachId,
   type AlgorithmLearningStage,
   type AlgorithmPatternFamilyId,
@@ -25,14 +23,9 @@ export type AlgorithmRoadmapNodeKind =
   | "mechanics"
   | "contrast"
   | "strategy_selection"
-  | "mixed_practice"
-  | "later";
+  | "mixed_practice";
 
-export type AlgorithmRoadmapStatus =
-  | "available"
-  | "planned"
-  | "locked"
-  | "coming_later";
+export type AlgorithmRoadmapStatus = "available";
 
 export type AlgorithmRoadmapPrerequisite = {
   nodeId: AlgorithmRoadmapNodeId;
@@ -93,7 +86,6 @@ export type AlgorithmRoadmapQualityIssueCode =
   | "unknown_skill_atom_id"
   | "unknown_recommended_item_type"
   | "available_node_missing_minimum_active_items"
-  | "unavailable_node_with_minimum_active_items"
   | "mixed_practice_marked_beginner"
   | "forbidden_visible_term";
 
@@ -108,7 +100,7 @@ export type AlgorithmRoadmapQualityResult = {
   valid: boolean;
 };
 
-const mvpItemTypes = [
+const defaultRecommendedItemTypes = [
   "approach_primer",
   "approach_naming",
   "worked_example",
@@ -359,32 +351,142 @@ const algorithmRoadmapNodes = [
     prerequisiteNodeIds: ["arrays_and_strings", "binary_search"],
     skillAtomIds: ["track_index_boundary", "identify_monotonic_predicate"],
   }),
-  ...([
-    ["linked_list", "Linked list"],
-    ["recursion_basics", "Recursion basics"],
-    ["tree_traversal", "Tree traversal"],
-    ["heap_priority_queue", "Heap and priority queue"],
-    ["intervals", "Intervals"],
-    ["backtracking", "Backtracking"],
-    ["graph_traversal", "Graph traversal"],
-    ["greedy_intro", "Greedy intro"],
-    ["dynamic_programming_intro", "Dynamic programming intro"],
-    ["bit_manipulation", "Bit manipulation"],
-    ["math_and_geometry", "Math and geometry"],
-  ] as const).map(([id, label], index) =>
-    makeNode({
-      id,
-      kind: "later",
-      label,
-      learningStage: "pattern_mechanics",
-      minimumActiveItemCount: 0,
-      order: 16 + index,
-      prerequisiteNodeIds: ["strategy_selection_core"],
-      primaryPatternFamilyId: id as AlgorithmPatternFamilyId,
-      recommendedItemTypes: mvpItemTypes,
-      status: "coming_later",
-    }),
-  ),
+  makeNode({
+    id: "linked_list",
+    kind: "mechanics",
+    label: "Linked list",
+    minimumActiveItemCount: 1,
+    order: 16,
+    patternVariantIds: ["pointer_rewiring", "reverse_list"],
+    prerequisiteNodeIds: ["arrays_and_strings"],
+    primaryPatternFamilyId: "linked_list",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["reason_linked_list_rewiring"],
+  }),
+  makeNode({
+    id: "recursion_basics",
+    kind: "mechanics",
+    label: "Recursion basics",
+    minimumActiveItemCount: 1,
+    order: 17,
+    patternVariantIds: ["base_case_recognition", "recursive_decomposition"],
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "recursion_basics",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["trace_recursive_base_case"],
+  }),
+  makeNode({
+    id: "tree_traversal",
+    kind: "mechanics",
+    label: "Tree traversal",
+    minimumActiveItemCount: 1,
+    order: 18,
+    patternVariantIds: ["dfs_preorder_inorder_postorder", "path_accumulation"],
+    prerequisiteNodeIds: ["recursion_basics"],
+    primaryPatternFamilyId: "tree_traversal",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["carry_tree_traversal_state"],
+  }),
+  makeNode({
+    id: "heap_priority_queue",
+    kind: "mechanics",
+    label: "Heap and priority queue",
+    minimumActiveItemCount: 1,
+    order: 19,
+    patternVariantIds: ["top_k", "running_extreme"],
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "heap_priority_queue",
+    problemArchetypeIds: ["choose_repeated_extreme"],
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["choose_priority_queue_state"],
+  }),
+  makeNode({
+    id: "intervals",
+    kind: "mechanics",
+    label: "Intervals",
+    minimumActiveItemCount: 1,
+    order: 20,
+    patternVariantIds: ["merge_overlaps", "sweep_line_intro"],
+    prerequisiteNodeIds: ["sorting_based"],
+    primaryPatternFamilyId: "intervals",
+    problemArchetypeIds: ["merge_or_compare_intervals"],
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["reason_about_interval_overlap"],
+  }),
+  makeNode({
+    id: "backtracking",
+    kind: "mechanics",
+    label: "Backtracking",
+    minimumActiveItemCount: 1,
+    order: 21,
+    patternVariantIds: ["choice_tree", "constraints_and_pruning"],
+    prerequisiteNodeIds: ["recursion_basics"],
+    primaryPatternFamilyId: "backtracking",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["prune_backtracking_choice"],
+  }),
+  makeNode({
+    id: "graph_traversal",
+    kind: "mechanics",
+    label: "Graph traversal",
+    minimumActiveItemCount: 1,
+    order: 22,
+    patternVariantIds: ["adjacency_representation", "visited_state"],
+    prerequisiteNodeIds: ["stack"],
+    primaryPatternFamilyId: "graph_traversal",
+    problemArchetypeIds: ["traverse_connected_state"],
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["track_graph_visited_state"],
+  }),
+  makeNode({
+    id: "greedy_intro",
+    kind: "strategy_selection",
+    label: "Greedy intro",
+    minimumActiveItemCount: 1,
+    order: 23,
+    patternVariantIds: ["local_choice_signal", "sorting_plus_greedy"],
+    prerequisiteNodeIds: ["sorting_based"],
+    primaryPatternFamilyId: "greedy_intro",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["justify_greedy_choice"],
+  }),
+  makeNode({
+    id: "dynamic_programming_intro",
+    kind: "strategy_selection",
+    label: "Dynamic programming intro",
+    minimumActiveItemCount: 1,
+    order: 24,
+    patternVariantIds: ["state_definition", "transition_choice"],
+    prerequisiteNodeIds: ["recursion_basics"],
+    primaryPatternFamilyId: "dynamic_programming_intro",
+    problemArchetypeIds: ["define_reusable_state"],
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["define_dynamic_programming_state"],
+  }),
+  makeNode({
+    id: "bit_manipulation",
+    kind: "mechanics",
+    label: "Bit manipulation",
+    minimumActiveItemCount: 1,
+    order: 25,
+    patternVariantIds: ["bitmask_basics", "set_clear_check_bit"],
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "bit_manipulation",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["apply_bitmask_state"],
+  }),
+  makeNode({
+    id: "math_and_geometry",
+    kind: "mechanics",
+    label: "Math and geometry",
+    minimumActiveItemCount: 1,
+    order: 26,
+    patternVariantIds: ["modulo_reasoning", "coordinate_reasoning"],
+    prerequisiteNodeIds: ["complexity_and_constraints"],
+    primaryPatternFamilyId: "math_and_geometry",
+    recommendedItemTypes: ["approach_naming"],
+    skillAtomIds: ["reason_about_numeric_structure"],
+  }),
   makeNode({
     id: "mixed_pattern_practice",
     kind: "mixed_practice",
@@ -419,12 +521,12 @@ const algorithmRoadmapEdges = algorithmRoadmapNodes.flatMap((node) =>
 export const ALGORITHM_ROADMAP = {
   contentVersion: ALGORITHM_CONTENT_VERSION,
   description:
-    "Curriculum from foundations through pattern mechanics, strategy selection, contrast practice, and later mixed practice.",
+    "Curriculum from foundations through pattern mechanics, strategy selection, contrast practice, and mixed practice.",
   edges: algorithmRoadmapEdges,
   id: "algorithms-core-roadmap",
   label: "Algorithms Core Roadmap",
   nodes: algorithmRoadmapNodes,
-  status: "planned",
+  status: "available",
 } as const satisfies AlgorithmRoadmapTrack;
 
 export function validateAlgorithmRoadmap(
@@ -438,11 +540,7 @@ export function validateAlgorithmRoadmap(
   const patternVariantIds = new Set(ALGORITHM_PATTERN_VARIANTS.map((variant) => variant.id));
   const problemArchetypeIds = new Set(ALGORITHM_PROBLEM_ARCHETYPES.map((archetype) => archetype.id));
   const skillAtomIds = new Set(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
-  const itemTypes = new Set<string>([
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ]);
+  const itemTypes = new Set<string>(ALGORITHM_TRAINING_ITEM_TYPES);
 
   for (const node of roadmap.nodes) {
     if (nodesById.has(node.id)) {
@@ -523,7 +621,7 @@ function makeNode(input: AlgorithmRoadmapNodeInput): AlgorithmRoadmapNode {
     minimumActiveItemCount: input.minimumActiveItemCount ?? 1,
     order: input.order,
     prerequisiteNodeIds: input.prerequisiteNodeIds ?? ["complexity_and_constraints"],
-    recommendedItemTypes: input.recommendedItemTypes ?? mvpItemTypes,
+    recommendedItemTypes: input.recommendedItemTypes ?? defaultRecommendedItemTypes,
     shortDescription: input.shortDescription ??
       `Practice ${input.label} reasoning with active checks before implementation details.`,
     status: input.status ?? "available",
@@ -665,18 +763,10 @@ function validateRoadmapPolicy(
     });
   }
 
-  if (node.status !== "available" && node.minimumActiveItemCount > 0) {
-    issues.push({
-      code: "unavailable_node_with_minimum_active_items",
-      message: `Unavailable roadmap node must not require active session content: ${node.id}.`,
-      nodeId: node.id,
-    });
-  }
-
   if (node.id === "mixed_pattern_practice" && node.learningStage !== "mixed_interview_practice") {
     issues.push({
       code: "mixed_practice_marked_beginner",
-      message: "Mixed pattern practice must remain a later-stage practice mode.",
+      message: "Mixed pattern practice must remain an advanced practice mode.",
       nodeId: node.id,
     });
   }

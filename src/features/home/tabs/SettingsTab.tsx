@@ -118,7 +118,7 @@ export function SettingsTab({
 
       <SettingsGroup title="Data and privacy">
         <ListRow
-          detail="No account, backend, or sync in MVP."
+          detail="Data stays on this device; account sync is not implemented."
           leading={<IconTile name="database" tone="info" />}
           title={getSettingsRowLabel("localOnlyData")}
           variant="grouped"

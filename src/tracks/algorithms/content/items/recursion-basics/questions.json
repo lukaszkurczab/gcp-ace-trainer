@@ -1,0 +1,51 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "intro",
+    "feedbackModel": {
+      "decisionSignal": "The same work repeats on a smaller input until a base case stops the calls.",
+      "distractorExplanations": {
+        "global_sort": "Sorting does not explain the repeated smaller call or the stopping condition.",
+        "hash_lookup": "Lookup state may help some problems, but recursion is signaled by decomposition and a base case.",
+        "two_boundaries": "Two moving boundaries are not the main signal here."
+      },
+      "mentalModelCorrection": "Name the base case first, then state how each call makes the problem smaller.",
+      "mistakeTypes": ["subgoal_order_wrong", "edge_case_missed"],
+      "nextAction": "Practice identifying the base case before tracing recursive calls.",
+      "result": "diagnostic"
+    },
+    "id": "alg-recursion-basics-naming-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "trace_recursive_base_case",
+    "prompt": "A function processes a nested structure by handling one part, then calling itself on the remaining smaller structure. What signal matters first?",
+    "roadmapNodeId": "recursion_basics",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "base_case_then_smaller_call",
+        "feedback": "Recursive reasoning starts with the stopping condition and the smaller repeated call.",
+        "id": "alg-recursion-basics-naming-001-check",
+        "mistakeTypes": ["subgoal_order_wrong", "edge_case_missed"],
+        "options": [
+          { "id": "base_case_then_smaller_call", "text": "Identify the base case and the smaller call." },
+          { "id": "global_sort", "text": "Sort all values before processing." },
+          { "id": "hash_lookup", "text": "Store every value for constant-time lookup." },
+          { "id": "two_boundaries", "text": "Move two pointers toward each other." }
+        ],
+        "prompt": "Choose the signal that matches recursion.",
+        "status": "active",
+        "testedSkillAtomIds": ["trace_recursive_base_case"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      { "axisId": "pattern_family", "nodeId": "recursion_basics", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "trace_recursive_base_case", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "base_case_recognition", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "edge_case_missed", "role": "mistake_type" }
+    ],
+    "title": "Name recursion base case",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  }
+]

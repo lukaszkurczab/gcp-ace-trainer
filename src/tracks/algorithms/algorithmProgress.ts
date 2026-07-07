@@ -84,10 +84,10 @@ export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
   items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
-  fallbackRoadmapNodeId?: AlgorithmRoadmapNodeId,
+  preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
   const selectableItems = getSelectableItems(items, roadmapNodes);
-  const fallbackNodeId = getFallbackRoadmapNodeId(selectableItems, roadmapNodes, fallbackRoadmapNodeId);
+  const defaultNodeId = getDefaultRoadmapNodeId(selectableItems, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) => attempt.trackId === "algorithms"),
   );
@@ -100,7 +100,7 @@ export function buildAlgorithmWeakAreaRecommendation(
       right.partialCount - left.partialCount ||
       getRoadmapNodeOrder(left.nodeId, roadmapNodes) - getRoadmapNodeOrder(right.nodeId, roadmapNodes),
     )[0];
-  const selectedNodeId = selectedStats?.nodeId ?? fallbackNodeId;
+  const selectedNodeId = selectedStats?.nodeId ?? defaultNodeId;
   const selectedNode = roadmapNodes.find((node) => node.id === selectedNodeId);
   const selectedMistakeTypes = selectedStats ? getTopMistakeTypes(selectedStats.mistakeTypeCounts) : [];
   const candidateItemIds = getWeakAreaCandidateItemIds({
@@ -248,33 +248,28 @@ function getSelectableItems(
   items: readonly AlgorithmTrainingItem[],
   roadmapNodes: readonly AlgorithmRoadmapNode[],
 ): readonly AlgorithmTrainingItem[] {
-  const availableNodeIds = new Set(
-    roadmapNodes
-      .filter((node) => node.status === "available")
-      .map((node) => node.id),
-  );
+  const roadmapNodeIds = new Set(roadmapNodes.map((node) => node.id));
 
   return items.filter((item) =>
     item.status === "active" &&
     typeof item.roadmapNodeId === "string" &&
-    availableNodeIds.has(item.roadmapNodeId as AlgorithmRoadmapNodeId),
+    roadmapNodeIds.has(item.roadmapNodeId as AlgorithmRoadmapNodeId),
   );
 }
 
-function getFallbackRoadmapNodeId(
+function getDefaultRoadmapNodeId(
   selectableItems: readonly AlgorithmTrainingItem[],
   roadmapNodes: readonly AlgorithmRoadmapNode[],
-  fallbackRoadmapNodeId?: AlgorithmRoadmapNodeId,
+  preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmRoadmapNodeId {
   if (
-    fallbackRoadmapNodeId &&
-    selectableItems.some((item) => item.roadmapNodeId === fallbackRoadmapNodeId)
+    preferredRoadmapNodeId &&
+    selectableItems.some((item) => item.roadmapNodeId === preferredRoadmapNodeId)
   ) {
-    return fallbackRoadmapNodeId;
+    return preferredRoadmapNodeId;
   }
 
   const firstSelectableNode = roadmapNodes.find((node) =>
-    node.status === "available" &&
     selectableItems.some((item) => item.roadmapNodeId === node.id),
   );
 

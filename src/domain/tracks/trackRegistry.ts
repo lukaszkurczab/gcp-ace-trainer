@@ -91,7 +91,7 @@ const algorithmsTrack: TrackDefinition = {
   accentMutedColor: "#F1ECFF",
   category: "algorithms",
   contentManifest: {
-    itemCount: 366,
+    itemCount: 377,
     source: "local_static",
     supportedItemTypes: [
       "approach_primer",
@@ -271,21 +271,6 @@ const algorithmsTrack: TrackDefinition = {
       ],
       title: "Mixed practice",
       type: "practice",
-    },
-    {
-      description: "Compare approaches after the first mechanics are grounded.",
-      enabled: false,
-      feedbackTiming: "after_submit",
-      id: "algorithms-strategy-practice",
-      order: 7,
-      scoringType: "mixed",
-      supportedItemTypes: [
-        "strategy_choice",
-        "complexity_check",
-        "solution_comparison",
-      ],
-      title: "Strategy practice",
-      type: "strategy_practice",
     },
   ],
   shortTitle: "Algorithms",

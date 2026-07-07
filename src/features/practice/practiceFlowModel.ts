@@ -338,8 +338,8 @@ export function buildTopicRoadmapNodes(input: {
     const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
     const isCurrent = progress.activeRoadmapNode.id === node.id;
     const prerequisitesMet = node.prerequisiteNodeIds.every((nodeId) => completedNodeIds.has(nodeId));
-    const enabled = node.status === "available" && itemCount > 0 && (isCurrent || prerequisitesMet || nodeProgress?.status === "completed");
-    const status = getAlgorithmTopicStatus(node.status, enabled, isCurrent, nodeProgress?.status);
+    const enabled = itemCount > 0 && (isCurrent || prerequisitesMet || nodeProgress?.status === "completed");
+    const status = getAlgorithmTopicStatus(enabled, isCurrent, nodeProgress?.status);
 
     return {
       detail: itemCount > 0
@@ -365,17 +365,12 @@ export function getCloudTopicTitle(topicId: string): string {
 }
 
 function getAlgorithmTopicStatus(
-  roadmapStatus: string,
   enabled: boolean,
   isCurrent: boolean,
   progressStatus?: string,
 ): TopicRoadmapNodeModel["status"] {
   if (progressStatus === "completed") {
     return "completed";
-  }
-
-  if (roadmapStatus !== "available") {
-    return roadmapStatus === "coming_later" ? "later" : "locked";
   }
 
   if (isCurrent) {

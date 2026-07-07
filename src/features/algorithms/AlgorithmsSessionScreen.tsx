@@ -963,17 +963,17 @@ function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
 
 function resolveDisplayNode(
   items: readonly AlgorithmTrainingItem[],
-  fallbackNode: AlgorithmRoadmapNode,
+  defaultNode: AlgorithmRoadmapNode,
   mode: PracticeSessionRouteParams["mode"],
 ): AlgorithmRoadmapNode {
   if (mode !== "weakArea") {
-    return fallbackNode;
+    return defaultNode;
   }
 
   const selectedNodeId = items[0]?.roadmapNodeId;
   const selectedNode = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === selectedNodeId);
 
-  return selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode) ? selectedNode : fallbackNode;
+  return selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode) ? selectedNode : defaultNode;
 }
 
 function getEmptySessionStateCopy(mode: PracticeSessionRouteParams["mode"]): {

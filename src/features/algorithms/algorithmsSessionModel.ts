@@ -705,7 +705,7 @@ function buildSessionMainIssue(
     mistakeType: formattedMistake,
     pattern,
     recommendedNextAction: buildMainIssueNextAction({
-      fallbackAction: representativeItem.feedbackModel.nextAction,
+      defaultAction: representativeItem.feedbackModel.nextAction,
       formattedMistake,
       pattern,
     }),
@@ -713,12 +713,12 @@ function buildSessionMainIssue(
 }
 
 function buildMainIssueNextAction(input: {
-  fallbackAction: string;
+  defaultAction: string;
   formattedMistake?: string;
   pattern: string;
 }): string {
   if (!input.formattedMistake) {
-    return input.fallbackAction;
+    return input.defaultAction;
   }
 
   return `Review ${input.pattern} with a short ${input.formattedMistake.toLowerCase()} drill before mixed practice.`;

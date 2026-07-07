@@ -178,15 +178,11 @@ export function buildAlgorithmMixedPracticeSelection(
   input: AlgorithmMixedPracticeSelectionInput,
 ): readonly AlgorithmTrainingItem[] {
   const roadmapNodes = input.roadmapNodes ?? ALGORITHM_ROADMAP.nodes;
-  const availableNodeIds = new Set(
-    roadmapNodes
-      .filter((node) => node.status === "available")
-      .map((node) => node.id),
-  );
+  const roadmapNodeIds = new Set(roadmapNodes.map((node) => node.id));
   const selectableItems = input.items.filter((item) =>
     item.status === "active" &&
     item.roadmapNodeId &&
-    availableNodeIds.has(item.roadmapNodeId),
+    roadmapNodeIds.has(item.roadmapNodeId),
   );
   const unlockedNodeIds = getUnlockedRoadmapNodeIds(input.attempts, selectableItems, roadmapNodes);
   const unlockedItems = selectableItems.filter((item) =>
@@ -257,7 +253,7 @@ function getSelectableModeItems(adapter: TrackContentAdapter): readonly Algorith
     .map((item) => item as unknown as AlgorithmTrainingItem)
     .filter((item) =>
       item.status === "active" &&
-      ALGORITHM_ROADMAP.nodes.some((node) => node.id === item.roadmapNodeId && node.status === "available"),
+      ALGORITHM_ROADMAP.nodes.some((node) => node.id === item.roadmapNodeId),
     );
 }
 
@@ -390,7 +386,6 @@ function buildMixedPracticeNodeOrder(input: {
   );
   const orderedNodeIds = input.roadmapNodes
     .filter((node) =>
-      node.status === "available" &&
       input.unlockedNodeIds.has(node.id) &&
       nodeIdsWithItems.has(node.id),
     )
@@ -456,7 +451,6 @@ function getUnlockedRoadmapNodeIds(
   return new Set(
     roadmapNodes
       .filter((node) =>
-        node.status === "available" &&
         items.some((item) => item.roadmapNodeId === node.id) &&
         (
           node.id === progress.activeRoadmapNode.id ||

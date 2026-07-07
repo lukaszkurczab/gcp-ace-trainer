@@ -1,0 +1,51 @@
+[
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "intro",
+    "feedbackModel": {
+      "decisionSignal": "The input is hierarchical, and the needed answer depends on carrying path or depth state through traversal.",
+      "distractorExplanations": {
+        "flat_scan": "A flat scan ignores parent-child structure.",
+        "frequency_count": "Counting values alone does not preserve path or depth context.",
+        "sort_nodes": "Sorting node values removes the traversal relationship."
+      },
+      "mentalModelCorrection": "Choose traversal order together with the state carried into each child.",
+      "mistakeTypes": ["subgoal_order_wrong", "cannot_trace_algorithm"],
+      "nextAction": "Practice naming whether path, depth, or subtree state is carried.",
+      "result": "diagnostic"
+    },
+    "id": "alg-tree-traversal-naming-001",
+    "learningStage": "pattern_mechanics",
+    "primarySkillAtomId": "carry_tree_traversal_state",
+    "prompt": "A binary-tree task asks for the sum along each root-to-leaf path. Which signal should guide the approach?",
+    "roadmapNodeId": "tree_traversal",
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "carry_path_state",
+        "feedback": "Root-to-leaf work requires traversal while carrying path state.",
+        "id": "alg-tree-traversal-naming-001-check",
+        "mistakeTypes": ["subgoal_order_wrong", "cannot_trace_algorithm"],
+        "options": [
+          { "id": "carry_path_state", "text": "Traverse children while carrying the current path state." },
+          { "id": "flat_scan", "text": "Treat nodes as an unordered flat list." },
+          { "id": "frequency_count", "text": "Count each value without path context." },
+          { "id": "sort_nodes", "text": "Sort node values before traversing." }
+        ],
+        "prompt": "Choose the tree-traversal signal.",
+        "status": "active",
+        "testedSkillAtomIds": ["carry_tree_traversal_state"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      { "axisId": "pattern_family", "nodeId": "tree_traversal", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "carry_tree_traversal_state", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "path_accumulation", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "cannot_trace_algorithm", "role": "mistake_type" }
+    ],
+    "title": "Name tree traversal state",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  }
+]

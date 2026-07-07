@@ -12,7 +12,7 @@ import {
 } from "../src/domain";
 import { ALGORITHM_TRAINING_ITEMS } from "../src/tracks";
 
-test("track registry exposes the commercial MVP track set", () => {
+test("track registry exposes the commercial launch track set", () => {
   const tracks = getTrackDefinitions();
 
   assert.equal(DEFAULT_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID);
@@ -41,7 +41,6 @@ test("cloud certification and algorithms are active tracks", () => {
       ["Review", true],
       ["Weak area", true],
       ["Mixed practice", true],
-      ["Strategy practice", false],
     ],
   );
   assert.equal(algorithms.nextActionLabel, "Start algorithms practice");

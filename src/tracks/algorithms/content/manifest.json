@@ -8,10 +8,22 @@
       "roadmapNodeId": "arrays_and_strings"
     },
     {
+      "folderName": "backtracking",
+      "itemCount": 1,
+      "questionFile": "items/backtracking/questions.json",
+      "roadmapNodeId": "backtracking"
+    },
+    {
       "folderName": "binary-search",
       "itemCount": 35,
       "questionFile": "items/binary-search/questions.json",
       "roadmapNodeId": "binary_search"
+    },
+    {
+      "folderName": "bit-manipulation",
+      "itemCount": 1,
+      "questionFile": "items/bit-manipulation/questions.json",
+      "roadmapNodeId": "bit_manipulation"
     },
     {
       "folderName": "complexity-and-constraints",
@@ -50,10 +62,52 @@
       "roadmapNodeId": "contrast_two_pointers_vs_sliding_window"
     },
     {
+      "folderName": "dynamic-programming-intro",
+      "itemCount": 1,
+      "questionFile": "items/dynamic-programming-intro/questions.json",
+      "roadmapNodeId": "dynamic_programming_intro"
+    },
+    {
+      "folderName": "graph-traversal",
+      "itemCount": 1,
+      "questionFile": "items/graph-traversal/questions.json",
+      "roadmapNodeId": "graph_traversal"
+    },
+    {
+      "folderName": "greedy-intro",
+      "itemCount": 1,
+      "questionFile": "items/greedy-intro/questions.json",
+      "roadmapNodeId": "greedy_intro"
+    },
+    {
       "folderName": "hash-map-and-set",
       "itemCount": 40,
       "questionFile": "items/hash-map-and-set/questions.json",
       "roadmapNodeId": "hash_map_and_set"
+    },
+    {
+      "folderName": "heap-priority-queue",
+      "itemCount": 1,
+      "questionFile": "items/heap-priority-queue/questions.json",
+      "roadmapNodeId": "heap_priority_queue"
+    },
+    {
+      "folderName": "intervals",
+      "itemCount": 1,
+      "questionFile": "items/intervals/questions.json",
+      "roadmapNodeId": "intervals"
+    },
+    {
+      "folderName": "linked-list",
+      "itemCount": 1,
+      "questionFile": "items/linked-list/questions.json",
+      "roadmapNodeId": "linked_list"
+    },
+    {
+      "folderName": "math-and-geometry",
+      "itemCount": 1,
+      "questionFile": "items/math-and-geometry/questions.json",
+      "roadmapNodeId": "math_and_geometry"
     },
     {
       "folderName": "mixed-pattern-practice",
@@ -66,6 +120,12 @@
       "itemCount": 35,
       "questionFile": "items/prefix-sums/questions.json",
       "roadmapNodeId": "prefix_sums"
+    },
+    {
+      "folderName": "recursion-basics",
+      "itemCount": 1,
+      "questionFile": "items/recursion-basics/questions.json",
+      "roadmapNodeId": "recursion_basics"
     },
     {
       "folderName": "sliding-window",
@@ -92,18 +152,35 @@
       "roadmapNodeId": "strategy_selection_core"
     },
     {
+      "folderName": "tree-traversal",
+      "itemCount": 1,
+      "questionFile": "items/tree-traversal/questions.json",
+      "roadmapNodeId": "tree_traversal"
+    },
+    {
       "folderName": "two-pointers",
       "itemCount": 35,
       "questionFile": "items/two-pointers/questions.json",
       "roadmapNodeId": "two_pointers"
     }
   ],
-  "itemCount": 366,
+  "itemCount": 377,
   "trackId": "algorithms",
   "itemOrder": [
     "alg-complexity-constraint-pair-001",
     "alg-array-string-naming-001",
+    "alg-backtracking-naming-001",
     "alg-hash-map-primer-001",
+    "alg-bit-manipulation-naming-001",
+    "alg-dynamic-programming-intro-naming-001",
+    "alg-graph-traversal-naming-001",
+    "alg-greedy-intro-naming-001",
+    "alg-heap-priority-queue-naming-001",
+    "alg-intervals-naming-001",
+    "alg-linked-list-naming-001",
+    "alg-math-and-geometry-naming-001",
+    "alg-recursion-basics-naming-001",
+    "alg-tree-traversal-naming-001",
     "alg-hash-map-pseudocode-order-001",
     "alg-hash-map-trace-next-001",
     "alg-two-pointers-subgoal-order-001",

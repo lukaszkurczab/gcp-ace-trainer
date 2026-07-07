@@ -8,11 +8,11 @@ import {
 } from "../src/tracks/algorithms";
 
 test("Algorithms static scoring supports required answer types", () => {
-  assert.equal(scoreCheck("single_choice", "check_complement_first").status, "correct");
-  assert.equal(scoreCheck("multi_select", ["linear_scan"]).status, "partial");
-  assert.equal(scoreCheck("complexity_pair", { time: "O(n)", space: "O(1)" }).status, "partial");
+  assert.equal(scoreCheck("alg-check-hash-primer-001", "check_complement_first").status, "correct");
+  assert.equal(scoreCheck("alg-check-array-naming-001", ["linear_scan"]).status, "partial");
+  assert.equal(scoreCheck("alg-check-complexity-pair-001", { time: "O(n)", space: "O(1)" }).status, "partial");
   assert.equal(
-    scoreCheck("order_steps", [
+    scoreCheck("alg-check-hash-pseudocode-order-001", [
       "create_lookup",
       "scan_values",
       "derive_complement",
@@ -22,12 +22,12 @@ test("Algorithms static scoring supports required answer types", () => {
     ]).status,
     "correct",
   );
-  assert.equal(scoreCheck("select_pseudocode_line", "line-5").status, "correct");
-  assert.equal(scoreCheck("trace_next_step", "store_7").status, "incorrect");
+  assert.equal(scoreCheck("alg-check-two-pointers-line-001", "line-5").status, "correct");
+  assert.equal(scoreCheck("alg-check-hash-trace-next-001", "store_7").status, "incorrect");
 });
 
 test("Algorithms static scoring returns static feedback and mistake types for incorrect answers", () => {
-  const check = getCheck("trace_next_step");
+  const check = getCheck("alg-check-hash-trace-next-001");
   const score = scoreAlgorithmStaticMicroCheck(check, "store_7");
 
   assert.equal(score.status, "incorrect");
@@ -40,13 +40,13 @@ test("Algorithms static scoring returns static feedback and mistake types for in
 });
 
 function scoreCheck(
-  checkType: AlgorithmStaticMicroCheck["type"],
+  checkId: string,
   answer: Parameters<typeof scoreAlgorithmStaticMicroCheck>[1],
 ) {
-  return scoreAlgorithmStaticMicroCheck(getCheck(checkType), answer);
+  return scoreAlgorithmStaticMicroCheck(getCheck(checkId), answer);
 }
 
-function getCheck(checkType: AlgorithmStaticMicroCheck["type"]): AlgorithmStaticMicroCheck {
+function getCheck(checkId: string): AlgorithmStaticMicroCheck {
   const checks: AlgorithmStaticMicroCheck[] = [];
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
@@ -55,9 +55,9 @@ function getCheck(checkType: AlgorithmStaticMicroCheck["type"]): AlgorithmStatic
     }
   }
 
-  const check = checks.find((candidate) => candidate.type === checkType);
+  const check = checks.find((candidate) => candidate.id === checkId);
 
-  assert.ok(check, `Missing check type ${checkType}`);
+  assert.ok(check, `Missing check ${checkId}`);
   assert.equal(check.status, "active");
   return check;
 }

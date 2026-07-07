@@ -19,16 +19,14 @@ import {
   ALGORITHM_CONTENT_VERSION,
   ALGORITHM_EVIDENCE_LEVELS,
   ALGORITHM_FORBIDDEN_MODEL_TERMS,
-  ALGORITHM_LATER_TRAINING_ITEM_TYPES,
   ALGORITHM_MISTAKE_TYPES,
-  ALGORITHM_MVP_TRAINING_ITEM_TYPES,
   ALGORITHM_PATTERN_FAMILIES,
   ALGORITHM_PATTERN_VARIANTS,
   ALGORITHM_PROBLEM_ARCHETYPES,
   ALGORITHM_ROADMAP,
-  ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
   ALGORITHM_SKILL_ATOMS,
   ALGORITHM_STATIC_MICRO_CHECK_TYPES,
+  ALGORITHM_TRAINING_ITEM_TYPES,
   ALGORITHM_TRAINING_ITEMS,
   buildAlgorithmWeakAreaRecommendation,
   createAlgorithmsContentAdapter,
@@ -127,6 +125,17 @@ const requiredSkillAtomIds = [
   "use_last_unresolved_state",
   "maintain_monotonic_stack_invariant",
   "identify_monotonic_predicate",
+  "reason_linked_list_rewiring",
+  "trace_recursive_base_case",
+  "carry_tree_traversal_state",
+  "choose_priority_queue_state",
+  "reason_about_interval_overlap",
+  "prune_backtracking_choice",
+  "track_graph_visited_state",
+  "justify_greedy_choice",
+  "define_dynamic_programming_state",
+  "apply_bitmask_state",
+  "reason_about_numeric_structure",
 ] as const;
 
 const expectedArrayStringPrimarySkills = {
@@ -178,7 +187,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 366;
+const expectedActiveAlgorithmItemCount = 377;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
@@ -191,6 +200,36 @@ const requiredActiveAlgorithmItemTypes = [
   "edge_case_drill",
   "subgoal_ordering",
   "pseudocode_ordering",
+] as const;
+
+const expectedRoadmapNodeIds = [
+  "complexity_and_constraints",
+  "arrays_and_strings",
+  "hash_map_and_set",
+  "two_pointers",
+  "sliding_window",
+  "prefix_sums",
+  "sorting_based",
+  "stack",
+  "binary_search",
+  "strategy_selection_core",
+  "contrast_hash_map_vs_sorting",
+  "contrast_two_pointers_vs_sliding_window",
+  "contrast_sliding_window_vs_prefix_sums",
+  "contrast_stack_vs_monotonic_stack_intro",
+  "contrast_binary_search_vs_linear_scan",
+  "linked_list",
+  "recursion_basics",
+  "tree_traversal",
+  "heap_priority_queue",
+  "intervals",
+  "backtracking",
+  "graph_traversal",
+  "greedy_intro",
+  "dynamic_programming_intro",
+  "bit_manipulation",
+  "math_and_geometry",
+  "mixed_pattern_practice",
 ] as const;
 
 test("Algorithms curriculum taxonomy exposes the target real pattern families", () => {
@@ -274,8 +313,10 @@ test("Algorithms skill atoms model trainable reasoning actions", () => {
       assert.ok(patternVariantIds.has(patternVariantId));
     }
 
-    for (const problemArchetypeId of atom.problemArchetypeIds ?? []) {
-      assert.ok(problemArchetypeIds.has(problemArchetypeId));
+    if ("problemArchetypeIds" in atom) {
+      for (const problemArchetypeId of atom.problemArchetypeIds ?? []) {
+        assert.ok(problemArchetypeIds.has(problemArchetypeId));
+      }
     }
   }
 
@@ -284,29 +325,14 @@ test("Algorithms skill atoms model trainable reasoning actions", () => {
   }
 });
 
-test("Algorithms roadmap separates available, planned, future, and mixed practice", () => {
-  const availableNodeIds = ALGORITHM_ROADMAP.nodes
-    .filter((node) => node.status === "available")
-    .map((node) => node.id);
+test("Algorithms roadmap exposes only active canonical nodes", () => {
+  assert.deepEqual(ALGORITHM_ROADMAP.nodes.map((node) => node.id), [...expectedRoadmapNodeIds]);
+  assert.equal(ALGORITHM_ROADMAP.status, "available");
 
-  for (const nodeId of [
-    "complexity_and_constraints",
-    "arrays_and_strings",
-    "hash_map_and_set",
-    "two_pointers",
-    "sliding_window",
-    "prefix_sums",
-    "sorting_based",
-    "stack",
-    "binary_search",
-    "strategy_selection_core",
-    "contrast_hash_map_vs_sorting",
-    "contrast_two_pointers_vs_sliding_window",
-    "contrast_sliding_window_vs_prefix_sums",
-    "contrast_stack_vs_monotonic_stack_intro",
-    "contrast_binary_search_vs_linear_scan",
-  ]) {
-    assert.equal(availableNodeIds.includes(nodeId), true, nodeId);
+  for (const node of ALGORITHM_ROADMAP.nodes) {
+    assert.equal(node.status, "available", node.id);
+    assert.notEqual(node.kind, "later", node.id);
+    assert.ok(node.minimumActiveItemCount > 0, node.id);
   }
 
   const mixedPractice = getRoadmapNode("mixed_pattern_practice");
@@ -314,11 +340,6 @@ test("Algorithms roadmap separates available, planned, future, and mixed practic
   assert.equal(mixedPractice.learningStage, "mixed_interview_practice");
   assert.equal(mixedPractice.status, "available");
   assert.equal(mixedPractice.minimumActiveItemCount, 35);
-
-  for (const node of ALGORITHM_ROADMAP.nodes.filter((item) => item.status !== "available")) {
-    assert.notEqual(node.status, "available", node.id);
-    assert.equal(node.minimumActiveItemCount, 0, node.id);
-  }
 
   assert.deepEqual(validateAlgorithmRoadmap(ALGORITHM_ROADMAP).issues, []);
 });
@@ -622,26 +643,20 @@ test("Algorithms content uses production status and version naming", () => {
   }
 });
 
-test("Algorithms session selection excludes planned and future roadmap nodes", () => {
+test("Algorithms session selection uses active roadmap content thresholds", () => {
   assert.equal(getFirstUsableAlgorithmRoadmapNode().id, "complexity_and_constraints");
 
   for (const node of ALGORITHM_ROADMAP.nodes) {
     const activeItemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
-
-    if (node.status === "available") {
-      assert.equal(isAlgorithmRoadmapNodeSelectable(node), activeItemCount >= node.minimumActiveItemCount, node.id);
-      continue;
-    }
-
-    assert.equal(isAlgorithmRoadmapNodeSelectable(node), false, node.id);
+    assert.equal(isAlgorithmRoadmapNodeSelectable(node), activeItemCount >= node.minimumActiveItemCount, node.id);
   }
 });
 
-test("Algorithms adapter mode selection excludes active items on unavailable roadmap nodes", () => {
-  const plannedItem = {
+test("Algorithms adapter mode selection excludes active items on unknown roadmap nodes", () => {
+  const unknownNodeItem = {
     ...makeBaseAlgorithmItem({
-      id: "algorithm-planned-node-fixture-001",
-      roadmapNodeId: "linked_list",
+      id: "algorithm-unknown-node-fixture-001",
+      roadmapNodeId: "missing_node",
       status: "active",
       staticMicroChecks: [makeStaticMicroCheck()],
       type: "approach_naming",
@@ -649,11 +664,11 @@ test("Algorithms adapter mode selection excludes active items on unavailable roa
   };
   const adapter = createAlgorithmsContentAdapter([
     ...ALGORITHM_TRAINING_ITEMS,
-    plannedItem as AlgorithmTrainingItem & TrainingItem,
+    unknownNodeItem as AlgorithmTrainingItem & TrainingItem,
   ]);
   const modeItems = adapter.getItemsForMode("algorithms-roadmap-basics");
 
-  assert.equal(modeItems.some((item) => item.id === plannedItem.id), false);
+  assert.equal(modeItems.some((item) => item.id === unknownNodeItem.id), false);
   assert.equal(getSelectableAlgorithmTrainingItems().every((item) => item.status === "active"), true);
 });
 
@@ -723,14 +738,14 @@ test("Algorithms drill mode selects active practice items from the current roadm
   );
 });
 
-test("Algorithms learn mode falls back to selectable current-node items when no learn items exist", () => {
-  const fallbackItems = [
-    makeSelectableAlgorithmItem("learn-fallback-strategy", "contrast_hash_map_vs_sorting", "solution_comparison"),
-    makeSelectableAlgorithmItem("learn-fallback-complexity", "contrast_hash_map_vs_sorting", "strategy_choice"),
-    makeSelectableAlgorithmItem("learn-fallback-other-node", "hash_map_and_set", "approach_primer"),
+test("Algorithms learn mode uses selectable current-node items when no learn items exist", () => {
+  const alternateItems = [
+    makeSelectableAlgorithmItem("learn-alternate-strategy", "contrast_hash_map_vs_sorting", "solution_comparison"),
+    makeSelectableAlgorithmItem("learn-alternate-complexity", "contrast_hash_map_vs_sorting", "strategy_choice"),
+    makeSelectableAlgorithmItem("learn-alternate-other-node", "hash_map_and_set", "approach_primer"),
   ];
   const selected = selectAlgorithmSessionItems({
-    contentAdapter: makeSelectionAdapter(fallbackItems),
+    contentAdapter: makeSelectionAdapter(alternateItems),
     mode: "learn",
     nodeId: "contrast_hash_map_vs_sorting",
     sessionLength: 10,
@@ -738,18 +753,18 @@ test("Algorithms learn mode falls back to selectable current-node items when no 
 
   assert.deepEqual(
     selected.map((item) => item.id),
-    ["learn-fallback-strategy", "learn-fallback-complexity"],
+    ["learn-alternate-strategy", "learn-alternate-complexity"],
   );
 });
 
-test("Algorithms drill mode falls back to selectable current-node items when no drill items exist", () => {
-  const fallbackItems = [
-    makeSelectableAlgorithmItem("drill-fallback-comparison", "contrast_two_pointers_vs_sliding_window", "solution_comparison"),
-    makeSelectableAlgorithmItem("drill-fallback-strategy", "contrast_two_pointers_vs_sliding_window", "strategy_choice"),
-    makeSelectableAlgorithmItem("drill-fallback-other-node", "hash_map_and_set", "trace_next_step"),
+test("Algorithms drill mode uses selectable current-node items when no drill items exist", () => {
+  const alternateItems = [
+    makeSelectableAlgorithmItem("drill-alternate-comparison", "contrast_two_pointers_vs_sliding_window", "solution_comparison"),
+    makeSelectableAlgorithmItem("drill-alternate-strategy", "contrast_two_pointers_vs_sliding_window", "strategy_choice"),
+    makeSelectableAlgorithmItem("drill-alternate-other-node", "hash_map_and_set", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
-    contentAdapter: makeSelectionAdapter(fallbackItems),
+    contentAdapter: makeSelectionAdapter(alternateItems),
     mode: "drill",
     nodeId: "contrast_two_pointers_vs_sliding_window",
     sessionLength: 10,
@@ -757,7 +772,7 @@ test("Algorithms drill mode falls back to selectable current-node items when no 
 
   assert.deepEqual(
     selected.map((item) => item.id),
-    ["drill-fallback-comparison", "drill-fallback-strategy"],
+    ["drill-alternate-comparison", "drill-alternate-strategy"],
   );
 });
 
@@ -765,7 +780,7 @@ test("Algorithms review mode selects due Algorithms review queue items", () => {
   const reviewItems = [
     makeSelectableAlgorithmItem("review-normal", "hash_map_and_set", "trace_next_step"),
     makeSelectableAlgorithmItem("review-high", "hash_map_and_set", "complexity_check"),
-    makeSelectableAlgorithmItem("review-future", "hash_map_and_set", "edge_case_drill"),
+    makeSelectableAlgorithmItem("review-not-yet-due", "hash_map_and_set", "edge_case_drill"),
     makeSelectableAlgorithmItem("review-cloud", "hash_map_and_set", "subgoal_ordering"),
   ];
   const selected = selectAlgorithmSessionItems({
@@ -782,7 +797,7 @@ test("Algorithms review mode selects due Algorithms review queue items", () => {
         dueAt: "2026-07-03T09:30:00.000Z",
         priority: "high",
       }),
-      makeReviewQueueItem("queue-future", "review-future", {
+      makeReviewQueueItem("queue-not-yet-due", "review-not-yet-due", {
         dueAt: "2026-07-04T09:00:00.000Z",
         priority: "urgent",
       }),
@@ -826,16 +841,16 @@ test("Algorithms session-miss review selects requested missed items before dueAt
 
 test("Algorithms due review does not fall back to session missed ids before dueAt", () => {
   const reviewItems = [
-    makeSelectableAlgorithmItem("review-future-requested", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("review-not-yet-due-requested", "hash_map_and_set", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
     contentAdapter: makeSelectionAdapter(reviewItems),
     mode: "review",
     nodeId: "hash_map_and_set",
     now: "2026-07-03T10:00:00.000Z",
-    reviewItemIds: ["review-future-requested"],
+    reviewItemIds: ["review-not-yet-due-requested"],
     reviewQueueItems: [
-      makeReviewQueueItem("queue-future-requested", "review-future-requested", {
+      makeReviewQueueItem("queue-not-yet-due-requested", "review-not-yet-due-requested", {
         dueAt: "2026-07-04T09:00:00.000Z",
       }),
     ],
@@ -911,10 +926,10 @@ test("Algorithms weak area mode weights incorrect attempts above partial attempt
   assert.deepEqual(recommendation.candidateItemIds, ["weak-incorrect"]);
 });
 
-test("Algorithms weak area mode falls back to current roadmap node without attempts", () => {
+test("Algorithms weak area mode uses current roadmap node without attempts", () => {
   const weakItems = [
-    makeSelectableAlgorithmItem("weak-fallback-current", "hash_map_and_set", "trace_next_step"),
-    makeSelectableAlgorithmItem("weak-fallback-arrays", "arrays_and_strings", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-default-current", "hash_map_and_set", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-default-arrays", "arrays_and_strings", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
     attempts: [],
@@ -924,20 +939,20 @@ test("Algorithms weak area mode falls back to current roadmap node without attem
     sessionLength: 10,
   });
 
-  assert.deepEqual(selected.map((item) => item.id), ["weak-fallback-current"]);
+  assert.deepEqual(selected.map((item) => item.id), ["weak-default-current"]);
 });
 
-test("Algorithms weak area mode selects active available items only", () => {
+test("Algorithms weak area mode selects active implemented items only", () => {
   const weakItems = [
     makeSelectableAlgorithmItem("weak-active", "arrays_and_strings", "trace_next_step"),
     makeAlgorithmSelectionItem("weak-disabled", "arrays_and_strings", "trace_next_step", "disabled"),
-    makeSelectableAlgorithmItem("weak-unavailable", "linked_list", "trace_next_step"),
+    makeSelectableAlgorithmItem("weak-implemented-linked", "linked_list", "trace_next_step"),
     makeSelectableAlgorithmItem("weak-current", "hash_map_and_set", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
     attempts: [
       makeSelectionAttempt("attempt-disabled-001", "weak-disabled", "incorrect"),
-      makeSelectionAttempt("attempt-unavailable-001", "weak-unavailable", "incorrect"),
+      makeSelectionAttempt("attempt-linked-001", "weak-implemented-linked", "incorrect"),
       makeSelectionAttempt("attempt-active-001", "weak-active", "incorrect"),
     ],
     contentAdapter: makeSelectionAdapter(weakItems),
@@ -949,10 +964,10 @@ test("Algorithms weak area mode selects active available items only", () => {
   assert.deepEqual(selected.map((item) => item.id), ["weak-active"]);
 });
 
-test("Algorithms practice mode excludes unavailable roadmap nodes", () => {
+test("Algorithms practice mode respects progress-unlocked roadmap nodes", () => {
   const practiceItems = [
     makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
-    makeSelectableAlgorithmItem("practice-linked-unavailable", "linked_list", "trace_next_step"),
+    makeSelectableAlgorithmItem("practice-linked-locked-by-progress", "linked_list", "trace_next_step"),
   ];
   const selected = selectAlgorithmSessionItems({
     attempts: [],
@@ -1047,7 +1062,7 @@ test("Algorithms default mode keeps current roadmap node selection", () => {
   assert.deepEqual(selected.map((item) => item.id), ["default-current"]);
 });
 
-test("Algorithms curriculum validation rejects active items on unknown or unavailable roadmap nodes", () => {
+test("Algorithms curriculum validation rejects active items on unknown roadmap nodes", () => {
   const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
   const unknownNodeItem = makeBaseAlgorithmItem({
     id: "algorithm-unknown-node-fixture-001",
@@ -1055,30 +1070,19 @@ test("Algorithms curriculum validation rejects active items on unknown or unavai
     status: "active",
     staticMicroChecks: [makeStaticMicroCheck()],
   });
-  const unavailableNodeItem = makeBaseAlgorithmItem({
-    id: "algorithm-unavailable-node-fixture-001",
-    roadmapNodeId: "linked_list",
-    status: "active",
-    staticMicroChecks: [makeStaticMicroCheck()],
-  });
 
   const issueCodes = validateAlgorithmCurriculum({
     enabledSessionModes: track.sessionModes.filter((mode) => mode.enabled),
-    items: [...ALGORITHM_TRAINING_ITEMS, unknownNodeItem, unavailableNodeItem],
+    items: [...ALGORITHM_TRAINING_ITEMS, unknownNodeItem],
     roadmap: ALGORITHM_ROADMAP,
   }).issues.map((issue) => issue.code);
 
   assert.ok(issueCodes.includes("active_item_references_unknown_roadmap_node"));
-  assert.ok(issueCodes.includes("active_item_on_unavailable_roadmap_node"));
 });
 
 test("Algorithms session mode supported item types are canonical and known", () => {
   const track = getTrackDefinition(ALGORITHMS_TRACK_ID);
-  const knownItemTypes = new Set<string>([
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
-  ]);
+  const knownItemTypes = new Set<string>(ALGORITHM_TRAINING_ITEM_TYPES);
 
   for (const mode of track.sessionModes) {
     for (const itemType of mode.supportedItemTypes) {
@@ -1108,9 +1112,7 @@ test("Algorithms model values avoid forbidden progress and platform terms", () =
     ...ALGORITHM_PROBLEM_ARCHETYPES,
     ...ALGORITHM_SKILL_ATOMS,
     ...ALGORITHM_MISTAKE_TYPES,
-    ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
-    ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+    ...ALGORITHM_TRAINING_ITEM_TYPES,
     ...ALGORITHM_EVIDENCE_LEVELS,
     ...ALGORITHM_STATIC_MICRO_CHECK_TYPES,
     ALGORITHM_ROADMAP,

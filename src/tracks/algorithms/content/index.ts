@@ -11,20 +11,31 @@ import { validateAlgorithmTrainingItem } from "../algorithmContentQuality";
 import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNodeId } from "../algorithmRoadmap";
 import manifest from "./manifest.json";
 import arraysAndStringsQuestions from "./items/arrays-and-strings/questions.json";
+import backtrackingQuestions from "./items/backtracking/questions.json";
 import binarySearchQuestions from "./items/binary-search/questions.json";
+import bitManipulationQuestions from "./items/bit-manipulation/questions.json";
 import complexityAndConstraintsQuestions from "./items/complexity-and-constraints/questions.json";
 import contrastBinarySearchVsLinearScanQuestions from "./items/contrast-binary-search-vs-linear-scan/questions.json";
 import contrastHashMapVsSortingQuestions from "./items/contrast-hash-map-vs-sorting/questions.json";
 import contrastSlidingWindowVsPrefixSumsQuestions from "./items/contrast-sliding-window-vs-prefix-sums/questions.json";
 import contrastStackVsMonotonicStackIntroQuestions from "./items/contrast-stack-vs-monotonic-stack-intro/questions.json";
 import contrastTwoPointersVsSlidingWindowQuestions from "./items/contrast-two-pointers-vs-sliding-window/questions.json";
+import dynamicProgrammingIntroQuestions from "./items/dynamic-programming-intro/questions.json";
+import graphTraversalQuestions from "./items/graph-traversal/questions.json";
+import greedyIntroQuestions from "./items/greedy-intro/questions.json";
 import hashMapAndSetQuestions from "./items/hash-map-and-set/questions.json";
+import heapPriorityQueueQuestions from "./items/heap-priority-queue/questions.json";
+import intervalsQuestions from "./items/intervals/questions.json";
+import linkedListQuestions from "./items/linked-list/questions.json";
+import mathAndGeometryQuestions from "./items/math-and-geometry/questions.json";
 import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
 import prefixSumsQuestions from "./items/prefix-sums/questions.json";
+import recursionBasicsQuestions from "./items/recursion-basics/questions.json";
 import slidingWindowQuestions from "./items/sliding-window/questions.json";
 import sortingBasedQuestions from "./items/sorting-based/questions.json";
 import stackQuestions from "./items/stack/questions.json";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
+import treeTraversalQuestions from "./items/tree-traversal/questions.json";
 import twoPointersQuestions from "./items/two-pointers/questions.json";
 
 export type AlgorithmContentGroup = ContentPackGroup<
@@ -39,20 +50,31 @@ export const algorithmContentManifest = manifest as ContentPackManifest<
 
 const algorithmQuestionFilesByPath = {
   "items/arrays-and-strings/questions.json": arraysAndStringsQuestions,
+  "items/backtracking/questions.json": backtrackingQuestions,
   "items/binary-search/questions.json": binarySearchQuestions,
+  "items/bit-manipulation/questions.json": bitManipulationQuestions,
   "items/complexity-and-constraints/questions.json": complexityAndConstraintsQuestions,
   "items/contrast-binary-search-vs-linear-scan/questions.json": contrastBinarySearchVsLinearScanQuestions,
   "items/contrast-hash-map-vs-sorting/questions.json": contrastHashMapVsSortingQuestions,
   "items/contrast-sliding-window-vs-prefix-sums/questions.json": contrastSlidingWindowVsPrefixSumsQuestions,
   "items/contrast-stack-vs-monotonic-stack-intro/questions.json": contrastStackVsMonotonicStackIntroQuestions,
   "items/contrast-two-pointers-vs-sliding-window/questions.json": contrastTwoPointersVsSlidingWindowQuestions,
+  "items/dynamic-programming-intro/questions.json": dynamicProgrammingIntroQuestions,
+  "items/graph-traversal/questions.json": graphTraversalQuestions,
+  "items/greedy-intro/questions.json": greedyIntroQuestions,
   "items/hash-map-and-set/questions.json": hashMapAndSetQuestions,
+  "items/heap-priority-queue/questions.json": heapPriorityQueueQuestions,
+  "items/intervals/questions.json": intervalsQuestions,
+  "items/linked-list/questions.json": linkedListQuestions,
+  "items/math-and-geometry/questions.json": mathAndGeometryQuestions,
   "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,
   "items/prefix-sums/questions.json": prefixSumsQuestions,
+  "items/recursion-basics/questions.json": recursionBasicsQuestions,
   "items/sliding-window/questions.json": slidingWindowQuestions,
   "items/sorting-based/questions.json": sortingBasedQuestions,
   "items/stack/questions.json": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
+  "items/tree-traversal/questions.json": treeTraversalQuestions,
   "items/two-pointers/questions.json": twoPointersQuestions,
 } as const satisfies Record<string, unknown>;
 
@@ -121,8 +143,6 @@ function validateAlgorithmContentGroups(
 
         if (!itemRoadmapNode) {
           issues.push(`Active Algorithms content item ${itemLabel} references unknown roadmap node: ${String(item.roadmapNodeId)}.`);
-        } else if (itemRoadmapNode.status !== "available") {
-          issues.push(`Active Algorithms content item ${itemLabel} references unavailable roadmap node: ${itemRoadmapNode.id}.`);
         }
       }
 

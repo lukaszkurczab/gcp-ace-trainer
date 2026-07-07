@@ -7,119 +7,195 @@ import {
   type AlgorithmSkillAtom,
 } from "./algorithmContentTypes";
 
-const familyCopy: Record<AlgorithmPatternFamilyId, {
-  description: string;
-  label: string;
-  signals: readonly string[];
-}> = {
+const familyCopy: Record<
+  AlgorithmPatternFamilyId,
+  {
+    description: string;
+    label: string;
+    signals: readonly string[];
+  }
+> = {
   arrays_and_strings: {
-    description: "Reason about indexed sequences, character data, duplicates, and local scan state.",
+    description:
+      "Reason about indexed sequences, character data, duplicates, and local scan state.",
     label: "Arrays and strings",
-    signals: ["Input is an indexed sequence.", "Correctness depends on positions, boundaries, or duplicates."],
+    signals: [
+      "Input is an indexed sequence.",
+      "Correctness depends on positions, boundaries, or duplicates.",
+    ],
   },
   backtracking: {
     description: "Explore a choice tree while pruning invalid partial states.",
     label: "Backtracking",
-    signals: ["The answer is assembled through reversible choices.", "Constraints can prune partial candidates."],
+    signals: [
+      "The answer is assembled through reversible choices.",
+      "Constraints can prune partial candidates.",
+    ],
   },
   binary_search: {
-    description: "Use ordered structure or a monotonic predicate to shrink the search space.",
+    description:
+      "Use ordered structure or a monotonic predicate to shrink the search space.",
     label: "Binary search",
-    signals: ["The input or answer space has an ordered boundary.", "Each check can discard a large ordered region."],
+    signals: [
+      "The input or answer space has an ordered boundary.",
+      "Each check can discard a large ordered region.",
+    ],
   },
   bit_manipulation: {
-    description: "Use bit-level representation for flags, masks, parity, or compact subset state.",
+    description:
+      "Use bit-level representation for flags, masks, parity, or compact subset state.",
     label: "Bit manipulation",
-    signals: ["The problem asks about individual bits, masks, parity, or compact set encoding."],
+    signals: [
+      "The problem asks about individual bits, masks, parity, or compact set encoding.",
+    ],
   },
   complexity_and_constraints: {
-    description: "Reason from input limits, operation cost, and baseline approaches before choosing a strategy.",
+    description:
+      "Reason from input limits, operation cost, and baseline approaches before choosing a strategy.",
     label: "Complexity and constraints",
-    signals: ["Large input size makes nested enumeration too expensive.", "The prompt asks whether work will scale."],
+    signals: [
+      "Large input size makes nested enumeration too expensive.",
+      "The prompt asks whether work will scale.",
+    ],
   },
   dynamic_programming_intro: {
-    description: "Define reusable state and transitions when local choices overlap across subproblems.",
+    description:
+      "Define reusable state and transitions when local choices overlap across subproblems.",
     label: "Dynamic programming intro",
-    signals: ["Choices repeat over overlapping subproblems.", "The solution needs a state definition and transition."],
+    signals: [
+      "Choices repeat over overlapping subproblems.",
+      "The solution needs a state definition and transition.",
+    ],
   },
   graph_traversal: {
-    description: "Represent relationships and traverse nodes while maintaining visited state.",
+    description:
+      "Represent relationships and traverse nodes while maintaining visited state.",
     label: "Graph traversal",
-    signals: ["Entities are connected by edges.", "Correctness depends on reachability, components, or dependency order."],
+    signals: [
+      "Entities are connected by edges.",
+      "Correctness depends on reachability, components, or dependency order.",
+    ],
   },
   greedy_intro: {
-    description: "Use a locally justified choice when an exchange or ordering argument makes it safe.",
+    description:
+      "Use a locally justified choice when an exchange or ordering argument makes it safe.",
     label: "Greedy intro",
-    signals: ["A local choice can be justified by ordering or an exchange argument."],
+    signals: [
+      "A local choice can be justified by ordering or an exchange argument.",
+    ],
   },
   hash_map_and_set: {
-    description: "Remember values, counts, groups, or complements for fast lookup during a scan.",
+    description:
+      "Remember values, counts, groups, or complements for fast lookup during a scan.",
     label: "Hash map and set",
-    signals: ["The solution needs quick membership, count, grouping, or complement lookup."],
+    signals: [
+      "The solution needs quick membership, count, grouping, or complement lookup.",
+    ],
   },
   heap_priority_queue: {
-    description: "Maintain a changing extreme or priority order without sorting everything repeatedly.",
+    description:
+      "Maintain a changing extreme or priority order without sorting everything repeatedly.",
     label: "Heap and priority queue",
-    signals: ["The next item depends on current priority.", "Only the top K or current extreme matters repeatedly."],
+    signals: [
+      "The next item depends on current priority.",
+      "Only the top K or current extreme matters repeatedly.",
+    ],
   },
   intervals: {
     description: "Reason about ranges, overlaps, ordering, and active spans.",
     label: "Intervals",
-    signals: ["Inputs describe start/end ranges.", "Ordering reveals overlap, gaps, or active intervals."],
+    signals: [
+      "Inputs describe start/end ranges.",
+      "Ordering reveals overlap, gaps, or active intervals.",
+    ],
   },
   linked_list: {
-    description: "Manipulate node references where pointer order and rewiring define the state.",
+    description:
+      "Manipulate node references where pointer order and rewiring define the state.",
     label: "Linked list",
-    signals: ["The structure is node-linked.", "The main risk is pointer movement or rewiring."],
+    signals: [
+      "The structure is node-linked.",
+      "The main risk is pointer movement or rewiring.",
+    ],
   },
   math_and_geometry: {
-    description: "Use formulas, modular reasoning, coordinates, or numeric structure.",
+    description:
+      "Use formulas, modular reasoning, coordinates, or numeric structure.",
     label: "Math and geometry",
-    signals: ["The core decision depends on numeric properties, coordinates, or formulas."],
+    signals: [
+      "The core decision depends on numeric properties, coordinates, or formulas.",
+    ],
   },
   monotonic_stack: {
-    description: "Maintain a stack invariant to resolve next greater, smaller, or boundary questions.",
+    description:
+      "Maintain a stack invariant to resolve next greater, smaller, or boundary questions.",
     label: "Monotonic stack",
-    signals: ["Unresolved elements wait for a future larger or smaller boundary."],
+    signals: [
+      "Unresolved elements wait for a future larger or smaller boundary.",
+    ],
   },
   prefix_sums: {
-    description: "Reuse accumulated values to answer range and subarray questions without recomputing ranges.",
+    description:
+      "Reuse accumulated values to answer range and subarray questions without recomputing ranges.",
     label: "Prefix sums",
-    signals: ["The problem asks about range totals, differences, or repeated subarray sums."],
+    signals: [
+      "The problem asks about range totals, differences, or repeated subarray sums.",
+    ],
   },
   recursion_basics: {
-    description: "Decompose a problem into base cases and smaller calls while tracking call-stack behavior.",
+    description:
+      "Decompose a problem into base cases and smaller calls while tracking call-stack behavior.",
     label: "Recursion basics",
-    signals: ["The same structure repeats at smaller scale.", "A base case controls termination."],
+    signals: [
+      "The same structure repeats at smaller scale.",
+      "A base case controls termination.",
+    ],
   },
   sliding_window: {
-    description: "Maintain a moving contiguous range while updating state needed to test a condition.",
+    description:
+      "Maintain a moving contiguous range while updating state needed to test a condition.",
     label: "Sliding window",
-    signals: ["The answer depends on a contiguous range.", "Expanding or shrinking the range updates state predictably."],
+    signals: [
+      "The answer depends on a contiguous range.",
+      "Expanding or shrinking the range updates state predictably.",
+    ],
   },
   sorting_based: {
-    description: "Sort input or derived records when ordering reveals a simpler scan, grouping, or comparison.",
+    description:
+      "Sort input or derived records when ordering reveals a simpler scan, grouping, or comparison.",
     label: "Sorting based",
-    signals: ["Ordering simplifies comparisons or grouping.", "Sorting preserves the answer and its cost is acceptable."],
+    signals: [
+      "Ordering simplifies comparisons or grouping.",
+      "Sorting preserves the answer and its cost is acceptable.",
+    ],
   },
   stack: {
-    description: "Use last-in-first-out state for nested structures, previous state, or explicit traversal.",
+    description:
+      "Use last-in-first-out state for nested structures, previous state, or explicit traversal.",
     label: "Stack",
     signals: ["The most recent unresolved element controls the next decision."],
   },
   tree_traversal: {
-    description: "Traverse hierarchical structure while carrying path, depth, or subtree state.",
+    description:
+      "Traverse hierarchical structure while carrying path, depth, or subtree state.",
     label: "Tree traversal",
-    signals: ["The input is hierarchical.", "The solution depends on subtree, path, depth, or level state."],
+    signals: [
+      "The input is hierarchical.",
+      "The solution depends on subtree, path, depth, or level state.",
+    ],
   },
   two_pointers: {
-    description: "Coordinate moving positions when a comparison or boundary condition determines movement.",
+    description:
+      "Coordinate moving positions when a comparison or boundary condition determines movement.",
     label: "Two pointers",
-    signals: ["Two positions can move without checking every pair.", "A boundary comparison decides which pointer moves."],
+    signals: [
+      "Two positions can move without checking every pair.",
+      "A boundary comparison decides which pointer moves.",
+    ],
   },
 };
 
-const mvpFamilyIds = [
+const patternFamilyIds = [
   "complexity_and_constraints",
   "arrays_and_strings",
   "hash_map_and_set",
@@ -130,9 +206,6 @@ const mvpFamilyIds = [
   "stack",
   "monotonic_stack",
   "binary_search",
-] as const satisfies readonly AlgorithmPatternFamilyId[];
-
-const futureFamilyIds = [
   "linked_list",
   "recursion_basics",
   "tree_traversal",
@@ -147,8 +220,14 @@ const futureFamilyIds = [
 ] as const satisfies readonly AlgorithmPatternFamilyId[];
 
 export const ALGORITHM_PATTERN_FAMILIES = [
-  ...mvpFamilyIds.map((id) => makeFamily(id, id === "complexity_and_constraints" || id === "arrays_and_strings" ? [] : ["complexity_and_constraints"])),
-  ...futureFamilyIds.map((id) => makeFamily(id, ["complexity_and_constraints", "arrays_and_strings"])),
+  ...patternFamilyIds.map((id) =>
+    makeFamily(
+      id,
+      id === "complexity_and_constraints" || id === "arrays_and_strings"
+        ? []
+        : ["complexity_and_constraints"],
+    ),
+  ),
 ] as const satisfies readonly AlgorithmPatternFamily[];
 
 const variantsByFamily = {
@@ -298,44 +377,82 @@ const variantsByFamily = {
   ],
 } as const satisfies Record<AlgorithmPatternFamilyId, readonly string[]>;
 
-export const ALGORITHM_PATTERN_VARIANTS = Object.entries(variantsByFamily).flatMap(
-  ([patternFamilyId, variantIds]) =>
-    variantIds.map((variantId) => ({
-      contentVersion: ALGORITHM_CONTENT_VERSION,
-      decisionSignals: [`Use ${formatLabel(variantId)} when its signal is present in the problem shape.`],
-      description: `Practice the ${formatLabel(variantId)} variant within ${familyCopy[patternFamilyId as AlgorithmPatternFamilyId].label}.`,
-      id: variantId,
-      label: formatLabel(variantId),
-      learningStage: getVariantLearningStage(patternFamilyId as AlgorithmPatternFamilyId),
-      patternFamilyId: patternFamilyId as AlgorithmPatternFamilyId,
-      prerequisiteLearningStageIds: patternFamilyId === "complexity_and_constraints" ? [] : ["foundations"],
-      prerequisitePatternFamilyIds:
-        patternFamilyId === "complexity_and_constraints" || patternFamilyId === "arrays_and_strings"
-          ? []
-          : ["complexity_and_constraints"],
-      prerequisitePatternVariantIds: [],
-    })),
+export const ALGORITHM_PATTERN_VARIANTS = Object.entries(
+  variantsByFamily,
+).flatMap(([patternFamilyId, variantIds]) =>
+  variantIds.map((variantId) => ({
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    decisionSignals: [
+      `Use ${formatLabel(variantId)} when its signal is present in the problem shape.`,
+    ],
+    description: `Practice the ${formatLabel(variantId)} variant within ${familyCopy[patternFamilyId as AlgorithmPatternFamilyId].label}.`,
+    id: variantId,
+    label: formatLabel(variantId),
+    learningStage: getVariantLearningStage(
+      patternFamilyId as AlgorithmPatternFamilyId,
+    ),
+    patternFamilyId: patternFamilyId as AlgorithmPatternFamilyId,
+    prerequisiteLearningStageIds:
+      patternFamilyId === "complexity_and_constraints" ? [] : ["foundations"],
+    prerequisitePatternFamilyIds:
+      patternFamilyId === "complexity_and_constraints" ||
+      patternFamilyId === "arrays_and_strings"
+        ? []
+        : ["complexity_and_constraints"],
+    prerequisitePatternVariantIds: [],
+  })),
 ) as readonly AlgorithmPatternVariant[];
 
 export const ALGORITHM_PROBLEM_ARCHETYPES = [
-  makeArchetype("analyze_scaling_limit", "Analyze scaling limit", ["complexity_and_constraints"]),
-  makeArchetype("scan_indexed_sequence", "Scan indexed sequence", ["arrays_and_strings"]),
-  makeArchetype("find_pair_with_condition", "Find pair with condition", ["hash_map_and_set", "two_pointers", "sorting_based"]),
-  makeArchetype("find_subarray_with_target", "Find subarray with target", ["sliding_window", "prefix_sums"]),
-  makeArchetype("group_or_count_values", "Group or count values", ["hash_map_and_set", "sorting_based"]),
-  makeArchetype("validate_nested_structure", "Validate nested structure", ["stack"]),
-  makeArchetype("resolve_next_boundary", "Resolve next boundary", ["monotonic_stack", "stack"]),
-  makeArchetype("find_index_in_sorted_input", "Find index in sorted input", ["binary_search"]),
-  makeArchetype("merge_or_compare_intervals", "Merge or compare intervals", ["intervals", "sorting_based"]),
-  makeArchetype("choose_repeated_extreme", "Choose repeated extreme", ["heap_priority_queue"]),
-  makeArchetype("traverse_connected_state", "Traverse connected state", ["graph_traversal"]),
-  makeArchetype("define_reusable_state", "Define reusable state", ["dynamic_programming_intro"]),
+  makeArchetype("analyze_scaling_limit", "Analyze scaling limit", [
+    "complexity_and_constraints",
+  ]),
+  makeArchetype("scan_indexed_sequence", "Scan indexed sequence", [
+    "arrays_and_strings",
+  ]),
+  makeArchetype("find_pair_with_condition", "Find pair with condition", [
+    "hash_map_and_set",
+    "two_pointers",
+    "sorting_based",
+  ]),
+  makeArchetype("find_subarray_with_target", "Find subarray with target", [
+    "sliding_window",
+    "prefix_sums",
+  ]),
+  makeArchetype("group_or_count_values", "Group or count values", [
+    "hash_map_and_set",
+    "sorting_based",
+  ]),
+  makeArchetype("validate_nested_structure", "Validate nested structure", [
+    "stack",
+  ]),
+  makeArchetype("resolve_next_boundary", "Resolve next boundary", [
+    "monotonic_stack",
+    "stack",
+  ]),
+  makeArchetype("find_index_in_sorted_input", "Find index in sorted input", [
+    "binary_search",
+  ]),
+  makeArchetype("merge_or_compare_intervals", "Merge or compare intervals", [
+    "intervals",
+    "sorting_based",
+  ]),
+  makeArchetype("choose_repeated_extreme", "Choose repeated extreme", [
+    "heap_priority_queue",
+  ]),
+  makeArchetype("traverse_connected_state", "Traverse connected state", [
+    "graph_traversal",
+  ]),
+  makeArchetype("define_reusable_state", "Define reusable state", [
+    "dynamic_programming_intro",
+  ]),
 ] as const satisfies readonly AlgorithmProblemArchetype[];
 
 export const ALGORITHM_SKILL_ATOMS = [
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Use input constraints to reject nested pair enumeration when the input can be very large.",
+    description:
+      "Use input constraints to reject nested pair enumeration when the input can be very large.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "derive_time_complexity",
     label: "Derive time complexity from constraints",
@@ -351,7 +468,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Separate extra output storage from working memory when stating space complexity.",
+    description:
+      "Separate extra output storage from working memory when stating space complexity.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "derive_space_complexity",
     label: "Derive space complexity",
@@ -363,19 +481,28 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Compare competing approaches by weighing their time, space, and output-shape tradeoffs.",
+    description:
+      "Compare competing approaches by weighing their time, space, and output-shape tradeoffs.",
     evidenceRequiredForProgression: ["explained", "contrast_success"],
     id: "compare_complexity_tradeoffs",
     label: "Compare complexity tradeoffs",
-    mistakeTypes: ["complexity_mismatch", "wrong_approach", "cannot_explain_why"],
+    mistakeTypes: [
+      "complexity_mismatch",
+      "wrong_approach",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["time_vs_space_tradeoff", "operations_cost"],
     primaryPatternFamilyId: "complexity_and_constraints",
     problemArchetypeIds: ["analyze_scaling_limit"],
-    prerequisiteSkillAtomIds: ["derive_time_complexity", "derive_space_complexity"],
+    prerequisiteSkillAtomIds: [
+      "derive_time_complexity",
+      "derive_space_complexity",
+    ],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Track index boundaries and duplicates while scanning arrays or strings.",
+    description:
+      "Track index boundaries and duplicates while scanning arrays or strings.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "track_index_boundary",
     label: "Track index boundaries",
@@ -387,11 +514,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Recognize that adjacent or previous-value prompts call for a local scan instead of global state.",
+    description:
+      "Recognize that adjacent or previous-value prompts call for a local scan instead of global state.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "recognize_adjacent_scan",
     label: "Recognize adjacent scan",
-    mistakeTypes: ["wrong_approach", "constraint_ignored", "cannot_explain_why"],
+    mistakeTypes: [
+      "wrong_approach",
+      "constraint_ignored",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["indexed_scan"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -399,11 +531,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Diagnose when sorting or another transformation invalidates original positional evidence.",
+    description:
+      "Diagnose when sorting or another transformation invalidates original positional evidence.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "diagnose_order_destroying_transform",
     label: "Diagnose order-destroying transform",
-    mistakeTypes: ["wrong_approach", "constraint_ignored", "cannot_explain_why"],
+    mistakeTypes: [
+      "wrong_approach",
+      "constraint_ignored",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["indexed_scan"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -411,7 +548,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Diagnose boundary mistakes around the first index or previous-value access in a scan.",
+    description:
+      "Diagnose boundary mistakes around the first index or previous-value access in a scan.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "diagnose_off_by_one",
     label: "Diagnose off-by-one scan bug",
@@ -423,7 +561,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Trace which index is processed next in a left-to-right scan without skipping or rereading work.",
+    description:
+      "Trace which index is processed next in a left-to-right scan without skipping or rereading work.",
     evidenceRequiredForProgression: ["traced", "guided"],
     id: "trace_scan_index",
     label: "Trace scan index",
@@ -435,7 +574,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Choose per-value counts when multiplicity matters instead of weaker presence-only state.",
+    description:
+      "Choose per-value counts when multiplicity matters instead of weaker presence-only state.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "choose_frequency_state",
     label: "Choose frequency state",
@@ -447,11 +587,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Distinguish a presence check from a count comparison when duplicates change the answer.",
+    description:
+      "Distinguish a presence check from a count comparison when duplicates change the answer.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "distinguish_presence_from_count",
     label: "Distinguish presence from count",
-    mistakeTypes: ["data_structure_mismatch", "cannot_explain_why", "wrong_approach"],
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "cannot_explain_why",
+      "wrong_approach",
+    ],
     patternVariantIds: ["frequency_counting"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["group_or_count_values"],
@@ -459,11 +604,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Diagnose when a learner picked a weaker data structure such as a set for a count-based requirement.",
+    description:
+      "Diagnose when a learner picked a weaker data structure such as a set for a count-based requirement.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "diagnose_data_structure_mismatch",
     label: "Diagnose data-structure mismatch",
-    mistakeTypes: ["data_structure_mismatch", "cannot_explain_why", "wrong_approach"],
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "cannot_explain_why",
+      "wrong_approach",
+    ],
     patternVariantIds: ["frequency_counting"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["group_or_count_values"],
@@ -471,7 +621,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Reason about the time and space cost of frequency counting when the bucket count can grow with distinct values.",
+    description:
+      "Reason about the time and space cost of frequency counting when the bucket count can grow with distinct values.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "reason_about_frequency_counting_complexity",
     label: "Reason about frequency-counting complexity",
@@ -479,11 +630,15 @@ export const ALGORITHM_SKILL_ATOMS = [
     patternVariantIds: ["frequency_counting"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["group_or_count_values"],
-    prerequisiteSkillAtomIds: ["choose_frequency_state", "derive_space_complexity"],
+    prerequisiteSkillAtomIds: [
+      "choose_frequency_state",
+      "derive_space_complexity",
+    ],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Use a fixed bounded alphabet to tighten frequency-table space from variable buckets to constant space.",
+    description:
+      "Use a fixed bounded alphabet to tighten frequency-table space from variable buckets to constant space.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "fixed_alphabet_complexity",
     label: "Use fixed-alphabet complexity caveat",
@@ -495,7 +650,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Apply explicit normalization rules such as stripping spaces or folding case before using string equality.",
+    description:
+      "Apply explicit normalization rules such as stripping spaces or folding case before using string equality.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "apply_string_normalization",
     label: "Apply string normalization",
@@ -507,11 +663,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Recognize that normalization must happen before comparison when the prompt defines semantic equality.",
+    description:
+      "Recognize that normalization must happen before comparison when the prompt defines semantic equality.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "normalization_before_comparison",
     label: "Normalize before comparison",
-    mistakeTypes: ["constraint_ignored", "wrong_approach", "cannot_explain_why"],
+    mistakeTypes: [
+      "constraint_ignored",
+      "wrong_approach",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["string_normalization"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -519,23 +680,36 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Trade full normalized copies for streaming normalization when the input is large and memory is constrained.",
+    description:
+      "Trade full normalized copies for streaming normalization when the input is large and memory is constrained.",
     evidenceRequiredForProgression: ["explained", "contrast_success"],
     id: "streaming_normalization_tradeoff",
     label: "Use streaming normalization tradeoff",
-    mistakeTypes: ["complexity_mismatch", "wrong_approach", "constraint_ignored"],
+    mistakeTypes: [
+      "complexity_mismatch",
+      "wrong_approach",
+      "constraint_ignored",
+    ],
     patternVariantIds: ["string_normalization"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
-    prerequisiteSkillAtomIds: ["normalization_before_comparison", "derive_space_complexity"],
+    prerequisiteSkillAtomIds: [
+      "normalization_before_comparison",
+      "derive_space_complexity",
+    ],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Preserve the original relative order of kept values when the output contract requires stability.",
+    description:
+      "Preserve the original relative order of kept values when the output contract requires stability.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "preserve_relative_order",
     label: "Preserve relative order",
-    mistakeTypes: ["constraint_ignored", "wrong_approach", "cannot_explain_why"],
+    mistakeTypes: [
+      "constraint_ignored",
+      "wrong_approach",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["in_place_update"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -543,7 +717,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Use a read index and write boundary to compact kept values in place without breaking order.",
+    description:
+      "Use a read index and write boundary to compact kept values in place without breaking order.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "use_read_write_boundary",
     label: "Use read/write boundary",
@@ -555,11 +730,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Reason about whether an order-preservation requirement keeps or eliminates candidate mutation strategies.",
+    description:
+      "Reason about whether an order-preservation requirement keeps or eliminates candidate mutation strategies.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "reason_about_order_constraint",
     label: "Reason about order constraint",
-    mistakeTypes: ["constraint_ignored", "wrong_approach", "cannot_explain_why"],
+    mistakeTypes: [
+      "constraint_ignored",
+      "wrong_approach",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["in_place_update"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -567,7 +747,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Trace where the next kept value should be written when a stable compaction scan accepts it.",
+    description:
+      "Trace where the next kept value should be written when a stable compaction scan accepts it.",
     evidenceRequiredForProgression: ["traced", "guided"],
     id: "trace_write_boundary",
     label: "Trace write boundary",
@@ -579,23 +760,36 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Distinguish extra output space from in-place working state when the task returns a new filtered result.",
+    description:
+      "Distinguish extra output space from in-place working state when the task returns a new filtered result.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "distinguish_output_space",
     label: "Distinguish output space",
-    mistakeTypes: ["complexity_mismatch", "constraint_ignored", "cannot_explain_why"],
+    mistakeTypes: [
+      "complexity_mismatch",
+      "constraint_ignored",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["in_place_update"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
-    prerequisiteSkillAtomIds: ["derive_space_complexity", "use_read_write_boundary"],
+    prerequisiteSkillAtomIds: [
+      "derive_space_complexity",
+      "use_read_write_boundary",
+    ],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Match the implementation to the prompt's output contract instead of assuming in-place mutation is required.",
+    description:
+      "Match the implementation to the prompt's output contract instead of assuming in-place mutation is required.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "distinguish_output_contract",
     label: "Distinguish output contract",
-    mistakeTypes: ["constraint_ignored", "complexity_mismatch", "wrong_approach"],
+    mistakeTypes: [
+      "constraint_ignored",
+      "complexity_mismatch",
+      "wrong_approach",
+    ],
     patternVariantIds: ["in_place_update"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -603,11 +797,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Diagnose why a sorted duplicate-collapse scan fails when it mishandles the first unique value.",
+    description:
+      "Diagnose why a sorted duplicate-collapse scan fails when it mishandles the first unique value.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "diagnose_duplicate_collapse",
     label: "Diagnose duplicate collapse",
-    mistakeTypes: ["duplicate_handling_error", "off_by_one", "cannot_trace_algorithm"],
+    mistakeTypes: [
+      "duplicate_handling_error",
+      "off_by_one",
+      "cannot_trace_algorithm",
+    ],
     patternVariantIds: ["duplicate_handling"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -615,11 +814,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Initialize sorted duplicate collapse so the first unique value is preserved before later comparisons.",
+    description:
+      "Initialize sorted duplicate collapse so the first unique value is preserved before later comparisons.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "initialize_duplicate_collapse",
     label: "Initialize duplicate collapse",
-    mistakeTypes: ["duplicate_handling_error", "off_by_one", "edge_case_missed"],
+    mistakeTypes: [
+      "duplicate_handling_error",
+      "off_by_one",
+      "edge_case_missed",
+    ],
     patternVariantIds: ["duplicate_handling"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -627,11 +831,16 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Avoid heavier state when sorted order already exposes the duplicate boundary the algorithm needs.",
+    description:
+      "Avoid heavier state when sorted order already exposes the duplicate boundary the algorithm needs.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "avoid_unnecessary_state",
     label: "Avoid unnecessary state",
-    mistakeTypes: ["wrong_approach", "complexity_mismatch", "cannot_explain_why"],
+    mistakeTypes: [
+      "wrong_approach",
+      "complexity_mismatch",
+      "cannot_explain_why",
+    ],
     patternVariantIds: ["duplicate_handling"],
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["scan_indexed_sequence"],
@@ -639,7 +848,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Choose the value, count, or complement that should be stored for later lookup.",
+    description:
+      "Choose the value, count, or complement that should be stored for later lookup.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "choose_lookup_key",
     label: "Choose lookup key",
@@ -651,7 +861,8 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Coordinate sorted boundaries and move the pointer ruled out by the comparison.",
+    description:
+      "Coordinate sorted boundaries and move the pointer ruled out by the comparison.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "move_decisive_pointer",
     label: "Move decisive pointer",
@@ -663,19 +874,28 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Track what must remain true as a contiguous window expands and shrinks.",
+    description:
+      "Track what must remain true as a contiguous window expands and shrinks.",
     evidenceRequiredForProgression: ["traced", "guided"],
     id: "maintain_window_invariant",
     label: "Maintain window invariant",
-    mistakeTypes: ["invariant_missing", "invariant_broken", "cannot_trace_algorithm"],
-    patternVariantIds: ["variable_size_positive_numbers", "frequency_constraint"],
+    mistakeTypes: [
+      "invariant_missing",
+      "invariant_broken",
+      "cannot_trace_algorithm",
+    ],
+    patternVariantIds: [
+      "variable_size_positive_numbers",
+      "frequency_constraint",
+    ],
     primaryPatternFamilyId: "sliding_window",
     problemArchetypeIds: ["find_subarray_with_target"],
     prerequisiteSkillAtomIds: ["derive_time_complexity"],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Detect when values or constraints break a simple moving-window assumption.",
+    description:
+      "Detect when values or constraints break a simple moving-window assumption.",
     evidenceRequiredForProgression: ["contrast_success", "needs_review"],
     id: "detect_window_failure_signal",
     label: "Detect window failure signal",
@@ -684,42 +904,67 @@ export const ALGORITHM_SKILL_ATOMS = [
       "invariant_broken",
       "wrong_approach",
     ],
-    patternVariantIds: ["when_sliding_window_fails", "when_prefix_beats_window"],
+    patternVariantIds: [
+      "when_sliding_window_fails",
+      "when_prefix_beats_window",
+    ],
     primaryPatternFamilyId: "prefix_sums",
     problemArchetypeIds: ["find_subarray_with_target"],
     prerequisiteSkillAtomIds: ["maintain_window_invariant"],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Recognize when sorting reveals structure and when its cost or side effects make it weaker.",
+    description:
+      "Recognize when sorting reveals structure and when its cost or side effects make it weaker.",
     evidenceRequiredForProgression: ["explained", "contrast_success"],
     id: "recognize_sorting_tradeoff",
     label: "Recognize sorting tradeoff",
-    mistakeTypes: ["wrong_approach", "complexity_mismatch", "constraint_ignored"],
-    patternVariantIds: ["sort_then_scan", "sort_then_two_pointers", "sorting_cost_recognition"],
+    mistakeTypes: [
+      "wrong_approach",
+      "complexity_mismatch",
+      "constraint_ignored",
+    ],
+    patternVariantIds: [
+      "sort_then_scan",
+      "sort_then_two_pointers",
+      "sorting_cost_recognition",
+    ],
     primaryPatternFamilyId: "sorting_based",
     problemArchetypeIds: ["find_pair_with_condition", "group_or_count_values"],
     prerequisiteSkillAtomIds: ["derive_time_complexity"],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Use the latest unresolved item when validating nested or previous-state structure.",
+    description:
+      "Use the latest unresolved item when validating nested or previous-state structure.",
     evidenceRequiredForProgression: ["explained", "traced"],
     id: "use_last_unresolved_state",
     label: "Use last unresolved state",
-    mistakeTypes: ["data_structure_mismatch", "cannot_trace_algorithm", "edge_case_missed"],
-    patternVariantIds: ["nested_structure_validation", "undo_or_previous_state"],
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "cannot_trace_algorithm",
+      "edge_case_missed",
+    ],
+    patternVariantIds: [
+      "nested_structure_validation",
+      "undo_or_previous_state",
+    ],
     primaryPatternFamilyId: "stack",
     problemArchetypeIds: ["validate_nested_structure"],
     prerequisiteSkillAtomIds: ["derive_time_complexity"],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Maintain increasing or decreasing stack state to resolve future boundaries.",
+    description:
+      "Maintain increasing or decreasing stack state to resolve future boundaries.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "maintain_monotonic_stack_invariant",
     label: "Maintain monotonic stack invariant",
-    mistakeTypes: ["invariant_missing", "invariant_broken", "cannot_trace_algorithm"],
+    mistakeTypes: [
+      "invariant_missing",
+      "invariant_broken",
+      "cannot_trace_algorithm",
+    ],
     patternVariantIds: ["next_greater_element", "monotonic_invariant"],
     primaryPatternFamilyId: "monotonic_stack",
     problemArchetypeIds: ["resolve_next_boundary"],
@@ -727,14 +972,194 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    description: "Identify an ordered yes/no boundary that makes repeated halving valid.",
+    description:
+      "Identify an ordered yes/no boundary that makes repeated halving valid.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "identify_monotonic_predicate",
     label: "Identify monotonic predicate",
     mistakeTypes: ["wrong_approach", "constraint_ignored", "off_by_one"],
-    patternVariantIds: ["classic_index_search", "monotonic_predicate_recognition"],
+    patternVariantIds: [
+      "classic_index_search",
+      "monotonic_predicate_recognition",
+    ],
     primaryPatternFamilyId: "binary_search",
     problemArchetypeIds: ["find_index_in_sorted_input"],
+    prerequisiteSkillAtomIds: ["derive_time_complexity"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Track which links change before moving pointers in a node-based sequence.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "reason_linked_list_rewiring",
+    label: "Reason about linked-list rewiring",
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "cannot_trace_algorithm",
+      "edge_case_missed",
+    ],
+    patternVariantIds: ["pointer_rewiring", "reverse_list"],
+    primaryPatternFamilyId: "linked_list",
+    prerequisiteSkillAtomIds: ["track_index_boundary"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Name the base case and smaller repeated call before tracing recursive work.",
+    evidenceRequiredForProgression: ["explained", "traced"],
+    id: "trace_recursive_base_case",
+    label: "Trace recursive base case",
+    mistakeTypes: [
+      "subgoal_order_wrong",
+      "cannot_trace_algorithm",
+      "edge_case_missed",
+    ],
+    patternVariantIds: ["base_case_recognition", "recursive_decomposition"],
+    primaryPatternFamilyId: "recursion_basics",
+    prerequisiteSkillAtomIds: ["derive_time_complexity"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Carry path, depth, or subtree state while choosing a tree traversal order.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "carry_tree_traversal_state",
+    label: "Carry tree traversal state",
+    mistakeTypes: [
+      "subgoal_order_wrong",
+      "cannot_trace_algorithm",
+      "edge_case_missed",
+    ],
+    patternVariantIds: ["dfs_preorder_inorder_postorder", "path_accumulation"],
+    primaryPatternFamilyId: "tree_traversal",
+    prerequisiteSkillAtomIds: ["trace_recursive_base_case"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Choose a heap when the next decision repeatedly depends on the current extreme or priority.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "choose_priority_queue_state",
+    label: "Choose priority-queue state",
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "wrong_approach",
+      "complexity_mismatch",
+    ],
+    patternVariantIds: ["top_k", "running_extreme"],
+    primaryPatternFamilyId: "heap_priority_queue",
+    problemArchetypeIds: ["choose_repeated_extreme"],
+    prerequisiteSkillAtomIds: ["derive_time_complexity"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Sort interval boundaries before reasoning about overlap, gaps, or active ranges.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "reason_about_interval_overlap",
+    label: "Reason about interval overlap",
+    mistakeTypes: ["wrong_approach", "edge_case_missed", "cannot_explain_why"],
+    patternVariantIds: ["merge_overlaps", "sweep_line_intro"],
+    primaryPatternFamilyId: "intervals",
+    problemArchetypeIds: ["merge_or_compare_intervals"],
+    prerequisiteSkillAtomIds: ["recognize_sorting_tradeoff"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Separate reversible choices from constraints that can prune a partial candidate.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "prune_backtracking_choice",
+    label: "Prune backtracking choice",
+    mistakeTypes: [
+      "constraint_ignored",
+      "subgoal_order_wrong",
+      "cannot_explain_why",
+    ],
+    patternVariantIds: ["choice_tree", "constraints_and_pruning"],
+    primaryPatternFamilyId: "backtracking",
+    prerequisiteSkillAtomIds: ["trace_recursive_base_case"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Represent edges and mark visited state before traversing connected data.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "track_graph_visited_state",
+    label: "Track graph visited state",
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "cannot_trace_algorithm",
+      "edge_case_missed",
+    ],
+    patternVariantIds: ["adjacency_representation", "visited_state"],
+    primaryPatternFamilyId: "graph_traversal",
+    problemArchetypeIds: ["traverse_connected_state"],
+    prerequisiteSkillAtomIds: ["use_last_unresolved_state"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Identify the ordering or exchange signal that makes a local choice safe.",
+    evidenceRequiredForProgression: ["explained", "contrast_success"],
+    id: "justify_greedy_choice",
+    label: "Justify greedy choice",
+    mistakeTypes: [
+      "wrong_approach",
+      "constraint_ignored",
+      "cannot_explain_why",
+    ],
+    patternVariantIds: ["local_choice_signal", "sorting_plus_greedy"],
+    primaryPatternFamilyId: "greedy_intro",
+    prerequisiteSkillAtomIds: ["recognize_sorting_tradeoff"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Define reusable state and transitions before filling dynamic programming results.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "define_dynamic_programming_state",
+    label: "Define dynamic-programming state",
+    mistakeTypes: [
+      "subgoal_order_wrong",
+      "invariant_missing",
+      "cannot_explain_why",
+    ],
+    patternVariantIds: ["state_definition", "transition_choice"],
+    primaryPatternFamilyId: "dynamic_programming_intro",
+    problemArchetypeIds: ["define_reusable_state"],
+    prerequisiteSkillAtomIds: ["trace_recursive_base_case"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Use masks or bit properties when compact state or parity is the central signal.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "apply_bitmask_state",
+    label: "Apply bitmask state",
+    mistakeTypes: [
+      "data_structure_mismatch",
+      "wrong_approach",
+      "cannot_explain_why",
+    ],
+    patternVariantIds: ["bitmask_basics", "set_clear_check_bit"],
+    primaryPatternFamilyId: "bit_manipulation",
+    prerequisiteSkillAtomIds: ["derive_time_complexity"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Use numeric structure, formulas, or coordinates before trying broad search.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "reason_about_numeric_structure",
+    label: "Reason about numeric structure",
+    mistakeTypes: [
+      "wrong_approach",
+      "constraint_ignored",
+      "cannot_explain_why",
+    ],
+    patternVariantIds: ["modulo_reasoning", "coordinate_reasoning"],
+    primaryPatternFamilyId: "math_and_geometry",
     prerequisiteSkillAtomIds: ["derive_time_complexity"],
   },
 ] as const satisfies readonly AlgorithmSkillAtom[];
@@ -753,12 +1178,14 @@ function makeFamily(
     contentVersion: ALGORITHM_CONTENT_VERSION,
     coreDecisionSignals: copy.signals,
     description: copy.description,
-    entryLearningStage: id === "complexity_and_constraints" || id === "arrays_and_strings"
-      ? "foundations"
-      : "pattern_mechanics",
+    entryLearningStage:
+      id === "complexity_and_constraints" || id === "arrays_and_strings"
+        ? "foundations"
+        : "pattern_mechanics",
     id,
     label: copy.label,
-    prerequisiteLearningStageIds: id === "complexity_and_constraints" ? [] : ["foundations"],
+    prerequisiteLearningStageIds:
+      id === "complexity_and_constraints" ? [] : ["foundations"],
     prerequisitePatternFamilyIds,
   };
 }
@@ -770,7 +1197,9 @@ function makeArchetype(
 ): AlgorithmProblemArchetype {
   return {
     contentVersion: ALGORITHM_CONTENT_VERSION,
-    decisionSignals: [`${label} depends on choosing the right structure before implementation details.`],
+    decisionSignals: [
+      `${label} depends on choosing the right structure before implementation details.`,
+    ],
     description: `${label} problems train transfer across related algorithmic patterns.`,
     id,
     label,
@@ -779,7 +1208,8 @@ function makeArchetype(
 }
 
 function getVariantLearningStage(patternFamilyId: AlgorithmPatternFamilyId) {
-  return patternFamilyId === "complexity_and_constraints" || patternFamilyId === "arrays_and_strings"
+  return patternFamilyId === "complexity_and_constraints" ||
+    patternFamilyId === "arrays_and_strings"
     ? "foundations"
     : "pattern_mechanics";
 }
