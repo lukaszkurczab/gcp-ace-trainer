@@ -2,6 +2,9 @@ import {
   ALGORITHM_COMPLEXITY_CLASSES,
   ALGORITHM_DIFFICULTIES,
   ALGORITHM_FEEDBACK_RESULTS,
+  ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+  ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+  ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
   isAlgorithmMistakeType,
   type AlgorithmTrainingItem,
 } from "./algorithmContentTypes";
@@ -18,6 +21,7 @@ export type AlgorithmContentQualityIssueCode =
   | "missing_item_id"
   | "missing_track_id"
   | "missing_item_type"
+  | "invalid_item_type"
   | "missing_title"
   | "missing_prompt"
   | "missing_difficulty"
@@ -290,6 +294,8 @@ function validateBaseTrainingItemContract(
 
   if (!isNonEmptyString(item.type)) {
     addIssue(issues, "missing_item_type", "Algorithm item must include type.", itemId);
+  } else if (!isAlgorithmTrainingItemType(item.type)) {
+    addIssue(issues, "invalid_item_type", "Algorithm item type must be a canonical Algorithms item type.", itemId);
   }
 
   if (!isNonEmptyString(item.title)) {
@@ -966,6 +972,16 @@ function isComplexityPairAnswer(value: unknown): boolean {
 
 function isAlgorithmComplexityClass(value: unknown): boolean {
   return (ALGORITHM_COMPLEXITY_CLASSES as readonly unknown[]).includes(value);
+}
+
+function isAlgorithmTrainingItemType(value: unknown): boolean {
+  return (
+    [
+      ...ALGORITHM_MVP_TRAINING_ITEM_TYPES,
+      ...ALGORITHM_SECOND_STAGE_TRAINING_ITEM_TYPES,
+      ...ALGORITHM_LATER_TRAINING_ITEM_TYPES,
+    ] as readonly unknown[]
+  ).includes(value);
 }
 
 function isGenericFeedbackText(value: string): boolean {

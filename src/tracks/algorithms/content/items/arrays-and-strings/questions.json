@@ -1434,7 +1434,7 @@
     ],
     "title": "Relaxing order changes the valid mutation",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "constraint_change"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1604,7 +1604,7 @@
     ],
     "title": "Explain why sorting breaks adjacency questions",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "common_mistake_diagnosis"
   },
   {
     "contentVersion": "algorithms-core",
@@ -1696,7 +1696,7 @@
   },
   {
     "contentVersion": "algorithms-core",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "feedbackModel": {
       "decisionSignal": "The strings are huge and memory is constrained, so apply the normalization rules while streaming instead of building full copies.",
       "distractorExplanations": {
@@ -1868,10 +1868,10 @@
     ],
     "title": "Pick a counterexample for set misuse",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "test_case_selection"
   },
   {
-    "complexityExplanation": "Adjacent duplicate detection only needs a single scan. Checking every later character turns the task into unnecessary quadratic work.",
+    "complexityExplanation": "Adjacent duplicate detection only needs a single scan. Mistaken approach: O(n^2) time, O(1) space. Intended approach: O(n) time, O(1) space.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "expectedSpaceComplexity": "O(1)",
@@ -1900,7 +1900,7 @@
           "space": "O(1)",
           "time": "O(n^2)"
         },
-        "feedback": "The nested comparisons use constant extra storage, but they do quadratic work because they inspect many irrelevant pairs.",
+        "feedback": "Mistaken approach: O(n^2) time, O(1) space. Intended approach: O(n) time, O(1) space. The nested comparisons inspect many irrelevant pairs.",
         "id": "alg-prod-array-string-017-check",
         "mistakeTypes": [
           "complexity_mismatch",
@@ -1939,7 +1939,7 @@
     ],
     "title": "Measure the cost of over-solving adjacency",
     "trackId": "algorithms",
-    "type": "complexity_check"
+    "type": "complexity_reasoning"
   },
   {
     "complexityExplanation": "With a fixed bounded alphabet such as lowercase English letters, the count table size is capped, so the extra space can be treated as constant.",
@@ -2024,10 +2024,9 @@
     "feedbackModel": {
       "decisionSignal": "Preserve order plus in-place mutation rules out the swap-with-end shortcut.",
       "distractorExplanations": {
-        "stable_scan": "A stable read/write scan is actually the safer alternative here, but it does not answer the question about why the learner's swap plan fails.",
-        "swap_with_end": "Swapping can be fast, but it scrambles the order of the kept values and violates the prompt.",
-        "sort_after": "Sorting after removal changes the output order instead of preserving it.",
-        "count_then_rebuild": "Rebuilding from counts can lose the original relative order and spends extra memory for a task a stable scan can solve directly."
+        "too_much_memory": "The flaw is order stability, not extra memory: swapping with the end can be done in place.",
+        "sort_after": "Sorting after removal creates sorted order, not the original relative order.",
+        "count_then_rebuild": "Counting is not required for stable removal, and rebuilding from counts can lose original relative order."
       },
       "mentalModelCorrection": "Stable order is a product constraint, not a nice-to-have implementation preference.",
       "mistakeTypes": [
@@ -2054,7 +2053,7 @@
     "staticMicroChecks": [
       {
         "correctAnswer": "swap_with_end",
-        "feedback": "The flaw is not that swapping is impossible in general. It is that this swap strategy breaks the same-order requirement.",
+        "feedback": "The flaw is that swapping with the end can scramble the relative order of values that should be kept. The issue is constraint fit, not memory.",
         "id": "alg-prod-array-string-019-check",
         "mistakeTypes": [
           "constraint_ignored",
@@ -2062,20 +2061,20 @@
         ],
         "options": [
           {
-            "id": "stable_scan",
-            "text": "A stable read/write scan preserves the kept values' order."
+            "id": "swap_with_end",
+            "text": "Swapping with the end can move later kept values before earlier kept values."
           },
           {
-            "id": "swap_with_end",
-            "text": "Swapping with the end changes the order of kept values."
+            "id": "too_much_memory",
+            "text": "Swapping with the end is wrong because it always requires O(n) extra memory."
           },
           {
             "id": "sort_after",
-            "text": "Sorting after removal restores the original order."
+            "text": "Sorting after removal restores the original relative order."
           },
           {
             "id": "count_then_rebuild",
-            "text": "Counting values is the only way to remove rejected entries."
+            "text": "Counting values is required before any rejected entries can be removed."
           }
         ],
         "prompt": "Choose the statement that identifies the flaw.",
@@ -2551,7 +2550,7 @@
     ],
     "title": "Avoid unnecessary frequency state in sorted collapse",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "state_selection"
   },
   {
     "acceptableApproachIds": [],
@@ -2650,6 +2649,6 @@
     ],
     "title": "Match the filtering approach to the output contract",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "output_contract_reasoning"
   }
 ]

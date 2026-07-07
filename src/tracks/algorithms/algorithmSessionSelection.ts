@@ -54,6 +54,12 @@ const DRILL_ITEM_TYPES = [
   "trace_next_step",
   "complexity_check",
   "edge_case_drill",
+  "common_mistake_diagnosis",
+  "test_case_selection",
+  "state_selection",
+  "output_contract_reasoning",
+  "constraint_change",
+  "complexity_reasoning",
   "pseudocode_ordering",
   "subgoal_ordering",
 ] as const;

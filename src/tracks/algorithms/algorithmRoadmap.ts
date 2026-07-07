@@ -117,6 +117,12 @@ const mvpItemTypes = [
   "complexity_check",
   "solution_comparison",
   "edge_case_drill",
+  "common_mistake_diagnosis",
+  "test_case_selection",
+  "state_selection",
+  "output_contract_reasoning",
+  "constraint_change",
+  "complexity_reasoning",
 ] as const satisfies readonly AlgorithmTrainingItemType[];
 
 const algorithmRoadmapNodes = [

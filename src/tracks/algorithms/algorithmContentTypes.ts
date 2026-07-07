@@ -82,6 +82,12 @@ export const ALGORITHM_MVP_TRAINING_ITEM_TYPES = [
   "complexity_check",
   "solution_comparison",
   "edge_case_drill",
+  "common_mistake_diagnosis",
+  "test_case_selection",
+  "state_selection",
+  "output_contract_reasoning",
+  "constraint_change",
+  "complexity_reasoning",
 ] as const;
 
 export type AlgorithmMvpTrainingItemType = (typeof ALGORITHM_MVP_TRAINING_ITEM_TYPES)[number];
