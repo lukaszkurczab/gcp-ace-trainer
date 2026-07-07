@@ -165,6 +165,7 @@ const algorithmRoadmapNodes = [
     skillAtomIds: [
       "track_index_boundary",
       "recognize_adjacent_scan",
+      "diagnose_order_destroying_transform",
       "diagnose_off_by_one",
       "trace_scan_index",
       "choose_frequency_state",

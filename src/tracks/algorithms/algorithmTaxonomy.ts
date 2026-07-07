@@ -399,6 +399,18 @@ export const ALGORITHM_SKILL_ATOMS = [
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
+    description: "Diagnose when sorting or another transformation invalidates original positional evidence.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "diagnose_order_destroying_transform",
+    label: "Diagnose order-destroying transform",
+    mistakeTypes: ["wrong_approach", "constraint_ignored", "cannot_explain_why"],
+    patternVariantIds: ["indexed_scan"],
+    primaryPatternFamilyId: "arrays_and_strings",
+    problemArchetypeIds: ["scan_indexed_sequence"],
+    prerequisiteSkillAtomIds: ["recognize_adjacent_scan"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
     description: "Diagnose boundary mistakes around the first index or previous-value access in a scan.",
     evidenceRequiredForProgression: ["explained", "guided"],
     id: "diagnose_off_by_one",

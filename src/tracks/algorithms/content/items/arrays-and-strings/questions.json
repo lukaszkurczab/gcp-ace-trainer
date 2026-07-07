@@ -10,33 +10,22 @@
         "frequency_counting": "Counts tell you how often a character appears, but not whether equal characters sit next to each other."
       },
       "mentalModelCorrection": "Name the local movement first: scan forward and guard the first index before reading a previous neighbor.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "edge_case_missed"
-      ],
+      "mistakeTypes": ["constraint_ignored", "edge_case_missed"],
       "nextAction": "Practice separating local adjacency from global reorderings such as sorting or all-pairs checks.",
       "result": "diagnostic"
     },
     "id": "alg-array-string-naming-001",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "secondarySkillAtomIds": [
-      "recognize_adjacent_scan"
-    ],
+    "secondarySkillAtomIds": ["recognize_adjacent_scan"],
     "prompt": "A task asks you to scan a string and compare each character with the character immediately before it. Which mechanics best describe the work?",
     "roadmapNodeId": "arrays_and_strings",
     "staticMicroChecks": [
       {
-        "correctAnswer": [
-          "linear_scan",
-          "index_boundary"
-        ],
+        "correctAnswer": ["linear_scan", "index_boundary"],
         "feedback": "Neighbor comparison is local, so one forward scan plus a boundary guard is enough.",
         "id": "alg-check-array-naming-001",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
+        "mistakeTypes": ["constraint_ignored", "edge_case_missed"],
         "options": [
           {
             "id": "linear_scan",
@@ -61,9 +50,7 @@
         ],
         "prompt": "Select every mechanic that matches the task.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "multi_select"
       }
     ],
@@ -105,20 +92,14 @@
         "sort_first": "Sorting creates new neighbors that did not exist in the original string."
       },
       "mentalModelCorrection": "Preserve the original order and decide how the first character will be handled before the loop runs.",
-      "mistakeTypes": [
-        "edge_case_missed",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
       "nextAction": "Look for words like adjacent, previous, or next before reaching for a broader data structure.",
       "result": "diagnostic"
     },
     "id": "alg-array-string-scan-signals-001",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "secondarySkillAtomIds": [
-      "recognize_adjacent_scan",
-      "diagnose_off_by_one"
-    ],
+    "secondarySkillAtomIds": ["recognize_adjacent_scan", "diagnose_off_by_one"],
     "prompt": "A string task says, \"return true if no two adjacent characters are the same.\" Which detail matters most before writing the loop?",
     "roadmapNodeId": "arrays_and_strings",
     "staticMicroChecks": [
@@ -126,10 +107,7 @@
         "correctAnswer": "previous_character_boundary",
         "feedback": "Adjacency means each step only needs the current character and the previous one, with special handling around index 0.",
         "id": "alg-array-string-scan-signals-001-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
         "options": [
           {
             "id": "previous_character_boundary",
@@ -150,9 +128,7 @@
         ],
         "prompt": "Choose the detail that should guide the loop shape.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "single_choice"
       }
     ],
@@ -194,19 +170,14 @@
         "stop": "Using the previous character does not finish the scan. Later positions can still change the answer."
       },
       "mentalModelCorrection": "Trace local scans one index at a time unless the algorithm has a stated reason to skip a range.",
-      "mistakeTypes": [
-        "cannot_trace_algorithm",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
       "nextAction": "Practice tracing what the next live index is after each comparison step.",
       "result": "diagnostic"
     },
     "id": "alg-array-string-trace-index-001",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "secondarySkillAtomIds": [
-      "trace_scan_index"
-    ],
+    "secondarySkillAtomIds": ["trace_scan_index"],
     "prompt": "You are scanning a 5-character string with indexes 0 through 4. The loop has just compared `s[2]` with `s[1]`. What is the next safe index to process?",
     "roadmapNodeId": "arrays_and_strings",
     "staticMicroChecks": [
@@ -214,10 +185,7 @@
         "correctAnswer": "index_3",
         "feedback": "After processing index 2, the next unprocessed index in a left-to-right scan is 3.",
         "id": "alg-array-string-trace-index-001-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
         "options": [
           {
             "id": "index_3",
@@ -238,9 +206,7 @@
         ],
         "prompt": "Choose the next trace step.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "trace_next_step"
       }
     ],
@@ -250,9 +216,7 @@
         "description": "Process index 3 next because index 2 has already been handled and 3 is still within bounds.",
         "id": "alg-array-string-trace-index-001-trace-001",
         "order": 1,
-        "state": [
-          "Compared s[2] with s[1] in a 5-character string."
-        ]
+        "state": ["Compared s[2] with s[1] in a 5-character string."]
       }
     ],
     "taxonomyRefs": [
@@ -292,19 +256,14 @@
         "long_input": "Input size affects performance expectations, not whether index -1 is accessed."
       },
       "mentalModelCorrection": "Boundary bugs come from where the scan starts, not from the character values inside the string.",
-      "mistakeTypes": [
-        "edge_case_missed",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
       "nextAction": "Check whether neighbor access can happen at index 0 before thinking about larger optimizations.",
       "result": "diagnostic"
     },
     "id": "alg-array-string-edge-neighbor-001",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "secondarySkillAtomIds": [
-      "diagnose_off_by_one"
-    ],
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
     "prompt": "A routine reads `s[i - 1]` while scanning a string. Which input case is most likely to break a careless implementation?",
     "roadmapNodeId": "arrays_and_strings",
     "staticMicroChecks": [
@@ -312,10 +271,7 @@
         "correctAnswer": "first_index_access",
         "feedback": "If the loop starts at index 0, reading the previous character is unsafe.",
         "id": "alg-array-string-edge-neighbor-001-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
         "options": [
           {
             "id": "first_index_access",
@@ -336,9 +292,7 @@
         ],
         "prompt": "Choose the boundary case that creates the real risk.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "single_choice"
       }
     ],
@@ -374,9 +328,7 @@
     "constraintSignal": "Two strings should match only if each character appears the same number of times in both strings.",
     "contentVersion": "algorithms-core",
     "difficulty": "easy",
-    "expectedApproachIds": [
-      "character_frequency_state"
-    ],
+    "expectedApproachIds": ["character_frequency_state"],
     "feedbackModel": {
       "decisionSignal": "The phrase same number of times is a frequency signal, so multiplicity has to be stored.",
       "distractorExplanations": {
@@ -385,10 +337,7 @@
         "adjacent_pairs": "Adjacent pairs describe local order, not total multiplicity across the whole string."
       },
       "mentalModelCorrection": "When the prompt cares about how many times each value appears, presence alone is not strong enough.",
-      "mistakeTypes": [
-        "data_structure_mismatch",
-        "edge_case_missed"
-      ],
+      "mistakeTypes": ["data_structure_mismatch", "edge_case_missed"],
       "nextAction": "Separate membership checks from multiplicity checks before picking a data structure.",
       "result": "diagnostic"
     },
@@ -403,18 +352,13 @@
       "adjacent_pair_tracking"
     ],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "distinguish_presence_from_count"
-    ],
+    "secondarySkillAtomIds": ["distinguish_presence_from_count"],
     "staticMicroChecks": [
       {
         "correctAnswer": "character_counts",
         "feedback": "Multiplicity requires counts, not just membership or a few positional samples.",
         "id": "alg-array-string-frequency-signal-001-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "edge_case_missed"
-        ],
+        "mistakeTypes": ["data_structure_mismatch", "edge_case_missed"],
         "options": [
           {
             "id": "character_counts",
@@ -435,9 +379,7 @@
         ],
         "prompt": "Choose the state that matches the requirement.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
+        "testedSkillAtomIds": ["choose_frequency_state"],
         "type": "single_choice"
       }
     ],
@@ -477,10 +419,7 @@
     "feedbackModel": {
       "decisionSignal": "A very large input still does not change the local nature of adjacency. One scan is enough.",
       "mentalModelCorrection": "Do not inflate a neighbor problem into sorting or all-pairs work just because the input is large.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
       "nextAction": "When a prompt only compares neighboring positions, ask whether one pass already covers every required check.",
       "result": "diagnostic"
     },
@@ -490,6 +429,7 @@
     "prompt": "A problem asks for the number of times adjacent characters are equal in a very large string. What time and extra space should the intended solution use?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
+      "recognize_adjacent_scan",
       "derive_time_complexity"
     ],
     "staticMicroChecks": [
@@ -500,15 +440,10 @@
         },
         "feedback": "A single left-to-right scan checks every adjacent pair exactly once and only needs a counter.",
         "id": "alg-prod-array-string-001-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
         "prompt": "Choose the expected time and space cost.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "complexity_pair"
       }
     ],
@@ -523,6 +458,16 @@
         "axisId": "skill_atom",
         "nodeId": "track_index_boundary",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "recognize_adjacent_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -544,9 +489,7 @@
     "constraintSignal": "Remove rejected values in-place while keeping accepted values in their original relative order.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
-    "expectedApproachIds": [
-      "stable_read_write_boundary"
-    ],
+    "expectedApproachIds": ["stable_read_write_boundary"],
     "feedbackModel": {
       "decisionSignal": "In-place plus original order means the algorithm needs a stable read/write boundary, not swaps or sorting.",
       "distractorExplanations": {
@@ -555,10 +498,7 @@
         "nested_shift": "Repeatedly shifting later elements can preserve order, but it turns a one-pass compaction task into quadratic work."
       },
       "mentalModelCorrection": "Read every value once and write accepted values forward at the next open boundary.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "complexity_mismatch"
-      ],
+      "mistakeTypes": ["constraint_ignored", "complexity_mismatch"],
       "nextAction": "Treat order preservation as a hard constraint before comparing mutation strategies.",
       "result": "diagnostic"
     },
@@ -573,18 +513,13 @@
       "nested_shift"
     ],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "preserve_relative_order"
-    ],
+    "secondarySkillAtomIds": ["preserve_relative_order"],
     "staticMicroChecks": [
       {
         "correctAnswer": "read_write_boundary",
         "feedback": "Stable in-place compaction works by reading each value once and writing accepted values forward.",
         "id": "alg-prod-array-string-002-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
+        "mistakeTypes": ["constraint_ignored", "complexity_mismatch"],
         "options": [
           {
             "id": "read_write_boundary",
@@ -605,9 +540,7 @@
         ],
         "prompt": "Choose the approach that fits the constraints.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
+        "testedSkillAtomIds": ["use_read_write_boundary"],
         "type": "single_choice"
       }
     ],
@@ -652,10 +585,7 @@
     "feedbackModel": {
       "decisionSignal": "The time is linear in the combined input size, but the space claim depends on whether the alphabet is bounded.",
       "mentalModelCorrection": "Use O(k) for distinct-character state unless the prompt gives you a fixed small alphabet.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
       "nextAction": "When you see a count table, ask what limits the number of buckets before calling it constant space.",
       "result": "diagnostic"
     },
@@ -676,15 +606,10 @@
         },
         "feedback": "The scan is linear in total input length, O(n + m), and the count table uses O(k) extra space for distinct characters rather than O(1).",
         "id": "alg-prod-array-string-003-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
         "prompt": "Choose the expected time and space cost.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_frequency_counting_complexity"
-        ],
+        "testedSkillAtomIds": ["reason_about_frequency_counting_complexity"],
         "type": "complexity_pair"
       }
     ],
@@ -699,6 +624,16 @@
         "axisId": "skill_atom",
         "nodeId": "reason_about_frequency_counting_complexity",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_space_complexity",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -720,9 +655,7 @@
     "constraintSignal": "A phrase comparison should ignore spaces and letter case before deciding whether the phrases match.",
     "contentVersion": "algorithms-core",
     "difficulty": "easy",
-    "expectedApproachIds": [
-      "normalize_then_compare"
-    ],
+    "expectedApproachIds": ["normalize_then_compare"],
     "feedbackModel": {
       "decisionSignal": "Semantic equality under explicit transformations means both inputs must be normalized by the same rules first.",
       "distractorExplanations": {
@@ -731,10 +664,7 @@
         "count_only_length": "Equal lengths do not prove the normalized phrases are equal."
       },
       "mentalModelCorrection": "Normalize first, then compare the transformed content under the stated rules.",
-      "mistakeTypes": [
-        "wrong_approach",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["wrong_approach", "constraint_ignored"],
       "nextAction": "Separate transformation rules from comparison rules before choosing a concrete loop.",
       "result": "diagnostic"
     },
@@ -743,24 +673,15 @@
     "primarySkillAtomId": "normalization_before_comparison",
     "prompt": "A phrase comparison should ignore spaces and letter case. Which step should happen before comparing the phrases?",
     "reasonSignal": "Apply the same normalization rules to both phrases before comparing them.",
-    "rejectedApproachIds": [
-      "raw_compare",
-      "sort_characters",
-      "length_only"
-    ],
+    "rejectedApproachIds": ["raw_compare", "sort_characters", "length_only"],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "apply_string_normalization"
-    ],
+    "secondarySkillAtomIds": ["apply_string_normalization"],
     "staticMicroChecks": [
       {
         "correctAnswer": "normalize_then_compare",
         "feedback": "Ignoring spaces and case means the raw inputs must be transformed into a comparable form first.",
         "id": "alg-prod-array-string-004-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["wrong_approach", "constraint_ignored"],
         "options": [
           {
             "id": "normalize_then_compare",
@@ -781,9 +702,7 @@
         ],
         "prompt": "Choose the step that should guide the solution.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
+        "testedSkillAtomIds": ["normalization_before_comparison"],
         "type": "single_choice"
       }
     ],
@@ -825,19 +744,14 @@
         "nested_required": "Sorted adjacency removes the need to compare every pair."
       },
       "mentalModelCorrection": "Accept the first value or initialize the write boundary before applying duplicate checks to later elements.",
-      "mistakeTypes": [
-        "duplicate_handling_error",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["duplicate_handling_error", "off_by_one"],
       "nextAction": "When collapsing sorted duplicates, decide how the first element enters the result before the main loop starts.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-005",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "secondarySkillAtomIds": [
-      "diagnose_off_by_one"
-    ],
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
     "prompt": "A sorted array `[1, 1, 2, 2, 3]` should be collapsed into `[1, 2, 3]`. A learner only writes a value when it differs from the previous value, but starts checking at index 0. What mistake is most likely?",
     "roadmapNodeId": "arrays_and_strings",
     "staticMicroChecks": [
@@ -845,10 +759,7 @@
         "correctAnswer": "first_value_skipped",
         "feedback": "Index 0 has no previous value to compare against, so the first unique element is easy to lose unless it is initialized separately.",
         "id": "alg-prod-array-string-005-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["duplicate_handling_error", "off_by_one"],
         "options": [
           {
             "id": "first_value_skipped",
@@ -869,9 +780,7 @@
         ],
         "prompt": "Choose the most likely bug.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
+        "testedSkillAtomIds": ["diagnose_duplicate_collapse"],
         "type": "single_choice"
       }
     ],
@@ -907,9 +816,7 @@
     "constraintSignal": "Remove zeroes from an array while keeping the remaining numbers in the same order.",
     "contentVersion": "algorithms-core",
     "difficulty": "easy",
-    "expectedApproachIds": [
-      "stable_order_preserved"
-    ],
+    "expectedApproachIds": ["stable_order_preserved"],
     "feedbackModel": {
       "decisionSignal": "The same-order requirement is the key constraint because it rules out arbitrary swaps and sorting.",
       "distractorExplanations": {
@@ -918,10 +825,7 @@
         "compare_all_pairs": "This task filters values. It does not compare every value against every other value."
       },
       "mentalModelCorrection": "When order must stay the same, think stable scan first and only then choose the exact mutation strategy.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "Treat preserve order as a decision signal, not as a minor implementation detail.",
       "result": "diagnostic"
     },
@@ -930,24 +834,15 @@
     "primarySkillAtomId": "preserve_relative_order",
     "prompt": "A problem asks you to remove all zeroes from an array while keeping the remaining numbers in the same order. Which constraint should shape the approach?",
     "reasonSignal": "The relative order of the kept values must stay the same, so the compaction must be stable.",
-    "rejectedApproachIds": [
-      "sort_values",
-      "count_zeroes_only",
-      "all_pairs"
-    ],
+    "rejectedApproachIds": ["sort_values", "count_zeroes_only", "all_pairs"],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "reason_about_order_constraint"
-    ],
+    "secondarySkillAtomIds": ["reason_about_order_constraint"],
     "staticMicroChecks": [
       {
         "correctAnswer": "preserve_order",
         "feedback": "The same-order constraint is what points you toward a stable scan or read/write boundary.",
         "id": "alg-prod-array-string-006-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "preserve_order",
@@ -968,9 +863,7 @@
         ],
         "prompt": "Choose the constraint that should guide the design.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
+        "testedSkillAtomIds": ["preserve_relative_order"],
         "type": "single_choice"
       }
     ],
@@ -1010,10 +903,7 @@
     "feedbackModel": {
       "decisionSignal": "A new returned collection changes the space model even when the filtering work is still one pass.",
       "mentalModelCorrection": "Distinguish in-place extra space from output space. Reusing the input buffer and building a new output are not the same claim.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
       "nextAction": "Whenever a prompt says return a new array, revisit the space claim before calling it constant.",
       "result": "diagnostic"
     },
@@ -1034,15 +924,10 @@
         },
         "feedback": "The scan is linear, and the output array can grow with the number of accepted values.",
         "id": "alg-prod-array-string-007-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
         "prompt": "Choose the expected time and space cost.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_space"
-        ],
+        "testedSkillAtomIds": ["distinguish_output_space"],
         "type": "complexity_pair"
       }
     ],
@@ -1057,6 +942,16 @@
         "axisId": "skill_atom",
         "nodeId": "distinguish_output_space",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_space_complexity",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -1084,10 +979,7 @@
         "adjacent_duplicates": "Adjacent duplicates depend on order, but frequency equality does not require the same arrangement."
       },
       "mentalModelCorrection": "Presence is weaker than multiplicity. Use counts when the prompt says same frequencies, not just same characters.",
-      "mistakeTypes": [
-        "data_structure_mismatch",
-        "cannot_explain_why"
-      ],
+      "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
       "nextAction": "Test whether a proposed check would still work on a string pair with the same letters but different counts.",
       "result": "diagnostic"
     },
@@ -1096,18 +988,13 @@
     "primarySkillAtomId": "distinguish_presence_from_count",
     "prompt": "You need to decide whether `aab` and `aba` contain the same characters with the same frequencies. Which comparison is stronger?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "choose_frequency_state"
-    ],
+    "secondarySkillAtomIds": ["choose_frequency_state"],
     "staticMicroChecks": [
       {
         "correctAnswer": "frequency_counts",
         "feedback": "Frequency counts preserve both presence and multiplicity, which is exactly what the prompt asks for.",
         "id": "alg-prod-array-string-008-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
+        "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
         "options": [
           {
             "id": "frequency_counts",
@@ -1128,9 +1015,7 @@
         ],
         "prompt": "Choose the stronger comparison.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
+        "testedSkillAtomIds": ["distinguish_presence_from_count"],
         "type": "single_choice"
       }
     ],
@@ -1172,10 +1057,7 @@
         "compare_lengths": "Equal length after or before trimming does not prove the normalized phrases are equal."
       },
       "mentalModelCorrection": "Read the transformation rules literally and apply those rules before deciding on a comparison method.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "Underline each normalization rule in the prompt before selecting the comparison strategy.",
       "result": "diagnostic"
     },
@@ -1184,18 +1066,13 @@
     "primarySkillAtomId": "apply_string_normalization",
     "prompt": "A problem says two phrases are equal if they match after removing spaces and treating uppercase and lowercase letters as the same. Which pair of transformations is required?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "normalization_before_comparison"
-    ],
+    "secondarySkillAtomIds": ["normalization_before_comparison"],
     "staticMicroChecks": [
       {
         "correctAnswer": "remove_spaces_lowercase",
         "feedback": "The prompt already gives the transformation rules: remove spaces and use consistent casing before comparing.",
         "id": "alg-prod-array-string-009-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "remove_spaces_lowercase",
@@ -1216,9 +1093,7 @@
         ],
         "prompt": "Choose the transformations that the prompt actually requires.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
+        "testedSkillAtomIds": ["apply_string_normalization"],
         "type": "single_choice"
       }
     ],
@@ -1260,10 +1135,7 @@
         "start_middle": "Starting in the middle avoids nothing and leaves earlier values unprocessed."
       },
       "mentalModelCorrection": "Initialize the first accepted value before duplicate comparisons begin, then scan from index 1.",
-      "mistakeTypes": [
-        "duplicate_handling_error",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["duplicate_handling_error", "off_by_one"],
       "nextAction": "Whenever an algorithm compares with a previous accepted value, ask how that first accepted value is created.",
       "result": "diagnostic"
     },
@@ -1272,18 +1144,13 @@
     "primarySkillAtomId": "initialize_duplicate_collapse",
     "prompt": "You collapse duplicates in a sorted array using a write boundary. Which initialization is safest?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "use_read_write_boundary"
-    ],
+    "secondarySkillAtomIds": ["use_read_write_boundary"],
     "staticMicroChecks": [
       {
         "correctAnswer": "accept_first_then_scan",
         "feedback": "If the array is non-empty, accepting the first value before the loop avoids a bogus previous-value read at index 0.",
         "id": "alg-prod-array-string-010-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["duplicate_handling_error", "off_by_one"],
         "options": [
           {
             "id": "accept_first_then_scan",
@@ -1304,9 +1171,7 @@
         ],
         "prompt": "Choose the safest initialization.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "initialize_duplicate_collapse"
-        ],
+        "testedSkillAtomIds": ["initialize_duplicate_collapse"],
         "type": "single_choice"
       }
     ],
@@ -1342,9 +1207,7 @@
     "constraintSignal": "Remove rejected values from an array, but the remaining values do not need to preserve their original order.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
-    "expectedApproachIds": [
-      "order_can_be_discarded"
-    ],
+    "expectedApproachIds": ["order_can_be_discarded"],
     "feedbackModel": {
       "decisionSignal": "Dropping the order constraint unlocks mutation strategies that would otherwise be invalid.",
       "distractorExplanations": {
@@ -1353,10 +1216,7 @@
         "frequency_required": "A frequency map is only needed when the result depends on counts by value."
       },
       "mentalModelCorrection": "First ask which constraints were relaxed. Then look for the cheaper strategies that become valid.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "Compare what changes when order matters versus when it does not.",
       "result": "diagnostic"
     },
@@ -1371,18 +1231,13 @@
       "frequency_required"
     ],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "preserve_relative_order"
-    ],
+    "secondarySkillAtomIds": ["preserve_relative_order"],
     "staticMicroChecks": [
       {
         "correctAnswer": "swap_allowed",
         "feedback": "Once order no longer matters, end-swaps can be acceptable because they avoid stable shifting or copying.",
         "id": "alg-prod-array-string-011-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "swap_allowed",
@@ -1403,9 +1258,7 @@
         ],
         "prompt": "Choose what actually changes.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_order_constraint"
-        ],
+        "testedSkillAtomIds": ["reason_about_order_constraint"],
         "type": "single_choice"
       }
     ],
@@ -1447,10 +1300,7 @@
         "start_at_last": "An empty string has no valid last index to start from."
       },
       "mentalModelCorrection": "Empty and length-one inputs are safe once the scan starts at index 1 or returns early.",
-      "mistakeTypes": [
-        "empty_input_error",
-        "edge_case_missed"
-      ],
+      "mistakeTypes": ["empty_input_error", "edge_case_missed"],
       "nextAction": "Check whether the algorithm should return early or naturally skip the loop on empty input.",
       "result": "diagnostic"
     },
@@ -1464,10 +1314,7 @@
         "correctAnswer": "no_neighbor_exists",
         "feedback": "With no characters, there is no previous neighbor to read, so the loop must avoid neighbor access entirely.",
         "id": "alg-prod-array-string-012-check",
-        "mistakeTypes": [
-          "empty_input_error",
-          "edge_case_missed"
-        ],
+        "mistakeTypes": ["empty_input_error", "edge_case_missed"],
         "options": [
           {
             "id": "no_neighbor_exists",
@@ -1488,9 +1335,7 @@
         ],
         "prompt": "Choose the boundary-safe interpretation.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "single_choice"
       }
     ],
@@ -1532,27 +1377,25 @@
         "needs_nested_loop": "All-pairs comparison is unnecessary because only adjacent positions affect the answer."
       },
       "mentalModelCorrection": "When a question depends on original positions, preserve the order and inspect those positions directly.",
-      "mistakeTypes": [
-        "wrong_approach",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["wrong_approach", "constraint_ignored"],
       "nextAction": "Ask whether the task depends on the original sequence before considering any reordering step.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-013",
     "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
+    "primarySkillAtomId": "recognize_adjacent_scan",
     "prompt": "A learner solves \"count how many positions have the same character as the previous position\" by sorting the string first. What is the main mistake?",
     "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "track_index_boundary",
+      "diagnose_order_destroying_transform"
+    ],
     "staticMicroChecks": [
       {
         "correctAnswer": "sorting_destroys_position",
         "feedback": "The task is about original neighboring positions, so sorting changes the very evidence you are supposed to inspect.",
         "id": "alg-prod-array-string-013-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["wrong_approach", "constraint_ignored"],
         "options": [
           {
             "id": "sorting_destroys_position",
@@ -1573,9 +1416,7 @@
         ],
         "prompt": "Choose the real flaw in the learner's approach.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["recognize_adjacent_scan"],
         "type": "single_choice"
       }
     ],
@@ -1588,8 +1429,18 @@
       },
       {
         "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
+        "nodeId": "recognize_adjacent_scan",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "diagnose_order_destroying_transform",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -1617,10 +1468,7 @@
         "first_mismatch": "Position-by-position comparison is too strict because equal frequencies do not require the same order."
       },
       "mentalModelCorrection": "Choose the representation that stores the exact property the prompt cares about. Here that property is frequency, not ordering.",
-      "mistakeTypes": [
-        "cannot_explain_why",
-        "complexity_mismatch"
-      ],
+      "mistakeTypes": ["cannot_explain_why", "complexity_mismatch"],
       "nextAction": "Compare what information sorting gives you versus what information counting gives you.",
       "result": "diagnostic"
     },
@@ -1629,18 +1477,13 @@
     "primarySkillAtomId": "distinguish_presence_from_count",
     "prompt": "Two strings should match if they contain the same characters with the same frequencies. Which comparison is more direct for large inputs when you do not need sorted output?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "compare_complexity_tradeoffs"
-    ],
+    "secondarySkillAtomIds": ["compare_complexity_tradeoffs"],
     "staticMicroChecks": [
       {
         "correctAnswer": "frequency_counting",
         "feedback": "Counting directly stores the multiplicity the prompt asks for, without paying the cost of sorting.",
         "id": "alg-prod-array-string-014-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "complexity_mismatch"
-        ],
+        "mistakeTypes": ["cannot_explain_why", "complexity_mismatch"],
         "options": [
           {
             "id": "frequency_counting",
@@ -1661,9 +1504,7 @@
         ],
         "prompt": "Choose the more direct comparison.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
+        "testedSkillAtomIds": ["distinguish_presence_from_count"],
         "type": "single_choice"
       }
     ],
@@ -1705,10 +1546,7 @@
         "frequency_counts": "Frequency counts ignore order, but phrase equality still requires the normalized sequence to match."
       },
       "mentalModelCorrection": "Follow the same normalization logic, but change the implementation style to reduce extra space.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "Ask whether the same transformation can be applied incrementally instead of materializing whole normalized outputs.",
       "result": "diagnostic"
     },
@@ -1717,18 +1555,13 @@
     "primarySkillAtomId": "streaming_normalization_tradeoff",
     "prompt": "Two very large strings should be compared while ignoring spaces and case. Memory is constrained. Which approach best fits?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "apply_string_normalization"
-    ],
+    "secondarySkillAtomIds": ["apply_string_normalization"],
     "staticMicroChecks": [
       {
         "correctAnswer": "streaming_normalized_compare",
         "feedback": "Streaming the normalized comparison applies the required rules without storing full transformed copies.",
         "id": "alg-prod-array-string-015-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "streaming_normalized_compare",
@@ -1749,9 +1582,7 @@
         ],
         "prompt": "Choose the approach that best fits the memory constraint.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
+        "testedSkillAtomIds": ["streaming_normalization_tradeoff"],
         "type": "single_choice"
       }
     ],
@@ -1793,10 +1624,7 @@
         "empty_empty": "This checks empty-input handling rather than whether duplicate information was lost."
       },
       "mentalModelCorrection": "Pick a counterexample that isolates the exact information the wrong structure throws away.",
-      "mistakeTypes": [
-        "data_structure_mismatch",
-        "cannot_explain_why"
-      ],
+      "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
       "nextAction": "Build test cases that keep one property the same and change only the property your structure forgets.",
       "result": "diagnostic"
     },
@@ -1805,18 +1633,13 @@
     "primarySkillAtomId": "diagnose_data_structure_mismatch",
     "prompt": "A learner checks whether two strings have the same frequencies by converting both strings to sets. Which test case exposes the bug?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "distinguish_presence_from_count"
-    ],
+    "secondarySkillAtomIds": ["distinguish_presence_from_count"],
     "staticMicroChecks": [
       {
         "correctAnswer": "ab_aab",
         "feedback": "The set of characters matches, but the multiplicities do not, so the bug becomes visible immediately.",
         "id": "alg-prod-array-string-016-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
+        "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
         "options": [
           {
             "id": "ab_aab",
@@ -1837,9 +1660,7 @@
         ],
         "prompt": "Choose the test case that reveals the bug.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_data_structure_mismatch"
-        ],
+        "testedSkillAtomIds": ["diagnose_data_structure_mismatch"],
         "type": "single_choice"
       }
     ],
@@ -1879,20 +1700,18 @@
     "feedbackModel": {
       "decisionSignal": "The wrong approach checks many non-adjacent pairs, so the core problem is wasted work rather than missing memory.",
       "mentalModelCorrection": "A local adjacency condition should not be expanded into all-pairs comparison.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["complexity_mismatch", "wrong_approach"],
       "nextAction": "Contrast what the prompt asks for with what the loop actually compares.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-017",
     "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
+    "primarySkillAtomId": "derive_time_complexity",
     "prompt": "A learner checks each character against every later character to detect adjacent duplicates. What time and extra space does that mistaken approach use?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
-      "derive_time_complexity"
+      "recognize_adjacent_scan",
+      "derive_space_complexity"
     ],
     "staticMicroChecks": [
       {
@@ -1902,15 +1721,10 @@
         },
         "feedback": "Mistaken approach: O(n^2) time, O(1) space. Intended approach: O(n) time, O(1) space. The nested comparisons inspect many irrelevant pairs.",
         "id": "alg-prod-array-string-017-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["complexity_mismatch", "wrong_approach"],
         "prompt": "Choose the time and space cost of the mistaken approach.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["derive_time_complexity"],
         "type": "complexity_pair"
       }
     ],
@@ -1923,8 +1737,18 @@
       },
       {
         "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
+        "nodeId": "derive_time_complexity",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "recognize_adjacent_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_space_complexity",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -1950,10 +1774,7 @@
     "feedbackModel": {
       "decisionSignal": "The alphabet bound is what changes the space claim, not the counting idea itself.",
       "mentalModelCorrection": "Call the space O(1) only when the prompt truly fixes the number of possible buckets.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
+      "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
       "nextAction": "Check whether the value domain is fixed before compressing O(k) into O(1).",
       "result": "diagnostic"
     },
@@ -1974,15 +1795,10 @@
         },
         "feedback": "The scan is still linear, and the number of counters is capped by the fixed alphabet.",
         "id": "alg-prod-array-string-018-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
+        "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
         "prompt": "Choose the expected time and space cost.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "fixed_alphabet_complexity"
-        ],
+        "testedSkillAtomIds": ["fixed_alphabet_complexity"],
         "type": "complexity_pair"
       }
     ],
@@ -1997,6 +1813,16 @@
         "axisId": "skill_atom",
         "nodeId": "fixed_alphabet_complexity",
         "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "reason_about_frequency_counting_complexity",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_space_complexity",
+        "role": "secondary"
       },
       {
         "axisId": "pattern_variant",
@@ -2018,9 +1844,7 @@
     "constraintSignal": "Remove rejected values in-place while preserving the order of the kept values.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
-    "expectedApproachIds": [
-      "stable_compaction"
-    ],
+    "expectedApproachIds": ["stable_compaction"],
     "feedbackModel": {
       "decisionSignal": "Preserve order plus in-place mutation rules out the swap-with-end shortcut.",
       "distractorExplanations": {
@@ -2029,10 +1853,7 @@
         "count_then_rebuild": "Counting is not required for stable removal, and rebuilding from counts can lose original relative order."
       },
       "mentalModelCorrection": "Stable order is a product constraint, not a nice-to-have implementation preference.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "When you consider a mutation trick, check whether it preserves the exact output order the prompt requires.",
       "result": "diagnostic"
     },
@@ -2047,18 +1868,13 @@
       "count_then_rebuild"
     ],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "reason_about_order_constraint"
-    ],
+    "secondarySkillAtomIds": ["reason_about_order_constraint"],
     "staticMicroChecks": [
       {
         "correctAnswer": "swap_with_end",
         "feedback": "The flaw is that swapping with the end can scramble the relative order of values that should be kept. The issue is constraint fit, not memory.",
         "id": "alg-prod-array-string-019-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "swap_with_end",
@@ -2079,9 +1895,7 @@
         ],
         "prompt": "Choose the statement that identifies the flaw.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
+        "testedSkillAtomIds": ["preserve_relative_order"],
         "type": "single_choice"
       }
     ],
@@ -2123,10 +1937,7 @@
         "buffer_elsewhere": "A separate buffer can work, but it is unnecessary when the prompt allows in-place compaction."
       },
       "mentalModelCorrection": "Read pointers discover values. Write boundaries mark the next slot in the compacted prefix.",
-      "mistakeTypes": [
-        "cannot_trace_algorithm",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
       "nextAction": "Trace what the write boundary means after each accepted and rejected value.",
       "result": "diagnostic"
     },
@@ -2135,18 +1946,13 @@
     "primarySkillAtomId": "trace_write_boundary",
     "prompt": "In stable in-place compaction, the write boundary currently equals 2 and the next read value should be kept. Where should that value be written?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "use_read_write_boundary"
-    ],
+    "secondarySkillAtomIds": ["use_read_write_boundary"],
     "staticMicroChecks": [
       {
         "correctAnswer": "write_at_boundary",
         "feedback": "The write boundary marks the next open slot in the kept prefix, so the accepted value belongs there.",
         "id": "alg-prod-array-string-020-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
         "options": [
           {
             "id": "write_at_boundary",
@@ -2167,9 +1973,7 @@
         ],
         "prompt": "Choose the correct write location.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
+        "testedSkillAtomIds": ["trace_write_boundary"],
         "type": "single_choice"
       }
     ],
@@ -2211,10 +2015,7 @@
         "length_only": "Length is too weak because two normalized phrases can match even when the raw lengths differ."
       },
       "mentalModelCorrection": "Do not compare raw inputs when the problem explicitly tells you which differences to ignore.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "wrong_approach"
-      ],
+      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
       "nextAction": "Check whether the prompt defines a semantic equality that differs from literal string equality.",
       "result": "diagnostic"
     },
@@ -2223,18 +2024,13 @@
     "primarySkillAtomId": "normalization_before_comparison",
     "prompt": "Two phrases should be treated as equal after removing spaces and ignoring case. Why is comparing the raw strings directly not enough?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "apply_string_normalization"
-    ],
+    "secondarySkillAtomIds": ["apply_string_normalization"],
     "staticMicroChecks": [
       {
         "correctAnswer": "raw_compare_too_strict",
         "feedback": "Raw comparison keeps spaces and letter casing meaningful even though the prompt told you to ignore them.",
         "id": "alg-prod-array-string-021-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
+        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
             "id": "raw_compare_too_strict",
@@ -2255,9 +2051,7 @@
         ],
         "prompt": "Choose the reason raw comparison fails here.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
+        "testedSkillAtomIds": ["normalization_before_comparison"],
         "type": "single_choice"
       }
     ],
@@ -2299,10 +2093,7 @@
         "first_last": "Comparing the ends ignores almost the entire input."
       },
       "mentalModelCorrection": "Match the stored state to the property being tested: multiplicity, presence, or local order.",
-      "mistakeTypes": [
-        "data_structure_mismatch",
-        "cannot_explain_why"
-      ],
+      "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
       "nextAction": "Name the exact evidence the answer depends on before choosing a structure.",
       "result": "diagnostic"
     },
@@ -2311,18 +2102,13 @@
     "primarySkillAtomId": "choose_frequency_state",
     "prompt": "Two strings can be arranged differently but should still match if every character appears the same number of times. Which state is the right one to keep?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "distinguish_presence_from_count"
-    ],
+    "secondarySkillAtomIds": ["distinguish_presence_from_count"],
     "staticMicroChecks": [
       {
         "correctAnswer": "counts_by_character",
         "feedback": "If order can differ but multiplicity must match, counts capture the exact property you need.",
         "id": "alg-prod-array-string-022-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
+        "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
         "options": [
           {
             "id": "counts_by_character",
@@ -2343,9 +2129,7 @@
         ],
         "prompt": "Choose the state that matches the requirement.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
+        "testedSkillAtomIds": ["choose_frequency_state"],
         "type": "single_choice"
       }
     ],
@@ -2387,10 +2171,7 @@
         "read_same_index": "Comparing the character with itself invents a new rule the prompt did not ask for."
       },
       "mentalModelCorrection": "Length zero and length one are often already handled by the loop boundary if the scan starts at index 1.",
-      "mistakeTypes": [
-        "edge_case_missed",
-        "off_by_one"
-      ],
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
       "nextAction": "Check whether the loop boundary already handles short inputs before adding special-case branches.",
       "result": "diagnostic"
     },
@@ -2404,10 +2185,7 @@
         "correctAnswer": "no_comparison_needed",
         "feedback": "There is no adjacent pair in a one-character string, so the scan can finish without reading a previous neighbor.",
         "id": "alg-prod-array-string-023-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
         "options": [
           {
             "id": "no_comparison_needed",
@@ -2428,9 +2206,7 @@
         ],
         "prompt": "Choose the safe behavior.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
+        "testedSkillAtomIds": ["track_index_boundary"],
         "type": "single_choice"
       }
     ],
@@ -2475,10 +2251,7 @@
         "all_pairs": "Sorted adjacency already exposes duplicates without comparing every pair."
       },
       "mentalModelCorrection": "Use the sorted order that is already given instead of layering heavier state on top of it.",
-      "mistakeTypes": [
-        "wrong_approach",
-        "complexity_mismatch"
-      ],
+      "mistakeTypes": ["wrong_approach", "complexity_mismatch"],
       "nextAction": "Ask whether the prompt already provides enough structure to avoid a heavier data structure.",
       "result": "diagnostic"
     },
@@ -2487,18 +2260,13 @@
     "primarySkillAtomId": "avoid_unnecessary_state",
     "prompt": "A sorted array should be collapsed so each value appears once. Which extra state is unnecessary for the intended solution?",
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "diagnose_duplicate_collapse"
-    ],
+    "secondarySkillAtomIds": ["diagnose_duplicate_collapse"],
     "staticMicroChecks": [
       {
         "correctAnswer": "frequency_map",
         "feedback": "Because equal values are already adjacent, a boundary comparison can collapse duplicates without storing full counts.",
         "id": "alg-prod-array-string-024-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "complexity_mismatch"
-        ],
+        "mistakeTypes": ["wrong_approach", "complexity_mismatch"],
         "options": [
           {
             "id": "frequency_map",
@@ -2519,9 +2287,7 @@
         ],
         "prompt": "Choose the state that is unnecessary here.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "avoid_unnecessary_state"
-        ],
+        "testedSkillAtomIds": ["avoid_unnecessary_state"],
         "type": "single_choice"
       }
     ],
@@ -2557,9 +2323,7 @@
     "constraintSignal": "The task returns a new filtered array instead of mutating the original input in place.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
-    "expectedApproachIds": [
-      "new_output_buffer"
-    ],
+    "expectedApproachIds": ["new_output_buffer"],
     "feedbackModel": {
       "decisionSignal": "The requested output shape changes the space tradeoff, even if the filtering scan is still linear.",
       "distractorExplanations": {
@@ -2568,10 +2332,7 @@
         "all_pairs": "Filtering each value still does not require comparing every pair."
       },
       "mentalModelCorrection": "Match the algorithm to the output contract: in-place compaction and returning a new array are different promises.",
-      "mistakeTypes": [
-        "constraint_ignored",
-        "complexity_mismatch"
-      ],
+      "mistakeTypes": ["constraint_ignored", "complexity_mismatch"],
       "nextAction": "Read the output requirement before finalizing both the mutation strategy and the space claim.",
       "result": "diagnostic"
     },
@@ -2580,24 +2341,15 @@
     "primarySkillAtomId": "distinguish_output_contract",
     "prompt": "A filtering task says, \"return a new array containing the accepted values in order.\" Which statement best matches that contract?",
     "reasonSignal": "Building a new output array is valid here, and it changes the extra-space claim compared with in-place compaction.",
-    "rejectedApproachIds": [
-      "must_be_in_place",
-      "sort_first",
-      "all_pairs"
-    ],
+    "rejectedApproachIds": ["must_be_in_place", "sort_first", "all_pairs"],
     "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "distinguish_output_space"
-    ],
+    "secondarySkillAtomIds": ["distinguish_output_space"],
     "staticMicroChecks": [
       {
         "correctAnswer": "new_output_space",
         "feedback": "Returning a new ordered result means the algorithm can append accepted values into a separate output array.",
         "id": "alg-prod-array-string-025-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
+        "mistakeTypes": ["constraint_ignored", "complexity_mismatch"],
         "options": [
           {
             "id": "new_output_space",
@@ -2618,9 +2370,7 @@
         ],
         "prompt": "Choose the statement that matches the contract.",
         "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
+        "testedSkillAtomIds": ["distinguish_output_contract"],
         "type": "single_choice"
       }
     ],
