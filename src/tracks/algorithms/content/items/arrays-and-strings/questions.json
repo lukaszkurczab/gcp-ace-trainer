@@ -85,84 +85,6 @@
     "contentVersion": "algorithms-core",
     "difficulty": "easy",
     "feedbackModel": {
-      "decisionSignal": "The word adjacent means the answer depends on the previous character and the index-0 boundary.",
-      "distractorExplanations": {
-        "all_pairs": "Comparing every pair adds work that the prompt does not ask for. Adjacency is a local relationship.",
-        "frequency_map": "A frequency map loses position, so it cannot tell whether duplicates are adjacent or far apart.",
-        "sort_first": "Sorting creates new neighbors that did not exist in the original string."
-      },
-      "mentalModelCorrection": "Preserve the original order and decide how the first character will be handled before the loop runs.",
-      "mistakeTypes": ["edge_case_missed", "off_by_one"],
-      "nextAction": "Look for words like adjacent, previous, or next before reaching for a broader data structure.",
-      "result": "diagnostic"
-    },
-    "id": "alg-array-string-scan-signals-001",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
-    "secondarySkillAtomIds": ["recognize_adjacent_scan", "diagnose_off_by_one"],
-    "prompt": "A string task says, \"return true if no two adjacent characters are the same.\" Which detail matters most before writing the loop?",
-    "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "previous_character_boundary",
-        "feedback": "Adjacency means each step only needs the current character and the previous one, with special handling around index 0.",
-        "id": "alg-array-string-scan-signals-001-check",
-        "mistakeTypes": ["edge_case_missed", "off_by_one"],
-        "options": [
-          {
-            "id": "previous_character_boundary",
-            "text": "You need access to the previous character, so the first position needs special handling."
-          },
-          {
-            "id": "all_pairs",
-            "text": "You need to compare every character with every other character."
-          },
-          {
-            "id": "frequency_map",
-            "text": "You need a frequency map for the entire string."
-          },
-          {
-            "id": "sort_first",
-            "text": "You should sort the string so equal characters become adjacent."
-          }
-        ],
-        "prompt": "Choose the detail that should guide the loop shape.",
-        "status": "active",
-        "testedSkillAtomIds": ["track_index_boundary"],
-        "type": "single_choice"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "off_by_one",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Identify the key adjacent-scan detail",
-    "trackId": "algorithms",
-    "type": "approach_naming"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "easy",
-    "feedbackModel": {
       "decisionSignal": "A simple left-to-right scan processes the next untouched index after each comparison.",
       "distractorExplanations": {
         "index_4": "Jumping to the last index skips unprocessed work. Nothing in the prompt lets you discard index 3.",
@@ -895,22 +817,22 @@
     "type": "strategy_choice"
   },
   {
-    "complexityExplanation": "Returning a separate filtered array still allows a linear scan, but the output itself can grow with the number of accepted values.",
+    "complexityExplanation": "Returning a separate filtered array still allows a linear scan. If the returned output is counted as additional memory, the output can grow with the number of accepted values.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "expectedSpaceComplexity": "O(n)",
     "expectedTimeComplexity": "O(n)",
     "feedbackModel": {
-      "decisionSignal": "A new returned collection changes the space model even when the filtering work is still one pass.",
-      "mentalModelCorrection": "Distinguish in-place extra space from output space. Reusing the input buffer and building a new output are not the same claim.",
+      "decisionSignal": "A new returned collection changes the memory model when output memory is counted, even though the filtering work is still one pass.",
+      "mentalModelCorrection": "Separate in-place auxiliary space from memory used by a returned output. Reusing the input buffer and building a new result are different contracts.",
       "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
-      "nextAction": "Whenever a prompt says return a new array, revisit the space claim before calling it constant.",
+      "nextAction": "Whenever a prompt says return a new array, decide whether the analysis is counting output memory before calling the space constant.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-007",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_space",
-    "prompt": "An array filtering task says, \"return a new array containing accepted values in order.\" What time and extra space should you expect?",
+    "prompt": "An array filtering task says, \"return a new array containing accepted values in order.\" If the returned output is counted as additional memory, what time and space should you expect?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "derive_time_complexity",
@@ -922,10 +844,10 @@
           "space": "O(n)",
           "time": "O(n)"
         },
-        "feedback": "The scan is linear, and the output array can grow with the number of accepted values.",
+        "feedback": "The scan is linear, and the returned output array can grow with the number of accepted values.",
         "id": "alg-prod-array-string-007-check",
         "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
-        "prompt": "Choose the expected time and space cost.",
+        "prompt": "Choose the expected time and counted output space.",
         "status": "active",
         "testedSkillAtomIds": ["distinguish_output_space"],
         "type": "complexity_pair"
@@ -964,7 +886,7 @@
         "role": "mistake_type"
       }
     ],
-    "title": "Separate output space from in-place space",
+    "title": "Count output space separately from in-place space",
     "trackId": "algorithms",
     "type": "complexity_check"
   },
@@ -986,7 +908,7 @@
     "id": "alg-prod-array-string-008",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "You need to decide whether `aab` and `aba` contain the same characters with the same frequencies. Which comparison is stronger?",
+    "prompt": "You need an approach that accepts `aab` and `aba` as same-frequency strings, but rejects `ab` and `aab`. Which comparison is strong enough?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": ["choose_frequency_state"],
     "staticMicroChecks": [
@@ -1050,48 +972,48 @@
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "feedbackModel": {
-      "decisionSignal": "The prompt spells out the normalization rules directly: ignore spaces and ignore case.",
+      "decisionSignal": "Ignoring spaces and case changes which characters are comparable, but it does not remove the requirement that the normalized sequence order must match.",
       "distractorExplanations": {
-        "sort_and_count": "Sorting and counting target different problems and can discard order even when order should still matter after normalization.",
-        "trim_edges_only": "Removing only leading and trailing spaces is weaker than removing spaces throughout the phrase.",
-        "compare_lengths": "Equal length after or before trimming does not prove the normalized phrases are equal."
+        "sort_and_compare": "Sorting can make anagrams look equal, but phrase equality after normalization still depends on sequence order.",
+        "frequency_counts": "Frequency counts ignore order, but normalized equality still requires the characters to appear in the same order.",
+        "trim_edges_only": "Trimming only leading and trailing spaces is weaker than removing spaces throughout the phrase."
       },
-      "mentalModelCorrection": "Read the transformation rules literally and apply those rules before deciding on a comparison method.",
+      "mentalModelCorrection": "Apply the transformation rules first, then preserve the comparison type. Normalized equality is not the same as anagram comparison.",
       "mistakeTypes": ["constraint_ignored", "wrong_approach"],
-      "nextAction": "Underline each normalization rule in the prompt before selecting the comparison strategy.",
+      "nextAction": "After reading normalization rules, ask whether order still matters in the transformed representation.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-009",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "A problem says two phrases are equal if they match after removing spaces and treating uppercase and lowercase letters as the same. Which pair of transformations is required?",
+    "prompt": "Two phrases are equal if they match after removing spaces and ignoring case. Order still matters. Which comparison matches that contract?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": ["normalization_before_comparison"],
     "staticMicroChecks": [
       {
-        "correctAnswer": "remove_spaces_lowercase",
-        "feedback": "The prompt already gives the transformation rules: remove spaces and use consistent casing before comparing.",
+        "correctAnswer": "normalize_preserve_order",
+        "feedback": "The correct comparison removes spaces and applies consistent casing, then compares the resulting character sequence in order.",
         "id": "alg-prod-array-string-009-check",
         "mistakeTypes": ["constraint_ignored", "wrong_approach"],
         "options": [
           {
-            "id": "remove_spaces_lowercase",
-            "text": "Remove spaces and apply consistent casing."
+            "id": "normalize_preserve_order",
+            "text": "Remove spaces, apply consistent casing, then compare the resulting sequences in order."
           },
           {
-            "id": "sort_and_count",
-            "text": "Sort characters and count duplicates."
+            "id": "sort_and_compare",
+            "text": "Remove spaces, sort both phrases, then compare the sorted characters."
+          },
+          {
+            "id": "frequency_counts",
+            "text": "Count each character after removing spaces and compare only the counts."
           },
           {
             "id": "trim_edges_only",
-            "text": "Remove only leading and trailing spaces."
-          },
-          {
-            "id": "compare_lengths",
-            "text": "Compare only the phrase lengths."
+            "text": "Trim leading and trailing spaces, then compare the raw phrases."
           }
         ],
-        "prompt": "Choose the transformations that the prompt actually requires.",
+        "prompt": "Choose the comparison that keeps the intended meaning.",
         "status": "active",
         "testedSkillAtomIds": ["apply_string_normalization"],
         "type": "single_choice"
@@ -1120,7 +1042,7 @@
         "role": "mistake_type"
       }
     ],
-    "title": "Read normalization rules directly",
+    "title": "Preserve order after normalization",
     "trackId": "algorithms",
     "type": "approach_naming"
   },
@@ -1291,83 +1213,6 @@
   },
   {
     "contentVersion": "algorithms-core",
-    "difficulty": "easy",
-    "feedbackModel": {
-      "decisionSignal": "An empty string has no previous character, so a neighbor-access loop must skip or guard that case.",
-      "distractorExplanations": {
-        "must_throw": "Throwing only makes sense if the contract forbids empty input. The boundary issue alone does not require an error.",
-        "sort_first": "Sorting does nothing to fix the logic of reading a previous index from an empty string.",
-        "start_at_last": "An empty string has no valid last index to start from."
-      },
-      "mentalModelCorrection": "Empty and length-one inputs are safe once the scan starts at index 1 or returns early.",
-      "mistakeTypes": ["empty_input_error", "edge_case_missed"],
-      "nextAction": "Check whether the algorithm should return early or naturally skip the loop on empty input.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-012",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A function checks whether every character in a string differs from the previous one. What should the implementation consider for an empty string?",
-    "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "no_neighbor_exists",
-        "feedback": "With no characters, there is no previous neighbor to read, so the loop must avoid neighbor access entirely.",
-        "id": "alg-prod-array-string-012-check",
-        "mistakeTypes": ["empty_input_error", "edge_case_missed"],
-        "options": [
-          {
-            "id": "no_neighbor_exists",
-            "text": "There is no previous character to read, so the loop should avoid neighbor access."
-          },
-          {
-            "id": "must_throw",
-            "text": "An empty string should always throw an error."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sorting the empty string fixes the boundary issue."
-          },
-          {
-            "id": "start_at_last",
-            "text": "Start at the last index to avoid index 0."
-          }
-        ],
-        "prompt": "Choose the boundary-safe interpretation.",
-        "status": "active",
-        "testedSkillAtomIds": ["track_index_boundary"],
-        "type": "single_choice"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "empty_input_error",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Handle empty input in a neighbor scan",
-    "trackId": "algorithms",
-    "type": "edge_case_drill"
-  },
-  {
-    "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "feedbackModel": {
       "decisionSignal": "Original adjacency is positional evidence, so sorting is invalid even before you compare runtimes.",
@@ -1458,30 +1303,35 @@
     "type": "common_mistake_diagnosis"
   },
   {
+    "acceptableApproachIds": ["sort_both"],
+    "constraintSignal": "Two strings should match if they contain the same characters with the same frequencies. Large inputs make direct linear counting preferable when sorted output is not needed.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
+    "expectedApproachIds": ["frequency_counting"],
     "feedbackModel": {
-      "decisionSignal": "Same frequencies is a multiplicity problem, so counting is the more direct comparison when sorted output is unnecessary.",
+      "decisionSignal": "Same frequencies is a multiplicity problem, so counting stores the needed property directly. Sorting can be logically valid, but it pays extra ordering cost when no sorted output is required.",
       "distractorExplanations": {
-        "sort_both": "Sorting can work logically, but it spends extra O(n log n) time arranging the data when direct counts already answer the question.",
+        "sort_both": "Sorting can produce a correct comparison, but it is less direct for large inputs because it spends O(n log n) time arranging data that only needs counts.",
         "set_compare": "A set loses duplicate counts, so it cannot distinguish `ab` from `aab`.",
         "first_mismatch": "Position-by-position comparison is too strict because equal frequencies do not require the same order."
       },
-      "mentalModelCorrection": "Choose the representation that stores the exact property the prompt cares about. Here that property is frequency, not ordering.",
+      "mentalModelCorrection": "Separate logically valid from preferred under constraints. Here sorting can work, but counting matches the requested property more directly.",
       "mistakeTypes": ["cannot_explain_why", "complexity_mismatch"],
-      "nextAction": "Compare what information sorting gives you versus what information counting gives you.",
+      "nextAction": "When two approaches can both be correct, compare the information each one stores and the cost paid to get it.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-014",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
     "prompt": "Two strings should match if they contain the same characters with the same frequencies. Which comparison is more direct for large inputs when you do not need sorted output?",
+    "reasonSignal": "Counting directly stores multiplicity without paying the sorting cost.",
+    "rejectedApproachIds": ["set_compare", "first_mismatch"],
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": ["compare_complexity_tradeoffs"],
     "staticMicroChecks": [
       {
         "correctAnswer": "frequency_counting",
-        "feedback": "Counting directly stores the multiplicity the prompt asks for, without paying the cost of sorting.",
+        "feedback": "Counting directly stores the multiplicity the prompt asks for. Sorting can also compare frequencies, but it is less direct for large inputs when sorted output is unnecessary.",
         "id": "alg-prod-array-string-014-check",
         "mistakeTypes": ["cannot_explain_why", "complexity_mismatch"],
         "options": [
@@ -1502,7 +1352,7 @@
             "text": "Return false at the first position where the strings differ."
           }
         ],
-        "prompt": "Choose the more direct comparison.",
+        "prompt": "Choose the more direct comparison under the stated constraint.",
         "status": "active",
         "testedSkillAtomIds": ["distinguish_presence_from_count"],
         "type": "single_choice"
@@ -1692,22 +1542,22 @@
     "type": "test_case_selection"
   },
   {
-    "complexityExplanation": "Adjacent duplicate detection only needs a single scan. Mistaken approach: O(n^2) time, O(1) space. Intended approach: O(n) time, O(1) space.",
+    "complexityExplanation": "This question asks for the cost of the mistaken nested-pair approach. Mistaken approach: O(n^2) time, O(1) space. Intended adjacency scan: O(n) time, O(1) space.",
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "expectedSpaceComplexity": "O(1)",
     "expectedTimeComplexity": "O(n^2)",
     "feedbackModel": {
-      "decisionSignal": "The wrong approach checks many non-adjacent pairs, so the core problem is wasted work rather than missing memory.",
-      "mentalModelCorrection": "A local adjacency condition should not be expanded into all-pairs comparison.",
+      "decisionSignal": "The analyzed approach checks many non-adjacent pairs, so the core problem is wasted quadratic work rather than missing memory.",
+      "mentalModelCorrection": "A local adjacency condition should not be expanded into all-pairs comparison. First measure what the code actually does, then compare it with the intended scan.",
       "mistakeTypes": ["complexity_mismatch", "wrong_approach"],
-      "nextAction": "Contrast what the prompt asks for with what the loop actually compares.",
+      "nextAction": "Contrast what the prompt asks for with what the nested loops actually compare.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-017",
     "learningStage": "foundations",
     "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "A learner checks each character against every later character to detect adjacent duplicates. What time and extra space does that mistaken approach use?",
+    "prompt": "A learner uses a mistaken approach: each character is checked against every later character to detect adjacent duplicates. What time and extra space does that mistaken approach use?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "recognize_adjacent_scan",
@@ -1719,7 +1569,7 @@
           "space": "O(1)",
           "time": "O(n^2)"
         },
-        "feedback": "Mistaken approach: O(n^2) time, O(1) space. Intended approach: O(n) time, O(1) space. The nested comparisons inspect many irrelevant pairs.",
+        "feedback": "The mistaken nested approach uses O(n^2) time and O(1) extra space. The intended adjacency scan would be O(n) time and O(1) space.",
         "id": "alg-prod-array-string-017-check",
         "mistakeTypes": ["complexity_mismatch", "wrong_approach"],
         "prompt": "Choose the time and space cost of the mistaken approach.",
@@ -1761,7 +1611,7 @@
         "role": "mistake_type"
       }
     ],
-    "title": "Measure the cost of over-solving adjacency",
+    "title": "Measure the mistaken cost of over-solving adjacency",
     "trackId": "algorithms",
     "type": "complexity_reasoning"
   },
@@ -1930,27 +1780,27 @@
     "contentVersion": "algorithms-core",
     "difficulty": "medium",
     "feedbackModel": {
-      "decisionSignal": "The write boundary already points at the next free kept slot, so the next accepted value should go there immediately.",
+      "decisionSignal": "The write boundary already points at the next free slot in the compacted kept prefix, so the next accepted value should be written there immediately.",
       "distractorExplanations": {
-        "write_next_plus_one": "Skipping the current boundary leaves a gap and eventually misaligns the compacted prefix.",
-        "write_last_index": "Jumping to the end ignores the whole idea of filling the compacted prefix contiguously.",
-        "buffer_elsewhere": "A separate buffer can work, but it is unnecessary when the prompt allows in-place compaction."
+        "write_next_plus_one": "Skipping the current boundary leaves a gap inside the compacted prefix.",
+        "write_read_index": "Leaving the value at the read index does not compact it into the next kept slot.",
+        "buffer_elsewhere": "A separate buffer can work for a new-output contract, but it misses the in-place write-boundary invariant."
       },
-      "mentalModelCorrection": "Read pointers discover values. Write boundaries mark the next slot in the compacted prefix.",
+      "mentalModelCorrection": "Read indexes discover values. The write boundary marks the next slot where the kept prefix should grow.",
       "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
-      "nextAction": "Trace what the write boundary means after each accepted and rejected value.",
+      "nextAction": "Trace what `write` means after each accepted and rejected value: it is the next open kept slot, not the last written slot.",
       "result": "diagnostic"
     },
     "id": "alg-prod-array-string-020",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "In stable in-place compaction, the write boundary currently equals 2 and the next read value should be kept. Where should that value be written?",
+    "prompt": "During stable in-place compaction, the kept prefix already occupies indexes 0 and 1, so `write = 2`. The read index is 4 and `arr[4]` should be kept. Where should `arr[4]` be written?",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": ["use_read_write_boundary"],
     "staticMicroChecks": [
       {
         "correctAnswer": "write_at_boundary",
-        "feedback": "The write boundary marks the next open slot in the kept prefix, so the accepted value belongs there.",
+        "feedback": "The write boundary marks the next open slot in the kept prefix, so the accepted value belongs at index 2.",
         "id": "alg-prod-array-string-020-check",
         "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
         "options": [
@@ -1960,15 +1810,15 @@
           },
           {
             "id": "write_next_plus_one",
-            "text": "Write it at index 3 so the boundary is not overwritten."
+            "text": "Write it at index 3 so index 2 remains a boundary marker."
           },
           {
-            "id": "write_last_index",
-            "text": "Write it at the last array index to avoid shifting."
+            "id": "write_read_index",
+            "text": "Leave it at index 4 because that is where it was read."
           },
           {
             "id": "buffer_elsewhere",
-            "text": "Store it in a new array until all reads finish."
+            "text": "Store it in a new output array until all reads finish."
           }
         ],
         "prompt": "Choose the correct write location.",
@@ -2000,240 +1850,7 @@
         "role": "mistake_type"
       }
     ],
-    "title": "Trace where the next kept value is written",
-    "trackId": "algorithms",
-    "type": "edge_case_drill"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "easy",
-    "feedbackModel": {
-      "decisionSignal": "Raw comparison is weaker than the prompt because it treats removable spaces and case differences as meaningful.",
-      "distractorExplanations": {
-        "sort_both": "Sorting throws away sequence order and answers a different question.",
-        "set_compare": "A set loses both order and duplicate counts, neither of which the prompt told you to discard.",
-        "length_only": "Length is too weak because two normalized phrases can match even when the raw lengths differ."
-      },
-      "mentalModelCorrection": "Do not compare raw inputs when the problem explicitly tells you which differences to ignore.",
-      "mistakeTypes": ["constraint_ignored", "wrong_approach"],
-      "nextAction": "Check whether the prompt defines a semantic equality that differs from literal string equality.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-021",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "Two phrases should be treated as equal after removing spaces and ignoring case. Why is comparing the raw strings directly not enough?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": ["apply_string_normalization"],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "raw_compare_too_strict",
-        "feedback": "Raw comparison keeps spaces and letter casing meaningful even though the prompt told you to ignore them.",
-        "id": "alg-prod-array-string-021-check",
-        "mistakeTypes": ["constraint_ignored", "wrong_approach"],
-        "options": [
-          {
-            "id": "raw_compare_too_strict",
-            "text": "Raw comparison still treats spaces and case differences as mismatches."
-          },
-          {
-            "id": "sort_both",
-            "text": "Sorting both phrases would restore the same meaning."
-          },
-          {
-            "id": "set_compare",
-            "text": "A set comparison keeps the original order intact."
-          },
-          {
-            "id": "length_only",
-            "text": "Equal length is enough after a raw comparison fails."
-          }
-        ],
-        "prompt": "Choose the reason raw comparison fails here.",
-        "status": "active",
-        "testedSkillAtomIds": ["normalization_before_comparison"],
-        "type": "single_choice"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "normalization_before_comparison",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "string_normalization",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "constraint_ignored",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Explain why raw comparison is too strict",
-    "trackId": "algorithms",
-    "type": "approach_naming"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "feedbackModel": {
-      "decisionSignal": "Frequency counts answer multiplicity questions, while adjacent-pair tracking answers order-local questions.",
-      "distractorExplanations": {
-        "set_only": "A set loses counts, so it is weaker than the requirement.",
-        "adjacent_pairs": "Adjacent pairs describe local order, but same frequency is not a local-order property.",
-        "first_last": "Comparing the ends ignores almost the entire input."
-      },
-      "mentalModelCorrection": "Match the stored state to the property being tested: multiplicity, presence, or local order.",
-      "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
-      "nextAction": "Name the exact evidence the answer depends on before choosing a structure.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-022",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "Two strings can be arranged differently but should still match if every character appears the same number of times. Which state is the right one to keep?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": ["distinguish_presence_from_count"],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "counts_by_character",
-        "feedback": "If order can differ but multiplicity must match, counts capture the exact property you need.",
-        "id": "alg-prod-array-string-022-check",
-        "mistakeTypes": ["data_structure_mismatch", "cannot_explain_why"],
-        "options": [
-          {
-            "id": "counts_by_character",
-            "text": "Counts for each character."
-          },
-          {
-            "id": "set_only",
-            "text": "A set of which characters appear."
-          },
-          {
-            "id": "adjacent_pairs",
-            "text": "A list of which characters sit next to each other."
-          },
-          {
-            "id": "first_last",
-            "text": "Only the first and last character."
-          }
-        ],
-        "prompt": "Choose the state that matches the requirement.",
-        "status": "active",
-        "testedSkillAtomIds": ["choose_frequency_state"],
-        "type": "single_choice"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "choose_frequency_state",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "data_structure_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Keep counts when order can differ",
-    "trackId": "algorithms",
-    "type": "solution_comparison"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "easy",
-    "feedbackModel": {
-      "decisionSignal": "A length-one string has no adjacent pair, so any scan that starts at index 1 naturally finishes without a neighbor read.",
-      "distractorExplanations": {
-        "must_fail": "A single character does not violate the rule by itself because there is no adjacent pair to compare.",
-        "sort_first": "Sorting a one-character string does not change the boundary logic.",
-        "read_same_index": "Comparing the character with itself invents a new rule the prompt did not ask for."
-      },
-      "mentalModelCorrection": "Length zero and length one are often already handled by the loop boundary if the scan starts at index 1.",
-      "mistakeTypes": ["edge_case_missed", "off_by_one"],
-      "nextAction": "Check whether the loop boundary already handles short inputs before adding special-case branches.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-023",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A function returns true when no character matches the previous one. What should happen on a one-character string?",
-    "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "no_comparison_needed",
-        "feedback": "There is no adjacent pair in a one-character string, so the scan can finish without reading a previous neighbor.",
-        "id": "alg-prod-array-string-023-check",
-        "mistakeTypes": ["edge_case_missed", "off_by_one"],
-        "options": [
-          {
-            "id": "no_comparison_needed",
-            "text": "No comparison is needed because there is no previous character."
-          },
-          {
-            "id": "must_fail",
-            "text": "The function should fail because the previous character is missing."
-          },
-          {
-            "id": "sort_first",
-            "text": "The string should be sorted first to avoid the edge case."
-          },
-          {
-            "id": "read_same_index",
-            "text": "The character should be compared with itself."
-          }
-        ],
-        "prompt": "Choose the safe behavior.",
-        "status": "active",
-        "testedSkillAtomIds": ["track_index_boundary"],
-        "type": "single_choice"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "edge_case_missed",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Handle the length-one neighbor case",
+    "title": "Trace the write-boundary invariant",
     "trackId": "algorithms",
     "type": "edge_case_drill"
   },
@@ -2400,5 +2017,1617 @@
     "title": "Match the filtering approach to the output contract",
     "trackId": "algorithms",
     "type": "output_contract_reasoning"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The loop reads both before the string at index 0 and past the string at index `s.length`.",
+      "distractorExplanations": {
+        "sorting_missing": "Sorting would change the original neighbor relationships and does not fix the boundary reads.",
+        "frequency_map_missing": "A frequency map solves a different multiplicity problem and does not repair invalid neighbor access.",
+        "nested_loop_missing": "The task is local adjacency, so a nested loop would add irrelevant work."
+      },
+      "mentalModelCorrection": "When code reads `s[i - 1]`, inspect the loop start. When code reads `s[i]`, inspect the loop end.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "Trace the first and last loop iterations before judging the algorithm idea.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-026",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "diagnose_off_by_one",
+    "prompt": "A learner writes: `for (let i = 0; i <= s.length; i++) { if (s[i] === s[i - 1]) return false; }`. What is the main bug?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "track_index_boundary",
+      "recognize_adjacent_scan"
+    ],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "invalid_boundary_reads",
+        "feedback": "At `i = 0`, the code reads `s[-1]`. At `i = s.length`, it reads past the last character. The loop boundaries are wrong.",
+        "id": "alg-prod-array-string-026-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          {
+            "id": "invalid_boundary_reads",
+            "text": "The loop reads `s[-1]` on the first iteration and reads past the end on the last iteration."
+          },
+          {
+            "id": "sorting_missing",
+            "text": "The code should sort the string before checking neighbors."
+          },
+          {
+            "id": "frequency_map_missing",
+            "text": "The code needs a frequency map to compare duplicate counts."
+          },
+          {
+            "id": "nested_loop_missing",
+            "text": "The code needs a nested loop to compare every pair."
+          }
+        ],
+        "prompt": "Choose the bug that actually follows from the loop bounds.",
+        "status": "active",
+        "testedSkillAtomIds": ["diagnose_off_by_one"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "diagnose_off_by_one",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Diagnose both ends of a neighbor loop",
+    "trackId": "algorithms",
+    "type": "common_mistake_diagnosis"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The wrong implementation forgets to seed the first run before later duplicate checks begin.",
+      "distractorExplanations": {
+        "empty_array": "An empty array checks empty-input handling, not whether the first non-empty run is initialized.",
+        "unsorted_input": "The duplicate-collapse contract assumes sorted input, so an unsorted case mixes in a different issue.",
+        "single_run_only": "A single run can reveal the missing first value, but it does not also check that later unique runs are still processed."
+      },
+      "mentalModelCorrection": "For sorted duplicate collapse, the first run must enter the result before comparisons against previous values can safely control later writes.",
+      "mistakeTypes": ["duplicate_handling_error", "cannot_explain_why"],
+      "nextAction": "Use counterexamples that isolate both initialization of the first run and continued processing of later unique values.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-028",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "diagnose_duplicate_collapse",
+    "prompt": "A sorted-duplicate collapse writes later unique values when they differ from the previous value, but it forgets to seed the first run before the loop. Which test case best checks both the missing first run and a later unique run?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["initialize_duplicate_collapse"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "one_then_duplicate_then_new",
+        "feedback": "`[1, 1, 2]` checks that the first run contributes `1` and that the later unique value `2` is still kept.",
+        "id": "alg-prod-array-string-028-check",
+        "mistakeTypes": ["duplicate_handling_error", "cannot_explain_why"],
+        "options": [
+          {
+            "id": "one_then_duplicate_then_new",
+            "text": "`[1, 1, 2]`"
+          },
+          {
+            "id": "empty_array",
+            "text": "`[]`"
+          },
+          {
+            "id": "unsorted_input",
+            "text": "`[2, 1, 1]`"
+          },
+          {
+            "id": "single_run_only",
+            "text": "`[2, 2, 2]`"
+          }
+        ],
+        "prompt": "Choose the test case that best targets the missing-first-run bug.",
+        "status": "active",
+        "testedSkillAtomIds": ["diagnose_duplicate_collapse"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "diagnose_duplicate_collapse",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "duplicate_handling",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "duplicate_handling_error",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Pick a counterexample for the missing first run",
+    "trackId": "algorithms",
+    "type": "test_case_selection"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The write boundary is an invariant: it marks the next open slot after the compacted kept prefix.",
+      "distractorExplanations": {
+        "last_read_index": "The read index tracks inspection progress, not the boundary of the kept prefix.",
+        "last_rejected_index": "Rejected values do not define where the next accepted value belongs.",
+        "array_length": "The array length may remain unchanged during in-place compaction; the logical kept length is tracked separately."
+      },
+      "mentalModelCorrection": "The kept prefix is the part of the array that already satisfies the output contract. `write` points just after it.",
+      "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
+      "nextAction": "When tracing read/write algorithms, restate the invariant before moving either pointer.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-029",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "use_read_write_boundary",
+    "prompt": "In stable in-place compaction, what does the `write` boundary represent after several elements have been scanned?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "trace_write_boundary",
+      "preserve_relative_order"
+    ],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "next_open_kept_slot",
+        "feedback": "The write boundary is the next open slot after the compacted prefix of kept values.",
+        "id": "alg-prod-array-string-029-check",
+        "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
+        "options": [
+          {
+            "id": "next_open_kept_slot",
+            "text": "The next index where an accepted value should be written."
+          },
+          {
+            "id": "last_read_index",
+            "text": "The last index that was read from the original array."
+          },
+          {
+            "id": "last_rejected_index",
+            "text": "The most recent rejected value's original index."
+          },
+          {
+            "id": "array_length",
+            "text": "The physical length of the array."
+          }
+        ],
+        "prompt": "Choose the invariant that makes tracing reliable.",
+        "status": "active",
+        "testedSkillAtomIds": ["use_read_write_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_read_write_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Name the write-boundary invariant",
+    "trackId": "algorithms",
+    "type": "state_selection"
+  },
+  {
+    "acceptableApproachIds": [],
+    "rejectedApproachIds": ["frequency_counting", "raw_compare", "length_only"],
+    "constraintSignal": "The prompt asks for normalized phrase equality, so order still matters after spaces and case are ignored.",
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "expectedApproachIds": ["streaming_normalized_compare"],
+    "feedbackModel": {
+      "decisionSignal": "The two approaches can both transform characters, but frequency counting changes the question from equality of sequence to equality of multiset.",
+      "distractorExplanations": {
+        "frequency_counting": "Frequency counting can be useful for anagram-style equality, but phrase equality still requires normalized order to match.",
+        "raw_compare": "Raw comparison ignores none of the prompt's transformation rules.",
+        "length_only": "Equal normalized length is necessary but not sufficient for equality."
+      },
+      "mentalModelCorrection": "Do not let normalization erase the comparison contract. Equality after normalization still compares a sequence, not just counts.",
+      "mistakeTypes": ["wrong_approach", "constraint_ignored"],
+      "nextAction": "Ask whether the final comparison cares about order, multiplicity, or only presence.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-030",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "streaming_normalization_tradeoff",
+    "prompt": "Two strings should be equal after ignoring spaces and case, but their character order still matters. Which approach preserves the correct comparison meaning?",
+    "reasonSignal": "Streaming normalized comparison keeps sequence order while avoiding full normalized copies.",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "apply_string_normalization",
+      "normalization_before_comparison"
+    ],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "streaming_normalized_compare",
+        "feedback": "A streaming normalized comparison skips ignored characters and compares normalized characters in order. Counts would answer an anagram-like question instead.",
+        "id": "alg-prod-array-string-030-check",
+        "mistakeTypes": ["wrong_approach", "constraint_ignored"],
+        "options": [
+          {
+            "id": "streaming_normalized_compare",
+            "text": "Skip spaces and compare lowercased characters in order."
+          },
+          {
+            "id": "frequency_counting",
+            "text": "Count lowercased non-space characters and compare the counts."
+          },
+          {
+            "id": "raw_compare",
+            "text": "Compare the original strings directly."
+          },
+          {
+            "id": "length_only",
+            "text": "Compare only the number of non-space characters."
+          }
+        ],
+        "prompt": "Choose the approach that preserves normalized equality.",
+        "status": "active",
+        "testedSkillAtomIds": ["streaming_normalization_tradeoff"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "streaming_normalization_tradeoff",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "string_normalization",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_approach",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Do not turn normalized equality into frequency comparison",
+    "trackId": "algorithms",
+    "type": "solution_comparison"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)",
+    "feedbackModel": {
+      "decisionSignal": "Stable in-place compaction reads each element once and keeps only a write boundary, so it is linear time and constant auxiliary space.",
+      "mentalModelCorrection": "In-place does not mean no variables. It means the algorithm does not allocate storage proportional to input size.",
+      "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
+      "nextAction": "For in-place mutation, separate the input buffer from small pointer/counter variables.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-031",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "use_read_write_boundary",
+    "prompt": "An array removes rejected values in-place while preserving the relative order of kept values using a read index and a write boundary. What time and auxiliary space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "derive_time_complexity",
+      "derive_space_complexity",
+      "preserve_relative_order"
+    ],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": {
+          "space": "O(1)",
+          "time": "O(n)"
+        },
+        "feedback": "The algorithm scans once and only stores indexes or counters, so it uses O(n) time and O(1) auxiliary space.",
+        "id": "alg-prod-array-string-031-check",
+        "mistakeTypes": ["complexity_mismatch", "constraint_ignored"],
+        "prompt": "Choose the expected time and auxiliary space.",
+        "status": "active",
+        "testedSkillAtomIds": ["use_read_write_boundary"],
+        "type": "complexity_pair"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "use_read_write_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_time_complexity",
+        "role": "secondary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "derive_space_complexity",
+        "role": "secondary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "in_place_update",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Estimate stable in-place compaction cost",
+    "trackId": "algorithms",
+    "type": "complexity_check"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "easy",
+    "feedbackModel": {
+      "decisionSignal": "Reading `s[i - 1]` means the first safe current index is 1.",
+      "distractorExplanations": {
+        "start_zero": "Starting at 0 makes the first iteration read before the string.",
+        "start_two": "Starting at 2 skips the valid adjacent pair at indexes 0 and 1.",
+        "start_last": "Starting at the last index skips earlier adjacent pairs."
+      },
+      "mentalModelCorrection": "Choose the loop start from the farthest previous-index expression used inside the loop.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "Before writing the loop, name the first index where every indexed read is valid.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-032",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop compares `s[i]` with `s[i - 1]`. Which loop start is boundary-safe without adding a separate guard inside the loop?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "start_one",
+        "feedback": "Starting at `i = 1` makes both `s[i]` and `s[i - 1]` valid for the first comparison.",
+        "id": "alg-prod-array-string-032-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          { "id": "start_one", "text": "Start at `i = 1`." },
+          { "id": "start_zero", "text": "Start at `i = 0`." },
+          { "id": "start_two", "text": "Start at `i = 2`." },
+          { "id": "start_last", "text": "Start at the last index." }
+        ],
+        "prompt": "Choose the safe loop start.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the first safe previous-neighbor index",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The loop starts safely for `i - 1`, but the `<=` condition still creates a past-the-end read.",
+      "distractorExplanations": {
+        "start_boundary_only": "Starting at 1 protects `s[i - 1]`, but it does not protect `s[i]` when `i === s.length`.",
+        "needs_sorting": "Sorting changes the original neighbor relationships and does not repair the loop bound.",
+        "needs_nested_loop": "The condition is local adjacency, so nested comparison is not required."
+      },
+      "mentalModelCorrection": "A loop can have one boundary correct and the other boundary wrong. Check both first and last iterations.",
+      "mistakeTypes": ["off_by_one", "cannot_trace_algorithm"],
+      "nextAction": "Trace the first valid iteration and the final attempted iteration separately.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-034",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A learner writes `for (let i = 1; i <= s.length; i++)` before comparing `s[i]` with `s[i - 1]`. What boundary bug remains?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "past_end_read",
+        "feedback": "The loop start is safe, but `i <= s.length` eventually makes the code read `s[s.length]`, which is past the final character.",
+        "id": "alg-prod-array-string-034-check",
+        "mistakeTypes": ["off_by_one", "cannot_trace_algorithm"],
+        "options": [
+          {
+            "id": "past_end_read",
+            "text": "The loop still reads `s[s.length]` on the final iteration."
+          },
+          {
+            "id": "start_boundary_only",
+            "text": "There is no bug because starting at 1 fixes every boundary."
+          },
+          {
+            "id": "needs_sorting",
+            "text": "The remaining bug is that the string was not sorted first."
+          },
+          {
+            "id": "needs_nested_loop",
+            "text": "The loop still needs to compare every pair of characters."
+          }
+        ],
+        "prompt": "Choose the remaining boundary bug.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Catch the unsafe inclusive end bound",
+    "trackId": "algorithms",
+    "type": "common_mistake_diagnosis"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The loop condition prevents every iteration when the string is length 0 or 1, so no neighbor read occurs.",
+      "distractorExplanations": {
+        "throws_empty": "The loop does not need to throw unless the problem contract forbids empty input.",
+        "reads_negative": "Starting at 1 avoids reading `s[-1]`.",
+        "needs_manual_special_case": "A special branch can work, but the loop boundary already handles these short inputs naturally."
+      },
+      "mentalModelCorrection": "A good boundary can make empty and length-one inputs safe without extra branching.",
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
+      "nextAction": "Check whether the loop runs at all for the smallest valid inputs.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-035",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A function uses `for (let i = 1; i < s.length; i++)` to compare `s[i]` with `s[i - 1]`. What happens for strings of length 0 or 1?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "loop_skips_safely",
+        "feedback": "For length 0 or 1, `i = 1` is not less than `s.length`, so the loop does not run and no invalid previous-neighbor read occurs.",
+        "id": "alg-prod-array-string-035-check",
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
+        "options": [
+          {
+            "id": "loop_skips_safely",
+            "text": "The loop skips, so no neighbor access occurs."
+          },
+          {
+            "id": "throws_empty",
+            "text": "The loop must throw on empty input."
+          },
+          {
+            "id": "reads_negative",
+            "text": "The first iteration reads `s[-1]`."
+          },
+          {
+            "id": "needs_manual_special_case",
+            "text": "The loop is unsafe unless both cases are manually special-cased."
+          }
+        ],
+        "prompt": "Choose the boundary behavior for short strings.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace short inputs through a safe loop",
+    "trackId": "algorithms",
+    "type": "trace_next_step"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The condition `i > 0` is the guard that makes previous-neighbor access safe at index 0.",
+      "distractorExplanations": {
+        "i_less_than_length": "This protects the current index from the end, but it does not protect `i - 1` at the start.",
+        "s_i_exists": "Checking the current character does not prove the previous character exists.",
+        "s_previous_equals_current": "This is the comparison, not the guard that makes the comparison safe."
+      },
+      "mentalModelCorrection": "A guard should protect the specific index expression that could go out of bounds.",
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
+      "nextAction": "Pair each guarded expression with the boundary that can break it.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-036",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A scan starts at `i = 0`, but only reads `s[i - 1]` inside an `if` guard. Which guard protects the previous-neighbor read?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "i_greater_than_zero",
+        "feedback": "`i > 0` means the previous index exists before `s[i - 1]` is read.",
+        "id": "alg-prod-array-string-036-check",
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
+        "options": [
+          { "id": "i_greater_than_zero", "text": "`i > 0`" },
+          { "id": "i_less_than_length", "text": "`i < s.length`" },
+          { "id": "s_i_exists", "text": "`s[i]` is not empty." },
+          { "id": "s_previous_equals_current", "text": "`s[i - 1] === s[i]`" }
+        ],
+        "prompt": "Choose the guard that protects `s[i - 1]`.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the guard for previous-neighbor access",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The condition `i < arr.length - 1` is the guard that makes next-neighbor access safe.",
+      "distractorExplanations": {
+        "i_greater_than_zero": "This protects previous-neighbor access, not `i + 1` at the end.",
+        "i_less_equal_length": "This permits positions outside the array.",
+        "arr_i_exists": "The current element can exist while the next element does not."
+      },
+      "mentalModelCorrection": "The boundary guard depends on the direction of the neighbor access.",
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
+      "nextAction": "For `i + 1`, trace what happens at the last valid index.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-037",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A scan starts at `i = 0`, but only reads `arr[i + 1]` inside an `if` guard. Which guard protects the next-neighbor read?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "i_less_than_length_minus_one",
+        "feedback": "`i < arr.length - 1` ensures there is a next element before `arr[i + 1]` is read.",
+        "id": "alg-prod-array-string-037-check",
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
+        "options": [
+          {
+            "id": "i_less_than_length_minus_one",
+            "text": "`i < arr.length - 1`"
+          },
+          { "id": "i_greater_than_zero", "text": "`i > 0`" },
+          { "id": "i_less_equal_length", "text": "`i <= arr.length`" },
+          { "id": "arr_i_exists", "text": "`arr[i]` exists." }
+        ],
+        "prompt": "Choose the guard that protects `arr[i + 1]`.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the guard for next-neighbor access",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "Comparing with `i - 2` requires starting at index 2, not index 1.",
+      "distractorExplanations": {
+        "start_one": "At index 1, `i - 2` is -1, so the read is unsafe.",
+        "start_zero": "At index 0, `i - 2` is -2, so the read is even farther before the array.",
+        "start_three": "Starting at 3 is safe but skips the valid comparison at index 2."
+      },
+      "mentalModelCorrection": "The loop start must account for the largest backward offset used in the loop body.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "Find the most negative index expression and choose the first `i` that makes it zero or greater.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-038",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop compares each value with the value two positions before it using `arr[i - 2]`. What is the first safe index for `i`?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "start_two",
+        "feedback": "At `i = 2`, `arr[i - 2]` becomes `arr[0]`, the first valid read for that expression.",
+        "id": "alg-prod-array-string-038-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          { "id": "start_two", "text": "Start at `i = 2`." },
+          { "id": "start_one", "text": "Start at `i = 1`." },
+          { "id": "start_zero", "text": "Start at `i = 0`." },
+          { "id": "start_three", "text": "Start at `i = 3`." }
+        ],
+        "prompt": "Choose the first safe index.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the boundary for a two-step previous read",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "Reading `arr[i + 2]` requires stopping before the final two indexes as current positions.",
+      "distractorExplanations": {
+        "length_minus_one": "This still lets `i` reach the second-to-last index, where `i + 2` is past the end.",
+        "length": "This allows current positions at or beyond the end.",
+        "length_minus_three": "This is safe but skips the last valid current index."
+      },
+      "mentalModelCorrection": "The loop end must account for the largest forward offset used in the loop body.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "Find the largest forward index expression and choose the final `i` that keeps it within bounds.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-039",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop compares each value with the value two positions after it using `arr[i + 2]`. Which condition keeps the read boundary-safe while checking every valid pair?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "i_less_than_length_minus_two",
+        "feedback": "The last safe current index is `arr.length - 3`, so the condition should be `i < arr.length - 2`.",
+        "id": "alg-prod-array-string-039-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          {
+            "id": "i_less_than_length_minus_two",
+            "text": "`i < arr.length - 2`"
+          },
+          { "id": "length_minus_one", "text": "`i < arr.length - 1`" },
+          { "id": "length", "text": "`i < arr.length`" },
+          { "id": "length_minus_three", "text": "`i < arr.length - 3`" }
+        ],
+        "prompt": "Choose the correct loop condition.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Choose the boundary for a two-step next read",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The code uses the previous index, so an empty array and a first-index iteration are the important risks.",
+      "distractorExplanations": {
+        "large_array": "A large array affects performance but does not create a boundary error by itself.",
+        "negative_values": "Negative values are data values, not invalid indexes.",
+        "duplicates_late": "Later duplicates affect the answer, but not whether the first previous-index read is safe."
+      },
+      "mentalModelCorrection": "Boundary bugs come from index expressions and loop bounds, not from ordinary values stored in the array.",
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
+      "nextAction": "When checking a boundary bug, choose a test that forces the dangerous index expression to execute.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-040",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A learner scans an array from index 0 and compares `arr[i]` with `arr[i - 1]`. Which test case most directly exposes the boundary bug?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "single_element",
+        "feedback": "A one-element array still enters a careless `i = 0` loop and immediately tries to read `arr[-1]`.",
+        "id": "alg-prod-array-string-040-check",
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
+        "options": [
+          { "id": "single_element", "text": "`[7]`" },
+          { "id": "large_array", "text": "An array with one million values." },
+          { "id": "negative_values", "text": "`[-3, -2, -1]`" },
+          { "id": "duplicates_late", "text": "`[1, 2, 3, 3]`" }
+        ],
+        "prompt": "Choose the test case that targets the first-index boundary.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "test_case_selection"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Pick a test for first-index previous access",
+    "trackId": "algorithms",
+    "type": "test_case_selection"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "A next-neighbor loop that reaches the last index will read past the end.",
+      "distractorExplanations": {
+        "empty_array": "An empty array may skip the loop depending on the condition, so it may not expose the last-index next read.",
+        "all_same": "Equal values affect the predicate result, not whether the end boundary is safe.",
+        "sorted_values": "Sorted order is unrelated to protecting `i + 1`."
+      },
+      "mentalModelCorrection": "To expose a next-neighbor end bug, pick the smallest input where the loop reaches a last element and tries to read one more.",
+      "mistakeTypes": ["edge_case_missed", "off_by_one"],
+      "nextAction": "Trace the final iteration, not only the first one.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-041",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A learner scans with `i < arr.length` and compares `arr[i]` with `arr[i + 1]`. Which test case most directly exposes the end-boundary bug?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "single_element",
+        "feedback": "With `[7]`, the loop reaches `i = 0` and immediately reads `arr[1]`, which is past the end.",
+        "id": "alg-prod-array-string-041-check",
+        "mistakeTypes": ["edge_case_missed", "off_by_one"],
+        "options": [
+          { "id": "single_element", "text": "`[7]`" },
+          { "id": "empty_array", "text": "`[]`" },
+          { "id": "all_same", "text": "`[2, 2, 2]`" },
+          { "id": "sorted_values", "text": "`[1, 2, 3]`" }
+        ],
+        "prompt": "Choose the smallest direct boundary test.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "test_case_selection"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Pick a test for last-index next access",
+    "trackId": "algorithms",
+    "type": "test_case_selection"
+  },
+  {
+    "complexityExplanation": "Checking each adjacent pair once uses one pass and constant auxiliary space. Boundary handling changes where the loop starts or stops, not the asymptotic cost.",
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "expectedSpaceComplexity": "O(1)",
+    "expectedTimeComplexity": "O(n)",
+    "feedbackModel": {
+      "decisionSignal": "A boundary-safe adjacent scan still visits each relevant pair once.",
+      "mentalModelCorrection": "Adding correct loop bounds or a small guard does not turn a linear scan into a heavier algorithm.",
+      "mistakeTypes": ["complexity_mismatch", "off_by_one"],
+      "nextAction": "Separate correctness of loop bounds from the number of iterations the scan performs.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-042",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A boundary-safe loop checks every adjacent pair in an array exactly once. What time and auxiliary space should you expect?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": [
+      "derive_time_complexity",
+      "derive_space_complexity",
+      "recognize_adjacent_scan"
+    ],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": { "space": "O(1)", "time": "O(n)" },
+        "feedback": "The scan is linear because each adjacent pair is checked once, and the loop only needs indexes or a counter.",
+        "id": "alg-prod-array-string-042-check",
+        "mistakeTypes": ["complexity_mismatch", "off_by_one"],
+        "prompt": "Choose the expected time and auxiliary space.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "complexity_pair"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "complexity_mismatch",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Estimate a boundary-safe adjacent scan",
+    "trackId": "algorithms",
+    "type": "complexity_check"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "When scanning backward and reading `i - 1`, the loop must stop before `i` reaches 0.",
+      "distractorExplanations": {
+        "i_greater_equal_zero": "At `i = 0`, `arr[i - 1]` reads before the array.",
+        "i_less_than_length": "This is an upper-bound check, not the lower-bound needed in a backward scan.",
+        "i_greater_than_one": "This is safe but skips the valid comparison at `i = 1`."
+      },
+      "mentalModelCorrection": "Backward scans still need the lower boundary protected when reading previous indexes.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "For reverse loops, trace the final iteration near index 0.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-044",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A reverse loop compares `arr[i]` with `arr[i - 1]`. Which condition lets it stop safely while still checking the pair at indexes 0 and 1?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "trace_scan_index"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "i_greater_than_zero",
+        "feedback": "The loop can run down to `i = 1`, where `arr[i - 1]` is `arr[0]`. It must not run at `i = 0`.",
+        "id": "alg-prod-array-string-044-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          { "id": "i_greater_than_zero", "text": "Continue while `i > 0`." },
+          { "id": "i_greater_equal_zero", "text": "Continue while `i >= 0`." },
+          {
+            "id": "i_less_than_length",
+            "text": "Continue while `i < arr.length`."
+          },
+          { "id": "i_greater_than_one", "text": "Continue while `i > 1`." }
+        ],
+        "prompt": "Choose the safe reverse-loop condition.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Protect index zero in a reverse previous-neighbor scan",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "A while loop with manual index updates has the same boundary risk as a for loop.",
+      "distractorExplanations": {
+        "increment_missing": "The snippet increments `i`; the issue is the unsafe first previous read.",
+        "needs_sorting": "Sorting is unrelated to protecting `i - 1`.",
+        "nested_loop_missing": "A nested loop would add irrelevant comparisons."
+      },
+      "mentalModelCorrection": "Loop syntax does not change boundary reasoning. Inspect the first and last index values actually used.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "Apply the same boundary checklist to `for`, `while`, and manual pointer loops.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-045",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A learner writes `let i = 0; while (i < s.length) { if (s[i] === s[i - 1]) return false; i++; }`. What is the main bug?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "unsafe_first_previous_read",
+        "feedback": "The first loop iteration uses `i = 0`, so `s[i - 1]` reads `s[-1]`.",
+        "id": "alg-prod-array-string-045-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          {
+            "id": "unsafe_first_previous_read",
+            "text": "The first iteration reads `s[-1]`."
+          },
+          {
+            "id": "increment_missing",
+            "text": "The loop never increments `i`."
+          },
+          {
+            "id": "needs_sorting",
+            "text": "The string must be sorted before the loop."
+          },
+          {
+            "id": "nested_loop_missing",
+            "text": "The code needs a nested loop to compare all pairs."
+          }
+        ],
+        "prompt": "Choose the real bug in the while loop.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "common_mistake_diagnosis"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Diagnose previous access in a while loop",
+    "trackId": "algorithms",
+    "type": "common_mistake_diagnosis"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "A safe refactor can either start at 1 or keep index 0 and guard the previous-neighbor comparison.",
+      "distractorExplanations": {
+        "sort_first": "Sorting changes the original adjacency evidence instead of fixing the boundary.",
+        "use_frequency_map": "A frequency map solves multiplicity questions, not local previous-neighbor safety.",
+        "skip_last": "Skipping the last index protects the wrong end for `i - 1` access."
+      },
+      "mentalModelCorrection": "Fix the boundary that the indexed expression actually threatens. For `i - 1`, protect the start.",
+      "mistakeTypes": ["off_by_one", "wrong_approach"],
+      "nextAction": "When refactoring boundary bugs, prefer the smallest loop-bound or guard change that preserves the original task.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-046",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop starts at `i = 0` and reads `s[i - 1]`. Which refactor fixes the boundary bug while preserving the same adjacent-scan task?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "start_at_one",
+        "feedback": "Starting the comparison loop at `i = 1` preserves every adjacent pair and avoids reading before the string.",
+        "id": "alg-prod-array-string-046-check",
+        "mistakeTypes": ["off_by_one", "wrong_approach"],
+        "options": [
+          {
+            "id": "start_at_one",
+            "text": "Start the comparison loop at `i = 1`."
+          },
+          { "id": "sort_first", "text": "Sort the string first." },
+          {
+            "id": "use_frequency_map",
+            "text": "Build a frequency map before scanning."
+          },
+          {
+            "id": "skip_last",
+            "text": "Stop the loop before the last character."
+          }
+        ],
+        "prompt": "Choose the boundary-preserving refactor.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Refactor a previous-neighbor boundary bug",
+    "trackId": "algorithms",
+    "type": "common_mistake_diagnosis"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "Skipping the last index is the correct refactor for a next-neighbor read.",
+      "distractorExplanations": {
+        "start_at_one": "Starting at 1 protects previous-neighbor reads and skips the first valid next-neighbor pair.",
+        "sort_first": "Sorting changes the original adjacency relationships.",
+        "use_frequency_map": "Counting values does not repair the end boundary for `i + 1`."
+      },
+      "mentalModelCorrection": "For `i + 1`, the unsafe boundary is the end of the array, not the beginning.",
+      "mistakeTypes": ["off_by_one", "wrong_approach"],
+      "nextAction": "Tie each refactor to the exact boundary threatened by the index expression.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-047",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop scans with `i < arr.length` and reads `arr[i + 1]`. Which refactor fixes the boundary bug while preserving every valid adjacent comparison?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "recognize_adjacent_scan"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "stop_before_last",
+        "feedback": "Using `i < arr.length - 1` stops before the last index as a current position while still checking every adjacent pair.",
+        "id": "alg-prod-array-string-047-check",
+        "mistakeTypes": ["off_by_one", "wrong_approach"],
+        "options": [
+          {
+            "id": "stop_before_last",
+            "text": "Change the condition to `i < arr.length - 1`."
+          },
+          { "id": "start_at_one", "text": "Start at `i = 1`." },
+          { "id": "sort_first", "text": "Sort the array before scanning." },
+          {
+            "id": "use_frequency_map",
+            "text": "Build a frequency map before the loop."
+          }
+        ],
+        "prompt": "Choose the boundary-preserving refactor.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Refactor a next-neighbor boundary bug",
+    "trackId": "algorithms",
+    "type": "common_mistake_diagnosis"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "easy",
+    "feedbackModel": {
+      "decisionSignal": "The phrase immediately after means the algorithm needs next-neighbor access and an end boundary.",
+      "distractorExplanations": {
+        "previous_boundary": "Previous-neighbor access is used for `immediately before`, not `immediately after`.",
+        "frequency_counting": "Counts do not preserve which character sits immediately after another character.",
+        "global_sorting": "Sorting changes the original next-neighbor relationships."
+      },
+      "mentalModelCorrection": "Map directional words in the prompt to the index expression and boundary they imply.",
+      "mistakeTypes": ["constraint_ignored", "edge_case_missed"],
+      "nextAction": "When a prompt says before or after, translate it into `i - 1` or `i + 1` before choosing loop bounds.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-048",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A task asks whether any character is the same as the character immediately after it. Which boundary matters most?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["recognize_adjacent_scan", "diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "next_neighbor_end_boundary",
+        "feedback": "Immediately after maps to `s[i + 1]`, so the loop must protect the end of the string.",
+        "id": "alg-prod-array-string-048-check",
+        "mistakeTypes": ["constraint_ignored", "edge_case_missed"],
+        "options": [
+          {
+            "id": "next_neighbor_end_boundary",
+            "text": "A next-neighbor read with an end boundary."
+          },
+          {
+            "id": "previous_boundary",
+            "text": "A previous-neighbor read with a start boundary."
+          },
+          {
+            "id": "frequency_counting",
+            "text": "A count table for each character."
+          },
+          {
+            "id": "global_sorting",
+            "text": "Sorting first so equal characters group together."
+          }
+        ],
+        "prompt": "Choose the boundary signal in the prompt.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "edge_case_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Map immediately-after wording to the end boundary",
+    "trackId": "algorithms",
+    "type": "approach_naming"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "The loop body reads both `i - 1` and `i + 1`, so both ends must be protected.",
+      "distractorExplanations": {
+        "start_one_only": "Starting at 1 protects `i - 1`, but the loop must also stop before the last index to protect `i + 1`.",
+        "stop_before_last_only": "Stopping before the last index protects `i + 1`, but starting at 0 still breaks `i - 1`.",
+        "full_range": "Scanning every index from 0 through the last index makes both boundary reads unsafe."
+      },
+      "mentalModelCorrection": "When a loop reads neighbors on both sides, the safe current indexes are the interior positions only.",
+      "mistakeTypes": ["off_by_one", "edge_case_missed"],
+      "nextAction": "List every indexed expression in the loop body and intersect their safe ranges.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-049",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "A loop compares `arr[i]` with both `arr[i - 1]` and `arr[i + 1]`. Which range is safe for `i`?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["diagnose_off_by_one", "trace_scan_index"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "interior_only",
+        "feedback": "The current index must be at least 1 for `i - 1` and at most `arr.length - 2` for `i + 1`, so only interior indexes are safe.",
+        "id": "alg-prod-array-string-049-check",
+        "mistakeTypes": ["off_by_one", "edge_case_missed"],
+        "options": [
+          {
+            "id": "interior_only",
+            "text": "`i` from 1 through `arr.length - 2`."
+          },
+          {
+            "id": "start_one_only",
+            "text": "`i` from 1 through `arr.length - 1`."
+          },
+          {
+            "id": "stop_before_last_only",
+            "text": "`i` from 0 through `arr.length - 2`."
+          },
+          {
+            "id": "full_range",
+            "text": "Every index from 0 through `arr.length - 1`."
+          }
+        ],
+        "prompt": "Choose the safe current-index range.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "single_choice"
+      }
+    ],
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "off_by_one",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Intersect both-side neighbor boundaries",
+    "trackId": "algorithms",
+    "type": "edge_case_drill"
+  },
+  {
+    "contentVersion": "algorithms-core",
+    "difficulty": "medium",
+    "feedbackModel": {
+      "decisionSignal": "For a 5-element array, indexes 1, 2, and 3 are the only positions with both a previous and next neighbor.",
+      "distractorExplanations": {
+        "index_four": "Index 4 has a previous neighbor but no next neighbor.",
+        "index_zero": "Index 0 has a next neighbor but no previous neighbor.",
+        "stop": "The scan is not finished after index 2 because index 3 is still an interior index."
+      },
+      "mentalModelCorrection": "Interior scans advance through positions that have all required neighbor reads available.",
+      "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
+      "nextAction": "Mark the safe current-index range first, then trace movement inside that range.",
+      "result": "diagnostic"
+    },
+    "id": "alg-prod-array-string-050",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "track_index_boundary",
+    "prompt": "You scan a 5-element array and at each current index read both `arr[i - 1]` and `arr[i + 1]`. You just processed index 2. What is the next safe current index?",
+    "roadmapNodeId": "arrays_and_strings",
+    "secondarySkillAtomIds": ["trace_scan_index", "diagnose_off_by_one"],
+    "staticMicroChecks": [
+      {
+        "correctAnswer": "index_three",
+        "feedback": "For a 5-element array, the safe current indexes with both neighbors are 1, 2, and 3. After index 2, index 3 is next.",
+        "id": "alg-prod-array-string-050-check",
+        "mistakeTypes": ["cannot_trace_algorithm", "off_by_one"],
+        "options": [
+          { "id": "index_three", "text": "Move to index 3." },
+          { "id": "index_four", "text": "Move to index 4." },
+          { "id": "index_zero", "text": "Move back to index 0." },
+          { "id": "stop", "text": "Stop because index 2 has both neighbors." }
+        ],
+        "prompt": "Choose the next safe trace step.",
+        "status": "active",
+        "testedSkillAtomIds": ["track_index_boundary"],
+        "type": "trace_next_step"
+      }
+    ],
+    "status": "active",
+    "stepByStepTrace": [
+      {
+        "description": "The safe interior range for a 5-element array is indexes 1 through 3. After processing index 2, the next safe current index is 3.",
+        "id": "alg-prod-array-string-050-trace-001",
+        "order": 1,
+        "state": [
+          "Processed index 2 while reading both arr[i - 1] and arr[i + 1]."
+        ]
+      }
+    ],
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "arrays_and_strings",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "track_index_boundary",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "indexed_scan",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "cannot_trace_algorithm",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Trace an interior-neighbor scan",
+    "trackId": "algorithms",
+    "type": "trace_next_step"
   }
 ]

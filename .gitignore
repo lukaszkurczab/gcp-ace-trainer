@@ -19,3 +19,4 @@ ios/
 
 artifacts/
 docs/audits/*
+.aider*
