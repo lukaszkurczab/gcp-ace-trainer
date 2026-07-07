@@ -163,6 +163,7 @@ const algorithmRoadmapNodes = [
       "choose_frequency_state",
       "distinguish_presence_from_count",
       "diagnose_data_structure_mismatch",
+      "reason_about_seen_state_complexity",
       "reason_about_frequency_counting_complexity",
       "fixed_alphabet_complexity",
       "apply_string_normalization",

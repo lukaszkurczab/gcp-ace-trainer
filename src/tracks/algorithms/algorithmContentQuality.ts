@@ -312,8 +312,8 @@ function validateBaseTrainingItemContract(
   if (item.secondarySkillAtomIds !== undefined) {
     if (!isStringArray(item.secondarySkillAtomIds)) {
       addIssue(issues, "invalid_secondary_skills", "secondarySkillAtomIds must be a string array.", itemId);
-    } else if (item.secondarySkillAtomIds.length > 2) {
-      addIssue(issues, "too_many_secondary_skills", "Algorithm item can have no more than two secondary skills.", itemId);
+    } else if (item.secondarySkillAtomIds.length > 3) {
+      addIssue(issues, "too_many_secondary_skills", "Algorithm item can have no more than three secondary skills.", itemId);
     }
   }
 

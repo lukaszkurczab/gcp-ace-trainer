@@ -234,6 +234,7 @@ const variantsByFamily = {
   arrays_and_strings: [
     "indexed_scan",
     "frequency_counting",
+    "presence_tracking",
     "in_place_update",
     "string_normalization",
     "duplicate_handling",
@@ -618,6 +619,22 @@ export const ALGORITHM_SKILL_ATOMS = [
     primaryPatternFamilyId: "arrays_and_strings",
     problemArchetypeIds: ["group_or_count_values"],
     prerequisiteSkillAtomIds: ["distinguish_presence_from_count"],
+  },
+  {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description:
+      "Reason about the time and space cost of seen-state lookup when the set can grow with distinct values.",
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: "reason_about_seen_state_complexity",
+    label: "Reason about seen-state complexity",
+    mistakeTypes: ["complexity_mismatch", "data_structure_mismatch"],
+    patternVariantIds: ["presence_tracking"],
+    primaryPatternFamilyId: "arrays_and_strings",
+    problemArchetypeIds: ["group_or_count_values"],
+    prerequisiteSkillAtomIds: [
+      "distinguish_presence_from_count",
+      "derive_space_complexity",
+    ],
   },
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
