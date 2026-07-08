@@ -14,7 +14,7 @@ import arraysAndStringsQuestions from "./items/arrays-and-strings";
 import backtrackingQuestions from "./items/backtracking";
 import binarySearchQuestions from "./items/binary-search/questions.json";
 import bitManipulationQuestions from "./items/bit-manipulation/questions.json";
-import complexityAndConstraintsQuestions from "./items/complexity-and-constraints/questions.json";
+import complexityAndConstraintsQuestions from "./items/complexity-and-constraints";
 import contrastBinarySearchVsLinearScanQuestions from "./items/contrast-binary-search-vs-linear-scan/questions.json";
 import contrastHashMapVsSortingQuestions from "./items/contrast-hash-map-vs-sorting/questions.json";
 import contrastSlidingWindowVsPrefixSumsQuestions from "./items/contrast-sliding-window-vs-prefix-sums/questions.json";
