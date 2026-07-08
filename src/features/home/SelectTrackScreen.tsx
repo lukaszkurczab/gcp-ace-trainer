@@ -108,7 +108,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
     setActiveTrackId(track.id);
 
     if (destination === "roadmap") {
-      navigation.navigate(ROUTES.TOPIC_ROADMAP);
+      navigation.navigate(ROUTES.TOPIC_ROADMAP, { trackId: track.id });
       return;
     }
 

@@ -1,4 +1,5 @@
 import { ROUTES } from "../constants/routes";
+import type { TrackId } from "../domain";
 import type { PracticeSessionRouteParams } from "../features/practice/sessionConfig";
 import type { ShellTab } from "../features/home/types";
 
@@ -6,7 +7,7 @@ export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
-  [ROUTES.TOPIC_ROADMAP]: { topicId?: string } | undefined;
+  [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.EXAM]: { questionIndex?: number } | undefined;
   [ROUTES.EXAM_REVIEW]: undefined;
   [ROUTES.RESULT]: { attemptId?: string; autoSubmitted?: boolean } | undefined;

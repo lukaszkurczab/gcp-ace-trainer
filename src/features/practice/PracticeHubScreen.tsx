@@ -154,7 +154,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             <Text style={styles.mutedText}>{topic.detail}</Text>
           </View>
           <Button
-            onPress={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, { topicId: topic.id })}
+            onPress={() =>
+              navigation.navigate(ROUTES.TOPIC_ROADMAP, {
+                topicId: topic.id,
+                trackId: activeTrack.id,
+              })
+            }
             style={styles.compactButton}
             variant="ghost"
           >

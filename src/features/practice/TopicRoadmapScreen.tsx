@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   Icon,
@@ -11,6 +11,7 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   CLOUD_CERTIFICATION_TRACK_ID,
+  DEFAULT_TRACK_ID,
   getTrackDefinition,
   type TrackId,
 } from "../../domain";
@@ -39,7 +40,9 @@ const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
 
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
-  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId>(
+    route.params?.trackId ?? DEFAULT_TRACK_ID,
+  );
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
   const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
 
@@ -71,8 +74,14 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     setSelectedTopicId(route.params?.topicId);
   }, [route.params?.topicId]);
 
-  const activeTrack = activeTrackId ? getTrackDefinition(activeTrackId) : null;
-  const topics = activeTrackId ? buildTopicRoadmapNodes({ activeTrackId, trainingAttempts }) : [];
+  useEffect(() => {
+    if (route.params?.trackId) {
+      setActiveTrackId(route.params.trackId);
+    }
+  }, [route.params?.trackId]);
+
+  const activeTrack = getTrackDefinition(activeTrackId);
+  const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
   const rows = useMemo(() => buildRoadmapRows(topics), [topics]);
   const resolvedSelectedTopicId = selectedTopicId ?? getDefaultSelectedTopicId(topics);
 
@@ -99,61 +108,50 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
 
         <View style={styles.intro}>
           <Text style={styles.title}>Choose topic</Text>
-          {activeTrack ? (
-            <Text style={styles.subtitle}>
-              Select a topic to practice in {activeTrack.title}. Patternly may still suggest areas based on your answers.
-            </Text>
-          ) : null}
+          <Text style={styles.subtitle}>
+            Select a topic to practice in {activeTrack.title}. Patternly may still suggest areas based on your answers.
+          </Text>
         </View>
 
         <View style={styles.canvas}>
-          {activeTrackId ? (
-            <>
-              <DotGrid />
-              <View style={styles.verticalConnector} />
+          <DotGrid />
+          <View style={styles.verticalConnector} />
 
-              <View style={styles.roadmapRows}>
-                {rows.map((row, index) => {
-                  if (row.kind === "split") {
-                    return (
-                      <View key={`${row.left.id}-${row.right.id}`} style={styles.splitRow}>
-                        <View style={styles.horizontalConnector} />
-                        <RoadmapNode
-                          activeTrackId={activeTrackId}
-                          selected={isTopicSelected(row.left, resolvedSelectedTopicId)}
-                          topic={row.left}
-                          onPress={() => selectTopic(row.left)}
-                        />
-                        <RoadmapNode
-                          activeTrackId={activeTrackId}
-                          selected={isTopicSelected(row.right, resolvedSelectedTopicId)}
-                          topic={row.right}
-                          onPress={() => selectTopic(row.right)}
-                        />
-                      </View>
-                    );
-                  }
+          <View style={styles.roadmapRows}>
+            {rows.map((row, index) => {
+              if (row.kind === "split") {
+                return (
+                  <View key={`${row.left.id}-${row.right.id}`} style={styles.splitRow}>
+                    <View style={styles.horizontalConnector} />
+                    <RoadmapNode
+                      activeTrackId={activeTrackId}
+                      selected={isTopicSelected(row.left, resolvedSelectedTopicId)}
+                      topic={row.left}
+                      onPress={() => selectTopic(row.left)}
+                    />
+                    <RoadmapNode
+                      activeTrackId={activeTrackId}
+                      selected={isTopicSelected(row.right, resolvedSelectedTopicId)}
+                      topic={row.right}
+                      onPress={() => selectTopic(row.right)}
+                    />
+                  </View>
+                );
+              }
 
-                  return (
-                    <View key={row.topic.id} style={styles.centerRow}>
-                      <RoadmapNode
-                        activeTrackId={activeTrackId}
-                        large={index < 2}
-                        selected={isTopicSelected(row.topic, resolvedSelectedTopicId)}
-                        topic={row.topic}
-                        onPress={() => selectTopic(row.topic)}
-                      />
-                    </View>
-                  );
-                })}
-              </View>
-            </>
-          ) : (
-            <View style={styles.loadingState}>
-              <ActivityIndicator color={colors.dark.primary} size="small" />
-              <Text style={styles.loadingText}>Loading topics</Text>
-            </View>
-          )}
+              return (
+                <View key={row.topic.id} style={styles.centerRow}>
+                  <RoadmapNode
+                    activeTrackId={activeTrackId}
+                    large={index < 2}
+                    selected={isTopicSelected(row.topic, resolvedSelectedTopicId)}
+                    topic={row.topic}
+                    onPress={() => selectTopic(row.topic)}
+                  />
+                </View>
+              );
+            })}
+          </View>
         </View>
       </Screen>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
@@ -397,16 +395,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingTop: spacing.xxl,
     position: "relative",
-  },
-  loadingState: {
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingTop: spacing.xxxl,
-  },
-  loadingText: {
-    ...typography.caption,
-    color: colors.dark.textMuted,
-    textTransform: "uppercase",
   },
   dotGrid: {
     ...StyleSheet.absoluteFillObject,

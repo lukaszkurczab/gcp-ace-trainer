@@ -51,6 +51,7 @@ import {
   type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
 import { resetToPracticeHubAfterSession } from "../practice/practiceNavigation";
+import { SessionPreparingShell } from "../practice/SessionPreparingShell";
 import { buildPracticeSessionConfig, type PracticeSessionMode } from "../practice/sessionConfig";
 import {
   buildAlgorithmsImmediateFeedbackModel,
@@ -470,12 +471,11 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
   if (isLoading) {
     return (
-      <Screen>
-        <EmptyState
-          title="Preparing Algorithms session"
-          description="Loading local progress and review items."
-        />
-      </Screen>
+      <SessionPreparingShell
+        title="Preparing Algorithms session"
+        description="Loading local progress and review items."
+        onClose={() => resetToPracticeHubAfterSession(navigation, node.id)}
+      />
     );
   }
 

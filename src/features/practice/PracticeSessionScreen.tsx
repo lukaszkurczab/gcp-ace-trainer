@@ -19,6 +19,7 @@ import {
 } from "./practiceService";
 import { resetToPracticeHubAfterSession } from "./practiceNavigation";
 import { canCheckAnswer } from "./practiceSessionModel";
+import { SessionPreparingShell } from "./SessionPreparingShell";
 import { getCloudDomainForTopicId } from "./sessionConfig";
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -46,25 +47,31 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
   const [completedAnswers, setCompletedAnswers] = useState<CompletedAnswer[]>([]);
   const [isReviewPass, setIsReviewPass] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
 
       async function loadSessionQuestions() {
+        setIsLoading(true);
+
         const loadedQuestions = await loadPracticeQuestions(
           getCloudDomainForTopicId(route.params.topicId),
           route.params.sessionLength,
         );
 
-        if (isActive) {
-          setQuestions(loadedQuestions);
-          setCurrentIndex(0);
-          setCompletedAnswers([]);
-          setIsReviewPass(false);
-          setSessionComplete(false);
-          resetQuestionState();
+        if (!isActive) {
+          return;
         }
+
+        setQuestions(loadedQuestions);
+        setCurrentIndex(0);
+        setCompletedAnswers([]);
+        setIsReviewPass(false);
+        setSessionComplete(false);
+        resetQuestionState();
+        setIsLoading(false);
       }
 
       void loadSessionQuestions();
@@ -175,6 +182,16 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
     setCurrentIndex((current) => current + 1);
     resetQuestionState();
+  }
+
+  if (isLoading) {
+    return (
+      <SessionPreparingShell
+        title="Preparing practice session"
+        description="Loading questions and local progress."
+        onClose={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)}
+      />
+    );
   }
 
   if (!currentQuestion) {
