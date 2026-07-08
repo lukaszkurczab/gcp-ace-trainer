@@ -640,6 +640,161 @@ const backtrackingContentSkillAtoms = backtrackingContentSkillAtomIds.map((id) =
   prerequisiteSkillAtomIds: ["prune_backtracking_choice"],
 })) satisfies readonly AlgorithmSkillAtom[];
 
+const binarySearchSkillAtoms = [
+  makeBinarySearchSkillAtom({
+    description:
+      "Recognize when ordered indexed data or a monotonic decision boundary makes halving valid.",
+    id: "recognize_binary_search_signal",
+    label: "Recognize binary-search signal",
+    mistakeTypes: ["wrong_approach", "constraint_ignored", "data_structure_mismatch"],
+    patternVariantIds: ["classic_index_search", "monotonic_predicate_recognition"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Use an ascending mid comparison to prove which side cannot contain a stored target.",
+    id: "classic_binary_search_discard_rule",
+    label: "Apply classic discard rule",
+    mistakeTypes: ["invariant_broken", "off_by_one", "cannot_explain_why"],
+    patternVariantIds: ["classic_index_search"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Return a matching index when found and the explicit not-found contract when all candidates are exhausted.",
+    id: "classic_binary_search_found_not_found_contract",
+    label: "Use classic found/not-found contract",
+    mistakeTypes: ["edge_case_missed", "output_contract_misread"],
+    patternVariantIds: ["classic_index_search"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Keep every still-possible target or boundary position inside the active search interval.",
+    id: "binary_search_boundary_invariant",
+    label: "Maintain binary-search boundary invariant",
+    mistakeTypes: ["invariant_missing", "invariant_broken", "off_by_one"],
+    patternVariantIds: ["classic_index_search", "lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Ensure every binary-search branch strictly shrinks the active range and recomputes derived state.",
+    id: "binary_search_loop_progress",
+    label: "Ensure binary-search loop progress",
+    mistakeTypes: ["state_progress_error", "edge_case_missed", "invariant_broken"],
+    patternVariantIds: ["classic_index_search", "lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Match inclusive or half-open loop conditions, initial bounds, and return values to the interval contract.",
+    id: "binary_search_interval_contract",
+    label: "Match binary-search interval contract",
+    mistakeTypes: ["range_contract_misread", "edge_case_missed", "off_by_one"],
+    patternVariantIds: ["classic_index_search", "lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Find the first position where nums[i] is greater than or equal to the target.",
+    id: "lower_bound_contract",
+    label: "Apply lower-bound contract",
+    mistakeTypes: ["range_contract_misread", "duplicate_handling_error", "off_by_one"],
+    patternVariantIds: ["lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Find the first position where nums[i] is strictly greater than the target.",
+    id: "upper_bound_contract",
+    label: "Apply upper-bound contract",
+    mistakeTypes: ["range_contract_misread", "duplicate_handling_error", "off_by_one"],
+    patternVariantIds: ["lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Derive first occurrence, last occurrence, and duplicate counts from lower and upper boundaries.",
+    id: "derive_first_last_occurrence_from_bounds",
+    label: "Derive occurrences from bounds",
+    mistakeTypes: ["output_contract_misread", "duplicate_handling_error", "cannot_explain_why"],
+    patternVariantIds: ["lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Define the searched numeric answer separately from indexes or stored input values.",
+    id: "binary_search_answer_candidate_model",
+    label: "Model answer-space candidate",
+    mistakeTypes: ["state_model_misread", "wrong_approach", "constraint_ignored"],
+    patternVariantIds: ["binary_search_on_answer"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Define and validate a monotonic feasibility predicate over answer candidates.",
+    id: "binary_search_answer_feasibility_predicate",
+    label: "Define answer feasibility predicate",
+    mistakeTypes: ["monotonic_assumption_invalid", "monotonic_signal_missed", "constraint_ignored"],
+    patternVariantIds: ["binary_search_on_answer", "monotonic_predicate_recognition"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Move answer-space bounds in the direction implied by feasible and infeasible candidate checks.",
+    id: "binary_search_answer_update_direction",
+    label: "Update answer-search bounds",
+    mistakeTypes: ["state_progress_error", "invariant_broken", "off_by_one"],
+    patternVariantIds: ["binary_search_on_answer"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Choose tight lower and upper bounds for a binary search over candidate answers.",
+    id: "binary_search_answer_bounds",
+    label: "Choose answer-search bounds",
+    mistakeTypes: ["boundary_guard_missed", "constraint_ignored", "edge_case_missed"],
+    patternVariantIds: ["binary_search_on_answer"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Identify the boundary in a monotonic boolean sequence, including first-true and last-true shapes.",
+    id: "monotonic_predicate_boundary",
+    label: "Identify monotonic predicate boundary",
+    mistakeTypes: ["monotonic_signal_missed", "monotonic_assumption_invalid", "off_by_one"],
+    patternVariantIds: ["monotonic_predicate_recognition"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Keep true mid as a possible answer and discard the false prefix in first-true searches.",
+    id: "first_true_update_rule",
+    label: "Apply first-true update rule",
+    mistakeTypes: ["invariant_broken", "off_by_one", "subgoal_order_wrong"],
+    patternVariantIds: ["monotonic_predicate_recognition"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Keep true mid as a possible answer and discard the false suffix in last-true searches.",
+    id: "last_true_update_rule",
+    label: "Apply last-true update rule",
+    mistakeTypes: ["invariant_broken", "off_by_one", "subgoal_order_wrong"],
+    patternVariantIds: ["monotonic_predicate_recognition"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Detect which half of a rotated sorted array is currently sorted.",
+    id: "rotated_array_sorted_half_detection",
+    label: "Detect rotated sorted half",
+    mistakeTypes: ["structure_signal_missed", "wrong_layer_fix", "cannot_explain_why"],
+    patternVariantIds: ["rotated_array_search"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Use inclusive and exclusive containment bounds to decide whether target can be inside the sorted half.",
+    id: "rotated_array_target_containment",
+    label: "Test rotated target containment",
+    mistakeTypes: ["range_contract_misread", "subgoal_order_wrong", "edge_case_missed"],
+    patternVariantIds: ["rotated_array_search"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
+      "Recognize when duplicates hide the sorted-half signal in rotated array search.",
+    id: "rotated_array_duplicate_ambiguity",
+    label: "Handle rotated duplicate ambiguity",
+    mistakeTypes: ["duplicate_handling_error", "structure_signal_missed", "edge_case_missed"],
+    patternVariantIds: ["rotated_array_search"],
+  }),
+] as const satisfies readonly AlgorithmSkillAtom[];
+
 export const ALGORITHM_SKILL_ATOMS: readonly AlgorithmSkillAtom[] = [
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
@@ -1302,6 +1457,7 @@ export const ALGORITHM_SKILL_ATOMS: readonly AlgorithmSkillAtom[] = [
     problemArchetypeIds: ["find_index_in_sorted_input"],
     prerequisiteSkillAtomIds: ["derive_time_complexity"],
   },
+  ...binarySearchSkillAtoms,
   {
     contentVersion: ALGORITHM_CONTENT_VERSION,
     description:
@@ -1480,6 +1636,26 @@ export const ALGORITHM_SKILL_ATOMS: readonly AlgorithmSkillAtom[] = [
   },
   ...backtrackingContentSkillAtoms,
 ] as const satisfies readonly AlgorithmSkillAtom[];
+
+function makeBinarySearchSkillAtom(
+  input: Pick<
+    AlgorithmSkillAtom,
+    "description" | "id" | "label" | "mistakeTypes" | "patternVariantIds"
+  >,
+): AlgorithmSkillAtom {
+  return {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
+    description: input.description,
+    evidenceRequiredForProgression: ["explained", "guided"],
+    id: input.id,
+    label: input.label,
+    mistakeTypes: input.mistakeTypes,
+    patternVariantIds: input.patternVariantIds,
+    primaryPatternFamilyId: "binary_search",
+    problemArchetypeIds: ["find_index_in_sorted_input"],
+    prerequisiteSkillAtomIds: ["identify_monotonic_predicate"],
+  };
+}
 
 function makeFamily(
   id: AlgorithmPatternFamilyId,
