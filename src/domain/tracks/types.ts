@@ -32,6 +32,7 @@ export type ScoringType =
 export type TrainingItemType =
   | "single_choice_question"
   | "multiple_choice_question"
+  | "single_choice"
   | "approach_primer"
   | "approach_naming"
   | "worked_example"

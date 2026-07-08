@@ -91,9 +91,10 @@ const algorithmsTrack: TrackDefinition = {
   accentMutedColor: "#F1ECFF",
   category: "algorithms",
   contentManifest: {
-    itemCount: 475,
+    itemCount: 668,
     source: "local_static",
     supportedItemTypes: [
+      "single_choice",
       "approach_primer",
       "approach_naming",
       "worked_example",
@@ -130,6 +131,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 1,
       scoringType: "partial_credit",
       supportedItemTypes: [
+        "single_choice",
         "approach_primer",
         "approach_naming",
         "worked_example",
@@ -159,6 +161,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 2,
       scoringType: "partial_credit",
       supportedItemTypes: [
+        "single_choice",
         "approach_primer",
         "approach_naming",
         "worked_example",
@@ -174,6 +177,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 3,
       scoringType: "partial_credit",
       supportedItemTypes: [
+        "single_choice",
         "trace_next_step",
         "complexity_check",
         "edge_case_drill",
@@ -197,6 +201,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 4,
       scoringType: "partial_credit",
       supportedItemTypes: [
+        "single_choice",
         "approach_primer",
         "approach_naming",
         "worked_example",
@@ -226,6 +231,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 5,
       scoringType: "partial_credit",
       supportedItemTypes: [
+        "single_choice",
         "trace_next_step",
         "strategy_choice",
         "complexity_check",
@@ -251,6 +257,7 @@ const algorithmsTrack: TrackDefinition = {
       order: 6,
       scoringType: "mixed",
       supportedItemTypes: [
+        "single_choice",
         "approach_primer",
         "approach_naming",
         "worked_example",

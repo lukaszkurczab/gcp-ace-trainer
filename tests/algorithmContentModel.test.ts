@@ -161,7 +161,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 475;
+const expectedActiveAlgorithmItemCount = 668;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
@@ -470,7 +470,7 @@ test("Algorithms active items and curriculum pass validation", () => {
   assert.deepEqual(result.issues, []);
   assert.equal(activeItems.length, expectedActiveAlgorithmItemCount);
   assert.ok(activeItems.length >= 360);
-  assert.ok(activeItems.length <= 500);
+  assert.ok(activeItems.length <= 700);
   assert.equal(track.contentManifest.itemCount, activeItems.length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {

@@ -109,6 +109,7 @@ export type AlgorithmsSolutionComparisonTrainingItem = TrainingItemBase & {
 
 export type AlgorithmsStaticTrainingItem = TrainingItemBase & {
   type:
+    | "single_choice"
     | "approach_primer"
     | "approach_naming"
     | "worked_example"

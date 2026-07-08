@@ -11,7 +11,7 @@ import { validateAlgorithmTrainingItem } from "../algorithmContentQuality";
 import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNodeId } from "../algorithmRoadmap";
 import manifest from "./manifest.json";
 import arraysAndStringsQuestions from "./items/arrays-and-strings";
-import backtrackingQuestions from "./items/backtracking/questions.json";
+import backtrackingQuestions from "./items/backtracking";
 import binarySearchQuestions from "./items/binary-search/questions.json";
 import bitManipulationQuestions from "./items/bit-manipulation/questions.json";
 import complexityAndConstraintsQuestions from "./items/complexity-and-constraints/questions.json";
