@@ -451,6 +451,77 @@ Nie zakładać, że każdy item ma:
 
 ---
 
+## Content source organization
+
+Duże content topics powinny być dzielone na pliki źródłowe według dydaktycznych grup / skill families, ale publiczny import dla runtime pozostaje jeden per topic.
+
+Rekomendowana struktura:
+
+```txt
+src/data/tracks/algorithms/content/<topic>/
+  index.ts
+  <group>.ts
+```
+
+Przykład dla `arrays-and-strings`:
+
+```txt
+src/data/tracks/algorithms/content/arrays-and-strings/
+  index.ts
+  indexed-scan-boundary.ts
+  frequency-counting.ts
+  presence-tracking.ts
+  string-normalization.ts
+  filtering-output-contract.ts
+  sorted-duplicate-collapse.ts
+```
+
+Zasady implementacyjne:
+
+- Pliki grupowe eksportują tylko tablice itemów należących do danej grupy.
+- `index.ts` agreguje wszystkie grupy i eksportuje publiczną tablicę topicu.
+- Adaptery, walidatory, session engine i UI importują tylko agregat z `index.ts`.
+- Nie importować plików grupowych bezpośrednio w UI.
+- Nie kopiować itemów między grupami.
+- Nie duplikować contentu w starym monolitycznym pliku po migracji.
+- Podział plików nie może zmieniać `id`, `contentVersion`, `trackId`, `roadmapNodeId`, `status`, `taxonomyRefs` ani `staticMicroChecks`.
+- Podział plików nie tworzy osobnych statusów, wersji ani runtime contracts.
+- Nie tworzyć pustych folderów ani plików pod przyszłe topic groups.
+- Jeśli dana grupa jest słaba jakościowo lub ma mało pytań, poprawić ją bezpośrednio jako normalną część systemu, bez oznaczania jej jako temporary/seed/future/incomplete.
+
+Przykład agregatora:
+
+```ts
+import { indexedScanBoundaryQuestions } from "./indexed-scan-boundary";
+import { frequencyCountingQuestions } from "./frequency-counting";
+import { presenceTrackingQuestions } from "./presence-tracking";
+import { stringNormalizationQuestions } from "./string-normalization";
+import { filteringOutputContractQuestions } from "./filtering-output-contract";
+import { sortedDuplicateCollapseQuestions } from "./sorted-duplicate-collapse";
+
+export const arraysAndStringsQuestions = [
+  ...indexedScanBoundaryQuestions,
+  ...frequencyCountingQuestions,
+  ...presenceTrackingQuestions,
+  ...stringNormalizationQuestions,
+  ...filteringOutputContractQuestions,
+  ...sortedDuplicateCollapseQuestions,
+];
+```
+
+When splitting a content topic:
+
+1. Move item objects mechanically into group files.
+2. Preserve every item object unchanged unless the task explicitly asks for content hardening.
+3. Create a topic-level `index.ts` aggregate.
+4. Update imports to use the aggregate.
+5. Run content validation, tests, and typecheck.
+6. Report question counts per group and total aggregate count.
+
+Preferowany stan końcowy: brak duplikacji danych i jeden canonical aggregate. Krótki re-export jest dopuszczalny tylko jako mechaniczna migracja istniejącego importu.
+
+---
+
 ## Error handling
 
 Storage może zawieść. Dane lokalne mogą być uszkodzone. Content pack może mieć niezgodną wersję. Attempt może odwoływać się do itemu, którego nie ma już w aktualnym content packu.
@@ -714,4 +785,6 @@ Unikać:
 - dodawania code execution sandbox w MVP,
 - używania nazw GCP jako nazw globalnych komponentów,
 - liczenia progressu wyłącznie według domen egzaminacyjnych,
-- binarnego feedbacku tam, gdzie potrzebny jest feedback częściowy lub strategiczny.
+- binarnego feedbacku tam, gdzie potrzebny jest feedback częściowy lub strategiczny,
+- importowania grupowych plików contentu bezpośrednio w UI, adapterach albo walidatorach,
+- zostawiania zduplikowanego monolitu po podziale topicu contentu.

@@ -1,12 +1,13 @@
 # Algorithms Content Pack
 
-Algorithms training items are stored as local static JSON content grouped by roadmap node.
+Algorithms training items are stored as local static content grouped by roadmap node.
 
 ## Canonical Ownership
 
 - `src/tracks/algorithms/algorithmItems.ts` remains the canonical TypeScript API for Algorithms training items.
 - `src/tracks/algorithms/content/index.ts` is the local static content loader.
-- `src/tracks/algorithms/content/items/**/questions.json` files are the content source for training items.
+- `src/tracks/algorithms/content/items/**/questions.json` files are the default content source for training items.
+- `src/tracks/algorithms/content/items/arrays-and-strings/index.ts` is the canonical source for the split arrays-and-strings group and aggregates its smaller topic files.
 - Roadmap and taxonomy definitions remain TypeScript model definitions for now. They are not part of this content-pack split yet.
 
 ## Folder Structure
@@ -18,16 +19,20 @@ src/tracks/algorithms/content/
   items/
     <roadmap-node-folder>/
       questions.json
+    arrays-and-strings/
+      index.ts
+      <topic>.ts
 ```
 
 `questions.json` is the current file name for generic Algorithms training items. It contains more than quiz questions, including primers, worked examples, trace drills, strategy choices, and checks. Keep this name until there is a dedicated rename slice.
+The arrays-and-strings group is split into smaller TypeScript files because the previous single file was too large for focused authoring. Its manifest `questionFile` remains `items/arrays-and-strings/questions.json` as the stable group key used by the loader.
 
 Content is grouped by `roadmapNodeId` so authoring, validation, and selectable practice coverage stay aligned with the learner roadmap.
 
 ## Add An Item
 
 1. Choose the target roadmap node in `src/tracks/algorithms/algorithmRoadmap.ts`.
-2. Add the item to that node's `questions.json` file.
+2. Add the item to that node's `questions.json` file, or to the matching arrays-and-strings topic file when working in that split group.
 3. Set `trackId` to `algorithms`.
 4. Set `contentVersion` to `ALGORITHM_CONTENT_VERSION`.
 5. Set `roadmapNodeId` to the group roadmap node id.

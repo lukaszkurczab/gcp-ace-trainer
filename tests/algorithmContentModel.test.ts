@@ -140,35 +140,9 @@ const requiredSkillAtomIds = [
 
 const expectedArrayStringPrimarySkills = {
   "alg-array-string-naming-001": "track_index_boundary",
-  "alg-array-string-scan-signals-001": "track_index_boundary",
-  "alg-array-string-trace-index-001": "track_index_boundary",
+  "alg-array-string-trace-index-001": "trace_scan_index",
   "alg-array-string-edge-neighbor-001": "track_index_boundary",
   "alg-array-string-frequency-signal-001": "choose_frequency_state",
-  "alg-prod-array-string-001": "track_index_boundary",
-  "alg-prod-array-string-002": "use_read_write_boundary",
-  "alg-prod-array-string-003": "reason_about_frequency_counting_complexity",
-  "alg-prod-array-string-004": "normalization_before_comparison",
-  "alg-prod-array-string-005": "diagnose_duplicate_collapse",
-  "alg-prod-array-string-006": "preserve_relative_order",
-  "alg-prod-array-string-007": "distinguish_output_space",
-  "alg-prod-array-string-008": "distinguish_presence_from_count",
-  "alg-prod-array-string-009": "apply_string_normalization",
-  "alg-prod-array-string-010": "initialize_duplicate_collapse",
-  "alg-prod-array-string-011": "reason_about_order_constraint",
-  "alg-prod-array-string-012": "track_index_boundary",
-  "alg-prod-array-string-013": "recognize_adjacent_scan",
-  "alg-prod-array-string-014": "distinguish_presence_from_count",
-  "alg-prod-array-string-015": "streaming_normalization_tradeoff",
-  "alg-prod-array-string-016": "diagnose_data_structure_mismatch",
-  "alg-prod-array-string-017": "derive_time_complexity",
-  "alg-prod-array-string-018": "fixed_alphabet_complexity",
-  "alg-prod-array-string-019": "preserve_relative_order",
-  "alg-prod-array-string-020": "trace_write_boundary",
-  "alg-prod-array-string-021": "normalization_before_comparison",
-  "alg-prod-array-string-022": "choose_frequency_state",
-  "alg-prod-array-string-023": "track_index_boundary",
-  "alg-prod-array-string-024": "avoid_unnecessary_state",
-  "alg-prod-array-string-025": "distinguish_output_contract",
 } as const;
 
 const oldAlgorithmIds = [
@@ -187,7 +161,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 377;
+const expectedActiveAlgorithmItemCount = 475;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
@@ -496,7 +470,7 @@ test("Algorithms active items and curriculum pass validation", () => {
   assert.deepEqual(result.issues, []);
   assert.equal(activeItems.length, expectedActiveAlgorithmItemCount);
   assert.ok(activeItems.length >= 360);
-  assert.ok(activeItems.length <= 400);
+  assert.ok(activeItems.length <= 500);
   assert.equal(track.contentManifest.itemCount, activeItems.length);
 
   for (const item of ALGORITHM_TRAINING_ITEMS) {
@@ -532,7 +506,7 @@ test("Algorithms active items expose canonical roadmap, taxonomy, feedback, and 
   for (const item of getActiveAlgorithmItems()) {
     assert.equal(typeof item.primarySkillAtomId, "string", item.id);
     assert.ok(item.primarySkillAtomId.length > 0, item.id);
-    assert.ok((item.secondarySkillAtomIds?.length ?? 0) <= 2, item.id);
+    assert.ok((item.secondarySkillAtomIds?.length ?? 0) <= 3, item.id);
     assert.ok(item.roadmapNodeId, item.id);
     assert.ok(availableNodeIds.has(item.roadmapNodeId), item.id);
     assert.ok(

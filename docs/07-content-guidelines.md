@@ -492,6 +492,19 @@ Lepiej:
 
 Deprecated content nie powinien pojawiać się w nowych sesjach, ale powinien być możliwy do odtworzenia w historii użytkownika, jeżeli istnieją powiązane próby.
 
+## Editorial source organization
+
+Duże zestawy contentu mogą być dzielone na mniejsze pliki redakcyjne według dydaktycznych grup, skill families lub naturalnych obszarów hardeningu. Taki podział ułatwia review, pracę agentów kodujących i lokalne poprawki jakościowe.
+
+Zasady:
+
+- Podział plików nie jest częścią modelu dydaktycznego widocznego dla użytkownika.
+- Podział plików nie tworzy osobnej wersji contentu.
+- Podział plików nie tworzy osobnego statusu jakościowego.
+- Publiczny agregat topicu pozostaje źródłem dla runtime, adapterów i walidatorów.
+- Słaby content poprawiać bezpośrednio jako normalną część systemu, bez ukrywania go za etykietami redakcyjnymi.
+- Nie tworzyć pustych folderów ani placeholderów pod obszary, które nie mają jeszcze realnego contentu.
+
 ## Kontrola jakości
 
 Przed dodaniem itemu sprawdzić:
@@ -570,7 +583,10 @@ Unikać:
 - mylenia `track` z `session mode`,
 - używania marek zewnętrznych jako obietnicy produktu,
 - pytań, które testują pamięć sformułowania zamiast rozumowania,
-- zadań algorytmicznych, które wymagają znajomości konkretnego problemu zamiast rozpoznania patternu.
+- zadań algorytmicznych, które wymagają znajomości konkretnego problemu zamiast rozpoznania patternu,
+- traktowania podziału plików contentu jako osobnego modelu dydaktycznego,
+- tworzenia pustych przyszłych folderów contentu,
+- oznaczania słabego contentu etykietami redakcyjnymi zamiast poprawiania go wprost.
 
 ## Decyzje bazowe
 
@@ -580,3 +596,4 @@ Unikać:
 - Każdy item musi mieć feedback.
 - Każdy item musi mieć track, typ, taksonomię i wersję.
 - Content nie może kopiować materiałów egzaminacyjnych ani platform codingowych.
+- Duże topic packs mogą mieć mniejsze pliki redakcyjne, ale runtime korzysta z publicznego agregatu topicu.

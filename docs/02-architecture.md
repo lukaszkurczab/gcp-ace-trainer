@@ -376,10 +376,57 @@ data/
 
     algorithms/
       manifest.ts
-      patterns.ts
-      categories.ts
-      items.json
+      taxonomy.ts
+      content/
+        arrays-and-strings/
+          index.ts
+          indexed-scan-boundary.ts
+          frequency-counting.ts
+          presence-tracking.ts
+          string-normalization.ts
+          filtering-output-contract.ts
+          sorted-duplicate-collapse.ts
+        hash-map-lookup/
+          index.ts
+        two-pointers/
+          index.ts
+        sliding-window/
+          index.ts
       complexity.ts
+```
+
+Duże content topics w Algorithms Track mogą być fizycznie dzielone na mniejsze pliki redakcyjne według dydaktycznych grup, skill families albo naturalnych obszarów pracy nad contentem. Ten podział jest wyłącznie organizacją źródła. Nie tworzy osobnego modelu domenowego, osobnej wersji contentu, osobnego statusu ani osobnego runtime contractu.
+
+Przepływ dla dużego topicu:
+
+```txt
+source files per group
+  ↓
+topic-level index.ts aggregate
+  ↓
+track content adapter
+  ↓
+session engine / validators / runtime
+```
+
+Przykład agregatu dla `arrays-and-strings`:
+
+```ts
+import { indexedScanBoundaryQuestions } from "./indexed-scan-boundary";
+import { frequencyCountingQuestions } from "./frequency-counting";
+import { presenceTrackingQuestions } from "./presence-tracking";
+import { stringNormalizationQuestions } from "./string-normalization";
+import { filteringOutputContractQuestions } from "./filtering-output-contract";
+import { sortedDuplicateCollapseQuestions } from "./sorted-duplicate-collapse";
+
+export const arraysAndStringsQuestions = [
+  ...indexedScanBoundaryQuestions,
+  ...frequencyCountingQuestions,
+  ...presenceTrackingQuestions,
+  ...stringNormalizationQuestions,
+  ...filteringOutputContractQuestions,
+  ...sortedDuplicateCollapseQuestions,
+];
 ```
 
 Każdy content pack powinien mieć:
@@ -792,9 +839,22 @@ src/
 
       algorithms/
         manifest.ts
-        patterns.ts
-        categories.ts
-        items.json
+        taxonomy.ts
+        content/
+          arrays-and-strings/
+            index.ts
+            indexed-scan-boundary.ts
+            frequency-counting.ts
+            presence-tracking.ts
+            string-normalization.ts
+            filtering-output-contract.ts
+            sorted-duplicate-collapse.ts
+          hash-map-lookup/
+            index.ts
+          two-pointers/
+            index.ts
+          sliding-window/
+            index.ts
         complexity.ts
 
   storage/
@@ -912,7 +972,11 @@ Kod specyficzny dla tracka powinien trafić do `src/tracks/<trackId>`, a nie do 
 
 Wspólne feature'y powinny wołać definicję tracka, a nie importować szczegóły GCP albo Algorithms bezpośrednio.
 
-### 7. UI wspólne, renderery specyficzne
+### 7. Content source split nie zmienia kontraktu runtime
+
+Duże paczki contentu mogą być dzielone na mniejsze pliki źródłowe, ale tylko dla wygody redakcyjnej i pracy agentów. UI, adaptery, walidatory i runtime powinny importować agregat topicu, np. `arraysAndStringsQuestions`, a nie pojedyncze pliki grupowe.
+
+### 8. UI wspólne, renderery specyficzne
 
 Wspólny `SessionRunner` jest właściwy, ale renderowanie konkretnych itemów może być specyficzne.
 
@@ -923,7 +987,7 @@ Nie należy tworzyć dwóch osobnych aplikacji:
 
 Lepiej mieć jeden shell i rozszerzalne renderery.
 
-### 8. Brak backendu nie może przeciekać do domeny
+### 9. Brak backendu nie może przeciekać do domeny
 
 Domena nie powinna zakładać, że dane zawsze pochodzą z lokalnego JSON-a albo AsyncStorage.
 
@@ -1122,6 +1186,10 @@ Nie robić:
 - wymuszania Exam Mode na tracku algorytmicznym,
 - pełnego plugin-systemu przed realną potrzebą,
 - backendu jako warunku działania MVP.
+- jednego monolitycznego pliku contentu dla dużych topiców,
+- importowania pojedynczych plików grupowych contentu bezpośrednio w UI,
+- tworzenia pustych przyszłych folderów contentu,
+- oznaczania słabych obszarów contentu statusami typu temporary, seed, future, incomplete.
 
 ## Decyzje końcowe
 
@@ -1133,3 +1201,6 @@ Nie robić:
 6. UI korzysta ze wspólnych ekranów sesji, ale itemy mogą mieć własne renderery.
 7. Storage jest lokalny, wersjonowany i ukryty za adapterami.
 8. Backend, synchronizacja i judge online są poza MVP.
+9. Duże content topics mogą być dzielone na mniejsze pliki źródłowe.
+10. Runtime korzysta z jednego publicznego agregatu per topic.
+11. Podział plików contentu nie tworzy osobnych statusów, wersji ani modeli domenowych.

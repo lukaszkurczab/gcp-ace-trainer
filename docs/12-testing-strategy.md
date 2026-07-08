@@ -390,6 +390,35 @@ Dla algorithms dodatkowo:
 - obecność common mistakes,
 - obecność explanation zależnego od constraints.
 
+### Split content topic validation
+
+Testy i walidatory powinny sprawdzać publiczny agregat topicu, nie tylko pojedyncze pliki grupowe.
+
+Wymagania walidacyjne:
+
+- Każdy plik grupowy eksportuje tablicę itemów.
+- Topic-level `index.ts` agreguje wszystkie grupy.
+- Agregat zawiera wszystkie itemy z plików grupowych.
+- Agregat nie zawiera duplikatów itemów.
+- Każdy item ma unikalne `id` w obrębie tracka.
+- Każdy `staticMicroChecks.id` jest unikalny.
+- Każdy `primarySkillAtomId` i `secondarySkillAtomIds` istnieje w taksonomii.
+- Każdy `taxonomyRefs` wskazuje istniejący node.
+- Każdy item ma zgodny `trackId`, `roadmapNodeId`, `contentVersion` i `status`.
+- UI, session engine i adaptery importują agregat topicu, nie pojedyncze pliki grupowe.
+
+Refactor podziału contentu powinien być testowany jako zmiana strukturalna. Jeżeli zadanie dotyczy tylko splitu plików, testy powinny potwierdzić brak zmian semantycznych w itemach.
+
+Po takim refactorze uruchomić:
+
+```txt
+npm run validate:questions
+npm test
+npm run typecheck
+```
+
+Po rozbiciu dużego topicu suma itemów w agregacie musi być identyczna jak przed refactorem. Jeżeli liczba itemów się zmienia, musi to wynikać z osobnego content hardening tasku, nie z samego splitu.
+
 ## Manual QA checklist
 
 ### Global navigation
