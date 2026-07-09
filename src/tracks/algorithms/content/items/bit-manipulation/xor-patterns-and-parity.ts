@@ -995,54 +995,56 @@ export const xorPatternsAndParityQuestions = [
     difficulty: "medium",
     feedbackModel: {
       decisionSignal:
-        "The final XOR is zero when every value appears an even number of times.",
+        "If every value appears an even number of times, equal values can be paired and every pair cancels under XOR.",
       mentalModelCorrection:
-        "XOR can answer parity-style questions such as whether all occurrences cancel, but not exact frequency details.",
+        "Even occurrence counts imply the total XOR is zero, but the reverse is not safe for arbitrary inputs. A zero XOR result alone does not prove every value appeared an even number of times.",
       mistakeTypes: ["parity_model_missed", "xor_frequency_confused"],
       nextAction:
-        "Reduce each value's count to odd/even and ask whether any odd value remains.",
+        "Use XOR cancellation as a consequence of a known parity guarantee, not as a complete proof of even frequency for arbitrary values.",
       result: "diagnostic",
       distractorExplanations: {
-        needs_exact_counts:
-          "Exact counts are unnecessary if the only question is whether all values cancel in pairs.",
-        sorted_required: "Sorting is not required for XOR cancellation.",
-        xor_invalid_for_parity:
-          "XOR is specifically useful for this parity-style cancellation check.",
+        proves_even_counts:
+          "A zero XOR result alone is not enough to prove every value has even frequency; different odd-occurring values can XOR to zero.",
+        needs_sorting:
+          "Sorting is not required for the cancellation consequence. Equal pairs cancel regardless of order.",
+        stores_exact_counts:
+          "XOR does not store exact counts. It only preserves parity-style cancellation effects.",
       },
     },
     id: "alg-bit-manipulation-xor-patterns-and-parity-014",
     learningStage: "foundations",
     primarySkillAtomId: "use_xor_for_even_odd_cancellation_check",
     prompt:
-      "You only need to know whether every value in a list appears an even number of times. Which XOR-based signal is useful?",
+      "If every value in a list appears an even number of times, what must be true about the XOR of all values?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
       {
         correctAnswer: "all_cancel_to_zero",
         feedback:
-          "Correct. If every value appears an even number of times, XORing all values cancels to zero.",
+          "Correct. Every equal pair cancels under XOR, so known even occurrences imply a total XOR of zero.",
         id: "alg-bit-manipulation-xor-patterns-and-parity-014-check",
         mistakeTypes: ["parity_model_missed", "xor_frequency_confused"],
         options: [
           {
             id: "all_cancel_to_zero",
-            text: "XOR all values; all even occurrences cancel to zero.",
+            text: "The XOR of all values must be 0 because all equal pairs cancel.",
           },
           {
-            id: "needs_exact_counts",
-            text: "Exact frequency counts are required even though only even/odd matters.",
+            id: "proves_even_counts",
+            text: "A total XOR of 0 always proves every value appeared an even number of times in arbitrary input.",
           },
           {
-            id: "sorted_required",
-            text: "The list must be sorted before cancellation can be reasoned about.",
+            id: "needs_sorting",
+            text: "The values must be sorted before this cancellation consequence can hold.",
           },
           {
-            id: "xor_invalid_for_parity",
-            text: "XOR cannot represent odd/even occurrence information.",
+            id: "stores_exact_counts",
+            text: "The final XOR stores the exact count of each value.",
           },
         ],
-        prompt: "How can XOR help check even-occurrence cancellation?",
+        prompt:
+          "What does a known even-occurrence guarantee imply about total XOR?",
         status: "active",
         testedSkillAtomIds: ["use_xor_for_even_odd_cancellation_check"],
         type: "single_choice",
@@ -1060,7 +1062,7 @@ export const xorPatternsAndParityQuestions = [
         role: "primary",
       },
     ],
-    title: "Use XOR for even-occurrence cancellation",
+    title: "Use XOR as a consequence of even occurrence",
     trackId: "algorithms",
     type: "single_choice",
   },

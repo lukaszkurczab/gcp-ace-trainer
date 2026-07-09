@@ -1067,53 +1067,55 @@ export const masksAndCompositionQuestions = [
     difficulty: "medium",
     feedbackModel: {
       decisionSignal:
-        "The updated mask must include the existing enabled bits plus the new bit.",
+        "The update must remove WRITE while preserving every unrelated enabled flag.",
       mentalModelCorrection:
-        "OR with a new flag preserves previous flags because every 0 in the added flag mask leaves the original bit unchanged.",
-      mistakeTypes: ["unrelated_bits_modified", "binary_trace_error"],
+        "To remove a named flag from a composite mask, use mask & ~FLAG. The negated flag mask has 0 at that flag and 1 everywhere else.",
+      mistakeTypes: ["unrelated_bits_modified", "clear_mask_missing_negation"],
       nextAction:
-        "Trace the operation column by column and confirm only the intended new bit changes.",
+        "When removing a flag, verify that only the target flag is cleared and all other enabled flags remain unchanged.",
       result: "diagnostic",
       distractorExplanations: {
-        result_0100:
-          "This overwrites the existing enabled bit and keeps only the new flag.",
-        result_0001: "This fails to add the new flag.",
-        result_0000: "This would clear all flags, not add one.",
+        keep_only_write:
+          "mask & WRITE keeps only the WRITE bit instead of removing WRITE from the full mask.",
+        add_write:
+          "mask | WRITE adds or preserves WRITE, which is the opposite of removing it.",
+        toggle_write:
+          "XOR toggles WRITE. It removes WRITE only if it was present, but it would add WRITE if it was absent, so it is not the default remove operation.",
       },
     },
     id: "alg-bit-manipulation-masks-and-composition-015",
     learningStage: "foundations",
     primarySkillAtomId: "preserve_unrelated_bits_when_applying_mask",
     prompt:
-      "A current mask is 0b0001. You add flag 0b0100 using OR. What is the result?",
+      "A current permission mask has READ, WRITE, and EXECUTE enabled. You want to remove WRITE while preserving READ and EXECUTE. Which update is correct?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
       {
-        correctAnswer: "result_0101",
+        correctAnswer: "remove_write_with_and_not",
         feedback:
-          "Correct. 0b0001 | 0b0100 equals 0b0101, preserving the existing flag.",
+          "Correct. mask & ~WRITE clears WRITE and preserves unrelated enabled flags such as READ and EXECUTE.",
         id: "alg-bit-manipulation-masks-and-composition-015-check",
-        mistakeTypes: ["unrelated_bits_modified", "binary_trace_error"],
+        mistakeTypes: ["unrelated_bits_modified", "clear_mask_missing_negation"],
         options: [
           {
-            id: "result_0101",
-            text: "0b0101.",
+            id: "remove_write_with_and_not",
+            text: "mask & ~WRITE.",
           },
           {
-            id: "result_0100",
-            text: "0b0100.",
+            id: "keep_only_write",
+            text: "mask & WRITE.",
           },
           {
-            id: "result_0001",
-            text: "0b0001.",
+            id: "add_write",
+            text: "mask | WRITE.",
           },
           {
-            id: "result_0000",
-            text: "0b0000.",
+            id: "toggle_write",
+            text: "mask ^ WRITE as the default remove operation.",
           },
         ],
-        prompt: "Compute 0b0001 | 0b0100.",
+        prompt: "How do you remove WRITE without losing other flags?",
         status: "active",
         testedSkillAtomIds: ["preserve_unrelated_bits_when_applying_mask"],
         type: "single_choice",
@@ -1131,7 +1133,7 @@ export const masksAndCompositionQuestions = [
         role: "primary",
       },
     ],
-    title: "Trace flag addition with OR",
+    title: "Remove a flag without losing unrelated flags",
     trackId: "algorithms",
     type: "single_choice",
   },

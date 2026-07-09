@@ -564,7 +564,7 @@ export const bitCountingAndIterationQuestions = [
     learningStage: "foundations",
     primarySkillAtomId: "reason_about_set_bit_iteration_complexity",
     prompt:
-      "What is the most precise time complexity of Brian Kernighan's set-bit counting loop for one integer?",
+      "What is the most precise time complexity of Brian Kernighan's set-bit counting loop for one non-negative integer mask?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
@@ -799,7 +799,7 @@ export const bitCountingAndIterationQuestions = [
     learningStage: "foundations",
     primarySkillAtomId: "terminate_set_bit_iteration",
     prompt:
-      "Which loop structure correctly counts set bits using Brian Kernighan's idea?",
+      "Which loop structure correctly counts set bits for a non-negative integer mask using Brian Kernighan's idea?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
@@ -1032,7 +1032,7 @@ export const bitCountingAndIterationQuestions = [
     learningStage: "foundations",
     primarySkillAtomId: "reason_about_bit_counting_across_inputs",
     prompt:
-      "You count set bits for many integers using n &= n - 1. What does the total runtime primarily depend on?",
+      "You count set bits for many non-negative integer masks using n &= n - 1. What does the total runtime primarily depend on?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
@@ -1108,7 +1108,8 @@ export const bitCountingAndIterationQuestions = [
     id: "alg-bit-manipulation-bit-counting-and-iteration-015",
     learningStage: "foundations",
     primarySkillAtomId: "apply_kernighan_set_bit_counting",
-    prompt: "In a set-bit counting loop, how should n & (n - 1) be used?",
+    prompt:
+      "In a set-bit counting loop for a non-negative integer mask, how should n & (n - 1) be used?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [

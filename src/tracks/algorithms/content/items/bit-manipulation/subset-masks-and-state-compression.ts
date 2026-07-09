@@ -772,29 +772,34 @@ export const subsetMasksAndStateCompressionQuestions = [
     difficulty: "easy",
     feedbackModel: {
       decisionSignal:
-        "Four independent items each have two membership choices.",
+        "For n items, every n-bit pattern from 0 up to 2^n - 1 represents one subset.",
       mentalModelCorrection:
-        "For a concrete small set, enumerate subset-mask count as 2^n, not n or n + 1.",
+        "To enumerate all subset masks for n items, iterate mask from 0 to (1 << n) - 1. The loop condition is mask < (1 << n).",
       mistakeTypes: ["subset_count_undercounted", "state_space_model_confused"],
-      nextAction: "Raise 2 to the number of independent items.",
+      nextAction:
+        "Treat each mask value as one membership pattern over the n item bits.",
       result: "diagnostic",
       distractorExplanations: {
-        four_masks: "That counts items, not subsets.",
-        eight_masks: "That would be 2^3, so it misses one item.",
-        five_masks:
-          "The empty subset adds one, but every combination of items also counts.",
+        one_to_n:
+          "This counts item indexes, not subset masks, and it misses the empty subset and most combinations.",
+        one_to_shift_inclusive:
+          "Starting at 1 misses the empty subset, and using <= includes one value outside the n-bit mask range.",
+        zero_to_n_inclusive:
+          "n is the number of items, not the number of subset masks. The mask range has 2^n values.",
       },
     },
     id: "alg-bit-manipulation-subset-masks-and-state-compression-011",
     learningStage: "foundations",
     primarySkillAtomId: "count_subset_masks_as_two_power_n",
-    prompt: "How many subset masks are possible for 4 items?",
+    prompt:
+      "For n items, which loop range visits every subset mask exactly once?",
     roadmapNodeId: "bit_manipulation",
     status: "active",
     staticMicroChecks: [
       {
-        correctAnswer: "sixteen_masks",
-        feedback: "Correct. 2^4 = 16 possible subset masks.",
+        correctAnswer: "zero_to_shift_exclusive",
+        feedback:
+          "Correct. Masks 0 through (1 << n) - 1 cover every n-bit membership pattern exactly once.",
         id: "alg-bit-manipulation-subset-masks-and-state-compression-011-check",
         mistakeTypes: [
           "subset_count_undercounted",
@@ -802,23 +807,23 @@ export const subsetMasksAndStateCompressionQuestions = [
         ],
         options: [
           {
-            id: "sixteen_masks",
-            text: "16.",
+            id: "zero_to_shift_exclusive",
+            text: "for (let mask = 0; mask < (1 << n); mask++).",
           },
           {
-            id: "four_masks",
-            text: "4.",
+            id: "one_to_n",
+            text: "for (let mask = 1; mask <= n; mask++).",
           },
           {
-            id: "eight_masks",
-            text: "8.",
+            id: "one_to_shift_inclusive",
+            text: "for (let mask = 1; mask <= (1 << n); mask++).",
           },
           {
-            id: "five_masks",
-            text: "5.",
+            id: "zero_to_n_inclusive",
+            text: "for (let mask = 0; mask <= n; mask++).",
           },
         ],
-        prompt: "Count possible subset masks for 4 items.",
+        prompt: "How do you enumerate all subset masks for n items?",
         status: "active",
         testedSkillAtomIds: ["count_subset_masks_as_two_power_n"],
         type: "single_choice",
@@ -836,7 +841,7 @@ export const subsetMasksAndStateCompressionQuestions = [
         role: "primary",
       },
     ],
-    title: "Compute a concrete subset-mask count",
+    title: "Enumerate all subset masks",
     trackId: "algorithms",
     type: "single_choice",
   },

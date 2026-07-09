@@ -321,7 +321,7 @@ export const powersOfTwoAndLowbitQuestions = [
     difficulty: "easy",
     feedbackModel: {
       decisionSignal:
-        "Zero also satisfies (0 & -1) === 0 in JavaScript/TypeScript bitwise evaluation, but zero is not a power of two.",
+        "The expression (n & (n - 1)) === 0 is also true for n = 0, but zero is not a power of two.",
       mentalModelCorrection:
         "A correct power-of-two check needs n > 0 and (n & (n - 1)) === 0.",
       mistakeTypes: ["zero_case_mishandled", "power_of_two_check_incomplete"],

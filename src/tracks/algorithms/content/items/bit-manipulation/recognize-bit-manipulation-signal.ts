@@ -12,12 +12,12 @@ export const recognizeBitManipulationSignalQuestions = [
         "When you see many independent yes/no states, ask whether each state can map to one bit position.",
       result: "diagnostic",
       distractorExplanations: {
-        use_sorting:
-          "Sorting does not help represent independent on/off states.",
-        use_two_pointers:
-          "Two pointers is for coordinated movement over sequences, not compact flag storage.",
-        use_prefix_sums:
-          "Prefix sums help with range aggregation, not direct on/off flag representation.",
+        use_boolean_array:
+          "A boolean array can represent the states, but the prompt asks for a compact permission value where each independent flag can map to one bit.",
+        use_string_set:
+          "A set of permission strings can work at a higher level, but it does not use the compact encoded flag structure described by the prompt.",
+        use_count:
+          "A count of enabled permissions loses which specific permissions are enabled.",
       },
     },
     id: "alg-bit-manipulation-recognize-signal-001",
@@ -40,16 +40,16 @@ export const recognizeBitManipulationSignalQuestions = [
             text: "Use bit manipulation because each permission can map to one bit.",
           },
           {
-            id: "use_sorting",
-            text: "Use sorting because permissions should be ordered first.",
+            id: "use_boolean_array",
+            text: "Use only a boolean array because compact encoding is irrelevant.",
           },
           {
-            id: "use_two_pointers",
-            text: "Use two pointers because there are multiple permissions.",
+            id: "use_string_set",
+            text: "Use only a set of permission strings because independent flags cannot be encoded as bits.",
           },
           {
-            id: "use_prefix_sums",
-            text: "Use prefix sums because permissions are cumulative.",
+            id: "use_count",
+            text: "Store only the number of enabled permissions.",
           },
         ],
         prompt: "Which pattern best matches compact independent on/off flags?",
@@ -553,9 +553,12 @@ export const recognizeBitManipulationSignalQuestions = [
         "For power-of-two questions, look for the exactly-one-set-bit property.",
       result: "diagnostic",
       distractorExplanations: {
-        use_sorting: "There is no sequence ordering problem to sort.",
-        use_two_pointers: "There are no two coordinated indices to move.",
-        use_prefix_sums: "There is no range aggregation structure.",
+        repeated_division_only:
+          "Repeated division can test the property, but the strongest bit-manipulation signal is the exactly-one-set-bit binary shape.",
+        evenness_only:
+          "Evenness is not enough. Many even numbers are not powers of two.",
+        decimal_digits:
+          "Decimal appearance does not determine whether the binary representation has exactly one set bit.",
       },
     },
     id: "alg-bit-manipulation-recognize-signal-008",
@@ -581,16 +584,16 @@ export const recognizeBitManipulationSignalQuestions = [
             text: "Bit manipulation, because powers of two have exactly one set bit.",
           },
           {
-            id: "use_sorting",
-            text: "Sorting, because powers should be ordered.",
+            id: "repeated_division_only",
+            text: "Only repeated division by 2 matters; the binary shape is irrelevant.",
           },
           {
-            id: "use_two_pointers",
-            text: "Two pointers, because powers of two involve two values.",
+            id: "evenness_only",
+            text: "Only check whether n is even.",
           },
           {
-            id: "use_prefix_sums",
-            text: "Prefix sums, because powers accumulate over time.",
+            id: "decimal_digits",
+            text: "Inspect the decimal digits of n.",
           },
         ],
         prompt: "Which signal appears in a power-of-two check?",

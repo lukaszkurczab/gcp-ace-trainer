@@ -16,7 +16,7 @@ export const bitCheckSetClearToggleQuestions = [
       result: "diagnostic",
       distractorExplanations: {
         use_or:
-          "OR is for forcing a bit to 1. It does not test whether the bit was already set.",
+          "OR forces the masked bit to 1. Checking whether n | mask is nonzero does not tell you whether the bit was already set.",
         use_xor:
           "XOR toggles the bit. It changes the bit state instead of checking it.",
         use_shift_only:
@@ -47,7 +47,7 @@ export const bitCheckSetClearToggleQuestions = [
           },
           {
             id: "use_or",
-            text: "Use n | mask and check whether the result changed.",
+            text: "Use n | mask and check whether the result is nonzero.",
           },
           {
             id: "use_xor",
