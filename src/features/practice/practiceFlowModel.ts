@@ -285,7 +285,7 @@ export function buildPracticeStatsSummary(input: {
 
     return {
       detail: `${progress.correctCount} correct, ${progress.partialCount} partial, ${progress.incorrectCount} incorrect.`,
-      metricLabel: "Items completed",
+      metricLabel: "Items practiced",
       metricValue: String(progress.itemsCompleted),
       title: `${input.activeTrack.title} stats`,
     };

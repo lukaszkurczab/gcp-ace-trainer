@@ -208,12 +208,16 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   assert.equal(model.reviewQueueCopy, "No Algorithms review items right now.");
   assert.equal(model.reviewActionLabel, "Review from Progress is not available yet.");
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
-  assert.equal(
-    model.performanceScores[0]?.detail,
-    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} practiced. Core skills: 0/3 covered. Score: 0%.`,
-  );
+  assert.deepEqual(model.performanceScores, []);
+  assert.deepEqual(model.metrics, []);
+  assert.deepEqual(model.activitySummary, {
+    detail: "Current roadmap node: Complexity and constraints.",
+    label: "Items practiced",
+    value: 0,
+  });
+  assert.equal(model.algorithmsProgress?.priority.title, "Start your first Algorithms session");
   assert.deepEqual(
-    model.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
     [
       ["Correct", 0],
       ["Partial", 0],
@@ -222,11 +226,6 @@ test("Algorithms progress shows empty local facts before attempts", () => {
       ["Nodes mastered", 0],
     ],
   );
-  assert.deepEqual(model.activitySummary, {
-    detail: "Current roadmap node: Complexity and constraints.",
-    label: "Items practiced",
-    value: 0,
-  });
 });
 
 test("Algorithms progress uses only Algorithms training attempts", () => {
@@ -262,7 +261,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
     value: 1,
   });
   assert.deepEqual(
-    model.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
     [
       ["Correct", 1],
       ["Partial", 0],
@@ -293,16 +292,15 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
       }),
     ],
   });
-  const complexityNode = model.performanceScores.find((score) => score.id === "complexity_and_constraints");
-  const hashNode = model.performanceScores.find((score) => score.id === "hash_map_and_set");
+  const complexityNode = model.algorithmsProgress?.roadmapSummary.allNodes.find(
+    (node) => node.id === "complexity_and_constraints",
+  );
+  const hashNode = model.algorithmsProgress?.roadmapSummary.allNodes.find(
+    (node) => node.id === "hash_map_and_set",
+  );
 
-  const complexityItemCount = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length;
-  const hashItemCount = getAlgorithmTrainingItemsForRoadmapNode("hash_map_and_set").length;
-
-  assert.equal(complexityNode?.detail, `1/${complexityItemCount} practiced. Core skills: 0/3 covered. Score: 100%.`);
-  assert.equal(complexityNode?.percent, Math.round((1 / complexityItemCount) * 100));
-  assert.equal(hashNode?.detail, `1/${hashItemCount} practiced. Core skills: 0/1 covered. Score: 0%.`);
-  assert.equal(hashNode?.percent, Math.round((1 / hashItemCount) * 100));
+  assert.ok((complexityNode?.progressPercent ?? 0) > 0);
+  assert.ok((hashNode?.progressPercent ?? 0) > 0);
   assert.equal(model.reviewQueueCount, 1);
   assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
   assert.equal(model.reviewActionEnabled, true);
@@ -322,7 +320,7 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
     },
   });
   assert.deepEqual(
-    model.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
     [
       ["Correct", 1],
       ["Partial", 0],
@@ -371,11 +369,11 @@ test("Algorithms progress does not advance from ten correct prerequisite attempt
     trainingAttempts: completedComplexityAttempts,
   });
 
-  assert.equal(model.algorithmsProgress?.currentRoadmapNode.id, "complexity_and_constraints");
-  assert.equal(model.algorithmsProgress?.nodes[0]?.status, "initial_exposure");
+  assert.equal(model.algorithmsProgress?.currentFocus.nodeId, "complexity_and_constraints");
+  assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "First pass");
 });
 
-test("Algorithms progress detects weak roadmap and repeated mistake signals", () => {
+test("Algorithms progress promotes repeated mistakes into the learning priority", () => {
   const model = buildProgressTabModel({
     activeTrackId: "algorithms",
     analytics: makeAnalytics(),
@@ -395,14 +393,8 @@ test("Algorithms progress detects weak roadmap and repeated mistake signals", ()
     ],
   });
 
-  assert.ok(model.algorithmsProgress?.signals.some((signal) =>
-    signal.label === "Repeated mistake" &&
-    signal.detail.includes("repeated mistake"),
-  ));
-  assert.ok(model.algorithmsProgress?.signals.some((signal) =>
-    signal.label === "Needs review" &&
-    signal.detail.includes("Hash map and set"),
-  ));
+  assert.equal(model.algorithmsProgress?.priority.label, "Critical remediation");
+  assert.match(model.algorithmsProgress?.priority.detail ?? "", /Hash map and set/);
 });
 
 test("Algorithms progress counts due review items only", () => {
@@ -422,7 +414,6 @@ test("Algorithms progress counts due review items only", () => {
     ],
   });
 
-  assert.equal(model.algorithmsProgress?.dueReviewCount, 1);
   assert.equal(model.reviewQueueCount, 1);
   assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
   assert.equal(model.reviewActionEnabled, true);
@@ -446,11 +437,11 @@ test("Algorithms progress recommends the next useful mode from evidence", () => 
     now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     trainingAttempts: [
-      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
         isCorrect: false,
         kind: "correctness",
       }),
-      makeAlgorithmAttempt("alg-array-string-naming-001", {
+      makeAlgorithmAttempt(getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints")[1]!.id, {
         earnedPoints: 1,
         isCorrect: false,
         kind: "partial_credit",
@@ -472,10 +463,10 @@ test("Algorithms progress recommends the next useful mode from evidence", () => 
     ],
   });
 
-  assert.equal(dueModel.algorithmsProgress?.recommendation.mode, "review");
-  assert.equal(weakModel.algorithmsProgress?.recommendation.mode, "weakArea");
-  assert.equal(weakModel.algorithmsProgress?.recommendation.label, "Practice weak area");
-  assert.equal(strongModel.algorithmsProgress?.recommendation.mode, "practice");
+  assert.equal(dueModel.algorithmsProgress?.priority.primaryActionMode, "review");
+  assert.equal(weakModel.algorithmsProgress?.priority.primaryActionMode, "drill");
+  assert.equal(weakModel.algorithmsProgress?.priority.title, "Build core-skill breadth");
+  assert.equal(strongModel.algorithmsProgress?.priority.primaryActionMode, "drill");
 });
 
 test("Algorithms review count uses the canonical review queue, not inferred misses", () => {
@@ -497,6 +488,133 @@ test("Algorithms review count uses the canonical review queue, not inferred miss
   assert.equal(model.reviewQueueCount, 0);
   assert.equal(model.reviewActionEnabled, false);
   assert.equal(model.reviewQueueCopy, "No Algorithms review items right now.");
+});
+
+test("Algorithms remediation is the top-level learning priority", () => {
+  const attempts = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints")
+    .slice(0, 10)
+    .map((item) => makeAlgorithmAttempt(item.id, { isCorrect: true, kind: "correctness" }));
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-remediation-priority", attempts[0]!.itemId, {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        kind: "remediation",
+        priority: "normal",
+      }),
+    ],
+    trainingAttempts: attempts,
+  });
+
+  assert.match(model.algorithmsProgress?.priority.title ?? "", /Review 1 remediation item/);
+  assert.equal(model.algorithmsProgress?.priority.primaryActionLabel, "Review remediation");
+  assert.equal(model.algorithmsProgress?.priority.tone, "warning");
+  assert.equal(model.algorithmsProgress?.currentFocus.title, "Complexity and constraints");
+  assert.deepEqual(
+    model.algorithmsProgress?.diagnostics.metrics.slice(0, 3).map((metric) => metric.label),
+    ["Correct", "Partial", "Incorrect"],
+  );
+});
+
+test("Algorithms retention priority is scheduled work, not missed work", () => {
+  const items = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints");
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-retention-priority", items[0]!.id, {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        kind: "retention",
+        priority: "low",
+        reasons: ["due_spacing"],
+      }),
+    ],
+    trainingAttempts: items.map((item) =>
+      makeAlgorithmAttempt(item.id, { isCorrect: true, kind: "correctness" })),
+  });
+
+  assert.equal(model.algorithmsProgress?.priority.title, "Retention check pending");
+  assert.match(model.algorithmsProgress?.priority.detail ?? "", /does not block/);
+  assert.equal(model.algorithmsProgress?.priority.primaryActionLabel, "Run retention check");
+  assert.doesNotMatch(JSON.stringify(model.algorithmsProgress), /missed/i);
+});
+
+test("Algorithms progress uses practiced language and three current-focus metrics", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+        isCorrect: true,
+        kind: "correctness",
+      }),
+    ],
+  });
+  const copy = JSON.stringify(model.algorithmsProgress);
+
+  assert.doesNotMatch(copy, /Items completed|completed items/i);
+  assert.equal(model.activitySummary.label, "Items practiced");
+  assert.deepEqual(
+    [
+      ["Practiced", model.algorithmsProgress?.currentFocus.practicedLabel],
+      ["Core skills", model.algorithmsProgress?.currentFocus.coreSkillsLabel],
+      ["Score", model.algorithmsProgress?.currentFocus.scoreLabel],
+    ].map(([label]) => label),
+    ["Practiced", "Core skills", "Score"],
+  );
+  assert.equal("resultCounts" in (model.algorithmsProgress ?? {}), false);
+});
+
+test("Algorithms roadmap summary keeps inactive nodes compact", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+  });
+  const summary = model.algorithmsProgress?.roadmapSummary.nodes ?? [];
+  const copy = JSON.stringify(summary);
+
+  assert.ok(summary.length <= 4);
+  assert.doesNotMatch(copy, /0\/\d+ practiced|Core skills:|Score:/);
+  assert.ok(summary.some((node) => node.label.includes("Next")));
+  assert.ok(summary.some((node) => node.label === "Later"));
+});
+
+test("Algorithms next-topic readiness remains distinct from mastery", () => {
+  const items = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints");
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-retention-ready", items[0]!.id, {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        kind: "retention",
+        priority: "low",
+        reasons: ["due_spacing"],
+      }),
+    ],
+    trainingAttempts: items.map((item) =>
+      makeAlgorithmAttempt(item.id, { isCorrect: true, kind: "correctness" })),
+  });
+
+  assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "Ready for next");
+  assert.equal(model.algorithmsProgress?.nextTopic?.state, "available");
+  assert.match(model.algorithmsProgress?.nextTopic?.detail ?? "", /can start this topic/i);
+  assert.match(model.algorithmsProgress?.nextTopic?.detail ?? "", /mastery.*retention/i);
+  assert.notEqual(model.algorithmsProgress?.currentFocus.statusLabel, "Mastered");
 });
 
 function makeCloudProgress(

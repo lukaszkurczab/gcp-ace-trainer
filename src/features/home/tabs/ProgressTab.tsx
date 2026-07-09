@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import {
@@ -22,7 +23,11 @@ import type {
   PracticeAnswerRecord,
 } from "../../../types";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { buildProgressTabModel, type ProgressReviewAction } from "./progressTabModel";
+import {
+  buildProgressTabModel,
+  type AlgorithmsProgressScreenModel,
+  type ProgressReviewAction,
+} from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDefinition;
@@ -55,6 +60,15 @@ export function ProgressTab({
     trainingAttempts,
   });
   const reviewAction = progress.reviewAction;
+
+  if (progress.algorithmsProgress) {
+    return (
+      <AlgorithmsProgressContent
+        model={progress.algorithmsProgress}
+        onAction={onOpenReviewQueue}
+      />
+    );
+  }
 
   return (
     <>
@@ -117,61 +131,6 @@ export function ProgressTab({
         </Card>
       </View>
 
-      {progress.algorithmsProgress ? (
-        <View style={styles.section}>
-          <SectionHeader title="Algorithms focus" tight />
-          <Card style={styles.algorithmsCard}>
-            <View style={styles.algorithmsHeader}>
-              <View style={styles.activityCopy}>
-                <Text style={styles.performanceTitle}>Current roadmap node</Text>
-                <Text style={styles.activityValue}>
-                  {progress.algorithmsProgress.currentRoadmapNode.label}
-                </Text>
-                <Text style={styles.mutedText}>
-                  {progress.algorithmsProgress.recommendation.detail}
-                </Text>
-              </View>
-              <Badge label={progress.algorithmsProgress.recommendation.label} tone="info" />
-            </View>
-            <View style={styles.metricRow}>
-              <MetricCard
-                label="Items completed"
-                tone="primary"
-                value={progress.activitySummary.value}
-              />
-              <MetricCard
-                label="Due review"
-                tone={progress.algorithmsProgress.dueReviewCount > 0 ? "warning" : "neutral"}
-                value={progress.algorithmsProgress.dueReviewCount}
-              />
-              <MetricCard
-                label="Correct"
-                tone="success"
-                value={progress.algorithmsProgress.resultCounts.correct}
-              />
-              <MetricCard
-                label="Partial"
-                tone="info"
-                value={progress.algorithmsProgress.resultCounts.partial}
-              />
-              <MetricCard
-                label="Incorrect"
-                tone="warning"
-                value={progress.algorithmsProgress.resultCounts.incorrect}
-              />
-            </View>
-            <View style={styles.signalList}>
-              {progress.algorithmsProgress.signals.map((signal) => (
-                <View key={signal.id} style={styles.signalRow}>
-                  <Badge label={signal.label} tone={signal.tone} />
-                  <Text style={styles.mutedText}>{signal.detail}</Text>
-                </View>
-              ))}
-            </View>
-          </Card>
-        </View>
-      ) : null}
-
       <View style={styles.section}>
         <SectionHeader title={progress.performanceSectionTitle} tight />
         {progress.performanceScores.length > 0 ? (
@@ -220,6 +179,171 @@ export function ProgressTab({
       </View>
     </>
   );
+}
+
+function AlgorithmsProgressContent({
+  model,
+  onAction,
+}: {
+  model: AlgorithmsProgressScreenModel;
+  onAction?: (action: ProgressReviewAction) => void;
+}) {
+  const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
+  const [showDiagnostics, setShowDiagnostics] = useState(!model.diagnostics.collapsedByDefault);
+  const roadmapNodes = showAllRoadmapNodes
+    ? model.roadmapSummary.allNodes
+    : model.roadmapSummary.nodes;
+
+  return (
+    <>
+      <View style={styles.pageIntro}>
+        <Text style={styles.screenTitle}>Learning priority</Text>
+        <Text style={styles.screenSubtitle}>
+          Use your current evidence to choose the next learning action.
+        </Text>
+      </View>
+
+      <Card variant="tonal" style={styles.priorityCard}>
+        <Badge label={model.priority.label} tone={getBadgeTone(model.priority.tone)} />
+        <Text style={styles.priorityTitle}>{model.priority.title}</Text>
+        <Text style={styles.mutedText}>{model.priority.detail}</Text>
+        <Button
+          disabled={!onAction}
+          onPress={() => onAction?.(model.priority.primaryAction)}
+        >
+          {model.priority.primaryActionLabel}
+        </Button>
+        {model.priority.secondaryAction && model.priority.secondaryActionLabel ? (
+          <Button
+            disabled={!onAction}
+            onPress={() => onAction?.(model.priority.secondaryAction!)}
+            variant="secondary"
+          >
+            {model.priority.secondaryActionLabel}
+          </Button>
+        ) : null}
+      </Card>
+
+      <View style={styles.section}>
+        <SectionHeader title="Current focus" tight />
+        <Card style={styles.focusCard}>
+          <View style={styles.cardHeading}>
+            <Text style={styles.activityValue}>{model.currentFocus.title}</Text>
+            <Badge
+              label={model.currentFocus.statusLabel}
+              tone={getBadgeTone(model.currentFocus.statusTone)}
+            />
+          </View>
+          <View style={styles.focusMetrics}>
+            <FocusMetric label="Practiced" value={model.currentFocus.practicedLabel} />
+            <FocusMetric label="Core skills" value={model.currentFocus.coreSkillsLabel} />
+            <FocusMetric label="Score" value={model.currentFocus.scoreLabel} />
+          </View>
+          <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
+          <Text style={styles.mutedText}>{model.currentFocus.explanation}</Text>
+        </Card>
+      </View>
+
+      {model.nextTopic ? (
+        <View style={styles.section}>
+          <SectionHeader title="Next topic" tight />
+          <Card style={styles.focusCard}>
+            <View style={styles.cardHeading}>
+              <Text style={styles.activityValue}>{model.nextTopic.title}</Text>
+              <Badge
+                label={getNextTopicStateLabel(model.nextTopic.state)}
+                tone={model.nextTopic.state === "locked" ? "neutral" : "success"}
+              />
+            </View>
+            <Text style={styles.mutedText}>{model.nextTopic.detail}</Text>
+            {model.nextTopic.requirements.length > 0 ? (
+              <View style={styles.requirementList}>
+                <Text style={styles.performanceTitle}>To unlock</Text>
+                {model.nextTopic.requirements.map((requirement) => (
+                  <View key={requirement.label} style={styles.requirementRow}>
+                    <Text style={requirement.met ? styles.metMark : styles.unmetMark}>
+                      {requirement.met ? "✓" : "○"}
+                    </Text>
+                    <Text style={styles.mutedText}>{requirement.label}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+          </Card>
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <SectionHeader title="Roadmap summary" tight />
+        <Card style={styles.roadmapCard}>
+          {roadmapNodes.map((node) => (
+            <View key={node.id} style={styles.roadmapRow}>
+              <View style={styles.roadmapCopy}>
+                <Text style={styles.performanceTitle}>{node.title}</Text>
+                <ProgressBar progress={node.progressPercent / 100} tone="primary" />
+              </View>
+              <Badge label={node.label} tone={getBadgeTone(node.tone)} />
+            </View>
+          ))}
+          {model.roadmapSummary.allNodes.length > model.roadmapSummary.nodes.length ? (
+            <Button
+              onPress={() => setShowAllRoadmapNodes((current) => !current)}
+              variant="ghost"
+            >
+              {showAllRoadmapNodes ? "Show roadmap summary" : model.roadmapSummary.showAllActionLabel}
+            </Button>
+          ) : null}
+        </Card>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Detailed diagnostics" tight />
+        <Card style={styles.diagnosticsCard}>
+          <Button onPress={() => setShowDiagnostics((current) => !current)} variant="secondary">
+            {showDiagnostics ? "Hide detailed diagnostics" : "Show detailed diagnostics"}
+          </Button>
+          {showDiagnostics ? (
+            <>
+              <View style={styles.metricRow}>
+                {model.diagnostics.metrics.map((metric) => (
+                  <MetricCard
+                    key={metric.label}
+                    label={metric.label}
+                    tone={metric.tone}
+                    value={metric.value}
+                  />
+                ))}
+              </View>
+              {model.diagnostics.mistakeSummary ? (
+                <Text style={styles.mutedText}>{model.diagnostics.mistakeSummary}</Text>
+              ) : null}
+            </>
+          ) : null}
+        </Card>
+      </View>
+    </>
+  );
+}
+
+function FocusMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.focusMetric}>
+      <Text style={styles.focusMetricValue}>{value}</Text>
+      <Text style={styles.focusMetricLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function getBadgeTone(
+  tone: "danger" | "warning" | "info" | "success" | "muted",
+): "danger" | "warning" | "info" | "success" | "neutral" {
+  return tone === "muted" ? "neutral" : tone;
+}
+
+function getNextTopicStateLabel(state: "locked" | "available" | "ready"): string {
+  if (state === "locked") return "Locked for now";
+  if (state === "ready") return "Ready now";
+  return "Available now";
 }
 
 function getProgressEmptyTitle(trackId: TrackDefinition["id"]): string {
@@ -309,29 +433,78 @@ const styles = StyleSheet.create({
     color: colors.dark.textPrimary,
     fontVariant: ["tabular-nums"],
   },
-  algorithmsCard: {
+  priorityCard: {
     gap: spacing.lg,
   },
-  algorithmsHeader: {
+  priorityTitle: {
+    ...typography.heading,
+    color: colors.dark.textPrimary,
+  },
+  focusCard: {
+    gap: spacing.lg,
+  },
+  cardHeading: {
     alignItems: "flex-start",
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
   },
-  mutedText: {
-    ...typography.small,
-    color: colors.dark.textSecondary,
+  focusMetrics: {
+    flexDirection: "row",
+    gap: spacing.sm,
   },
-  signalList: {
-    gap: spacing.md,
-  },
-  signalRow: {
+  focusMetric: {
     backgroundColor: colors.dark.surface,
     borderColor: colors.dark.border,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,
-    gap: spacing.sm,
+    flex: 1,
+    gap: spacing.xs,
     padding: spacing.md,
+  },
+  focusMetricValue: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  focusMetricLabel: {
+    ...typography.caption,
+    color: colors.dark.textSecondary,
+  },
+  mutedText: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+  },
+  requirementList: {
+    gap: spacing.md,
+  },
+  requirementRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  metMark: {
+    ...typography.bodyStrong,
+    color: colors.dark.success,
+  },
+  unmetMark: {
+    ...typography.bodyStrong,
+    color: colors.dark.textMuted,
+  },
+  roadmapCard: {
+    gap: spacing.lg,
+  },
+  roadmapRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  roadmapCopy: {
+    flex: 1,
+    gap: spacing.sm,
+  },
+  diagnosticsCard: {
+    gap: spacing.lg,
   },
   warningBanner: {
     backgroundColor: colors.dark.warningSoft,

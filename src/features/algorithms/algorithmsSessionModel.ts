@@ -212,9 +212,9 @@ export function buildAlgorithmsSummaryActions(
 
   if (missedItemIds.length > 0) {
     actions.push({
-      detail: "Review the missed items from this session.",
+      detail: "Repair the incorrect or partial items from this session.",
       kind: "reviewMissed",
-      label: "Review missed items",
+      label: "Review remediation",
       priority: "primary",
       reviewItemIds: missedItemIds,
     });
