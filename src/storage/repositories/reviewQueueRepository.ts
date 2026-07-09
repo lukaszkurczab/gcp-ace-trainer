@@ -123,12 +123,15 @@ function mergeReviewQueueItem(
   incoming: ReviewQueueItem,
 ): ReviewQueueItem {
   if (getReviewQueueItemKind(incoming) === "retention") {
-    return getReviewQueueItemKind(existing) === "retention"
-      ? { ...incoming, retentionPassedAt: incoming.createdAt }
-      : incoming;
+    return {
+      ...incoming,
+      lastReviewedAt: latestOptionalIso(existing.lastReviewedAt, incoming.lastReviewedAt),
+      retentionPassedAt: latestOptionalIso(existing.retentionPassedAt, incoming.retentionPassedAt),
+    };
   }
 
-  const repeatedMistakeReasons = isReviewAttemptReason(incoming.reasons) &&
+  const repeatedMistakeReasons = getReviewQueueItemKind(existing) === "remediation" &&
+    isReviewAttemptReason(incoming.reasons) &&
     existing.sourceAttemptId !== incoming.sourceAttemptId
     ? ["repeated_mistake" as const]
     : [];
@@ -137,6 +140,7 @@ function mergeReviewQueueItem(
     ...existing,
     createdAt: earliestIso(existing.createdAt, incoming.createdAt),
     dueAt: earliestIso(existing.dueAt, incoming.dueAt),
+    kind: "remediation",
     lastReviewedAt: latestOptionalIso(existing.lastReviewedAt, incoming.lastReviewedAt),
     mistakeTypeRefs: mergeTaxonomyRefs(existing.mistakeTypeRefs, incoming.mistakeTypeRefs),
     priority: maxReviewPriority(existing.priority, incoming.priority),

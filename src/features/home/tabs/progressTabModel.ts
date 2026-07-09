@@ -43,7 +43,7 @@ export type ProgressTabPerformanceScore = {
 };
 
 export type AlgorithmsProgressNodeModel = {
-  completedItemCount: number;
+  uniquePracticedItemCount: number;
   evidenceLabel: "New" | "First pass" | "Practicing" | "Ready for next" | "Mastered" | "Maintenance";
   id: string;
   itemCount: number;
@@ -234,11 +234,11 @@ function buildAlgorithmsProgressTabModel(
       },
     ],
     performanceScores: facts.nodeProgress.map((node) => ({
-      correct: node.completedItemCount,
-      detail: `${node.completedItemCount}/${node.itemCount} practiced. Core skills: ${node.coveredCoreSkillAtomCount}/${node.coreSkillAtomCount} covered. Score: ${node.scorePercent}%.`,
+      correct: node.uniquePracticedItemCount,
+      detail: `${node.uniquePracticedItemCount}/${node.itemCount} practiced. Core skills: ${node.coveredCoreSkillAtomCount}/${node.coreSkillAtomCount} covered. Score: ${node.scorePercent}%.`,
       id: node.nodeId,
       label: node.label,
-      percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
+      percent: node.itemCount > 0 ? Math.round((node.uniquePracticedItemCount / node.itemCount) * 100) : 0,
       total: node.itemCount,
     })),
     performanceSectionTitle: "Roadmap nodes",
@@ -272,12 +272,12 @@ function buildAlgorithmsProgressViewModel(input: {
     currentRoadmapNode: input.facts.activeRoadmapNode,
     dueReviewCount: input.dueReviewCount,
     nodes: input.facts.nodeProgress.map((node) => ({
-      completedItemCount: node.completedItemCount,
+      uniquePracticedItemCount: node.uniquePracticedItemCount,
       evidenceLabel: getNodeEvidenceLabel(node),
       id: node.nodeId,
       itemCount: node.itemCount,
       label: node.label,
-      percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
+      percent: node.itemCount > 0 ? Math.round((node.uniquePracticedItemCount / node.itemCount) * 100) : 0,
       status: node.status,
     })),
     recommendation: buildAlgorithmsProgressRecommendation(input),

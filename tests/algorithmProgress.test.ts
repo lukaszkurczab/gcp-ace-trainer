@@ -19,13 +19,43 @@ test("ten correct attempts out of a large node are exposure, not mastery", () =>
 });
 
 test("eligible for next remains distinct from mastery while retention is pending", () => {
-  const node = buildAlgorithmProgressFacts(complexityItems.map(makeCorrectAttempt)).nodeProgress[0];
+  const attempts = complexityItems.map(makeCorrectAttempt);
+  const pendingRetention = complexityItems.map((item, index) =>
+    makeRetentionItem(item.id, index));
+  const facts = buildAlgorithmProgressFacts(
+    attempts,
+    undefined,
+    undefined,
+    pendingRetention,
+    "2026-07-03T00:00:00.000Z",
+  );
+  const node = facts.nodeProgress[0];
 
   assert.equal(node?.eligibleForNext, true);
   assert.equal(node?.mastered, false);
   assert.equal(node?.status, "eligible_for_next");
   assert.equal(node?.nextRequiredAction, "retention_check");
   assert.equal(isRoadmapPrerequisiteSatisfied(node!.status), true);
+  assert.notEqual(facts.activeRoadmapNode.id, node?.nodeId);
+});
+
+test("mastery requires passed retention evidence for every core skill atom", () => {
+  const attempts = complexityItems.map(makeCorrectAttempt);
+  const passedRetention = complexityItems.map((item, index) => ({
+    ...makeRetentionItem(item.id, index),
+    retentionPassedAt: "2026-07-03T00:00:00.000Z",
+  }));
+  const node = buildAlgorithmProgressFacts(
+    attempts,
+    undefined,
+    undefined,
+    passedRetention,
+    "2026-07-03T00:00:00.000Z",
+  ).nodeProgress[0];
+
+  assert.equal(node?.retentionPassedCount, node?.coreSkillAtomCount);
+  assert.equal(node?.mastered, true);
+  assert.equal(node?.status, "mastered");
 });
 
 test("critical remediation blocks next-topic eligibility", () => {
@@ -67,6 +97,20 @@ function makeCorrectAttempt(
     modeId: "algorithms-practice",
     response: { kind: "option_selection", selectedOptionIds: [] },
     result: { isCorrect: true, kind: "correctness" },
+    trackId: "algorithms",
+  };
+}
+
+function makeRetentionItem(itemId: string, index: number): ReviewQueueItem {
+  return {
+    createdAt: "2026-07-01T00:00:00.000Z",
+    dueAt: "2026-07-08T00:00:00.000Z",
+    id: `review:retention:${index}`,
+    itemId,
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    sourceAttemptId: `attempt:retention:${index}`,
     trackId: "algorithms",
   };
 }

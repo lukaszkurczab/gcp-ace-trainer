@@ -190,6 +190,55 @@ test("review queue repository merges reasons without duplicates", async () => {
   assert.deepEqual(read.value[0]?.reasons, ["partial_credit", "incorrect_attempt", "repeated_mistake"]);
 });
 
+test("review queue repository does not invent retention pass evidence during merge", async () => {
+  const existing = makeReviewQueueItem("review-retention-001", "attempt-retention-001", {
+    createdAt: "2026-07-01T00:00:00.000Z",
+    dueAt: "2026-07-02T00:00:00.000Z",
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    retentionPassedAt: undefined,
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const incoming = makeReviewQueueItem("review-retention-002", "attempt-retention-002", {
+    createdAt: "2026-07-01T00:00:00.000Z",
+    dueAt: "2026-07-08T00:00:00.000Z",
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    retentionPassedAt: undefined,
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([existing]);
+  await addReviewQueueItems([incoming]);
+  const read = await getReviewQueueItems();
+
+  assert.equal(read.value[0]?.retentionPassedAt, undefined);
+});
+
+test("review queue repository converts a failed retention check into remediation", async () => {
+  const retention = makeReviewQueueItem("review-retention-failed-001", "attempt-correct-001", {
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+  const remediation = makeReviewQueueItem("review-retention-failed-002", "attempt-incorrect-001", {
+    kind: "remediation",
+    reasons: ["incorrect_attempt"],
+    trackId: ALGORITHMS_TRACK_ID,
+  });
+
+  await addReviewQueueItems([retention]);
+  await addReviewQueueItems([remediation]);
+  const read = await getReviewQueueItems();
+
+  assert.equal(read.value[0]?.kind, "remediation");
+  assert.ok(read.value[0]?.reasons.includes("incorrect_attempt"));
+  assert.equal(read.value[0]?.reasons.includes("repeated_mistake"), false);
+});
+
 test("review queue repository merges mistake refs without duplicates", async () => {
   const first = makeReviewQueueItem("review-mistakes-001", "attempt-mistakes-001", {
     itemId: "alg-hash-map-primer-001",

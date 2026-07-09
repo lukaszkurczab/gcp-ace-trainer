@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { ALGORITHMS_TRACK_ID, createTrainingSession } from "../src/domain";
+import type { ReviewQueueItem } from "../src/domain/training";
 import {
   buildAlgorithmsImmediateFeedbackModel,
   buildAlgorithmsReviewQueueUpdate,
@@ -301,7 +302,7 @@ test("Algorithms review queue receives partial attempts in both feedback modes",
   }
 });
 
-test("Algorithms correct review attempt replaces remediation with a retention check", () => {
+test("Algorithms normal correct answer schedules retention without passing it", () => {
   const { check, item, session } = makeSubmissionFixture("single_choice");
   const submission = buildAlgorithmsSubmission({
     answeredAt: "2026-07-03T11:00:00.000Z",
@@ -320,8 +321,71 @@ test("Algorithms correct review attempt replaces remediation with a retention ch
   assert.equal(update.action, "keep");
   assert.equal(update.reviewQueueItems[0]?.kind, "retention");
   assert.deepEqual(update.reviewQueueItems[0]?.reasons, ["due_spacing"]);
+  assert.ok(update.reviewQueueItems[0]!.dueAt > submission.attempt.answeredAt);
+  assert.equal(update.reviewQueueItems[0]?.retentionPassedAt, undefined);
+  assert.equal(update.reviewQueueItems[0]?.lastReviewedAt, undefined);
   assert.equal(summary.reviewSession?.clearedItems, 1);
   assert.equal(summary.reviewSession?.stillNeedsReview, 0);
+});
+
+test("Algorithms correct due retention answer records delayed retrieval evidence", () => {
+  const { check, item, session } = makeSubmissionFixture("single_choice");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T11:00:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: [String(check.correctAnswer)],
+    session,
+  });
+  const existingRetention: ReviewQueueItem = {
+    createdAt: "2026-06-25T11:00:00.000Z",
+    dueAt: "2026-07-02T11:00:00.000Z",
+    id: "review:due-retention",
+    itemId: item.id,
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    sourceAttemptId: "attempt:original-correct",
+    trackId: "algorithms",
+  };
+
+  const update = buildAlgorithmsReviewQueueUpdate(submission, existingRetention);
+
+  assert.equal(update.action, "keep");
+  assert.equal(update.reviewQueueItems[0]?.kind, "retention");
+  assert.equal(update.reviewQueueItems[0]?.retentionPassedAt, submission.attempt.answeredAt);
+  assert.equal(update.reviewQueueItems[0]?.lastReviewedAt, submission.attempt.answeredAt);
+});
+
+test("Algorithms incorrect due retention answer creates remediation debt", () => {
+  const { check, item, session } = makeSubmissionFixture("trace_next_step");
+  const submission = buildAlgorithmsSubmission({
+    answeredAt: "2026-07-03T11:10:00.000Z",
+    check,
+    complexityAnswer: {},
+    item,
+    selectedOptionIds: ["not-the-correct-step"],
+    session,
+  });
+  const existingRetention: ReviewQueueItem = {
+    createdAt: "2026-06-25T11:00:00.000Z",
+    dueAt: "2026-07-02T11:00:00.000Z",
+    id: "review:due-retention-failed",
+    itemId: item.id,
+    kind: "retention",
+    priority: "low",
+    reasons: ["due_spacing"],
+    sourceAttemptId: "attempt:original-correct",
+    trackId: "algorithms",
+  };
+
+  const update = buildAlgorithmsReviewQueueUpdate(submission, existingRetention);
+
+  assert.equal(update.action, "keep");
+  assert.equal(update.reviewQueueItems[0]?.kind, "remediation");
+  assert.deepEqual(update.reviewQueueItems[0]?.reasons, ["incorrect_attempt"]);
+  assert.equal(update.reviewQueueItems[0]?.lastReviewedAt, submission.attempt.answeredAt);
 });
 
 test("Algorithms partial review attempt stays in queue with review timestamp", () => {
@@ -339,7 +403,18 @@ test("Algorithms partial review attempt stays in queue with review timestamp", (
     session,
   });
 
-  const update = buildAlgorithmsReviewQueueUpdate(submission);
+  const existingRemediation: ReviewQueueItem = {
+    createdAt: "2026-07-01T11:05:00.000Z",
+    dueAt: "2026-07-02T11:05:00.000Z",
+    id: "review:partial-remediation",
+    itemId: item.id,
+    kind: "remediation",
+    priority: "normal",
+    reasons: ["partial_credit"],
+    sourceAttemptId: "attempt:previous-partial",
+    trackId: "algorithms",
+  };
+  const update = buildAlgorithmsReviewQueueUpdate(submission, existingRemediation);
 
   assert.equal(update.action, "keep");
   assert.equal(update.reviewQueueItems[0]?.itemId, item.id);
@@ -348,7 +423,7 @@ test("Algorithms partial review attempt stays in queue with review timestamp", (
   assert.deepEqual(update.reviewQueueItems[0]?.reasons, ["partial_credit"]);
 });
 
-test("Algorithms incorrect review attempt stays high priority with repeated mistake signal", () => {
+test("Algorithms repeated incorrect remediation attempt stays high priority", () => {
   const { check, item, session } = makeSubmissionFixture("trace_next_step");
   const submission = buildAlgorithmsSubmission({
     answeredAt: "2026-07-03T11:10:00.000Z",
@@ -359,7 +434,18 @@ test("Algorithms incorrect review attempt stays high priority with repeated mist
     session,
   });
 
-  const update = buildAlgorithmsReviewQueueUpdate(submission);
+  const existingRemediation: ReviewQueueItem = {
+    createdAt: "2026-07-01T11:10:00.000Z",
+    dueAt: "2026-07-02T11:10:00.000Z",
+    id: "review:existing-remediation",
+    itemId: item.id,
+    kind: "remediation",
+    priority: "high",
+    reasons: ["incorrect_attempt"],
+    sourceAttemptId: "attempt:previous-miss",
+    trackId: "algorithms",
+  };
+  const update = buildAlgorithmsReviewQueueUpdate(submission, existingRemediation);
 
   assert.equal(update.action, "keep");
   assert.equal(update.reviewQueueItems[0]?.priority, "high");

@@ -20,7 +20,7 @@ export type AlgorithmRoadmapNodeProgressStatus =
   | "eligible_for_next" | "mastered" | "maintenance";
 
 export type AlgorithmRoadmapNodeProgress = {
-  completedItemCount: number;
+  uniquePracticedItemCount: number;
   itemCount: number;
   label: string;
   nodeId: AlgorithmRoadmapNodeId;
@@ -148,7 +148,7 @@ function buildNodeProgress(
     const attempt = latestAttemptByItemId.get(item.id);
     return attempt ? [attempt] : [];
   });
-  const completedItemCount = latestNodeAttempts.length;
+  const uniquePracticedItemCount = latestNodeAttempts.length;
   const itemCount = nodeItems.length;
   const scorePercent = getNodeScorePercent(latestNodeAttempts);
   const eligibleRequiredItemCount = Math.min(itemCount, Math.min(40, Math.max(25, Math.ceil(itemCount * 0.35))));
@@ -173,25 +173,25 @@ function buildNodeProgress(
     for (const id of getItemSkillAtomIds(item)) retainedSkillAtoms.add(id);
   }
   const retentionPassedCount = coreSkillAtomIds.filter((id) => retainedSkillAtoms.has(id)).length;
-  const eligibleForNext = completedItemCount >= eligibleRequiredItemCount &&
+  const eligibleForNext = uniquePracticedItemCount >= eligibleRequiredItemCount &&
     coreSkillAtomCoveragePercent >= 80 && scorePercent >= 80 && criticalRemediationDueCount === 0;
-  const mastered = completedItemCount >= masteryRequiredItemCount &&
+  const mastered = uniquePracticedItemCount >= masteryRequiredItemCount &&
     coreSkillAtomCoveragePercent === 100 && scorePercent >= 85 && remediationDue.length === 0 &&
     retentionPassedCount === coreSkillAtomCount &&
     !hasRepeatedCriticalMistake(attempts.filter((attempt) => nodeItemIds.has(attempt.itemId)));
   const status = mastered
     ? (retentionDueCount > 0 ? "maintenance" : "mastered")
     : eligibleForNext ? "eligible_for_next"
-    : getPreEligibilityStatus(completedItemCount, itemCount, scorePercent);
+    : getPreEligibilityStatus(uniquePracticedItemCount, itemCount, scorePercent);
 
   return {
-    completedItemCount,
+    uniquePracticedItemCount,
     itemCount,
     label: node.label,
     nodeId: node.id,
     scorePercent,
     status,
-    itemCoveragePercent: itemCount > 0 ? Math.round((completedItemCount / itemCount) * 100) : 0,
+    itemCoveragePercent: itemCount > 0 ? Math.round((uniquePracticedItemCount / itemCount) * 100) : 0,
     coreSkillAtomCoveragePercent,
     coveredCoreSkillAtomCount,
     coreSkillAtomCount,
@@ -205,7 +205,7 @@ function buildNodeProgress(
       : remediationDue.length > 0 ? "remediate"
       : eligibleForNext && retentionPassedCount < coreSkillAtomCount ? "retention_check"
       : eligibleForNext ? "ready_for_next"
-      : completedItemCount === 0 ? "start"
+      : uniquePracticedItemCount === 0 ? "start"
       : coreSkillAtomCoveragePercent < 80 ? "cover_core_skills"
       : "continue_practice",
     eligibleRequiredItemCount,
@@ -214,13 +214,13 @@ function buildNodeProgress(
 }
 
 function getPreEligibilityStatus(
-  completedItemCount: number,
+  uniquePracticedItemCount: number,
   itemCount: number,
   scorePercent: number,
 ): AlgorithmRoadmapNodeProgressStatus {
-  if (completedItemCount === 0) return "not_started";
+  if (uniquePracticedItemCount === 0) return "not_started";
   const exposureCount = Math.min(itemCount, Math.min(5, Math.ceil(itemCount * 0.1)));
-  return completedItemCount >= exposureCount && scorePercent >= 60 ? "initial_exposure" : "in_progress";
+  return uniquePracticedItemCount >= exposureCount && scorePercent >= 60 ? "initial_exposure" : "in_progress";
 }
 
 export function isRoadmapPrerequisiteSatisfied(status: AlgorithmRoadmapNodeProgressStatus): boolean {

@@ -344,13 +344,13 @@ export function buildTopicRoadmapNodes(input: {
 
     return {
       detail: itemCount > 0
-        ? `${node.shortDescription} ${nodeProgress?.completedItemCount ?? 0}/${itemCount} practiced. Core skills: ${nodeProgress?.coveredCoreSkillAtomCount ?? 0}/${nodeProgress?.coreSkillAtomCount ?? node.skillAtomIds?.length ?? 0} covered.`
+        ? `${node.shortDescription} ${nodeProgress?.uniquePracticedItemCount ?? 0}/${itemCount} practiced. Core skills: ${nodeProgress?.coveredCoreSkillAtomCount ?? 0}/${nodeProgress?.coreSkillAtomCount ?? node.skillAtomIds?.length ?? 0} covered.`
         : node.shortDescription,
       enabled,
       id: node.id,
       label: nodeProgress ? formatAlgorithmProgressStatusLabel(nodeProgress.status) : formatTopicStatusLabel(status),
       progress: nodeProgress && nodeProgress.itemCount > 0
-        ? nodeProgress.completedItemCount / nodeProgress.itemCount
+        ? nodeProgress.uniquePracticedItemCount / nodeProgress.itemCount
         : 0,
       status,
       title: node.label,

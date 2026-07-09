@@ -1,11 +1,12 @@
 import { ALGORITHMS_TRACK_ID } from "../../domain";
-import type {
-  ComplexityAnswer,
-  ReviewReason,
-  ReviewQueueItem,
-  TrainingAttempt,
-  TrainingAttemptResponse,
-  TrainingSession,
+import {
+  getReviewQueueItemKind,
+  type ComplexityAnswer,
+  type ReviewReason,
+  type ReviewQueueItem,
+  type TrainingAttempt,
+  type TrainingAttemptResponse,
+  type TrainingSession,
 } from "../../domain/training";
 import type { PracticeFeedbackMode, PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
@@ -111,11 +112,6 @@ export type AlgorithmsSummaryAction = {
 };
 
 export type AlgorithmsReviewQueueUpdate =
-  | {
-      action: "clear";
-      itemId: string;
-      trackId: typeof ALGORITHMS_TRACK_ID;
-    }
   | {
       action: "keep";
       reviewQueueItems: readonly ReviewQueueItem[];
@@ -351,20 +347,33 @@ export function buildAlgorithmsSessionSummary(
 
 export function buildAlgorithmsReviewQueueUpdate(
   submission: AlgorithmsSubmission,
+  existingReviewItem?: ReviewQueueItem,
 ): AlgorithmsReviewQueueUpdate {
+  const answeredAt = submission.attempt.answeredAt;
+  const isExistingItemDue = Boolean(
+    existingReviewItem &&
+    existingReviewItem.trackId === ALGORITHMS_TRACK_ID &&
+    existingReviewItem.itemId === submission.attempt.itemId &&
+    existingReviewItem.dueAt <= answeredAt,
+  );
+  const existingKind = existingReviewItem
+    ? getReviewQueueItemKind(existingReviewItem)
+    : undefined;
+
   if (submission.score.status === "correct") {
     const retentionItem = submission.reviewQueueItems.find((item) => item.kind === "retention");
     if (retentionItem) {
+      const passedDueRetention = isExistingItemDue && existingKind === "retention";
       return {
         action: "keep",
-        reviewQueueItems: [{ ...retentionItem, lastReviewedAt: submission.attempt.answeredAt }],
+        reviewQueueItems: [{
+          ...retentionItem,
+          lastReviewedAt: isExistingItemDue ? answeredAt : undefined,
+          retentionPassedAt: passedDueRetention ? answeredAt : undefined,
+        }],
       };
     }
-    return {
-      action: "clear",
-      itemId: submission.attempt.itemId,
-      trackId: ALGORITHMS_TRACK_ID,
-    };
+    return { action: "none" };
   }
 
   if (submission.reviewQueueItems.length === 0) {
@@ -375,8 +384,8 @@ export function buildAlgorithmsReviewQueueUpdate(
     action: "keep",
     reviewQueueItems: submission.reviewQueueItems.map((item) => ({
       ...item,
-      lastReviewedAt: submission.attempt.answeredAt,
-      reasons: submission.score.status === "incorrect"
+      lastReviewedAt: isExistingItemDue ? answeredAt : undefined,
+      reasons: submission.score.status === "incorrect" && existingKind === "remediation"
         ? uniqueReasons([...item.reasons, "repeated_mistake"])
         : item.reasons,
     })),

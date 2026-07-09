@@ -32,7 +32,6 @@ import {
   getReviewQueueItems,
   getTrainingSessions,
   getTrainingAttempts,
-  removeReviewQueueItem,
   saveTrainingSessions,
   type LocalStorageIssue,
 } from "../../storage";
@@ -257,15 +256,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       setStorageMessage(formatStorageFailure("The answer was checked, but this attempt was not saved locally", result.issues));
     }
 
-    if (sessionConfig?.mode === "review") {
-      await saveReviewQueueUpdate(submission);
-    } else if (submission.reviewQueueItems.length > 0) {
-      const reviewResult = await addReviewQueueItems([...submission.reviewQueueItems]);
-
-      if (!reviewResult.ok) {
-        setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
-      }
-    }
+    await saveReviewQueueUpdate(submission);
 
     const nextAttempts = [submission.attempt, ...attempts];
     setAttempts(nextAttempts);
@@ -318,16 +309,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }
 
   async function saveReviewQueueUpdate(submission: AlgorithmsSubmission) {
-    const update = buildAlgorithmsReviewQueueUpdate(submission);
-
-    if (update.action === "clear") {
-      const reviewResult = await removeReviewQueueItem(update.trackId, update.itemId);
-
-      if (!reviewResult.ok) {
-        setStorageMessage(formatStorageFailure("The answer was checked, but review queue clearing was not saved locally", reviewResult.issues));
-      }
-      return;
-    }
+    const existingResult = await getReviewQueueItems();
+    const existingItem = existingResult.value.find((item) =>
+      item.trackId === ALGORITHMS_TRACK_ID &&
+      item.itemId === submission.attempt.itemId
+    );
+    const update = buildAlgorithmsReviewQueueUpdate(submission, existingItem);
 
     if (update.action === "keep" && update.reviewQueueItems.length > 0) {
       const reviewResult = await addReviewQueueItems([...update.reviewQueueItems]);
