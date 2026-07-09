@@ -21,7 +21,7 @@
     },
     {
       "folderName": "bit-manipulation",
-      "itemCount": 1,
+      "itemCount": 0,
       "questionFile": "items/bit-manipulation/questions.json",
       "roadmapNodeId": "bit_manipulation"
     },
@@ -164,7 +164,7 @@
       "roadmapNodeId": "two_pointers"
     }
   ],
-  "itemCount": 848,
+  "itemCount": 847,
   "trackId": "algorithms",
   "itemOrder": [
     "alg-complexity-constraint-pair-001",
@@ -484,7 +484,6 @@
     "alg-backtracking-placement-011",
     "alg-backtracking-placement-012",
     "alg-hash-map-primer-001",
-    "alg-bit-manipulation-naming-001",
     "alg-dynamic-programming-intro-naming-001",
     "alg-graph-traversal-naming-001",
     "alg-greedy-intro-naming-001",

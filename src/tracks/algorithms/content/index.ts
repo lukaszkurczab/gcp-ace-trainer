@@ -13,7 +13,7 @@ import manifest from "./manifest.json";
 import arraysAndStringsQuestions from "./items/arrays-and-strings";
 import backtrackingQuestions from "./items/backtracking";
 import { binarySearchQuestions } from "./items/binary-search";
-import bitManipulationQuestions from "./items/bit-manipulation/questions.json";
+import { bitManipulationQuestions } from "./items/bit-manipulation";
 import complexityAndConstraintsQuestions from "./items/complexity-and-constraints";
 import contrastBinarySearchVsLinearScanQuestions from "./items/contrast-binary-search-vs-linear-scan/questions.json";
 import contrastHashMapVsSortingQuestions from "./items/contrast-hash-map-vs-sorting/questions.json";
