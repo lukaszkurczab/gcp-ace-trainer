@@ -351,7 +351,7 @@ function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
 
 function formatNodeLabel(topic: TopicRoadmapNodeModel): string {
   if (topic.status === "completed") {
-    return "Strong";
+    return topic.label;
   }
 
   if (topic.status === "current") {

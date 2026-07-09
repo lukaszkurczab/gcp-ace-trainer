@@ -10,6 +10,7 @@ import {
   ALGORITHM_ROADMAP,
   buildAlgorithmProgressFacts,
   getAlgorithmTrainingItemsForRoadmapNode,
+  isRoadmapPrerequisiteSatisfied,
 } from "../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { ExamDomain } from "../../types";
@@ -327,9 +328,9 @@ export function buildTopicRoadmapNodes(input: {
   }
 
   const progress = buildAlgorithmProgressFacts(input.trainingAttempts);
-  const completedNodeIds = new Set(
+  const readyNodeIds = new Set(
     progress.nodeProgress
-      .filter((node) => node.status === "completed")
+      .filter((node) => isRoadmapPrerequisiteSatisfied(node.status))
       .map((node) => node.nodeId),
   );
 
@@ -337,17 +338,17 @@ export function buildTopicRoadmapNodes(input: {
     const itemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
     const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
     const isCurrent = progress.activeRoadmapNode.id === node.id;
-    const prerequisitesMet = node.prerequisiteNodeIds.every((nodeId) => completedNodeIds.has(nodeId));
-    const enabled = itemCount > 0 && (isCurrent || prerequisitesMet || nodeProgress?.status === "completed");
+    const prerequisitesMet = node.prerequisiteNodeIds.every((nodeId) => readyNodeIds.has(nodeId));
+    const enabled = itemCount > 0 && (isCurrent || prerequisitesMet || Boolean(nodeProgress && isRoadmapPrerequisiteSatisfied(nodeProgress.status)));
     const status = getAlgorithmTopicStatus(enabled, isCurrent, nodeProgress?.status);
 
     return {
       detail: itemCount > 0
-        ? `${node.shortDescription} ${itemCount} ${itemCount === 1 ? "item" : "items"} available. Unlock requires ${nodeProgress?.unlockRequiredItemCount ?? Math.min(10, itemCount)} attempts with at least 70% score.`
+        ? `${node.shortDescription} ${nodeProgress?.completedItemCount ?? 0}/${itemCount} practiced. Core skills: ${nodeProgress?.coveredCoreSkillAtomCount ?? 0}/${nodeProgress?.coreSkillAtomCount ?? node.skillAtomIds?.length ?? 0} covered.`
         : node.shortDescription,
       enabled,
       id: node.id,
-      label: formatTopicStatusLabel(status),
+      label: nodeProgress ? formatAlgorithmProgressStatusLabel(nodeProgress.status) : formatTopicStatusLabel(status),
       progress: nodeProgress && nodeProgress.itemCount > 0
         ? nodeProgress.completedItemCount / nodeProgress.itemCount
         : 0,
@@ -369,7 +370,7 @@ function getAlgorithmTopicStatus(
   isCurrent: boolean,
   progressStatus?: string,
 ): TopicRoadmapNodeModel["status"] {
-  if (progressStatus === "completed") {
+  if (progressStatus === "mastered" || progressStatus === "maintenance") {
     return "completed";
   }
 
@@ -382,6 +383,18 @@ function getAlgorithmTopicStatus(
   }
 
   return "locked";
+}
+
+function formatAlgorithmProgressStatusLabel(status: string): string {
+  switch (status) {
+    case "not_started": return "New";
+    case "initial_exposure": return "First pass";
+    case "in_progress": return "Practicing";
+    case "eligible_for_next": return "Ready for next";
+    case "mastered": return "Mastered";
+    case "maintenance": return "Maintenance";
+    default: return "Available";
+  }
 }
 
 function formatTopicStatusLabel(status: TopicRoadmapNodeModel["status"]): string {

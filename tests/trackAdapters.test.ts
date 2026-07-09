@@ -194,7 +194,10 @@ test("Algorithms review adapter creates review items for partial and incorrect a
   assert.equal(incorrectItems.length, 1);
   assert.equal(incorrectItems[0]?.priority, "high");
   assert.deepEqual(incorrectItems[0]?.reasons, ["incorrect_attempt"]);
-  assert.deepEqual(review.createReviewQueueItems(correctAttempt), []);
+  const retentionItems = review.createReviewQueueItems(correctAttempt);
+  assert.equal(retentionItems.length, 1);
+  assert.equal(retentionItems[0]?.kind, "retention");
+  assert.deepEqual(retentionItems[0]?.reasons, ["due_spacing"]);
 });
 
 test("adapter registry rejects an unknown track id", () => {

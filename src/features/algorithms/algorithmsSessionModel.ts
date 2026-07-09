@@ -353,6 +353,13 @@ export function buildAlgorithmsReviewQueueUpdate(
   submission: AlgorithmsSubmission,
 ): AlgorithmsReviewQueueUpdate {
   if (submission.score.status === "correct") {
+    const retentionItem = submission.reviewQueueItems.find((item) => item.kind === "retention");
+    if (retentionItem) {
+      return {
+        action: "keep",
+        reviewQueueItems: [{ ...retentionItem, lastReviewedAt: submission.attempt.answeredAt }],
+      };
+    }
     return {
       action: "clear",
       itemId: submission.attempt.itemId,

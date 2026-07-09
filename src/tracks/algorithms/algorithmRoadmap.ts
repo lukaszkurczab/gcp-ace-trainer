@@ -136,7 +136,7 @@ const algorithmRoadmapNodes = [
     skillAtomIds: [
       "derive_time_complexity",
       "derive_space_complexity",
-      "compare_complexity_tradeoffs",
+      "evaluate_time_space_tradeoff",
     ],
   }),
   makeNode({

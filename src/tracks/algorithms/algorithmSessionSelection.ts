@@ -12,6 +12,7 @@ import { algorithmsContentAdapter } from "./algorithmsContentAdapter";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
+  isRoadmapPrerequisiteSatisfied,
 } from "./algorithmProgress";
 
 export type AlgorithmPracticeSessionMode =
@@ -444,7 +445,7 @@ function getUnlockedRoadmapNodeIds(
   const progress = buildAlgorithmProgressFacts(attempts, items, roadmapNodes);
   const completedNodeIds = new Set(
     progress.nodeProgress
-      .filter((node) => node.status === "completed")
+      .filter((node) => isRoadmapPrerequisiteSatisfied(node.status))
       .map((node) => node.nodeId),
   );
 

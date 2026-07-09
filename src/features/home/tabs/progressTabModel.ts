@@ -3,7 +3,7 @@ import {
   CLOUD_CERTIFICATION_TRACK_ID,
   type TrackDefinition,
 } from "../../../domain";
-import type { ReviewQueueItem, TrainingAttempt } from "../../../domain/training";
+import { getReviewQueueItemKind, type ReviewQueueItem, type TrainingAttempt } from "../../../domain/training";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
@@ -44,7 +44,7 @@ export type ProgressTabPerformanceScore = {
 
 export type AlgorithmsProgressNodeModel = {
   completedItemCount: number;
-  evidenceLabel: "Limited evidence" | "Needs review" | "Strong recent signal";
+  evidenceLabel: "New" | "First pass" | "Practicing" | "Ready for next" | "Mastered" | "Maintenance";
   id: string;
   itemCount: number;
   label: string;
@@ -188,7 +188,7 @@ function buildAlgorithmsProgressTabModel(
   reviewQueueItems: readonly ReviewQueueItem[],
   now: string,
 ): ProgressTabModel {
-  const facts = buildAlgorithmProgressFacts(trainingAttempts);
+  const facts = buildAlgorithmProgressFacts(trainingAttempts, undefined, undefined, reviewQueueItems, now);
   const algorithmsReviewItems = reviewQueueItems.filter((item) => item.trackId === ALGORITHMS_TRACK_ID);
   const dueReviewCount = algorithmsReviewItems.filter((item) => item.dueAt <= now).length;
   const algorithmsProgress = buildAlgorithmsProgressViewModel({
@@ -201,7 +201,7 @@ function buildAlgorithmsProgressTabModel(
   return {
     activitySummary: {
       detail: `Current roadmap node: ${facts.activeRoadmapNode.label}.`,
-      label: "Items completed",
+      label: "Items practiced",
       value: facts.itemsCompleted,
     },
     algorithmsProgress,
@@ -228,14 +228,14 @@ function buildAlgorithmsProgressTabModel(
         value: facts.roadmapNodesStarted,
       },
       {
-        label: "Nodes completed",
+        label: "Nodes mastered",
         tone: "neutral",
-        value: facts.roadmapNodesCompleted,
+        value: facts.roadmapNodesMastered,
       },
     ],
     performanceScores: facts.nodeProgress.map((node) => ({
       correct: node.completedItemCount,
-      detail: `${node.completedItemCount}/${node.itemCount} items completed. ${getNodeEvidenceLabel(node)}.`,
+      detail: `${node.completedItemCount}/${node.itemCount} practiced. Core skills: ${node.coveredCoreSkillAtomCount}/${node.coreSkillAtomCount} covered. Score: ${node.scorePercent}%.`,
       id: node.nodeId,
       label: node.label,
       percent: node.itemCount > 0 ? Math.round((node.completedItemCount / node.itemCount) * 100) : 0,
@@ -297,9 +297,13 @@ function buildAlgorithmsProgressRecommendation(input: {
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressRecommendation {
   if (input.dueReviewCount > 0) {
+    const dueItems = input.reviewQueueItems.filter((item) => item.dueAt <= new Date().toISOString());
+    const remediationCount = dueItems.filter((item) => getReviewQueueItemKind(item) === "remediation").length;
     return {
-      detail: "Review due items before starting new work.",
-      label: "Review missed items",
+      detail: remediationCount > 0
+        ? `Review ${remediationCount} remediation ${remediationCount === 1 ? "item" : "items"} before more new work.`
+        : "Retention check pending. This does not block the next topic.",
+      label: remediationCount > 0 ? "Review remediation" : "Run retention check",
       mode: "review",
     };
   }
@@ -314,7 +318,7 @@ function buildAlgorithmsProgressRecommendation(input: {
 
   if (input.facts.itemsCompleted > 0 && input.facts.incorrectCount === 0 && input.facts.partialCount === 0) {
     return {
-      detail: "Interleave unlocked nodes after a strong recent signal.",
+      detail: "Ready for continued practice; later retention checks confirm mastery.",
       label: "Start Mixed practice",
       mode: "practice",
     };
@@ -378,7 +382,7 @@ function buildAlgorithmsProgressSignals(input: {
     signals.push({
       detail: `${input.facts.correctCount} correct latest ${input.facts.correctCount === 1 ? "item" : "items"} recorded.`,
       id: "strong-recent-signal",
-      label: "Strong recent signal",
+      label: "Current evidence",
       tone: "success",
     });
   }
@@ -396,18 +400,13 @@ function buildAlgorithmsProgressSignals(input: {
 }
 
 function getNodeEvidenceLabel(node: {
-  completedItemCount: number;
-  scorePercent: number;
+  status: AlgorithmRoadmapNodeProgressStatus;
 }): AlgorithmsProgressNodeModel["evidenceLabel"] {
-  if (node.completedItemCount === 0) {
-    return "Limited evidence";
-  }
-
-  if (node.scorePercent >= 70) {
-    return "Strong recent signal";
-  }
-
-  return "Needs review";
+  const labels: Record<AlgorithmRoadmapNodeProgressStatus, AlgorithmsProgressNodeModel["evidenceLabel"]> = {
+    not_started: "New", initial_exposure: "First pass", in_progress: "Practicing",
+    eligible_for_next: "Ready for next", mastered: "Mastered", maintenance: "Maintenance",
+  };
+  return labels[node.status];
 }
 
 function formatAlgorithmSignalLabel(value: string): string {

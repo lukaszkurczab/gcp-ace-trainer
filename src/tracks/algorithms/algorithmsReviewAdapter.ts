@@ -20,12 +20,9 @@ export function createAlgorithmsReviewQueueItems(
 ): ReviewQueueItem[] {
   const reviewReason = getReviewReason(attempt);
 
-  if (!reviewReason) {
-    return [];
-  }
-
   const createdAt = context?.now ?? attempt.answeredAt;
-  const dueAt = context?.dueAt ?? addDaysIso(createdAt, 1);
+  const kind = reviewReason ? "remediation" : "retention";
+  const dueAt = context?.dueAt ?? addDaysIso(createdAt, reviewReason ? 1 : 7);
 
   return [
     {
@@ -33,10 +30,11 @@ export function createAlgorithmsReviewQueueItems(
       dueAt,
       id: `review:${attempt.id}`,
       itemId: attempt.itemId,
+      kind,
       lastReviewedAt: undefined,
       mistakeTypeRefs: attempt.mistakeTypeRefs ?? feedback?.mistakeTypeRefs,
-      priority: reviewReason === "incorrect_attempt" ? "high" : "normal",
-      reasons: [reviewReason],
+      priority: reviewReason === "incorrect_attempt" ? "high" : kind === "retention" ? "low" : "normal",
+      reasons: [reviewReason ?? "due_spacing"],
       sourceAttemptId: attempt.id,
       trackId: ALGORITHMS_TRACK_ID,
     },

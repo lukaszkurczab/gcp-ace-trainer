@@ -1,4 +1,4 @@
-import type { TrainingAttempt } from "../../domain/training";
+import { getReviewQueueItemKind, type ReviewQueueItem, type TrainingAttempt } from "../../domain/training";
 import type { TrainingItemTaxonomyRef } from "../../domain/training";
 import {
   ALGORITHM_ROADMAP,
@@ -15,7 +15,9 @@ import {
   type AlgorithmScoringStatus,
 } from "./algorithmsScoringAdapter";
 
-export type AlgorithmRoadmapNodeProgressStatus = "not_started" | "started" | "completed";
+export type AlgorithmRoadmapNodeProgressStatus =
+  | "not_started" | "initial_exposure" | "in_progress"
+  | "eligible_for_next" | "mastered" | "maintenance";
 
 export type AlgorithmRoadmapNodeProgress = {
   completedItemCount: number;
@@ -24,7 +26,20 @@ export type AlgorithmRoadmapNodeProgress = {
   nodeId: AlgorithmRoadmapNodeId;
   scorePercent: number;
   status: AlgorithmRoadmapNodeProgressStatus;
-  unlockRequiredItemCount: number;
+  itemCoveragePercent: number;
+  coreSkillAtomCoveragePercent: number;
+  coveredCoreSkillAtomCount: number;
+  coreSkillAtomCount: number;
+  remediationDueCount: number;
+  criticalRemediationDueCount: number;
+  retentionDueCount: number;
+  retentionPassedCount: number;
+  eligibleForNext: boolean;
+  mastered: boolean;
+  nextRequiredAction: "start" | "continue_practice" | "cover_core_skills" | "remediate" |
+    "retention_check" | "ready_for_next" | "maintenance";
+  eligibleRequiredItemCount: number;
+  masteryRequiredItemCount: number;
 };
 
 export type AlgorithmProgressFacts = {
@@ -37,7 +52,7 @@ export type AlgorithmProgressFacts = {
   itemsCompleted: number;
   nodeProgress: AlgorithmRoadmapNodeProgress[];
   partialCount: number;
-  roadmapNodesCompleted: number;
+  roadmapNodesMastered: number;
   roadmapNodesStarted: number;
 };
 
@@ -52,6 +67,8 @@ export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
   items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
+  reviewQueueItems: readonly ReviewQueueItem[] = [],
+  now = new Date().toISOString(),
 ): AlgorithmProgressFacts {
   const activeRoadmapItems = items.filter((item) => item.roadmapNodeId);
   const activeRoadmapItemIds = new Set(activeRoadmapItems.map((item) => item.id));
@@ -61,8 +78,8 @@ export function buildAlgorithmProgressFacts(
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
   const nodeProgress = getRoadmapNodesWithActiveItems()
     .filter((node) => roadmapNodes.some((candidate) => candidate.id === node.id))
-    .map((node) => buildNodeProgress(node, activeRoadmapItems, latestAttemptByItemId));
-  const activeNode = getActiveNode(nodeProgress);
+    .map((node) => buildNodeProgress(node, activeRoadmapItems, algorithmAttempts, latestAttemptByItemId, reviewQueueItems, now));
+  const activeNode = getActiveNode(nodeProgress, roadmapNodes);
   const statusCounts = countLatestStatuses(latestAttemptByItemId);
 
   return {
@@ -75,7 +92,7 @@ export function buildAlgorithmProgressFacts(
     itemsCompleted: latestAttemptByItemId.size,
     nodeProgress,
     partialCount: statusCounts.partial,
-    roadmapNodesCompleted: nodeProgress.filter((node) => node.status === "completed").length,
+    roadmapNodesMastered: nodeProgress.filter((node) => node.mastered).length,
     roadmapNodesStarted: nodeProgress.filter((node) => node.status !== "not_started").length,
   };
 }
@@ -121,7 +138,10 @@ export function buildAlgorithmWeakAreaRecommendation(
 function buildNodeProgress(
   node: AlgorithmRoadmapNode,
   items: readonly AlgorithmTrainingItem[],
+  attempts: readonly TrainingAttempt[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
+  reviewQueueItems: readonly ReviewQueueItem[],
+  now: string,
 ): AlgorithmRoadmapNodeProgress {
   const nodeItems = items.filter((item) => item.roadmapNodeId === node.id);
   const latestNodeAttempts = nodeItems.flatMap((item) => {
@@ -131,7 +151,38 @@ function buildNodeProgress(
   const completedItemCount = latestNodeAttempts.length;
   const itemCount = nodeItems.length;
   const scorePercent = getNodeScorePercent(latestNodeAttempts);
-  const unlockRequiredItemCount = getNodeUnlockRequiredItemCount(itemCount);
+  const eligibleRequiredItemCount = Math.min(itemCount, Math.min(40, Math.max(25, Math.ceil(itemCount * 0.35))));
+  const masteryRequiredItemCount = Math.min(itemCount, Math.min(70, Math.max(35, Math.ceil(itemCount * 0.6))));
+  const coreSkillAtomIds = node.skillAtomIds ?? [];
+  const coveredCoreSkillAtomCount = coreSkillAtomIds.filter((id) =>
+    isCoreSkillAtomCovered(id, nodeItems, latestAttemptByItemId)).length;
+  const coreSkillAtomCount = coreSkillAtomIds.length;
+  const coreSkillAtomCoveragePercent = coreSkillAtomCount === 0
+    ? 100 : Math.round((coveredCoreSkillAtomCount / coreSkillAtomCount) * 100);
+  const nodeItemIds = new Set(nodeItems.map((item) => item.id));
+  const dueReviews = reviewQueueItems.filter((item) =>
+    item.trackId === "algorithms" && nodeItemIds.has(item.itemId) && item.dueAt <= now);
+  const remediationDue = dueReviews.filter((item) => getReviewQueueItemKind(item) === "remediation");
+  const retentionDueCount = dueReviews.filter((item) => getReviewQueueItemKind(item) === "retention").length;
+  const criticalRemediationDueCount = remediationDue.filter((item) =>
+    item.priority === "high" || item.priority === "urgent" || item.reasons.includes("repeated_mistake")).length;
+  const retainedSkillAtoms = new Set<string>();
+  for (const review of reviewQueueItems) {
+    if (!review.retentionPassedAt || !nodeItemIds.has(review.itemId)) continue;
+    const item = nodeItems.find((candidate) => candidate.id === review.itemId);
+    for (const id of getItemSkillAtomIds(item)) retainedSkillAtoms.add(id);
+  }
+  const retentionPassedCount = coreSkillAtomIds.filter((id) => retainedSkillAtoms.has(id)).length;
+  const eligibleForNext = completedItemCount >= eligibleRequiredItemCount &&
+    coreSkillAtomCoveragePercent >= 80 && scorePercent >= 80 && criticalRemediationDueCount === 0;
+  const mastered = completedItemCount >= masteryRequiredItemCount &&
+    coreSkillAtomCoveragePercent === 100 && scorePercent >= 85 && remediationDue.length === 0 &&
+    retentionPassedCount === coreSkillAtomCount &&
+    !hasRepeatedCriticalMistake(attempts.filter((attempt) => nodeItemIds.has(attempt.itemId)));
+  const status = mastered
+    ? (retentionDueCount > 0 ? "maintenance" : "mastered")
+    : eligibleForNext ? "eligible_for_next"
+    : getPreEligibilityStatus(completedItemCount, itemCount, scorePercent);
 
   return {
     completedItemCount,
@@ -139,29 +190,41 @@ function buildNodeProgress(
     label: node.label,
     nodeId: node.id,
     scorePercent,
-    status: getNodeStatus(completedItemCount, unlockRequiredItemCount, scorePercent),
-    unlockRequiredItemCount,
+    status,
+    itemCoveragePercent: itemCount > 0 ? Math.round((completedItemCount / itemCount) * 100) : 0,
+    coreSkillAtomCoveragePercent,
+    coveredCoreSkillAtomCount,
+    coreSkillAtomCount,
+    remediationDueCount: remediationDue.length,
+    criticalRemediationDueCount,
+    retentionDueCount,
+    retentionPassedCount,
+    eligibleForNext,
+    mastered,
+    nextRequiredAction: mastered ? "maintenance"
+      : remediationDue.length > 0 ? "remediate"
+      : eligibleForNext && retentionPassedCount < coreSkillAtomCount ? "retention_check"
+      : eligibleForNext ? "ready_for_next"
+      : completedItemCount === 0 ? "start"
+      : coreSkillAtomCoveragePercent < 80 ? "cover_core_skills"
+      : "continue_practice",
+    eligibleRequiredItemCount,
+    masteryRequiredItemCount,
   };
 }
 
-function getNodeStatus(
+function getPreEligibilityStatus(
   completedItemCount: number,
-  unlockRequiredItemCount: number,
+  itemCount: number,
   scorePercent: number,
 ): AlgorithmRoadmapNodeProgressStatus {
-  if (
-    unlockRequiredItemCount > 0 &&
-    completedItemCount >= unlockRequiredItemCount &&
-    scorePercent >= 70
-  ) {
-    return "completed";
-  }
-
-  return completedItemCount > 0 ? "started" : "not_started";
+  if (completedItemCount === 0) return "not_started";
+  const exposureCount = Math.min(itemCount, Math.min(5, Math.ceil(itemCount * 0.1)));
+  return completedItemCount >= exposureCount && scorePercent >= 60 ? "initial_exposure" : "in_progress";
 }
 
-function getNodeUnlockRequiredItemCount(itemCount: number): number {
-  return Math.min(10, itemCount);
+export function isRoadmapPrerequisiteSatisfied(status: AlgorithmRoadmapNodeProgressStatus): boolean {
+  return status === "eligible_for_next" || status === "mastered" || status === "maintenance";
 }
 
 function getNodeScorePercent(attempts: readonly TrainingAttempt[]): number {
@@ -182,8 +245,14 @@ function getNodeScorePercent(attempts: readonly TrainingAttempt[]): number {
 
 function getActiveNode(
   nodeProgress: readonly AlgorithmRoadmapNodeProgress[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
 ): AlgorithmRoadmapNodeProgress {
-  const firstIncompleteNode = nodeProgress.find((node) => node.status !== "completed");
+  const satisfiedIds = new Set(nodeProgress.filter((node) => isRoadmapPrerequisiteSatisfied(node.status)).map((node) => node.nodeId));
+  const firstIncompleteNode = nodeProgress.find((progress) => {
+    if (isRoadmapPrerequisiteSatisfied(progress.status)) return false;
+    const node = roadmapNodes.find((candidate) => candidate.id === progress.nodeId);
+    return node?.prerequisiteNodeIds.every((id) => satisfiedIds.has(id)) ?? false;
+  });
 
   if (firstIncompleteNode) {
     return firstIncompleteNode;
@@ -196,6 +265,41 @@ function getActiveNode(
   }
 
   return finalNode;
+}
+
+function getAttemptScore(attempt: TrainingAttempt): number {
+  const status = getAlgorithmAttemptStatus(attempt.result);
+  return status === "correct" ? 1 : status === "partial" ? 0.5 : 0;
+}
+
+function getItemSkillAtomIds(item: AlgorithmTrainingItem | undefined): readonly string[] {
+  if (!item) return [];
+  return [...new Set([item.primarySkillAtomId, ...(item.secondarySkillAtomIds ?? []),
+    ...item.taxonomyRefs.filter((ref) => ref.axisId === "skill_atom").map((ref) => ref.nodeId)])];
+}
+
+function isCoreSkillAtomCovered(
+  skillAtomId: string,
+  items: readonly AlgorithmTrainingItem[],
+  latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
+): boolean {
+  const linkedItems = items.filter((item) => getItemSkillAtomIds(item).includes(skillAtomId));
+  const attempts = linkedItems.flatMap((item) => {
+    const attempt = latestAttemptByItemId.get(item.id);
+    return attempt ? [attempt] : [];
+  });
+  const required = Math.min(2, linkedItems.length);
+  return required > 0 && attempts.length >= required &&
+    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) / attempts.length >= 0.75;
+}
+
+function hasRepeatedCriticalMistake(attempts: readonly TrainingAttempt[]): boolean {
+  const misses = new Map<string, number>();
+  for (const attempt of attempts) {
+    if (getAttemptScore(attempt) >= 0.75) continue;
+    misses.set(attempt.itemId, (misses.get(attempt.itemId) ?? 0) + 1);
+  }
+  return [...misses.values()].some((count) => count >= 2);
 }
 
 function getLatestAttemptByItemId(

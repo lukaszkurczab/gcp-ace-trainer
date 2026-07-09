@@ -301,7 +301,7 @@ test("Algorithms review queue receives partial attempts in both feedback modes",
   }
 });
 
-test("Algorithms correct review attempt clears the queue item", () => {
+test("Algorithms correct review attempt replaces remediation with a retention check", () => {
   const { check, item, session } = makeSubmissionFixture("single_choice");
   const submission = buildAlgorithmsSubmission({
     answeredAt: "2026-07-03T11:00:00.000Z",
@@ -317,9 +317,9 @@ test("Algorithms correct review attempt clears the queue item", () => {
     mode: "review",
   });
 
-  assert.equal(update.action, "clear");
-  assert.equal(update.itemId, item.id);
-  assert.equal(update.trackId, ALGORITHMS_TRACK_ID);
+  assert.equal(update.action, "keep");
+  assert.equal(update.reviewQueueItems[0]?.kind, "retention");
+  assert.deepEqual(update.reviewQueueItems[0]?.reasons, ["due_spacing"]);
   assert.equal(summary.reviewSession?.clearedItems, 1);
   assert.equal(summary.reviewSession?.stillNeedsReview, 0);
 });

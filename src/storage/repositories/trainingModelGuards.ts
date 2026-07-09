@@ -64,6 +64,8 @@ function isReviewQueueItem(value: unknown): value is ReviewQueueItem {
     typeof value.sourceAttemptId === "string" &&
     typeof value.createdAt === "string" &&
     typeof value.dueAt === "string" &&
+    (value.kind === undefined || value.kind === "remediation" || value.kind === "retention") &&
+    (value.retentionPassedAt === undefined || typeof value.retentionPassedAt === "string") &&
     isReviewPriority(value.priority) &&
     Array.isArray(value.reasons) &&
     value.reasons.every(isReviewReason) &&

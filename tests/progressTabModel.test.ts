@@ -210,7 +210,7 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   assert.equal(model.performanceSectionTitle, "Roadmap nodes");
   assert.equal(
     model.performanceScores[0]?.detail,
-    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} items completed. Limited evidence.`,
+    `0/${getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length} practiced. Core skills: 0/3 covered. Score: 0%.`,
   );
   assert.deepEqual(
     model.metrics.map((metric) => [metric.label, metric.value]),
@@ -219,12 +219,12 @@ test("Algorithms progress shows empty local facts before attempts", () => {
       ["Partial", 0],
       ["Incorrect", 0],
       ["Nodes started", 0],
-      ["Nodes completed", 0],
+      ["Nodes mastered", 0],
     ],
   );
   assert.deepEqual(model.activitySummary, {
     detail: "Current roadmap node: Complexity and constraints.",
-    label: "Items completed",
+    label: "Items practiced",
     value: 0,
   });
 });
@@ -258,7 +258,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
   assert.equal(model.hasData, true);
   assert.deepEqual(model.activitySummary, {
     detail: "Current roadmap node: Complexity and constraints.",
-    label: "Items completed",
+    label: "Items practiced",
     value: 1,
   });
   assert.deepEqual(
@@ -268,7 +268,7 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
       ["Partial", 0],
       ["Incorrect", 0],
       ["Nodes started", 1],
-      ["Nodes completed", 0],
+      ["Nodes mastered", 0],
     ],
   );
 });
@@ -299,9 +299,9 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
   const complexityItemCount = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints").length;
   const hashItemCount = getAlgorithmTrainingItemsForRoadmapNode("hash_map_and_set").length;
 
-  assert.equal(complexityNode?.detail, `1/${complexityItemCount} items completed. Strong recent signal.`);
+  assert.equal(complexityNode?.detail, `1/${complexityItemCount} practiced. Core skills: 0/3 covered. Score: 100%.`);
   assert.equal(complexityNode?.percent, Math.round((1 / complexityItemCount) * 100));
-  assert.equal(hashNode?.detail, `1/${hashItemCount} items completed. Needs review.`);
+  assert.equal(hashNode?.detail, `1/${hashItemCount} practiced. Core skills: 0/1 covered. Score: 0%.`);
   assert.equal(hashNode?.percent, Math.round((1 / hashItemCount) * 100));
   assert.equal(model.reviewQueueCount, 1);
   assert.equal(model.reviewQueueCopy, "1 due Algorithms item needs review.");
@@ -328,7 +328,7 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
       ["Partial", 0],
       ["Incorrect", 1],
       ["Nodes started", 2],
-      ["Nodes completed", 0],
+      ["Nodes mastered", 0],
     ],
   );
 });
@@ -355,7 +355,7 @@ test("Algorithms due review action routes to an Algorithms review practice sessi
   assert.equal(model.reviewAction?.params.feedbackMode, "afterEachAnswer");
 });
 
-test("Algorithms progress selects the active roadmap node from completed prerequisites", () => {
+test("Algorithms progress does not advance from ten correct prerequisite attempts", () => {
   const completedComplexityAttempts = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints")
     .slice(0, 10)
     .map((item) => makeAlgorithmAttempt(item.id, {
@@ -371,8 +371,8 @@ test("Algorithms progress selects the active roadmap node from completed prerequ
     trainingAttempts: completedComplexityAttempts,
   });
 
-  assert.equal(model.algorithmsProgress?.currentRoadmapNode.id, "arrays_and_strings");
-  assert.equal(model.algorithmsProgress?.currentRoadmapNode.label, "Arrays and strings");
+  assert.equal(model.algorithmsProgress?.currentRoadmapNode.id, "complexity_and_constraints");
+  assert.equal(model.algorithmsProgress?.nodes[0]?.status, "initial_exposure");
 });
 
 test("Algorithms progress detects weak roadmap and repeated mistake signals", () => {

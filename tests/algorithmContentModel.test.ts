@@ -954,7 +954,7 @@ test("Algorithms practice mode respects progress-unlocked roadmap nodes", () => 
   assert.deepEqual(selected.map((item) => item.id), ["practice-complexity"]);
 });
 
-test("Algorithms practice mode includes multiple unlocked nodes and item types when available", () => {
+test("Algorithms practice mode does not unlock multiple nodes from one attempt per prerequisite", () => {
   const practiceItems = [
     makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
     makeSelectableAlgorithmItem("practice-arrays-trace", "arrays_and_strings", "trace_next_step"),
@@ -973,12 +973,10 @@ test("Algorithms practice mode includes multiple unlocked nodes and item types w
     sessionLength: 5,
   });
 
-  assert.ok(new Set(selected.map((item) => item.roadmapNodeId)).size >= 2);
-  assert.ok(new Set(selected.map((item) => item.type)).size >= 2);
-  assert.ok(selected.some((item) => item.roadmapNodeId === "complexity_and_constraints"));
+  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity"]);
 });
 
-test("Algorithms practice mode represents weak nodes when attempt evidence exists", () => {
+test("Algorithms practice mode excludes weak nodes that are still locked", () => {
   const practiceItems = [
     makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
     makeSelectableAlgorithmItem("practice-arrays", "arrays_and_strings", "trace_next_step"),
@@ -997,11 +995,10 @@ test("Algorithms practice mode represents weak nodes when attempt evidence exist
     sessionLength: 3,
   });
 
-  assert.equal(selected[0]?.id, "practice-hash-weak");
-  assert.ok(selected.some((item) => item.roadmapNodeId === "complexity_and_constraints"));
+  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity"]);
 });
 
-test("Algorithms practice mode respects session length", () => {
+test("Algorithms practice mode respects evidence-gated availability before session length", () => {
   const practiceItems = [
     makeSelectableAlgorithmItem("practice-complexity", "complexity_and_constraints", "complexity_check"),
     makeSelectableAlgorithmItem("practice-arrays-trace", "arrays_and_strings", "trace_next_step"),
@@ -1019,7 +1016,7 @@ test("Algorithms practice mode respects session length", () => {
     sessionLength: 2,
   });
 
-  assert.equal(selected.length, 2);
+  assert.deepEqual(selected.map((item) => item.id), ["practice-complexity"]);
 });
 
 test("Algorithms default mode keeps current roadmap node selection", () => {

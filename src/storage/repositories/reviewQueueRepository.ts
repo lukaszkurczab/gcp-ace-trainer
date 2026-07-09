@@ -1,5 +1,5 @@
 import type { TrackId } from "../../domain";
-import type { ReviewPriority, ReviewQueueItem, ReviewReason, TrainingItemTaxonomyRef } from "../../domain/training";
+import { getReviewQueueItemKind, type ReviewPriority, type ReviewQueueItem, type ReviewReason, type TrainingItemTaxonomyRef } from "../../domain/training";
 import {
   mergeRepositoryReadWriteResult,
   readRepositoryJson,
@@ -122,6 +122,12 @@ function mergeReviewQueueItem(
   existing: ReviewQueueItem,
   incoming: ReviewQueueItem,
 ): ReviewQueueItem {
+  if (getReviewQueueItemKind(incoming) === "retention") {
+    return getReviewQueueItemKind(existing) === "retention"
+      ? { ...incoming, retentionPassedAt: incoming.createdAt }
+      : incoming;
+  }
+
   const repeatedMistakeReasons = isReviewAttemptReason(incoming.reasons) &&
     existing.sourceAttemptId !== incoming.sourceAttemptId
     ? ["repeated_mistake" as const]

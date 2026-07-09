@@ -5,6 +5,7 @@ import type { TrainingItemId, TrainingItemTaxonomyRef } from "./trainingItem";
 export type ReviewQueueItemId = string;
 
 export type ReviewPriority = "low" | "normal" | "high" | "urgent";
+export type ReviewQueueItemKind = "remediation" | "retention";
 
 export type ReviewReason =
   | "incorrect_attempt"
@@ -19,11 +20,26 @@ export type ReviewQueueItem = {
   dueAt: string;
   id: ReviewQueueItemId;
   itemId: TrainingItemId;
+  kind?: ReviewQueueItemKind;
   lastReviewedAt?: string;
   mistakeTypeRefs?: TrainingItemTaxonomyRef[];
   priority: ReviewPriority;
   reasons: ReviewReason[];
+  retentionPassedAt?: string;
   sourceAttemptId: TrainingAttemptId;
   taxonomyRefs?: TrainingItemTaxonomyRef[];
   trackId: TrackId;
 };
+
+export function getReviewQueueItemKind(
+  item: Pick<ReviewQueueItem, "kind" | "reasons">,
+): ReviewQueueItemKind {
+  if (item.kind) return item.kind;
+
+  return item.reasons.some((reason) =>
+    reason === "incorrect_attempt" ||
+    reason === "partial_credit" ||
+    reason === "repeated_mistake" ||
+    reason === "low_confidence"
+  ) ? "remediation" : "retention";
+}
