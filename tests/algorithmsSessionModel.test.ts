@@ -9,6 +9,11 @@ import {
   buildAlgorithmsSummaryActions,
   buildAlgorithmsSessionSummary,
   buildAlgorithmsSubmission,
+  formatElapsedTime,
+  formatSessionItemCount,
+  formatSubmittedSessionActionLabel,
+  getAnswerOptionVisualState,
+  getElapsedSessionSeconds,
   getAlgorithmsSessionModeIdForRouteMode,
   getAlgorithmsFeedbackState,
   hasAlgorithmsFeedbackDetails,
@@ -22,6 +27,64 @@ import {
   type AlgorithmStaticMicroCheck,
   type AlgorithmTrainingItem,
 } from "../src/tracks/algorithms";
+
+test("Algorithms active session item count omits Item copy", () => {
+  assert.equal(formatSessionItemCount(0, 20), "1 OF 20");
+  assert.equal(formatSessionItemCount(3, 20), "4 OF 20");
+  assert.equal(formatSessionItemCount(0, 20).includes("Item"), false);
+});
+
+test("Algorithms active session timer formats elapsed seconds", () => {
+  assert.equal(formatElapsedTime(0), "00:00");
+  assert.equal(formatElapsedTime(18), "00:18");
+  assert.equal(formatElapsedTime(64), "01:04");
+});
+
+test("Algorithms session timer derives elapsed time from session start", () => {
+  assert.equal(
+    getElapsedSessionSeconds("2026-07-03T10:00:00.000Z", Date.parse("2026-07-03T10:01:04.000Z")),
+    64,
+  );
+  assert.equal(
+    getElapsedSessionSeconds("2026-07-03T10:00:00.000Z", Date.parse("2026-07-03T09:59:59.000Z")),
+    0,
+  );
+  assert.equal(getElapsedSessionSeconds("not-a-date", Date.parse("2026-07-03T10:01:04.000Z")), 0);
+});
+
+test("Algorithms submitted answer footer uses compact action copy", () => {
+  assert.equal(formatSubmittedSessionActionLabel(false), "Next");
+  assert.equal(formatSubmittedSessionActionLabel(true), "Finish");
+  assert.notEqual(formatSubmittedSessionActionLabel(false), "Next Item");
+  assert.notEqual(formatSubmittedSessionActionLabel(true), "Finish Session");
+});
+
+test("Algorithms answer option visual state uses color-state semantics only", () => {
+  assert.equal(
+    getAnswerOptionVisualState({ correct: false, selected: true, submitted: false }),
+    "selected",
+  );
+  assert.equal(
+    getAnswerOptionVisualState({ correct: false, selected: false, submitted: false }),
+    "idle",
+  );
+  assert.equal(
+    getAnswerOptionVisualState({ correct: true, selected: true, submitted: true }),
+    "selected_correct",
+  );
+  assert.equal(
+    getAnswerOptionVisualState({ correct: false, selected: true, submitted: true }),
+    "selected_incorrect",
+  );
+  assert.equal(
+    getAnswerOptionVisualState({ correct: true, selected: false, submitted: true }),
+    "expected_correct",
+  );
+  assert.equal(
+    getAnswerOptionVisualState({ correct: false, selected: false, submitted: true }),
+    "disabled",
+  );
+});
 
 test("Algorithms afterEachAnswer derives immediate feedback state after scoring", () => {
   const { check, item, session } = makeSubmissionFixture("single_choice");

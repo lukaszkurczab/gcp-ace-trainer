@@ -35,6 +35,14 @@ export type AlgorithmsFeedbackState = {
   showImmediateFeedback: boolean;
 };
 
+export type AnswerOptionVisualState =
+  | "idle"
+  | "selected"
+  | "selected_correct"
+  | "selected_incorrect"
+  | "expected_correct"
+  | "disabled";
+
 export type AlgorithmsSessionReviewItem = {
   commonTrap: string;
   complexity?: string;
@@ -130,6 +138,46 @@ export function getAlgorithmsFeedbackState(
     hasSubmittedAnswer: score !== null,
     showImmediateFeedback: feedbackMode === "afterEachAnswer" && score !== null,
   };
+}
+
+export function formatSessionItemCount(currentIndex: number, totalCount: number): string {
+  return `${currentIndex + 1} OF ${totalCount}`;
+}
+
+export function formatElapsedTime(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+}
+
+export function getElapsedSessionSeconds(startedAt: string, nowMs: number): number {
+  const startedAtMs = Date.parse(startedAt);
+
+  if (Number.isNaN(startedAtMs) || nowMs <= startedAtMs) {
+    return 0;
+  }
+
+  return Math.floor((nowMs - startedAtMs) / 1000);
+}
+
+export function formatSubmittedSessionActionLabel(isFinalItem: boolean): "Finish" | "Next" {
+  return isFinalItem ? "Finish" : "Next";
+}
+
+export function getAnswerOptionVisualState(input: {
+  correct: boolean;
+  selected: boolean;
+  submitted: boolean;
+}): AnswerOptionVisualState {
+  if (!input.submitted) {
+    return input.selected ? "selected" : "idle";
+  }
+
+  if (input.selected && input.correct) return "selected_correct";
+  if (input.selected && !input.correct) return "selected_incorrect";
+  if (!input.selected && input.correct) return "expected_correct";
+  return "disabled";
 }
 
 export function hasAlgorithmsFeedbackDetails(

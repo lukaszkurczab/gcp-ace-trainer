@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   EmptyState,
-  Icon,
   ProgressBar,
   Screen,
   SectionHeader,
@@ -59,10 +58,16 @@ import {
   getAlgorithmsSessionModeIdForRouteMode,
   buildAlgorithmsReviewQueueUpdate,
   buildAlgorithmsSubmission,
+  formatElapsedTime,
+  formatSessionItemCount,
+  formatSubmittedSessionActionLabel,
+  getAnswerOptionVisualState,
+  getElapsedSessionSeconds,
   formatAlgorithmItemType,
   formatAlgorithmStatus,
   getAlgorithmsFeedbackState,
   hasAlgorithmsFeedbackDetails,
+  type AnswerOptionVisualState,
   type AlgorithmsSubmission,
   type AlgorithmsSummaryAction,
   type AlgorithmsSessionSummary,
@@ -87,6 +92,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [complexityAnswer, setComplexityAnswer] = useState<ComplexityAnswer>({});
   const [checkedScore, setCheckedScore] = useState<AlgorithmStaticCheckScore | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
   const [summary, setSummary] = useState<AlgorithmsSessionSummary | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
@@ -190,9 +196,25 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const canCheck = currentCheck ? hasAnswer(currentCheck, selectedOptionIds, complexityAnswer) : false;
   const feedbackMode = sessionConfig?.feedbackMode ?? "afterEachAnswer";
   const feedbackState = getAlgorithmsFeedbackState(feedbackMode, checkedScore);
+  const timerLabel = formatElapsedTime(elapsedSeconds);
+  const itemCountLabel = formatSessionItemCount(currentIndex, items.length);
   const summaryActions = summary
     ? buildAlgorithmsSummaryActions(summary, sessionConfig)
     : [];
+
+  useEffect(() => {
+    if (!session || summary) {
+      return;
+    }
+
+    setElapsedSeconds(getElapsedSessionSeconds(session.startedAt, Date.now()));
+
+    const intervalId = setInterval(() => {
+      setElapsedSeconds(getElapsedSessionSeconds(session.startedAt, Date.now()));
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [session, summary]);
 
   function resetAnswerState() {
     setSelectedOptionIds([]);
@@ -357,7 +379,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   if (summary) {
     return (
       <Screen edges={["top", "bottom"]}>
-        <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
+        <SummaryTopBar onExit={() => resetToPracticeHubAfterSession(navigation, node.id)} />
         <Card variant="tonal" style={styles.summaryCard}>
           <Text style={styles.heroEyebrow}>Session summary</Text>
           <SectionHeader
@@ -488,28 +510,29 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       style={styles.sessionContent}
       footer={
         feedbackState.hasSubmittedAnswer ? (
-          <Button onPress={() => void goNext()}>
-            {currentIndex >= items.length - 1 ? "Finish Session" : "Next Item"}
-          </Button>
+          <SubmittedAnswerFooter
+            buttonLabel={formatSubmittedSessionActionLabel(currentIndex >= items.length - 1)}
+            correctCount={checkedScore?.result.kind === "partial_credit" ? checkedScore.result.earnedPoints : checkedScore?.status === "correct" ? 1 : 0}
+            maxCount={checkedScore?.result.kind === "partial_credit" ? checkedScore.result.maxPoints : 1}
+            onPress={() => void goNext()}
+            statusLabel={checkedScore ? formatAlgorithmStatus(checkedScore.status) : ""}
+          />
         ) : (
           <Button disabled={!canCheck || isSubmitting} onPress={() => void checkAnswer()}>
-            {feedbackMode === "atSessionEnd"
-              ? currentIndex >= items.length - 1 ? "Finish Session" : "Next Item"
-              : "Check Answer"}
+            Check Answer
           </Button>
         )
       }
     >
-      <SessionTopBar onClose={() => resetToPracticeHubAfterSession(navigation, node.id)} />
+      <SessionTopBar itemCountLabel={itemCountLabel} timerLabel={timerLabel} />
 
       <View style={styles.progressBlock}>
         {sessionConfig?.mode === "practice" ? (
-          <Text style={styles.itemCount}>Mixed practice</Text>
+          <Text style={styles.sessionModeLabel}>Mixed practice</Text>
         ) : null}
         {sessionConfig?.mode === "weakArea" ? (
-          <Text style={styles.itemCount}>Weak area: {node.label}</Text>
+          <Text style={styles.sessionModeLabel}>Weak area: {node.label}</Text>
         ) : null}
-        <Text style={styles.itemCount}>Item {currentIndex + 1} of {items.length}</Text>
         <ProgressBar
           progress={progress}
           tone={feedbackState.showImmediateFeedback && checkedScore ? getProgressTone(checkedScore.status) : "primary"}
@@ -539,11 +562,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
           check={currentCheck}
           checkOptions={currentCheckOptions}
           complexityAnswer={complexityAnswer}
+          interactionDisabled={isSubmitting}
           onResetOrder={() => setSelectedOptionIds([])}
           onSelectComplexity={selectComplexity}
           onSelectOption={selectOption}
           selectedOptionIds={selectedOptionIds}
-          submitted={feedbackState.hasSubmittedAnswer || isSubmitting}
+          submitted={feedbackState.hasSubmittedAnswer}
         />
       </Card>
 
@@ -606,21 +630,52 @@ function TraceDrillPrompt({ check, item, node }: TraceDrillPromptProps) {
 }
 
 type SessionTopBarProps = {
-  onClose: () => void;
+  itemCountLabel: string;
+  timerLabel: string;
 };
 
-function SessionTopBar({ onClose }: SessionTopBarProps) {
+function SessionTopBar({ itemCountLabel, timerLabel }: SessionTopBarProps) {
   return (
     <View style={styles.sessionTopBar}>
-      <Pressable
-        accessibilityLabel="Close Algorithms session"
-        accessibilityRole="button"
-        onPress={onClose}
-        style={({ pressed }) => [styles.closeButton, pressed ? styles.pressed : null]}
-      >
-        <Icon name="close" size={18} />
-      </Pressable>
+      <Text style={styles.sessionTimer}>{timerLabel}</Text>
+      <Text style={styles.sessionItemCount}>{itemCountLabel}</Text>
+    </View>
+  );
+}
+
+function SummaryTopBar({ onExit }: { onExit: () => void }) {
+  return (
+    <View style={styles.summaryTopBar}>
       <Text style={styles.sessionBrand}>Patternly</Text>
+      <Button onPress={onExit} variant="ghost">Exit</Button>
+    </View>
+  );
+}
+
+function SubmittedAnswerFooter({
+  buttonLabel,
+  correctCount,
+  maxCount,
+  onPress,
+  statusLabel,
+}: {
+  buttonLabel: string;
+  correctCount: number;
+  maxCount: number;
+  onPress: () => void;
+  statusLabel: string;
+}) {
+  return (
+    <View style={styles.submittedFooter}>
+      <View style={styles.submittedFooterCopy}>
+        <Text style={styles.submittedFooterStatus}>{statusLabel}</Text>
+        <Text style={styles.submittedFooterDetail}>
+          {correctCount} / {maxCount} correct
+        </Text>
+      </View>
+      <Button onPress={onPress} style={styles.submittedFooterButton}>
+        {buttonLabel}
+      </Button>
     </View>
   );
 }
@@ -629,6 +684,7 @@ type AnswerControlProps = {
   check: AlgorithmStaticMicroCheck;
   checkOptions: readonly NonNullable<AlgorithmStaticMicroCheck["options"]>[number][];
   complexityAnswer: ComplexityAnswer;
+  interactionDisabled: boolean;
   onResetOrder: () => void;
   onSelectComplexity: (dimension: ComplexityDimension, value: string) => void;
   onSelectOption: (check: AlgorithmStaticMicroCheck, optionId: string) => void;
@@ -640,6 +696,7 @@ function AnswerControl({
   check,
   checkOptions,
   complexityAnswer,
+  interactionDisabled,
   onResetOrder,
   onSelectComplexity,
   onSelectOption,
@@ -647,15 +704,21 @@ function AnswerControl({
   submitted,
 }: AnswerControlProps) {
   if (check.type === "complexity_pair") {
+    const expectedComplexity = getExpectedComplexityAnswer(check);
+
     return (
       <View style={styles.complexityGroups}>
         <ComplexityChoiceGroup
+          expectedValue={expectedComplexity?.time}
+          interactionDisabled={interactionDisabled}
           label="Time"
           onSelect={(value) => onSelectComplexity("time", value)}
           selectedValue={complexityAnswer.time}
           submitted={submitted}
         />
         <ComplexityChoiceGroup
+          expectedValue={expectedComplexity?.space}
+          interactionDisabled={interactionDisabled}
           label="Space"
           onSelect={(value) => onSelectComplexity("space", value)}
           selectedValue={complexityAnswer.space}
@@ -685,12 +748,16 @@ function AnswerControl({
           <OptionButton
             key={option.id}
             label={option.text}
+            interactionDisabled={interactionDisabled}
             onPress={() => onSelectOption(check, option.id)}
-            selected={false}
-            submitted={submitted}
+            visualState={getAnswerOptionVisualState({
+              correct: getCorrectOptionIds(check).has(option.id),
+              selected: false,
+              submitted,
+            })}
           />
         ))}
-        <Button disabled={submitted || selectedOptionIds.length === 0} onPress={onResetOrder} variant="secondary">
+        <Button disabled={submitted || interactionDisabled || selectedOptionIds.length === 0} onPress={onResetOrder} variant="secondary">
           Reset Order
         </Button>
       </View>
@@ -703,9 +770,13 @@ function AnswerControl({
         <OptionButton
           key={option.id}
           label={option.text}
+          interactionDisabled={interactionDisabled}
           onPress={() => onSelectOption(check, option.id)}
-          selected={selectedOptionIds.includes(option.id)}
-          submitted={submitted}
+          visualState={getAnswerOptionVisualState({
+            correct: getCorrectOptionIds(check).has(option.id),
+            selected: selectedOptionIds.includes(option.id),
+            submitted,
+          })}
         />
       ))}
     </View>
@@ -713,6 +784,8 @@ function AnswerControl({
 }
 
 type ComplexityChoiceGroupProps = {
+  expectedValue?: string;
+  interactionDisabled: boolean;
   label: string;
   onSelect: (value: string) => void;
   selectedValue?: string;
@@ -720,6 +793,8 @@ type ComplexityChoiceGroupProps = {
 };
 
 function ComplexityChoiceGroup({
+  expectedValue,
+  interactionDisabled,
   label,
   onSelect,
   selectedValue,
@@ -729,50 +804,60 @@ function ComplexityChoiceGroup({
     <View style={styles.complexityGroup}>
       <Text style={styles.groupLabel}>{label}</Text>
       <View style={styles.choiceWrap}>
-        {complexityChoices.map((choice) => (
-          <Pressable
-            accessibilityRole="button"
-            disabled={submitted}
-            key={`${label}-${choice}`}
-            onPress={() => onSelect(choice)}
-            style={({ pressed }) => [
-              styles.choiceChip,
-              selectedValue === choice ? styles.choiceChipSelected : null,
-              pressed && !submitted ? styles.pressed : null,
-            ]}
-          >
-            <View style={[styles.choiceDot, selectedValue === choice ? styles.choiceDotSelected : null]} />
-            <Text style={[styles.choiceText, selectedValue === choice ? styles.choiceTextSelected : null]}>
-              {choice}
-            </Text>
-          </Pressable>
-        ))}
+        {complexityChoices.map((choice) => {
+          const visualState = getAnswerOptionVisualState({
+            correct: expectedValue === choice,
+            selected: selectedValue === choice,
+            submitted,
+          });
+
+          return (
+            <Pressable
+              accessibilityRole="button"
+              disabled={submitted || interactionDisabled}
+              key={`${label}-${choice}`}
+              onPress={() => onSelect(choice)}
+              style={({ pressed }) => [
+                styles.choiceChip,
+                getChoiceChipStyle(visualState),
+                pressed && !submitted && !interactionDisabled ? styles.pressed : null,
+              ]}
+            >
+              <View style={[styles.choiceDot, getChoiceDotStyle(visualState)]} />
+              <Text style={[styles.choiceText, getChoiceTextStyle(visualState)]}>
+                {choice}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
 }
 
 type OptionButtonProps = {
+  interactionDisabled: boolean;
   label: string;
   onPress: () => void;
-  selected: boolean;
-  submitted: boolean;
+  visualState: AnswerOptionVisualState;
 };
 
-function OptionButton({ label, onPress, selected, submitted }: OptionButtonProps) {
+function OptionButton({ interactionDisabled, label, onPress, visualState }: OptionButtonProps) {
+  const submitted = visualState !== "idle" && visualState !== "selected";
+
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={submitted}
+      disabled={submitted || interactionDisabled}
       onPress={onPress}
       style={({ pressed }) => [
         styles.optionCard,
-        selected ? styles.optionSelected : null,
-        pressed && !submitted ? styles.pressed : null,
+        getOptionCardStyle(visualState),
+        pressed && !submitted && !interactionDisabled ? styles.pressed : null,
       ]}
     >
-      <View style={[styles.optionMarker, selected ? styles.optionMarkerSelected : null]} />
-      <Text style={styles.optionText}>{label}</Text>
+      <View style={[styles.optionMarker, getOptionMarkerStyle(visualState)]} />
+      <Text style={[styles.optionText, getOptionTextStyle(visualState)]}>{label}</Text>
     </Pressable>
   );
 }
@@ -805,7 +890,6 @@ function FeedbackCard({
   return (
     <Card style={styles.feedbackCard}>
       <View style={styles.feedbackHeader}>
-        <Text style={styles.feedbackTitle}>Feedback</Text>
         <Badge label={feedback.statusLabel} tone={getFeedbackStatusTone(feedback.status)} />
       </View>
 
@@ -1025,6 +1109,84 @@ function getOptionText(check: AlgorithmStaticMicroCheck, optionId: string): stri
   return check.options?.find((option) => option.id === optionId)?.text ?? optionId;
 }
 
+function getCorrectOptionIds(check: AlgorithmStaticMicroCheck): ReadonlySet<string> {
+  if (Array.isArray(check.correctAnswer)) {
+    return new Set(check.correctAnswer);
+  }
+
+  if (typeof check.correctAnswer === "string") {
+    return new Set([check.correctAnswer]);
+  }
+
+  return new Set();
+}
+
+function getExpectedComplexityAnswer(
+  check: AlgorithmStaticMicroCheck,
+): { space: string; time: string } | null {
+  if (
+    check.type === "complexity_pair" &&
+    typeof check.correctAnswer === "object" &&
+    !Array.isArray(check.correctAnswer) &&
+    "time" in check.correctAnswer &&
+    "space" in check.correctAnswer
+  ) {
+    return check.correctAnswer;
+  }
+
+  return null;
+}
+
+function getOptionCardStyle(state: AnswerOptionVisualState) {
+  if (state === "selected") return styles.optionSelected;
+  if (state === "selected_correct" || state === "expected_correct") return styles.optionCorrect;
+  if (state === "selected_incorrect") return styles.optionIncorrect;
+  if (state === "disabled") return styles.optionDisabled;
+  return null;
+}
+
+function getOptionMarkerStyle(state: AnswerOptionVisualState) {
+  if (state === "selected") return styles.optionMarkerSelected;
+  if (state === "selected_correct" || state === "expected_correct") return styles.optionMarkerCorrect;
+  if (state === "selected_incorrect") return styles.optionMarkerIncorrect;
+  if (state === "disabled") return styles.optionMarkerDisabled;
+  return null;
+}
+
+function getOptionTextStyle(state: AnswerOptionVisualState) {
+  if (state === "selected" || state === "selected_correct" || state === "expected_correct" || state === "selected_incorrect") {
+    return styles.optionTextEmphasis;
+  }
+
+  if (state === "disabled") return styles.optionTextDisabled;
+  return null;
+}
+
+function getChoiceChipStyle(state: AnswerOptionVisualState) {
+  if (state === "selected") return styles.choiceChipSelected;
+  if (state === "selected_correct" || state === "expected_correct") return styles.choiceChipCorrect;
+  if (state === "selected_incorrect") return styles.choiceChipIncorrect;
+  if (state === "disabled") return styles.choiceChipDisabled;
+  return null;
+}
+
+function getChoiceDotStyle(state: AnswerOptionVisualState) {
+  if (state === "selected") return styles.choiceDotSelected;
+  if (state === "selected_correct" || state === "expected_correct") return styles.choiceDotCorrect;
+  if (state === "selected_incorrect") return styles.choiceDotIncorrect;
+  if (state === "disabled") return styles.choiceDotDisabled;
+  return null;
+}
+
+function getChoiceTextStyle(state: AnswerOptionVisualState) {
+  if (state === "selected" || state === "selected_correct" || state === "expected_correct" || state === "selected_incorrect") {
+    return styles.choiceTextSelected;
+  }
+
+  if (state === "disabled") return styles.choiceTextDisabled;
+  return null;
+}
+
 const styles = StyleSheet.create({
   sessionContent: {
     paddingBottom: spacing.xxxl,
@@ -1034,19 +1196,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  closeButton: {
-    alignItems: "center",
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
-    borderRadius: radius.pill,
-    borderWidth: StyleSheet.hairlineWidth,
-    height: 40,
-    justifyContent: "center",
-    width: 40,
+  sessionTimer: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+    fontVariant: ["tabular-nums"],
+  },
+  sessionItemCount: {
+    ...typography.caption,
+    color: colors.dark.textSecondary,
+    fontVariant: ["tabular-nums"],
+    letterSpacing: 0.8,
   },
   sessionBrand: {
     ...typography.bodyStrong,
     color: colors.dark.textPrimary,
+  },
+  summaryTopBar: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   pressed: {
     opacity: 0.82,
@@ -1054,10 +1222,32 @@ const styles = StyleSheet.create({
   progressBlock: {
     gap: spacing.sm,
   },
-  itemCount: {
+  sessionModeLabel: {
     ...typography.caption,
     color: colors.dark.textMuted,
     textTransform: "uppercase",
+  },
+  submittedFooter: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  submittedFooterCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  submittedFooterStatus: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
+  submittedFooterDetail: {
+    ...typography.small,
+    color: colors.dark.textSecondary,
+    fontVariant: ["tabular-nums"],
+  },
+  submittedFooterButton: {
+    minWidth: 120,
   },
   itemCard: {
     gap: spacing.md,
@@ -1142,6 +1332,19 @@ const styles = StyleSheet.create({
     borderColor: colors.dark.primary,
     borderWidth: 2,
   },
+  optionCorrect: {
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.success,
+    borderWidth: 2,
+  },
+  optionIncorrect: {
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.danger,
+    borderWidth: 2,
+  },
+  optionDisabled: {
+    opacity: 0.62,
+  },
   optionMarker: {
     borderColor: colors.dark.borderStrong,
     borderRadius: radius.pill,
@@ -1153,10 +1356,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dark.primary,
     borderColor: colors.dark.primary,
   },
+  optionMarkerCorrect: {
+    backgroundColor: colors.dark.success,
+    borderColor: colors.dark.success,
+  },
+  optionMarkerIncorrect: {
+    backgroundColor: colors.dark.danger,
+    borderColor: colors.dark.danger,
+  },
+  optionMarkerDisabled: {
+    borderColor: colors.dark.border,
+  },
   optionText: {
     ...typography.body,
     color: colors.dark.textPrimary,
     flex: 1,
+  },
+  optionTextEmphasis: {
+    color: colors.dark.textPrimary,
+    fontWeight: "700",
+  },
+  optionTextDisabled: {
+    color: colors.dark.textMuted,
   },
   complexityGroups: {
     gap: spacing.lg,
@@ -1192,6 +1413,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md - 1,
     paddingVertical: spacing.sm - 1,
   },
+  choiceChipCorrect: {
+    backgroundColor: colors.dark.successSoft,
+    borderColor: colors.dark.success,
+    borderWidth: 2,
+    paddingHorizontal: spacing.md - 1,
+    paddingVertical: spacing.sm - 1,
+  },
+  choiceChipIncorrect: {
+    backgroundColor: colors.dark.dangerSoft,
+    borderColor: colors.dark.danger,
+    borderWidth: 2,
+    paddingHorizontal: spacing.md - 1,
+    paddingVertical: spacing.sm - 1,
+  },
+  choiceChipDisabled: {
+    opacity: 0.62,
+  },
   choiceText: {
     ...typography.small,
     color: colors.dark.textSecondary,
@@ -1199,6 +1437,9 @@ const styles = StyleSheet.create({
   choiceTextSelected: {
     color: colors.dark.textPrimary,
     fontWeight: "700",
+  },
+  choiceTextDisabled: {
+    color: colors.dark.textMuted,
   },
   choiceDot: {
     backgroundColor: "transparent",
@@ -1211,6 +1452,17 @@ const styles = StyleSheet.create({
   choiceDotSelected: {
     backgroundColor: colors.dark.primary,
     borderColor: colors.dark.primary,
+  },
+  choiceDotCorrect: {
+    backgroundColor: colors.dark.success,
+    borderColor: colors.dark.success,
+  },
+  choiceDotIncorrect: {
+    backgroundColor: colors.dark.danger,
+    borderColor: colors.dark.danger,
+  },
+  choiceDotDisabled: {
+    borderColor: colors.dark.border,
   },
   selectedOrder: {
     backgroundColor: colors.dark.surface,
