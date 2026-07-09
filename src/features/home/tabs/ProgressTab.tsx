@@ -26,7 +26,7 @@ import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   buildProgressTabModel,
   type AlgorithmsProgressScreenModel,
-  type ProgressReviewAction,
+  type ProgressAction,
 } from "./progressTabModel";
 
 type ProgressTabProps = {
@@ -37,7 +37,7 @@ type ProgressTabProps = {
   practiceHistory: PracticeAnswerRecord[];
   reviewQueueItems?: readonly ReviewQueueItem[];
   trainingAttempts?: TrainingAttempt[];
-  onOpenReviewQueue?: (action: ProgressReviewAction) => void;
+  onProgressAction?: (action: ProgressAction) => void;
 };
 
 export function ProgressTab({
@@ -48,7 +48,7 @@ export function ProgressTab({
   practiceHistory,
   reviewQueueItems = [],
   trainingAttempts = [],
-  onOpenReviewQueue,
+  onProgressAction,
 }: ProgressTabProps) {
   const progress = buildProgressTabModel({
     activeTrackId: activeTrack.id,
@@ -65,7 +65,7 @@ export function ProgressTab({
     return (
       <AlgorithmsProgressContent
         model={progress.algorithmsProgress}
-        onAction={onOpenReviewQueue}
+        onProgressAction={onProgressAction}
       />
     );
   }
@@ -94,8 +94,8 @@ export function ProgressTab({
             <Text style={styles.warningText}>{progress.warning}</Text>
           </View>
         ) : null}
-        {progress.reviewActionEnabled && reviewAction && onOpenReviewQueue ? (
-          <Button onPress={() => onOpenReviewQueue(reviewAction)} variant="secondary">
+        {progress.reviewActionEnabled && reviewAction && onProgressAction ? (
+          <Button onPress={() => onProgressAction(reviewAction)} variant="secondary">
             {progress.reviewActionLabel}
           </Button>
         ) : (
@@ -183,10 +183,10 @@ export function ProgressTab({
 
 function AlgorithmsProgressContent({
   model,
-  onAction,
+  onProgressAction,
 }: {
   model: AlgorithmsProgressScreenModel;
-  onAction?: (action: ProgressReviewAction) => void;
+  onProgressAction?: (action: ProgressAction) => void;
 }) {
   const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(!model.diagnostics.collapsedByDefault);
@@ -208,16 +208,16 @@ function AlgorithmsProgressContent({
         <Text style={styles.priorityTitle}>{model.priority.title}</Text>
         <Text style={styles.mutedText}>{model.priority.detail}</Text>
         <Button
-          disabled={!onAction}
-          onPress={() => onAction?.(model.priority.primaryAction)}
+          disabled={!onProgressAction}
+          onPress={() => onProgressAction?.(model.priority.primaryAction)}
         >
           {model.priority.primaryActionLabel}
         </Button>
         {model.priority.secondaryAction && model.priority.secondaryActionLabel ? (
           <Button
-            disabled={!onAction}
-            onPress={() => onAction?.(model.priority.secondaryAction!)}
-            variant="secondary"
+            disabled={!onProgressAction}
+            onPress={() => onProgressAction?.(model.priority.secondaryAction!)}
+            variant="ghost"
           >
             {model.priority.secondaryActionLabel}
           </Button>
@@ -235,8 +235,16 @@ function AlgorithmsProgressContent({
             />
           </View>
           <View style={styles.focusMetrics}>
-            <FocusMetric label="Practiced" value={model.currentFocus.practicedLabel} />
-            <FocusMetric label="Core skills" value={model.currentFocus.coreSkillsLabel} />
+            <FocusMetric
+              label="Practiced"
+              showDivider
+              value={model.currentFocus.practicedLabel}
+            />
+            <FocusMetric
+              label="Core skills"
+              showDivider
+              value={model.currentFocus.coreSkillsLabel}
+            />
             <FocusMetric label="Score" value={model.currentFocus.scoreLabel} />
           </View>
           <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
@@ -280,7 +288,9 @@ function AlgorithmsProgressContent({
             <View key={node.id} style={styles.roadmapRow}>
               <View style={styles.roadmapCopy}>
                 <Text style={styles.performanceTitle}>{node.title}</Text>
-                <ProgressBar progress={node.progressPercent / 100} tone="primary" />
+                {node.showProgress ? (
+                  <ProgressBar progress={node.progressPercent / 100} tone="primary" />
+                ) : null}
               </View>
               <Badge label={node.label} tone={getBadgeTone(node.tone)} />
             </View>
@@ -325,9 +335,17 @@ function AlgorithmsProgressContent({
   );
 }
 
-function FocusMetric({ label, value }: { label: string; value: string }) {
+function FocusMetric({
+  label,
+  showDivider = false,
+  value,
+}: {
+  label: string;
+  showDivider?: boolean;
+  value: string;
+}) {
   return (
-    <View style={styles.focusMetric}>
+    <View style={[styles.focusMetric, showDivider ? styles.focusMetricDivider : null]}>
       <Text style={styles.focusMetricValue}>{value}</Text>
       <Text style={styles.focusMetricLabel}>{label}</Text>
     </View>
@@ -454,13 +472,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   focusMetric: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
     flex: 1,
     gap: spacing.xs,
-    padding: spacing.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  focusMetricDivider: {
+    borderColor: colors.dark.border,
+    borderRightWidth: StyleSheet.hairlineWidth,
   },
   focusMetricValue: {
     ...typography.bodyStrong,

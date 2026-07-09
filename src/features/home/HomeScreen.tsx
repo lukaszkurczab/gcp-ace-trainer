@@ -35,7 +35,7 @@ import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { buildPracticeSessionConfig } from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
-import type { ProgressReviewAction } from "./tabs/progressTabModel";
+import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsTab } from "./tabs/SettingsTab";
 import {
   CLEAR_LOCAL_HISTORY_CONFIRMATION,
@@ -153,7 +153,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     );
   }
 
-  function openReviewQueue(action: ProgressReviewAction) {
+  function handleProgressAction(action: ProgressAction) {
     if (action.kind === "practiceSession") {
       navigation.navigate(ROUTES.PRACTICE_SESSION, action.params);
       return;
@@ -195,7 +195,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             analytics={analytics}
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
-            onOpenReviewQueue={openReviewQueue}
+            onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}
             trainingAttempts={data.trainingAttempts}

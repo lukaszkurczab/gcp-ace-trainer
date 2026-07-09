@@ -50,10 +50,10 @@ export type ProgressTabPerformanceScore = {
 export type LearningPriorityModel = {
   detail: string;
   label: string;
-  primaryAction: ProgressReviewAction;
+  primaryAction: ProgressAction;
   primaryActionLabel: string;
   primaryActionMode: PracticeSessionMode;
-  secondaryAction?: ProgressReviewAction;
+  secondaryAction?: ProgressAction;
   secondaryActionLabel?: string;
   secondaryActionMode?: PracticeSessionMode;
   title: string;
@@ -87,6 +87,7 @@ export type RoadmapSummaryNodeModel = {
   id: string;
   label: string;
   progressPercent: number;
+  showProgress: boolean;
   title: string;
   tone: LearningTone;
 };
@@ -118,7 +119,7 @@ export type ProgressTabModel = {
   metrics: ProgressTabMetric[];
   performanceScores: ProgressTabPerformanceScore[];
   performanceSectionTitle: "Performance by domain" | "Performance areas" | "Roadmap nodes";
-  reviewAction?: ProgressReviewAction;
+  reviewAction?: ProgressAction;
   reviewActionEnabled: boolean;
   reviewActionLabel: string;
   reviewQueueCount: number;
@@ -126,7 +127,7 @@ export type ProgressTabModel = {
   warning?: string;
 };
 
-export type ProgressReviewAction =
+export type ProgressAction =
   | {
       kind: "legacyMistakesReview";
     }
@@ -259,6 +260,38 @@ function buildAlgorithmsProgressTabModel(
   };
 }
 
+type AlgorithmsRemediationState = {
+  attentionNodeId?: string;
+  attentionNodeLabel?: string;
+  criticalRemediationCount: number;
+  remediationCount: number;
+};
+
+function getAlgorithmsRemediationState(input: {
+  dueReviewItems: readonly ReviewQueueItem[];
+  nodeProgress: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"];
+}): AlgorithmsRemediationState {
+  const remediationItems = input.dueReviewItems.filter(
+    (item) => getReviewQueueItemKind(item) === "remediation",
+  );
+  const criticalRemediationCount = remediationItems.filter(
+    (item) =>
+      item.priority === "high" ||
+      item.priority === "urgent" ||
+      item.reasons.includes("repeated_mistake"),
+  ).length;
+  const attentionNode = criticalRemediationCount > 0
+    ? input.nodeProgress.find((node) => node.criticalRemediationDueCount > 0)
+    : input.nodeProgress.find((node) => node.remediationDueCount > 0);
+
+  return {
+    attentionNodeId: attentionNode?.nodeId,
+    attentionNodeLabel: attentionNode?.label,
+    criticalRemediationCount,
+    remediationCount: remediationItems.length,
+  };
+}
+
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueItem[];
   facts: ReturnType<typeof buildAlgorithmProgressFacts>;
@@ -279,9 +312,10 @@ function buildAlgorithmsProgressScreenModel(input: {
     : activeNode;
   const focusIndex = input.facts.nodeProgress.indexOf(focusNode);
   const nextNode = input.facts.nodeProgress[focusIndex + 1];
-  const attentionNode = input.facts.nodeProgress.find(
-    (node) => node.criticalRemediationDueCount > 0,
-  ) ?? input.facts.nodeProgress.find((node) => node.remediationDueCount > 0);
+  const remediationState = getAlgorithmsRemediationState({
+    dueReviewItems: input.dueReviewItems,
+    nodeProgress: input.facts.nodeProgress,
+  });
   const weakRecommendation = buildAlgorithmWeakAreaRecommendation(
     input.trainingAttempts,
     undefined,
@@ -289,13 +323,15 @@ function buildAlgorithmsProgressScreenModel(input: {
     focusNode.nodeId,
   );
   const focusStatus = getCurrentFocusStatus(focusNode);
+  const nextTopicAvailable = focusNode.eligibleForNext &&
+    remediationState.criticalRemediationCount === 0;
 
   return {
     priority: buildLearningPriority({
-      attentionNode,
       dueReviewItems: input.dueReviewItems,
       focusNode,
       nextNode,
+      remediationState,
     }),
     currentFocus: {
       coreSkillsLabel: `${focusNode.coveredCoreSkillAtomCount} / ${focusNode.coreSkillAtomCount}`,
@@ -308,10 +344,12 @@ function buildAlgorithmsProgressScreenModel(input: {
       statusTone: focusStatus.tone,
       title: focusNode.label,
     },
-    nextTopic: nextNode ? buildNextTopicReadiness(focusNode, nextNode) : null,
+    nextTopic: nextNode
+      ? buildNextTopicReadiness(focusNode, nextNode, remediationState)
+      : null,
     roadmapSummary: {
-      allNodes: buildRoadmapNodes(input.facts.nodeProgress, focusIndex),
-      nodes: buildRoadmapSummary(input.facts.nodeProgress, focusIndex),
+      allNodes: buildRoadmapNodes(input.facts.nodeProgress, focusIndex, nextTopicAvailable),
+      nodes: buildRoadmapSummary(input.facts.nodeProgress, focusIndex, nextTopicAvailable),
       showAllActionLabel: "View all roadmap nodes",
     },
     diagnostics: {
@@ -333,38 +371,30 @@ function buildAlgorithmsProgressScreenModel(input: {
 }
 
 function buildLearningPriority(input: {
-  attentionNode?: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
   dueReviewItems: readonly ReviewQueueItem[];
   focusNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
   nextNode?: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
+  remediationState: AlgorithmsRemediationState;
 }): LearningPriorityModel {
-  const remediationItems = input.dueReviewItems.filter(
-    (item) => getReviewQueueItemKind(item) === "remediation",
-  );
-  const criticalRemediationItems = remediationItems.filter(
-    (item) =>
-      item.priority === "high" ||
-      item.priority === "urgent" ||
-      item.reasons.includes("repeated_mistake"),
-  );
   const retentionItems = input.dueReviewItems.filter(
     (item) => getReviewQueueItemKind(item) === "retention",
   );
 
-  if (criticalRemediationItems.length > 0 || remediationItems.length > 0) {
-    const remediationCount = remediationItems.length;
-    const remediationNode = input.attentionNode ?? input.focusNode;
+  if (input.remediationState.remediationCount > 0) {
+    const remediationCount = input.remediationState.remediationCount;
+    const remediationNodeId = input.remediationState.attentionNodeId ?? input.focusNode.nodeId;
+    const remediationNodeLabel = input.remediationState.attentionNodeLabel ?? input.focusNode.label;
     return {
-      detail: `Your recent ${remediationNode.label} attempts show ${remediationCount === 1 ? "a mistake" : "mistakes"} that need repair before more new work.`,
-      label: criticalRemediationItems.length > 0 ? "Critical remediation" : "Needs attention",
-      primaryAction: buildAlgorithmsAction("review", remediationNode.nodeId, "dueQueue"),
+      detail: `Your recent ${remediationNodeLabel} attempts show ${remediationCount === 1 ? "a mistake pattern that needs" : "mistake patterns that need"} repair before more new work.`,
+      label: input.remediationState.criticalRemediationCount > 0 ? "Critical remediation" : "Needs attention",
+      primaryAction: buildAlgorithmsAction("review", remediationNodeId, "dueQueue"),
       primaryActionLabel: "Review remediation",
       primaryActionMode: "review",
       secondaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
       secondaryActionLabel: "Continue practice",
       secondaryActionMode: "drill",
       title: `Review ${remediationCount} remediation ${remediationCount === 1 ? "item" : "items"}`,
-      tone: criticalRemediationItems.length > 0 ? "danger" : "warning",
+      tone: input.remediationState.criticalRemediationCount > 0 ? "danger" : "warning",
     };
   }
 
@@ -443,7 +473,7 @@ function buildAlgorithmsAction(
   mode: PracticeSessionMode,
   topicId: string,
   reviewSource?: "dueQueue",
-): ProgressReviewAction {
+): ProgressAction {
   return {
     kind: "practiceSession",
     params: buildPracticeSessionConfig({
@@ -496,12 +526,15 @@ function buildFocusExplanation(
 function buildNextTopicReadiness(
   currentNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number],
   nextNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number],
+  remediationState: AlgorithmsRemediationState,
 ): NextTopicReadinessModel {
-  const state = currentNode.mastered
-    ? "ready"
-    : currentNode.eligibleForNext
-      ? "available"
-      : "locked";
+  const state = remediationState.criticalRemediationCount > 0
+    ? "locked"
+    : currentNode.mastered
+      ? "ready"
+      : currentNode.eligibleForNext
+        ? "available"
+        : "locked";
 
   return {
     detail: state === "locked"
@@ -524,7 +557,7 @@ function buildNextTopicReadiness(
           },
           {
             label: "Clear critical remediation",
-            met: currentNode.criticalRemediationDueCount === 0,
+            met: remediationState.criticalRemediationCount === 0,
           },
         ]
       : [],
@@ -536,14 +569,17 @@ function buildNextTopicReadiness(
 function buildRoadmapSummary(
   nodes: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"],
   focusIndex: number,
+  nextTopicAvailable: boolean,
 ): RoadmapSummaryNodeModel[] {
   const startIndex = Math.max(0, focusIndex - 1);
-  return buildRoadmapNodes(nodes, focusIndex).slice(startIndex, focusIndex + 3);
+  return buildRoadmapNodes(nodes, focusIndex, nextTopicAvailable)
+    .slice(startIndex, focusIndex + 3);
 }
 
 function buildRoadmapNodes(
   nodes: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"],
   focusIndex: number,
+  nextTopicAvailable: boolean,
 ): RoadmapSummaryNodeModel[] {
   return nodes.map((node, index) => {
     if (index === focusIndex) {
@@ -551,6 +587,7 @@ function buildRoadmapNodes(
         id: node.nodeId,
         label: getNodeEvidenceLabel(node),
         progressPercent: node.itemCoveragePercent,
+        showProgress: true,
         title: node.label,
         tone: getNodeTone(node.status),
       };
@@ -559,12 +596,13 @@ function buildRoadmapNodes(
     if (index === focusIndex + 1) {
       return {
         id: node.nodeId,
-        label: node.uniquePracticedItemCount > 0 || nodes[focusIndex]?.eligibleForNext
+        label: node.uniquePracticedItemCount > 0 || nextTopicAvailable
           ? "Next"
           : "Next · Locked",
         progressPercent: node.itemCoveragePercent,
+        showProgress: node.itemCoveragePercent > 0,
         title: node.label,
-        tone: nodes[focusIndex]?.eligibleForNext ? "success" : "muted",
+        tone: nextTopicAvailable ? "success" : "muted",
       };
     }
 
@@ -573,6 +611,7 @@ function buildRoadmapNodes(
         id: node.nodeId,
         label: "Later",
         progressPercent: node.itemCoveragePercent,
+        showProgress: node.itemCoveragePercent > 0,
         title: node.label,
         tone: "muted",
       };
@@ -582,6 +621,7 @@ function buildRoadmapNodes(
       id: node.nodeId,
       label: getNodeEvidenceLabel(node),
       progressPercent: node.itemCoveragePercent,
+      showProgress: node.itemCoveragePercent > 0,
       title: node.label,
       tone: getNodeTone(node.status),
     };

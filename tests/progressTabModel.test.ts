@@ -395,6 +395,24 @@ test("Algorithms progress promotes repeated mistakes into the learning priority"
 
   assert.equal(model.algorithmsProgress?.priority.label, "Critical remediation");
   assert.match(model.algorithmsProgress?.priority.detail ?? "", /Hash map and set/);
+  assert.match(model.algorithmsProgress?.priority.title ?? "", /Review 1 remediation item/);
+  const criticalRequirement = model.algorithmsProgress?.nextTopic?.requirements.find(
+    (requirement) => requirement.label === "Clear critical remediation",
+  );
+  assert.equal(criticalRequirement?.met, false);
+  assert.equal(model.algorithmsProgress?.nextTopic?.state, "locked");
+  assert.equal(
+    model.algorithmsProgress?.roadmapSummary.nodes.find(
+      (node) => node.id === model.algorithmsProgress?.nextTopic?.nodeId,
+    )?.label,
+    "Next · Locked",
+  );
+  assert.equal(
+    model.algorithmsProgress?.nextTopic?.requirements
+      .filter((requirement) => /remediation/i.test(requirement.label))
+      .some((requirement) => requirement.met),
+    false,
+  );
 });
 
 test("Algorithms progress counts due review items only", () => {
@@ -513,10 +531,49 @@ test("Algorithms remediation is the top-level learning priority", () => {
   assert.match(model.algorithmsProgress?.priority.title ?? "", /Review 1 remediation item/);
   assert.equal(model.algorithmsProgress?.priority.primaryActionLabel, "Review remediation");
   assert.equal(model.algorithmsProgress?.priority.tone, "warning");
+  assert.match(
+    model.algorithmsProgress?.priority.detail ?? "",
+    /a mistake pattern that needs repair/,
+  );
+  assert.doesNotMatch(
+    model.algorithmsProgress?.priority.detail ?? "",
+    /a mistake that need repair/,
+  );
   assert.equal(model.algorithmsProgress?.currentFocus.title, "Complexity and constraints");
   assert.deepEqual(
     model.algorithmsProgress?.diagnostics.metrics.slice(0, 3).map((metric) => metric.label),
     ["Correct", "Partial", "Incorrect"],
+  );
+});
+
+test("Algorithms priority uses grammatical copy for multiple remediation items", () => {
+  const items = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints");
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    now: "2026-07-03T10:00:00.000Z",
+    practiceHistory: [],
+    reviewQueueItems: [
+      makeAlgorithmReviewQueueItem("review-remediation-copy-1", items[0]!.id, {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        kind: "remediation",
+        priority: "normal",
+      }),
+      makeAlgorithmReviewQueueItem("review-remediation-copy-2", items[1]!.id, {
+        dueAt: "2026-07-03T09:00:00.000Z",
+        kind: "remediation",
+        priority: "normal",
+      }),
+    ],
+    trainingAttempts: items.slice(0, 10).map((item) =>
+      makeAlgorithmAttempt(item.id, { isCorrect: true, kind: "correctness" })),
+  });
+
+  assert.match(model.algorithmsProgress?.priority.title ?? "", /Review 2 remediation items/);
+  assert.match(
+    model.algorithmsProgress?.priority.detail ?? "",
+    /mistake patterns that need repair/,
   );
 });
 
@@ -580,14 +637,26 @@ test("Algorithms roadmap summary keeps inactive nodes compact", () => {
     analytics: makeAnalytics(),
     attempts: [],
     practiceHistory: [],
+    trainingAttempts: [
+      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+        isCorrect: true,
+        kind: "correctness",
+      }),
+    ],
   });
   const summary = model.algorithmsProgress?.roadmapSummary.nodes ?? [];
   const copy = JSON.stringify(summary);
+  const currentNode = summary.find((node) => node.id === "complexity_and_constraints");
+  const nextNode = summary.find((node) => node.label.includes("Next"));
+  const laterNode = summary.find((node) => node.label === "Later");
 
   assert.ok(summary.length <= 4);
   assert.doesNotMatch(copy, /0\/\d+ practiced|Core skills:|Score:/);
-  assert.ok(summary.some((node) => node.label.includes("Next")));
-  assert.ok(summary.some((node) => node.label === "Later"));
+  assert.equal(currentNode?.showProgress, true);
+  assert.equal(nextNode?.progressPercent, 0);
+  assert.equal(nextNode?.showProgress, false);
+  assert.equal(laterNode?.progressPercent, 0);
+  assert.equal(laterNode?.showProgress, false);
 });
 
 test("Algorithms next-topic readiness remains distinct from mastery", () => {
