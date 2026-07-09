@@ -217,11 +217,16 @@ test("Algorithms progress shows empty local facts before attempts", () => {
   });
   assert.equal(model.algorithmsProgress?.priority.title, "Start your first Algorithms session");
   assert.deepEqual(
-    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.outcomeSummary.map((fact) => [fact.label, fact.value]),
     [
       ["Correct", 0],
       ["Partial", 0],
       ["Incorrect", 0],
+    ],
+  );
+  assert.deepEqual(
+    model.algorithmsProgress?.diagnostics.roadmapFacts.map((fact) => [fact.label, fact.value]),
+    [
       ["Nodes started", 0],
       ["Nodes mastered", 0],
     ],
@@ -261,11 +266,16 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
     value: 1,
   });
   assert.deepEqual(
-    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.outcomeSummary.map((fact) => [fact.label, fact.value]),
     [
       ["Correct", 1],
       ["Partial", 0],
       ["Incorrect", 0],
+    ],
+  );
+  assert.deepEqual(
+    model.algorithmsProgress?.diagnostics.roadmapFacts.map((fact) => [fact.label, fact.value]),
+    [
       ["Nodes started", 1],
       ["Nodes mastered", 0],
     ],
@@ -320,11 +330,16 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
     },
   });
   assert.deepEqual(
-    model.algorithmsProgress?.diagnostics.metrics.map((metric) => [metric.label, metric.value]),
+    model.algorithmsProgress?.diagnostics.outcomeSummary.map((fact) => [fact.label, fact.value]),
     [
       ["Correct", 1],
       ["Partial", 0],
       ["Incorrect", 1],
+    ],
+  );
+  assert.deepEqual(
+    model.algorithmsProgress?.diagnostics.roadmapFacts.map((fact) => [fact.label, fact.value]),
+    [
       ["Nodes started", 2],
       ["Nodes mastered", 0],
     ],
@@ -541,7 +556,7 @@ test("Algorithms remediation is the top-level learning priority", () => {
   );
   assert.equal(model.algorithmsProgress?.currentFocus.title, "Complexity and constraints");
   assert.deepEqual(
-    model.algorithmsProgress?.diagnostics.metrics.slice(0, 3).map((metric) => metric.label),
+    model.algorithmsProgress?.diagnostics.outcomeSummary.map((fact) => fact.label),
     ["Correct", "Partial", "Incorrect"],
   );
 });
@@ -601,6 +616,85 @@ test("Algorithms retention priority is scheduled work, not missed work", () => {
   assert.match(model.algorithmsProgress?.priority.detail ?? "", /does not block/);
   assert.equal(model.algorithmsProgress?.priority.primaryActionLabel, "Run retention check");
   assert.doesNotMatch(JSON.stringify(model.algorithmsProgress), /missed/i);
+});
+
+test("Algorithms diagnostics is grouped recommendation explanation data", () => {
+  const items = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints");
+  const outcomes = [
+    { isCorrect: true, kind: "correctness" as const },
+    { isCorrect: true, kind: "correctness" as const },
+    { earnedPoints: 1, isCorrect: false, kind: "partial_credit" as const, maxPoints: 2 },
+    ...Array.from({ length: 7 }, () => ({ isCorrect: false, kind: "correctness" as const })),
+  ];
+  const mistakeTypes = [
+    "complexity_mismatch",
+    "constraint_ignored",
+    "data_structure_mismatch",
+    "complexity_mismatch",
+    "constraint_ignored",
+    "data_structure_mismatch",
+    "complexity_mismatch",
+  ];
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+    trainingAttempts: outcomes.map((result, index) =>
+      makeAlgorithmAttempt(items[index]!.id, result, {
+        mistakeTypeRefs: mistakeTypes[index - 3]
+          ? [
+              {
+                axisId: "mistake_type",
+                nodeId: mistakeTypes[index - 3]!,
+                role: "mistake_type",
+                trackId: "algorithms",
+              },
+            ]
+          : undefined,
+      })),
+  });
+  const diagnostics = model.algorithmsProgress?.diagnostics;
+
+  assert.equal(diagnostics?.collapsedByDefault, true);
+  assert.equal(diagnostics?.title, "Why this recommendation?");
+  assert.equal(diagnostics?.subtitle, "Evidence behind this priority.");
+  assert.equal(diagnostics?.showActionLabel, "Show details");
+  assert.equal("metrics" in (diagnostics ?? {}), false);
+  assert.deepEqual(
+    diagnostics?.outcomeSummary.map((fact) => [fact.label, fact.value]),
+    [
+      ["Correct", 2],
+      ["Partial", 1],
+      ["Incorrect", 7],
+    ],
+  );
+  assert.deepEqual(diagnostics?.mistakePatterns, [
+    "Complexity Mismatch",
+    "Constraint Ignored",
+    "Data Structure Mismatch",
+  ]);
+  assert.deepEqual(
+    diagnostics?.roadmapFacts.map((fact) => fact.label),
+    ["Nodes started", "Nodes mastered"],
+  );
+});
+
+test("Algorithms recommendation explanation copy avoids dashboard diagnostics language", () => {
+  const model = buildProgressTabModel({
+    activeTrackId: "algorithms",
+    analytics: makeAnalytics(),
+    attempts: [],
+    practiceHistory: [],
+  });
+  const diagnosticsCopy = JSON.stringify(model.algorithmsProgress?.diagnostics);
+
+  assert.match(diagnosticsCopy, /Why this recommendation\?/);
+  assert.match(diagnosticsCopy, /Evidence behind this priority/);
+  assert.match(diagnosticsCopy, /Show details/);
+  assert.doesNotMatch(diagnosticsCopy, /Detailed diagnostics/);
+  assert.doesNotMatch(diagnosticsCopy, /Concrete metrics/);
+  assert.doesNotMatch(diagnosticsCopy, /Show detailed diagnostics/);
 });
 
 test("Algorithms progress uses practiced language and three current-focus metrics", () => {
@@ -744,6 +838,7 @@ function makeAnalytics(
 function makeAlgorithmAttempt(
   itemId: string,
   result: TrainingAttempt["result"],
+  overrides: Partial<TrainingAttempt> = {},
 ): TrainingAttempt {
   return {
     answeredAt: `2026-06-29T12:00:00.000Z:${itemId}`,
@@ -757,6 +852,7 @@ function makeAlgorithmAttempt(
     },
     result,
     trackId: "algorithms",
+    ...overrides,
   };
 }
 

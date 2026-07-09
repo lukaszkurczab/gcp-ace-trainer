@@ -98,10 +98,20 @@ export type RoadmapSummaryModel = {
   showAllActionLabel: string;
 };
 
+export type ProgressDiagnosticFact = {
+  label: string;
+  value: number | string;
+};
+
 export type ProgressDiagnosticsModel = {
   collapsedByDefault: true;
-  metrics: readonly ProgressTabMetric[];
-  mistakeSummary?: string;
+  hideActionLabel: string;
+  mistakePatterns: readonly string[];
+  outcomeSummary: readonly ProgressDiagnosticFact[];
+  roadmapFacts: readonly ProgressDiagnosticFact[];
+  showActionLabel: string;
+  subtitle: string;
+  title: string;
 };
 
 export type AlgorithmsProgressScreenModel = {
@@ -354,18 +364,20 @@ function buildAlgorithmsProgressScreenModel(input: {
     },
     diagnostics: {
       collapsedByDefault: true,
-      metrics: [
-        { label: "Correct", tone: "success", value: input.facts.correctCount },
-        { label: "Partial", tone: "info", value: input.facts.partialCount },
-        { label: "Incorrect", tone: "warning", value: input.facts.incorrectCount },
-        { label: "Nodes started", tone: "primary", value: input.facts.roadmapNodesStarted },
-        { label: "Nodes mastered", tone: "neutral", value: input.facts.roadmapNodesMastered },
+      hideActionLabel: "Hide details",
+      mistakePatterns: weakRecommendation.selectedMistakeTypes.map(formatAlgorithmSignalLabel),
+      outcomeSummary: [
+        { label: "Correct", value: input.facts.correctCount },
+        { label: "Partial", value: input.facts.partialCount },
+        { label: "Incorrect", value: input.facts.incorrectCount },
       ],
-      mistakeSummary: weakRecommendation.selectedMistakeTypes.length > 0
-        ? `${weakRecommendation.reasonLabel}: ${weakRecommendation.selectedMistakeTypes
-            .map(formatAlgorithmSignalLabel)
-            .join(", ")}.`
-        : undefined,
+      roadmapFacts: [
+        { label: "Nodes started", value: input.facts.roadmapNodesStarted },
+        { label: "Nodes mastered", value: input.facts.roadmapNodesMastered },
+      ],
+      showActionLabel: "Show details",
+      subtitle: "Evidence behind this priority.",
+      title: "Why this recommendation?",
     },
   };
 }

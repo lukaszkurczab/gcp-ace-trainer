@@ -306,32 +306,53 @@ function AlgorithmsProgressContent({
         </Card>
       </View>
 
-      <View style={styles.section}>
-        <SectionHeader title="Detailed diagnostics" tight />
-        <Card style={styles.diagnosticsCard}>
-          <Button onPress={() => setShowDiagnostics((current) => !current)} variant="secondary">
-            {showDiagnostics ? "Hide detailed diagnostics" : "Show detailed diagnostics"}
+      <View style={styles.explanationDisclosure}>
+        <View style={styles.explanationHeader}>
+          <View style={styles.explanationCopy}>
+            <Text style={styles.explanationTitle}>{model.diagnostics.title}</Text>
+            <Text style={styles.explanationSubtitle}>{model.diagnostics.subtitle}</Text>
+          </View>
+          <Button onPress={() => setShowDiagnostics((current) => !current)} variant="ghost">
+            {showDiagnostics ? model.diagnostics.hideActionLabel : model.diagnostics.showActionLabel}
           </Button>
-          {showDiagnostics ? (
-            <>
-              <View style={styles.metricRow}>
-                {model.diagnostics.metrics.map((metric) => (
-                  <MetricCard
-                    key={metric.label}
-                    label={metric.label}
-                    tone={metric.tone}
-                    value={metric.value}
-                  />
-                ))}
-              </View>
-              {model.diagnostics.mistakeSummary ? (
-                <Text style={styles.mutedText}>{model.diagnostics.mistakeSummary}</Text>
-              ) : null}
-            </>
-          ) : null}
-        </Card>
+        </View>
+        {showDiagnostics ? (
+          <View style={styles.explanationDetails}>
+            <ExplanationBlock
+              label="Attempt outcomes"
+              text={formatDiagnosticFacts(model.diagnostics.outcomeSummary)}
+            />
+            <ExplanationBlock
+              label="Detected mistake patterns"
+              text={
+                model.diagnostics.mistakePatterns.length > 0
+                  ? model.diagnostics.mistakePatterns.join(" · ")
+                  : "No repeated mistake patterns detected yet."
+              }
+            />
+            <ExplanationBlock
+              label="Roadmap state"
+              text={formatDiagnosticFacts(model.diagnostics.roadmapFacts)}
+            />
+          </View>
+        ) : null}
       </View>
     </>
+  );
+}
+
+function ExplanationBlock({
+  label,
+  text,
+}: {
+  label: string;
+  text: string;
+}) {
+  return (
+    <View style={styles.explanationBlock}>
+      <Text style={styles.explanationLabel}>{label}</Text>
+      <Text style={styles.explanationText}>{text}</Text>
+    </View>
   );
 }
 
@@ -362,6 +383,12 @@ function getNextTopicStateLabel(state: "locked" | "available" | "ready"): string
   if (state === "locked") return "Locked for now";
   if (state === "ready") return "Ready now";
   return "Available now";
+}
+
+function formatDiagnosticFacts(
+  facts: AlgorithmsProgressScreenModel["diagnostics"]["outcomeSummary"],
+): string {
+  return facts.map((fact) => `${fact.label}: ${fact.value}`).join(" · ");
 }
 
 function getProgressEmptyTitle(trackId: TrackDefinition["id"]): string {
@@ -522,8 +549,48 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.sm,
   },
-  diagnosticsCard: {
-    gap: spacing.lg,
+  explanationDisclosure: {
+    backgroundColor: colors.dark.surface,
+    borderColor: colors.dark.border,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  explanationHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  explanationCopy: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  explanationTitle: {
+    ...typography.bodyStrong,
+    color: colors.dark.textPrimary,
+  },
+  explanationSubtitle: {
+    ...typography.caption,
+    color: colors.dark.textMuted,
+  },
+  explanationDetails: {
+    borderColor: colors.dark.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    gap: spacing.md,
+    paddingTop: spacing.md,
+  },
+  explanationBlock: {
+    gap: spacing.xs,
+  },
+  explanationLabel: {
+    ...typography.caption,
+    color: colors.dark.textSecondary,
+  },
+  explanationText: {
+    ...typography.small,
+    color: colors.dark.textPrimary,
   },
   warningBanner: {
     backgroundColor: colors.dark.warningSoft,
