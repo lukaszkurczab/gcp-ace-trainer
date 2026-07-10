@@ -1,4 +1,8 @@
-[
+// Planning target: recognize repeated smallest, largest, earliest, cheapest, or highest-priority candidate extraction; changing frontiers; and bounded best-k state.
+// It should distinguish priority queues from full sorting, FIFO queues, stacks, linear scans, and one-time extreme selection.
+// Target question count: 14.
+// Prefer strategy and signal-recognition items; avoid comparator, top-k, stale-entry, and full-complexity mechanics.
+export const recognizePriorityQueueSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +52,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

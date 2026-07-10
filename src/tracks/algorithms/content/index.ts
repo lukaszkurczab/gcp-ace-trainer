@@ -24,7 +24,7 @@ import { dynamicProgrammingIntroQuestions } from "./items/dynamic-programming-in
 import { graphTraversalQuestions } from "./items/graph-traversal";
 import { greedyIntroQuestions } from "./items/greedy-intro";
 import { hashMapAndSetQuestions } from "./items/hash-map-and-set";
-import heapPriorityQueueQuestions from "./items/heap-priority-queue/questions.json";
+import { heapPriorityQueueQuestions } from "./items/heap-priority-queue";
 import intervalsQuestions from "./items/intervals/questions.json";
 import linkedListQuestions from "./items/linked-list/questions.json";
 import mathAndGeometryQuestions from "./items/math-and-geometry/questions.json";
@@ -63,7 +63,7 @@ const algorithmQuestionFilesByPath = {
   "items/graph-traversal/index.ts": graphTraversalQuestions,
   "items/greedy-intro/index.ts": greedyIntroQuestions,
   "items/hash-map-and-set/index.ts": hashMapAndSetQuestions,
-  "items/heap-priority-queue/questions.json": heapPriorityQueueQuestions,
+  "items/heap-priority-queue/index.ts": heapPriorityQueueQuestions,
   "items/intervals/questions.json": intervalsQuestions,
   "items/linked-list/questions.json": linkedListQuestions,
   "items/math-and-geometry/questions.json": mathAndGeometryQuestions,
