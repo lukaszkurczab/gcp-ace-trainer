@@ -35,7 +35,7 @@ import { slidingWindowQuestions } from "./items/sliding-window";
 import { sortingBasedQuestions } from "./items/sorting-based";
 import { stackQuestions } from "./items/stack";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
-import treeTraversalQuestions from "./items/tree-traversal/questions.json";
+import { treeTraversalQuestions } from "./items/tree-traversal";
 import twoPointersQuestions from "./items/two-pointers/questions.json";
 
 export type AlgorithmContentGroup = ContentPackGroup<
@@ -74,7 +74,7 @@ const algorithmQuestionFilesByPath = {
   "items/sorting-based/index.ts": sortingBasedQuestions,
   "items/stack/index.ts": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
-  "items/tree-traversal/questions.json": treeTraversalQuestions,
+  "items/tree-traversal/index.ts": treeTraversalQuestions,
   "items/two-pointers/questions.json": twoPointersQuestions,
 } as const satisfies Record<string, unknown>;
 

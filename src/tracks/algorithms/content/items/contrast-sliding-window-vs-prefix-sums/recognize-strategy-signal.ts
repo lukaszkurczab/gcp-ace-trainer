@@ -1,126 +1,588 @@
-// Planning target: this file should contain questions about recognizing the high-level strategy contrast between sliding window and prefix sums:
-// maintaining one evolving contiguous range; incrementally adding and removing boundary elements;
-// versus preprocessing cumulative state to answer arbitrary static range queries.
-// It should teach the learner to identify whether the task asks to optimize over many candidate windows,
-// process one current window online, or answer independently specified ranges.
-// It should diagnose mistakes such as choosing sliding window only because the prompt mentions a subarray,
-// choosing prefix sums only because the task mentions sums,
-// confusing one moving range with many unrelated range queries,
-// or comparing Big-O before identifying the required query and update contract.
-// Target question count: 14.
-// Prefer single_choice, strategy_choice, solution_comparison, and mistake-review style items.
-// Avoid detailed pointer mechanics, prefix-index formulas, negative-number edge cases, and full complexity accounting; those belong in later files.
 export const recognizeSlidingWindowVsPrefixSumsStrategySignalQuestions = [
   {
-    "contentVersion": "algorithms-core",
-    "feedbackModel": {
-      "decisionSignal": "Which signal should push a range-sum problem away from sliding window and toward prefix state?",
-      "mentalModelCorrection": "Prefix sums handle range totals when window movement no longer gives a safe invariant.",
-      "mistakeTypes": [
-        "negative_numbers_assumption_error",
-        "invariant_broken"
-      ],
-      "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
-      "result": "diagnostic",
-      "distractorExplanations": {
-        "wrong_1": "This option leans on \"A moving window is always safe for every range sum\", but the useful rule is: Prefix sums handle range totals when window movement no longer gives a safe invariant.",
-        "wrong_2": "This option leans on \"Prefix state cannot represent ranges that start later than index 0\", but the useful rule is: Prefix sums handle range totals when window movement no longer gives a safe invariant."
-      }
+    contentVersion: "algorithms-core",
+    difficulty: "intro",
+    id: "alg-contrast-sliding-window-prefix-recognize-001",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_sliding_window_vs_prefix_sum_signal",
+    secondarySkillAtomIds: [
+      "moving_contiguous_range",
+      "static_range_query_preprocessing",
+    ],
+    type: "single_choice",
+    prompt:
+      "You must find the largest sum among all consecutive blocks of exactly k values in one left-to-right pass. Which strategy best matches the access pattern?",
+    options: [
+      {
+        id: "rolling_window",
+        text: "Maintain one current length-k range and update its aggregate as the range moves.",
+      },
+      {
+        id: "prefix_queries",
+        text: "Treat every candidate range as an independently supplied static query.",
+      },
+      {
+        id: "global_total",
+        text: "Compute only the sum of the entire array.",
+      },
+      {
+        id: "sort_then_scan",
+        text: "Sort the values before examining consecutive blocks.",
+      },
+    ],
+    correctOptionId: "rolling_window",
+    feedbackModel: {
+      decisionSignal:
+        "The task evaluates neighboring candidate ranges in one monotonic traversal.",
+      mentalModelCorrection:
+        "A rolling window is indicated by reusable state between consecutive ranges, not merely by the presence of a sum.",
+      mistakeTypes: ["strategy_signal_mismatch"],
+      nextAction:
+        "Check whether each next range differs from the current range only at its boundaries.",
+      result: "diagnostic",
     },
-    "id": "alg-contrast-window-prefix-001",
-    "learningStage": "contrast_practice",
-    "primarySkillAtomId": "detect_window_failure_signal",
-    "prompt": "Which signal should push a range-sum problem away from sliding window and toward prefix state?",
-    "roadmapNodeId": "contrast_sliding_window_vs_prefix_sums",
-    "secondarySkillAtomIds": [
-      "maintain_window_invariant"
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "intro",
+    id: "alg-contrast-sliding-window-prefix-recognize-002",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_static_range_query_signal",
+    secondarySkillAtomIds: [
+      "independent_range_queries",
+      "prefix_preprocessing_reuse",
     ],
-    "status": "active",
-    "staticMicroChecks": [
+    type: "single_choice",
+    prompt:
+      "An immutable array is followed by many queries, each supplying unrelated left and right indexes and asking for the sum of that range. Which strategy best matches the contract?",
+    options: [
       {
-        "correctAnswer": "expected_signal",
-        "feedback": "Prefix sums handle range totals when window movement no longer gives a safe invariant.",
-        "id": "alg-contrast-window-prefix-001-check",
-        "mistakeTypes": [
-          "negative_numbers_assumption_error",
-          "invariant_broken"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Prefix sums handle range totals when window movement no longer gives a safe invariant."
-          },
-          {
-            "id": "wrong_1",
-            "text": "A moving window is always safe for every range sum."
-          },
-          {
-            "id": "wrong_2",
-            "text": "Prefix state cannot represent ranges that start later than index 0."
-          }
-        ],
-        "prompt": "Choose the reasoning signal that should guide the strategy.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "detect_window_failure_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "prefix_sums",
-        "role": "primary"
+        id: "prefix_sums",
+        text: "Precompute cumulative sums and answer every supplied range independently.",
       },
       {
-        "axisId": "skill_atom",
-        "nodeId": "detect_window_failure_signal",
-        "role": "primary"
+        id: "single_window",
+        text: "Maintain one active range and move it only from left to right across all queries.",
       },
       {
-        "axisId": "pattern_variant",
-        "nodeId": "when_prefix_beats_window",
-        "role": "secondary"
+        id: "best_range",
+        text: "Return the largest range sum instead of answering each query.",
       },
       {
-        "axisId": "mistake_type",
-        "nodeId": "negative_numbers_assumption_error",
-        "role": "mistake_type"
-      }
+        id: "sort_queries_only",
+        text: "Sort the query endpoints and ignore their original order.",
+      },
     ],
-    "title": "Contrast window with prefix sums",
-    "trackId": "algorithms",
-    "type": "strategy_choice",
-    "acceptableApproachIds": [
-      "maintain_window_invariant"
-    ],
-    "constraintSignal": "Which signal should push a range-sum problem away from sliding window and toward prefix state?",
-    "expectedApproachIds": [
-      "detect_window_failure_signal"
-    ],
-    "reasonSignal": "Prefix sums handle range totals when window movement no longer gives a safe invariant.",
-    "rejectedApproachIds": [
-      "label_only",
-      "implementation_first"
-    ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Prefix sums handle range totals when window movement no longer gives a safe invariant."
-        },
-        {
-          "id": "wrong_1",
-          "text": "A moving window is always safe for every range sum."
-        },
-        {
-          "id": "wrong_2",
-          "text": "Prefix state cannot represent ranges that start later than index 0."
-        }
-      ]
+    correctOptionId: "prefix_sums",
+    feedbackModel: {
+      decisionSignal:
+        "The required ranges are externally specified and may appear in unrelated order.",
+      mentalModelCorrection:
+        "Prefix sums are designed for reusable static range evaluation. A single moving window does not naturally represent arbitrary independent queries.",
+      mistakeTypes: ["query_contract_mismatch"],
+      nextAction:
+        "Determine whether boundaries are generated by one traversal or supplied independently.",
+      result: "diagnostic",
     },
-    "difficulty": "medium"
-  }
-]
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "intro",
+    id: "alg-contrast-sliding-window-prefix-recognize-003",
+    learningStage: "foundations",
+    primarySkillAtomId: "reject_subarray_keyword_matching",
+    secondarySkillAtomIds: [
+      "problem_contract_analysis",
+      "strategy_precondition_analysis",
+    ],
+    type: "single_choice",
+    prompt:
+      "A prompt contains the word subarray. What can you conclude from that fact alone?",
+    options: [
+      {
+        id: "contiguous_only",
+        text: "The selected elements must be contiguous, but the correct strategy still depends on the objective and access contract.",
+      },
+      {
+        id: "always_window",
+        text: "The problem must use sliding window.",
+      },
+      {
+        id: "always_prefix",
+        text: "The problem must use prefix sums.",
+      },
+      {
+        id: "always_two_pointers",
+        text: "The problem must use opposite-end two pointers.",
+      },
+    ],
+    correctOptionId: "contiguous_only",
+    feedbackModel: {
+      decisionSignal:
+        "Subarray describes the shape of a candidate result, not the complete algorithmic mechanism.",
+      mentalModelCorrection:
+        "Contiguity is compatible with several patterns. The task may ask for one moving optimum, an exact range, many queries, or a different relationship between boundaries.",
+      mistakeTypes: ["keyword_pattern_matching"],
+      nextAction:
+        "After identifying contiguity, inspect how candidate ranges are generated and what output is required.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "intro",
+    id: "alg-contrast-sliding-window-prefix-recognize-004",
+    learningStage: "foundations",
+    primarySkillAtomId: "reject_sum_keyword_matching",
+    secondarySkillAtomIds: [
+      "aggregate_signal_analysis",
+      "output_contract_analysis",
+    ],
+    type: "single_choice",
+    prompt:
+      "A task asks about sums of contiguous ranges. Why is that not enough to choose prefix sums immediately?",
+    options: [
+      {
+        id: "range_access_matters",
+        text: "The task may require one rolling range, one direct answer, or many independent queries, and those contracts favor different approaches.",
+      },
+      {
+        id: "prefixes_cannot_sum",
+        text: "Prefix sums cannot represent sums of contiguous ranges.",
+      },
+      {
+        id: "window_always_better",
+        text: "Sliding window is always better whenever ranges overlap.",
+      },
+      {
+        id: "sums_require_sorting",
+        text: "All sum problems require the values to be sorted first.",
+      },
+    ],
+    correctOptionId: "range_access_matters",
+    feedbackModel: {
+      decisionSignal:
+        "The aggregate type is only one part of strategy selection.",
+      mentalModelCorrection:
+        "Prefix sums become valuable when cumulative preprocessing is reused. A sum objective alone does not establish that reuse contract.",
+      mistakeTypes: ["aggregate_keyword_matching"],
+      nextAction:
+        "Separate what is aggregated from how candidate ranges are requested.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-005",
+    learningStage: "foundations",
+    primarySkillAtomId: "distinguish_moving_range_from_queries",
+    secondarySkillAtomIds: ["rolling_range_state", "independent_query_state"],
+    type: "solution_comparison",
+    prompt:
+      "Requirement A asks for the best value among all consecutive length-k ranges. Requirement B supplies 50,000 arbitrary ranges and asks for one answer per range. Which comparison is correct?",
+    options: [
+      {
+        id: "window_a_prefix_b",
+        text: "A naturally fits a rolling window, while B naturally fits reusable prefix preprocessing.",
+      },
+      {
+        id: "prefix_a_window_b",
+        text: "A requires prefix sums, while B requires one moving window.",
+      },
+      {
+        id: "window_both",
+        text: "Both require sliding window because every result concerns a contiguous range.",
+      },
+      {
+        id: "prefix_both",
+        text: "Both require prefix sums because every result uses an aggregate.",
+      },
+    ],
+    correctOptionId: "window_a_prefix_b",
+    feedbackModel: {
+      decisionSignal:
+        "A searches neighboring candidates in one traversal; B evaluates externally specified ranges.",
+      mentalModelCorrection:
+        "The decisive contrast is not contiguity or aggregate type, but one evolving range versus many independent range requests.",
+      mistakeTypes: ["strategy_contrast_mismatch"],
+      nextAction:
+        "Classify the source of the range boundaries before choosing the representation.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-006",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_online_window_contract",
+    secondarySkillAtomIds: ["online_processing", "current_window_output"],
+    type: "single_choice",
+    prompt:
+      "Values arrive continuously, and after each arrival the system must report a statistic for the latest k values. Which high-level signal is strongest?",
+    options: [
+      {
+        id: "online_evolving_range",
+        text: "One active contiguous range evolves online as new values arrive and old values expire.",
+      },
+      {
+        id: "static_query_batch",
+        text: "All query boundaries are known before preprocessing begins.",
+      },
+      {
+        id: "global_sort_order",
+        text: "The complete input must be sorted before any answer is produced.",
+      },
+      {
+        id: "independent_subsets",
+        text: "Each answer concerns an arbitrary non-contiguous subset.",
+      },
+    ],
+    correctOptionId: "online_evolving_range",
+    feedbackModel: {
+      decisionSignal:
+        "The answer concerns the current suffix-like range and must be produced before the full input is known.",
+      mentalModelCorrection:
+        "Online expiration and arrival are strong rolling-window signals. Static prefix-query preprocessing assumes a reusable completed prefix history.",
+      mistakeTypes: ["online_contract_mismatch"],
+      nextAction:
+        "Ask whether each answer must be produced as the input evolves.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-007",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_candidate_window_optimization",
+    secondarySkillAtomIds: ["best_contiguous_range", "evolving_candidate_set"],
+    type: "single_choice",
+    prompt:
+      "A function must examine a sequence of overlapping candidate ranges and return only the best candidate. Which feature most strongly favors rolling state?",
+    options: [
+      {
+        id: "neighboring_candidates",
+        text: "Each next candidate can be derived from the previous candidate by updating boundary contributions.",
+      },
+      {
+        id: "sum_word",
+        text: "The prompt contains the word sum.",
+      },
+      {
+        id: "array_input",
+        text: "The input is stored in an array.",
+      },
+      {
+        id: "one_output",
+        text: "The function returns exactly one value, regardless of how candidates relate.",
+      },
+    ],
+    correctOptionId: "neighboring_candidates",
+    feedbackModel: {
+      decisionSignal:
+        "Rolling state is valuable when consecutive candidates share most of their content.",
+      mentalModelCorrection:
+        "One output does not automatically imply sliding window. The key is reusable incremental state between ordered neighboring candidates.",
+      mistakeTypes: ["weak_strategy_signal"],
+      nextAction:
+        "Identify what changes between one candidate range and the next.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-008",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_prefix_reuse_contract",
+    secondarySkillAtomIds: ["static_input", "repeated_range_answers"],
+    type: "single_choice",
+    prompt: "Which combination most strongly suggests prefix preprocessing?",
+    options: [
+      {
+        id: "static_many_queries",
+        text: "The input is static, many range answers are required, and query boundaries are independently specified.",
+      },
+      {
+        id: "stream_latest_window",
+        text: "Values stream in and only the latest fixed-size range matters.",
+      },
+      {
+        id: "single_best_window",
+        text: "Only the best among consecutive neighboring windows is required.",
+      },
+      {
+        id: "mutable_frequent_updates",
+        text: "Array values change between every query, but no update-aware structure is available.",
+      },
+    ],
+    correctOptionId: "static_many_queries",
+    feedbackModel: {
+      decisionSignal:
+        "One preprocessing pass can be reused across many independent reads of unchanged data.",
+      mentalModelCorrection:
+        "Prefix sums are a static preprocessing trade-off. Their value comes from repeated reuse, not simply from working with ranges.",
+      mistakeTypes: ["preprocessing_signal_mismatch"],
+      nextAction:
+        "Check whether the data remains unchanged while many range answers are requested.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-009",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_single_exact_range_contract",
+    secondarySkillAtomIds: [
+      "single_query_analysis",
+      "avoid_forced_pattern_choice",
+    ],
+    type: "single_choice",
+    prompt:
+      "The input includes one array and one exact range [left, right]. The function must return that range's sum once. Which conclusion is best?",
+    options: [
+      {
+        id: "neither_automatic",
+        text: "Neither sliding window nor full prefix preprocessing is automatically required; the direct workload and surrounding constraints must be considered.",
+      },
+      {
+        id: "always_window",
+        text: "Sliding window is mandatory because the range is contiguous.",
+      },
+      {
+        id: "always_prefix",
+        text: "Prefix sums are mandatory because the result is a range sum.",
+      },
+      {
+        id: "both_required",
+        text: "The function must first build prefixes and then slide over the requested range.",
+      },
+    ],
+    correctOptionId: "neither_automatic",
+    feedbackModel: {
+      decisionSignal:
+        "There is no moving candidate sequence and no stated repeated-query workload.",
+      mentalModelCorrection:
+        "A contrast topic must still allow the answer that neither technique is justified by the current contract.",
+      mistakeTypes: ["forced_pattern_selection"],
+      nextAction:
+        "Do not choose preprocessing or rolling state without identifying what work they reuse.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-010",
+    learningStage: "foundations",
+    primarySkillAtomId: "prioritize_contract_before_complexity",
+    secondarySkillAtomIds: [
+      "correctness_before_complexity",
+      "range_access_contract",
+    ],
+    type: "solution_comparison",
+    prompt:
+      "A reviewer compares sliding window and prefix sums only by saying that both can run in O(n). What essential analysis is missing?",
+    options: [
+      {
+        id: "required_workload",
+        text: "Whether the task maintains one evolving range or answers independently requested ranges.",
+      },
+      {
+        id: "variable_names",
+        text: "Whether the implementations use variables named left and right.",
+      },
+      {
+        id: "language_choice",
+        text: "Whether the code is written in JavaScript or Python.",
+      },
+      {
+        id: "array_values",
+        text: "Whether the first array value is larger than the last.",
+      },
+    ],
+    correctOptionId: "required_workload",
+    feedbackModel: {
+      decisionSignal:
+        "Asymptotic costs do not determine whether a strategy satisfies the required access and output contract.",
+      mentalModelCorrection:
+        "Strategy comparison begins with what state must be maintained and what answers must be produced. Complexity comes after suitability.",
+      mistakeTypes: ["complexity_before_contract"],
+      nextAction:
+        "Describe the query, update, and output contracts before comparing Big-O.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "core",
+    id: "alg-contrast-sliding-window-prefix-recognize-011",
+    learningStage: "foundations",
+    primarySkillAtomId: "distinguish_query_order_requirements",
+    secondarySkillAtomIds: [
+      "monotonic_range_traversal",
+      "arbitrary_query_order",
+    ],
+    type: "strategy_choice",
+    prompt:
+      "A list of requested ranges may jump from [900, 950] to [3, 20] and then to [500, 700]. What does this access pattern imply?",
+    options: [
+      {
+        id: "prefix_friendly",
+        text: "The ranges are independent, so reusable prefix state is more natural than one forward-only rolling range.",
+      },
+      {
+        id: "window_friendly",
+        text: "The requests naturally form one left-to-right sliding-window traversal.",
+      },
+      {
+        id: "same_range",
+        text: "All requests should be treated as one continuously expanding range.",
+      },
+      {
+        id: "sort_input",
+        text: "The array values must be sorted before answering the queries.",
+      },
+    ],
+    correctOptionId: "prefix_friendly",
+    feedbackModel: {
+      decisionSignal:
+        "The requested boundaries are not monotonic and do not preserve one current range.",
+      mentalModelCorrection:
+        "Sliding-window reuse depends on controlled neighboring movement. Arbitrary jumps favor a representation that answers each range independently.",
+      mistakeTypes: ["range_access_pattern_mismatch"],
+      nextAction:
+        "Inspect whether query boundaries evolve monotonically or reset independently.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "advanced",
+    id: "alg-contrast-sliding-window-prefix-recognize-012",
+    learningStage: "foundations",
+    primarySkillAtomId: "recognize_output_cardinality_signal",
+    secondarySkillAtomIds: ["best_window_output", "per_query_output"],
+    type: "solution_comparison",
+    prompt:
+      "Two tasks inspect the same array. Task A returns one best contiguous range. Task B returns one answer for every supplied range query. Which observation is strategically relevant?",
+    options: [
+      {
+        id: "output_shapes_differ",
+        text: "A performs candidate optimization, while B must preserve the complete mapping from each query to its answer.",
+      },
+      {
+        id: "same_array_same_strategy",
+        text: "Both must use the same strategy because their input type is identical.",
+      },
+      {
+        id: "one_output_prefix",
+        text: "A requires prefix sums because it returns one value.",
+      },
+      {
+        id: "many_outputs_window",
+        text: "B requires sliding window because it returns many values.",
+      },
+    ],
+    correctOptionId: "output_shapes_differ",
+    feedbackModel: {
+      decisionSignal:
+        "The tasks require different relationships between candidate ranges and returned results.",
+      mentalModelCorrection:
+        "Input shape alone does not determine the strategy. Optimization over candidates differs from independently answering every query.",
+      mistakeTypes: ["output_contract_mismatch"],
+      nextAction:
+        "Count what must be returned and identify who chooses each range boundary.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "advanced",
+    id: "alg-contrast-sliding-window-prefix-recognize-013",
+    learningStage: "foundations",
+    primarySkillAtomId: "identify_strategy_from_state_lifecycle",
+    secondarySkillAtomIds: [
+      "ephemeral_window_state",
+      "persistent_prefix_state",
+    ],
+    type: "single_choice",
+    prompt:
+      "Which state-lifecycle description correctly contrasts the two strategies?",
+    options: [
+      {
+        id: "window_ephemeral_prefix_persistent",
+        text: "Sliding window maintains state for one current range, while prefix sums retain cumulative states for many boundaries.",
+      },
+      {
+        id: "window_all_ranges_prefix_one",
+        text: "Sliding window stores every previous range, while prefix sums remember only the current range.",
+      },
+      {
+        id: "both_same_state",
+        text: "Both strategies maintain exactly one identical scalar with the same meaning.",
+      },
+      {
+        id: "prefix_online_expiration",
+        text: "Prefix sums automatically remove expired values from one active window.",
+      },
+    ],
+    correctOptionId: "window_ephemeral_prefix_persistent",
+    feedbackModel: {
+      decisionSignal:
+        "The strategies differ in whether historical boundary state is retained for future independent access.",
+      mentalModelCorrection:
+        "A rolling window updates ephemeral current-range state. Prefix preprocessing stores cumulative state indexed by boundary.",
+      mistakeTypes: ["state_lifecycle_mismatch"],
+      nextAction:
+        "Ask which historical states must remain available after the scan passes them.",
+      result: "diagnostic",
+    },
+  },
+  {
+    contentVersion: "algorithms-core",
+    difficulty: "advanced",
+    id: "alg-contrast-sliding-window-prefix-recognize-014",
+    learningStage: "foundations",
+    primarySkillAtomId: "justify_sliding_window_vs_prefix_choice",
+    secondarySkillAtomIds: [
+      "strategy_justification",
+      "contract_first_reasoning",
+    ],
+    type: "solution_comparison",
+    prompt:
+      "Which explanation best distinguishes sliding window from prefix sums at the strategy-selection stage?",
+    options: [
+      {
+        id: "complete_contrast",
+        text: "Use rolling window when one contiguous range evolves and neighboring states can be updated incrementally; use prefix preprocessing when static cumulative state must answer independently specified ranges.",
+      },
+      {
+        id: "sum_contrast",
+        text: "Use prefix sums for sum problems and sliding window for every other aggregate.",
+      },
+      {
+        id: "subarray_contrast",
+        text: "Use sliding window for subarrays and prefix sums for arrays.",
+      },
+      {
+        id: "big_o_contrast",
+        text: "Choose whichever approach is described with the lower Big-O, without first checking the query contract.",
+      },
+    ],
+    correctOptionId: "complete_contrast",
+    feedbackModel: {
+      decisionSignal:
+        "A strong justification connects the strategy to state evolution and the range-access contract.",
+      mentalModelCorrection:
+        "The contrast is not based on isolated keywords. It is based on whether one current range evolves or many static boundary pairs must remain queryable.",
+      mistakeTypes: ["weak_strategy_justification"],
+      nextAction:
+        "Justify the choice using state lifecycle, boundary source, and output requirements.",
+      result: "diagnostic",
+    },
+  },
+];

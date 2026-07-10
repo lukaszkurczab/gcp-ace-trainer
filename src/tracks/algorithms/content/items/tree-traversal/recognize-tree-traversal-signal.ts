@@ -1,4 +1,7 @@
-[
+// Planning target: this file should contain questions about recognizing hierarchical parent-child traversal, recursive subtrees, all-node visits, depth/path state, and descendant aggregation.
+// Distinguish tree traversal from array scans, graph traversal, BST pruning, heaps, and generic recursion.
+// Target question count: 14.
+export const recognizeTreeTraversalSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +51,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

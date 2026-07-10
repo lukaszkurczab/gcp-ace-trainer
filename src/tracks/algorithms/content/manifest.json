@@ -154,7 +154,7 @@
     {
       "folderName": "tree-traversal",
       "itemCount": 1,
-      "questionFile": "items/tree-traversal/questions.json",
+      "questionFile": "items/tree-traversal/index.ts",
       "roadmapNodeId": "tree_traversal"
     },
     {
