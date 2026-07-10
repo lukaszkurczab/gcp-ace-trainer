@@ -22,7 +22,7 @@ import { contrastStackVsMonotonicStackIntroQuestions } from "./items/contrast-st
 import { contrastTwoPointersVsSlidingWindowQuestions } from "./items/contrast-two-pointers-vs-sliding-window";
 import { dynamicProgrammingIntroQuestions } from "./items/dynamic-programming-intro";
 import { graphTraversalQuestions } from "./items/graph-traversal";
-import greedyIntroQuestions from "./items/greedy-intro/questions.json";
+import { greedyIntroQuestions } from "./items/greedy-intro";
 import hashMapAndSetQuestions from "./items/hash-map-and-set/questions.json";
 import heapPriorityQueueQuestions from "./items/heap-priority-queue/questions.json";
 import intervalsQuestions from "./items/intervals/questions.json";
@@ -61,7 +61,7 @@ const algorithmQuestionFilesByPath = {
   "items/contrast-two-pointers-vs-sliding-window/index.ts": contrastTwoPointersVsSlidingWindowQuestions,
   "items/dynamic-programming-intro/index.ts": dynamicProgrammingIntroQuestions,
   "items/graph-traversal/index.ts": graphTraversalQuestions,
-  "items/greedy-intro/questions.json": greedyIntroQuestions,
+  "items/greedy-intro/index.ts": greedyIntroQuestions,
   "items/hash-map-and-set/questions.json": hashMapAndSetQuestions,
   "items/heap-priority-queue/questions.json": heapPriorityQueueQuestions,
   "items/intervals/questions.json": intervalsQuestions,

@@ -1,4 +1,11 @@
-[
+// Planning target: this file should contain questions about recognizing when a greedy strategy may be appropriate:
+// repeated selection of one locally best feasible candidate, irreversible commitments, consistent ordering, and a possible proof that an optimum begins with the greedy choice.
+// It should distinguish greedy from brute force, dynamic programming, backtracking, sorting alone, and arbitrary heuristics.
+// It should diagnose choosing greedy only for min/max objectives, treating any one-pass algorithm or sort as greedy, and rejecting irreversible choices.
+// Target question count: 16.
+// Prefer single_choice, strategy_choice, solution_comparison, signal-recognition, and mistake-review style items.
+// Avoid full proof construction, interval traces, and complete DP comparisons; those belong in later files.
+export const recognizeGreedySignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +55,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

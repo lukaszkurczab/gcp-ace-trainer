@@ -76,7 +76,7 @@
     {
       "folderName": "greedy-intro",
       "itemCount": 1,
-      "questionFile": "items/greedy-intro/questions.json",
+      "questionFile": "items/greedy-intro/index.ts",
       "roadmapNodeId": "greedy_intro"
     },
     {
