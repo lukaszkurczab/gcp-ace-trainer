@@ -161,7 +161,7 @@ const oldAlgorithmIds = [
   oldId("sorted", "two", "pointers", "pair", "scan"),
 ] as const;
 
-const expectedActiveAlgorithmItemCount = 847;
+const expectedActiveAlgorithmItemCount = 929;
 
 const requiredActiveAlgorithmItemTypes = [
   "approach_naming",
