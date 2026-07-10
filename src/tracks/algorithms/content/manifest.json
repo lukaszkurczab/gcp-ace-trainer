@@ -118,7 +118,7 @@
     {
       "folderName": "prefix-sums",
       "itemCount": 35,
-      "questionFile": "items/prefix-sums/questions.json",
+      "questionFile": "items/prefix-sums/index.ts",
       "roadmapNodeId": "prefix_sums"
     },
     {

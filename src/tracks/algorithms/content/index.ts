@@ -29,7 +29,7 @@ import { intervalsQuestions } from "./items/intervals";
 import { linkedListQuestions } from "./items/linked-list";
 import { mathAndGeometryQuestions } from "./items/math-and-geometry";
 import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
-import prefixSumsQuestions from "./items/prefix-sums/questions.json";
+import { prefixSumsQuestions } from "./items/prefix-sums";
 import recursionBasicsQuestions from "./items/recursion-basics/questions.json";
 import slidingWindowQuestions from "./items/sliding-window/questions.json";
 import sortingBasedQuestions from "./items/sorting-based/questions.json";
@@ -68,7 +68,7 @@ const algorithmQuestionFilesByPath = {
   "items/linked-list/index.ts": linkedListQuestions,
   "items/math-and-geometry/index.ts": mathAndGeometryQuestions,
   "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,
-  "items/prefix-sums/questions.json": prefixSumsQuestions,
+  "items/prefix-sums/index.ts": prefixSumsQuestions,
   "items/recursion-basics/questions.json": recursionBasicsQuestions,
   "items/sliding-window/questions.json": slidingWindowQuestions,
   "items/sorting-based/questions.json": sortingBasedQuestions,
