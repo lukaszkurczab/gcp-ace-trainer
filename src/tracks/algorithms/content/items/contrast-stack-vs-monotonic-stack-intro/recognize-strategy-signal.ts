@@ -1,4 +1,15 @@
-[
+// Planning target: this file should contain questions about recognizing the high-level contrast between a plain LIFO stack and a monotonic stack:
+// nested structure, matching, undo, reversal, and most-recent unresolved state;
+// versus nearest greater/smaller queries, directional boundaries, and ordered candidate elimination.
+// It should teach that a monotonic stack is still a stack, but with an additional order invariant.
+// It should diagnose mistakes such as choosing a monotonic stack for every problem that mentions a stack,
+// using a plain stack without an order invariant for a nearest-greater query,
+// assuming monotonic means the original input is sorted,
+// or choosing the strategy from the data structure name rather than the required relationship.
+// Target question count: 14.
+// Prefer single_choice, strategy_choice, solution_comparison, and mistake-review style items.
+// Avoid detailed pop traces, strictness with duplicates, index-distance calculations, and amortized analysis; those belong in later files.
+export const recognizeStackVsMonotonicStackStrategySignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {

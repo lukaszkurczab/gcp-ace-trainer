@@ -71,10 +71,13 @@ export function validateContentPackManifest<Item, TrackId extends string, GroupI
     }
     manifestQuestionFiles.add(manifestGroup.questionFile);
 
-    const expectedQuestionFile = `items/${manifestGroup.folderName}/questions.json`;
-    if (manifestGroup.questionFile !== expectedQuestionFile) {
+    const expectedQuestionFiles = [
+      `items/${manifestGroup.folderName}/questions.json`,
+      `items/${manifestGroup.folderName}/index.ts`,
+    ];
+    if (!expectedQuestionFiles.includes(manifestGroup.questionFile)) {
       issues.push(
-        `Content pack manifest group ${manifestGroup.roadmapNodeId} questionFile must be ${expectedQuestionFile}; received ${manifestGroup.questionFile}.`,
+        `Content pack manifest group ${manifestGroup.roadmapNodeId} questionFile must be one of ${expectedQuestionFiles.join(" or ")}; received ${manifestGroup.questionFile}.`,
       );
     }
   }

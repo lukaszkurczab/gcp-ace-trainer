@@ -40,19 +40,19 @@
     {
       "folderName": "contrast-hash-map-vs-sorting",
       "itemCount": 2,
-      "questionFile": "items/contrast-hash-map-vs-sorting/questions.json",
+      "questionFile": "items/contrast-hash-map-vs-sorting/index.ts",
       "roadmapNodeId": "contrast_hash_map_vs_sorting"
     },
     {
       "folderName": "contrast-sliding-window-vs-prefix-sums",
       "itemCount": 3,
-      "questionFile": "items/contrast-sliding-window-vs-prefix-sums/questions.json",
+      "questionFile": "items/contrast-sliding-window-vs-prefix-sums/index.ts",
       "roadmapNodeId": "contrast_sliding_window_vs_prefix_sums"
     },
     {
       "folderName": "contrast-stack-vs-monotonic-stack-intro",
       "itemCount": 2,
-      "questionFile": "items/contrast-stack-vs-monotonic-stack-intro/questions.json",
+      "questionFile": "items/contrast-stack-vs-monotonic-stack-intro/index.ts",
       "roadmapNodeId": "contrast_stack_vs_monotonic_stack_intro"
     },
     {

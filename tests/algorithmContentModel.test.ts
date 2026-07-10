@@ -414,11 +414,10 @@ test("Algorithms content manifest stays synchronized with imported JSON groups",
     assert.equal(importedGroup.items.length, manifestGroup.itemCount, manifestGroup.roadmapNodeId);
     assert.equal(questionFiles.has(manifestGroup.questionFile), false, manifestGroup.questionFile);
     assert.equal(folderNames.has(manifestGroup.folderName), false, manifestGroup.folderName);
-    assert.equal(
-      manifestGroup.questionFile,
-      `items/${manifestGroup.folderName}/questions.json`,
-      manifestGroup.roadmapNodeId,
-    );
+    const expectedQuestionFile = manifestGroup.questionFile.endsWith("/index.ts")
+      ? `items/${manifestGroup.folderName}/index.ts`
+      : `items/${manifestGroup.folderName}/questions.json`;
+    assert.equal(manifestGroup.questionFile, expectedQuestionFile, manifestGroup.roadmapNodeId);
 
     questionFiles.add(manifestGroup.questionFile);
     folderNames.add(manifestGroup.folderName);

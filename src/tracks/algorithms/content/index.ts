@@ -16,9 +16,9 @@ import { binarySearchQuestions } from "./items/binary-search";
 import { bitManipulationQuestions } from "./items/bit-manipulation";
 import complexityAndConstraintsQuestions from "./items/complexity-and-constraints";
 import { contrastBinarySearchVsLinearScanQuestions } from "./items/contrast-binary-search-vs-linear-scan";
-import contrastHashMapVsSortingQuestions from "./items/contrast-hash-map-vs-sorting/questions.json";
-import contrastSlidingWindowVsPrefixSumsQuestions from "./items/contrast-sliding-window-vs-prefix-sums/questions.json";
-import contrastStackVsMonotonicStackIntroQuestions from "./items/contrast-stack-vs-monotonic-stack-intro/questions.json";
+import { contrastHashMapVsSortingQuestions } from "./items/contrast-hash-map-vs-sorting";
+import { contrastSlidingWindowVsPrefixSumsQuestions } from "./items/contrast-sliding-window-vs-prefix-sums";
+import { contrastStackVsMonotonicStackIntroQuestions } from "./items/contrast-stack-vs-monotonic-stack-intro";
 import contrastTwoPointersVsSlidingWindowQuestions from "./items/contrast-two-pointers-vs-sliding-window/questions.json";
 import dynamicProgrammingIntroQuestions from "./items/dynamic-programming-intro/questions.json";
 import graphTraversalQuestions from "./items/graph-traversal/questions.json";
@@ -55,9 +55,9 @@ const algorithmQuestionFilesByPath = {
   "items/bit-manipulation/questions.json": bitManipulationQuestions,
   "items/complexity-and-constraints/questions.json": complexityAndConstraintsQuestions,
   "items/contrast-binary-search-vs-linear-scan/questions.json": contrastBinarySearchVsLinearScanQuestions,
-  "items/contrast-hash-map-vs-sorting/questions.json": contrastHashMapVsSortingQuestions,
-  "items/contrast-sliding-window-vs-prefix-sums/questions.json": contrastSlidingWindowVsPrefixSumsQuestions,
-  "items/contrast-stack-vs-monotonic-stack-intro/questions.json": contrastStackVsMonotonicStackIntroQuestions,
+  "items/contrast-hash-map-vs-sorting/index.ts": contrastHashMapVsSortingQuestions,
+  "items/contrast-sliding-window-vs-prefix-sums/index.ts": contrastSlidingWindowVsPrefixSumsQuestions,
+  "items/contrast-stack-vs-monotonic-stack-intro/index.ts": contrastStackVsMonotonicStackIntroQuestions,
   "items/contrast-two-pointers-vs-sliding-window/questions.json": contrastTwoPointersVsSlidingWindowQuestions,
   "items/dynamic-programming-intro/questions.json": dynamicProgrammingIntroQuestions,
   "items/graph-traversal/questions.json": graphTraversalQuestions,
