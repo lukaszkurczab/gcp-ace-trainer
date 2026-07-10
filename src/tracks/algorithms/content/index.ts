@@ -21,7 +21,7 @@ import { contrastSlidingWindowVsPrefixSumsQuestions } from "./items/contrast-sli
 import { contrastStackVsMonotonicStackIntroQuestions } from "./items/contrast-stack-vs-monotonic-stack-intro";
 import { contrastTwoPointersVsSlidingWindowQuestions } from "./items/contrast-two-pointers-vs-sliding-window";
 import { dynamicProgrammingIntroQuestions } from "./items/dynamic-programming-intro";
-import graphTraversalQuestions from "./items/graph-traversal/questions.json";
+import { graphTraversalQuestions } from "./items/graph-traversal";
 import greedyIntroQuestions from "./items/greedy-intro/questions.json";
 import hashMapAndSetQuestions from "./items/hash-map-and-set/questions.json";
 import heapPriorityQueueQuestions from "./items/heap-priority-queue/questions.json";
@@ -60,7 +60,7 @@ const algorithmQuestionFilesByPath = {
   "items/contrast-stack-vs-monotonic-stack-intro/index.ts": contrastStackVsMonotonicStackIntroQuestions,
   "items/contrast-two-pointers-vs-sliding-window/index.ts": contrastTwoPointersVsSlidingWindowQuestions,
   "items/dynamic-programming-intro/index.ts": dynamicProgrammingIntroQuestions,
-  "items/graph-traversal/questions.json": graphTraversalQuestions,
+  "items/graph-traversal/index.ts": graphTraversalQuestions,
   "items/greedy-intro/questions.json": greedyIntroQuestions,
   "items/hash-map-and-set/questions.json": hashMapAndSetQuestions,
   "items/heap-priority-queue/questions.json": heapPriorityQueueQuestions,

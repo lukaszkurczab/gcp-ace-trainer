@@ -70,7 +70,7 @@
     {
       "folderName": "graph-traversal",
       "itemCount": 1,
-      "questionFile": "items/graph-traversal/questions.json",
+      "questionFile": "items/graph-traversal/index.ts",
       "roadmapNodeId": "graph_traversal"
     },
     {

@@ -1,4 +1,11 @@
-[
+// Planning target: this file should contain questions about recognizing graph-traversal structure:
+// entities connected by relationships; states reachable through legal transitions; explicit or implicit graphs; reachability; components; and exhaustive source exploration.
+// It should distinguish graph traversal from linear scans, tree-only recursion, dynamic programming, union-find, and weighted shortest-path algorithms.
+// It should diagnose word-only graph recognition, missed implicit state graphs, premature BFS/DFS choice, nonexistent connectivity relations, and needless full traversal.
+// Target question count: 14.
+// Prefer single_choice, strategy_choice, solution_comparison, implicit-graph recognition, and mistake-review style items.
+// Avoid detailed queue or stack mechanics, visited timing, grid boundaries, and full complexity calculations.
+export const recognizeGraphTraversalSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +55,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];
