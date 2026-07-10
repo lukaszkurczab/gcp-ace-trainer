@@ -1,4 +1,13 @@
-[
+// Planning target: this file should contain questions about recognizing recursive problem structure:
+// a problem defined in terms of a smaller instance of the same problem; nested or hierarchical data;
+// repeated removal of one unit; natural descent toward a boundary; and work that must resume after a nested subproblem returns.
+// It should distinguish recursion from loops, backtracking, dynamic programming, divide and conquer, and ordinary function composition.
+// It should diagnose mistakes such as calling any repeated function use recursion, choosing recursion only because a tree appears in the prompt,
+// using recursion when the state does not become smaller, or missing a recursive structure because the prompt does not explicitly mention self-calls.
+// Target question count: 14.
+// Prefer single_choice, strategy_choice, solution_comparison, signal-recognition, and mistake-review style items.
+// Avoid detailed stack traces, base-case code, recursion trees, and complexity calculations.
+export const recognizeRecursiveStructureQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +57,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

@@ -124,7 +124,7 @@
     {
       "folderName": "recursion-basics",
       "itemCount": 1,
-      "questionFile": "items/recursion-basics/questions.json",
+      "questionFile": "items/recursion-basics/index.ts",
       "roadmapNodeId": "recursion_basics"
     },
     {
