@@ -33,7 +33,7 @@ import { prefixSumsQuestions } from "./items/prefix-sums";
 import { recursionBasicsQuestions } from "./items/recursion-basics";
 import { slidingWindowQuestions } from "./items/sliding-window";
 import { sortingBasedQuestions } from "./items/sorting-based";
-import stackQuestions from "./items/stack/questions.json";
+import { stackQuestions } from "./items/stack";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
 import treeTraversalQuestions from "./items/tree-traversal/questions.json";
 import twoPointersQuestions from "./items/two-pointers/questions.json";
@@ -72,7 +72,7 @@ const algorithmQuestionFilesByPath = {
   "items/recursion-basics/index.ts": recursionBasicsQuestions,
   "items/sliding-window/index.ts": slidingWindowQuestions,
   "items/sorting-based/index.ts": sortingBasedQuestions,
-  "items/stack/questions.json": stackQuestions,
+  "items/stack/index.ts": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
   "items/tree-traversal/questions.json": treeTraversalQuestions,
   "items/two-pointers/questions.json": twoPointersQuestions,

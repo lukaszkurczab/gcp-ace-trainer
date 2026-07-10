@@ -142,7 +142,7 @@
     {
       "folderName": "stack",
       "itemCount": 30,
-      "questionFile": "items/stack/questions.json",
+      "questionFile": "items/stack/index.ts",
       "roadmapNodeId": "stack"
     },
     {

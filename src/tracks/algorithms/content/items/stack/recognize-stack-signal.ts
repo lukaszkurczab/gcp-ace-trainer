@@ -1,4 +1,7 @@
-[
+// Planning target: this file should contain questions about recognizing LIFO strategy signals: newest unresolved context, nesting, delimiters, expression work, undo, deferred work, and recent-item cancellation.
+// Distinguish stacks from queues, recursion, ordinary storage, arbitrary two pointers, and monotonic stacks.
+// Target question count: 14.
+export const recognizeStackSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {
@@ -26,18 +29,9 @@
         "id": "alg-prod-stack-015-check",
         "mistakeTypes": ["data_structure_mismatch", "edge_case_missed"],
         "options": [
-          {
-            "id": "expected_signal",
-            "text": "Push context when entering a nested segment and pop it when closing."
-          },
-          {
-            "id": "wrong_1",
-            "text": "Choose the most familiar label before checking the constraint."
-          },
-          {
-            "id": "wrong_2",
-            "text": "Start with implementation details before naming the required state."
-          }
+          { "id": "expected_signal", "text": "Push context when entering a nested segment and pop it when closing." },
+          { "id": "wrong_1", "text": "Choose the most familiar label before checking the constraint." },
+          { "id": "wrong_2", "text": "Start with implementation details before naming the required state." }
         ],
         "prompt": "Choose the reasoning signal that should guide the strategy.",
         "status": "active",
@@ -46,26 +40,10 @@
       }
     ],
     "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "stack",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "use_last_unresolved_state",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "expression_like_processing",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "data_structure_mismatch",
-        "role": "mistake_type"
-      }
+      { "axisId": "pattern_family", "nodeId": "stack", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "use_last_unresolved_state", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "expression_like_processing", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "data_structure_mismatch", "role": "mistake_type" }
     ],
     "title": "Production stack baseline 15",
     "trackId": "algorithms",
@@ -78,19 +56,10 @@
     "responseSpec": {
       "kind": "strategy_selection",
       "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Push context when entering a nested segment and pop it when closing."
-        },
-        {
-          "id": "wrong_1",
-          "text": "Choose the most familiar label before checking the constraint."
-        },
-        {
-          "id": "wrong_2",
-          "text": "Start with implementation details before naming the required state."
-        }
+        { "id": "expected_signal", "text": "Push context when entering a nested segment and pop it when closing." },
+        { "id": "wrong_1", "text": "Choose the most familiar label before checking the constraint." },
+        { "id": "wrong_2", "text": "Start with implementation details before naming the required state." }
       ]
     }
   }
-]
+];
