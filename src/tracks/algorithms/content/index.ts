@@ -25,7 +25,7 @@ import { graphTraversalQuestions } from "./items/graph-traversal";
 import { greedyIntroQuestions } from "./items/greedy-intro";
 import { hashMapAndSetQuestions } from "./items/hash-map-and-set";
 import { heapPriorityQueueQuestions } from "./items/heap-priority-queue";
-import intervalsQuestions from "./items/intervals/questions.json";
+import { intervalsQuestions } from "./items/intervals";
 import linkedListQuestions from "./items/linked-list/questions.json";
 import mathAndGeometryQuestions from "./items/math-and-geometry/questions.json";
 import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
@@ -64,7 +64,7 @@ const algorithmQuestionFilesByPath = {
   "items/greedy-intro/index.ts": greedyIntroQuestions,
   "items/hash-map-and-set/index.ts": hashMapAndSetQuestions,
   "items/heap-priority-queue/index.ts": heapPriorityQueueQuestions,
-  "items/intervals/questions.json": intervalsQuestions,
+  "items/intervals/index.ts": intervalsQuestions,
   "items/linked-list/questions.json": linkedListQuestions,
   "items/math-and-geometry/questions.json": mathAndGeometryQuestions,
   "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,

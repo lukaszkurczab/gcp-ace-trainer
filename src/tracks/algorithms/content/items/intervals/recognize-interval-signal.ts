@@ -1,4 +1,8 @@
-[
+// Planning target: recognize starts and ends on a line or timeline and choose interval-specific reasoning for overlap, union, insertion, gaps, coverage, concurrency, or selection.
+// It should distinguish intervals from arbitrary pairs, points, sliding windows, prefix sums, and generic scheduling.
+// Target question count: 14.
+// Prefer strategy and signal-recognition items; avoid detailed endpoint, merge, sweep, and complexity mechanics.
+export const recognizeIntervalSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +52,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

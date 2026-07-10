@@ -94,7 +94,7 @@
     {
       "folderName": "intervals",
       "itemCount": 1,
-      "questionFile": "items/intervals/questions.json",
+      "questionFile": "items/intervals/index.ts",
       "roadmapNodeId": "intervals"
     },
     {
