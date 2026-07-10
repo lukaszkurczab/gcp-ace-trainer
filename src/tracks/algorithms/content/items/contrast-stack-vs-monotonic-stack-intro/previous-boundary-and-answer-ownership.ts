@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawpreviousBoundaryAndAnswerOwnershipQuestions = [
+export const previousBoundaryAndAnswerOwnershipQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -10,11 +8,11 @@ const rawpreviousBoundaryAndAnswerOwnershipQuestions = [
     secondarySkillAtomIds: ["nearest_previous_candidate", "left_to_right_scan"],
     type: "single_choice",
     prompt:
-      "For each position, you need the nearest previous strictly greater value. During a left-to-right scan, what should the current position do after invalid stack candidates are removed?",
+      "For each position, you need the index of the nearest previous strictly greater value. During a left-to-right scan, what should the current index do after invalid stack candidates are removed?",
     options: [
       {
         id: "read_remaining_top",
-        text: "Use the remaining stack top as its nearest previous qualifying position.",
+        text: "Use the surviving stack-top index as its nearest previous qualifying index.",
       },
       {
         id: "use_last_popped",
@@ -32,7 +30,7 @@ const rawpreviousBoundaryAndAnswerOwnershipQuestions = [
     correctOptionId: "read_remaining_top",
     feedbackModel: {
       decisionSignal:
-        "The current item owns the answer, and the nearest qualifying earlier candidate is the closest one still retained at the top.",
+        "The current index owns the answer, and the nearest qualifying earlier index is the closest one still retained at the top.",
       mentalModelCorrection:
         "Popped entries failed the current item's boundary contract. The surviving top, not a removed candidate, provides the answer.",
       mistakeTypes: ["answer_ownership_mismatch"],
@@ -511,31 +509,31 @@ const rawpreviousBoundaryAndAnswerOwnershipQuestions = [
     secondarySkillAtomIds: ["candidate_filtering", "current_answer_ownership"],
     type: "solution_comparison",
     prompt:
-      "A previous-smaller implementation treats every popped index as a possible answer for the current item and returns the last one popped. Why is this reasoning incorrect?",
+      "For nearest previous strictly smaller values, the stack contains [2, 5, 8] from bottom to top and current value is 6. A bug reads the top before popping. Which incorrect answer does it assign to 6?",
     options: [
       {
-        id: "popped_entries_are_rejected",
-        text: "Popped entries fail the current item's previous-smaller requirement; only the surviving top can qualify.",
+        id: "incorrect_eight",
+        text: "8, because it is read before the loop removes candidates that fail the strictly-smaller contract.",
       },
       {
-        id: "first_popped_is_always_answer",
-        text: "The first popped entry is always the correct nearest boundary.",
+        id: "correct_five",
+        text: "5, because 8 is popped and the surviving top is the nearest previous strictly smaller value.",
       },
       {
-        id: "all_popped_entries_qualify",
-        text: "Every popped entry qualifies, but only one may be returned for performance reasons.",
+        id: "incorrect_two",
+        text: "2, because the oldest smaller value is preferred over a nearer candidate.",
       },
       {
-        id: "current_has_no_owner",
-        text: "Previous-boundary tasks do not assign any answer to the current item.",
+        id: "incorrect_six",
+        text: "6, because the current value becomes its own boundary after being pushed.",
       },
     ],
-    correctOptionId: "popped_entries_are_rejected",
+    correctOptionId: "incorrect_eight",
     feedbackModel: {
       decisionSignal:
-        "The pop loop removes candidates that violate the required relation.",
+        "The current answer must be read only after the pop loop leaves a qualifying surviving top.",
       mentalModelCorrection:
-        "In previous-boundary lookup, pops are filtering actions, not a sequence of potential answers for the current item.",
+        "Reading 8 before filtering returns a nearby but invalid candidate. After 8 is popped, 5 is the nearest previous strictly smaller boundary for the current item.",
       mistakeTypes: ["pop_semantics_mismatch"],
       nextAction:
         "Label each stack mutation as rejection, resolution, or answer retrieval.",
@@ -586,5 +584,3 @@ const rawpreviousBoundaryAndAnswerOwnershipQuestions = [
     },
   },
 ];
-
-export const previousBoundaryAndAnswerOwnershipQuestions = canonicalizeContrastQuestions(rawpreviousBoundaryAndAnswerOwnershipQuestions, "monotonic_stack", "monotonic_invariant");

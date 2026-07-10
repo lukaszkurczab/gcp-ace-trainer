@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawduplicatesStrictnessAndUnresolvedStateQuestions = [
+export const duplicatesStrictnessAndUnresolvedStateQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -138,31 +136,31 @@ const rawduplicatesStrictnessAndUnresolvedStateQuestions = [
     ],
     type: "single_choice",
     prompt:
-      "The task asks for the nearest next greater-or-equal element. Values contain a plateau [5, 5, 5]. Why should an earlier 5 be resolved by the immediately following 5 instead of waiting for a later value?",
+      "The task asks for the nearest next smaller-than-or-equal value. The input plateau is [5, 5, 5]. What is the answer for the first 5?",
     options: [
       {
+        id: "wait_for_strictly_smaller",
+        text: "No answer yet; it must wait for a value strictly smaller than 5.",
+      },
+      {
+        id: "last_equal_qualifies",
+        text: "The last 5, because equal values should resolve together at the end of a plateau.",
+      },
+      {
         id: "nearest_equal_qualifies",
-        text: "Equality qualifies, and the first qualifying index is the nearest valid answer.",
+        text: "The immediately following 5, because equality qualifies and it is the nearest valid answer.",
       },
       {
-        id: "later_value_always_better",
-        text: "Later values are always preferred because they provide more context.",
-      },
-      {
-        id: "duplicates_have_no_answer",
-        text: "Equal values can never resolve one another in a monotonic-stack task.",
-      },
-      {
-        id: "all_duplicates_share_last",
-        text: "Every duplicate must be resolved by the last equal value in the plateau.",
+        id: "unresolved_plateau",
+        text: "No answer, because duplicate values cannot resolve each other in a stack scan.",
       },
     ],
     correctOptionId: "nearest_equal_qualifies",
     feedbackModel: {
       decisionSignal:
-        "The contract combines a non-strict comparison with nearest-position semantics.",
+        "The relation includes equality, and the answer must be the nearest qualifying occurrence to the right.",
       mentalModelCorrection:
-        "Once the first qualifying value appears, waiting longer would violate the nearest-answer requirement.",
+        "The second 5 is smaller than or equal to the first and is already the nearest valid resolver. Waiting for a strictly smaller value changes the contract.",
       mistakeTypes: ["nearest_occurrence_mismatch"],
       nextAction:
         "Check both dimensions of the contract: value relation and positional priority.",
@@ -505,5 +503,3 @@ const rawduplicatesStrictnessAndUnresolvedStateQuestions = [
     },
   },
 ];
-
-export const duplicatesStrictnessAndUnresolvedStateQuestions = canonicalizeContrastQuestions(rawduplicatesStrictnessAndUnresolvedStateQuestions, "monotonic_stack", "next_greater_element");

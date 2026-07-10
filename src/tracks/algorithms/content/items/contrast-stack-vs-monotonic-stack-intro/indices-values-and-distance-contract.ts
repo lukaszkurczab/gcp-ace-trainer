@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawindicesValuesAndDistanceContractQuestions = [
+export const indicesValuesAndDistanceContractQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -53,19 +51,19 @@ const rawindicesValuesAndDistanceContractQuestions = [
     secondarySkillAtomIds: ["index_difference", "resolved_position_distance"],
     type: "single_choice",
     prompt:
-      "An unresolved element at index j is resolved by the current element at index i. The required answer is the number of positions between their occurrences. Which expression should be used?",
+      "An unresolved element at index j is resolved by the current element at index i. The required answer is how many positions later the resolver appears. Which expression should be used?",
     options: [
       {
-        id: "index_difference",
-        text: "i - j",
+        id: "positions_strictly_between",
+        text: "i - j - 1",
       },
       {
         id: "value_difference",
         text: "values[i] - values[j]",
       },
       {
-        id: "index_sum",
-        text: "i + j",
+        id: "index_difference",
+        text: "i - j",
       },
       {
         id: "stack_size",
@@ -75,9 +73,9 @@ const rawindicesValuesAndDistanceContractQuestions = [
     correctOptionId: "index_difference",
     feedbackModel: {
       decisionSignal:
-        "The output measures positional separation, not numeric difference.",
+        "The output is an index distance from the unresolved occurrence to its resolver.",
       mentalModelCorrection:
-        "Distances between occurrences are calculated from indexes. Subtracting values answers a different question.",
+        "i - j is the number of positions later. i - j - 1 instead counts positions strictly between the occurrences.",
       mistakeTypes: ["value_index_confusion"],
       nextAction:
         "Identify whether the requested difference is between positions or stored values.",
@@ -136,7 +134,7 @@ const rawindicesValuesAndDistanceContractQuestions = [
     secondarySkillAtomIds: ["value_output_contract", "minimal_stack_state"],
     type: "single_choice",
     prompt:
-      "A left-to-right scan must return only the next qualifying value for each processed item. Positions, distances, and duplicate occurrence identities are not needed. Which stack representation may be sufficient?",
+      "A left-to-right scan emits each next qualifying value immediately when it resolves an unresolved candidate. It never writes a per-index result, and values are unique. Which stack representation may be sufficient?",
     options: [
       {
         id: "values_only",
@@ -158,9 +156,9 @@ const rawindicesValuesAndDistanceContractQuestions = [
     correctOptionId: "values_only",
     feedbackModel: {
       decisionSignal:
-        "The output and comparison contract require only values, with no positional metadata.",
+        "The resolver can emit the answer at resolution time, and no future operation needs a position or occurrence identity.",
       mentalModelCorrection:
-        "Indexes are often useful, but they are not universally required. Store the minimum state that preserves all information needed later.",
+        "Outputting a value does not itself justify values-only state. Store only information that cannot be reconstructed and is required for comparison or resolution.",
       mistakeTypes: ["unnecessary_stack_state"],
       nextAction:
         "Check whether any future operation needs position, identity, or access to other input metadata.",
@@ -506,5 +504,3 @@ const rawindicesValuesAndDistanceContractQuestions = [
     },
   },
 ];
-
-export const indicesValuesAndDistanceContractQuestions = canonicalizeContrastQuestions(rawindicesValuesAndDistanceContractQuestions, "monotonic_stack", "next_greater_element");

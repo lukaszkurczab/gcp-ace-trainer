@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawplainStackLifoContractQuestions = [
+export const plainStackLifoContractQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -167,31 +165,31 @@ const rawplainStackLifoContractQuestions = [
     secondarySkillAtomIds: ["unresolved_opener_retention", "plain_stack_state"],
     type: "single_choice",
     prompt:
-      "A delimiter validator has unresolved openers ['(', '['] from bottom to top. Why must both remain on the stack?",
+      "A delimiter scan ends with unresolved opening delimiters still on the stack. What does that final stack state mean?",
     options: [
       {
-        id: "both_need_future_matches",
-        text: "Each opener still requires its own future matching closer, in reverse opening order.",
+        id: "invalid_unmatched_openers",
+        text: "The sequence is invalid because unmatched openers remain unresolved after the full scan.",
       },
       {
-        id: "only_top_has_value",
-        text: "The bottom opener is kept only because the stack cannot contain one item.",
+        id: "implementation_error",
+        text: "The implementation is incorrect because a stack should always be empty after any scan.",
       },
       {
-        id: "numeric_order",
-        text: "Their character codes happen to be monotonic.",
+        id: "valid_outer_openers",
+        text: "The sequence is valid because outer openers are allowed to remain after inner pairs close.",
       },
       {
-        id: "duplicates_required",
-        text: "A stack must always retain at least two entries.",
+        id: "ignore_openers",
+        text: "The remaining openers can be ignored because no closing delimiter caused a mismatch.",
       },
     ],
-    correctOptionId: "both_need_future_matches",
+    correctOptionId: "invalid_unmatched_openers",
     feedbackModel: {
       decisionSignal:
-        "Neither unresolved opener has been matched or proven irrelevant.",
+        "The scan has consumed all input, so no future closer remains to resolve any opener.",
       mentalModelCorrection:
-        "A plain stack retains every pending item whose matching event may still arrive. It does not compress state through value dominance.",
+        "A nonempty stack is a valid diagnostic state during the scan. At end of input, it proves the delimiter sequence has unmatched openers and is invalid.",
       mistakeTypes: ["premature_unresolved_removal"],
       nextAction:
         "Remove an item only when the event that resolves it actually occurs.",
@@ -408,34 +406,34 @@ const rawplainStackLifoContractQuestions = [
     secondarySkillAtomIds: ["unresolved_item_lifecycle", "safe_stack_pop"],
     type: "solution_comparison",
     prompt:
-      "An undo system removes an action from the stack when a newer action has a larger identifier, even though the older action has not been undone. What is wrong with this design?",
+      "A delimiter validator reads a closing bracket when its stack of unresolved opening delimiters is empty. What should it conclude?",
     options: [
       {
-        id: "older_action_still_needed",
-        text: "The older action remains part of the undo history and may need to be restored after newer actions are undone.",
+        id: "invalid_no_opener",
+        text: "The sequence is invalid because no unresolved opener exists for this closer.",
       },
       {
-        id: "identifiers_cannot_compare",
-        text: "Action identifiers can never be numeric.",
+        id: "ignore_closer",
+        text: "Ignore the closer because it has no effect without an opener.",
       },
       {
-        id: "undo_requires_queue",
-        text: "Undo systems must always use a queue.",
+        id: "push_closer",
+        text: "Push the closer so that a later opener can match it.",
       },
       {
-        id: "larger_action_should_replace_all",
-        text: "The newer action should remove every earlier action, not only one.",
+        id: "closer_as_opener",
+        text: "Treat the closer as its own opener and defer the match decision.",
       },
     ],
-    correctOptionId: "older_action_still_needed",
+    correctOptionId: "invalid_no_opener",
     feedbackModel: {
       decisionSignal:
-        "The older action remains unresolved in the reverse-history contract.",
+        "A closer must consume a compatible most-recent unresolved opener, and none exists.",
       mentalModelCorrection:
-        "A newer action does not dominate an older undo entry merely because of its identifier or value.",
+        "An empty opener stack is not a state to repair or defer. It is direct evidence that this closer has no matching opener, so the sequence is invalid.",
       mistakeTypes: ["premature_unresolved_removal"],
       nextAction:
-        "Pop history only when the corresponding undo operation consumes the top entry.",
+        "Before matching a closer, check that the stack is nonempty and that its top is the required opener.",
       result: "diagnostic",
     },
   },
@@ -483,5 +481,3 @@ const rawplainStackLifoContractQuestions = [
     },
   },
 ];
-
-export const plainStackLifoContractQuestions = canonicalizeContrastQuestions(rawplainStackLifoContractQuestions, "stack", "nested_structure_validation");

@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawnextGreaterSmallerResolutionQuestions = [
+export const nextGreaterSmallerResolutionQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -469,31 +467,31 @@ const rawnextGreaterSmallerResolutionQuestions = [
     secondarySkillAtomIds: ["while_not_if_pop", "missed_candidate_resolution"],
     type: "solution_comparison",
     prompt:
-      "A next-greater implementation uses if instead of while when comparing the current value with the stack top. Which input shape exposes the bug most directly?",
+      "A next-greater scan uses `if (current > top) pop()` before pushing current. With unresolved values [8, 5, 3] from bottom to top and current value 6, which incorrect state remains after this code runs?",
     options: [
       {
-        id: "one_value_resolves_many",
-        text: "Several unresolved smaller values followed by one larger value that should resolve all of them.",
+        id: "incorrect_five_remains",
+        text: "[8, 5, 6], leaving 5 unresolved even though 6 is its next strictly greater resolver.",
       },
       {
-        id: "strictly_decreasing_only",
-        text: "A strictly decreasing input in which no value resolves any earlier value.",
+        id: "correct_eight_six",
+        text: "[8, 6], because 6 resolves both 3 and 5 before it is pushed.",
       },
       {
-        id: "single_element",
-        text: "An array containing exactly one element.",
+        id: "incorrect_eight_five",
+        text: "[8, 5], because current 6 should not be stored after it resolves 3.",
       },
       {
-        id: "all_unresolved",
-        text: "An input in which every answer is the no-result sentinel.",
+        id: "incorrect_six_only",
+        text: "[6], because a resolver must clear every earlier candidate from the stack.",
       },
     ],
-    correctOptionId: "one_value_resolves_many",
+    correctOptionId: "incorrect_five_remains",
     feedbackModel: {
       decisionSignal:
-        "The bug appears when one incoming value qualifies for more than one consecutive stack entry.",
+        "One incoming resolver can qualify for several consecutive top candidates.",
       mentalModelCorrection:
-        "A single pop handles only one resolved candidate and leaves other already-resolvable entries incorrectly waiting.",
+        "The `if` pops 3, then pushes 6 above 5. But 6 is already the nearest next strictly greater resolver for 5, so leaving 5 on the stack is incorrect.",
       mistakeTypes: ["insufficient_stack_pop"],
       nextAction:
         "Test stack code with an incoming value that crosses several retained candidates.",
@@ -669,5 +667,3 @@ const rawnextGreaterSmallerResolutionQuestions = [
     },
   },
 ];
-
-export const nextGreaterSmallerResolutionQuestions = canonicalizeContrastQuestions(rawnextGreaterSmallerResolutionQuestions, "monotonic_stack", "next_greater_element");

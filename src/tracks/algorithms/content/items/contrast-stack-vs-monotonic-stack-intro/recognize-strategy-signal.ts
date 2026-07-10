@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawrecognizeStackVsMonotonicStackStrategySignalQuestions = [
+export const recognizeStackVsMonotonicStackStrategySignalQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -427,31 +425,31 @@ const rawrecognizeStackVsMonotonicStackStrategySignalQuestions = [
     ],
     type: "solution_comparison",
     prompt:
-      "Which comparison best describes what retained entries mean in the two strategies?",
+      "Compute the global maximum value in an array. Which strategy fits this task?",
     options: [
       {
-        id: "pending_vs_useful_candidates",
-        text: "A plain stack retains pending items until their LIFO event occurs; a monotonic stack retains only unresolved candidates still useful under its order invariant.",
+        id: "plain_stack",
+        text: "A plain stack that retains every value until the scan ends.",
       },
       {
-        id: "same_meaning",
-        text: "Both retain every processed item until the complete input ends.",
+        id: "running_maximum",
+        text: "A running maximum during one linear scan.",
       },
       {
-        id: "plain_discards_monotonic_keeps",
-        text: "A plain stack removes dominated candidates, while a monotonic stack keeps all history.",
+        id: "monotonic_stack",
+        text: "A monotonic stack that retains unresolved greater candidates.",
       },
       {
-        id: "resolved_only",
-        text: "Both stacks contain only entries whose answers are already complete.",
+        id: "sorting",
+        text: "Sort the array and select the last value.",
       },
     ],
-    correctOptionId: "pending_vs_useful_candidates",
+    correctOptionId: "running_maximum",
     feedbackModel: {
       decisionSignal:
-        "Entry retention follows different correctness arguments in the two structures.",
+        "The task asks for one global aggregate, not for LIFO matching or nearest unresolved boundaries.",
       mentalModelCorrection:
-        "Plain-stack entries remain because they are pending. Monotonic-stack entries remain because they are both unresolved and not yet dominated.",
+        "A running maximum preserves exactly the state needed for a global maximum. A stack adds retention semantics that this task does not require.",
       mistakeTypes: ["stack_state_semantics_mismatch"],
       nextAction:
         "Describe the semantic lifecycle of one retained entry in each strategy.",
@@ -553,31 +551,31 @@ const rawrecognizeStackVsMonotonicStackStrategySignalQuestions = [
     ],
     type: "solution_comparison",
     prompt:
-      "Which explanation best distinguishes when to use a plain stack and when to use a monotonic stack?",
+      "After preprocessing a static array, answer arbitrary range-sum queries. Which strategy fits this task?",
     options: [
       {
-        id: "complete_contrast",
-        text: "Use a plain stack when unresolved items must be processed in reverse arrival order; use a monotonic stack when an additional greater-or-smaller invariant can remove candidates that no longer matter.",
+        id: "monotonic_stack",
+        text: "A monotonic stack that keeps candidate boundaries in value order.",
       },
       {
-        id: "numbers_vs_symbols",
-        text: "Use monotonic stacks for numbers and plain stacks for symbols.",
+        id: "prefix_sums",
+        text: "Prefix sums, subtracting two prefix values for each query.",
       },
       {
-        id: "advanced_vs_easy",
-        text: "Use a monotonic stack for difficult problems and a plain stack for easy problems.",
+        id: "plain_stack",
+        text: "A plain stack that stores values in their input order.",
       },
       {
-        id: "same_strategy",
-        text: "The strategies are equivalent because both use push and pop at the top.",
+        id: "running_maximum",
+        text: "A running maximum, because sums and maxima are both aggregates.",
       },
     ],
-    correctOptionId: "complete_contrast",
+    correctOptionId: "prefix_sums",
     feedbackModel: {
       decisionSignal:
-        "A complete justification distinguishes both removal order and candidate-retention semantics.",
+        "The same static array serves many additive range queries after a one-time preprocessing step.",
       mentalModelCorrection:
-        "The deciding factor is the required relationship: pure LIFO pending state versus ordered candidate elimination.",
+        "Neither stack variant provides constant-time arbitrary range sums. Prefix sums make each query a subtraction of two stored cumulative totals.",
       mistakeTypes: ["weak_strategy_justification"],
       nextAction:
         "Justify the structure through what entries represent, why they remain, and when they may be safely removed.",
@@ -585,5 +583,3 @@ const rawrecognizeStackVsMonotonicStackStrategySignalQuestions = [
     },
   },
 ];
-
-export const recognizeStackVsMonotonicStackStrategySignalQuestions = canonicalizeContrastQuestions(rawrecognizeStackVsMonotonicStackStrategySignalQuestions, "stack", "nested_structure_validation");

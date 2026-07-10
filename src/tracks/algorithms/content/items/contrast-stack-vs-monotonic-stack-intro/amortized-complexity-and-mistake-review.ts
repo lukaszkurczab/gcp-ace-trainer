@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawamortizedComplexityAndMistakeReviewQuestions = [
+export const amortizedComplexityAndMistakeReviewQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -13,11 +11,11 @@ const rawamortizedComplexityAndMistakeReviewQuestions = [
     ],
     type: "single_choice",
     prompt:
-      "A stack is implemented with a dynamic array and operates only at its end. What are the expected costs of push, pop, and top?",
+      "A stack uses a dynamic array and operates only at its end. Which cost statement is precise under the standard dynamic-array model?",
     options: [
       {
-        id: "constant_expected",
-        text: "Each operation is O(1) expected or amortized time.",
+        id: "push_amortized_pop_top_worst_case",
+        text: "top and ordinary pop are O(1) worst-case; push is O(1) amortized because a resize can cost O(n).",
       },
       {
         id: "logarithmic",
@@ -29,15 +27,15 @@ const rawamortizedComplexityAndMistakeReviewQuestions = [
       },
       {
         id: "push_linear_others_constant",
-        text: "Push is O(n), while pop and top are O(1).",
+        text: "Every push is O(n), while pop and top are O(1).",
       },
     ],
-    correctOptionId: "constant_expected",
+    correctOptionId: "push_amortized_pop_top_worst_case",
     feedbackModel: {
       decisionSignal:
-        "All operations access or modify only the end of the underlying sequence.",
+        "top and ordinary pop inspect the end directly; a push may trigger an occasional resize.",
       mentalModelCorrection:
-        "The number of stored elements does not make top-end access linear. Dynamic-array resizing may occasionally cost O(n), but push remains amortized O(1).",
+        "Expected and amortized are different claims. The occasional O(n) resize makes push amortized O(1), while top and ordinary pop remain O(1) worst-case operations.",
       mistakeTypes: ["operation_complexity_mismatch"],
       nextAction:
         "Analyze where the data structure performs each operation rather than using its total size as the operation cost.",
@@ -426,5 +424,3 @@ const rawamortizedComplexityAndMistakeReviewQuestions = [
     },
   },
 ];
-
-export const amortizedComplexityAndMistakeReviewQuestions = canonicalizeContrastQuestions(rawamortizedComplexityAndMistakeReviewQuestions, "monotonic_stack", "monotonic_invariant");

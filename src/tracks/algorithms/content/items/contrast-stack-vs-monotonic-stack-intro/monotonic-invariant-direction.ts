@@ -1,6 +1,4 @@
-import { canonicalizeContrastQuestions } from "./canonicalize-contrast-questions";
-
-const rawmonotonicInvariantDirectionQuestions = [
+export const monotonicInvariantDirectionQuestions = [
   {
     contentVersion: "algorithms-core",
     difficulty: "intro",
@@ -179,7 +177,7 @@ const rawmonotonicInvariantDirectionQuestions = [
     ],
     type: "single_choice",
     prompt:
-      "During a left-to-right next-greater-element scan, unresolved values are kept in decreasing order from bottom to top. Why is a larger current value allowed to pop smaller values from the top?",
+      "During a left-to-right strict next-greater scan, unresolved values are kept non-increasing from bottom to top. Why may a larger current value pop smaller values from the top?",
     options: [
       {
         id: "current_resolves_smaller",
@@ -203,7 +201,7 @@ const rawmonotonicInvariantDirectionQuestions = [
       decisionSignal:
         "The stack contains unresolved candidates, and the current value satisfies their requested greater-than relation.",
       mentalModelCorrection:
-        "The maintained order supports efficient access to candidates that the current value can resolve, rather than sorting the input.",
+        "Equal unresolved values may remain for a strict relation. The maintained non-increasing order exposes candidates that the current resolver can settle; it does not sort the input.",
       mistakeTypes: ["weak_invariant_justification"],
       nextAction:
         "Explain what each retained entry is waiting for and what event makes it removable.",
@@ -222,11 +220,11 @@ const rawmonotonicInvariantDirectionQuestions = [
     ],
     type: "single_choice",
     prompt:
-      "For a left-to-right next-smaller-element scan, which unresolved stack order naturally allows a smaller current value to resolve entries from the top?",
+      "For a left-to-right strict next-smaller scan that preserves equal unresolved values, which stack order naturally exposes entries a smaller current value can resolve?",
     options: [
       {
         id: "increasing_bottom_to_top",
-        text: "Values increasing from bottom to top.",
+        text: "Values non-decreasing from bottom to top.",
       },
       {
         id: "decreasing_bottom_to_top",
@@ -244,9 +242,9 @@ const rawmonotonicInvariantDirectionQuestions = [
     correctOptionId: "increasing_bottom_to_top",
     feedbackModel: {
       decisionSignal:
-        "The smallest exposed unresolved candidate sits near the top and can be tested against the incoming smaller value.",
+        "Larger unresolved candidates are exposed at the top, so a smaller current value can resolve them consecutively.",
       mentalModelCorrection:
-        "For next-smaller reasoning, unresolved values commonly remain increasing so that a smaller current value removes larger top entries.",
+        "For a strict next-smaller query, equal values may remain. A non-decreasing bottom-to-top stack exposes larger unresolved candidates at the top for consecutive resolution.",
       mistakeTypes: ["stack_direction_mismatch"],
       nextAction:
         "Derive the order from which unresolved values the current greater or smaller value should eliminate.",
@@ -262,23 +260,23 @@ const rawmonotonicInvariantDirectionQuestions = [
     secondarySkillAtomIds: ["candidate_dominance", "safe_stack_pop"],
     type: "solution_comparison",
     prompt:
-      "A monotonic-stack solution keeps an older candidate even though a newer candidate is at least as useful for every future comparison and is closer to all future positions. What is the main issue?",
+      "For nearest previous smaller queries, an older value 8 at index 2 is below a newer value 5 at index 6. Future positions are to the right, and both values are smaller than a future current value 10. Can the older 8 ever be the nearest qualifying answer while 5 remains?",
     options: [
       {
         id: "older_candidate_dominated",
-        text: "The older candidate is dominated and may violate the intended minimal unresolved-candidate representation.",
+        text: "No. The newer 5 is closer and also qualifies, so 8 cannot win while 5 remains available.",
       },
       {
         id: "newer_candidate_invalid",
-        text: "Newer candidates may never be stored in a stack.",
+        text: "Yes. The older 8 is numerically larger, so it is always the stronger boundary.",
       },
       {
         id: "all_candidates_required",
-        text: "A monotonic stack must retain every processed item permanently.",
+        text: "Yes. Nearest previous queries must retain every processed candidate until the scan ends.",
       },
       {
         id: "distance_irrelevant",
-        text: "Candidate position can never affect stack usefulness.",
+        text: "No. Candidate position is irrelevant once both values are smaller than the current value.",
       },
     ],
     correctOptionId: "older_candidate_dominated",
@@ -584,5 +582,3 @@ const rawmonotonicInvariantDirectionQuestions = [
     },
   },
 ];
-
-export const monotonicInvariantDirectionQuestions = canonicalizeContrastQuestions(rawmonotonicInvariantDirectionQuestions, "monotonic_stack", "monotonic_invariant");
