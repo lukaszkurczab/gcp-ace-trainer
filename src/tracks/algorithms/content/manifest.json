@@ -136,7 +136,7 @@
     {
       "folderName": "sorting-based",
       "itemCount": 5,
-      "questionFile": "items/sorting-based/questions.json",
+      "questionFile": "items/sorting-based/index.ts",
       "roadmapNodeId": "sorting_based"
     },
     {

@@ -1,4 +1,7 @@
-[
+// Planning target: this file should contain questions about the sort-once then scan lifecycle, current groups/candidates, key changes, and monotonic post-sort invariants.
+// Diagnose early resets, missing finalization, backward scans, unsupported invariants, and omitted sorting cost.
+// Target question count: 16.
+export const sortAndScanInvariantsQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {
@@ -16,32 +19,15 @@
     "status": "active",
     "staticMicroChecks": [
       {
-        "correctAnswer": [
-          "choose_key",
-          "sort_records",
-          "scan_neighbors",
-          "merge_or_compare"
-        ],
+        "correctAnswer": ["choose_key", "sort_records", "scan_neighbors", "merge_or_compare"],
         "feedback": "Order the data, scan adjacent records, then combine only records whose ordered fields overlap.",
         "id": "alg-sorting-subgoal-order-001-check",
         "mistakeTypes": ["subgoal_order_wrong", "constraint_ignored"],
         "options": [
-          {
-            "id": "choose_key",
-            "text": "Choose the field that reveals adjacency."
-          },
-          {
-            "id": "sort_records",
-            "text": "Sort records by that field."
-          },
-          {
-            "id": "scan_neighbors",
-            "text": "Scan neighboring records in order."
-          },
-          {
-            "id": "merge_or_compare",
-            "text": "Merge or compare records when the ordered condition holds."
-          }
+          { "id": "choose_key", "text": "Choose the field that reveals adjacency." },
+          { "id": "sort_records", "text": "Sort records by that field." },
+          { "id": "scan_neighbors", "text": "Scan neighboring records in order." },
+          { "id": "merge_or_compare", "text": "Merge or compare records when the ordered condition holds." }
         ],
         "prompt": "Tap the steps in the correct order.",
         "status": "active",
@@ -50,30 +36,14 @@
       }
     ],
     "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "sorting_based",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "recognize_sorting_tradeoff",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "sort_then_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "subgoal_order_wrong",
-        "role": "mistake_type"
-      }
+      { "axisId": "pattern_family", "nodeId": "sorting_based", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "recognize_sorting_tradeoff", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "sort_then_scan", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "subgoal_order_wrong", "role": "mistake_type" }
     ],
     "title": "Order sort-then-scan subgoals",
     "trackId": "algorithms",
     "type": "subgoal_ordering",
     "difficulty": "medium"
   }
-]
+];

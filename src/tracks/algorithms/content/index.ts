@@ -32,7 +32,7 @@ import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questi
 import { prefixSumsQuestions } from "./items/prefix-sums";
 import { recursionBasicsQuestions } from "./items/recursion-basics";
 import { slidingWindowQuestions } from "./items/sliding-window";
-import sortingBasedQuestions from "./items/sorting-based/questions.json";
+import { sortingBasedQuestions } from "./items/sorting-based";
 import stackQuestions from "./items/stack/questions.json";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
 import treeTraversalQuestions from "./items/tree-traversal/questions.json";
@@ -71,7 +71,7 @@ const algorithmQuestionFilesByPath = {
   "items/prefix-sums/index.ts": prefixSumsQuestions,
   "items/recursion-basics/index.ts": recursionBasicsQuestions,
   "items/sliding-window/index.ts": slidingWindowQuestions,
-  "items/sorting-based/questions.json": sortingBasedQuestions,
+  "items/sorting-based/index.ts": sortingBasedQuestions,
   "items/stack/questions.json": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
   "items/tree-traversal/questions.json": treeTraversalQuestions,
