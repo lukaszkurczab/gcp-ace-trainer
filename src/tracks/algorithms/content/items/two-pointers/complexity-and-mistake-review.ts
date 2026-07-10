@@ -1,4 +1,7 @@
-[
+// Planning target: analyze monotonic pointer scans, sort-plus-scan costs, three-sum, in-place space, output size, copying, and duplicate-skipping work.
+// Diagnose omitted sorting cost, multiplying bounded pointer movement, claiming three-sum is linear, and accepting Big-O without a safe movement proof.
+// Target question count: 14. Avoid advanced amortized-analysis formalism.
+export const complexityAndMistakeReviewQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {
@@ -18,10 +21,7 @@
     "status": "active",
     "staticMicroChecks": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n)"
-        },
+        "correctAnswer": { "space": "O(1)", "time": "O(n)" },
         "feedback": "Each item is read once and writes reuse existing storage.",
         "id": "alg-prod-two-pointers-018-check",
         "mistakeTypes": ["wrong_approach", "off_by_one"],
@@ -32,26 +32,10 @@
       }
     ],
     "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "two_pointers",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "move_decisive_pointer",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "same_direction",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "wrong_approach",
-        "role": "mistake_type"
-      }
+      { "axisId": "pattern_family", "nodeId": "two_pointers", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "move_decisive_pointer", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "same_direction", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "wrong_approach", "role": "mistake_type" }
     ],
     "title": "Production two-pointer baseline 18",
     "trackId": "algorithms",
@@ -60,4 +44,4 @@
     "expectedSpaceComplexity": "O(1)",
     "expectedTimeComplexity": "O(n)"
   }
-]
+];

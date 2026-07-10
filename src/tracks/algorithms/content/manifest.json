@@ -160,7 +160,7 @@
     {
       "folderName": "two-pointers",
       "itemCount": 35,
-      "questionFile": "items/two-pointers/questions.json",
+      "questionFile": "items/two-pointers/index.ts",
       "roadmapNodeId": "two_pointers"
     }
   ],

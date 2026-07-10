@@ -36,7 +36,7 @@ import { sortingBasedQuestions } from "./items/sorting-based";
 import { stackQuestions } from "./items/stack";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
 import { treeTraversalQuestions } from "./items/tree-traversal";
-import twoPointersQuestions from "./items/two-pointers/questions.json";
+import { twoPointersQuestions } from "./items/two-pointers";
 
 export type AlgorithmContentGroup = ContentPackGroup<
   AlgorithmTrainingItem & TrainingItem,
@@ -75,7 +75,7 @@ const algorithmQuestionFilesByPath = {
   "items/stack/index.ts": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
   "items/tree-traversal/index.ts": treeTraversalQuestions,
-  "items/two-pointers/questions.json": twoPointersQuestions,
+  "items/two-pointers/index.ts": twoPointersQuestions,
 } as const satisfies Record<string, unknown>;
 
 export const algorithmContentGroups = validateAlgorithmContentGroups(
