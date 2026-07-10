@@ -129,8 +129,8 @@
     },
     {
       "folderName": "sliding-window",
-      "itemCount": 40,
-      "questionFile": "items/sliding-window/questions.json",
+      "itemCount": 1,
+      "questionFile": "items/sliding-window/index.ts",
       "roadmapNodeId": "sliding_window"
     },
     {

@@ -31,7 +31,7 @@ import { mathAndGeometryQuestions } from "./items/math-and-geometry";
 import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
 import { prefixSumsQuestions } from "./items/prefix-sums";
 import { recursionBasicsQuestions } from "./items/recursion-basics";
-import slidingWindowQuestions from "./items/sliding-window/questions.json";
+import { slidingWindowQuestions } from "./items/sliding-window";
 import sortingBasedQuestions from "./items/sorting-based/questions.json";
 import stackQuestions from "./items/stack/questions.json";
 import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
@@ -70,7 +70,7 @@ const algorithmQuestionFilesByPath = {
   "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,
   "items/prefix-sums/index.ts": prefixSumsQuestions,
   "items/recursion-basics/index.ts": recursionBasicsQuestions,
-  "items/sliding-window/questions.json": slidingWindowQuestions,
+  "items/sliding-window/index.ts": slidingWindowQuestions,
   "items/sorting-based/questions.json": sortingBasedQuestions,
   "items/stack/questions.json": stackQuestions,
   "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,

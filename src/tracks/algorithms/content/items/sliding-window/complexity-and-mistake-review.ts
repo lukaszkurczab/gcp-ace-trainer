@@ -1,4 +1,7 @@
-[
+// Planning target: this file should contain questions about amortized boundary movement, state/deque memory, output cost, and cross-cutting sliding-window review.
+// Diagnose false quadratic claims, hidden state costs, backward boundaries, and stale invariants.
+// Target question count: 10.
+export const complexityAndMistakeReviewQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {
@@ -18,10 +21,7 @@
     "status": "active",
     "staticMicroChecks": [
       {
-        "correctAnswer": {
-          "space": "O(n)",
-          "time": "O(n)"
-        },
+        "correctAnswer": { "space": "O(n)", "time": "O(n)" },
         "feedback": "Both boundaries move forward through the sequence once.",
         "id": "alg-prod-window-024-check",
         "mistakeTypes": ["invariant_missing", "invariant_broken"],
@@ -32,26 +32,10 @@
       }
     ],
     "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "sliding_window",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "maintain_window_invariant",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "at_most_k_distinct",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "invariant_missing",
-        "role": "mistake_type"
-      }
+      { "axisId": "pattern_family", "nodeId": "sliding_window", "role": "primary" },
+      { "axisId": "skill_atom", "nodeId": "maintain_window_invariant", "role": "primary" },
+      { "axisId": "pattern_variant", "nodeId": "at_most_k_distinct", "role": "secondary" },
+      { "axisId": "mistake_type", "nodeId": "invariant_missing", "role": "mistake_type" }
     ],
     "title": "Production sliding-window baseline 24",
     "trackId": "algorithms",
@@ -60,4 +44,4 @@
     "expectedSpaceComplexity": "O(n)",
     "expectedTimeComplexity": "O(n)"
   }
-]
+];
