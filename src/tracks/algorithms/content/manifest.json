@@ -147,7 +147,7 @@
     },
     {
       "folderName": "strategy-selection-core",
-      "itemCount": 35,
+      "itemCount": 1,
       "questionFile": "items/strategy-selection-core/index.ts",
       "roadmapNodeId": "strategy_selection_core"
     },
