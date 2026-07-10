@@ -19,7 +19,7 @@ import { contrastBinarySearchVsLinearScanQuestions } from "./items/contrast-bina
 import { contrastHashMapVsSortingQuestions } from "./items/contrast-hash-map-vs-sorting";
 import { contrastSlidingWindowVsPrefixSumsQuestions } from "./items/contrast-sliding-window-vs-prefix-sums";
 import { contrastStackVsMonotonicStackIntroQuestions } from "./items/contrast-stack-vs-monotonic-stack-intro";
-import contrastTwoPointersVsSlidingWindowQuestions from "./items/contrast-two-pointers-vs-sliding-window/questions.json";
+import { contrastTwoPointersVsSlidingWindowQuestions } from "./items/contrast-two-pointers-vs-sliding-window";
 import dynamicProgrammingIntroQuestions from "./items/dynamic-programming-intro/questions.json";
 import graphTraversalQuestions from "./items/graph-traversal/questions.json";
 import greedyIntroQuestions from "./items/greedy-intro/questions.json";
@@ -58,7 +58,7 @@ const algorithmQuestionFilesByPath = {
   "items/contrast-hash-map-vs-sorting/index.ts": contrastHashMapVsSortingQuestions,
   "items/contrast-sliding-window-vs-prefix-sums/index.ts": contrastSlidingWindowVsPrefixSumsQuestions,
   "items/contrast-stack-vs-monotonic-stack-intro/index.ts": contrastStackVsMonotonicStackIntroQuestions,
-  "items/contrast-two-pointers-vs-sliding-window/questions.json": contrastTwoPointersVsSlidingWindowQuestions,
+  "items/contrast-two-pointers-vs-sliding-window/index.ts": contrastTwoPointersVsSlidingWindowQuestions,
   "items/dynamic-programming-intro/questions.json": dynamicProgrammingIntroQuestions,
   "items/graph-traversal/questions.json": graphTraversalQuestions,
   "items/greedy-intro/questions.json": greedyIntroQuestions,

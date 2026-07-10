@@ -58,7 +58,7 @@
     {
       "folderName": "contrast-two-pointers-vs-sliding-window",
       "itemCount": 2,
-      "questionFile": "items/contrast-two-pointers-vs-sliding-window/questions.json",
+      "questionFile": "items/contrast-two-pointers-vs-sliding-window/index.ts",
       "roadmapNodeId": "contrast_two_pointers_vs_sliding_window"
     },
     {
