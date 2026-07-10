@@ -351,11 +351,11 @@ Why is that generally unsafe?`,
     type: "code_reading",
     prompt: `A loop repeatedly evaluates only:
 
-  values[left] + values[right]
+values[left] + values[right]
 
-  No aggregate over values[left..right] is maintained.
+No aggregate over values[left..right] is maintained.
 
-  Which classification is precise?`,
+Which classification is precise?`,
     options: [
       {
         id: "endpoint_pair_search",
@@ -402,7 +402,7 @@ Why is that generally unsafe?`,
     type: "code_reading",
     prompt: `A loop maintains a frequency Map for every value in [left, right], expands right, and shrinks left until the range contains at most k distinct values.
 
-  Which classification is precise?`,
+Which classification is precise?`,
     options: [
       {
         id: "sliding_window",
@@ -449,11 +449,11 @@ Why is that generally unsafe?`,
     type: "mistake_review",
     prompt: `A sorted array pair problem asks for indexes i and j satisfying:
 
-  values[i] + values[j] === target
+values[i] + values[j] === target
 
-  A candidate proposes one binary search over the entire pair problem without fixing either index.
+A candidate proposes one binary search over the entire pair problem without fixing either index.
 
-  What is missing?`,
+What is missing?`,
     options: [
       {
         id: "no_single_midpoint_pair_predicate",
@@ -546,11 +546,11 @@ Why is that generally unsafe?`,
     type: "mistake_review",
     prompt: `A sorted array is searched for an exact nonnegative difference:
 
-  values[j] - values[i] === target
+values[j] - values[i] === target
 
-  A candidate starts at opposite ends. When the current difference is too large, they cannot justify whether to increment i or decrement j.
+A candidate starts at opposite ends. When the current difference is too large, they cannot justify whether to increment i or decrement j.
 
-  What does this reveal?`,
+What does this reveal?`,
     options: [
       {
         id: "opposite_end_elimination_not_established",

@@ -514,7 +514,7 @@ What boundary should it return if the boundary equals the accepted count?`,
     type: "invariant_identification",
     prompt: `A two-ended partition maintains left and right around the unclassified region.
 
-  Which invariant is precise?`,
+Which invariant is precise?`,
     options: [
       {
         id: "accepted_left_rejected_right",
@@ -561,10 +561,10 @@ What boundary should it return if the boundary equals the accepted count?`,
     type: "subgoal_ordering",
     prompt: `In a two-ended partition:
 
-  - values[left] belongs on the rejected side,
-  - values[right] belongs on the accepted side.
+- values[left] belongs on the rejected side,
+- values[right] belongs on the accepted side.
 
-  What should happen?`,
+What should happen?`,
     options: [
       {
         id: "swap_then_move_both",
@@ -611,10 +611,10 @@ What boundary should it return if the boundary equals the accepted count?`,
     type: "output_contract_analysis",
     prompt: `A two-way partition terminates with boundary = left and guarantees:
 
-  - every index below boundary satisfies predicate,
-  - every index at or above boundary does not.
+- every index below boundary satisfies predicate,
+- every index at or above boundary does not.
 
-  What may be returned and claimed?`,
+What may be returned and claimed?`,
     options: [
       {
         id: "boundary_and_membership_only",

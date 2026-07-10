@@ -870,10 +870,10 @@ What is the best review?`,
     type: "edge_case_drill",
     prompt: `Trace exact pair-sum search:
 
-  values = [-8, -3, 1, 4, 10]
-  target = 5
+values = [-8, -3, 1, 4, 10]
+target = 5
 
-  Which pair is found?`,
+Which pair is found?`,
     options: [
       {
         id: "one_four",
@@ -920,10 +920,10 @@ What is the best review?`,
     type: "edge_case_drill",
     prompt: `Trace exact pair-sum search:
 
-  values = [1, 2, 4, 9]
-  target = 8
+values = [1, 2, 4, 9]
+target = 8
 
-  What is the result?`,
+What is the result?`,
     options: [
       {
         id: "no_pair",
