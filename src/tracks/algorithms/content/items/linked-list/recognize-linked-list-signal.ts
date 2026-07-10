@@ -1,4 +1,16 @@
-[
+// Planning target: this file should contain questions about recognizing when linked-list reasoning is central:
+// nodes connected by references; local insertion or deletion without shifting later elements;
+// unknown-length forward traversal; pointer rewiring; shared tails; cycles;
+// and output contracts requiring node reuse rather than array reconstruction.
+// It should distinguish linked-list tasks from array indexing, generic two-pointer scans, stacks, queues, and graph traversal.
+// It should diagnose mistakes such as choosing a linked list only because data is sequential,
+// converting to an array before checking whether node identity must be preserved,
+// assuming random access by index is constant time,
+// or missing a pointer-rewiring problem hidden behind value-based wording.
+// Target question count: 14.
+// Prefer single_choice, strategy_choice, solution_comparison, signal-recognition, and mistake-review style items.
+// Avoid detailed reversal traces, dummy-node mechanics, cycle proofs, and full complexity calculations.
+export const recognizeLinkedListSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +60,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];

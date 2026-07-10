@@ -100,7 +100,7 @@
     {
       "folderName": "linked-list",
       "itemCount": 1,
-      "questionFile": "items/linked-list/questions.json",
+      "questionFile": "items/linked-list/index.ts",
       "roadmapNodeId": "linked_list"
     },
     {
