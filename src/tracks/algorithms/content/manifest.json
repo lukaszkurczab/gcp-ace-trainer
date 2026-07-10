@@ -106,7 +106,7 @@
     {
       "folderName": "math-and-geometry",
       "itemCount": 1,
-      "questionFile": "items/math-and-geometry/questions.json",
+      "questionFile": "items/math-and-geometry/index.ts",
       "roadmapNodeId": "math_and_geometry"
     },
     {

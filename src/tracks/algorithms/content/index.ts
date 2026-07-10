@@ -27,7 +27,7 @@ import { hashMapAndSetQuestions } from "./items/hash-map-and-set";
 import { heapPriorityQueueQuestions } from "./items/heap-priority-queue";
 import { intervalsQuestions } from "./items/intervals";
 import { linkedListQuestions } from "./items/linked-list";
-import mathAndGeometryQuestions from "./items/math-and-geometry/questions.json";
+import { mathAndGeometryQuestions } from "./items/math-and-geometry";
 import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
 import prefixSumsQuestions from "./items/prefix-sums/questions.json";
 import recursionBasicsQuestions from "./items/recursion-basics/questions.json";
@@ -66,7 +66,7 @@ const algorithmQuestionFilesByPath = {
   "items/heap-priority-queue/index.ts": heapPriorityQueueQuestions,
   "items/intervals/index.ts": intervalsQuestions,
   "items/linked-list/index.ts": linkedListQuestions,
-  "items/math-and-geometry/questions.json": mathAndGeometryQuestions,
+  "items/math-and-geometry/index.ts": mathAndGeometryQuestions,
   "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,
   "items/prefix-sums/questions.json": prefixSumsQuestions,
   "items/recursion-basics/questions.json": recursionBasicsQuestions,

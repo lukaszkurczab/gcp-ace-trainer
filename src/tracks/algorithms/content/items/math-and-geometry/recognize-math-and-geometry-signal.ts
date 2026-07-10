@@ -1,4 +1,16 @@
-[
+// Planning target: this file should contain questions about recognizing when a mathematical identity or geometric representation is the core of the solution:
+// divisibility; modular cycles; repeated numeric structure; factor relationships;
+// coordinate differences; orientation; area; overlap; transformations; and direct formula-based reasoning.
+// It should distinguish math-and-geometry problems from generic simulation, brute force, graph traversal, dynamic programming, and data-structure selection.
+// It should teach learners to derive the represented quantity before selecting a formula.
+// It should diagnose mistakes such as using a memorized formula without matching its variables,
+// choosing simulation when a closed-form invariant exists,
+// treating every coordinate problem as graph traversal,
+// or assuming every numeric task belongs to dynamic programming.
+// Target question count: 14.
+// Prefer single_choice, strategy_choice, representation selection, solution_comparison, and mistake-review style items.
+// Avoid detailed modulo cases, prime traces, cross-product signs, and full complexity calculations.
+export const recognizeMathAndGeometrySignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +60,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];
