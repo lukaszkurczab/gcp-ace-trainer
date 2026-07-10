@@ -34,7 +34,7 @@ import { recursionBasicsQuestions } from "./items/recursion-basics";
 import { slidingWindowQuestions } from "./items/sliding-window";
 import { sortingBasedQuestions } from "./items/sorting-based";
 import { stackQuestions } from "./items/stack";
-import strategySelectionCoreQuestions from "./items/strategy-selection-core/questions.json";
+import { strategySelectionCoreQuestions } from "./items/strategy-selection-core";
 import { treeTraversalQuestions } from "./items/tree-traversal";
 import { twoPointersQuestions } from "./items/two-pointers";
 
@@ -73,7 +73,7 @@ const algorithmQuestionFilesByPath = {
   "items/sliding-window/index.ts": slidingWindowQuestions,
   "items/sorting-based/index.ts": sortingBasedQuestions,
   "items/stack/index.ts": stackQuestions,
-  "items/strategy-selection-core/questions.json": strategySelectionCoreQuestions,
+  "items/strategy-selection-core/index.ts": strategySelectionCoreQuestions,
   "items/tree-traversal/index.ts": treeTraversalQuestions,
   "items/two-pointers/index.ts": twoPointersQuestions,
 } as const satisfies Record<string, unknown>;
