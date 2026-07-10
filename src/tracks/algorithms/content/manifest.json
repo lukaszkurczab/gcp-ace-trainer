@@ -82,7 +82,7 @@
     {
       "folderName": "hash-map-and-set",
       "itemCount": 40,
-      "questionFile": "items/hash-map-and-set/questions.json",
+      "questionFile": "items/hash-map-and-set/index.ts",
       "roadmapNodeId": "hash_map_and_set"
     },
     {

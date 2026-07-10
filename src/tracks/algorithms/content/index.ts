@@ -23,7 +23,7 @@ import { contrastTwoPointersVsSlidingWindowQuestions } from "./items/contrast-tw
 import { dynamicProgrammingIntroQuestions } from "./items/dynamic-programming-intro";
 import { graphTraversalQuestions } from "./items/graph-traversal";
 import { greedyIntroQuestions } from "./items/greedy-intro";
-import hashMapAndSetQuestions from "./items/hash-map-and-set/questions.json";
+import { hashMapAndSetQuestions } from "./items/hash-map-and-set";
 import heapPriorityQueueQuestions from "./items/heap-priority-queue/questions.json";
 import intervalsQuestions from "./items/intervals/questions.json";
 import linkedListQuestions from "./items/linked-list/questions.json";
@@ -62,7 +62,7 @@ const algorithmQuestionFilesByPath = {
   "items/dynamic-programming-intro/index.ts": dynamicProgrammingIntroQuestions,
   "items/graph-traversal/index.ts": graphTraversalQuestions,
   "items/greedy-intro/index.ts": greedyIntroQuestions,
-  "items/hash-map-and-set/questions.json": hashMapAndSetQuestions,
+  "items/hash-map-and-set/index.ts": hashMapAndSetQuestions,
   "items/heap-priority-queue/questions.json": heapPriorityQueueQuestions,
   "items/intervals/questions.json": intervalsQuestions,
   "items/linked-list/questions.json": linkedListQuestions,
