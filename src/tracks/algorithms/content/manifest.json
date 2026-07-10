@@ -64,7 +64,7 @@
     {
       "folderName": "dynamic-programming-intro",
       "itemCount": 1,
-      "questionFile": "items/dynamic-programming-intro/questions.json",
+      "questionFile": "items/dynamic-programming-intro/index.ts",
       "roadmapNodeId": "dynamic_programming_intro"
     },
     {

@@ -1,4 +1,14 @@
-[
+// Planning target: this file should contain questions about recognizing when dynamic programming is a justified strategy:
+// repeated subproblems; the same state reached through multiple decision paths;
+// a result that can be composed from smaller state results; and a finite reusable state space.
+// It should distinguish DP from plain recursion, brute-force enumeration, greedy choice, divide and conquer, and simple linear accumulation.
+// It should diagnose mistakes such as choosing DP only because the prompt asks for a minimum or maximum,
+// assuming every recursive solution is dynamic programming, memoizing states that are never repeated,
+// or rejecting DP because the original problem statement does not explicitly mention subproblems.
+// Target question count: 16.
+// Prefer single_choice, strategy_choice, solution_comparison, recursion-tree comparison, and mistake-review style items.
+// Avoid detailed state design, recurrence formulas, memo-table code, and advanced DP families; those belong in later files.
+export const recognizeDpSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
     "difficulty": "intro",
@@ -48,4 +58,4 @@
     "trackId": "algorithms",
     "type": "approach_naming"
   }
-]
+];
