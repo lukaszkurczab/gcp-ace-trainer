@@ -3,6 +3,7 @@ import type {
   ReviewPriority,
   ReviewQueueItem,
   ReviewReason,
+  TrainingItem,
   TrainingItemTaxonomyRef,
 } from "../../domain/training";
 import { getReviewQueueItems } from "../../storage/repositories";
@@ -36,7 +37,7 @@ export type CloudCertificationReviewViewModel = {
 };
 
 export type CloudCertificationReviewViewModelInput = {
-  contentAdapter?: TrackContentAdapter;
+  contentAdapter?: TrackContentAdapter<TrainingItem>;
   issues?: readonly LocalStorageIssue[];
   now?: string;
   reviewQueueItems: readonly ReviewQueueItem[];
@@ -44,7 +45,7 @@ export type CloudCertificationReviewViewModelInput = {
 
 export async function loadCloudCertificationReviewViewModel(
   input: {
-    contentAdapter?: TrackContentAdapter;
+    contentAdapter?: TrackContentAdapter<TrainingItem>;
     now?: string;
   } = {},
 ): Promise<CloudCertificationReviewViewModel> {
@@ -81,7 +82,7 @@ export function buildCloudCertificationReviewViewModel(
 
 function buildReviewViewItem(
   item: ReviewQueueItem,
-  contentAdapter: TrackContentAdapter,
+  contentAdapter: TrackContentAdapter<TrainingItem>,
   now: string,
 ): CloudCertificationReviewViewItem {
   const contentItem = contentAdapter.getItemById(item.itemId);

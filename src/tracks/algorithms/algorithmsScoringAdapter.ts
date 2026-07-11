@@ -1,83 +1,43 @@
 import { ALGORITHMS_TRACK_ID } from "../../domain";
 import type {
-  ComplexityAnswer,
   TrainingAttemptResponse,
   TrainingAttemptResult,
-  TrainingItem,
 } from "../../domain/training";
 import type { TrackScoringAdapter } from "../types";
-import type {
-  AlgorithmComplexityPairAnswer,
-  AlgorithmStaticMicroCheck,
-  AlgorithmStaticMicroCheckAnswer,
-  AlgorithmTrainingItem,
-} from "./algorithmContentTypes";
+import {
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  type AlgorithmQuestion,
+} from "./algorithmQuestionTypes";
 
 export type AlgorithmScoringStatus = "correct" | "partial" | "incorrect";
 
-export type AlgorithmSubmittedAnswer =
-  | string
-  | readonly string[]
-  | {
-      space?: string;
-      time?: string;
-    };
-
-export type AlgorithmStaticCheckScore = {
+export type AlgorithmQuestionScore = {
   feedback: string;
-  mistakeTypes: AlgorithmStaticMicroCheck["mistakeTypes"];
+  mistakeTypes: AlgorithmQuestion["feedbackModel"]["mistakeTypes"];
   result: TrainingAttemptResult;
   status: AlgorithmScoringStatus;
 };
 
-export function createAlgorithmsScoringAdapter(): TrackScoringAdapter {
+export function createAlgorithmsScoringAdapter(): TrackScoringAdapter<AlgorithmQuestion> {
   return {
-    scoreAttempt: (
-      item: TrainingItem,
-      response: TrainingAttemptResponse,
-    ): TrainingAttemptResult => scoreAlgorithmsAttempt(item, response),
+    scoreAttempt: (question, response) => scoreAlgorithmQuestion(question, response).result,
     trackId: ALGORITHMS_TRACK_ID,
   };
 }
 
-export function scoreAlgorithmsAttempt(
-  item: TrainingItem,
+export function scoreAlgorithmQuestion(
+  question: AlgorithmQuestion,
   response: TrainingAttemptResponse,
-): TrainingAttemptResult {
-  const algorithmItem = asAlgorithmTrainingItem(item);
-  const check = getActiveAlgorithmStaticMicroCheck(algorithmItem);
-  const answer = answerFromTrainingResponse(check, response);
-
-  return scoreAlgorithmStaticMicroCheck(check, answer).result;
-}
-
-export function getActiveAlgorithmStaticMicroCheck(
-  item: AlgorithmTrainingItem,
-): AlgorithmStaticMicroCheck {
-  const check = item.staticMicroChecks?.find((candidate) => candidate.status === "active");
-
-  if (!check) {
-    throw new Error(`Algorithms item has no active static micro-check: ${item.id}`);
-  }
-
-  return check;
-}
-
-export function scoreAlgorithmStaticMicroCheck(
-  check: AlgorithmStaticMicroCheck,
-  answer: AlgorithmSubmittedAnswer,
-): AlgorithmStaticCheckScore {
-  if (check.status !== "active") {
-    throw new Error(`Cannot score disabled Algorithms micro-check: ${check.id}`);
-  }
-
-  const points = scoreStaticAnswer(check, answer);
-  const status = getStatus(points.earnedPoints, points.maxPoints);
+): AlgorithmQuestionScore {
+  const score = getQuestionPoints(question, response);
+  const status = getStatus(score.earnedPoints, score.maxPoints);
 
   return {
-    feedback: check.feedback,
-    mistakeTypes: status === "correct" ? [] : check.mistakeTypes,
-    result: toTrainingAttemptResult(status, points),
+    feedback: question.feedbackModel.mentalModelCorrection,
+    mistakeTypes: status === "correct" ? [] : question.feedbackModel.mistakeTypes,
+    result: toTrainingAttemptResult(status, score),
     status,
   };
 }
@@ -116,62 +76,64 @@ export function getAlgorithmAttemptStatus(
   return undefined;
 }
 
-function scoreStaticAnswer(
-  check: AlgorithmStaticMicroCheck,
-  answer: AlgorithmSubmittedAnswer,
+function getQuestionPoints(
+  question: AlgorithmQuestion,
+  response: TrainingAttemptResponse,
 ): { earnedPoints: number; maxPoints: number } {
-  if (check.type === "single_choice" || check.type === "select_pseudocode_line" || check.type === "trace_next_step") {
-    assertStringAnswer(check.correctAnswer, check.id);
+  if (isAlgorithmChoiceQuestion(question)) {
+    if (response.kind !== "option_selection") {
+      throw new Error(`Algorithms response kind mismatch for ${question.id}: expected option_selection.`);
+    }
+
+    const correctIds = new Set(
+      question.options.filter((option) => option.isCorrect).map((option) => option.id),
+    );
+    const selectedIds = new Set(response.selectedOptionIds);
+    const selectedCorrectCount = [...selectedIds].filter((id) => correctIds.has(id)).length;
+    const selectedIncorrectCount = [...selectedIds].filter((id) => !correctIds.has(id)).length;
+    const exact = selectedCorrectCount === correctIds.size && selectedIncorrectCount === 0;
+
     return {
-      earnedPoints: answer === check.correctAnswer ? 1 : 0,
-      maxPoints: 1,
+      earnedPoints: exact ? correctIds.size : Math.max(0, selectedCorrectCount - selectedIncorrectCount),
+      maxPoints: correctIds.size,
     };
   }
 
-  if (check.type === "multi_select") {
-    const expected = assertStringArrayAnswer(check.correctAnswer, check.id);
-    const selected = Array.isArray(answer) ? answer : typeof answer === "string" ? [answer] : [];
-    const expectedSet = new Set(expected);
-    const selectedSet = new Set(selected);
-    const matchedCount = [...selectedSet].filter((id) => expectedSet.has(id)).length;
-    const exact = matchedCount === expectedSet.size && selectedSet.size === expectedSet.size;
+  if (isAlgorithmOrderingQuestion(question)) {
+    if (response.kind !== "option_selection") {
+      throw new Error(`Algorithms response kind mismatch for ${question.id}: expected option_selection.`);
+    }
 
     return {
-      earnedPoints: exact ? expectedSet.size : matchedCount,
-      maxPoints: expectedSet.size,
+      earnedPoints: question.correctOrder.filter(
+        (subgoalId, index) => response.selectedOptionIds[index] === subgoalId,
+      ).length,
+      maxPoints: question.correctOrder.length,
     };
   }
 
-  if (check.type === "order_steps") {
-    const expected = assertStringArrayAnswer(check.correctAnswer, check.id);
-    const selected = Array.isArray(answer) ? answer : typeof answer === "string" ? [answer] : [];
-    const positionMatches = expected.filter((id, index) => selected[index] === id).length;
+  if (isAlgorithmComplexityQuestion(question)) {
+    if (response.kind !== "complexity_check") {
+      throw new Error(`Algorithms response kind mismatch for ${question.id}: expected complexity_check.`);
+    }
 
     return {
-      earnedPoints: positionMatches,
-      maxPoints: expected.length,
-    };
-  }
-
-  if (check.type === "complexity_pair") {
-    const expected = assertComplexityPairAnswer(check.correctAnswer, check.id);
-    const selected = isComplexityAnswer(answer) ? answer : {};
-
-    return {
-      earnedPoints: (selected.time === expected.time ? 1 : 0) + (selected.space === expected.space ? 1 : 0),
+      earnedPoints:
+        (response.selectedComplexityAnswer.time === question.correctComplexity.time ? 1 : 0) +
+        (response.selectedComplexityAnswer.space === question.correctComplexity.space ? 1 : 0),
       maxPoints: 2,
     };
   }
 
-  if (check.type === "fill_blank") {
-    assertStringAnswer(check.correctAnswer, check.id);
-    return {
-      earnedPoints: answer === check.correctAnswer ? 1 : 0,
-      maxPoints: 1,
-    };
+  return assertUnreachableQuestion(question);
+}
+
+function getStatus(earnedPoints: number, maxPoints: number): AlgorithmScoringStatus {
+  if (earnedPoints >= maxPoints) {
+    return "correct";
   }
 
-  throw new Error(`Unsupported Algorithms micro-check type: ${check.type}`);
+  return earnedPoints > 0 ? "partial" : "incorrect";
 }
 
 function toTrainingAttemptResult(
@@ -193,78 +155,8 @@ function toTrainingAttemptResult(
   };
 }
 
-function answerFromTrainingResponse(
-  check: AlgorithmStaticMicroCheck,
-  response: TrainingAttemptResponse,
-): AlgorithmSubmittedAnswer {
-  if (check.type === "complexity_pair") {
-    if (response.kind !== "complexity_check") {
-      throw new Error(`Algorithms response kind mismatch for ${check.id}: expected complexity_check.`);
-    }
-
-    return response.selectedComplexityAnswer;
-  }
-
-  if (response.kind !== "option_selection") {
-    throw new Error(`Algorithms response kind mismatch for ${check.id}: expected option_selection.`);
-  }
-
-  if (check.type === "single_choice" || check.type === "select_pseudocode_line" || check.type === "trace_next_step") {
-    return response.selectedOptionIds[0] ?? "";
-  }
-
-  return response.selectedOptionIds;
-}
-
-function getStatus(earnedPoints: number, maxPoints: number): AlgorithmScoringStatus {
-  if (earnedPoints >= maxPoints) {
-    return "correct";
-  }
-
-  return earnedPoints > 0 ? "partial" : "incorrect";
-}
-
-function assertStringAnswer(
-  value: AlgorithmStaticMicroCheckAnswer,
-  checkId: string,
-): asserts value is string {
-  if (typeof value !== "string") {
-    throw new Error(`Algorithms micro-check ${checkId} requires a single static answer.`);
-  }
-}
-
-function assertStringArrayAnswer(
-  value: AlgorithmStaticMicroCheckAnswer,
-  checkId: string,
-): readonly string[] {
-  if (!Array.isArray(value)) {
-    throw new Error(`Algorithms micro-check ${checkId} requires an ordered static answer list.`);
-  }
-
-  return value;
-}
-
-function assertComplexityPairAnswer(
-  value: AlgorithmStaticMicroCheckAnswer,
-  checkId: string,
-): AlgorithmComplexityPairAnswer {
-  if (!isComplexityPairAnswer(value)) {
-    throw new Error(`Algorithms micro-check ${checkId} requires a time and space answer.`);
-  }
-
-  return value;
-}
-
-function isComplexityPairAnswer(value: AlgorithmStaticMicroCheckAnswer): value is AlgorithmComplexityPairAnswer {
-  return typeof value === "object" && !Array.isArray(value) && "time" in value && "space" in value;
-}
-
-function isComplexityAnswer(value: AlgorithmSubmittedAnswer): value is ComplexityAnswer {
-  return typeof value === "object" && !Array.isArray(value);
-}
-
-function asAlgorithmTrainingItem(item: TrainingItem): AlgorithmTrainingItem {
-  return item as unknown as AlgorithmTrainingItem;
+function assertUnreachableQuestion(question: never): never {
+  throw new Error(`Unsupported Algorithms question interaction: ${JSON.stringify(question)}`);
 }
 
 export const algorithmsScoringAdapter = createAlgorithmsScoringAdapter();

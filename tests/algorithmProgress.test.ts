@@ -2,9 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { ReviewQueueItem, TrainingAttempt } from "../src/domain/training";
 import {
+  ALGORITHM_ROADMAP,
   buildAlgorithmProgressFacts,
+  buildAlgorithmWeakAreaRecommendation,
   getAlgorithmTrainingItemsForRoadmapNode,
   isRoadmapPrerequisiteSatisfied,
+  type AlgorithmContentGroup,
+  type AlgorithmQuestion,
 } from "../src/tracks/algorithms";
 
 const complexityItems = getAlgorithmTrainingItemsForRoadmapNode("complexity_and_constraints");
@@ -85,6 +89,53 @@ test("critical remediation blocks next-topic eligibility", () => {
   assert.equal(node?.nextRequiredAction, "remediate");
 });
 
+test("progress resolves roadmap ownership from the group without decorating questions", () => {
+  const question = makeQuestion("group-owned-question", "group_owned_skill");
+  const group = makeGroup("complexity_and_constraints", [question]);
+  const roadmapNode = ALGORITHM_ROADMAP.nodes.find(
+    (node) => node.id === group.roadmapNodeId,
+  )!;
+  const facts = buildAlgorithmProgressFacts(
+    [makeCorrectAttempt(question, 0)],
+    [group],
+    [roadmapNode],
+  );
+
+  assert.equal("roadmapNodeId" in question, false);
+  assert.equal(facts.nodeProgress[0]?.nodeId, group.roadmapNodeId);
+  assert.equal(facts.nodeProgress[0]?.coreSkillAtomCount, 1);
+  assert.equal(facts.nodeProgress[0]?.coveredCoreSkillAtomCount, 1);
+});
+
+test("weak-area ranking uses content-owned skill and mistake ids", () => {
+  const missed = makeQuestion("missed-question", "content_owned_skill", ["content_owned_mistake"]);
+  const adjacent = makeQuestion("adjacent-question", "adjacent_skill", ["content_owned_mistake"]);
+  const group = makeGroup("complexity_and_constraints", [missed, adjacent]);
+  const roadmapNode = ALGORITHM_ROADMAP.nodes.find(
+    (node) => node.id === group.roadmapNodeId,
+  )!;
+  const attempt: TrainingAttempt = {
+    ...makeCorrectAttempt(missed, 0),
+    mistakeTypeRefs: [
+      {
+        axisId: "mistake_type",
+        nodeId: "content_owned_mistake",
+        role: "mistake_type",
+      },
+    ],
+    result: { isCorrect: false, kind: "correctness" },
+  };
+  const recommendation = buildAlgorithmWeakAreaRecommendation(
+    [attempt],
+    [group],
+    [roadmapNode],
+  );
+
+  assert.deepEqual(recommendation.selectedMistakeTypes, ["content_owned_mistake"]);
+  assert.equal(recommendation.selectedRoadmapNodeId, group.roadmapNodeId);
+  assert.deepEqual(recommendation.candidateItemIds, [missed.id, adjacent.id]);
+});
+
 function makeCorrectAttempt(
   item: (typeof complexityItems)[number],
   index: number,
@@ -112,5 +163,38 @@ function makeRetentionItem(itemId: string, index: number): ReviewQueueItem {
     reasons: ["due_spacing"],
     sourceAttemptId: `attempt:retention:${index}`,
     trackId: "algorithms",
+  };
+}
+
+function makeGroup(
+  roadmapNodeId: string,
+  questions: readonly AlgorithmQuestion[],
+): AlgorithmContentGroup {
+  return { id: roadmapNodeId, questions, roadmapNodeId };
+}
+
+function makeQuestion(
+  id: string,
+  primarySkillAtomId: string,
+  mistakeTypes: readonly string[] = ["test_mistake"],
+): AlgorithmQuestion {
+  return {
+    difficulty: "intro",
+    feedbackModel: {
+      decisionSignal: "Use the deciding signal.",
+      mentalModelCorrection: "Correct the mental model.",
+      mistakeTypes,
+      nextAction: "Practice the same reasoning once more.",
+      result: "diagnostic",
+    },
+    id,
+    learningStage: "foundations",
+    options: [
+      { id: "correct", isCorrect: true, text: "Correct" },
+      { id: "incorrect", isCorrect: false, text: "Incorrect" },
+    ],
+    primarySkillAtomId,
+    prompt: "Choose the correct reasoning.",
+    type: "single_choice",
   };
 }

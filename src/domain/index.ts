@@ -26,6 +26,7 @@ export type {
   TrainingAttemptResponse,
   TrainingAttemptResult,
   TrainingChoiceResponseSpec,
+  TrainingContentItem,
   TrainingComplexityDimension,
   TrainingComplexityResponseSpec,
   TrainingFeedback,

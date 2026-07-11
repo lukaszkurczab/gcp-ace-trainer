@@ -1,6 +1,6 @@
 import type { TrackId } from "../tracks";
 import type {
-  TrainingItem,
+  TrainingContentItem,
   TrainingSession,
   TrainingSessionId,
   TrainingSessionItemRef,
@@ -10,7 +10,7 @@ import type {
 export type CreateTrainingSessionInput = {
   id?: TrainingSessionId;
   itemRefs?: readonly TrainingSessionItemRef[];
-  items?: readonly TrainingItem[];
+  items?: readonly TrainingContentItem[];
   modeId: TrainingSessionModeId;
   startedAt: string;
   trackId: TrackId;
@@ -21,7 +21,7 @@ export function createTrainingSession(input: CreateTrainingSessionInput): Traini
     ? input.items.map((item) => ({
         itemId: item.id,
         itemType: item.type,
-        trackId: item.trackId,
+        trackId: input.trackId,
       }))
     : [...(input.itemRefs ?? [])];
 

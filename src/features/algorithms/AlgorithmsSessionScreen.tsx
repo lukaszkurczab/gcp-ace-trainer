@@ -25,6 +25,12 @@ import type {
 import type { RootStackParamList } from "../../navigation";
 import type { PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  type AlgorithmQuestion,
+} from "../../tracks/algorithms/algorithmQuestionTypes";
+import {
   addTrainingAttempt,
   addReviewQueueItems,
   addTrainingSession,
@@ -37,16 +43,15 @@ import {
 import { colors, radius, spacing, typography } from "../../theme";
 import {
   ALGORITHM_ROADMAP,
-  getActiveAlgorithmStaticMicroCheck,
+  getAlgorithmContentGroupForItem,
   getFirstUsableAlgorithmRoadmapNode,
-  getShuffledAlgorithmStaticCheckOptions,
+  getShuffledAlgorithmQuestionOptions,
   isAlgorithmRoadmapNodeSelectable,
   selectAlgorithmSessionItems,
+  type AlgorithmQuestionDisplayOption,
+  type AlgorithmQuestionScore,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
-  type AlgorithmStaticCheckScore,
-  type AlgorithmStaticMicroCheck,
-  type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
 import { resetToPracticeHubAfterSession } from "../practice/practiceNavigation";
 import { SessionPreparingShell } from "../practice/SessionPreparingShell";
@@ -86,12 +91,12 @@ const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] a
 export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: AlgorithmsSessionScreenProps) {
   const reviewItemIdsKey = sessionConfig?.reviewItemIds?.join("|") ?? "";
   const [node, setNode] = useState<AlgorithmRoadmapNode>(() => getFirstUsableAlgorithmRoadmapNode());
-  const [items, setItems] = useState<readonly AlgorithmTrainingItem[]>([]);
+  const [items, setItems] = useState<readonly AlgorithmQuestion[]>([]);
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [complexityAnswer, setComplexityAnswer] = useState<ComplexityAnswer>({});
-  const [checkedScore, setCheckedScore] = useState<AlgorithmStaticCheckScore | null>(null);
+  const [checkedScore, setCheckedScore] = useState<AlgorithmQuestionScore | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
   const [summary, setSummary] = useState<AlgorithmsSessionSummary | null>(null);
@@ -184,16 +189,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }, [nodeId, reviewItemIdsKey, sessionConfig?.mode, sessionConfig?.reviewSource, sessionConfig?.sessionLength]);
 
   const currentItem = items[currentIndex];
-  const currentCheck = useMemo(
-    () => currentItem ? getActiveAlgorithmStaticMicroCheck(currentItem) : null,
-    [currentItem],
-  );
-  const currentCheckOptions = useMemo(
-    () => currentCheck ? getShuffledAlgorithmStaticCheckOptions(currentCheck) : [],
-    [currentCheck?.id],
+  const currentOptions = useMemo(
+    () => currentItem ? getShuffledAlgorithmQuestionOptions(currentItem) : [],
+    [currentItem?.id],
   );
   const progress = items.length > 0 ? (currentIndex + 1) / items.length : 0;
-  const canCheck = currentCheck ? hasAnswer(currentCheck, selectedOptionIds, complexityAnswer) : false;
+  const canCheck = currentItem ? hasAnswer(currentItem, selectedOptionIds, complexityAnswer) : false;
   const feedbackMode = sessionConfig?.feedbackMode ?? "afterEachAnswer";
   const feedbackState = getAlgorithmsFeedbackState(feedbackMode, checkedScore);
   const timerLabel = formatElapsedTime(elapsedSeconds);
@@ -222,12 +223,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     setCheckedScore(null);
   }
 
-  function selectOption(check: AlgorithmStaticMicroCheck, optionId: string) {
+  function selectOption(question: AlgorithmQuestion, optionId: string) {
     if (checkedScore) {
       return;
     }
 
-    if (check.type === "multi_select") {
+    if (isAlgorithmChoiceQuestion(question) && question.options.filter((option) => option.isCorrect).length > 1) {
       setSelectedOptionIds((current) =>
         current.includes(optionId)
           ? current.filter((selectedId) => selectedId !== optionId)
@@ -236,7 +237,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       return;
     }
 
-    if (check.type === "order_steps") {
+    if (isAlgorithmOrderingQuestion(question)) {
       setSelectedOptionIds((current) =>
         current.includes(optionId) ? current : [...current, optionId],
       );
@@ -258,7 +259,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }
 
   async function checkAnswer() {
-    if (!currentItem || !currentCheck || !session || !canCheck || isSubmitting) {
+    if (!currentItem || !session || !canCheck || isSubmitting) {
       return;
     }
 
@@ -266,9 +267,8 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     const answeredAt = new Date().toISOString();
     const submission = buildAlgorithmsSubmission({
       answeredAt,
-      check: currentCheck,
       complexityAnswer,
-      item: currentItem,
+      question: currentItem,
       selectedOptionIds,
       session,
     });
@@ -488,7 +488,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     );
   }
 
-  if (!currentItem || !currentCheck) {
+  if (!currentItem) {
     const emptyState = getEmptySessionStateCopy(sessionConfig?.mode ?? "default");
 
     return (
@@ -540,32 +540,25 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       </View>
 
       <Card style={styles.itemCard}>
-        {currentCheck.type === "trace_next_step" ? (
-          <TraceDrillPrompt check={currentCheck} item={currentItem} node={node} />
-        ) : (
-          <>
-            <Text style={styles.heroEyebrow}>Algorithms</Text>
-            <Text style={styles.itemTitle}>{currentItem.title}</Text>
-            <Text style={styles.itemPrompt}>{currentItem.prompt}</Text>
-            <View style={styles.itemBadgeRow}>
-              <Badge label={node.label} tone="primary" />
-              <Badge label={formatAlgorithmItemType(currentItem.type)} tone="neutral" />
-              <Badge label={formatAlgorithmItemType(currentCheck.type)} tone="info" />
-            </View>
-          </>
-        )}
+        <Text style={styles.heroEyebrow}>Algorithms</Text>
+        <Text style={styles.itemTitle}>{formatAlgorithmItemType(currentItem.type)}</Text>
+        <Text style={styles.itemPrompt}>{currentItem.prompt}</Text>
+        <View style={styles.itemBadgeRow}>
+          <Badge label={node.label} tone="primary" />
+          <Badge label={formatAlgorithmItemType(currentItem.type)} tone="neutral" />
+        </View>
       </Card>
 
       <Card style={styles.answerCard}>
-        <SectionHeader title="Answer" subtitle={currentCheck.prompt} tight />
+        <SectionHeader title="Answer" tight />
         <AnswerControl
-          check={currentCheck}
-          checkOptions={currentCheckOptions}
           complexityAnswer={complexityAnswer}
           interactionDisabled={isSubmitting}
           onResetOrder={() => setSelectedOptionIds([])}
           onSelectComplexity={selectComplexity}
           onSelectOption={selectOption}
+          options={currentOptions}
+          question={currentItem}
           selectedOptionIds={selectedOptionIds}
           submitted={feedbackState.hasSubmittedAnswer}
         />
@@ -573,9 +566,8 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
       {feedbackState.showImmediateFeedback && checkedScore ? (
         <FeedbackCard
-          check={currentCheck}
           complexityAnswer={complexityAnswer}
-          item={currentItem}
+          question={currentItem}
           score={checkedScore}
           selectedOptionIds={selectedOptionIds}
         />
@@ -583,49 +575,6 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
       {storageMessage ? <StorageNotice message={storageMessage} /> : null}
     </Screen>
-  );
-}
-
-type TraceDrillPromptProps = {
-  check: AlgorithmStaticMicroCheck;
-  item: AlgorithmTrainingItem;
-  node: AlgorithmRoadmapNode;
-};
-
-function TraceDrillPrompt({ check, item, node }: TraceDrillPromptProps) {
-  const traceStep = item.stepByStepTrace?.[0];
-  const stateLines = traceStep?.state ?? [];
-
-  return (
-    <>
-      <Text style={styles.heroEyebrow}>TRACE DRILL</Text>
-      <Text style={styles.itemTitle}>Trace the Algorithm</Text>
-      <Text style={styles.itemPrompt}>{item.prompt}</Text>
-      <View style={styles.itemBadgeRow}>
-        <Badge label={node.label} tone="primary" />
-        <Badge label={formatAlgorithmItemType(item.type)} tone="neutral" />
-        <Badge label={formatAlgorithmItemType(check.type)} tone="info" />
-      </View>
-
-      {stateLines.length > 0 ? (
-        <View style={styles.tracePanel}>
-          <Text style={styles.tracePanelLabel}>Current state</Text>
-          <View style={styles.traceStateWrap}>
-            {stateLines.map((line) => (
-              <Text key={line} style={styles.traceStateChip}>{line}</Text>
-            ))}
-          </View>
-          {traceStep?.description ? (
-            <Text style={styles.traceDescription}>{traceStep.description}</Text>
-          ) : null}
-        </View>
-      ) : null}
-
-      <View style={styles.traceQuestion}>
-        <Text style={styles.tracePanelLabel}>Question</Text>
-        <Text style={styles.traceQuestionText}>{check.prompt || "What happens next?"}</Text>
-      </View>
-    </>
   );
 }
 
@@ -681,35 +630,33 @@ function SubmittedAnswerFooter({
 }
 
 type AnswerControlProps = {
-  check: AlgorithmStaticMicroCheck;
-  checkOptions: readonly NonNullable<AlgorithmStaticMicroCheck["options"]>[number][];
   complexityAnswer: ComplexityAnswer;
   interactionDisabled: boolean;
   onResetOrder: () => void;
   onSelectComplexity: (dimension: ComplexityDimension, value: string) => void;
-  onSelectOption: (check: AlgorithmStaticMicroCheck, optionId: string) => void;
+  onSelectOption: (question: AlgorithmQuestion, optionId: string) => void;
+  options: readonly AlgorithmQuestionDisplayOption[];
+  question: AlgorithmQuestion;
   selectedOptionIds: readonly string[];
   submitted: boolean;
 };
 
 function AnswerControl({
-  check,
-  checkOptions,
   complexityAnswer,
   interactionDisabled,
   onResetOrder,
   onSelectComplexity,
   onSelectOption,
+  options,
+  question,
   selectedOptionIds,
   submitted,
 }: AnswerControlProps) {
-  if (check.type === "complexity_pair") {
-    const expectedComplexity = getExpectedComplexityAnswer(check);
-
+  if (isAlgorithmComplexityQuestion(question)) {
     return (
       <View style={styles.complexityGroups}>
         <ComplexityChoiceGroup
-          expectedValue={expectedComplexity?.time}
+          expectedValue={question.correctComplexity.time}
           interactionDisabled={interactionDisabled}
           label="Time"
           onSelect={(value) => onSelectComplexity("time", value)}
@@ -717,7 +664,7 @@ function AnswerControl({
           submitted={submitted}
         />
         <ComplexityChoiceGroup
-          expectedValue={expectedComplexity?.space}
+          expectedValue={question.correctComplexity.space}
           interactionDisabled={interactionDisabled}
           label="Space"
           onSelect={(value) => onSelectComplexity("space", value)}
@@ -728,8 +675,8 @@ function AnswerControl({
     );
   }
 
-  if (check.type === "order_steps") {
-    const remainingOptions = checkOptions.filter((option) => !selectedOptionIds.includes(option.id));
+  if (isAlgorithmOrderingQuestion(question)) {
+    const remainingOptions = options.filter((option) => !selectedOptionIds.includes(option.id));
 
     return (
       <View style={styles.options}>
@@ -737,7 +684,7 @@ function AnswerControl({
           {selectedOptionIds.length > 0 ? (
             selectedOptionIds.map((optionId, index) => (
               <Text key={`${optionId}-${index}`} style={styles.selectedOrderText}>
-                {index + 1}. {getOptionText(check, optionId)}
+                {index + 1}. {getQuestionOptionText(question, optionId)}
               </Text>
             ))
           ) : (
@@ -749,9 +696,9 @@ function AnswerControl({
             key={option.id}
             label={option.text}
             interactionDisabled={interactionDisabled}
-            onPress={() => onSelectOption(check, option.id)}
+            onPress={() => onSelectOption(question, option.id)}
             visualState={getAnswerOptionVisualState({
-              correct: getCorrectOptionIds(check).has(option.id),
+              correct: question.correctOrder.includes(option.id),
               selected: false,
               submitted,
             })}
@@ -764,23 +711,27 @@ function AnswerControl({
     );
   }
 
-  return (
-    <View style={styles.options}>
-      {checkOptions.map((option) => (
-        <OptionButton
-          key={option.id}
-          label={option.text}
-          interactionDisabled={interactionDisabled}
-          onPress={() => onSelectOption(check, option.id)}
-          visualState={getAnswerOptionVisualState({
-            correct: getCorrectOptionIds(check).has(option.id),
-            selected: selectedOptionIds.includes(option.id),
-            submitted,
-          })}
-        />
-      ))}
-    </View>
-  );
+  if (isAlgorithmChoiceQuestion(question)) {
+    return (
+      <View style={styles.options}>
+        {options.map((option) => (
+          <OptionButton
+            key={option.id}
+            label={option.text}
+            interactionDisabled={interactionDisabled}
+            onPress={() => onSelectOption(question, option.id)}
+            visualState={getAnswerOptionVisualState({
+              correct: option.isCorrect === true,
+              selected: selectedOptionIds.includes(option.id),
+              submitted,
+            })}
+          />
+        ))}
+      </View>
+    );
+  }
+
+  return assertUnreachableQuestion(question);
 }
 
 type ComplexityChoiceGroupProps = {
@@ -800,11 +751,13 @@ function ComplexityChoiceGroup({
   selectedValue,
   submitted,
 }: ComplexityChoiceGroupProps) {
+  const choices = [...new Set([expectedValue, ...complexityChoices].filter((choice): choice is string => Boolean(choice)))];
+
   return (
     <View style={styles.complexityGroup}>
       <Text style={styles.groupLabel}>{label}</Text>
       <View style={styles.choiceWrap}>
-        {complexityChoices.map((choice) => {
+        {choices.map((choice) => {
           const visualState = getAnswerOptionVisualState({
             correct: expectedValue === choice,
             selected: selectedValue === choice,
@@ -863,25 +816,22 @@ function OptionButton({ interactionDisabled, label, onPress, visualState }: Opti
 }
 
 type FeedbackCardProps = {
-  check: AlgorithmStaticMicroCheck;
   complexityAnswer: ComplexityAnswer;
-  item: AlgorithmTrainingItem;
-  score: AlgorithmStaticCheckScore;
+  question: AlgorithmQuestion;
+  score: AlgorithmQuestionScore;
   selectedOptionIds: readonly string[];
 };
 
 function FeedbackCard({
-  check,
   complexityAnswer,
-  item,
+  question,
   score,
   selectedOptionIds,
 }: FeedbackCardProps) {
   const [showDetails, setShowDetails] = useState(false);
   const feedback = buildAlgorithmsImmediateFeedbackModel({
-    check,
     complexityAnswer,
-    item,
+    question,
     score,
     selectedOptionIds,
   });
@@ -1033,7 +983,7 @@ function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
 }
 
 function resolveDisplayNode(
-  items: readonly AlgorithmTrainingItem[],
+  questions: readonly AlgorithmQuestion[],
   defaultNode: AlgorithmRoadmapNode,
   mode: PracticeSessionRouteParams["mode"],
 ): AlgorithmRoadmapNode {
@@ -1041,10 +991,18 @@ function resolveDisplayNode(
     return defaultNode;
   }
 
-  const selectedNodeId = items[0]?.roadmapNodeId;
-  const selectedNode = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === selectedNodeId);
+  const selectedGroup = questions[0]
+    ? getAlgorithmContentGroupForItem(questions[0].id)
+    : undefined;
+  const selectedNode = ALGORITHM_ROADMAP.nodes.find(
+    (candidate) => candidate.id === selectedGroup?.roadmapNodeId,
+  );
 
-  return selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode) ? selectedNode : defaultNode;
+  if (selectedNode && isAlgorithmRoadmapNodeSelectable(selectedNode)) {
+    return selectedNode;
+  }
+
+  return defaultNode;
 }
 
 function getEmptySessionStateCopy(mode: PracticeSessionRouteParams["mode"]): {
@@ -1072,15 +1030,55 @@ function getSummaryActionMode(action: AlgorithmsSummaryAction): PracticeSessionM
 }
 
 function hasAnswer(
-  check: AlgorithmStaticMicroCheck,
+  question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
   complexityAnswer: ComplexityAnswer,
 ): boolean {
-  if (check.type === "complexity_pair") {
+  if (isAlgorithmComplexityQuestion(question)) {
     return Boolean(complexityAnswer.time && complexityAnswer.space);
   }
 
-  return selectedOptionIds.length > 0;
+  if (isAlgorithmOrderingQuestion(question)) {
+    return selectedOptionIds.length === question.correctOrder.length;
+  }
+
+  if (isAlgorithmChoiceQuestion(question)) {
+    return selectedOptionIds.length > 0;
+  }
+
+  return assertUnreachableQuestion(question);
+}
+
+function getQuestionOptionText(question: AlgorithmQuestion, optionId: string): string {
+  if (isAlgorithmOrderingQuestion(question)) {
+    const subgoal = question.subgoals.find((candidate) => candidate.id === optionId);
+
+    if (!subgoal) {
+      throw new Error(`Algorithms question ${question.id} has no subgoal ${optionId}.`);
+    }
+
+    return subgoal.text;
+  }
+
+  if (isAlgorithmChoiceQuestion(question)) {
+    const option = question.options.find((candidate) => candidate.id === optionId);
+
+    if (!option) {
+      throw new Error(`Algorithms question ${question.id} has no option ${optionId}.`);
+    }
+
+    return option.text;
+  }
+
+  if (isAlgorithmComplexityQuestion(question)) {
+    throw new Error(`Algorithms complexity question ${question.id} does not have selectable options.`);
+  }
+
+  return assertUnreachableQuestion(question);
+}
+
+function assertUnreachableQuestion(question: never): never {
+  throw new Error(`Unsupported Algorithms question interaction: ${JSON.stringify(question)}`);
 }
 
 function getProgressTone(status: AlgorithmScoringStatus): "primary" | "success" | "warning" {
@@ -1103,38 +1101,6 @@ function getFeedbackStatusTone(status: AlgorithmScoringStatus): "success" | "war
   if (status === "correct") return "success";
   if (status === "partial") return "warning";
   return "danger";
-}
-
-function getOptionText(check: AlgorithmStaticMicroCheck, optionId: string): string {
-  return check.options?.find((option) => option.id === optionId)?.text ?? optionId;
-}
-
-function getCorrectOptionIds(check: AlgorithmStaticMicroCheck): ReadonlySet<string> {
-  if (Array.isArray(check.correctAnswer)) {
-    return new Set(check.correctAnswer);
-  }
-
-  if (typeof check.correctAnswer === "string") {
-    return new Set([check.correctAnswer]);
-  }
-
-  return new Set();
-}
-
-function getExpectedComplexityAnswer(
-  check: AlgorithmStaticMicroCheck,
-): { space: string; time: string } | null {
-  if (
-    check.type === "complexity_pair" &&
-    typeof check.correctAnswer === "object" &&
-    !Array.isArray(check.correctAnswer) &&
-    "time" in check.correctAnswer &&
-    "space" in check.correctAnswer
-  ) {
-    return check.correctAnswer;
-  }
-
-  return null;
 }
 
 function getOptionCardStyle(state: AnswerOptionVisualState) {
@@ -1272,46 +1238,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm,
-  },
-  tracePanel: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: spacing.md,
-    padding: spacing.md,
-  },
-  tracePanelLabel: {
-    ...typography.caption,
-    color: colors.dark.textMuted,
-    textTransform: "uppercase",
-  },
-  traceStateWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-  },
-  traceStateChip: {
-    ...typography.small,
-    backgroundColor: colors.dark.background,
-    borderColor: colors.dark.borderStrong,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    color: colors.dark.textPrimary,
-    fontFamily: "monospace",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  traceDescription: {
-    ...typography.small,
-    color: colors.dark.textSecondary,
-  },
-  traceQuestion: {
-    gap: spacing.xs,
-  },
-  traceQuestionText: {
-    ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
   },
   options: {
     gap: spacing.md,

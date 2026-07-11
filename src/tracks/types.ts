@@ -4,17 +4,27 @@ import type {
   TrainingAttempt,
   TrainingAttemptResponse,
   TrainingAttemptResult,
+  TrainingContentItem,
   TrainingFeedback,
-  TrainingItem,
   TrainingItemId,
+  TrainingItemTaxonomyRef,
+  TrainingItemType,
   TrainingSessionModeId,
 } from "../domain/training";
 
-export type TrackContentAdapter = {
+export type TrackContentItem = TrainingContentItem;
+
+export type TrackReviewContent = {
+  prompt: string;
+  taxonomyRefs: readonly TrainingItemTaxonomyRef[];
+};
+
+export type TrackContentAdapter<Item extends TrackContentItem = TrackContentItem> = {
   getContentVersion(): string;
-  getItemById(itemId: TrainingItemId): TrainingItem | undefined;
-  getItems(): readonly TrainingItem[];
-  getItemsForMode(modeId: TrainingSessionModeId): readonly TrainingItem[];
+  getItemById(itemId: TrainingItemId): Item | undefined;
+  getItems(): readonly Item[];
+  getItemsForMode(modeId: TrainingSessionModeId): readonly Item[];
+  getReviewContent(itemId: TrainingItemId): TrackReviewContent | undefined;
   trackId: TrackId;
 };
 
@@ -23,9 +33,9 @@ export type TrackScoringContext = {
   modeId?: TrainingSessionModeId;
 };
 
-export type TrackScoringAdapter = {
+export type TrackScoringAdapter<Item extends TrackContentItem = TrackContentItem> = {
   scoreAttempt(
-    item: TrainingItem,
+    item: Item,
     response: TrainingAttemptResponse,
     context?: TrackScoringContext,
   ): TrainingAttemptResult;
@@ -46,9 +56,9 @@ export type TrackReviewAdapter = {
   trackId: TrackId;
 };
 
-export type TrackAdapter = {
-  content: TrackContentAdapter;
+export type TrackAdapter<Item extends TrackContentItem = TrackContentItem> = {
+  content: TrackContentAdapter<Item>;
   review: TrackReviewAdapter;
-  scoring: TrackScoringAdapter;
+  scoring: TrackScoringAdapter<Item>;
   trackId: TrackId;
 };

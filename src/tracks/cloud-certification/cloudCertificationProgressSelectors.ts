@@ -3,6 +3,7 @@ import type {
   ReviewQueueItem,
   TrainingAttempt,
   TrainingAttemptResult,
+  TrainingItem,
   TrainingItemTaxonomyRef,
 } from "../../domain/training";
 import { getReviewQueueItems, getTrainingAttempts } from "../../storage/repositories";
@@ -63,7 +64,7 @@ export type CloudCertificationProgressViewModel = {
 
 export type CloudCertificationProgressViewModelInput = {
   attempts: readonly TrainingAttempt[];
-  contentAdapter?: TrackContentAdapter;
+  contentAdapter?: TrackContentAdapter<TrainingItem>;
   issues?: readonly LocalStorageIssue[];
   now?: string;
   recentAttemptCount?: number;
@@ -72,7 +73,7 @@ export type CloudCertificationProgressViewModelInput = {
 
 export async function loadCloudCertificationProgressViewModel(
   input: {
-    contentAdapter?: TrackContentAdapter;
+    contentAdapter?: TrackContentAdapter<TrainingItem>;
     now?: string;
     recentAttemptCount?: number;
   } = {},
@@ -167,7 +168,7 @@ function buildAccuracySummary(attempts: readonly TrainingAttempt[]): CloudCertif
 
 function buildTaxonomyPerformance(
   attempts: readonly TrainingAttempt[],
-  contentAdapter: TrackContentAdapter,
+  contentAdapter: TrackContentAdapter<TrainingItem>,
 ): CloudCertificationTaxonomyPerformance[] {
   const counts = new Map<string, {
     correctCount: number;

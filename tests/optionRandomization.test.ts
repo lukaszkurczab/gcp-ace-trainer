@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { shuffleQuestionOptions } from "../src/features/practice/practiceService";
-import { getShuffledAlgorithmStaticCheckOptions } from "../src/tracks/algorithms";
-import type { AlgorithmStaticMicroCheck } from "../src/tracks/algorithms";
+import { getShuffledAlgorithmQuestionOptions } from "../src/tracks/algorithms/algorithmOptionOrder";
+import type { AlgorithmChoiceQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
 import { makeQuestion } from "./fixtures";
 
 test("Cloud practice shuffles displayed options without changing scoring ids", () => {
@@ -29,32 +29,37 @@ test("Cloud practice shuffles displayed options without changing scoring ids", (
   });
 });
 
-test("Algorithms static checks shuffle displayed options without changing correct answer ids", () => {
+test("Algorithms questions shuffle root options without changing authored correctness", () => {
   withFixedRandom(0, () => {
-    const check: AlgorithmStaticMicroCheck = {
-      correctAnswer: "expected_signal",
-      feedback: "Use the decision signal, not the first visible answer.",
+    const question: AlgorithmChoiceQuestion = {
+      difficulty: "intro",
+      feedbackModel: {
+        decisionSignal: "Use the decision signal.",
+        mentalModelCorrection: "Do not choose from surface wording.",
+        mistakeTypes: ["wrong_approach"],
+        nextAction: "Review the signal.",
+        result: "diagnostic",
+      },
       id: "algorithm-option-order-test",
-      mistakeTypes: ["wrong_approach"],
+      learningStage: "foundations",
       options: [
-        { id: "expected_signal", text: "Correct" },
-        { id: "wrong_1", text: "Wrong 1" },
-        { id: "wrong_2", text: "Wrong 2" },
+        { id: "expected_signal", isCorrect: true, text: "Correct" },
+        { id: "wrong_1", isCorrect: false, text: "Wrong 1" },
+        { id: "wrong_2", isCorrect: false, text: "Wrong 2" },
       ],
+      primarySkillAtomId: "choose_lookup_key",
       prompt: "Choose the best signal.",
-      status: "active",
-      testedSkillAtomIds: ["choose_lookup_key"],
       type: "single_choice",
     };
 
-    const shuffled = getShuffledAlgorithmStaticCheckOptions(check);
+    const shuffled = getShuffledAlgorithmQuestionOptions(question);
 
     assert.notDeepEqual(
       shuffled.map((option) => option.id),
-      check.options?.map((option) => option.id),
+      question.options.map((option) => option.id),
     );
     assert.deepEqual(new Set(shuffled.map((option) => option.id)), new Set(["expected_signal", "wrong_1", "wrong_2"]));
-    assert.equal(check.correctAnswer, "expected_signal");
+    assert.equal(question.options.find((option) => option.id === "expected_signal")?.isCorrect, true);
   });
 });
 

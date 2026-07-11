@@ -3,7 +3,7 @@ import type {
   TrainingAttemptConfidence,
   TrainingAttemptId,
   TrainingAttemptResponse,
-  TrainingItem,
+  TrainingContentItem,
   TrainingItemTaxonomyRef,
   TrainingSession,
 } from "../training";
@@ -15,7 +15,7 @@ export type AnswerTrainingItemInput = {
   durationSeconds?: number;
   feedbackSignals?: FeedbackSignal[];
   id?: TrainingAttemptId;
-  item: TrainingItem;
+  item: TrainingContentItem;
   mistakeTypeRefs?: TrainingItemTaxonomyRef[];
   response: TrainingAttemptResponse;
   session: TrainingSession;
@@ -26,10 +26,6 @@ export function answerTrainingItem(input: AnswerTrainingItemInput): TrainingAtte
 
   if (session.status !== "active") {
     throw new Error(`Cannot answer item in a ${session.status} training session.`);
-  }
-
-  if (item.trackId !== session.trackId) {
-    throw new Error(`Training item ${item.id} does not belong to session track ${session.trackId}.`);
   }
 
   if (!session.itemRefs.some((itemRef) => itemRef.itemId === item.id)) {

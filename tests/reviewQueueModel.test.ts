@@ -9,7 +9,7 @@ import type {
   ReviewQueueViewItem,
   ReviewQueueViewModel,
 } from "../src/features/review/reviewQueueModel";
-import { createAlgorithmsContentAdapter, ALGORITHM_TRAINING_ITEMS } from "../src/tracks/algorithms";
+import { createAlgorithmsContentAdapter } from "../src/tracks/algorithms";
 
 test("review queue model maps due canonical items into display rows", () => {
   const model = buildReviewQueueScreenModel(
@@ -101,7 +101,7 @@ test("review queue model exposes degraded queue warnings without fake metrics", 
 
 test("track review queue view model joins Algorithms review items to Algorithms content", () => {
   const viewModel = buildTrackReviewQueueViewModel({
-    contentAdapter: createAlgorithmsContentAdapter(ALGORITHM_TRAINING_ITEMS),
+    contentAdapter: createAlgorithmsContentAdapter(),
     now: "2026-06-30T12:00:00.000Z",
     reviewQueueItems: [
       makeAlgorithmsReviewQueueItem({
@@ -119,6 +119,10 @@ test("track review queue view model joins Algorithms review items to Algorithms 
   assert.equal(model.dueRows[0]?.status, "overdue");
   assert.equal(model.dueRows[0]?.title.length > 0, true);
   assert.notEqual(model.dueRows[0]?.taxonomyLabel, "Cloud Certification");
+  assert.deepEqual(
+    viewModel.dueItems[0]?.taxonomyRefs.map((ref) => ref.nodeId),
+    ["wrong_approach"],
+  );
 });
 
 function makeReviewViewModel(

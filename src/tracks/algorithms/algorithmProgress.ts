@@ -1,23 +1,33 @@
-import { getReviewQueueItemKind, type ReviewQueueItem, type TrainingAttempt } from "../../domain/training";
-import type { TrainingItemTaxonomyRef } from "../../domain/training";
+import {
+  getReviewQueueItemKind,
+  type ReviewQueueItem,
+  type TrainingAttempt,
+  type TrainingItemTaxonomyRef,
+} from "../../domain/training";
+import {
+  getAlgorithmQuestionEntries,
+  getRoadmapNodesWithActiveItems,
+  type AlgorithmQuestionEntry,
+} from "./algorithmItems";
+import { algorithmContentGroups, type AlgorithmContentGroup } from "./content";
+import type { AlgorithmQuestion, AlgorithmQuestionType } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapNodeId,
 } from "./algorithmRoadmap";
 import {
-  ALGORITHM_TRAINING_ITEMS,
-  getRoadmapNodesWithActiveItems,
-} from "./algorithmItems";
-import type { AlgorithmTrainingItem } from "./algorithmContentTypes";
-import {
   getAlgorithmAttemptStatus,
   type AlgorithmScoringStatus,
 } from "./algorithmsScoringAdapter";
 
 export type AlgorithmRoadmapNodeProgressStatus =
-  | "not_started" | "initial_exposure" | "in_progress"
-  | "eligible_for_next" | "mastered" | "maintenance";
+  | "not_started"
+  | "initial_exposure"
+  | "in_progress"
+  | "eligible_for_next"
+  | "mastered"
+  | "maintenance";
 
 export type AlgorithmRoadmapNodeProgress = {
   uniquePracticedItemCount: number;
@@ -36,17 +46,20 @@ export type AlgorithmRoadmapNodeProgress = {
   retentionPassedCount: number;
   eligibleForNext: boolean;
   mastered: boolean;
-  nextRequiredAction: "start" | "continue_practice" | "cover_core_skills" | "remediate" |
-    "retention_check" | "ready_for_next" | "maintenance";
+  nextRequiredAction:
+    | "start"
+    | "continue_practice"
+    | "cover_core_skills"
+    | "remediate"
+    | "retention_check"
+    | "ready_for_next"
+    | "maintenance";
   eligibleRequiredItemCount: number;
   masteryRequiredItemCount: number;
 };
 
 export type AlgorithmProgressFacts = {
-  activeRoadmapNode: {
-    id: AlgorithmRoadmapNodeId;
-    label: string;
-  };
+  activeRoadmapNode: { id: AlgorithmRoadmapNodeId; label: string };
   correctCount: number;
   incorrectCount: number;
   itemsCompleted: number;
@@ -65,28 +78,32 @@ export type AlgorithmWeakAreaRecommendation = {
 
 export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   reviewQueueItems: readonly ReviewQueueItem[] = [],
   now = new Date().toISOString(),
 ): AlgorithmProgressFacts {
-  const activeRoadmapItems = items.filter((item) => item.roadmapNodeId);
-  const activeRoadmapItemIds = new Set(activeRoadmapItems.map((item) => item.id));
-  const algorithmAttempts = attempts.filter(
-    (attempt) => attempt.trackId === "algorithms" && activeRoadmapItemIds.has(attempt.itemId),
+  const entries = getKnownRoadmapEntries(groups, roadmapNodes);
+  const questionIds = new Set(entries.map((entry) => entry.question.id));
+  const algorithmAttempts = attempts.filter((attempt) =>
+    attempt.trackId === "algorithms" && questionIds.has(attempt.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
-  const nodeProgress = getRoadmapNodesWithActiveItems()
+  const nodeProgress = getRoadmapNodesWithActiveItems(groups)
     .filter((node) => roadmapNodes.some((candidate) => candidate.id === node.id))
-    .map((node) => buildNodeProgress(node, activeRoadmapItems, algorithmAttempts, latestAttemptByItemId, reviewQueueItems, now));
+    .map((node) => buildNodeProgress(
+      node,
+      entries,
+      algorithmAttempts,
+      latestAttemptByItemId,
+      reviewQueueItems,
+      now,
+    ));
   const activeNode = getActiveNode(nodeProgress, roadmapNodes);
   const statusCounts = countLatestStatuses(latestAttemptByItemId);
 
   return {
-    activeRoadmapNode: {
-      id: activeNode.nodeId,
-      label: activeNode.label,
-    },
+    activeRoadmapNode: { id: activeNode.nodeId, label: activeNode.label },
     correctCount: statusCounts.correct,
     incorrectCount: statusCounts.incorrect,
     itemsCompleted: latestAttemptByItemId.size,
@@ -99,88 +116,123 @@ export function buildAlgorithmProgressFacts(
 
 export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmTrainingItem[] = ALGORITHM_TRAINING_ITEMS,
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
-  const selectableItems = getSelectableItems(items, roadmapNodes);
-  const defaultNodeId = getDefaultRoadmapNodeId(selectableItems, roadmapNodes, preferredRoadmapNodeId);
+  const entries = getKnownRoadmapEntries(groups, roadmapNodes);
+  const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) => attempt.trackId === "algorithms"),
   );
-  const statsByNodeId = buildWeakAreaStats(selectableItems, latestAttemptByItemId);
+  const statsByNodeId = buildWeakAreaStats(entries, latestAttemptByItemId);
   const selectedStats = [...statsByNodeId.values()]
     .filter((stats) => stats.weakScore > 0)
     .sort((left, right) =>
       right.weakScore - left.weakScore ||
       right.incorrectCount - left.incorrectCount ||
       right.partialCount - left.partialCount ||
-      getRoadmapNodeOrder(left.nodeId, roadmapNodes) - getRoadmapNodeOrder(right.nodeId, roadmapNodes),
+      getRoadmapNodeOrder(left.nodeId, roadmapNodes) -
+        getRoadmapNodeOrder(right.nodeId, roadmapNodes),
     )[0];
   const selectedNodeId = selectedStats?.nodeId ?? defaultNodeId;
   const selectedNode = roadmapNodes.find((node) => node.id === selectedNodeId);
-  const selectedMistakeTypes = selectedStats ? getTopMistakeTypes(selectedStats.mistakeTypeCounts) : [];
-  const candidateItemIds = getWeakAreaCandidateItemIds({
-    items: selectableItems,
-    missedItemTypes: selectedStats?.missedItemTypes ?? new Set(),
-    roadmapNodeId: selectedNodeId,
-    selectedMistakeTypes,
-  });
+  const selectedMistakeTypes = selectedStats
+    ? getTopMistakeTypes(selectedStats.mistakeTypeCounts)
+    : [];
 
   return {
-    candidateItemIds,
+    candidateItemIds: getWeakAreaCandidateItemIds(
+      entries,
+      selectedStats?.missedItemTypes ?? new Set(),
+      selectedNodeId,
+      selectedMistakeTypes,
+    ),
     reasonLabel: `Weak area: ${selectedNode?.label ?? selectedNodeId}`,
     selectedMistakeTypes,
     selectedRoadmapNodeId: selectedNodeId,
   };
 }
 
+function getKnownRoadmapEntries(
+  groups: readonly AlgorithmContentGroup[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+): readonly AlgorithmQuestionEntry[] {
+  const knownNodeIds = new Set(roadmapNodes.map((node) => node.id));
+  return getAlgorithmQuestionEntries(groups).filter((entry) =>
+    knownNodeIds.has(entry.group.roadmapNodeId),
+  );
+}
+
 function buildNodeProgress(
   node: AlgorithmRoadmapNode,
-  items: readonly AlgorithmTrainingItem[],
+  entries: readonly AlgorithmQuestionEntry[],
   attempts: readonly TrainingAttempt[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
   reviewQueueItems: readonly ReviewQueueItem[],
   now: string,
 ): AlgorithmRoadmapNodeProgress {
-  const nodeItems = items.filter((item) => item.roadmapNodeId === node.id);
-  const latestNodeAttempts = nodeItems.flatMap((item) => {
-    const attempt = latestAttemptByItemId.get(item.id);
+  const questions = entries
+    .filter((entry) => entry.group.roadmapNodeId === node.id)
+    .map((entry) => entry.question);
+  const latestNodeAttempts = questions.flatMap((question) => {
+    const attempt = latestAttemptByItemId.get(question.id);
     return attempt ? [attempt] : [];
   });
   const uniquePracticedItemCount = latestNodeAttempts.length;
-  const itemCount = nodeItems.length;
+  const itemCount = questions.length;
   const scorePercent = getNodeScorePercent(latestNodeAttempts);
-  const eligibleRequiredItemCount = Math.min(itemCount, Math.min(40, Math.max(25, Math.ceil(itemCount * 0.35))));
-  const masteryRequiredItemCount = Math.min(itemCount, Math.min(70, Math.max(35, Math.ceil(itemCount * 0.6))));
-  const coreSkillAtomIds = node.skillAtomIds ?? [];
-  const coveredCoreSkillAtomCount = coreSkillAtomIds.filter((id) =>
-    isCoreSkillAtomCovered(id, nodeItems, latestAttemptByItemId)).length;
+  const eligibleRequiredItemCount = Math.min(
+    itemCount,
+    Math.min(40, Math.max(25, Math.ceil(itemCount * 0.35))),
+  );
+  const masteryRequiredItemCount = Math.min(
+    itemCount,
+    Math.min(70, Math.max(35, Math.ceil(itemCount * 0.6))),
+  );
+  const coreSkillAtomIds = [...new Set(questions.map((question) => question.primarySkillAtomId))];
+  const coveredCoreSkillAtomCount = coreSkillAtomIds.filter((skillId) =>
+    isCoreSkillCovered(skillId, questions, latestAttemptByItemId),
+  ).length;
   const coreSkillAtomCount = coreSkillAtomIds.length;
   const coreSkillAtomCoveragePercent = coreSkillAtomCount === 0
-    ? 100 : Math.round((coveredCoreSkillAtomCount / coreSkillAtomCount) * 100);
-  const nodeItemIds = new Set(nodeItems.map((item) => item.id));
+    ? 100
+    : Math.round((coveredCoreSkillAtomCount / coreSkillAtomCount) * 100);
+  const questionIds = new Set(questions.map((question) => question.id));
   const dueReviews = reviewQueueItems.filter((item) =>
-    item.trackId === "algorithms" && nodeItemIds.has(item.itemId) && item.dueAt <= now);
-  const remediationDue = dueReviews.filter((item) => getReviewQueueItemKind(item) === "remediation");
-  const retentionDueCount = dueReviews.filter((item) => getReviewQueueItemKind(item) === "retention").length;
+    item.trackId === "algorithms" && questionIds.has(item.itemId) && item.dueAt <= now,
+  );
+  const remediationDue = dueReviews.filter((item) =>
+    getReviewQueueItemKind(item) === "remediation",
+  );
+  const retentionDueCount = dueReviews.filter((item) =>
+    getReviewQueueItemKind(item) === "retention",
+  ).length;
   const criticalRemediationDueCount = remediationDue.filter((item) =>
-    item.priority === "high" || item.priority === "urgent" || item.reasons.includes("repeated_mistake")).length;
-  const retainedSkillAtoms = new Set<string>();
-  for (const review of reviewQueueItems) {
-    if (!review.retentionPassedAt || !nodeItemIds.has(review.itemId)) continue;
-    const item = nodeItems.find((candidate) => candidate.id === review.itemId);
-    for (const id of getItemSkillAtomIds(item)) retainedSkillAtoms.add(id);
-  }
-  const retentionPassedCount = coreSkillAtomIds.filter((id) => retainedSkillAtoms.has(id)).length;
-  const eligibleForNext = uniquePracticedItemCount >= eligibleRequiredItemCount &&
-    coreSkillAtomCoveragePercent >= 80 && scorePercent >= 80 && criticalRemediationDueCount === 0;
-  const mastered = uniquePracticedItemCount >= masteryRequiredItemCount &&
-    coreSkillAtomCoveragePercent === 100 && scorePercent >= 85 && remediationDue.length === 0 &&
+    item.priority === "high" ||
+    item.priority === "urgent" ||
+    item.reasons.includes("repeated_mistake"),
+  ).length;
+  const retainedSkills = getRetainedSkills(reviewQueueItems, questions);
+  const retentionPassedCount = coreSkillAtomIds.filter((skillId) =>
+    retainedSkills.has(skillId),
+  ).length;
+  const eligibleForNext =
+    uniquePracticedItemCount >= eligibleRequiredItemCount &&
+    coreSkillAtomCoveragePercent >= 80 &&
+    scorePercent >= 80 &&
+    criticalRemediationDueCount === 0;
+  const mastered =
+    uniquePracticedItemCount >= masteryRequiredItemCount &&
+    coreSkillAtomCoveragePercent === 100 &&
+    scorePercent >= 85 &&
+    remediationDue.length === 0 &&
     retentionPassedCount === coreSkillAtomCount &&
-    !hasRepeatedCriticalMistake(attempts.filter((attempt) => nodeItemIds.has(attempt.itemId)));
+    !hasRepeatedCriticalMistake(
+      attempts.filter((attempt) => questionIds.has(attempt.itemId)),
+    );
   const status = mastered
-    ? (retentionDueCount > 0 ? "maintenance" : "mastered")
+    ? retentionDueCount > 0 ? "maintenance" : "mastered"
     : eligibleForNext ? "eligible_for_next"
     : getPreEligibilityStatus(uniquePracticedItemCount, itemCount, scorePercent);
 
@@ -191,7 +243,9 @@ function buildNodeProgress(
     nodeId: node.id,
     scorePercent,
     status,
-    itemCoveragePercent: itemCount > 0 ? Math.round((uniquePracticedItemCount / itemCount) * 100) : 0,
+    itemCoveragePercent: itemCount > 0
+      ? Math.round((uniquePracticedItemCount / itemCount) * 100)
+      : 0,
     coreSkillAtomCoveragePercent,
     coveredCoreSkillAtomCount,
     coreSkillAtomCount,
@@ -201,16 +255,59 @@ function buildNodeProgress(
     retentionPassedCount,
     eligibleForNext,
     mastered,
-    nextRequiredAction: mastered ? "maintenance"
-      : remediationDue.length > 0 ? "remediate"
-      : eligibleForNext && retentionPassedCount < coreSkillAtomCount ? "retention_check"
-      : eligibleForNext ? "ready_for_next"
-      : uniquePracticedItemCount === 0 ? "start"
-      : coreSkillAtomCoveragePercent < 80 ? "cover_core_skills"
-      : "continue_practice",
+    nextRequiredAction: mastered
+      ? "maintenance"
+      : remediationDue.length > 0
+        ? "remediate"
+        : eligibleForNext && retentionPassedCount < coreSkillAtomCount
+          ? "retention_check"
+          : eligibleForNext
+            ? "ready_for_next"
+            : uniquePracticedItemCount === 0
+              ? "start"
+              : coreSkillAtomCoveragePercent < 80
+                ? "cover_core_skills"
+                : "continue_practice",
     eligibleRequiredItemCount,
     masteryRequiredItemCount,
   };
+}
+
+function getRetainedSkills(
+  reviewQueueItems: readonly ReviewQueueItem[],
+  questions: readonly AlgorithmQuestion[],
+): ReadonlySet<string> {
+  const questionsById = new Map(questions.map((question) => [question.id, question]));
+  const retained = new Set<string>();
+
+  for (const review of reviewQueueItems) {
+    if (!review.retentionPassedAt) continue;
+    const question = questionsById.get(review.itemId);
+    if (!question) continue;
+    retained.add(question.primarySkillAtomId);
+  }
+
+  return retained;
+}
+
+function isCoreSkillCovered(
+  skillId: string,
+  questions: readonly AlgorithmQuestion[],
+  latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
+): boolean {
+  const linkedQuestions = questions.filter((question) =>
+    question.primarySkillAtomId === skillId,
+  );
+  const attempts = linkedQuestions.flatMap((question) => {
+    const attempt = latestAttemptByItemId.get(question.id);
+    return attempt ? [attempt] : [];
+  });
+  const required = Math.min(2, linkedQuestions.length);
+
+  return required > 0 &&
+    attempts.length >= required &&
+    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) /
+      attempts.length >= 0.75;
 }
 
 function getPreEligibilityStatus(
@@ -220,51 +317,23 @@ function getPreEligibilityStatus(
 ): AlgorithmRoadmapNodeProgressStatus {
   if (uniquePracticedItemCount === 0) return "not_started";
   const exposureCount = Math.min(itemCount, Math.min(5, Math.ceil(itemCount * 0.1)));
-  return uniquePracticedItemCount >= exposureCount && scorePercent >= 60 ? "initial_exposure" : "in_progress";
+  return uniquePracticedItemCount >= exposureCount && scorePercent >= 60
+    ? "initial_exposure"
+    : "in_progress";
 }
 
-export function isRoadmapPrerequisiteSatisfied(status: AlgorithmRoadmapNodeProgressStatus): boolean {
+export function isRoadmapPrerequisiteSatisfied(
+  status: AlgorithmRoadmapNodeProgressStatus,
+): boolean {
   return status === "eligible_for_next" || status === "mastered" || status === "maintenance";
 }
 
 function getNodeScorePercent(attempts: readonly TrainingAttempt[]): number {
-  if (attempts.length === 0) {
-    return 0;
-  }
-
-  const earnedPoints = attempts.reduce((sum, attempt) => {
-    const status = getAlgorithmAttemptStatus(attempt.result);
-
-    if (status === "correct") return sum + 1;
-    if (status === "partial") return sum + 0.5;
-    return sum;
-  }, 0);
-
-  return Math.round((earnedPoints / attempts.length) * 100);
-}
-
-function getActiveNode(
-  nodeProgress: readonly AlgorithmRoadmapNodeProgress[],
-  roadmapNodes: readonly AlgorithmRoadmapNode[],
-): AlgorithmRoadmapNodeProgress {
-  const satisfiedIds = new Set(nodeProgress.filter((node) => isRoadmapPrerequisiteSatisfied(node.status)).map((node) => node.nodeId));
-  const firstIncompleteNode = nodeProgress.find((progress) => {
-    if (isRoadmapPrerequisiteSatisfied(progress.status)) return false;
-    const node = roadmapNodes.find((candidate) => candidate.id === progress.nodeId);
-    return node?.prerequisiteNodeIds.every((id) => satisfiedIds.has(id)) ?? false;
-  });
-
-  if (firstIncompleteNode) {
-    return firstIncompleteNode;
-  }
-
-  const finalNode = nodeProgress[nodeProgress.length - 1];
-
-  if (!finalNode) {
-    throw new Error("No Algorithms roadmap nodes with active items are available.");
-  }
-
-  return finalNode;
+  if (attempts.length === 0) return 0;
+  return Math.round(
+    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) /
+      attempts.length * 100,
+  );
 }
 
 function getAttemptScore(attempt: TrainingAttempt): number {
@@ -272,51 +341,41 @@ function getAttemptScore(attempt: TrainingAttempt): number {
   return status === "correct" ? 1 : status === "partial" ? 0.5 : 0;
 }
 
-function getItemSkillAtomIds(item: AlgorithmTrainingItem | undefined): readonly string[] {
-  if (!item) return [];
-  return [...new Set([item.primarySkillAtomId, ...(item.secondarySkillAtomIds ?? []),
-    ...item.taxonomyRefs.filter((ref) => ref.axisId === "skill_atom").map((ref) => ref.nodeId)])];
-}
-
-function isCoreSkillAtomCovered(
-  skillAtomId: string,
-  items: readonly AlgorithmTrainingItem[],
-  latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
-): boolean {
-  const linkedItems = items.filter((item) => getItemSkillAtomIds(item).includes(skillAtomId));
-  const attempts = linkedItems.flatMap((item) => {
-    const attempt = latestAttemptByItemId.get(item.id);
-    return attempt ? [attempt] : [];
+function getActiveNode(
+  nodeProgress: readonly AlgorithmRoadmapNodeProgress[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+): AlgorithmRoadmapNodeProgress {
+  const satisfiedIds = new Set(
+    nodeProgress
+      .filter((node) => isRoadmapPrerequisiteSatisfied(node.status))
+      .map((node) => node.nodeId),
+  );
+  const firstIncompleteNode = nodeProgress.find((progress) => {
+    if (isRoadmapPrerequisiteSatisfied(progress.status)) return false;
+    const node = roadmapNodes.find((candidate) => candidate.id === progress.nodeId);
+    return node?.prerequisiteNodeIds.every((id) => satisfiedIds.has(id)) ?? false;
   });
-  const required = Math.min(2, linkedItems.length);
-  return required > 0 && attempts.length >= required &&
-    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) / attempts.length >= 0.75;
-}
+  const active = firstIncompleteNode ?? nodeProgress[nodeProgress.length - 1];
 
-function hasRepeatedCriticalMistake(attempts: readonly TrainingAttempt[]): boolean {
-  const misses = new Map<string, number>();
-  for (const attempt of attempts) {
-    if (getAttemptScore(attempt) >= 0.75) continue;
-    misses.set(attempt.itemId, (misses.get(attempt.itemId) ?? 0) + 1);
+  if (!active) {
+    throw new Error("No Algorithms roadmap nodes with questions are available.");
   }
-  return [...misses.values()].some((count) => count >= 2);
+
+  return active;
 }
 
 function getLatestAttemptByItemId(
   attempts: readonly TrainingAttempt[],
 ): Map<string, TrainingAttempt> {
-  const sortedAttempts = [...attempts].sort((left, right) =>
-    right.answeredAt.localeCompare(left.answeredAt),
-  );
-  const latestByItemId = new Map<string, TrainingAttempt>();
+  const latest = new Map<string, TrainingAttempt>();
 
-  for (const attempt of sortedAttempts) {
-    if (!latestByItemId.has(attempt.itemId)) {
-      latestByItemId.set(attempt.itemId, attempt);
-    }
+  for (const attempt of [...attempts].sort((left, right) =>
+    right.answeredAt.localeCompare(left.answeredAt),
+  )) {
+    if (!latest.has(attempt.itemId)) latest.set(attempt.itemId, attempt);
   }
 
-  return latestByItemId;
+  return latest;
 }
 
 function countLatestStatuses(
@@ -330,10 +389,7 @@ function countLatestStatuses(
 
   for (const attempt of latestAttemptByItemId.values()) {
     const status = getAlgorithmAttemptStatus(attempt.result);
-
-    if (status) {
-      counts[status] += 1;
-    }
+    if (status) counts[status] += 1;
   }
 
   return counts;
@@ -341,162 +397,123 @@ function countLatestStatuses(
 
 type WeakAreaNodeStats = {
   incorrectCount: number;
-  missedItemTypes: Set<AlgorithmTrainingItem["type"]>;
+  missedItemTypes: Set<AlgorithmQuestionType>;
   mistakeTypeCounts: Map<string, number>;
   nodeId: AlgorithmRoadmapNodeId;
   partialCount: number;
   weakScore: number;
 };
 
-function getSelectableItems(
-  items: readonly AlgorithmTrainingItem[],
-  roadmapNodes: readonly AlgorithmRoadmapNode[],
-): readonly AlgorithmTrainingItem[] {
-  const roadmapNodeIds = new Set(roadmapNodes.map((node) => node.id));
-
-  return items.filter((item) =>
-    item.status === "active" &&
-    typeof item.roadmapNodeId === "string" &&
-    roadmapNodeIds.has(item.roadmapNodeId as AlgorithmRoadmapNodeId),
-  );
-}
-
-function getDefaultRoadmapNodeId(
-  selectableItems: readonly AlgorithmTrainingItem[],
-  roadmapNodes: readonly AlgorithmRoadmapNode[],
-  preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
-): AlgorithmRoadmapNodeId {
-  if (
-    preferredRoadmapNodeId &&
-    selectableItems.some((item) => item.roadmapNodeId === preferredRoadmapNodeId)
-  ) {
-    return preferredRoadmapNodeId;
-  }
-
-  const firstSelectableNode = roadmapNodes.find((node) =>
-    selectableItems.some((item) => item.roadmapNodeId === node.id),
-  );
-
-  if (!firstSelectableNode) {
-    throw new Error("No selectable Algorithms weak-area items are available.");
-  }
-
-  return firstSelectableNode.id;
-}
-
 function buildWeakAreaStats(
-  items: readonly AlgorithmTrainingItem[],
+  entries: readonly AlgorithmQuestionEntry[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
 ): Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats> {
-  const itemById = new Map(items.map((item) => [item.id, item]));
+  const entriesById = new Map(entries.map((entry) => [entry.question.id, entry]));
   const statsByNodeId = new Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats>();
 
   for (const [itemId, attempt] of latestAttemptByItemId) {
-    const item = itemById.get(itemId);
-    const nodeId = item?.roadmapNodeId as AlgorithmRoadmapNodeId | undefined;
+    const entry = entriesById.get(itemId);
     const status = getAlgorithmAttemptStatus(attempt.result);
 
-    if (!item || !nodeId || !status || status === "correct") {
-      continue;
-    }
+    if (!entry || !status || status === "correct") continue;
 
-    const stats = getOrCreateWeakAreaNodeStats(statsByNodeId, nodeId);
-    const mistakeTypeRefs = attempt.mistakeTypeRefs ?? [];
+    const nodeId = entry.group.roadmapNodeId;
+    const stats = statsByNodeId.get(nodeId) ?? {
+      incorrectCount: 0,
+      missedItemTypes: new Set<AlgorithmQuestionType>(),
+      mistakeTypeCounts: new Map<string, number>(),
+      nodeId,
+      partialCount: 0,
+      weakScore: 0,
+    };
     const baseScore = status === "incorrect" ? 3 : 1;
-
     stats.weakScore += baseScore;
-    stats.missedItemTypes.add(item.type);
+    stats.missedItemTypes.add(entry.question.type);
+    status === "incorrect" ? stats.incorrectCount += 1 : stats.partialCount += 1;
 
-    if (status === "incorrect") {
-      stats.incorrectCount += 1;
-    } else {
-      stats.partialCount += 1;
-    }
-
-    for (const mistakeType of getMistakeTypeIds(mistakeTypeRefs)) {
+    for (const mistakeType of getMistakeTypeIds(attempt.mistakeTypeRefs ?? [])) {
       const nextCount = (stats.mistakeTypeCounts.get(mistakeType) ?? 0) + 1;
       stats.mistakeTypeCounts.set(mistakeType, nextCount);
-
-      if (nextCount > 1) {
-        stats.weakScore += 1;
-      }
+      if (nextCount > 1) stats.weakScore += 1;
     }
+
+    statsByNodeId.set(nodeId, stats);
   }
 
   return statsByNodeId;
 }
 
-function getOrCreateWeakAreaNodeStats(
-  statsByNodeId: Map<AlgorithmRoadmapNodeId, WeakAreaNodeStats>,
-  nodeId: AlgorithmRoadmapNodeId,
-): WeakAreaNodeStats {
-  const current = statsByNodeId.get(nodeId);
-
-  if (current) {
-    return current;
-  }
-
-  const next: WeakAreaNodeStats = {
-    incorrectCount: 0,
-    missedItemTypes: new Set(),
-    mistakeTypeCounts: new Map(),
-    nodeId,
-    partialCount: 0,
-    weakScore: 0,
-  };
-
-  statsByNodeId.set(nodeId, next);
-  return next;
-}
-
-function getMistakeTypeIds(refs: readonly TrainingItemTaxonomyRef[]): readonly string[] {
+function getMistakeTypeIds(
+  refs: readonly TrainingItemTaxonomyRef[],
+): readonly string[] {
   return refs
     .filter((ref) => ref.role === "mistake_type" || ref.axisId === "mistake_type")
     .map((ref) => ref.nodeId);
 }
 
-function getTopMistakeTypes(mistakeTypeCounts: ReadonlyMap<string, number>): readonly string[] {
+function getTopMistakeTypes(
+  mistakeTypeCounts: ReadonlyMap<string, number>,
+): readonly string[] {
   return [...mistakeTypeCounts.entries()]
     .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
     .map(([mistakeType]) => mistakeType)
     .slice(0, 3);
 }
 
-function getWeakAreaCandidateItemIds(input: {
-  items: readonly AlgorithmTrainingItem[];
-  missedItemTypes: ReadonlySet<AlgorithmTrainingItem["type"]>;
-  roadmapNodeId: AlgorithmRoadmapNodeId;
-  selectedMistakeTypes: readonly string[];
-}): readonly string[] {
-  const selectedMistakeTypes = new Set(input.selectedMistakeTypes);
-
-  return input.items
-    .filter((item) => item.roadmapNodeId === input.roadmapNodeId)
-    .map((item, index) => ({
-      index,
-      item,
-      score:
-        (input.missedItemTypes.has(item.type) ? 2 : 0) +
-        (hasMistakeTypeOverlap(item, selectedMistakeTypes) ? 1 : 0),
-    }))
-    .sort((left, right) => right.score - left.score || left.index - right.index)
-    .map((entry) => entry.item.id);
-}
-
-function hasMistakeTypeOverlap(
-  item: AlgorithmTrainingItem,
-  selectedMistakeTypes: ReadonlySet<string>,
-): boolean {
-  if (selectedMistakeTypes.size === 0) {
-    return false;
+function getDefaultRoadmapNodeId(
+  entries: readonly AlgorithmQuestionEntry[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+  preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
+): AlgorithmRoadmapNodeId {
+  if (preferredRoadmapNodeId && entries.some(
+    (entry) => entry.group.roadmapNodeId === preferredRoadmapNodeId,
+  )) {
+    return preferredRoadmapNodeId;
   }
 
-  const itemMistakeTypes = [
-    ...(item.feedbackModel?.mistakeTypes ?? []),
-    ...((item.staticMicroChecks ?? []).flatMap((check) => check.mistakeTypes)),
-  ];
+  const firstNode = roadmapNodes.find((node) =>
+    entries.some((entry) => entry.group.roadmapNodeId === node.id),
+  );
 
-  return itemMistakeTypes.some((mistakeType) => selectedMistakeTypes.has(mistakeType));
+  if (!firstNode) {
+    throw new Error("No Algorithms weak-area questions are available.");
+  }
+
+  return firstNode.id;
+}
+
+function getWeakAreaCandidateItemIds(
+  entries: readonly AlgorithmQuestionEntry[],
+  missedItemTypes: ReadonlySet<AlgorithmQuestionType>,
+  roadmapNodeId: AlgorithmRoadmapNodeId,
+  selectedMistakeTypes: readonly string[],
+): readonly string[] {
+  const mistakeTypes = new Set(selectedMistakeTypes);
+
+  return entries
+    .filter((entry) => entry.group.roadmapNodeId === roadmapNodeId)
+    .map((entry, index) => ({
+      entry,
+      index,
+      score:
+        (missedItemTypes.has(entry.question.type) ? 2 : 0) +
+        (entry.question.feedbackModel.mistakeTypes.some((mistakeType) =>
+          mistakeTypes.has(mistakeType),
+        ) ? 1 : 0),
+    }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map(({ entry }) => entry.question.id);
+}
+
+function hasRepeatedCriticalMistake(attempts: readonly TrainingAttempt[]): boolean {
+  const misses = new Map<string, number>();
+
+  for (const attempt of attempts) {
+    if (getAttemptScore(attempt) >= 0.75) continue;
+    misses.set(attempt.itemId, (misses.get(attempt.itemId) ?? 0) + 1);
+  }
+
+  return [...misses.values()].some((count) => count >= 2);
 }
 
 function getRoadmapNodeOrder(

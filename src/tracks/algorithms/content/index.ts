@@ -1,15 +1,16 @@
-import type { TrainingItem } from "../../../domain/training";
+import type { AlgorithmRoadmapNodeId } from "../algorithmRoadmap";
+import { ALGORITHM_ROADMAP } from "../algorithmRoadmap";
 import {
-  type ContentPackGroup,
-  type ContentPackGroupManifest,
-  type ContentPackManifest,
-  validateContentPackManifest,
-} from "../../contentPack";
-import type { AlgorithmTrainingItem } from "../algorithmContentTypes";
-import { ALGORITHM_CONTENT_VERSION } from "../algorithmContentTypes";
-import { validateAlgorithmTrainingItem } from "../algorithmContentQuality";
-import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNodeId } from "../algorithmRoadmap";
-import manifest from "./manifest.json";
+  ALGORITHM_CONTENT_VERSION,
+  ALGORITHM_QUESTION_DIFFICULTIES,
+  ALGORITHM_QUESTION_LEARNING_STAGES,
+  ALGORITHM_QUESTION_TYPES,
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  type AlgorithmQuestion,
+} from "../algorithmQuestionTypes";
+export { ALGORITHM_CONTENT_VERSION } from "../algorithmQuestionTypes";
 import arraysAndStringsQuestions from "./items/arrays-and-strings";
 import backtrackingQuestions from "./items/backtracking";
 import { binarySearchQuestions } from "./items/binary-search";
@@ -28,8 +29,7 @@ import { heapPriorityQueueQuestions } from "./items/heap-priority-queue";
 import { intervalsQuestions } from "./items/intervals";
 import { linkedListQuestions } from "./items/linked-list";
 import { mathAndGeometryQuestions } from "./items/math-and-geometry";
-import mixedPatternPracticeQuestions from "./items/mixed-pattern-practice/questions.json";
-import { prefixSumsQuestions } from "./items/prefix-sums";
+import { mixedPatternPracticeQuestions } from "./items/mixed-pattern-practice";
 import { recursionBasicsQuestions } from "./items/recursion-basics";
 import { slidingWindowQuestions } from "./items/sliding-window";
 import { sortingBasedQuestions } from "./items/sorting-based";
@@ -38,161 +38,200 @@ import { strategySelectionCoreQuestions } from "./items/strategy-selection-core"
 import { treeTraversalQuestions } from "./items/tree-traversal";
 import { twoPointersQuestions } from "./items/two-pointers";
 
-export type AlgorithmContentGroup = ContentPackGroup<
-  AlgorithmTrainingItem & TrainingItem,
-  AlgorithmRoadmapNodeId
->;
+export type AlgorithmContentGroup = {
+  id: AlgorithmRoadmapNodeId;
+  questions: readonly AlgorithmQuestion[];
+  roadmapNodeId: AlgorithmRoadmapNodeId;
+};
 
-export const algorithmContentManifest = manifest as ContentPackManifest<
-  "algorithms",
-  AlgorithmRoadmapNodeId
->;
-
-const algorithmQuestionFilesByPath = {
-  "items/arrays-and-strings/questions.json": arraysAndStringsQuestions,
-  "items/backtracking/questions.json": backtrackingQuestions,
-  "items/binary-search/questions.json": binarySearchQuestions,
-  "items/bit-manipulation/questions.json": bitManipulationQuestions,
-  "items/complexity-and-constraints/questions.json": complexityAndConstraintsQuestions,
-  "items/contrast-binary-search-vs-linear-scan/questions.json": contrastBinarySearchVsLinearScanQuestions,
-  "items/contrast-hash-map-vs-sorting/index.ts": contrastHashMapVsSortingQuestions,
-  "items/contrast-sliding-window-vs-prefix-sums/index.ts": contrastSlidingWindowVsPrefixSumsQuestions,
-  "items/contrast-stack-vs-monotonic-stack-intro/index.ts": contrastStackVsMonotonicStackIntroQuestions,
-  "items/contrast-two-pointers-vs-sliding-window/index.ts": contrastTwoPointersVsSlidingWindowQuestions,
-  "items/dynamic-programming-intro/index.ts": dynamicProgrammingIntroQuestions,
-  "items/graph-traversal/index.ts": graphTraversalQuestions,
-  "items/greedy-intro/index.ts": greedyIntroQuestions,
-  "items/hash-map-and-set/index.ts": hashMapAndSetQuestions,
-  "items/heap-priority-queue/index.ts": heapPriorityQueueQuestions,
-  "items/intervals/index.ts": intervalsQuestions,
-  "items/linked-list/index.ts": linkedListQuestions,
-  "items/math-and-geometry/index.ts": mathAndGeometryQuestions,
-  "items/mixed-pattern-practice/questions.json": mixedPatternPracticeQuestions,
-  "items/prefix-sums/index.ts": prefixSumsQuestions,
-  "items/recursion-basics/index.ts": recursionBasicsQuestions,
-  "items/sliding-window/index.ts": slidingWindowQuestions,
-  "items/sorting-based/index.ts": sortingBasedQuestions,
-  "items/stack/index.ts": stackQuestions,
-  "items/strategy-selection-core/index.ts": strategySelectionCoreQuestions,
-  "items/tree-traversal/index.ts": treeTraversalQuestions,
-  "items/two-pointers/index.ts": twoPointersQuestions,
-} as const satisfies Record<string, unknown>;
-
-export const algorithmContentGroups = validateAlgorithmContentGroups(
-  algorithmContentManifest.groups.map(makeContentGroup),
-);
-
-export const algorithmContentItems = orderAlgorithmContentItems(algorithmContentGroups);
-
-function makeContentGroup(
-  groupManifest: ContentPackGroupManifest<AlgorithmRoadmapNodeId>,
+function defineGroup(
+  roadmapNodeId: AlgorithmRoadmapNodeId,
+  questions: readonly AlgorithmQuestion[],
 ): AlgorithmContentGroup {
-  const items = readQuestionFile(groupManifest.questionFile);
-
-  return {
-    folderName: groupManifest.folderName,
-    itemCount: Array.isArray(items) ? items.length : 0,
-    items: items as readonly (AlgorithmTrainingItem & TrainingItem)[],
-    questionFile: groupManifest.questionFile,
-    roadmapNodeId: groupManifest.roadmapNodeId,
-  };
+  return { id: roadmapNodeId, questions, roadmapNodeId };
 }
 
-function readQuestionFile(questionFile: string): unknown {
-  return algorithmQuestionFilesByPath[questionFile as keyof typeof algorithmQuestionFilesByPath];
-}
+const groups = [
+  defineGroup("complexity_and_constraints", complexityAndConstraintsQuestions),
+  defineGroup("arrays_and_strings", arraysAndStringsQuestions),
+  defineGroup("hash_map_and_set", hashMapAndSetQuestions),
+  defineGroup("two_pointers", twoPointersQuestions),
+  defineGroup("sliding_window", slidingWindowQuestions),
+  defineGroup("sorting_based", sortingBasedQuestions),
+  defineGroup("stack", stackQuestions),
+  defineGroup("binary_search", binarySearchQuestions),
+  defineGroup("strategy_selection_core", strategySelectionCoreQuestions),
+  defineGroup("contrast_hash_map_vs_sorting", contrastHashMapVsSortingQuestions),
+  defineGroup("contrast_two_pointers_vs_sliding_window", contrastTwoPointersVsSlidingWindowQuestions),
+  defineGroup("contrast_sliding_window_vs_prefix_sums", contrastSlidingWindowVsPrefixSumsQuestions),
+  defineGroup("contrast_stack_vs_monotonic_stack_intro", contrastStackVsMonotonicStackIntroQuestions),
+  defineGroup("contrast_binary_search_vs_linear_scan", contrastBinarySearchVsLinearScanQuestions),
+  defineGroup("linked_list", linkedListQuestions),
+  defineGroup("recursion_basics", recursionBasicsQuestions),
+  defineGroup("tree_traversal", treeTraversalQuestions),
+  defineGroup("heap_priority_queue", heapPriorityQueueQuestions),
+  defineGroup("intervals", intervalsQuestions),
+  defineGroup("backtracking", backtrackingQuestions),
+  defineGroup("graph_traversal", graphTraversalQuestions),
+  defineGroup("greedy_intro", greedyIntroQuestions),
+  defineGroup("dynamic_programming_intro", dynamicProgrammingIntroQuestions),
+  defineGroup("bit_manipulation", bitManipulationQuestions),
+  defineGroup("math_and_geometry", mathAndGeometryQuestions),
+  defineGroup("mixed_pattern_practice", mixedPatternPracticeQuestions),
+] as const satisfies readonly AlgorithmContentGroup[];
 
-function validateAlgorithmContentGroups(
-  groups: readonly AlgorithmContentGroup[],
+export const algorithmContentGroups = validateAlgorithmContentGroups(groups);
+export const algorithmContentItems = algorithmContentGroups.flatMap((group) => group.questions);
+
+export const algorithmContentManifest = {
+  contentVersion: ALGORITHM_CONTENT_VERSION,
+  groups: algorithmContentGroups.map((group) => ({
+    itemCount: group.questions.length,
+    roadmapNodeId: group.roadmapNodeId,
+  })),
+  itemCount: algorithmContentItems.length,
+  itemOrder: algorithmContentItems.map((question) => question.id),
+  trackId: "algorithms",
+} as const;
+
+export function validateAlgorithmContentGroups(
+  contentGroups: readonly AlgorithmContentGroup[],
 ): readonly AlgorithmContentGroup[] {
-  const issues = validateContentPackManifest({
-    expectedContentVersion: ALGORITHM_CONTENT_VERSION,
-    expectedTrackId: "algorithms",
-    getItemId: (item) => item.id,
-    getItemTrackId: (item) => item.trackId,
-    groups,
-    manifest: algorithmContentManifest,
-  });
-  const roadmapNodesById = new Map(ALGORITHM_ROADMAP.nodes.map((node) => [node.id, node]));
-  const manifestQuestionFiles = new Set(algorithmContentManifest.groups.map((group) => group.questionFile));
+  const issues: string[] = [];
+  const roadmapNodeIds = new Set(ALGORITHM_ROADMAP.nodes.map((node) => node.id));
+  const groupIds = new Set<string>();
+  const questionIds = new Set<string>();
 
-  for (const questionFile of Object.keys(algorithmQuestionFilesByPath)) {
-    if (!manifestQuestionFiles.has(questionFile)) {
-      issues.push(`Algorithms content imports ${questionFile}, but the file is not listed in the manifest.`);
+  for (const group of contentGroups) {
+    if (groupIds.has(group.roadmapNodeId)) {
+      issues.push(`Algorithms content duplicates group: ${group.roadmapNodeId}.`);
+    }
+    groupIds.add(group.roadmapNodeId);
+
+    if (!roadmapNodeIds.has(group.roadmapNodeId)) {
+      issues.push(`Algorithms content references unknown roadmap node: ${group.roadmapNodeId}.`);
+    }
+    if (group.questions.length === 0) {
+      issues.push(`Algorithms content group has no questions: ${group.roadmapNodeId}.`);
+    }
+
+    for (const question of group.questions) {
+      validateQuestion(question, group, questionIds, issues);
     }
   }
 
-  for (const group of groups) {
-    const roadmapNode = roadmapNodesById.get(group.roadmapNodeId);
-
-    if (!roadmapNode) {
-      issues.push(`Algorithms content group references unknown roadmap node: ${group.roadmapNodeId}.`);
-    }
-
-    for (const item of group.items) {
-      const itemLabel = item.id || `${group.roadmapNodeId}:unknown-item`;
-
-      if (item.roadmapNodeId !== group.roadmapNodeId) {
-        issues.push(
-          `Algorithms content item ${itemLabel} is stored under ${group.roadmapNodeId} but references ${String(item.roadmapNodeId)}.`,
-        );
-      }
-
-      if (item.status === "active") {
-        const itemRoadmapNode = item.roadmapNodeId ? roadmapNodesById.get(item.roadmapNodeId) : undefined;
-
-        if (!itemRoadmapNode) {
-          issues.push(`Active Algorithms content item ${itemLabel} references unknown roadmap node: ${String(item.roadmapNodeId)}.`);
-        }
-      }
-
-      for (const issue of validateAlgorithmTrainingItem(item).issues) {
-        issues.push(`Algorithms content item ${itemLabel}: ${issue.message}`);
-      }
-    }
-  }
-
-  if (issues.length > 0) {
-    throw new Error(issues.join("\n"));
-  }
-
-  return groups;
+  if (issues.length > 0) throw new Error(issues.join("\n"));
+  return contentGroups;
 }
 
-function orderAlgorithmContentItems(
-  groups: readonly AlgorithmContentGroup[],
-): readonly (AlgorithmTrainingItem & TrainingItem)[] {
-  const itemsById = new Map(groups.flatMap((group) => group.items.map((item) => [item.id, item] as const)));
-  const orderedItems: (AlgorithmTrainingItem & TrainingItem)[] = [];
-  const issues: string[] = [];
-  const orderedItemIds = new Set<string>();
+function validateQuestion(
+  question: AlgorithmQuestion,
+  group: AlgorithmContentGroup,
+  questionIds: Set<string>,
+  issues: string[],
+): void {
+  const label = question.id || `${group.roadmapNodeId}:unknown-question`;
+  if (!isNonEmptyString(question.id)) issues.push(`${label}: id must be non-empty.`);
+  if (questionIds.has(question.id)) issues.push(`${label}: duplicate question id.`);
+  questionIds.add(question.id);
 
-  for (const itemId of algorithmContentManifest.itemOrder ?? []) {
-    if (orderedItemIds.has(itemId)) {
-      issues.push(`Algorithms content manifest itemOrder duplicates item: ${itemId}.`);
-      continue;
+  if (!ALGORITHM_QUESTION_DIFFICULTIES.includes(question.difficulty)) {
+    issues.push(`${label}: unsupported difficulty ${question.difficulty}.`);
+  }
+  if (!ALGORITHM_QUESTION_LEARNING_STAGES.includes(question.learningStage)) {
+    issues.push(`${label}: unsupported learning stage ${question.learningStage}.`);
+  }
+  if (!ALGORITHM_QUESTION_TYPES.includes(question.type)) {
+    issues.push(`${label}: unsupported question type ${question.type}.`);
+  }
+  for (const [field, value] of [
+    ["prompt", question.prompt],
+    ["primarySkillAtomId", question.primarySkillAtomId],
+    ["feedback.decisionSignal", question.feedbackModel.decisionSignal],
+    ["feedback.mentalModelCorrection", question.feedbackModel.mentalModelCorrection],
+    ["feedback.nextAction", question.feedbackModel.nextAction],
+  ] as const) {
+    if (!isNonEmptyString(value)) issues.push(`${label}: ${field} must be non-empty.`);
+  }
+  if (question.feedbackModel.mistakeTypes.some((mistake) => !isNonEmptyString(mistake))) {
+    issues.push(`${label}: feedback mistake types must be non-empty strings.`);
+  }
+  for (const [optionId, explanation] of Object.entries(
+    question.feedbackModel.distractorExplanations ?? {},
+  )) {
+    if (!isNonEmptyString(optionId) || !isNonEmptyString(explanation)) {
+      issues.push(`${label}: distractor explanations must map non-empty ids to non-empty text.`);
     }
+  }
 
-    orderedItemIds.add(itemId);
+  if (isAlgorithmChoiceQuestion(question)) {
+    validateChoiceQuestion(question, label, issues);
+    return;
+  }
+  if (isAlgorithmOrderingQuestion(question)) {
+    validateOrderingQuestion(question, label, issues);
+    return;
+  }
+  if (isAlgorithmComplexityQuestion(question)) {
+    validateComplexityQuestion(question, label, issues);
+    return;
+  }
+  issues.push(`${label}: question has no supported response contract.`);
+}
 
-    const item = itemsById.get(itemId);
-
-    if (!item) {
-      issues.push(`Algorithms content manifest itemOrder references missing item: ${itemId}.`);
-      continue;
+function validateChoiceQuestion(
+  question: Extract<AlgorithmQuestion, { options: readonly unknown[] }>,
+  label: string,
+  issues: string[],
+): void {
+  if (question.options.length < 2) issues.push(`${label}: choice question requires at least two options.`);
+  const optionIds = new Set<string>();
+  let correctCount = 0;
+  for (const option of question.options) {
+    if (!isNonEmptyString(option.id) || !isNonEmptyString(option.text)) {
+      issues.push(`${label}: option id and text must be non-empty.`);
     }
-
-    orderedItems.push(item);
+    if (optionIds.has(option.id)) issues.push(`${label}: duplicate option id ${option.id}.`);
+    optionIds.add(option.id);
+    if (option.isCorrect) correctCount += 1;
   }
+  if (correctCount === 0) issues.push(`${label}: choice question has no correct option.`);
+}
 
-  if (orderedItems.length !== itemsById.size) {
-    const missingOrderedIds = [...itemsById.keys()].filter((itemId) => !orderedItemIds.has(itemId));
-    issues.push(`Algorithms content manifest itemOrder omits items: ${missingOrderedIds.join(", ")}.`);
+function validateOrderingQuestion(
+  question: Extract<AlgorithmQuestion, { correctOrder: readonly string[] }>,
+  label: string,
+  issues: string[],
+): void {
+  if (question.type !== "subgoal_ordering") {
+    issues.push(`${label}: ordering response requires type subgoal_ordering.`);
   }
-
-  if (issues.length > 0) {
-    throw new Error(issues.join("\n"));
+  const subgoalIds = question.subgoals.map((subgoal) => subgoal.id);
+  if (subgoalIds.length < 2 || new Set(subgoalIds).size !== subgoalIds.length) {
+    issues.push(`${label}: ordering subgoals must contain at least two unique ids.`);
   }
+  if (
+    question.correctOrder.length !== subgoalIds.length ||
+    new Set(question.correctOrder).size !== question.correctOrder.length ||
+    question.correctOrder.some((id) => !subgoalIds.includes(id))
+  ) {
+    issues.push(`${label}: correctOrder must contain every subgoal id exactly once.`);
+  }
+}
 
-  return orderedItems;
+function validateComplexityQuestion(
+  question: Extract<AlgorithmQuestion, { correctComplexity: object }>,
+  label: string,
+  issues: string[],
+): void {
+  if (
+    !isNonEmptyString(question.correctComplexity.time) ||
+    !isNonEmptyString(question.correctComplexity.space)
+  ) {
+    issues.push(`${label}: correctComplexity requires non-empty time and space values.`);
+  }
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }

@@ -1,6 +1,9 @@
-import type { TrainingItem } from "../../domain/training";
-import { algorithmContentItems } from "./content";
-import type { AlgorithmTrainingItem } from "./algorithmContentTypes";
+import {
+  algorithmContentGroups,
+  algorithmContentItems,
+  type AlgorithmContentGroup,
+} from "./content";
+import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
@@ -9,59 +12,105 @@ import {
 
 export const ALGORITHMS_SESSION_MODE_ID = "algorithms-roadmap-basics";
 
-export const ALGORITHM_TRAINING_ITEMS =
-  algorithmContentItems satisfies readonly (AlgorithmTrainingItem & TrainingItem)[];
+export const ALGORITHM_TRAINING_ITEMS: readonly AlgorithmQuestion[] = algorithmContentItems;
 
-export function getAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
+export type AlgorithmQuestionEntry = {
+  group: AlgorithmContentGroup;
+  question: AlgorithmQuestion;
+};
+
+export function getAlgorithmTrainingItems(): readonly AlgorithmQuestion[] {
   return ALGORITHM_TRAINING_ITEMS;
 }
 
-export function getActiveAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
-  return ALGORITHM_TRAINING_ITEMS.filter((item) => item.status === "active");
+export function getAlgorithmTrainingItemById(itemId: string): AlgorithmQuestion | undefined {
+  return ALGORITHM_TRAINING_ITEMS.find((question) => question.id === itemId);
 }
 
-export function getAlgorithmTrainingItemById(itemId: string): AlgorithmTrainingItem | undefined {
-  return ALGORITHM_TRAINING_ITEMS.find((item) => item.id === itemId);
+export function getAlgorithmQuestionEntries(
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): readonly AlgorithmQuestionEntry[] {
+  return groups.flatMap((group) =>
+    group.questions.map((question) => ({ group, question })),
+  );
+}
+
+export function getAlgorithmContentGroupForItem(
+  itemId: string,
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): AlgorithmContentGroup | undefined {
+  return groups.find((group) =>
+    group.questions.some((question) => question.id === itemId),
+  );
 }
 
 export function getAlgorithmTrainingItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
-): readonly AlgorithmTrainingItem[] {
-  return getActiveAlgorithmTrainingItems().filter((item) => item.roadmapNodeId === nodeId);
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): readonly AlgorithmQuestion[] {
+  return groups.find((group) => group.roadmapNodeId === nodeId)?.questions ?? [];
 }
 
-export function getRoadmapNodesWithActiveItems(): readonly AlgorithmRoadmapNode[] {
-  const nodeIdsWithActiveItems = new Set<string>(
-    getActiveAlgorithmTrainingItems()
-      .map((item) => item.roadmapNodeId)
-      .filter((nodeId): nodeId is string => typeof nodeId === "string"),
+export function getRoadmapNodesWithActiveItems(
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): readonly AlgorithmRoadmapNode[] {
+  const nodeIdsWithItems = new Set(
+    groups
+      .filter((group) => group.questions.length > 0)
+      .map((group) => group.roadmapNodeId),
   );
-  return ALGORITHM_ROADMAP.nodes.filter((node) => nodeIdsWithActiveItems.has(node.id));
+
+  return ALGORITHM_ROADMAP.nodes.filter((node) => nodeIdsWithItems.has(node.id));
 }
 
-export function isAlgorithmRoadmapNodeSelectable(node: AlgorithmRoadmapNode): boolean {
-  return getAlgorithmTrainingItemsForRoadmapNode(node.id).length >= node.minimumActiveItemCount;
+export function isAlgorithmRoadmapNodeSelectable(
+  node: AlgorithmRoadmapNode,
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): boolean {
+  return getAlgorithmTrainingItemsForRoadmapNode(node.id, groups).length >=
+    node.minimumActiveItemCount;
 }
 
-export function isAlgorithmTrainingItemSelectable(item: AlgorithmTrainingItem): boolean {
-  if (item.status !== "active") return false;
-  if (!item.roadmapNodeId) return false;
+export function isAlgorithmTrainingItemSelectable(
+  question: AlgorithmQuestion,
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): boolean {
+  const group = getAlgorithmContentGroupForItem(question.id, groups);
 
-  const node = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === item.roadmapNodeId);
-  if (!node) return false;
+  if (!group) {
+    return false;
+  }
 
-  return isAlgorithmRoadmapNodeSelectable(node);
+  const node = ALGORITHM_ROADMAP.nodes.find(
+    (candidate) => candidate.id === group.roadmapNodeId,
+  );
+
+  return node ? isAlgorithmRoadmapNodeSelectable(node, groups) : false;
 }
 
-export function getSelectableAlgorithmTrainingItems(): readonly AlgorithmTrainingItem[] {
-  return ALGORITHM_TRAINING_ITEMS.filter(isAlgorithmTrainingItemSelectable);
+export function getSelectableAlgorithmTrainingItems(
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): readonly AlgorithmQuestion[] {
+  return groups.flatMap((group) => {
+    const node = ALGORITHM_ROADMAP.nodes.find(
+      (candidate) => candidate.id === group.roadmapNodeId,
+    );
+
+    return node && isAlgorithmRoadmapNodeSelectable(node, groups)
+      ? group.questions
+      : [];
+  });
 }
 
-export function getFirstUsableAlgorithmRoadmapNode(): AlgorithmRoadmapNode {
-  const node = ALGORITHM_ROADMAP.nodes.find(isAlgorithmRoadmapNodeSelectable);
+export function getFirstUsableAlgorithmRoadmapNode(
+  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+): AlgorithmRoadmapNode {
+  const node = ALGORITHM_ROADMAP.nodes.find((candidate) =>
+    isAlgorithmRoadmapNodeSelectable(candidate, groups),
+  );
 
   if (!node) {
-    throw new Error("No selectable Algorithms roadmap node has active items.");
+    throw new Error("No selectable Algorithms roadmap node has questions.");
   }
 
   return node;

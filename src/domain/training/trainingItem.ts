@@ -3,6 +3,12 @@ import type { TrackId, TrainingItemType as TrackTrainingItemType } from "../trac
 export type TrainingItemId = string;
 export type TrainingItemType = TrackTrainingItemType;
 
+export type TrainingContentItem = {
+  id: TrainingItemId;
+  prompt: string;
+  type: TrainingItemType;
+};
+
 export type TrainingItemDifficulty =
   | "introductory"
   | "easy"

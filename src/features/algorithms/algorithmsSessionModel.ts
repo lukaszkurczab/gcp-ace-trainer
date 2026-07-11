@@ -10,16 +10,18 @@ import {
 } from "../../domain/training";
 import type { PracticeFeedbackMode, PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  type AlgorithmQuestion,
+} from "../../tracks/algorithms/algorithmQuestionTypes";
+import {
   createAlgorithmsReviewQueueItems,
   getAlgorithmsTrainingSessionModeId,
   getAlgorithmAttemptStatus,
-  scoreAlgorithmStaticMicroCheck,
-  type AlgorithmComplexityPairAnswer,
+  scoreAlgorithmQuestion,
+  type AlgorithmQuestionScore,
   type AlgorithmScoringStatus,
-  type AlgorithmStaticCheckScore,
-  type AlgorithmStaticMicroCheck,
-  type AlgorithmSubmittedAnswer,
-  type AlgorithmTrainingItem,
 } from "../../tracks/algorithms";
 
 type ComplexityDimension = "time" | "space";
@@ -27,7 +29,7 @@ type ComplexityDimension = "time" | "space";
 export type AlgorithmsSubmission = {
   attempt: TrainingAttempt;
   reviewQueueItems: readonly ReviewQueueItem[];
-  score: AlgorithmStaticCheckScore;
+  score: AlgorithmQuestionScore;
 };
 
 export type AlgorithmsFeedbackState = {
@@ -132,7 +134,7 @@ const MIN_MISSED_ITEMS_FOR_WEAK_AREA = 2;
 
 export function getAlgorithmsFeedbackState(
   feedbackMode: PracticeFeedbackMode,
-  score: AlgorithmStaticCheckScore | null,
+  score: AlgorithmQuestionScore | null,
 ): AlgorithmsFeedbackState {
   return {
     hasSubmittedAnswer: score !== null,
@@ -193,32 +195,30 @@ export function hasAlgorithmsFeedbackDetails(
 }
 
 export function buildAlgorithmsImmediateFeedbackModel({
-  check,
   complexityAnswer = {},
-  item,
+  question,
   score,
   selectedOptionIds = [],
 }: {
-  check: AlgorithmStaticMicroCheck;
   complexityAnswer?: ComplexityAnswer;
-  item: AlgorithmTrainingItem;
-  score: AlgorithmStaticCheckScore;
+  question: AlgorithmQuestion;
+  score: AlgorithmQuestionScore;
   selectedOptionIds?: readonly string[];
 }): AlgorithmsImmediateFeedbackModel {
-  const correctAnswer = getAlgorithmsCorrectAnswerText(check);
-  const selectedAnswer = getCurrentSelectedAnswerText(check, selectedOptionIds, complexityAnswer);
+  const correctAnswer = getAlgorithmsCorrectAnswerText(question);
+  const selectedAnswer = getCurrentSelectedAnswerText(question, selectedOptionIds, complexityAnswer);
   const answerSummary = getImmediateAnswerSummary({
     correctAnswer,
     selectedAnswer,
   });
-  const keySignal = getAlgorithmsPatternSignalText(item);
+  const keySignal = getAlgorithmsPatternSignalText(question);
   const rule = getImmediateFeedbackRule({
     correctAnswer,
     explanation: score.feedback,
-    item,
+    question,
     keySignal,
   });
-  const commonTrap = getAlgorithmsCommonTrapText(item, score);
+  const commonTrap = getAlgorithmsCommonTrapText(question, score);
   const mistakeType = score.mistakeTypes.length > 0
     ? score.mistakeTypes.map(formatAlgorithmItemType).join(", ")
     : undefined;
@@ -226,18 +226,18 @@ export function buildAlgorithmsImmediateFeedbackModel({
   return {
     answerSummary,
     keySignal,
-    nextAction: item.feedbackModel.nextAction,
+    nextAction: question.feedbackModel.nextAction,
     reasoning: {
       answerSummary,
       commonTrap: isDuplicateFeedbackText(commonTrap, rule) || isDuplicateFeedbackText(commonTrap, mistakeType)
         ? undefined
         : commonTrap,
-      complexity: getAlgorithmsComplexityText(item),
+      complexity: getAlgorithmsComplexityText(question),
       correctAnswerExplanation: isDuplicateFeedbackText(score.feedback, rule)
         ? undefined
         : score.feedback,
       mistakeType,
-      weakerAnswerNotes: getAlgorithmsWeakerAnswerNotes(check, item),
+      weakerAnswerNotes: getAlgorithmsWeakerAnswerNotes(question),
     },
     rule,
     status: score.status,
@@ -307,27 +307,25 @@ export function getAlgorithmsSessionModeIdForRouteMode(
 
 export function buildAlgorithmsSubmission({
   answeredAt,
-  check,
   complexityAnswer,
-  item,
+  question,
   selectedOptionIds,
   session,
 }: {
   answeredAt: string;
-  check: AlgorithmStaticMicroCheck;
   complexityAnswer: ComplexityAnswer;
-  item: AlgorithmTrainingItem;
+  question: AlgorithmQuestion;
   selectedOptionIds: readonly string[];
   session: TrainingSession;
 }): AlgorithmsSubmission {
-  const answer = getSubmittedAnswer(check, selectedOptionIds, complexityAnswer);
-  const score = scoreAlgorithmStaticMicroCheck(check, answer);
+  const response = buildTrainingAttemptResponse(question, selectedOptionIds, complexityAnswer);
+  const score = scoreAlgorithmQuestion(question, response);
   const attempt: TrainingAttempt = {
     answeredAt,
     feedbackSignals: [score.status === "correct" ? "correct" : "review_recommended"],
-    id: `attempt:${session.id}:${item.id}:${answeredAt}`,
-    itemId: item.id,
-    itemType: item.type,
+    id: `attempt:${session.id}:${question.id}:${answeredAt}`,
+    itemId: question.id,
+    itemType: question.type,
     mistakeTypeRefs: score.mistakeTypes.map((mistakeType) => ({
       axisId: "mistake_type",
       nodeId: mistakeType,
@@ -335,7 +333,7 @@ export function buildAlgorithmsSubmission({
       trackId: ALGORITHMS_TRACK_ID,
     })),
     modeId: session.modeId,
-    response: buildTrainingAttemptResponse(check, selectedOptionIds, complexityAnswer),
+    response,
     result: score.result,
     sessionId: session.id,
     trackId: ALGORITHMS_TRACK_ID,
@@ -352,20 +350,20 @@ export function buildAlgorithmsSubmission({
 
 export function buildAlgorithmsSessionSummary(
   attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmTrainingItem[],
+  questions: readonly AlgorithmQuestion[],
   nodeLabel: string,
   options: { mode?: string } = {},
 ): AlgorithmsSessionSummary {
   const statuses = attempts.map((attempt) => getAlgorithmAttemptStatus(attempt.result));
-  const itemById = new Map(items.map((item) => [item.id, item]));
+  const questionById = new Map(questions.map((question) => [question.id, question]));
   const reviewedAttempts = attempts
     .map((attempt) => ({
       attempt,
-      item: itemById.get(attempt.itemId),
+      question: questionById.get(attempt.itemId),
       status: getAlgorithmAttemptStatus(attempt.result),
     }))
-    .filter((entry): entry is { attempt: TrainingAttempt; item: AlgorithmTrainingItem; status: AlgorithmScoringStatus } =>
-      Boolean(entry.item && entry.status),
+    .filter((entry): entry is { attempt: TrainingAttempt; question: AlgorithmQuestion; status: AlgorithmScoringStatus } =>
+      Boolean(entry.question && entry.status),
     );
   const missedAttempts = reviewedAttempts.filter((entry) => entry.status !== "correct");
   const mainIssue = buildSessionMainIssue(missedAttempts);
@@ -377,18 +375,18 @@ export function buildAlgorithmsSessionSummary(
     incorrect: statuses.filter((status) => status === "incorrect").length,
     mainIssue,
     needsReview: uniqueStrings(
-      missedAttempts.map((entry) => `${getAlgorithmsRecognizedPatternText(entry.item)}: ${getAttemptReviewSignal(entry)}`),
+      missedAttempts.map((entry) => `${getAlgorithmsRecognizedPatternText(entry.question)}: ${getAttemptReviewSignal(entry)}`),
     ).slice(0, 4),
     partial: statuses.filter((status) => status === "partial").length,
     recommendedNext: buildRecommendedNext(missedAttempts),
     reviewSession: options.mode === "review"
       ? buildReviewSessionSummary(reviewedAttempts)
       : undefined,
-    reviewItems: buildSessionReviewItems(reviewedAttempts, items),
+    reviewItems: buildSessionReviewItems(reviewedAttempts, questions),
     strong: uniqueStrings(
       reviewedAttempts
         .filter((entry) => entry.status === "correct")
-        .map((entry) => getAlgorithmsRecognizedPatternText(entry.item)),
+        .map((entry) => getAlgorithmsRecognizedPatternText(entry.question)),
     ).slice(0, 4),
   };
 }
@@ -440,87 +438,76 @@ export function buildAlgorithmsReviewQueueUpdate(
   };
 }
 
-export function getAlgorithmsCorrectAnswerText(check: AlgorithmStaticMicroCheck): string {
-  if (check.type === "complexity_pair" && isComplexityPairAnswer(check.correctAnswer)) {
-    return `Time ${check.correctAnswer.time}, space ${check.correctAnswer.space}`;
+export function getAlgorithmsCorrectAnswerText(question: AlgorithmQuestion): string {
+  if (isAlgorithmChoiceQuestion(question)) {
+    return question.options
+      .filter((option) => option.isCorrect)
+      .map((option) => option.text)
+      .join(", ");
   }
 
-  if (Array.isArray(check.correctAnswer)) {
-    return check.correctAnswer.map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`).join("\n");
+  if (isAlgorithmOrderingQuestion(question)) {
+    return question.correctOrder
+      .map((subgoalId, index) => `${index + 1}. ${getQuestionOptionText(question, subgoalId)}`)
+      .join("\n");
   }
 
-  if (typeof check.correctAnswer === "string") {
-    return getOptionText(check, check.correctAnswer);
+  if (isAlgorithmComplexityQuestion(question)) {
+    return `Time ${question.correctComplexity.time}, space ${question.correctComplexity.space}`;
   }
 
-  return "No static answer available.";
+  return assertUnreachableQuestion(question);
 }
 
-export function getAlgorithmsRecognizedPatternText(item: AlgorithmTrainingItem): string {
-  const taxonomyPattern = item.taxonomyRefs.find((ref) => ref.axisId === "pattern_family");
-
-  return formatAlgorithmItemType(item.roadmapNodeId ?? taxonomyPattern?.nodeId ?? item.primarySkillAtomId);
+export function getAlgorithmsRecognizedPatternText(question: AlgorithmQuestion): string {
+  return formatAlgorithmItemType(question.primarySkillAtomId);
 }
 
-export function getAlgorithmsPatternSignalText(item: AlgorithmTrainingItem): string {
-  return item.reasonSignal ??
-    item.constraintSignal ??
-    item.approachChoiceReason ??
-    item.feedbackModel.decisionSignal;
+export function getAlgorithmsPatternSignalText(question: AlgorithmQuestion): string {
+  return question.feedbackModel.decisionSignal;
 }
 
-export function getAlgorithmsComplexityText(item: AlgorithmTrainingItem): string | undefined {
+export function getAlgorithmsComplexityText(question: AlgorithmQuestion): string | undefined {
   const complexityParts = [
-    item.expectedTimeComplexity ? `Time ${item.expectedTimeComplexity}` : undefined,
-    item.expectedSpaceComplexity ? `space ${item.expectedSpaceComplexity}` : undefined,
+    question.expectedTimeComplexity ? `Time ${question.expectedTimeComplexity}` : undefined,
+    question.expectedSpaceComplexity ? `space ${question.expectedSpaceComplexity}` : undefined,
   ].filter((part): part is string => Boolean(part));
 
-  if (complexityParts.length === 0 && !item.complexityExplanation && !item.solution?.complexityExplanation) {
+  if (complexityParts.length === 0 && !question.complexityExplanation) {
     return undefined;
   }
 
   return [
     complexityParts.join(", "),
-    item.complexityExplanation ?? item.solution?.complexityExplanation,
+    question.complexityExplanation,
   ].filter(Boolean).join(". ");
 }
 
 export function getAlgorithmsCommonTrapText(
-  item: AlgorithmTrainingItem,
+  question: AlgorithmQuestion,
   score: { mistakeTypes: readonly string[] },
 ): string {
-  const pitfall = item.pitfalls?.[0]?.description;
-  const alternative = item.whyNotAlternatives?.[0]?.reason;
   const mistakeTypes = score.mistakeTypes.length > 0
     ? `Review ${score.mistakeTypes.map(formatAlgorithmItemType).join(", ")}.`
     : undefined;
 
-  return pitfall ??
-    alternative ??
-    mistakeTypes ??
-    item.feedbackModel.mentalModelCorrection;
+  return mistakeTypes ?? question.feedbackModel.mentalModelCorrection;
 }
 
 export function getAlgorithmsWeakerAnswerNotes(
-  check: AlgorithmStaticMicroCheck,
-  item: AlgorithmTrainingItem,
+  question: AlgorithmQuestion,
 ): readonly string[] {
-  const correctIds = getCorrectAnswerIds(check.correctAnswer);
-  const explanationsByOptionId = item.feedbackModel.distractorExplanations ?? {};
-  const weakerOptions = (check.options ?? [])
-    .filter((option) => !correctIds.has(option.id))
-    .slice(0, 3)
-    .map((option) =>
-      `${option.text}: ${explanationsByOptionId[option.id] ?? "No distractor explanation is authored for this option."}`,
-    );
-
-  if (weakerOptions.length > 0) {
-    return weakerOptions;
+  if (!isAlgorithmChoiceQuestion(question)) {
+    return [];
   }
 
-  return (item.whyNotAlternatives ?? [])
+  const explanationsByOptionId = question.feedbackModel.distractorExplanations ?? {};
+  return question.options
+    .filter((option) => !option.isCorrect && explanationsByOptionId[option.id])
     .slice(0, 3)
-    .map((alternative) => alternative.reason);
+    .map((option) =>
+      `${option.text}: ${explanationsByOptionId[option.id]}`,
+    );
 }
 
 export function formatAlgorithmStatus(status: AlgorithmScoringStatus): string {
@@ -538,34 +525,33 @@ export function formatAlgorithmItemType(value: string): string {
 function buildSessionReviewItems(
   reviewedAttempts: readonly {
     attempt: TrainingAttempt;
-    item: AlgorithmTrainingItem;
+    question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
-  items: readonly AlgorithmTrainingItem[],
+  questions: readonly AlgorithmQuestion[],
 ): readonly AlgorithmsSessionReviewItem[] {
-  const orderByItemId = new Map(items.map((item, index) => [item.id, index]));
+  const orderByQuestionId = new Map(questions.map((question, index) => [question.id, index]));
 
   return [...reviewedAttempts]
     .sort((left, right) =>
-      (orderByItemId.get(left.item.id) ?? Number.MAX_SAFE_INTEGER) -
-      (orderByItemId.get(right.item.id) ?? Number.MAX_SAFE_INTEGER),
+      (orderByQuestionId.get(left.question.id) ?? Number.MAX_SAFE_INTEGER) -
+      (orderByQuestionId.get(right.question.id) ?? Number.MAX_SAFE_INTEGER),
     )
     .map((entry) => {
-      const check = getActiveReviewCheck(entry.item);
       const mistakeTypes = entry.attempt.mistakeTypeRefs?.map((ref) => ref.nodeId) ?? [];
 
       return {
-        commonTrap: getAlgorithmsCommonTrapText(entry.item, { mistakeTypes }),
-        complexity: getAlgorithmsComplexityText(entry.item),
-        correctAnswer: getAlgorithmsCorrectAnswerText(check),
-        explanation: check.feedback || entry.item.feedbackModel.result,
-        itemId: entry.item.id,
-        nextReviewTarget: entry.item.feedbackModel.nextAction,
-        recognizedPattern: getAlgorithmsRecognizedPatternText(entry.item),
+        commonTrap: getAlgorithmsCommonTrapText(entry.question, { mistakeTypes }),
+        complexity: getAlgorithmsComplexityText(entry.question),
+        correctAnswer: getAlgorithmsCorrectAnswerText(entry.question),
+        explanation: entry.question.feedbackModel.mentalModelCorrection,
+        itemId: entry.question.id,
+        nextReviewTarget: entry.question.feedbackModel.nextAction,
+        recognizedPattern: getAlgorithmsRecognizedPatternText(entry.question),
         result: entry.status,
-        selectedAnswer: getSelectedAnswerText(check, entry.attempt.response),
-        title: entry.item.title,
-        whyThisPattern: getAlgorithmsPatternSignalText(entry.item),
+        selectedAnswer: getSelectedAnswerText(entry.question, entry.attempt.response),
+        title: formatAlgorithmItemType(entry.question.type),
+        whyThisPattern: getAlgorithmsPatternSignalText(entry.question),
       };
     });
 }
@@ -573,7 +559,7 @@ function buildSessionReviewItems(
 function buildReviewSessionSummary(
   reviewedAttempts: readonly {
     attempt: TrainingAttempt;
-    item: AlgorithmTrainingItem;
+    question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
 ): AlgorithmsReviewSessionSummary {
@@ -589,42 +575,30 @@ function buildReviewSessionSummary(
   };
 }
 
-function getSubmittedAnswer(
-  check: AlgorithmStaticMicroCheck,
-  selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
-): AlgorithmSubmittedAnswer {
-  if (check.type === "complexity_pair") {
-    return complexityAnswer;
-  }
-
-  if (check.type === "single_choice" || check.type === "select_pseudocode_line" || check.type === "trace_next_step") {
-    return selectedOptionIds[0] ?? "";
-  }
-
-  return selectedOptionIds;
-}
-
 function buildTrainingAttemptResponse(
-  check: AlgorithmStaticMicroCheck,
+  question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
   complexityAnswer: ComplexityAnswer,
 ): TrainingAttemptResponse {
-  if (check.type === "complexity_pair") {
+  if (isAlgorithmComplexityQuestion(question)) {
     return {
       kind: "complexity_check",
       selectedComplexityAnswer: complexityAnswer,
     };
   }
 
-  return {
-    kind: "option_selection",
-    selectedOptionIds: [...selectedOptionIds],
-  };
+  if (isAlgorithmChoiceQuestion(question) || isAlgorithmOrderingQuestion(question)) {
+    return {
+      kind: "option_selection",
+      selectedOptionIds: [...selectedOptionIds],
+    };
+  }
+
+  return assertUnreachableQuestion(question);
 }
 
 function getSelectedAnswerText(
-  check: AlgorithmStaticMicroCheck,
+  question: AlgorithmQuestion,
   response: TrainingAttemptResponse,
 ): string {
   if (response.kind === "complexity_check") {
@@ -632,34 +606,38 @@ function getSelectedAnswerText(
   }
 
   if (response.kind === "option_selection") {
-    if (check.type === "order_steps") {
+    if (isAlgorithmOrderingQuestion(question)) {
       return response.selectedOptionIds
-        .map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`)
+        .map((optionId, index) => `${index + 1}. ${getQuestionOptionText(question, optionId)}`)
         .join("\n");
     }
 
-    return response.selectedOptionIds.map((optionId) => getOptionText(check, optionId)).join(", ");
+    return response.selectedOptionIds.map((optionId) => getQuestionOptionText(question, optionId)).join(", ");
   }
 
   return "Answer unavailable.";
 }
 
 function getCurrentSelectedAnswerText(
-  check: AlgorithmStaticMicroCheck,
+  question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
   complexityAnswer: ComplexityAnswer,
 ): string {
-  if (check.type === "complexity_pair") {
+  if (isAlgorithmComplexityQuestion(question)) {
     return formatComplexityAnswer(complexityAnswer);
   }
 
-  if (check.type === "order_steps") {
+  if (isAlgorithmOrderingQuestion(question)) {
     return selectedOptionIds
-      .map((optionId, index) => `${index + 1}. ${getOptionText(check, optionId)}`)
+      .map((optionId, index) => `${index + 1}. ${getQuestionOptionText(question, optionId)}`)
       .join("\n");
   }
 
-  return selectedOptionIds.map((optionId) => getOptionText(check, optionId)).join(", ");
+  if (isAlgorithmChoiceQuestion(question)) {
+    return selectedOptionIds.map((optionId) => getQuestionOptionText(question, optionId)).join(", ");
+  }
+
+  return assertUnreachableQuestion(question);
 }
 
 function formatComplexityAnswer(answer: ComplexityAnswer): string {
@@ -674,19 +652,9 @@ function formatComplexityAnswer(answer: ComplexityAnswer): string {
   ].filter(Boolean).join(", ") || "No answer selected.";
 }
 
-function getActiveReviewCheck(item: AlgorithmTrainingItem): AlgorithmStaticMicroCheck {
-  const check = item.staticMicroChecks?.find((candidate) => candidate.status === "active");
-
-  if (!check) {
-    throw new Error(`Algorithms item has no active static micro-check: ${item.id}`);
-  }
-
-  return check;
-}
-
 function getAttemptReviewSignal(entry: {
   attempt: TrainingAttempt;
-  item: AlgorithmTrainingItem;
+  question: AlgorithmQuestion;
   status: AlgorithmScoringStatus;
 }): string {
   const mistakeType = entry.attempt.mistakeTypeRefs?.[0]?.nodeId;
@@ -695,13 +663,13 @@ function getAttemptReviewSignal(entry: {
     return formatAlgorithmItemType(mistakeType);
   }
 
-  return entry.item.feedbackModel.mentalModelCorrection;
+  return entry.question.feedbackModel.mentalModelCorrection;
 }
 
 function buildRecommendedNext(
   missedAttempts: readonly {
     attempt: TrainingAttempt;
-    item: AlgorithmTrainingItem;
+    question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
 ): readonly string[] {
@@ -709,21 +677,21 @@ function buildRecommendedNext(
     return ["Continue with the next roadmap session."];
   }
 
-  const missedStrategyCount = missedAttempts.filter((entry) => entry.item.type === "strategy_choice").length;
+  const missedStrategyCount = missedAttempts.filter((entry) => entry.question.type === "strategy_choice").length;
   const recommendations = missedStrategyCount > 0
     ? [`Review ${missedStrategyCount} missed strategy ${missedStrategyCount === 1 ? "item" : "items"}.`]
     : [];
 
   return uniqueStrings([
     ...recommendations,
-    ...missedAttempts.map((entry) => entry.item.feedbackModel.nextAction),
+    ...missedAttempts.map((entry) => entry.question.feedbackModel.nextAction),
   ]).slice(0, 3);
 }
 
 function buildSessionMainIssue(
   missedAttempts: readonly {
     attempt: TrainingAttempt;
-    item: AlgorithmTrainingItem;
+    question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
 ): AlgorithmsSessionMainIssue | undefined {
@@ -735,10 +703,10 @@ function buildSessionMainIssue(
   const mistakeTypeCounts = new Map<string, number>();
 
   for (const entry of missedAttempts) {
-    const pattern = getAlgorithmsRecognizedPatternText(entry.item);
+    const pattern = getAlgorithmsRecognizedPatternText(entry.question);
     const currentPattern = patternCounts.get(pattern) ?? { count: 0, itemIds: [] };
     currentPattern.count += entry.status === "incorrect" ? 2 : 1;
-    currentPattern.itemIds.push(entry.item.id);
+    currentPattern.itemIds.push(entry.question.id);
     patternCounts.set(pattern, currentPattern);
 
     for (const mistakeType of entry.attempt.mistakeTypeRefs?.map((ref) => ref.nodeId) ?? []) {
@@ -750,11 +718,11 @@ function buildSessionMainIssue(
     .sort((left, right) => right[1].count - left[1].count || left[0].localeCompare(right[0]))[0] ?? [];
   const mistakeType = [...mistakeTypeCounts.entries()]
     .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0];
-  const representativeItem = missedAttempts.find((entry) =>
-    getAlgorithmsRecognizedPatternText(entry.item) === pattern,
-  )?.item ?? missedAttempts[0]?.item;
+  const representativeQuestion = missedAttempts.find((entry) =>
+    getAlgorithmsRecognizedPatternText(entry.question) === pattern,
+  )?.question ?? missedAttempts[0]?.question;
 
-  if (!pattern || !representativeItem || !patternStats) {
+  if (!pattern || !representativeQuestion || !patternStats) {
     return undefined;
   }
 
@@ -769,7 +737,7 @@ function buildSessionMainIssue(
     mistakeType: formattedMistake,
     pattern,
     recommendedNextAction: buildMainIssueNextAction({
-      defaultAction: representativeItem.feedbackModel.nextAction,
+      defaultAction: representativeQuestion.feedbackModel.nextAction,
       formattedMistake,
       pattern,
     }),
@@ -813,16 +781,16 @@ function getImmediateAnswerSummary({
 function getImmediateFeedbackRule({
   correctAnswer,
   explanation,
-  item,
+  question,
   keySignal,
 }: {
   correctAnswer: string;
   explanation: string;
-  item: AlgorithmTrainingItem;
+  question: AlgorithmQuestion;
   keySignal: string;
 }): string {
   const candidates = [
-    item.feedbackModel.mentalModelCorrection,
+    question.feedbackModel.mentalModelCorrection,
     explanation,
   ];
   const distinctRule = candidates.find((candidate) =>
@@ -852,26 +820,36 @@ function uniqueReasons(values: readonly ReviewReason[]): ReviewReason[] {
   return [...new Set(values)];
 }
 
-function getCorrectAnswerIds(answer: AlgorithmStaticMicroCheck["correctAnswer"]): ReadonlySet<string> {
-  if (Array.isArray(answer)) {
-    return new Set(answer);
+function getQuestionOptionText(question: AlgorithmQuestion, optionId: string): string {
+  if (isAlgorithmChoiceQuestion(question)) {
+    const option = question.options.find((candidate) => candidate.id === optionId);
+
+    if (!option) {
+      throw new Error(`Algorithms question ${question.id} has no option ${optionId}.`);
+    }
+
+    return option.text;
   }
 
-  if (typeof answer === "string") {
-    return new Set([answer]);
+  if (isAlgorithmOrderingQuestion(question)) {
+    const subgoal = question.subgoals.find((candidate) => candidate.id === optionId);
+
+    if (!subgoal) {
+      throw new Error(`Algorithms question ${question.id} has no subgoal ${optionId}.`);
+    }
+
+    return subgoal.text;
   }
 
-  return new Set();
+  if (isAlgorithmComplexityQuestion(question)) {
+    throw new Error(`Algorithms complexity question ${question.id} does not have selectable options.`);
+  }
+
+  return assertUnreachableQuestion(question);
 }
 
-function getOptionText(check: AlgorithmStaticMicroCheck, optionId: string): string {
-  return check.options?.find((option) => option.id === optionId)?.text ?? optionId;
-}
-
-function isComplexityPairAnswer(
-  value: AlgorithmStaticMicroCheck["correctAnswer"],
-): value is AlgorithmComplexityPairAnswer {
-  return typeof value === "object" && !Array.isArray(value) && "space" in value && "time" in value;
+function assertUnreachableQuestion(question: never): never {
+  throw new Error(`Unsupported Algorithms question interaction: ${JSON.stringify(question)}`);
 }
 
 function capitalize(value: string): string {

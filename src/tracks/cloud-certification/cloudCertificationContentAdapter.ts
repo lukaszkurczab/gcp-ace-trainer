@@ -20,7 +20,7 @@ const cloudTrack = getTrackDefinition(CLOUD_CERTIFICATION_TRACK_ID);
 
 export function createCloudCertificationContentAdapter(
   questions: readonly Question[] = DEFAULT_QUESTION_BANK,
-): TrackContentAdapter {
+): TrackContentAdapter<TrainingItem> {
   const items = questions.map((question) =>
     mapCloudQuestionToTrainingItem(question, cloudTrack.contentManifest.version),
   );
@@ -38,6 +38,10 @@ export function createCloudCertificationContentAdapter(
       }
 
       return items.filter((item) => mode.supportedItemTypes.includes(item.type));
+    },
+    getReviewContent: (itemId) => {
+      const item = itemsById.get(itemId);
+      return item ? { prompt: item.prompt, taxonomyRefs: item.taxonomyRefs } : undefined;
     },
     trackId: CLOUD_CERTIFICATION_TRACK_ID,
   };

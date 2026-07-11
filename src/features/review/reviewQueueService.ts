@@ -3,7 +3,10 @@ import { getTrackDefinition } from "../../domain";
 import type { ReviewQueueItem, TrainingItemTaxonomyRef } from "../../domain/training";
 import { getReviewQueueItems } from "../../storage/repositories";
 import type { LocalStorageIssue } from "../../storage/storageCodec";
-import { getTrackAdapter, type TrackContentAdapter } from "../../tracks";
+import {
+  getTrackAdapter,
+  type TrackContentAdapter,
+} from "../../tracks";
 import type {
   ReviewQueueViewItem,
   ReviewQueueViewModel,
@@ -60,7 +63,7 @@ function buildReviewViewItem(
   contentAdapter: TrackContentAdapter,
   now: string,
 ): ReviewQueueViewItem {
-  const contentItem = contentAdapter.getItemById(item.itemId);
+  const reviewContent = contentAdapter.getReviewContent(item.itemId);
   const isDue = new Date(item.dueAt).getTime() <= new Date(now).getTime();
   const isOverdue = new Date(item.dueAt).getTime() < new Date(now).getTime();
 
@@ -72,11 +75,11 @@ function buildReviewViewItem(
     itemId: item.itemId,
     mistakeTypeRefs: dedupeTaxonomyRefs(item.mistakeTypeRefs ?? []),
     priority: item.priority,
-    prompt: contentItem?.prompt,
+    prompt: reviewContent?.prompt,
     reasons: item.reasons,
     sourceAttemptId: item.sourceAttemptId,
     taxonomyRefs: dedupeTaxonomyRefs([
-      ...(contentItem?.taxonomyRefs ?? []),
+      ...(reviewContent?.taxonomyRefs ?? []),
       ...(item.taxonomyRefs ?? []),
       ...(item.mistakeTypeRefs ?? []),
     ]),

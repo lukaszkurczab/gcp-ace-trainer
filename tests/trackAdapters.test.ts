@@ -43,6 +43,10 @@ test("Cloud adapter maps a Cloud question to a TrainingItem", () => {
     item.taxonomyRefs.map((ref) => `${ref.axisId}:${ref.nodeId}`),
     ["cloud-domain:operations", "cloud-topic:serverless", "cloud-topic:containers"],
   );
+  assert.deepEqual(adapter.getReviewContent(question.id), {
+    prompt: question.question,
+    taxonomyRefs: item.taxonomyRefs,
+  });
 });
 
 test("Cloud scoring returns correct result for correct option selection", () => {

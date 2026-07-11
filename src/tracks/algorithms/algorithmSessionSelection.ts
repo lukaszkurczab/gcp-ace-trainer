@@ -1,14 +1,21 @@
-import { shuffleArray } from "../../utils";
 import type { ReviewQueueItem, TrainingAttempt, TrainingSessionModeId } from "../../domain/training";
-import type { TrackContentAdapter } from "../types";
-import { ALGORITHMS_SESSION_MODE_ID } from "./algorithmItems";
+import { shuffleArray } from "../../utils";
+import {
+  ALGORITHMS_SESSION_MODE_ID,
+  getAlgorithmQuestionEntries,
+  type AlgorithmQuestionEntry,
+} from "./algorithmItems";
+import type { AlgorithmContentGroup } from "./content";
+import type { AlgorithmQuestion, AlgorithmQuestionType } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapNodeId,
 } from "./algorithmRoadmap";
-import type { AlgorithmTrainingItem } from "./algorithmContentTypes";
-import { algorithmsContentAdapter } from "./algorithmsContentAdapter";
+import {
+  algorithmsContentAdapter,
+  type AlgorithmsContentAdapter,
+} from "./algorithmsContentAdapter";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
@@ -27,7 +34,7 @@ export type AlgorithmReviewSource = "dueQueue" | "sessionMisses";
 
 export type SelectAlgorithmSessionItemsInput = {
   attempts?: readonly TrainingAttempt[];
-  contentAdapter?: TrackContentAdapter;
+  contentAdapter?: AlgorithmsContentAdapter;
   mode: AlgorithmPracticeSessionMode;
   nodeId: AlgorithmRoadmapNodeId;
   now?: string;
@@ -40,16 +47,15 @@ export type SelectAlgorithmSessionItemsInput = {
 export type AlgorithmMixedPracticeSelectionInput = {
   attempts: readonly TrainingAttempt[];
   currentRoadmapNodeId: AlgorithmRoadmapNodeId;
-  items: readonly AlgorithmTrainingItem[];
+  groups: readonly AlgorithmContentGroup[];
   roadmapNodes?: readonly AlgorithmRoadmapNode[];
   sessionLength: number;
 };
 
 const LEARN_ITEM_TYPES = [
-  "approach_primer",
   "approach_naming",
-  "worked_example",
-] as const;
+  "code_reading",
+] as const satisfies readonly AlgorithmQuestionType[];
 
 const DRILL_ITEM_TYPES = [
   "trace_next_step",
@@ -59,11 +65,15 @@ const DRILL_ITEM_TYPES = [
   "test_case_selection",
   "state_selection",
   "output_contract_reasoning",
+  "output_contract_analysis",
   "constraint_change",
   "complexity_reasoning",
-  "pseudocode_ordering",
   "subgoal_ordering",
-] as const;
+  "invariant_identification",
+  "invariant_reasoning",
+  "counterexample_reasoning",
+  "mistake_review",
+] as const satisfies readonly AlgorithmQuestionType[];
 
 const reviewPriorityRank: Record<ReviewQueueItem["priority"], number> = {
   urgent: 0,
@@ -88,84 +98,64 @@ export function getAlgorithmsTrainingSessionModeId(
 }
 
 export function selectAlgorithmSessionItemsForRoadmapNode(input: {
-  contentAdapter?: TrackContentAdapter;
+  contentAdapter?: AlgorithmsContentAdapter;
   modeId?: TrainingSessionModeId;
   nodeId: AlgorithmRoadmapNodeId;
   sessionLength: number;
-}): readonly AlgorithmTrainingItem[] {
+}): readonly AlgorithmQuestion[] {
   const adapter = input.contentAdapter ?? algorithmsContentAdapter;
-  const modeId = input.modeId ?? ALGORITHMS_SESSION_MODE_ID;
+  const entries = getSelectableModeEntries(
+    adapter,
+    input.modeId ?? ALGORITHMS_SESSION_MODE_ID,
+  ).filter((entry) => entry.group.roadmapNodeId === input.nodeId);
 
-  return shuffleArray(
-    adapter.getItemsForMode(modeId)
-      .filter((item) => (
-        item.trackId === "algorithms" &&
-        "roadmapNodeId" in item &&
-        item.roadmapNodeId === input.nodeId
-      ))
-      .map((item) => item as unknown as AlgorithmTrainingItem),
-  )
-    .slice(0, input.sessionLength);
+  return shuffleArray(entries.map((entry) => entry.question)).slice(0, input.sessionLength);
 }
 
 export function selectAlgorithmSessionItems(
   input: SelectAlgorithmSessionItemsInput,
-): readonly AlgorithmTrainingItem[] {
+): readonly AlgorithmQuestion[] {
   const adapter = input.contentAdapter ?? algorithmsContentAdapter;
-  const selectableItems = getSelectableModeItems(adapter);
+  const entries = getSelectableModeEntries(adapter, ALGORITHMS_SESSION_MODE_ID);
 
   switch (input.mode) {
     case "learn":
-      return takeSessionItems(
-        selectPreferredRoadmapNodeItems({
-          items: selectableItems,
-          nodeId: input.nodeId,
-          typePriority: LEARN_ITEM_TYPES,
-        }),
+      return takeQuestions(
+        selectPreferredNodeEntries(entries, input.nodeId, LEARN_ITEM_TYPES),
         input.sessionLength,
       );
     case "drill":
-      return takeSessionItems(
-        selectPreferredRoadmapNodeItems({
-          items: selectableItems,
-          nodeId: input.nodeId,
-          typePriority: DRILL_ITEM_TYPES,
-        }),
+      return takeQuestions(
+        selectPreferredNodeEntries(entries, input.nodeId, DRILL_ITEM_TYPES),
         input.sessionLength,
       );
     case "review":
-      // sessionMisses is the immediate post-session correction path: it replays the
-      // supplied missed ids regardless of dueAt. dueQueue remains the spaced-review
-      // source and continues to require dueAt <= now.
-      if (input.reviewSource === "sessionMisses") {
-        return selectReviewItemsById({
-          itemIds: input.reviewItemIds ?? [],
-          items: selectableItems,
-          sessionLength: input.sessionLength,
-        });
-      }
-
-      return selectDueReviewItems({
-        items: selectableItems,
-        now: input.now ?? new Date().toISOString(),
-        reviewQueueItems: input.reviewQueueItems ?? [],
-        sessionLength: input.sessionLength,
-      });
+      return input.reviewSource === "sessionMisses"
+        ? selectReviewQuestionsById(
+            input.reviewItemIds ?? [],
+            entries,
+            input.sessionLength,
+          )
+        : selectDueReviewQuestions(
+            input.reviewQueueItems ?? [],
+            entries,
+            input.now ?? new Date().toISOString(),
+            input.sessionLength,
+          );
     case "weakArea":
-      return selectWeakAreaItems({
-        attempts: input.attempts ?? [],
-        items: selectableItems,
-        nodeId: input.nodeId,
-        sessionLength: input.sessionLength,
-      });
-    case "practice": {
+      return selectWeakAreaQuestions(
+        input.attempts ?? [],
+        adapter.getGroups(),
+        input.nodeId,
+        input.sessionLength,
+      );
+    case "practice":
       return buildAlgorithmMixedPracticeSelection({
         attempts: input.attempts ?? [],
         currentRoadmapNodeId: input.nodeId,
-        items: selectableItems,
+        groups: adapter.getGroups(),
         sessionLength: input.sessionLength,
       });
-    }
     case "default":
       return selectAlgorithmSessionItemsForRoadmapNode({
         contentAdapter: adapter,
@@ -177,295 +167,264 @@ export function selectAlgorithmSessionItems(
 
 export function buildAlgorithmMixedPracticeSelection(
   input: AlgorithmMixedPracticeSelectionInput,
-): readonly AlgorithmTrainingItem[] {
+): readonly AlgorithmQuestion[] {
   const roadmapNodes = input.roadmapNodes ?? ALGORITHM_ROADMAP.nodes;
-  const roadmapNodeIds = new Set(roadmapNodes.map((node) => node.id));
-  const selectableItems = input.items.filter((item) =>
-    item.status === "active" &&
-    item.roadmapNodeId &&
-    roadmapNodeIds.has(item.roadmapNodeId),
+  const selectableEntries = getSelectableEntries(input.groups, roadmapNodes);
+  const unlockedNodeIds = getUnlockedRoadmapNodeIds(
+    input.attempts,
+    input.groups,
+    roadmapNodes,
   );
-  const unlockedNodeIds = getUnlockedRoadmapNodeIds(input.attempts, selectableItems, roadmapNodes);
-  const unlockedItems = selectableItems.filter((item) =>
-    item.roadmapNodeId ? unlockedNodeIds.has(item.roadmapNodeId) : false,
+  const unlockedEntries = selectableEntries.filter((entry) =>
+    unlockedNodeIds.has(entry.group.roadmapNodeId),
   );
 
-  if (unlockedItems.length === 0 || input.sessionLength <= 0) {
+  if (unlockedEntries.length === 0 || input.sessionLength <= 0) {
     return [];
   }
 
   const weakRecommendation = buildAlgorithmWeakAreaRecommendation(
     input.attempts,
-    unlockedItems,
+    input.groups,
     roadmapNodes,
     input.currentRoadmapNodeId,
   );
   const weakCandidateOrder = new Map(
     weakRecommendation.candidateItemIds.map((itemId, index) => [itemId, index]),
   );
-  const nodeIds = buildMixedPracticeNodeOrder({
-    currentRoadmapNodeId: input.currentRoadmapNodeId,
-    items: unlockedItems,
+  const nodeIds = buildMixedPracticeNodeOrder(
+    input.currentRoadmapNodeId,
+    unlockedEntries,
     roadmapNodes,
     unlockedNodeIds,
-    weakRoadmapNodeId: weakRecommendation.selectedRoadmapNodeId,
-  });
+    weakRecommendation.selectedRoadmapNodeId,
+  );
   const buckets = nodeIds.map((nodeId) =>
     sortMixedPracticeBucket(
-      unlockedItems.filter((item) => item.roadmapNodeId === nodeId),
+      unlockedEntries.filter((entry) => entry.group.roadmapNodeId === nodeId),
       weakCandidateOrder,
     ),
   );
-  const selectedItemIds = new Set<string>();
-  const selectedItemTypes = new Set<string>();
-  const selectedItems: AlgorithmTrainingItem[] = [];
+  const selectedIds = new Set<string>();
+  const selectedTypes = new Set<AlgorithmQuestionType>();
+  const selected: AlgorithmQuestion[] = [];
 
-  while (selectedItems.length < input.sessionLength) {
+  while (selected.length < input.sessionLength) {
     let selectedThisRound = false;
 
-    for (const bucketItems of buckets) {
-      const item = selectNextMixedPracticeItem(bucketItems, selectedItemIds, selectedItemTypes);
+    for (const bucket of buckets) {
+      const entry = selectNextMixedPracticeEntry(bucket, selectedIds, selectedTypes);
 
-      if (!item) {
-        continue;
-      }
+      if (!entry) continue;
 
-      selectedItems.push(item);
-      selectedItemIds.add(item.id);
-      selectedItemTypes.add(item.type);
+      selected.push(entry.question);
+      selectedIds.add(entry.question.id);
+      selectedTypes.add(entry.question.type);
       selectedThisRound = true;
 
-      if (selectedItems.length >= input.sessionLength) {
-        break;
-      }
+      if (selected.length >= input.sessionLength) break;
     }
 
-    if (!selectedThisRound) {
-      break;
-    }
+    if (!selectedThisRound) break;
   }
 
-  return selectedItems;
+  return selected;
 }
 
-function getSelectableModeItems(adapter: TrackContentAdapter): readonly AlgorithmTrainingItem[] {
-  return adapter.getItemsForMode(ALGORITHMS_SESSION_MODE_ID)
-    .filter(isAlgorithmTrainingItemLike)
-    .map((item) => item as unknown as AlgorithmTrainingItem)
-    .filter((item) =>
-      item.status === "active" &&
-      ALGORITHM_ROADMAP.nodes.some((node) => node.id === item.roadmapNodeId),
-    );
+function getSelectableModeEntries(
+  adapter: AlgorithmsContentAdapter,
+  modeId: TrainingSessionModeId,
+): readonly AlgorithmQuestionEntry[] {
+  const modeItemIds = new Set(adapter.getItemsForMode(modeId).map((question) => question.id));
+
+  return getSelectableEntries(adapter.getGroups(), ALGORITHM_ROADMAP.nodes)
+    .filter((entry) => modeItemIds.has(entry.question.id));
 }
 
-function isAlgorithmTrainingItemLike(item: ReturnType<TrackContentAdapter["getItemsForMode"]>[number]): boolean {
-  return item.trackId === "algorithms" && "roadmapNodeId" in item && "status" in item;
-}
-
-function selectWeakAreaItems(input: {
-  attempts: readonly TrainingAttempt[];
-  items: readonly AlgorithmTrainingItem[];
-  nodeId: AlgorithmRoadmapNodeId;
-  sessionLength: number;
-}): readonly AlgorithmTrainingItem[] {
-  const recommendation = buildAlgorithmWeakAreaRecommendation(
-    input.attempts,
-    input.items,
-    ALGORITHM_ROADMAP.nodes,
-    input.nodeId,
+function getSelectableEntries(
+  groups: readonly AlgorithmContentGroup[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+): readonly AlgorithmQuestionEntry[] {
+  const selectableNodeIds = new Set(
+    roadmapNodes
+      .filter((node) =>
+        (groups.find((group) => group.roadmapNodeId === node.id)?.questions.length ?? 0) >=
+        node.minimumActiveItemCount,
+      )
+      .map((node) => node.id),
   );
-  const itemById = new Map(input.items.map((item) => [item.id, item]));
-  const selectedItems = recommendation.candidateItemIds.flatMap((itemId) => {
-    const item = itemById.get(itemId);
-    return item ? [item] : [];
-  });
 
-  return takeSessionItems(selectedItems, input.sessionLength);
+  return getAlgorithmQuestionEntries(groups).filter((entry) =>
+    selectableNodeIds.has(entry.group.roadmapNodeId),
+  );
 }
 
-function filterItemsForRoadmapNode(
-  items: readonly AlgorithmTrainingItem[],
+function selectPreferredNodeEntries(
+  entries: readonly AlgorithmQuestionEntry[],
   nodeId: AlgorithmRoadmapNodeId,
-): readonly AlgorithmTrainingItem[] {
-  return items.filter((item) => item.roadmapNodeId === nodeId);
-}
+  typePriority: readonly AlgorithmQuestionType[],
+): readonly AlgorithmQuestionEntry[] {
+  const nodeEntries = entries.filter((entry) => entry.group.roadmapNodeId === nodeId);
+  const preferred = nodeEntries.filter((entry) => typePriority.includes(entry.question.type));
 
-function selectPreferredRoadmapNodeItems<TType extends string>(input: {
-  items: readonly AlgorithmTrainingItem[];
-  nodeId: AlgorithmRoadmapNodeId;
-  typePriority: readonly TType[];
-}): readonly AlgorithmTrainingItem[] {
-  const nodeItems = filterItemsForRoadmapNode(input.items, input.nodeId);
-  const preferredItems = nodeItems.filter((item) =>
-    input.typePriority.includes(item.type as TType),
+  return [...(preferred.length > 0 ? preferred : nodeEntries)].sort((left, right) =>
+    normalizeTypePriority(typePriority.indexOf(left.question.type)) -
+    normalizeTypePriority(typePriority.indexOf(right.question.type)),
   );
-
-  return preferredItems.length > 0
-    ? sortByTypePriority(preferredItems, input.typePriority)
-    : nodeItems;
-}
-
-function sortByTypePriority<TType extends string>(
-  items: readonly AlgorithmTrainingItem[],
-  typePriority: readonly TType[],
-): readonly AlgorithmTrainingItem[] {
-  return [...items].sort((left, right) => {
-    const leftIndex = typePriority.indexOf(left.type as TType);
-    const rightIndex = typePriority.indexOf(right.type as TType);
-
-    return normalizeTypePriority(leftIndex) - normalizeTypePriority(rightIndex);
-  });
 }
 
 function normalizeTypePriority(index: number): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-function selectDueReviewItems(input: {
-  items: readonly AlgorithmTrainingItem[];
-  now: string;
-  reviewQueueItems: readonly ReviewQueueItem[];
-  sessionLength: number;
-}): readonly AlgorithmTrainingItem[] {
-  const itemById = new Map(input.items.map((item) => [item.id, item]));
-  const selectedItemIds = new Set<string>();
-  const selectedItems: AlgorithmTrainingItem[] = [];
+function selectWeakAreaQuestions(
+  attempts: readonly TrainingAttempt[],
+  groups: readonly AlgorithmContentGroup[],
+  nodeId: AlgorithmRoadmapNodeId,
+  sessionLength: number,
+): readonly AlgorithmQuestion[] {
+  const recommendation = buildAlgorithmWeakAreaRecommendation(
+    attempts,
+    groups,
+    ALGORITHM_ROADMAP.nodes,
+    nodeId,
+  );
+  const questionsById = new Map(
+    groups.flatMap((group) => group.questions).map((question) => [question.id, question]),
+  );
 
-  for (const reviewItem of [...input.reviewQueueItems]
-    .filter((item) => item.trackId === "algorithms" && item.dueAt <= input.now)
-    .sort(compareReviewQueueItems)) {
-    const item = itemById.get(reviewItem.itemId);
-
-    if (item && !selectedItemIds.has(item.id)) {
-      selectedItems.push(item);
-      selectedItemIds.add(item.id);
-    }
-  }
-
-  return takeSessionItems(selectedItems, input.sessionLength);
+  return recommendation.candidateItemIds.flatMap((itemId) => {
+    const question = questionsById.get(itemId);
+    return question ? [question] : [];
+  }).slice(0, sessionLength);
 }
 
-function selectReviewItemsById(input: {
-  itemIds: readonly string[];
-  items: readonly AlgorithmTrainingItem[];
-  sessionLength: number;
-}): readonly AlgorithmTrainingItem[] {
-  const itemById = new Map(input.items.map((item) => [item.id, item]));
-  const selectedItemIds = new Set<string>();
-  const selectedItems: AlgorithmTrainingItem[] = [];
+function selectDueReviewQuestions(
+  reviewQueueItems: readonly ReviewQueueItem[],
+  entries: readonly AlgorithmQuestionEntry[],
+  now: string,
+  sessionLength: number,
+): readonly AlgorithmQuestion[] {
+  const questionsById = new Map(entries.map((entry) => [entry.question.id, entry.question]));
+  const selectedIds = new Set<string>();
+  const selected: AlgorithmQuestion[] = [];
 
-  for (const itemId of input.itemIds) {
-    const item = itemById.get(itemId);
+  for (const reviewItem of [...reviewQueueItems]
+    .filter((item) => item.trackId === "algorithms" && item.dueAt <= now)
+    .sort(compareReviewQueueItems)) {
+    const question = questionsById.get(reviewItem.itemId);
 
-    if (item && !selectedItemIds.has(item.id)) {
-      selectedItems.push(item);
-      selectedItemIds.add(item.id);
+    if (question && !selectedIds.has(question.id)) {
+      selected.push(question);
+      selectedIds.add(question.id);
     }
   }
 
-  return takeSessionItems(selectedItems, input.sessionLength);
+  return selected.slice(0, sessionLength);
+}
+
+function selectReviewQuestionsById(
+  itemIds: readonly string[],
+  entries: readonly AlgorithmQuestionEntry[],
+  sessionLength: number,
+): readonly AlgorithmQuestion[] {
+  const questionsById = new Map(entries.map((entry) => [entry.question.id, entry.question]));
+  const selectedIds = new Set<string>();
+  const selected: AlgorithmQuestion[] = [];
+
+  for (const itemId of itemIds) {
+    const question = questionsById.get(itemId);
+
+    if (question && !selectedIds.has(question.id)) {
+      selected.push(question);
+      selectedIds.add(question.id);
+    }
+  }
+
+  return selected.slice(0, sessionLength);
 }
 
 function compareReviewQueueItems(left: ReviewQueueItem, right: ReviewQueueItem): number {
-  return (
-    reviewPriorityRank[left.priority] - reviewPriorityRank[right.priority] ||
+  return reviewPriorityRank[left.priority] - reviewPriorityRank[right.priority] ||
     left.dueAt.localeCompare(right.dueAt) ||
     left.createdAt.localeCompare(right.createdAt) ||
-    left.id.localeCompare(right.id)
-  );
+    left.id.localeCompare(right.id);
 }
 
-function buildMixedPracticeNodeOrder(input: {
-  currentRoadmapNodeId: AlgorithmRoadmapNodeId;
-  items: readonly AlgorithmTrainingItem[];
-  roadmapNodes: readonly AlgorithmRoadmapNode[];
-  unlockedNodeIds: ReadonlySet<AlgorithmRoadmapNodeId>;
-  weakRoadmapNodeId: AlgorithmRoadmapNodeId;
-}): readonly AlgorithmRoadmapNodeId[] {
-  const nodeIdsWithItems = new Set(
-    input.items.flatMap((item) => item.roadmapNodeId ? [item.roadmapNodeId] : []),
-  );
-  const orderedNodeIds = input.roadmapNodes
-    .filter((node) =>
-      input.unlockedNodeIds.has(node.id) &&
-      nodeIdsWithItems.has(node.id),
-    )
+function buildMixedPracticeNodeOrder(
+  currentRoadmapNodeId: AlgorithmRoadmapNodeId,
+  entries: readonly AlgorithmQuestionEntry[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
+  unlockedNodeIds: ReadonlySet<AlgorithmRoadmapNodeId>,
+  weakRoadmapNodeId: AlgorithmRoadmapNodeId,
+): readonly AlgorithmRoadmapNodeId[] {
+  const nodeIdsWithQuestions = new Set(entries.map((entry) => entry.group.roadmapNodeId));
+  const orderedNodeIds = roadmapNodes
+    .filter((node) => unlockedNodeIds.has(node.id) && nodeIdsWithQuestions.has(node.id))
     .sort((left, right) => left.order - right.order)
     .map((node) => node.id);
 
   return dedupeRoadmapNodeIds([
-    input.weakRoadmapNodeId,
-    input.currentRoadmapNodeId,
+    weakRoadmapNodeId,
+    currentRoadmapNodeId,
     ...orderedNodeIds,
-  ]).filter((nodeId) => input.unlockedNodeIds.has(nodeId) && nodeIdsWithItems.has(nodeId));
+  ]).filter((nodeId) => unlockedNodeIds.has(nodeId) && nodeIdsWithQuestions.has(nodeId));
 }
 
 function sortMixedPracticeBucket(
-  items: readonly AlgorithmTrainingItem[],
+  entries: readonly AlgorithmQuestionEntry[],
   weakCandidateOrder: ReadonlyMap<string, number>,
-): readonly AlgorithmTrainingItem[] {
-  return [...items].sort((left, right) => (
-    (weakCandidateOrder.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
-    (weakCandidateOrder.get(right.id) ?? Number.MAX_SAFE_INTEGER)
-  ));
+): readonly AlgorithmQuestionEntry[] {
+  return [...entries].sort((left, right) =>
+    (weakCandidateOrder.get(left.question.id) ?? Number.MAX_SAFE_INTEGER) -
+    (weakCandidateOrder.get(right.question.id) ?? Number.MAX_SAFE_INTEGER),
+  );
 }
 
-function selectNextMixedPracticeItem(
-  items: readonly AlgorithmTrainingItem[],
-  selectedItemIds: ReadonlySet<string>,
-  selectedItemTypes: ReadonlySet<string>,
-): AlgorithmTrainingItem | undefined {
-  return (
-    items.find((item) => !selectedItemIds.has(item.id) && !selectedItemTypes.has(item.type)) ??
-    items.find((item) => !selectedItemIds.has(item.id))
-  );
+function selectNextMixedPracticeEntry(
+  entries: readonly AlgorithmQuestionEntry[],
+  selectedIds: ReadonlySet<string>,
+  selectedTypes: ReadonlySet<AlgorithmQuestionType>,
+): AlgorithmQuestionEntry | undefined {
+  return entries.find((entry) =>
+    !selectedIds.has(entry.question.id) && !selectedTypes.has(entry.question.type),
+  ) ?? entries.find((entry) => !selectedIds.has(entry.question.id));
 }
 
 function dedupeRoadmapNodeIds(
   nodeIds: readonly AlgorithmRoadmapNodeId[],
 ): readonly AlgorithmRoadmapNodeId[] {
-  const seen = new Set<AlgorithmRoadmapNodeId>();
-  const dedupedNodeIds: AlgorithmRoadmapNodeId[] = [];
-
-  for (const nodeId of nodeIds) {
-    if (!seen.has(nodeId)) {
-      dedupedNodeIds.push(nodeId);
-      seen.add(nodeId);
-    }
-  }
-
-  return dedupedNodeIds;
+  return [...new Set(nodeIds)];
 }
 
 function getUnlockedRoadmapNodeIds(
   attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmTrainingItem[],
-  roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
+  groups: readonly AlgorithmContentGroup[],
+  roadmapNodes: readonly AlgorithmRoadmapNode[],
 ): Set<AlgorithmRoadmapNodeId> {
-  const progress = buildAlgorithmProgressFacts(attempts, items, roadmapNodes);
+  const progress = buildAlgorithmProgressFacts(attempts, groups, roadmapNodes);
   const completedNodeIds = new Set(
     progress.nodeProgress
       .filter((node) => isRoadmapPrerequisiteSatisfied(node.status))
       .map((node) => node.nodeId),
   );
+  const nodesWithQuestions = new Set(groups.map((group) => group.roadmapNodeId));
 
   return new Set(
     roadmapNodes
       .filter((node) =>
-        items.some((item) => item.roadmapNodeId === node.id) &&
-        (
-          node.id === progress.activeRoadmapNode.id ||
+        nodesWithQuestions.has(node.id) &&
+        (node.id === progress.activeRoadmapNode.id ||
           completedNodeIds.has(node.id) ||
-          node.prerequisiteNodeIds.every((nodeId) => completedNodeIds.has(nodeId))
-        ),
+          node.prerequisiteNodeIds.every((nodeId) => completedNodeIds.has(nodeId))),
       )
       .map((node) => node.id),
   );
 }
 
-function takeSessionItems(
-  items: readonly AlgorithmTrainingItem[],
+function takeQuestions(
+  entries: readonly AlgorithmQuestionEntry[],
   sessionLength: number,
-): readonly AlgorithmTrainingItem[] {
-  return items.slice(0, sessionLength);
+): readonly AlgorithmQuestion[] {
+  return entries.slice(0, sessionLength).map((entry) => entry.question);
 }
