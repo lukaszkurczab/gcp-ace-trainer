@@ -1,0 +1,8 @@
+export type CanonicalSerializable = null | boolean | number | string | readonly CanonicalSerializable[] | { readonly [key: string]: CanonicalSerializable };
+export function canonicalSerialize(value: unknown): string {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return JSON.stringify(value);
+  if (typeof value === "number") { if (!Number.isFinite(value)) throw new TypeError("Canonical values cannot contain non-finite numbers."); return JSON.stringify(value); }
+  if (Array.isArray(value)) return `[${value.map(canonicalSerialize).join(",")}]`;
+  if (typeof value !== "object") throw new TypeError("Canonical values cannot contain unsupported values.");
+  return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalSerialize((value as Record<string, unknown>)[key])}`).join(",")}}`;
+}

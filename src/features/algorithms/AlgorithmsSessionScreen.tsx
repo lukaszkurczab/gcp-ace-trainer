@@ -272,7 +272,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
     setIsSubmitting(true);
     const answeredAt = new Date().toISOString();
-    const submission = buildAlgorithmsSubmission({
+    const submission = await buildAlgorithmsSubmission({
       answeredAt,
       complexityAnswer,
       question: currentItem,

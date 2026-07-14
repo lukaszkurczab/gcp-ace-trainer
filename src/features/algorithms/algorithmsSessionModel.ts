@@ -17,6 +17,7 @@ import {
   type AlgorithmScoringStatus,
   updateAlgorithmReviewEntry,
 } from "../../tracks/algorithms";
+import { createAttemptId } from "../../application/learningMutations/identity";
 
 type ComplexityDimension = "time" | "space";
 export type AlgorithmComplexityAnswer = { time?: string; space?: string };
@@ -300,7 +301,7 @@ export function getAlgorithmsSessionModeIdForRouteMode(
   return getAlgorithmsTrainingSessionModeId(mode ?? "default");
 }
 
-export function buildAlgorithmsSubmission({
+export async function buildAlgorithmsSubmission({
   answeredAt,
   complexityAnswer,
   question,
@@ -312,14 +313,14 @@ export function buildAlgorithmsSubmission({
   question: AlgorithmQuestion;
   selectedOptionIds: readonly string[];
   session: TrainingSession;
-}): AlgorithmsSubmission {
+}): Promise<AlgorithmsSubmission> {
   const response = buildAlgorithmResponse(question, selectedOptionIds, complexityAnswer);
   const score = scoreAlgorithmQuestion(question, response);
   const sourceItem = { contentVersion: question.contentVersion, itemId: question.id, trackId: ALGORITHMS_TRACK_ID };
   const attempt: TrainingAttempt<AlgorithmResponse> = createTrainingAttempt({
     answeredAt,
     committedAt: answeredAt,
-    id: `attempt:${session.id}:${question.id}:${JSON.stringify(response)}`,
+    id: await createAttemptId(session.id, question.id, response),
     item: sourceItem,
     modeId: session.modeId,
     response,

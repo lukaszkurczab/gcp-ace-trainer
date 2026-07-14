@@ -35,9 +35,9 @@ test("Algorithms scorer rejects response-kind, ordering, and complexity payload 
   assert.throws(() => scoreAlgorithmQuestion(complexity, { kind: "complexity", selectedValuesByDimension: { time: "O(log n)", space: "O(1)" } }));
 });
 
-test("Algorithms submission constructs an immutable typed canonical attempt and review entry directly", () => {
+test("Algorithms submission constructs an immutable typed canonical attempt and review entry directly", async () => {
   const session = createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ trackId: "algorithms", itemId: choice.id, contentVersion: choice.contentVersion }], optionOrderByItem: { [choice.id]: choice.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: choice.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
-  const submission = buildAlgorithmsSubmission({ answeredAt: "2026-01-01T00:01:00.000Z", complexityAnswer: {}, question: choice, selectedOptionIds: ["a", "b"], session });
+  const submission = await buildAlgorithmsSubmission({ answeredAt: "2026-01-01T00:01:00.000Z", complexityAnswer: {}, question: choice, selectedOptionIds: ["a", "b"], session });
   assert.equal(Object.isFrozen(submission.attempt), true);
   assert.equal(submission.attempt.sessionId, session.id);
   assert.equal(submission.attempt.response.kind, "choice");

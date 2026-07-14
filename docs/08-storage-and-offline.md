@@ -31,6 +31,8 @@ validate and freeze
 
 No feedback or advance occurs before journal durability. Retry is idempotent. After force-close, recovery completes a journaled operation. It does not display partial-success copy and does not use an old store.
 
+Journal and attempt identities use SHA-256 of canonical serialized command data. One materializer replays the complete immutable plan, one verifier reads every intended final record, and the journal clears only after that verification succeeds.
+
 ## Reset, errors, and privacy
 
 Reset deletes local canonical learning records. Storage failure, unknown ID, unsupported payload, missing content, and content mismatch are explicit errors. Future policy for corrupt canonical MMKV records is a separate pre-release decision; it must never heuristically alter scoring or review semantics. Local-only storage minimizes personal data and there is no export/import contract in this recovery scope.
