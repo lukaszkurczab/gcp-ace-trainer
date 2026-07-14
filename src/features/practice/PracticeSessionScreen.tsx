@@ -10,6 +10,7 @@ import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, advanceTrainingSessi
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
 import { addTrainingSession, getTrainingSessions, saveTrainingSessions } from "../../storage";
+import { commitSessionCompletion } from "../../application/learningMutations";
 import type { CertificationQuestion } from "../../tracks/cloud-certification";
 import { areOptionSetsEqual } from "../../utils";
 import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
@@ -122,7 +123,9 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
   async function completeSession(): Promise<void> {
     if (!trainingSession || trainingSession.status !== "active") return;
-    await persistSession(completeTrainingSession(trainingSession, new Date().toISOString()));
+    const completed = completeTrainingSession(trainingSession, new Date().toISOString());
+    await commitSessionCompletion(completed, completed.completedAt!);
+    setTrainingSession(completed);
   }
 
   function selectOption(optionId: string) {

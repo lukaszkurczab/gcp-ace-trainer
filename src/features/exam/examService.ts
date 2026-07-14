@@ -1,6 +1,7 @@
 import { EXAM_DURATION_MINUTES } from "../../constants";
 import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, moveTrainingSessionToIndex, type TrainingAttempt } from "../../domain";
-import { addReviewQueueItems, addTrainingAttempt, addTrainingSession, clearCertificationExam, getCertificationExam, saveCertificationExam, saveTrainingSessions, getTrainingSessions } from "../../storage";
+import { addTrainingSession, getCertificationExam, saveCertificationExam } from "../../storage";
+import { commitCertificationExamFinalization } from "../../application/learningMutations";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { createCertificationReviewEntry, scoreCertificationQuestion, type CertificationExamSummaryViewModel, type CertificationExamViewModel, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
 import { buildQuestionBankSummary } from "../questions/questionBankStats";
@@ -53,20 +54,17 @@ export async function submitCertificationExam(autoSubmitted = false): Promise<Ce
   const questions = buildExamQuestionViews(runtime, getCertificationContentCatalog().getItems());
   const completedAt = new Date().toISOString();
   const score = scoreExamSession(runtime, questions, completedAt);
-  const attempts: TrainingAttempt<CertificationResponse>[] = [];
+  const attempts: TrainingAttempt<CertificationResponse>[] = []; const reviews = [] as ReturnType<typeof createCertificationReviewEntry>[];
   for (const question of questions) {
     const response = runtime.examState.responsesByItemId[question.id];
     if (!response) continue;
     const result = scoreCertificationQuestion(question, response);
-    const attempt = createTrainingAttempt({ id: createId(autoSubmitted ? "auto-answer" : "exam-answer"), sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: getCertificationContentCatalog().toContentItemRef(question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag })), ...(runtime.examState.flaggedItemIds.includes(question.id) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: completedAt, committedAt: completedAt });
-    attempts.push(attempt); await addTrainingAttempt(attempt);
-    const review = createCertificationReviewEntry(attempt); if (review) await addReviewQueueItems([review]);
+    const attempt = createTrainingAttempt({ id: `exam:${runtime.session.id}:${question.id}`, sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: getCertificationContentCatalog().toContentItemRef(question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag })), ...(runtime.examState.flaggedItemIds.includes(question.id) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: completedAt, committedAt: completedAt });
+    attempts.push(attempt); const review = createCertificationReviewEntry(attempt); if (review) reviews.push(review);
   }
   const completedSession = completeTrainingSession(runtime.session, completedAt);
-  const sessions = await getTrainingSessions();
-  await saveTrainingSessions([completedSession, ...sessions.value.filter((session) => session.id !== completedSession.id)]);
+  await commitCertificationExamFinalization({ session: completedSession, attempts, reviews: reviews.filter((review): review is NonNullable<typeof review> => review !== null), createdAt: completedAt });
   const durationSeconds = Math.max(0, Math.round((Date.parse(completedAt) - Date.parse(runtime.session.startedAt)) / 1000));
   const summary = buildExamSummaryViewModel({ id: runtime.session.id, runtime, completedAt, durationSeconds, score });
-  await clearCertificationExam();
   return summary;
 }

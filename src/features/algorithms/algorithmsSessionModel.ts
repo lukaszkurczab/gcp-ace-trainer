@@ -319,7 +319,7 @@ export function buildAlgorithmsSubmission({
   const attempt: TrainingAttempt<AlgorithmResponse> = createTrainingAttempt({
     answeredAt,
     committedAt: answeredAt,
-    id: `attempt:${session.id}:${question.id}:${answeredAt}`,
+    id: `attempt:${session.id}:${question.id}:${JSON.stringify(response)}`,
     item: sourceItem,
     modeId: session.modeId,
     response,

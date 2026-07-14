@@ -29,8 +29,6 @@ import {
   type AlgorithmQuestion,
 } from "../../tracks/algorithms/algorithmQuestionTypes";
 import {
-  addTrainingAttempt,
-  addReviewQueueItems,
   addTrainingSession,
   getReviewQueueItems,
   getTrainingSessions,
@@ -38,6 +36,7 @@ import {
   saveTrainingSessions,
   type StorageIssue,
 } from "../../storage";
+import { commitSessionCompletion, commitTrainingOutcome } from "../../application/learningMutations";
 import { colors, radius, spacing, typography } from "../../theme";
 import {
   ALGORITHM_ROADMAP,
@@ -280,13 +279,8 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       selectedOptionIds,
       session,
     });
-    const result = await addTrainingAttempt(submission.attempt);
-
-    if (!result.ok) {
-      setStorageMessage(formatStorageFailure("The answer was checked, but this attempt was not saved locally", result.issues));
-    }
-
-    await saveReviewQueueUpdate(submission);
+    const reviews = await buildReviewQueueUpdate(submission);
+    await commitTrainingOutcome({ attempt: submission.attempt, session, reviews, createdAt: answeredAt });
 
     const nextAttempts = [submission.attempt, ...attempts];
     setAttempts(nextAttempts);
@@ -309,19 +303,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     if (currentIndex >= items.length - 1) {
       const completedAt = new Date().toISOString();
       const completed = { session: completeTrainingSession(session, completedAt) };
-      const sessionsResult = await getTrainingSessions();
-      const nextSessions = [
-        completed.session,
-        ...sessionsResult.value.filter((candidate) => candidate.id !== session.id),
-      ];
-      const saveResult = await saveTrainingSessions(nextSessions);
-
-      if (!saveResult.ok) {
-        setStorageMessage(formatStorageFailure(
-          "The summary is available, but session completion was not saved locally",
-          saveResult.issues,
-        ));
-      }
+      await commitSessionCompletion(completed.session, completedAt);
 
       setSession(completed.session);
       setSummary(buildAlgorithmsSessionSummary(nextAttempts, items, node.label, {
@@ -344,7 +326,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     resetAnswerState();
   }
 
-  async function saveReviewQueueUpdate(submission: AlgorithmsSubmission) {
+  async function buildReviewQueueUpdate(submission: AlgorithmsSubmission) {
     const existingResult = await getReviewQueueItems();
     const existingItem = existingResult.value.find((item) =>
       item.trackId === ALGORITHMS_TRACK_ID &&
@@ -352,13 +334,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     );
     const update = buildAlgorithmsReviewQueueUpdate(submission, existingItem);
 
-    if (update.action === "keep" && update.reviewQueueEntries.length > 0) {
-      const reviewResult = await addReviewQueueItems([...update.reviewQueueEntries]);
-
-      if (!reviewResult.ok) {
-        setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
-      }
-    }
+    return update.action === "keep" ? [...update.reviewQueueEntries] : [];
   }
 
   function handleSummaryAction(action: AlgorithmsSummaryAction) {

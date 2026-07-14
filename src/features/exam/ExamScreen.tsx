@@ -6,7 +6,9 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { clearCertificationExam, getCertificationExam } from "../../storage";
+import { getCertificationExam } from "../../storage";
+import { abandonTrainingSession } from "../../domain";
+import { commitSessionAbandonment } from "../../application/learningMutations";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { colors, radius, spacing, typography } from "../../theme";
 import type { CertificationExamViewModel } from "../../tracks/cloud-certification";
@@ -146,7 +148,7 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
           description="The saved exam references questions that are no longer available locally."
           actionLabel="Clear Session"
           onActionPress={() => {
-            void clearCertificationExam().then(() => navigation.navigate(ROUTES.HOME));
+            void commitSessionAbandonment(abandonTrainingSession(session.session, new Date().toISOString()), new Date().toISOString(), true).then(() => navigation.navigate(ROUTES.HOME));
           }}
         />
       </Screen>

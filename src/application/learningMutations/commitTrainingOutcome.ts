@@ -1,0 +1,4 @@
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
+import { buildMutationJournal } from "./mutationJournalBuilder";
+import { commitMutation } from "./commitMutation";
+export async function commitTrainingOutcome(input: { attempt: TrainingAttempt<unknown>; session: TrainingSession; reviews: readonly ReviewQueueEntry[]; createdAt: string }): Promise<void> { const writes = [{ kind: "put_attempt", record: input.attempt } as const, ...input.reviews.map((record) => ({ kind: "put_review_entry", record } as const)), { kind: "put_session", record: input.session } as const]; await commitMutation(buildMutationJournal({ operation: "submit_training_outcome", sessionId: input.session.id, trackId: input.session.trackId, identity: [input.attempt.id, input.attempt.response], writes, createdAt: input.createdAt })); }

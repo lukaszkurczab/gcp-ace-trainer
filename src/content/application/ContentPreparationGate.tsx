@@ -4,7 +4,7 @@ import { EmptyState, Screen } from "../../components";
 import type { ContentError } from "../errors";
 import { ContentCacheRepository } from "../cache";
 import { HttpContentSource } from "../source";
-import { recoverPendingMutation } from "../../storage";
+import { recoverPendingMutation } from "../../application/learningMutations";
 import { loadTrackContent } from "./loadTrackContent";
 
 export type ContentPreparationState =
