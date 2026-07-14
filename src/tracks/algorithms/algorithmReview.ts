@@ -13,6 +13,7 @@ export function createAlgorithmReviewEntry(
     persistent: attempt.result.kind !== "correct",
     reasons: [attempt.result.kind === "correct" ? "scheduled_retrieval" : attempt.result.kind],
     sourceAttemptId: attempt.id,
+    sourceSessionId: attempt.sessionId,
     sourceItem: attempt.reviewEvidence.sourceItem,
     taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs,
     trackId: attempt.trackId,
@@ -27,7 +28,7 @@ export function updateAlgorithmReviewEntry(
   if (attempt.result.kind !== "correct") {
     return { ...entry, consecutiveAfterDueSuccesses: 0, lastReviewedAt: attempt.committedAt, persistent: true, reasons: [attempt.result.kind] };
   }
-  const sameSessionCorrection = entry.persistent && entry.sourceAttemptId.includes(attempt.sessionId);
+  const sameSessionCorrection = entry.persistent && entry.sourceSessionId === attempt.sessionId;
   const consecutiveAfterDueSuccesses = sameSessionCorrection
     ? entry.consecutiveAfterDueSuccesses
     : entry.consecutiveAfterDueSuccesses + 1;

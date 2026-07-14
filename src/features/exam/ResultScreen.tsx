@@ -3,8 +3,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
-import { ROUTES, TRAINING_PASS_THRESHOLD } from "../../constants";
+import { Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
+import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getAttempts } from "../../storage";
 import { colors, spacing, typography } from "../../theme";
@@ -45,21 +45,14 @@ export function ResultScreen({ navigation, route }: ResultScreenProps) {
             <SectionHeader
               title="Exam Result"
               subtitle={route.params?.autoSubmitted ? "Submitted automatically when time expired." : "Submitted exam attempt."}
-              action={
-                <Badge
-                  label={attempt.passedTrainingThreshold ? "Training Pass" : "Training Failed"}
-                  tone={attempt.passedTrainingThreshold ? "ready" : "warning"}
-                />
-              }
             />
             <View style={styles.scoreBlock}>
               <Text style={styles.score}>{attempt.scorePercent}%</Text>
-              <ProgressBar progress={attempt.scorePercent / 100} tone={attempt.passedTrainingThreshold ? "success" : "warning"} />
+              <ProgressBar progress={attempt.scorePercent / 100} />
               <Text style={styles.meta}>
                 {attempt.correctCount}/{attempt.questionCount} correct · {formatDuration(attempt.durationSeconds)}
               </Text>
             </View>
-            <Text style={styles.meta}>Local training threshold: {TRAINING_PASS_THRESHOLD}%</Text>
             <Text style={styles.disclaimer}>Training score only. This is not an official Google exam result.</Text>
           </Card>
 
@@ -122,7 +115,7 @@ function ScoreRow({ correct, label, percent, total }: { correct: number; label: 
           {correct}/{total} · {percent}%
         </Text>
       </View>
-      <ProgressBar progress={percent / 100} tone={percent >= TRAINING_PASS_THRESHOLD ? "success" : "warning"} />
+      <ProgressBar progress={percent / 100} />
     </View>
   );
 }

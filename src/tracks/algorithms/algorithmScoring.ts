@@ -41,21 +41,26 @@ function scorePoints(question: AlgorithmQuestion, response: AlgorithmResponse): 
     const selectedCorrectCount = [...selectedIds].filter((id) => correctIds.has(id)).length;
     const selectedIncorrectCount = [...selectedIds].filter((id) => !correctIds.has(id)).length;
     const exact = selectedCorrectCount === correctIds.size && selectedIncorrectCount === 0;
-    return { earnedPoints: exact ? correctIds.size : Math.max(0, selectedCorrectCount - selectedIncorrectCount), maxPoints: correctIds.size };
+    return { earnedPoints: exact ? correctIds.size : selectedIncorrectCount === 0 ? selectedCorrectCount : 0, maxPoints: correctIds.size };
   }
   if (isAlgorithmOrderingQuestion(question)) {
     if (response.kind !== "ordering") throw new Error(`Algorithms response kind mismatch for ${question.id}: expected ordering.`);
-    return {
-      earnedPoints: question.correctOrder.filter((subgoalId, index) => response.orderedSubgoalIds[index] === subgoalId).length,
-      maxPoints: question.correctOrder.length,
-    };
+    if (response.orderedSubgoalIds.length !== question.correctOrder.length || new Set(response.orderedSubgoalIds).size !== question.correctOrder.length || response.orderedSubgoalIds.some((id) => !question.correctOrder.includes(id))) {
+      throw new Error(`Algorithms ordering response is invalid for ${question.id}.`);
+    }
+    const correctRelations = new Set(question.correctOrder.slice(0, -1).map((id, index) => `${id}->${question.correctOrder[index + 1]}`));
+    const earnedPoints = response.orderedSubgoalIds.slice(0, -1).filter((id, index) => correctRelations.has(`${id}->${response.orderedSubgoalIds[index + 1]}`)).length;
+    return { earnedPoints, maxPoints: question.correctOrder.length - 1 };
   }
   if (isAlgorithmComplexityQuestion(question)) {
     if (response.kind !== "complexity") throw new Error(`Algorithms response kind mismatch for ${question.id}: expected complexity.`);
     return {
       earnedPoints: question.correctComplexity.dimensions.filter((dimension) => {
         const selected = response.selectedValuesByDimension[dimension.id];
-        return selected !== undefined && [...dimension.acceptedValues, ...(dimension.acceptedAliases ?? [])].includes(selected);
+        if (selected === undefined || ![...dimension.values, ...(dimension.acceptedAliases ?? [])].includes(selected)) {
+          throw new Error(`Algorithms complexity response is invalid for ${question.id}:${dimension.id}.`);
+        }
+        return [...dimension.acceptedValues, ...(dimension.acceptedAliases ?? [])].includes(selected);
       }).length,
       maxPoints: question.correctComplexity.dimensions.length,
     };

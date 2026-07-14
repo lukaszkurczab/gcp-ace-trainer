@@ -1,4 +1,4 @@
-import { ALGORITHMS_TRACK_ID } from "../../domain";
+import { ALGORITHMS_TRACK_ID, createTrainingAttempt } from "../../domain";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain/learning";
 import type { PracticeFeedbackMode, PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
@@ -316,7 +316,7 @@ export function buildAlgorithmsSubmission({
   const response = buildAlgorithmResponse(question, selectedOptionIds, complexityAnswer);
   const score = scoreAlgorithmQuestion(question, response);
   const sourceItem = { contentVersion: question.contentVersion, itemId: question.id, trackId: ALGORITHMS_TRACK_ID };
-  const attempt: TrainingAttempt<AlgorithmResponse> = {
+  const attempt: TrainingAttempt<AlgorithmResponse> = createTrainingAttempt({
     answeredAt,
     committedAt: answeredAt,
     id: `attempt:${session.id}:${question.id}:${answeredAt}`,
@@ -334,7 +334,7 @@ export function buildAlgorithmsSubmission({
     },
     sessionId: session.id,
     trackId: ALGORITHMS_TRACK_ID,
-  };
+  });
 
   return {
     attempt,

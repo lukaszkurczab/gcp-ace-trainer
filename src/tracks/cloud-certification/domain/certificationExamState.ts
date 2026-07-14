@@ -8,7 +8,6 @@ export type CertificationExamState = Readonly<{
   deadlineAt: string;
   responsesByItemId: Readonly<Record<string, CertificationResponse>>;
   flaggedItemIds: readonly string[];
-  currentItemId?: string;
 }>;
 
 export type CertificationAnswerViewModel = Readonly<{
@@ -33,7 +32,6 @@ export type CertificationExamSummaryViewModel = Readonly<{
   questionCount: number;
   correctCount: number;
   scorePercent: number;
-  passedTrainingThreshold: boolean;
   incorrectQuestionIds: readonly string[];
   unansweredQuestionIds: readonly string[];
   flaggedQuestionIds: readonly string[];

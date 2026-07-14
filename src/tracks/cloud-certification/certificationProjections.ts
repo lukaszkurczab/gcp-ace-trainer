@@ -1,5 +1,4 @@
 import type { TrainingAttempt, TrainingSession } from "../../domain";
-import { TRAINING_PASS_THRESHOLD } from "../../constants";
 import { calculatePercent } from "../../utils";
 import { certificationContentCatalog } from "./certificationContentCatalog";
 import type { CertificationAnswerViewModel, CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel, CertificationResponse } from "./domain";
@@ -12,11 +11,11 @@ export function buildCertificationExamSummaries(sessions: readonly TrainingSessi
       const question = certificationContentCatalog.getItemById(item.itemId);
       const attempt = byItem.get(item.itemId);
       const response = attempt && isCertificationResponse(attempt.response) ? attempt.response : undefined;
-      return { questionId: item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: question.correctOptionIds, isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: false, answeredAt };
+      return { questionId: item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: question.correctOptionIds, isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt };
     });
     const correctCount = answers.filter((answer) => answer.isCorrect).length;
     const scorePercent = calculatePercent(correctCount, answers.length);
-    return { id: session.id, mode: "exam", startedAt: session.startedAt, completedAt: session.completedAt, durationSeconds: session.completedAt ? Math.max(0, Math.round((Date.parse(session.completedAt) - Date.parse(session.startedAt)) / 1000)) : 0, questionCount: answers.length, correctCount, scorePercent, passedTrainingThreshold: scorePercent >= TRAINING_PASS_THRESHOLD, incorrectQuestionIds: answers.filter((answer) => answer.isAnswered && !answer.isCorrect).map((answer) => answer.questionId), unansweredQuestionIds: answers.filter((answer) => !answer.isAnswered).map((answer) => answer.questionId), flaggedQuestionIds: [], answers, domainScores: buildDomainScores(answers), tagScores: buildTagScores(answers) };
+    return { id: session.id, mode: "exam", startedAt: session.startedAt, completedAt: session.completedAt, durationSeconds: session.completedAt ? Math.max(0, Math.round((Date.parse(session.completedAt) - Date.parse(session.startedAt)) / 1000)) : 0, questionCount: answers.length, correctCount, scorePercent, incorrectQuestionIds: answers.filter((answer) => answer.isAnswered && !answer.isCorrect).map((answer) => answer.questionId), unansweredQuestionIds: answers.filter((answer) => !answer.isAnswered).map((answer) => answer.questionId), flaggedQuestionIds: answers.filter((answer) => answer.wasFlagged).map((answer) => answer.questionId), answers, domainScores: buildDomainScores(answers), tagScores: buildTagScores(answers) };
   }).sort((left, right) => (right.completedAt ?? right.startedAt).localeCompare(left.completedAt ?? left.startedAt));
 }
 

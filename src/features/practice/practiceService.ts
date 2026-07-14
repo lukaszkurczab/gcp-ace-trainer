@@ -29,5 +29,5 @@ export async function savePracticeAnswer(input: { session: TrainingSession; ques
 export async function setQuestionNeedsReview(question: CertificationQuestion, needsReview: boolean): Promise<void> {
   if (!needsReview) { await removeReviewQueueItem(CLOUD_CERTIFICATION_TRACK_ID, question.id); return; }
   const now = new Date().toISOString();
-  await addReviewQueueItems([{ id: `review:manual:${question.id}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, sourceAttemptId: `manual-mark:${question.id}:${now}`, reasons: ["manual_mark"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: certificationContentCatalog.toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }]);
+  await addReviewQueueItems([{ id: `review:manual:${question.id}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, sourceAttemptId: `manual-mark:${question.id}:${now}`, sourceSessionId: `manual-mark:${question.id}`, reasons: ["manual_mark"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: certificationContentCatalog.toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }]);
 }

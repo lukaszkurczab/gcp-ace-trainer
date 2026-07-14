@@ -14,6 +14,7 @@ export function createCertificationReviewEntry(
     persistent: true,
     reasons: [attempt.result.kind],
     sourceAttemptId: attempt.id,
+    sourceSessionId: attempt.sessionId,
     sourceItem: attempt.reviewEvidence.sourceItem,
     taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs,
     trackId: attempt.trackId,

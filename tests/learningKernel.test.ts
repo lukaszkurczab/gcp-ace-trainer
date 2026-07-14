@@ -4,8 +4,8 @@ import { InvalidAttemptResultError, InvalidTrainingSessionError, REVIEW_REASONS,
 
 const ref = { trackId: "future-certification", itemId: "item-1", contentVersion: "v1" };
 test("kernel accepts open track ids and enforces canonical session invariants", () => {
-  const session = createTrainingSession({ id: "s1", trackId: ref.trackId, modeId: "practice", requestedLength: 3, actualLength: 1, itemOrder: [ref], optionOrderByItem: { "item-1": ["b", "a"] }, activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
-  assert.equal(session.requestedLength, 3); assert.deepEqual(session.optionOrderByItem["item-1"], ["b", "a"]); assert.equal("currentItemIndex" in session, false); assert.equal("response" in session, false);
+  const session = createTrainingSession({ id: "s1", trackId: ref.trackId, modeId: "practice", requestedLength: 3, actualLength: 1, currentItemIndex: 0, itemOrder: [ref], optionOrderByItem: { "item-1": ["b", "a"] }, activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  assert.equal(session.requestedLength, 3); assert.deepEqual(session.optionOrderByItem["item-1"], ["b", "a"]); assert.equal(session.currentItemIndex, 0); assert.equal("response" in session, false);
   assert.throws(() => createTrainingSession({ ...session, actualLength: 2 }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, requestedLength: 0 }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, status: "expired" as "active" }), InvalidTrainingSessionError);

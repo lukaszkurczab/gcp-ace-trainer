@@ -1,5 +1,5 @@
 import { EXAM_DURATION_MINUTES } from "../../constants";
-import { CLOUD_CERTIFICATION_TRACK_ID, createTrainingAttempt, createTrainingSession, type TrainingAttempt } from "../../domain";
+import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, moveTrainingSessionToIndex, type TrainingAttempt } from "../../domain";
 import { addReviewQueueItems, addTrainingAttempt, addTrainingSession, clearCertificationExam, getCertificationExam, getQuestions, saveCertificationExam, saveTrainingSessions, getTrainingSessions } from "../../storage";
 import { certificationContentCatalog, createCertificationReviewEntry, scoreCertificationQuestion, type CertificationExamSummaryViewModel, type CertificationExamViewModel, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
 import { buildQuestionBankSummary } from "../questions/questionBankStats";
@@ -20,8 +20,8 @@ export async function createExamSession(): Promise<ExamGenerationResult> {
   if (!selection.ok) return { ok: false, reason: "The question bank does not have enough questions for the exam blueprint." };
   const startedAt = new Date();
   const deadlineAt = new Date(startedAt.getTime() + EXAM_DURATION_MINUTES * 60 * 1000).toISOString();
-  const session = createTrainingSession({ id: createId("exam"), trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-exam-simulation", requestedLength: selection.questions.length, actualLength: selection.questions.length, itemOrder: selection.questions.map((question) => certificationContentCatalog.toContentItemRef(question)), optionOrderByItem: selection.optionOrderByQuestionId, activeForegroundMs: 0, contentVersion: certificationContentCatalog.getContentVersion(), status: "active", startedAt: startedAt.toISOString() });
-  const runtime: CertificationExamViewModel = { session, examState: { sessionId: session.id, deadlineAt, responsesByItemId: {}, flaggedItemIds: [], currentItemId: session.itemOrder[0]?.itemId } };
+  const session = createTrainingSession({ id: createId("exam"), trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-exam-simulation", requestedLength: selection.questions.length, actualLength: selection.questions.length, currentItemIndex: 0, itemOrder: selection.questions.map((question) => certificationContentCatalog.toContentItemRef(question)), optionOrderByItem: selection.optionOrderByQuestionId, activeForegroundMs: 0, contentVersion: certificationContentCatalog.getContentVersion(), status: "active", startedAt: startedAt.toISOString() });
+  const runtime: CertificationExamViewModel = { session, examState: { sessionId: session.id, deadlineAt, responsesByItemId: {}, flaggedItemIds: [] } };
   await Promise.all([saveCertificationExam(runtime), addTrainingSession(session)]);
   return { ok: true, session: runtime };
 }
@@ -30,7 +30,7 @@ export function buildExamQuestionViews(runtime: CertificationExamViewModel, ques
 export async function updateCurrentQuestionIndex(index: number): Promise<CertificationExamViewModel | null> {
   const runtime = await getCertificationExam(); if (!runtime) return null;
   const bounded = Math.max(0, Math.min(index, runtime.session.itemOrder.length - 1));
-  const next = { ...runtime, examState: { ...runtime.examState, currentItemId: runtime.session.itemOrder[bounded]?.itemId } };
+  const next = { ...runtime, session: moveTrainingSessionToIndex(runtime.session, bounded) };
   await saveCertificationExam(next); return next;
 }
 export async function updateExamAnswer(itemId: string, selectedOptionIds: string[]): Promise<CertificationExamViewModel | null> {
@@ -57,11 +57,11 @@ export async function submitCertificationExam(autoSubmitted = false): Promise<Ce
     const response = runtime.examState.responsesByItemId[question.id];
     if (!response) continue;
     const result = scoreCertificationQuestion(question, response);
-    const attempt = createTrainingAttempt({ id: createId(autoSubmitted ? "auto-answer" : "exam-answer"), sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: certificationContentCatalog.toContentItemRef(question), response, result, reviewEvidence: { sourceItem: certificationContentCatalog.toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag }))] }, answeredAt: completedAt, committedAt: completedAt });
+    const attempt = createTrainingAttempt({ id: createId(autoSubmitted ? "auto-answer" : "exam-answer"), sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: certificationContentCatalog.toContentItemRef(question), response, result, reviewEvidence: { sourceItem: certificationContentCatalog.toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag })), ...(runtime.examState.flaggedItemIds.includes(question.id) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: completedAt, committedAt: completedAt });
     attempts.push(attempt); await addTrainingAttempt(attempt);
     const review = createCertificationReviewEntry(attempt); if (review) await addReviewQueueItems([review]);
   }
-  const completedSession = createTrainingSession({ ...runtime.session, status: "completed", completedAt });
+  const completedSession = completeTrainingSession(runtime.session, completedAt);
   const sessions = await getTrainingSessions();
   await saveTrainingSessions([completedSession, ...sessions.value.filter((session) => session.id !== completedSession.id)]);
   const durationSeconds = Math.max(0, Math.round((Date.parse(completedAt) - Date.parse(runtime.session.startedAt)) / 1000));

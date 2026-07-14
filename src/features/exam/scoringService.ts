@@ -1,4 +1,3 @@
-import { TRAINING_PASS_THRESHOLD } from "../../constants";
 import type {
   CertificationAnswerViewModel,
   CertificationDomain,
@@ -13,7 +12,6 @@ export type ExamScoreResult = {
   correctCount: number;
   totalQuestions: number;
   scorePercent: number;
-  passedTrainingThreshold: boolean;
   domainScores: { domain: CertificationDomain; correct: number; total: number; percent: number }[];
   tagScores: { tag: string; correct: number; total: number; percent: number }[];
   incorrectQuestionIds: string[];
@@ -68,7 +66,6 @@ export function scoreExamSession(
     correctCount,
     totalQuestions: answers.length,
     scorePercent,
-    passedTrainingThreshold: scorePercent >= TRAINING_PASS_THRESHOLD,
     domainScores: buildDomainScores(answers),
     tagScores: buildTagScores(answers),
     incorrectQuestionIds,
@@ -93,7 +90,6 @@ export function buildExamSummaryViewModel(input: {
     questionCount: input.score.totalQuestions,
     correctCount: input.score.correctCount,
     scorePercent: input.score.scorePercent,
-    passedTrainingThreshold: input.score.passedTrainingThreshold,
     incorrectQuestionIds: input.score.incorrectQuestionIds,
     unansweredQuestionIds: input.score.unansweredQuestionIds,
     flaggedQuestionIds: input.score.flaggedQuestionIds,

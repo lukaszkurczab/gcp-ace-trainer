@@ -12,6 +12,7 @@ export type ReviewQueueEntry = ReviewEvidence & Readonly<{
   id: string;
   trackId: TrackId;
   sourceAttemptId: string;
+  sourceSessionId: string;
   reasons: readonly ReviewReason[];
   dueAt: string;
   createdAt: string;

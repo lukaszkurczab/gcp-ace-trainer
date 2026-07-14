@@ -25,10 +25,10 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if ("currentItemIndex" in value || "itemRefs" in value || value.status === "expired") return false;
+  if ("itemRefs" in value || value.status === "expired") return false;
   if (!(typeof value.id === "string" && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     typeof value.modeId === "string" && typeof value.requestedLength === "number" &&
-    typeof value.actualLength === "number" && typeof value.startedAt === "string" &&
+    typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && typeof value.startedAt === "string" &&
     (value.completedAt === undefined || typeof value.completedAt === "string") &&
     isOptionOrderByItem(value.optionOrderByItem) && typeof value.activeForegroundMs === "number" &&
     typeof value.contentVersion === "string" &&
@@ -41,6 +41,7 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       modeId: value.modeId,
       requestedLength: value.requestedLength,
       actualLength: value.actualLength,
+      currentItemIndex: value.currentItemIndex,
       itemOrder: value.itemOrder,
       optionOrderByItem: value.optionOrderByItem,
       activeForegroundMs: value.activeForegroundMs,
@@ -80,7 +81,7 @@ function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
 function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
   return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
     !("itemId" in value) && typeof value.id === "string" && typeof value.trackId === "string" &&
-    isRegisteredTrackId(value.trackId) && typeof value.sourceAttemptId === "string" &&
+    isRegisteredTrackId(value.trackId) && typeof value.sourceAttemptId === "string" && typeof value.sourceSessionId === "string" &&
     isReviewEvidence(value) && Array.isArray(value.reasons) && value.reasons.every((reason) =>
       typeof reason === "string" && (REVIEW_REASONS as readonly string[]).includes(reason)) &&
     typeof value.dueAt === "string" && typeof value.createdAt === "string" &&

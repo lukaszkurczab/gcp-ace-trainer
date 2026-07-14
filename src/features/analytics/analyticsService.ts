@@ -1,8 +1,7 @@
-import { TRAINING_PASS_THRESHOLD } from "../../constants";
 import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { calculatePercent, getDomainLabel } from "../../utils";
 
-export type SummaryMetrics = { totalCompletedExams: number; averageExamScore: number; bestExamScore: number; trainingPassRate: number; totalPracticeQuestionsAnswered: number };
+export type SummaryMetrics = { totalCompletedExams: number; averageExamScore: number; bestExamScore: number; totalPracticeQuestionsAnswered: number };
 export type ScoreTrendPoint = { label: string; scorePercent: number };
 export type PerformanceScore = { id: string; label: string; correct: number; total: number; percent: number };
 export type AnalyticsData = { summary: SummaryMetrics; scoreTrend: ScoreTrendPoint[]; domainPerformance: PerformanceScore[]; weakestTags: PerformanceScore[]; weaknessSummary: string[] };
@@ -20,5 +19,5 @@ export function buildAnalyticsData(attempts: readonly CertificationExamSummaryVi
   const lowestDomain = [...domainPerformance].filter((score) => score.total > 0).sort((a, b) => a.percent - b.percent)[0];
   const focusTags = weakestTags.filter((tag) => tag.percent < 75).slice(0, 2).map((tag) => tag.label);
   const weaknessSummary = [...(focusTags.length ? [`Focus next on ${focusTags.join(" and ")}.`] : []), ...(lowestDomain ? [`Your lowest domain is ${lowestDomain.label}.`] : [])];
-  return { summary: { totalCompletedExams: completed.length, averageExamScore: completed.length ? Math.round(totalScore / completed.length) : 0, bestExamScore: completed.reduce((best, attempt) => Math.max(best, attempt.scorePercent), 0), trainingPassRate: calculatePercent(completed.filter((attempt) => attempt.scorePercent >= TRAINING_PASS_THRESHOLD).length, completed.length), totalPracticeQuestionsAnswered: practiceHistory.length }, scoreTrend: completed.map((attempt, index) => ({ label: `#${index + 1}`, scorePercent: attempt.scorePercent })), domainPerformance, weakestTags, weaknessSummary: weaknessSummary.length ? weaknessSummary : ["Complete exams and practice questions to build a weakness summary."] };
+  return { summary: { totalCompletedExams: completed.length, averageExamScore: completed.length ? Math.round(totalScore / completed.length) : 0, bestExamScore: completed.reduce((best, attempt) => Math.max(best, attempt.scorePercent), 0), totalPracticeQuestionsAnswered: practiceHistory.length }, scoreTrend: completed.map((attempt, index) => ({ label: `#${index + 1}`, scorePercent: attempt.scorePercent })), domainPerformance, weakestTags, weaknessSummary: weaknessSummary.length ? weaknessSummary : ["Complete exams and practice questions to build a weakness summary."] };
 }

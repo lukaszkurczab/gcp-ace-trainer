@@ -75,7 +75,7 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
     }, [navigation, session])
   );
 
-  const currentIndex = session?.examState.currentItemId ? session.session.itemOrder.findIndex((item) => item.itemId === session.examState.currentItemId) : 0;
+  const currentIndex = session?.session.currentItemIndex ?? 0;
   const currentQuestion = session ? questions[Math.max(0, currentIndex)] : undefined;
   const selectedOptionIds = useMemo(() => {
     if (!session || !currentQuestion) {

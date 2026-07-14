@@ -68,8 +68,7 @@ export async function getCertificationExam(): Promise<CertificationExamViewModel
   if (value === null) return null;
   if (!isRecord(value) || !isTrainingSession(value.session) || !isRecord(value.examState) ||
     value.examState.sessionId !== value.session.id || typeof value.examState.deadlineAt !== "string" ||
-    !isRecord(value.examState.responsesByItemId) || !isStringArray(value.examState.flaggedItemIds) ||
-    (value.examState.currentItemId !== undefined && typeof value.examState.currentItemId !== "string")) {
+    !isRecord(value.examState.responsesByItemId) || !isStringArray(value.examState.flaggedItemIds)) {
     throw new UnsupportedStoredRecordError("certification exam");
   }
   const responses: Record<string, { kind: "option_selection"; selectedOptionIds: readonly string[] }> = {};
@@ -77,7 +76,7 @@ export async function getCertificationExam(): Promise<CertificationExamViewModel
     if (!isRecord(response) || response.kind !== "option_selection" || !isStringArray(response.selectedOptionIds)) throw new UnsupportedStoredRecordError("certification exam response");
     responses[itemId] = { kind: "option_selection", selectedOptionIds: response.selectedOptionIds };
   }
-  return { session: value.session, examState: { sessionId: value.session.id, deadlineAt: value.examState.deadlineAt, responsesByItemId: responses, flaggedItemIds: value.examState.flaggedItemIds, currentItemId: value.examState.currentItemId } };
+  return { session: value.session, examState: { sessionId: value.session.id, deadlineAt: value.examState.deadlineAt, responsesByItemId: responses, flaggedItemIds: value.examState.flaggedItemIds } };
 }
 export async function saveCertificationExam(runtime: CertificationExamViewModel): Promise<void> { await writeLocalJson("ACTIVE_EXAM_SESSION", runtime); }
 export async function clearCertificationExam(): Promise<void> { await removeStorageValue("ACTIVE_EXAM_SESSION"); }

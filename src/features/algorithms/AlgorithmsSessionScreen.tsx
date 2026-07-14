@@ -14,6 +14,8 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   ALGORITHMS_TRACK_ID,
+  advanceTrainingSession,
+  completeTrainingSession,
   createTrainingSession,
   type TrainingAttempt,
   type TrainingSession,
@@ -154,6 +156,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         id: `session:${ALGORITHMS_TRACK_ID}:${startedAt}`,
         requestedLength: sessionConfig?.sessionLength ?? 20,
         actualLength: nextItems.length,
+        currentItemIndex: 0,
         itemOrder: nextItems.map((item) => ({
           contentVersion: item.contentVersion,
           itemId: item.id,
@@ -305,7 +308,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
     if (currentIndex >= items.length - 1) {
       const completedAt = new Date().toISOString();
-      const completed = { session: createTrainingSession({ ...session, completedAt, status: "completed" }) };
+      const completed = { session: completeTrainingSession(session, completedAt) };
       const sessionsResult = await getTrainingSessions();
       const nextSessions = [
         completed.session,
@@ -327,7 +330,17 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       return;
     }
 
-    setCurrentIndex((current) => current + 1);
+    const advancedSession = advanceTrainingSession(session);
+    const sessionsResult = await getTrainingSessions();
+    const saveResult = await saveTrainingSessions([
+      advancedSession,
+      ...sessionsResult.value.filter((candidate) => candidate.id !== session.id),
+    ]);
+    if (!saveResult.ok) {
+      setStorageMessage(formatStorageFailure("The next item is available, but session position was not saved locally", saveResult.issues));
+    }
+    setSession(advancedSession);
+    setCurrentIndex(advancedSession.currentItemIndex);
     resetAnswerState();
   }
 

@@ -6,10 +6,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
-import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, createTrainingSession, type TrainingSession } from "../../domain";
+import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, advanceTrainingSession, completeTrainingSession, createTrainingSession, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
-import { addTrainingSession } from "../../storage";
+import { addTrainingSession, getTrainingSessions, saveTrainingSessions } from "../../storage";
 import type { CertificationQuestion } from "../../tracks/cloud-certification";
 import { areOptionSetsEqual } from "../../utils";
 import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
@@ -69,7 +69,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
         setQuestions(loadedQuestions);
         const startedAt = new Date().toISOString();
-        const session = createTrainingSession({ id: `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", requestedLength: route.params.sessionLength, actualLength: loadedQuestions.length, itemOrder: loadedQuestions.map((question) => ({ trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion: "ace-foundation-320" })), optionOrderByItem: Object.fromEntries(loadedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])), activeForegroundMs: 0, contentVersion: "ace-foundation-320", status: "active", startedAt });
+        const session = createTrainingSession({ id: `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", requestedLength: route.params.sessionLength, actualLength: loadedQuestions.length, currentItemIndex: 0, itemOrder: loadedQuestions.map((question) => ({ trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion: "ace-foundation-320" })), optionOrderByItem: Object.fromEntries(loadedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])), activeForegroundMs: 0, contentVersion: "ace-foundation-320", status: "active", startedAt });
         setTrainingSession(session);
         await addTrainingSession(session);
         setCurrentIndex(0);
@@ -101,6 +101,28 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     setSelectedOptionIds([]);
     setIsSubmitted(false);
     setNeedsReview(false);
+  }
+
+  async function persistSession(nextSession: TrainingSession): Promise<void> {
+    const sessions = await getTrainingSessions();
+    const result = await saveTrainingSessions([
+      nextSession,
+      ...sessions.value.filter((session) => session.id !== nextSession.id),
+    ]);
+    if (!result.ok) throw new Error("Cloud practice session state could not be persisted.");
+    setTrainingSession(nextSession);
+  }
+
+  async function advanceSession(): Promise<void> {
+    if (!trainingSession) return;
+    const nextSession = advanceTrainingSession(trainingSession);
+    await persistSession(nextSession);
+    setCurrentIndex(nextSession.currentItemIndex);
+  }
+
+  async function completeSession(): Promise<void> {
+    if (!trainingSession || trainingSession.status !== "active") return;
+    await persistSession(completeTrainingSession(trainingSession, new Date().toISOString()));
   }
 
   function selectOption(optionId: string) {
@@ -145,11 +167,12 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
     if (route.params.feedbackMode === "atSessionEnd") {
       if (currentIndex >= questions.length - 1) {
+        await completeSession();
         setSessionComplete(true);
         return;
       }
 
-      setCurrentIndex((current) => current + 1);
+      await advanceSession();
       resetQuestionState();
       return;
     }
@@ -167,7 +190,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     await setQuestionNeedsReview(currentQuestion, nextNeedsReview);
   }
 
-  function goNext() {
+  async function goNext() {
     if (currentIndex >= questions.length - 1) {
       if (!isReviewPass && route.params.reviewBehaviorEnabled) {
         const missedQuestions = completedAnswers
@@ -183,11 +206,12 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         }
       }
 
+      await completeSession();
       setSessionComplete(true);
       return;
     }
 
-    setCurrentIndex((current) => current + 1);
+    await advanceSession();
     resetQuestionState();
   }
 
