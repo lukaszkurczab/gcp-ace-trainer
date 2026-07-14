@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const stringNormalizationQuestions = [
   {
     "acceptableApproachIds": [],
@@ -22,10 +24,10 @@ export const stringNormalizationQuestions = [
       "nextAction": "List transformation rules before choosing the comparison operation.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-004",
+    "id": "alg-prod-array-string-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A phrase comparison has two kinds of rules: transformation rules such as ignoring spaces and case, and a final equality check. What should happen first?",
+    "prompt": "Choose the correct pipeline order.",
     "reasonSignal": "Apply the same transformation rules to both inputs before comparing the transformed sequences.",
     "rejectedApproachIds": [
       "raw_compare",
@@ -35,41 +37,6 @@ export const stringNormalizationQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "transform_then_compare",
-        "feedback": "The transformation rules must be applied to both inputs first; then the transformed sequences can be compared.",
-        "id": "alg-prod-array-string-004-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "transform_then_compare",
-            "text": "Apply the transformation rules to both inputs, then compare the transformed sequences."
-          },
-          {
-            "id": "raw_compare",
-            "text": "Compare the raw strings directly."
-          },
-          {
-            "id": "compare_then_normalize",
-            "text": "Compare first, then normalize only if they differ."
-          },
-          {
-            "id": "sort_characters",
-            "text": "Sort both strings before applying the stated rules."
-          }
-        ],
-        "prompt": "Choose the correct pipeline order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -96,7 +63,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Order transformation rules before equality",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "A phrase comparison has two kinds of rules: transformation rules such as ignoring spaces and case, and a final equality check. What should happen first?",
+    "answerFeedback": "The transformation rules must be applied to both inputs first; then the transformed sequences can be compared.",
+    "options": [
+      {
+        "id": "transform_then_compare",
+        "text": "Apply the transformation rules to both inputs, then compare the transformed sequences.",
+        "isCorrect": true
+      },
+      {
+        "id": "raw_compare",
+        "text": "Compare the raw strings directly.",
+        "isCorrect": false
+      },
+      {
+        "id": "compare_then_normalize",
+        "text": "Compare first, then normalize only if they differ.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_characters",
+        "text": "Sort both strings before applying the stated rules.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -116,49 +107,14 @@ export const stringNormalizationQuestions = [
       "nextAction": "After normalization, ask whether the transformed sequence order is still part of the contract.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-009",
+    "id": "alg-prod-array-string-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "A learner removes spaces and lowercases both phrases, then sorts the remaining characters before comparing. Why is this wrong when phrase order still matters?",
+    "prompt": "Choose the flaw in the learner's approach.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison",
       "diagnose_order_destroying_transform"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "turns_into_anagram",
-        "feedback": "Sorting discards the normalized sequence order, so it accepts anagram-style matches that semantic equality should reject.",
-        "id": "alg-prod-array-string-009-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "turns_into_anagram",
-            "text": "It turns normalized sequence equality into an anagram-style comparison."
-          },
-          {
-            "id": "normalization_unneeded",
-            "text": "The mistake is that spaces and case should not be normalized."
-          },
-          {
-            "id": "counts_required",
-            "text": "The correct solution must compare only character counts."
-          },
-          {
-            "id": "raw_lengths_enough",
-            "text": "The correct solution should compare only raw lengths."
-          }
-        ],
-        "prompt": "Choose the flaw in the learner's approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -190,7 +146,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Diagnose sorting after normalization",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner removes spaces and lowercases both phrases, then sorts the remaining characters before comparing. Why is this wrong when phrase order still matters?",
+    "answerFeedback": "Sorting discards the normalized sequence order, so it accepts anagram-style matches that semantic equality should reject.",
+    "options": [
+      {
+        "id": "turns_into_anagram",
+        "text": "It turns normalized sequence equality into an anagram-style comparison.",
+        "isCorrect": true
+      },
+      {
+        "id": "normalization_unneeded",
+        "text": "The mistake is that spaces and case should not be normalized.",
+        "isCorrect": false
+      },
+      {
+        "id": "counts_required",
+        "text": "The correct solution must compare only character counts.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_lengths_enough",
+        "text": "The correct solution should compare only raw lengths.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -210,49 +190,14 @@ export const stringNormalizationQuestions = [
       "nextAction": "Ask whether the normalized representation must be stored or can be compared as it is produced.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-015",
+    "id": "alg-prod-array-string-015-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "Two very large strings should be compared while ignoring spaces and case. A learner builds full normalized copies first. What is the memory drawback compared with streaming the comparison?",
+    "prompt": "Choose the memory drawback.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization",
       "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "copies_use_linear_memory",
-        "feedback": "Full normalized copies can use O(n + m) memory, while streaming can compare with constant auxiliary state.",
-        "id": "alg-prod-array-string-015-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "copies_use_linear_memory",
-            "text": "The normalized copies can use memory proportional to the input size."
-          },
-          {
-            "id": "streaming_changes_semantics",
-            "text": "Streaming cannot preserve normalized sequence equality."
-          },
-          {
-            "id": "sorting_required",
-            "text": "Sorting is required before either approach can compare strings."
-          },
-          {
-            "id": "counts_required",
-            "text": "Frequency counts are the only memory-efficient semantic comparison."
-          }
-        ],
-        "prompt": "Choose the memory drawback.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -284,7 +229,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Explain the memory drawback of materialized normalization",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "Two very large strings should be compared while ignoring spaces and case. A learner builds full normalized copies first. What is the memory drawback compared with streaming the comparison?",
+    "answerFeedback": "Full normalized copies can use O(n + m) memory, while streaming can compare with constant auxiliary state.",
+    "options": [
+      {
+        "id": "copies_use_linear_memory",
+        "text": "The normalized copies can use memory proportional to the input size.",
+        "isCorrect": true
+      },
+      {
+        "id": "streaming_changes_semantics",
+        "text": "Streaming cannot preserve normalized sequence equality.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_required",
+        "text": "Sorting is required before either approach can compare strings.",
+        "isCorrect": false
+      },
+      {
+        "id": "counts_required",
+        "text": "Frequency counts are the only memory-efficient semantic comparison.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -314,50 +283,15 @@ export const stringNormalizationQuestions = [
       "nextAction": "Ask whether the final comparison cares about order, multiplicity, or only presence.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-030",
+    "id": "alg-prod-array-string-030-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "Two strings should be equal after ignoring spaces and case, but their character order still matters. Which approach preserves the correct comparison meaning?",
+    "prompt": "Choose the approach that preserves normalized equality.",
     "reasonSignal": "Streaming normalized comparison keeps sequence order while avoiding full normalized copies.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization",
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "streaming_normalized_compare",
-        "feedback": "A streaming normalized comparison skips ignored characters and compares normalized characters in order. Counts would answer an anagram-like question instead.",
-        "id": "alg-prod-array-string-030-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "streaming_normalized_compare",
-            "text": "Skip spaces and compare lowercased characters in order."
-          },
-          {
-            "id": "frequency_counting",
-            "text": "Count lowercased non-space characters and compare the counts."
-          },
-          {
-            "id": "raw_compare",
-            "text": "Compare the original strings directly."
-          },
-          {
-            "id": "length_only",
-            "text": "Compare only the number of non-space characters."
-          }
-        ],
-        "prompt": "Choose the approach that preserves normalized equality.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -384,7 +318,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Do not turn normalized equality into frequency comparison",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "Two strings should be equal after ignoring spaces and case, but their character order still matters. Which approach preserves the correct comparison meaning?",
+    "answerFeedback": "A streaming normalized comparison skips ignored characters and compares normalized characters in order. Counts would answer an anagram-like question instead.",
+    "options": [
+      {
+        "id": "streaming_normalized_compare",
+        "text": "Skip spaces and compare lowercased characters in order.",
+        "isCorrect": true
+      },
+      {
+        "id": "frequency_counting",
+        "text": "Count lowercased non-space characters and compare the counts.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_compare",
+        "text": "Compare the original strings directly.",
+        "isCorrect": false
+      },
+      {
+        "id": "length_only",
+        "text": "Compare only the number of non-space characters.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -409,10 +367,10 @@ export const stringNormalizationQuestions = [
       "nextAction": "Separate transformation rules from the final comparison rule before choosing the loop.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-083",
+    "id": "alg-prod-array-string-083-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A comparison should treat `New York` and `newyork` as equal. Which approach matches the rule?",
+    "prompt": "Choose the approach that follows the comparison rule.",
     "reasonSignal": "Both strings need the same normalization: remove spaces and apply consistent casing before comparing.",
     "rejectedApproachIds": [
       "raw_compare",
@@ -422,41 +380,6 @@ export const stringNormalizationQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalize_then_compare",
-        "feedback": "Removing spaces and using consistent casing makes the two phrases comparable under the stated rule.",
-        "id": "alg-prod-array-string-083-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "normalize_then_compare",
-            "text": "Remove spaces, apply consistent casing, then compare the resulting strings."
-          },
-          {
-            "id": "raw_compare",
-            "text": "Compare the original strings directly."
-          },
-          {
-            "id": "sort_characters",
-            "text": "Sort the characters in both strings before comparing."
-          },
-          {
-            "id": "frequency_counts",
-            "text": "Count characters and compare only the counts."
-          }
-        ],
-        "prompt": "Choose the approach that follows the comparison rule.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -483,7 +406,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Normalize spaces and case before phrase equality",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "A comparison should treat `New York` and `newyork` as equal. Which approach matches the rule?",
+    "answerFeedback": "Removing spaces and using consistent casing makes the two phrases comparable under the stated rule.",
+    "options": [
+      {
+        "id": "normalize_then_compare",
+        "text": "Remove spaces, apply consistent casing, then compare the resulting strings.",
+        "isCorrect": true
+      },
+      {
+        "id": "raw_compare",
+        "text": "Compare the original strings directly.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_characters",
+        "text": "Sort the characters in both strings before comparing.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_counts",
+        "text": "Count characters and compare only the counts.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -503,48 +450,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "After applying transformations, ask whether order still matters.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-084",
+    "id": "alg-prod-array-string-084-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "Two phrases should be equal after removing spaces and ignoring case. The order of the remaining characters still matters. Which comparison is correct?",
+    "prompt": "Choose the comparison that preserves the intended meaning.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalized_sequence_compare",
-        "feedback": "The correct comparison transforms both phrases, then compares the normalized sequences in order.",
-        "id": "alg-prod-array-string-084-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "normalized_sequence_compare",
-            "text": "Compare the normalized character sequences in order."
-          },
-          {
-            "id": "sort_after_normalizing",
-            "text": "Sort the normalized characters before comparing."
-          },
-          {
-            "id": "count_after_normalizing",
-            "text": "Compare only the counts of normalized characters."
-          },
-          {
-            "id": "compare_lengths_only",
-            "text": "Compare only the normalized lengths."
-          }
-        ],
-        "prompt": "Choose the comparison that preserves the intended meaning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -571,7 +483,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Keep sequence equality after normalization",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "Two phrases should be equal after removing spaces and ignoring case. The order of the remaining characters still matters. Which comparison is correct?",
+    "answerFeedback": "The correct comparison transforms both phrases, then compares the normalized sequences in order.",
+    "options": [
+      {
+        "id": "normalized_sequence_compare",
+        "text": "Compare the normalized character sequences in order.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_after_normalizing",
+        "text": "Sort the normalized characters before comparing.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_after_normalizing",
+        "text": "Compare only the counts of normalized characters.",
+        "isCorrect": false
+      },
+      {
+        "id": "compare_lengths_only",
+        "text": "Compare only the normalized lengths.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -591,48 +527,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Check whether every input passed through the same normalization pipeline.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-085",
+    "id": "alg-prod-array-string-085-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A learner lowercases only the first string before comparing two case-insensitive strings. What is the main mistake?",
+    "prompt": "Choose the mistake.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalize_both",
-        "feedback": "Case-insensitive comparison requires applying the same casing rule to both strings.",
-        "id": "alg-prod-array-string-085-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "normalize_both",
-            "text": "Both strings must be normalized by the same rule."
-          },
-          {
-            "id": "normalize_first_only",
-            "text": "Only the first string should be normalized."
-          },
-          {
-            "id": "normalize_second_only",
-            "text": "Only the second string should be normalized."
-          },
-          {
-            "id": "compare_raw_then_normalize",
-            "text": "Raw comparison should happen before normalization."
-          }
-        ],
-        "prompt": "Choose the mistake.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -659,7 +560,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Apply normalization symmetrically",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner lowercases only the first string before comparing two case-insensitive strings. What is the main mistake?",
+    "answerFeedback": "Case-insensitive comparison requires applying the same casing rule to both strings.",
+    "options": [
+      {
+        "id": "normalize_both",
+        "text": "Both strings must be normalized by the same rule.",
+        "isCorrect": true
+      },
+      {
+        "id": "normalize_first_only",
+        "text": "Only the first string should be normalized.",
+        "isCorrect": false
+      },
+      {
+        "id": "normalize_second_only",
+        "text": "Only the second string should be normalized.",
+        "isCorrect": false
+      },
+      {
+        "id": "compare_raw_then_normalize",
+        "text": "Raw comparison should happen before normalization.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -681,48 +606,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Check whether the ignored characters can appear in the middle, not just at the edges.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-086",
+    "id": "alg-prod-array-string-086-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "A comparison should ignore all spaces. A learner only trims leading and trailing spaces. Which case exposes the bug?",
+    "prompt": "Choose the test case that exposes trimming as too weak.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "middle_space",
-        "feedback": "`ab c` and `abc` should match when all spaces are ignored, but trimming alone leaves the middle space.",
-        "id": "alg-prod-array-string-086-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "middle_space",
-            "text": "`ab c` and `abc`"
-          },
-          {
-            "id": "edge_space",
-            "text": "` abc ` and `abc`"
-          },
-          {
-            "id": "same_raw",
-            "text": "`abc` and `abc`"
-          },
-          {
-            "id": "case_only",
-            "text": "`ABC` and `abc`"
-          }
-        ],
-        "prompt": "Choose the test case that exposes trimming as too weak.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -749,7 +639,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Expose trimming as weaker than removing all spaces",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A comparison should ignore all spaces. A learner only trims leading and trailing spaces. Which case exposes the bug?",
+    "answerFeedback": "`ab c` and `abc` should match when all spaces are ignored, but trimming alone leaves the middle space.",
+    "options": [
+      {
+        "id": "middle_space",
+        "text": "`ab c` and `abc`",
+        "isCorrect": true
+      },
+      {
+        "id": "edge_space",
+        "text": "` abc ` and `abc`",
+        "isCorrect": false
+      },
+      {
+        "id": "same_raw",
+        "text": "`abc` and `abc`",
+        "isCorrect": false
+      },
+      {
+        "id": "case_only",
+        "text": "`ABC` and `abc`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -769,48 +683,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Ask whether the normalized representation has to be stored, or can be compared as it is produced.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-087",
+    "id": "alg-prod-array-string-087-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "Two huge strings should be compared while ignoring spaces and case. Memory is constrained. Which approach best preserves the semantic comparison?",
+    "prompt": "Choose the memory-aware semantic comparison.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "streaming_compare",
-        "feedback": "A streaming normalized comparison skips ignored characters and compares normalized characters in order without storing full normalized copies.",
-        "id": "alg-prod-array-string-087-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "streaming_compare",
-            "text": "Compare normalized characters incrementally while scanning."
-          },
-          {
-            "id": "build_copies",
-            "text": "Always build full normalized copies first."
-          },
-          {
-            "id": "sort_both",
-            "text": "Sort both strings after removing spaces."
-          },
-          {
-            "id": "frequency_counts",
-            "text": "Count normalized characters and compare only counts."
-          }
-        ],
-        "prompt": "Choose the memory-aware semantic comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -837,179 +716,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Choose streaming normalized equality under memory pressure",
     "trackId": "algorithms",
-    "type": "solution_comparison"
-  },
-  {
-    "complexityExplanation": "Building normalized copies scans both inputs and can allocate new strings proportional to the normalized output size.",
-    "complexityVariables": {
-      "m": "length of the second string",
-      "n": "length of the first string"
-    },
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(n + m)",
-    "expectedTimeComplexity": "O(n + m)",
-    "feedbackModel": {
-      "decisionSignal": "Materializing normalized strings uses memory proportional to the transformed outputs.",
-      "mentalModelCorrection": "A linear transformation is still linear-time, but storing its result changes the space claim.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Separate scan cost from the memory used by normalized copies.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-088",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "You build normalized copies of two strings by removing spaces and lowercasing before comparing. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "solution_comparison",
+    "instruction": "Two huge strings should be compared while ignoring spaces and case. Memory is constrained. Which approach best preserves the semantic comparison?",
+    "answerFeedback": "A streaming normalized comparison skips ignored characters and compares normalized characters in order without storing full normalized copies.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n + m)",
-          "space": "O(n + m)"
-        },
-        "feedback": "The inputs are scanned once, and the normalized copies can grow with the total input size.",
-        "id": "alg-prod-array-string-088-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and output-copy space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "complexity_pair"
+        "id": "streaming_compare",
+        "text": "Compare normalized characters incrementally while scanning.",
+        "isCorrect": true
+      },
+      {
+        "id": "build_copies",
+        "text": "Always build full normalized copies first.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_both",
+        "text": "Sort both strings after removing spaces.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_counts",
+        "text": "Count normalized characters and compare only counts.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "streaming_normalization_tradeoff",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "string_normalization",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate materialized normalization cost",
-    "trackId": "algorithms",
-    "type": "complexity_check"
-  },
-  {
-    "complexityExplanation": "A streaming normalized comparison scans through both strings and keeps only indexes or current characters as auxiliary state.",
-    "complexityVariables": {
-      "m": "length of the second string",
-      "n": "length of the first string"
-    },
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n + m)",
-    "feedbackModel": {
-      "decisionSignal": "Streaming applies normalization while scanning, so it avoids storing transformed copies.",
-      "mentalModelCorrection": "The same semantic rule can have different space costs depending on whether the normalized representation is materialized.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Check whether normalized output is stored or compared incrementally.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-089",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "You compare two strings while skipping spaces and lowercasing characters on the fly, without building normalized copies. What time and auxiliary space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": {
-          "time": "O(n + m)",
-          "space": "O(1)"
-        },
-        "feedback": "The scan may inspect both strings fully, but it only needs constant auxiliary state such as indexes and current normalized characters.",
-        "id": "alg-prod-array-string-089-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and auxiliary space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "complexity_pair"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "streaming_normalization_tradeoff",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "string_normalization",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate streaming normalization cost",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1029,48 +760,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "When a pointer lands on an ignored character, advance that pointer before comparing.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-090",
+    "id": "alg-prod-array-string-090-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "In a streaming comparison that ignores spaces, one pointer currently points at a space. What should happen before comparing characters?",
+    "prompt": "Choose the next streaming step.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "skip_space",
-        "feedback": "The pointer should advance past ignored spaces before comparing meaningful characters.",
-        "id": "alg-prod-array-string-090-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "skip_space",
-            "text": "Advance past the space because it is ignored."
-          },
-          {
-            "id": "return_false_on_space",
-            "text": "Return false immediately."
-          },
-          {
-            "id": "count_space",
-            "text": "Treat the space as a normal comparable character."
-          },
-          {
-            "id": "sort_remaining",
-            "text": "Sort the remaining characters."
-          }
-        ],
-        "prompt": "Choose the next streaming step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1107,7 +803,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Trace skipped spaces in streaming comparison",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "In a streaming comparison that ignores spaces, one pointer currently points at a space. What should happen before comparing characters?",
+    "answerFeedback": "The pointer should advance past ignored spaces before comparing meaningful characters.",
+    "options": [
+      {
+        "id": "skip_space",
+        "text": "Advance past the space because it is ignored.",
+        "isCorrect": true
+      },
+      {
+        "id": "return_false_on_space",
+        "text": "Return false immediately.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_space",
+        "text": "Treat the space as a normal comparable character.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_remaining",
+        "text": "Sort the remaining characters.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1127,48 +847,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Translate case-insensitive into lowercasing or uppercasing both sides consistently.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-091",
+    "id": "alg-prod-array-string-091-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "A comparison should be case-insensitive. How should `A` and `a` be handled?",
+    "prompt": "Choose the case-insensitive behavior.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_after_case_normalization",
-        "feedback": "`A` and `a` should compare equal after applying consistent casing.",
-        "id": "alg-prod-array-string-091-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "same_after_case_normalization",
-            "text": "Treat them as equal after applying consistent casing."
-          },
-          {
-            "id": "case_sensitive_raw",
-            "text": "Treat them as different because the raw characters differ."
-          },
-          {
-            "id": "remove_case_chars",
-            "text": "Remove both letters from the comparison."
-          },
-          {
-            "id": "sort_letters",
-            "text": "Sort both strings before comparing them."
-          }
-        ],
-        "prompt": "Choose the case-insensitive behavior.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1195,7 +880,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Apply case-insensitive character comparison",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A comparison should be case-insensitive. How should `A` and `a` be handled?",
+    "answerFeedback": "`A` and `a` should compare equal after applying consistent casing.",
+    "options": [
+      {
+        "id": "same_after_case_normalization",
+        "text": "Treat them as equal after applying consistent casing.",
+        "isCorrect": true
+      },
+      {
+        "id": "case_sensitive_raw",
+        "text": "Treat them as different because the raw characters differ.",
+        "isCorrect": false
+      },
+      {
+        "id": "remove_case_chars",
+        "text": "Remove both letters from the comparison.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_letters",
+        "text": "Sort both strings before comparing them.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1215,48 +924,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "List all ignored or transformed character classes before comparing.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-092",
+    "id": "alg-prod-array-string-092-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A comparison should ignore punctuation and case. Which preprocessing matches the contract?",
+    "prompt": "Choose the preprocessing that applies all stated rules.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "remove_punctuation_and_casefold",
-        "feedback": "Both punctuation and case must be normalized before comparison.",
-        "id": "alg-prod-array-string-092-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "remove_punctuation_and_casefold",
-            "text": "Remove punctuation and apply consistent casing to both strings."
-          },
-          {
-            "id": "punctuation_only",
-            "text": "Remove punctuation but keep original casing."
-          },
-          {
-            "id": "case_only",
-            "text": "Lowercase both strings but keep punctuation."
-          },
-          {
-            "id": "raw_compare",
-            "text": "Compare the raw strings directly."
-          }
-        ],
-        "prompt": "Choose the preprocessing that applies all stated rules.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1294,6 +968,30 @@ export const stringNormalizationQuestions = [
       "punctuation_only",
       "case_only",
       "raw_compare"
+    ],
+    "instruction": "A comparison should ignore punctuation and case. Which preprocessing matches the contract?",
+    "answerFeedback": "Both punctuation and case must be normalized before comparison.",
+    "options": [
+      {
+        "id": "remove_punctuation_and_casefold",
+        "text": "Remove punctuation and apply consistent casing to both strings.",
+        "isCorrect": true
+      },
+      {
+        "id": "punctuation_only",
+        "text": "Remove punctuation but keep original casing.",
+        "isCorrect": false
+      },
+      {
+        "id": "case_only",
+        "text": "Lowercase both strings but keep punctuation.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_compare",
+        "text": "Compare the raw strings directly.",
+        "isCorrect": false
+      }
     ]
   },
   {
@@ -1314,48 +1012,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Apply normalization before using length as evidence.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-093",
+    "id": "alg-prod-array-string-093-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A comparison ignores spaces. Why is it unsafe to reject immediately because the raw string lengths differ?",
+    "prompt": "Choose why raw length is not enough.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalized_lengths_may_match",
-        "feedback": "Ignored spaces can make raw lengths differ even when the normalized strings are equal.",
-        "id": "alg-prod-array-string-093-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "normalized_lengths_may_match",
-            "text": "The normalized lengths may still match after spaces are removed."
-          },
-          {
-            "id": "reject_raw_length",
-            "text": "Raw length mismatch always proves semantic mismatch."
-          },
-          {
-            "id": "sort_first",
-            "text": "The strings must be sorted before length can be checked."
-          },
-          {
-            "id": "count_raw",
-            "text": "Raw character counts are enough even when spaces are ignored."
-          }
-        ],
-        "prompt": "Choose why raw length is not enough.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1382,7 +1045,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Do not reject on raw length before normalization",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A comparison ignores spaces. Why is it unsafe to reject immediately because the raw string lengths differ?",
+    "answerFeedback": "Ignored spaces can make raw lengths differ even when the normalized strings are equal.",
+    "options": [
+      {
+        "id": "normalized_lengths_may_match",
+        "text": "The normalized lengths may still match after spaces are removed.",
+        "isCorrect": true
+      },
+      {
+        "id": "reject_raw_length",
+        "text": "Raw length mismatch always proves semantic mismatch.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "The strings must be sorted before length can be checked.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_raw",
+        "text": "Raw character counts are enough even when spaces are ignored.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1402,48 +1089,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "After the main comparison loop, skip trailing ignored characters and check both ends.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-094",
+    "id": "alg-prod-array-string-094-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "In a streaming comparison that ignores spaces, what must be true after all comparable characters have matched?",
+    "prompt": "Choose the final streaming equality check.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "both_meaningful_streams_end",
-        "feedback": "After skipping ignored spaces, both strings must have no remaining meaningful characters.",
-        "id": "alg-prod-array-string-094-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "both_meaningful_streams_end",
-            "text": "Both normalized streams must be exhausted."
-          },
-          {
-            "id": "first_end_is_enough",
-            "text": "It is enough that the first raw string ends."
-          },
-          {
-            "id": "raw_lengths_equal",
-            "text": "Only the raw lengths must be equal."
-          },
-          {
-            "id": "sort_remaining",
-            "text": "Any remaining characters should be sorted."
-          }
-        ],
-        "prompt": "Choose the final streaming equality check.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1480,7 +1132,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Check both normalized streams end together",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "In a streaming comparison that ignores spaces, what must be true after all comparable characters have matched?",
+    "answerFeedback": "After skipping ignored spaces, both strings must have no remaining meaningful characters.",
+    "options": [
+      {
+        "id": "both_meaningful_streams_end",
+        "text": "Both normalized streams must be exhausted.",
+        "isCorrect": true
+      },
+      {
+        "id": "first_end_is_enough",
+        "text": "It is enough that the first raw string ends.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_lengths_equal",
+        "text": "Only the raw lengths must be equal.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_remaining",
+        "text": "Any remaining characters should be sorted.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1500,48 +1176,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Explain equality using the normalized representations.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-095",
+    "id": "alg-prod-array-string-095-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "Why should `A b` and `ab` match when the comparison ignores spaces and case?",
+    "prompt": "Choose the semantic-equality explanation.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_normalized_sequence",
-        "feedback": "Both inputs normalize to the same sequence, `ab`.",
-        "id": "alg-prod-array-string-095-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "same_normalized_sequence",
-            "text": "They become the same normalized sequence."
-          },
-          {
-            "id": "raw_difference",
-            "text": "They should not match because the raw strings differ."
-          },
-          {
-            "id": "frequency_only",
-            "text": "They match only because the character counts match."
-          },
-          {
-            "id": "adjacency_only",
-            "text": "They match because adjacent characters are equal."
-          }
-        ],
-        "prompt": "Choose the semantic-equality explanation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1568,7 +1209,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Explain semantic equality from normalized form",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "Why should `A b` and `ab` match when the comparison ignores spaces and case?",
+    "answerFeedback": "Both inputs normalize to the same sequence, `ab`.",
+    "options": [
+      {
+        "id": "same_normalized_sequence",
+        "text": "They become the same normalized sequence.",
+        "isCorrect": true
+      },
+      {
+        "id": "raw_difference",
+        "text": "They should not match because the raw strings differ.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_only",
+        "text": "They match only because the character counts match.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacency_only",
+        "text": "They match because adjacent characters are equal.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1589,48 +1254,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "To expose frequency misuse, use same counts with different order.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-096",
+    "id": "alg-prod-array-string-096-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "A learner uses frequency counts for normalized phrase equality where order still matters. Which test case exposes the bug?",
+    "prompt": "Choose the counterexample.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "ab_ba",
-        "feedback": "`ab` and `ba` have the same counts, but they are not the same sequence.",
-        "id": "alg-prod-array-string-096-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "ab_ba",
-            "text": "`ab` and `ba`"
-          },
-          {
-            "id": "a_space_b_ab",
-            "text": "`a b` and `ab`"
-          },
-          {
-            "id": "case_pair",
-            "text": "`A` and `a`"
-          },
-          {
-            "id": "same_raw",
-            "text": "`abc` and `abc`"
-          }
-        ],
-        "prompt": "Choose the counterexample.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1657,7 +1287,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Pick a counterexample for frequency misuse in normalized equality",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A learner uses frequency counts for normalized phrase equality where order still matters. Which test case exposes the bug?",
+    "answerFeedback": "`ab` and `ba` have the same counts, but they are not the same sequence.",
+    "options": [
+      {
+        "id": "ab_ba",
+        "text": "`ab` and `ba`",
+        "isCorrect": true
+      },
+      {
+        "id": "a_space_b_ab",
+        "text": "`a b` and `ab`",
+        "isCorrect": false
+      },
+      {
+        "id": "case_pair",
+        "text": "`A` and `a`",
+        "isCorrect": false
+      },
+      {
+        "id": "same_raw",
+        "text": "`abc` and `abc`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1677,48 +1331,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Classify the final comparison as raw equality, normalized sequence equality, or multiset equality.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-097",
+    "id": "alg-prod-array-string-097-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "normalization_before_comparison",
-    "prompt": "A prompt says two phrases match if they are equal after removing spaces and ignoring case. What comparison contract is this?",
+    "prompt": "Choose the comparison contract.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalized_sequence_equality",
-        "feedback": "The contract is normalized sequence equality: transform both phrases, then compare order-preserving sequences.",
-        "id": "alg-prod-array-string-097-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "normalized_sequence_equality",
-            "text": "Normalized sequence equality."
-          },
-          {
-            "id": "anagram_contract",
-            "text": "Anagram equality."
-          },
-          {
-            "id": "raw_contract",
-            "text": "Raw string equality."
-          },
-          {
-            "id": "length_contract",
-            "text": "Length-only equality."
-          }
-        ],
-        "prompt": "Choose the comparison contract.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "normalization_before_comparison"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1745,7 +1364,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Name normalized sequence equality",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A prompt says two phrases match if they are equal after removing spaces and ignoring case. What comparison contract is this?",
+    "answerFeedback": "The contract is normalized sequence equality: transform both phrases, then compare order-preserving sequences.",
+    "options": [
+      {
+        "id": "normalized_sequence_equality",
+        "text": "Normalized sequence equality.",
+        "isCorrect": true
+      },
+      {
+        "id": "anagram_contract",
+        "text": "Anagram equality.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_contract",
+        "text": "Raw string equality.",
+        "isCorrect": false
+      },
+      {
+        "id": "length_contract",
+        "text": "Length-only equality.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1765,48 +1408,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Trace each pointer to the next meaningful character, normalize both, then compare.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-098",
+    "id": "alg-prod-array-string-098-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "streaming_normalization_tradeoff",
-    "prompt": "In a streaming case-insensitive comparison, the next meaningful characters are `B` and `b`. What should the comparison do?",
+    "prompt": "Choose the correct streaming comparison step.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "apply_string_normalization"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "normalize_and_match",
-        "feedback": "`B` and `b` match after applying consistent casing.",
-        "id": "alg-prod-array-string-098-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "normalize_and_match",
-            "text": "Normalize casing and treat them as matching."
-          },
-          {
-            "id": "raw_mismatch",
-            "text": "Return false because the raw characters differ."
-          },
-          {
-            "id": "skip_meaningful",
-            "text": "Skip both characters because letters are ignored."
-          },
-          {
-            "id": "count_instead",
-            "text": "Stop sequence comparison and compare only counts."
-          }
-        ],
-        "prompt": "Choose the correct streaming comparison step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "streaming_normalization_tradeoff"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1843,7 +1451,31 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Trace case-insensitive streaming comparison",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "In a streaming case-insensitive comparison, the next meaningful characters are `B` and `b`. What should the comparison do?",
+    "answerFeedback": "`B` and `b` match after applying consistent casing.",
+    "options": [
+      {
+        "id": "normalize_and_match",
+        "text": "Normalize casing and treat them as matching.",
+        "isCorrect": true
+      },
+      {
+        "id": "raw_mismatch",
+        "text": "Return false because the raw characters differ.",
+        "isCorrect": false
+      },
+      {
+        "id": "skip_meaningful",
+        "text": "Skip both characters because letters are ignored.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_instead",
+        "text": "Stop sequence comparison and compare only counts.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1863,48 +1495,13 @@ export const stringNormalizationQuestions = [
       "nextAction": "Write both normalized forms and compare them directly.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-099",
+    "id": "alg-prod-array-string-099-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_string_normalization",
-    "prompt": "`A b` normalizes to `ab`, and `ba` normalizes to `ba`. What should normalized sequence equality decide?",
+    "prompt": "Choose the normalized equality decision.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "normalization_before_comparison"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "reject_sequence_differs",
-        "feedback": "The normalized sequences are `ab` and `ba`, so order differs and semantic equality should reject.",
-        "id": "alg-prod-array-string-099-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "reject_sequence_differs",
-            "text": "Reject because the normalized sequences differ."
-          },
-          {
-            "id": "accept_counts",
-            "text": "Accept because the character counts match."
-          },
-          {
-            "id": "accept_sets",
-            "text": "Accept because the unique characters match."
-          },
-          {
-            "id": "reject_raw_only",
-            "text": "Reject only because the raw strings differ."
-          }
-        ],
-        "prompt": "Choose the normalized equality decision.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_string_normalization"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1931,6 +1528,30 @@ export const stringNormalizationQuestions = [
     ],
     "title": "Reject equal counts when normalized order differs",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "`A b` normalizes to `ab`, and `ba` normalizes to `ba`. What should normalized sequence equality decide?",
+    "answerFeedback": "The normalized sequences are `ab` and `ba`, so order differs and semantic equality should reject.",
+    "options": [
+      {
+        "id": "reject_sequence_differs",
+        "text": "Reject because the normalized sequences differ.",
+        "isCorrect": true
+      },
+      {
+        "id": "accept_counts",
+        "text": "Accept because the character counts match.",
+        "isCorrect": false
+      },
+      {
+        "id": "accept_sets",
+        "text": "Accept because the unique characters match.",
+        "isCorrect": false
+      },
+      {
+        "id": "reject_raw_only",
+        "text": "Reject only because the raw strings differ.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

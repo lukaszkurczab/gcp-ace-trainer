@@ -106,7 +106,7 @@ test("track review queue view model joins Algorithms review items to Algorithms 
     reviewQueueItems: [
       makeAlgorithmsReviewQueueItem({
         dueAt: "2026-06-30T11:00:00.000Z",
-        itemId: "alg-hash-map-primer-001",
+        itemId: "alg-recognize-hash-state-signal-001",
         priority: "high",
       }),
     ],
@@ -196,7 +196,7 @@ function makeAlgorithmsReviewQueueItem(
     createdAt: "2026-06-29T12:00:00.000Z",
     dueAt: "2026-06-30T12:00:00.000Z",
     id: "review:attempt-algorithms-review-001",
-    itemId: "alg-hash-map-primer-001",
+    itemId: "alg-recognize-hash-state-signal-001",
     mistakeTypeRefs: [
       {
         axisId: "mistake_type",

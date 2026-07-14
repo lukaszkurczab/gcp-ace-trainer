@@ -1,292 +1,774 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const backtrackingVsMemoizedSearchQuestions = [
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-001",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["strategy_selection", "overlapping_subproblems"],
-    type: "single_choice",
-    prompt: "A recursive search only needs to return whether a suffix of a string can be segmented into dictionary words. The same start index is reached through many branches. Which improvement is most appropriate?",
-    options: [
-      { id: "memoize_start_index", text: "Memoize whether each start index can lead to a valid segmentation." },
-      { id: "collect_all_paths", text: "Store every possible segmentation path before returning a boolean." },
-      { id: "sort_string", text: "Sort the string before segmenting it." },
-      { id: "global_visited_chars", text: "Mark characters globally visited so later branches cannot use them." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-001-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "strategy_selection",
+      "overlapping_subproblems"
     ],
-    correctAnswerId: "memoize_start_index",
-    feedbackModel: {
-      decisionSignal: "Boolean word-break search has overlapping suffix states; the answer from a start index can be reused.",
-      distractorExplanations: {
-        collect_all_paths: "Collecting all paths solves a broader output contract than boolean existence.",
-        sort_string: "Sorting destroys the original word order and segmentation boundaries.",
-        global_visited_chars: "Segmentation consumes ordered ranges; global character visited state is the wrong model.",
+    "type": "single_choice",
+    "prompt": "A recursive search only needs to return whether a suffix of a string can be segmented into dictionary words. The same start index is reached through many branches. Which improvement is most appropriate?",
+    "feedbackModel": {
+      "decisionSignal": "Boolean word-break search has overlapping suffix states; the answer from a start index can be reused.",
+      "distractorExplanations": {
+        "collect_all_paths": "Collecting all paths solves a broader output contract than boolean existence.",
+        "sort_string": "Sorting destroys the original word order and segmentation boundaries.",
+        "global_visited_chars": "Segmentation consumes ordered ranges; global character visited state is the wrong model."
       },
-      mentalModelCorrection: "When different branches ask the same existence question about the same remaining state, memoization may be the missing optimization.",
-      mistakeTypes: ["unnecessary_search_space", "memoization_opportunity_missed"],
-      nextAction: "Check whether recursive calls revisit the same state with the same required answer.",
-      result: "diagnostic",
+      "mentalModelCorrection": "When different branches ask the same existence question about the same remaining state, memoization may be the missing optimization.",
+      "mistakeTypes": [
+        "unnecessary_search_space",
+        "memoization_opportunity_missed"
+      ],
+      "nextAction": "Check whether recursive calls revisit the same state with the same required answer.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "unnecessary_search_space",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_opportunity_missed",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "Boolean word-break search has overlapping suffix states; the answer from a start index can be reused.",
+    "options": [
+      {
+        "id": "memoize_start_index",
+        "text": "Memoize whether each start index can lead to a valid segmentation.",
+        "isCorrect": true
+      },
+      {
+        "id": "collect_all_paths",
+        "text": "Store every possible segmentation path before returning a boolean.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_string",
+        "text": "Sort the string before segmenting it.",
+        "isCorrect": false
+      },
+      {
+        "id": "global_visited_chars",
+        "text": "Mark characters globally visited so later branches cannot use them.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-002",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["output_contract_misread", "word_break_segmentation"],
-    type: "single_choice",
-    prompt: "A word-break problem asks for all valid sentences, not just whether one exists. What changes compared with boolean memoized search?",
-    options: [
-      { id: "return_lists_per_state", text: "A state may need to return or collect all suffix sentence continuations, not just true or false." },
-      { id: "boolean_only", text: "A single boolean per start index is always enough to produce all sentences." },
-      { id: "sort_dictionary", text: "Sorting the dictionary replaces recursive result construction." },
-      { id: "stop_first", text: "The search should stop after the first valid sentence." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-002-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "output_contract_misread",
+      "word_break_segmentation"
     ],
-    correctAnswerId: "return_lists_per_state",
-    feedbackModel: {
-      decisionSignal: "Collect-all output requires preserving actual continuations, while boolean existence only needs success or failure.",
-      distractorExplanations: {
-        boolean_only: "A boolean can prove existence but cannot reconstruct every sentence.",
-        sort_dictionary: "Dictionary order does not replace result generation.",
-        stop_first: "Stopping after the first sentence violates the collect-all contract.",
+    "type": "single_choice",
+    "prompt": "A word-break problem asks for all valid sentences, not just whether one exists. What changes compared with boolean memoized search?",
+    "feedbackModel": {
+      "decisionSignal": "Collect-all output requires preserving actual continuations, while boolean existence only needs success or failure.",
+      "distractorExplanations": {
+        "boolean_only": "A boolean can prove existence but cannot reconstruct every sentence.",
+        "sort_dictionary": "Dictionary order does not replace result generation.",
+        "stop_first": "Stopping after the first sentence violates the collect-all contract."
       },
-      mentalModelCorrection: "Memoization must match the return contract of the state, not just the state key.",
-      mistakeTypes: ["output_contract_misread", "memoization_contract_misread"],
-      nextAction: "Before memoizing, define whether each state returns boolean, count, one result, or all results.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memoization must match the return contract of the state, not just the state key.",
+      "mistakeTypes": [
+        "output_contract_misread",
+        "memoization_contract_misread"
+      ],
+      "nextAction": "Before memoizing, define whether each state returns boolean, count, one result, or all results.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "output_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "Collect-all output requires preserving actual continuations, while boolean existence only needs success or failure.",
+    "options": [
+      {
+        "id": "return_lists_per_state",
+        "text": "A state may need to return or collect all suffix sentence continuations, not just true or false.",
+        "isCorrect": true
+      },
+      {
+        "id": "boolean_only",
+        "text": "A single boolean per start index is always enough to produce all sentences.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_dictionary",
+        "text": "Sorting the dictionary replaces recursive result construction.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop_first",
+        "text": "The search should stop after the first valid sentence.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-003",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["target_sum_search", "overlapping_subproblems"],
-    type: "single_choice",
-    prompt: "A subset-sum search asks only whether some subset reaches target. The recursion state is index and remaining. Many branches revisit the same pair. What should be considered?",
-    options: [
-      { id: "memoize_index_remaining", text: "Memoize failed or successful states keyed by index and remaining." },
-      { id: "store_every_subset", text: "Store every subset path before returning true or false." },
-      { id: "use_stack_order", text: "Use a stack because target sum is a nested-structure problem." },
-      { id: "ignore_remaining", text: "Ignore remaining because memoization only works for strings." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-003-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "target_sum_search",
+      "overlapping_subproblems"
     ],
-    correctAnswerId: "memoize_index_remaining",
-    feedbackModel: {
-      decisionSignal: "For boolean subset-sum, the same index and remaining target define the same future question.",
-      distractorExplanations: {
-        store_every_subset: "The prompt asks for existence, not all subsets.",
-        use_stack_order: "Target sum does not have a last-in-first-out nesting rule.",
-        ignore_remaining: "remaining is part of the state that determines the answer.",
+    "type": "single_choice",
+    "prompt": "A subset-sum search asks only whether some subset reaches target. The recursion state is index and remaining. Many branches revisit the same pair. What should be considered?",
+    "feedbackModel": {
+      "decisionSignal": "For boolean subset-sum, the same index and remaining target define the same future question.",
+      "distractorExplanations": {
+        "store_every_subset": "The prompt asks for existence, not all subsets.",
+        "use_stack_order": "Target sum does not have a last-in-first-out nesting rule.",
+        "ignore_remaining": "remaining is part of the state that determines the answer."
       },
-      mentalModelCorrection: "Memo keys should include the state fields that determine the future search result.",
-      mistakeTypes: ["memoization_opportunity_missed", "state_model_misread"],
-      nextAction: "Ask whether two calls with the same state would always return the same answer.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memo keys should include the state fields that determine the future search result.",
+      "mistakeTypes": [
+        "memoization_opportunity_missed",
+        "state_model_misread"
+      ],
+      "nextAction": "Ask whether two calls with the same state would always return the same answer.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_opportunity_missed",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "state_model_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "For boolean subset-sum, the same index and remaining target define the same future question.",
+    "options": [
+      {
+        "id": "memoize_index_remaining",
+        "text": "Memoize failed or successful states keyed by index and remaining.",
+        "isCorrect": true
+      },
+      {
+        "id": "store_every_subset",
+        "text": "Store every subset path before returning true or false.",
+        "isCorrect": false
+      },
+      {
+        "id": "use_stack_order",
+        "text": "Use a stack because target sum is a nested-structure problem.",
+        "isCorrect": false
+      },
+      {
+        "id": "ignore_remaining",
+        "text": "Ignore remaining because memoization only works for strings.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-004",
-    learningStage: "foundations",
-    primarySkillAtomId: "memoization_state_key",
-    secondarySkillAtomIds: ["target_sum_search", "minimal_state_reasoning"],
-    type: "single_choice",
-    prompt: "A boolean target-sum DFS uses state index and remaining. Which memo key is most appropriate?",
-    options: [
-      { id: "index_remaining", text: "A key containing both index and remaining." },
-      { id: "path_only", text: "Only the current path values." },
-      { id: "result_length", text: "Only the number of valid results found so far." },
-      { id: "sorted_input_only", text: "Only the sorted input array." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-004-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "memoization_state_key",
+    "secondarySkillAtomIds": [
+      "target_sum_search",
+      "minimal_state_reasoning"
     ],
-    correctAnswerId: "index_remaining",
-    feedbackModel: {
-      decisionSignal: "The future boolean answer depends on which candidates remain and how much target remains.",
-      distractorExplanations: {
-        path_only: "Different paths can lead to the same index and remaining; the future question is the same without needing the full path.",
-        result_length: "The number of completed results does not determine whether this state can succeed.",
-        sorted_input_only: "The input is fixed and does not identify the current recursive state.",
+    "type": "single_choice",
+    "prompt": "A boolean target-sum DFS uses state index and remaining. Which memo key is most appropriate?",
+    "feedbackModel": {
+      "decisionSignal": "The future boolean answer depends on which candidates remain and how much target remains.",
+      "distractorExplanations": {
+        "path_only": "Different paths can lead to the same index and remaining; the future question is the same without needing the full path.",
+        "result_length": "The number of completed results does not determine whether this state can succeed.",
+        "sorted_input_only": "The input is fixed and does not identify the current recursive state."
       },
-      mentalModelCorrection: "A memo key should represent the canonical future state, not incidental history.",
-      mistakeTypes: ["memoization_contract_misread", "state_model_misread"],
-      nextAction: "Include exactly the state fields that change the answer for the remaining search.",
-      result: "diagnostic",
+      "mentalModelCorrection": "A memo key should represent the canonical future state, not incidental history.",
+      "mistakeTypes": [
+        "memoization_contract_misread",
+        "state_model_misread"
+      ],
+      "nextAction": "Include exactly the state fields that change the answer for the remaining search.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "memoization_state_key",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "state_model_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "The future boolean answer depends on which candidates remain and how much target remains.",
+    "options": [
+      {
+        "id": "index_remaining",
+        "text": "A key containing both index and remaining.",
+        "isCorrect": true
+      },
+      {
+        "id": "path_only",
+        "text": "Only the current path values.",
+        "isCorrect": false
+      },
+      {
+        "id": "result_length",
+        "text": "Only the number of valid results found so far.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_input_only",
+        "text": "Only the sorted input array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-005",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["permutation_generation", "output_size_reasoning"],
-    type: "single_choice",
-    prompt: "A problem asks to return all permutations of n distinct values. Why is memoizing by path length not a useful replacement for enumeration?",
-    options: [
-      { id: "outputs_differ", text: "Many different permutations have the same path length, and the output requires each distinct arrangement." },
-      { id: "path_length_unique", text: "Path length uniquely identifies every permutation." },
-      { id: "memo_removes_output", text: "Memoization makes it unnecessary to return the requested outputs." },
-      { id: "sorting_enough", text: "Sorting once returns all permutations." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-005-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "permutation_generation",
+      "output_size_reasoning"
     ],
-    correctAnswerId: "outputs_differ",
-    feedbackModel: {
-      decisionSignal: "The output itself contains many arrangements, so a coarse memo key like length collapses distinct required results.",
-      distractorExplanations: {
-        path_length_unique: "All complete permutations have the same length but different value orders.",
-        memo_removes_output: "Optimization cannot remove the need to produce requested outputs.",
-        sorting_enough: "Sorting returns one canonical order, not all permutations.",
+    "type": "single_choice",
+    "prompt": "A problem asks to return all permutations of n distinct values. Why is memoizing by path length not a useful replacement for enumeration?",
+    "feedbackModel": {
+      "decisionSignal": "The output itself contains many arrangements, so a coarse memo key like length collapses distinct required results.",
+      "distractorExplanations": {
+        "path_length_unique": "All complete permutations have the same length but different value orders.",
+        "memo_removes_output": "Optimization cannot remove the need to produce requested outputs.",
+        "sorting_enough": "Sorting returns one canonical order, not all permutations."
       },
-      mentalModelCorrection: "Memoization helps repeated subproblems; it does not erase required output multiplicity.",
-      mistakeTypes: ["output_contract_misread", "memoization_contract_misread"],
-      nextAction: "Check whether the problem's output size already forces explicit enumeration.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memoization helps repeated subproblems; it does not erase required output multiplicity.",
+      "mistakeTypes": [
+        "output_contract_misread",
+        "memoization_contract_misread"
+      ],
+      "nextAction": "Check whether the problem's output size already forces explicit enumeration.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "output_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "The output itself contains many arrangements, so a coarse memo key like length collapses distinct required results.",
+    "options": [
+      {
+        "id": "outputs_differ",
+        "text": "Many different permutations have the same path length, and the output requires each distinct arrangement.",
+        "isCorrect": true
+      },
+      {
+        "id": "path_length_unique",
+        "text": "Path length uniquely identifies every permutation.",
+        "isCorrect": false
+      },
+      {
+        "id": "memo_removes_output",
+        "text": "Memoization makes it unnecessary to return the requested outputs.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_enough",
+        "text": "Sorting once returns all permutations.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-006",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["existence_search", "first_solution_contract"],
-    type: "single_choice",
-    prompt: "A search asks whether any valid configuration exists. A state is proven impossible. What can memoization safely store?",
-    options: [
-      { id: "state_false", text: "Store that this state cannot lead to a solution." },
-      { id: "all_paths", text: "Store every path that passed through the state." },
-      { id: "random_sibling", text: "Store that a random sibling branch must also fail." },
-      { id: "sorted_result", text: "Store the sorted version of the final result." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-006-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "existence_search",
+      "first_solution_contract"
     ],
-    correctAnswerId: "state_false",
-    feedbackModel: {
-      decisionSignal: "For boolean search, a repeated impossible state can be skipped once its failure is known.",
-      distractorExplanations: {
-        all_paths: "The prompt asks for existence, not path collection.",
-        random_sibling: "A sibling branch can only be skipped if it reaches the same memoized state or is separately proven impossible.",
-        sorted_result: "There is no final result from a failed state to sort.",
+    "type": "single_choice",
+    "prompt": "A search asks whether any valid configuration exists. A state is proven impossible. What can memoization safely store?",
+    "feedbackModel": {
+      "decisionSignal": "For boolean search, a repeated impossible state can be skipped once its failure is known.",
+      "distractorExplanations": {
+        "all_paths": "The prompt asks for existence, not path collection.",
+        "random_sibling": "A sibling branch can only be skipped if it reaches the same memoized state or is separately proven impossible.",
+        "sorted_result": "There is no final result from a failed state to sort."
       },
-      mentalModelCorrection: "Memoization stores answers for states, not vague conclusions about unrelated branches.",
-      mistakeTypes: ["memoization_contract_misread", "unsafe_pruning"],
-      nextAction: "Only reuse memo results when the current state matches the memo key.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memoization stores answers for states, not vague conclusions about unrelated branches.",
+      "mistakeTypes": [
+        "memoization_contract_misread",
+        "unsafe_pruning"
+      ],
+      "nextAction": "Only reuse memo results when the current state matches the memo key.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "unsafe_pruning",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "For boolean search, a repeated impossible state can be skipped once its failure is known.",
+    "options": [
+      {
+        "id": "state_false",
+        "text": "Store that this state cannot lead to a solution.",
+        "isCorrect": true
+      },
+      {
+        "id": "all_paths",
+        "text": "Store every path that passed through the state.",
+        "isCorrect": false
+      },
+      {
+        "id": "random_sibling",
+        "text": "Store that a random sibling branch must also fail.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_result",
+        "text": "Store the sorted version of the final result.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-007",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["backtracking_result_collection", "output_contract_misread"],
-    type: "single_choice",
-    prompt: "A problem asks for all valid combinations. A memoized boolean says state X can succeed. Why is that not enough to produce the final answer?",
-    options: [
-      { id: "needs_actual_combinations", text: "The output requires the actual combinations, not just proof that at least one exists from state X." },
-      { id: "boolean_invalid_always", text: "Boolean memoization is never useful in any recursive search." },
-      { id: "state_x_sorted", text: "State X must be sorted before it can be used." },
-      { id: "success_means_stop_all", text: "A successful state means the whole collect-all search must stop immediately." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-007-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "backtracking_result_collection",
+      "output_contract_misread"
     ],
-    correctAnswerId: "needs_actual_combinations",
-    feedbackModel: {
-      decisionSignal: "Collect-all output needs concrete result paths or continuations, not only existence information.",
-      distractorExplanations: {
-        boolean_invalid_always: "Boolean memoization is useful for boolean contracts; it is insufficient for collect-all output by itself.",
-        state_x_sorted: "Sorting is unrelated to whether boolean information satisfies the output contract.",
-        success_means_stop_all: "Stopping after one successful state violates the collect-all requirement.",
+    "type": "single_choice",
+    "prompt": "A problem asks for all valid combinations. A memoized boolean says state X can succeed. Why is that not enough to produce the final answer?",
+    "feedbackModel": {
+      "decisionSignal": "Collect-all output needs concrete result paths or continuations, not only existence information.",
+      "distractorExplanations": {
+        "boolean_invalid_always": "Boolean memoization is useful for boolean contracts; it is insufficient for collect-all output by itself.",
+        "state_x_sorted": "Sorting is unrelated to whether boolean information satisfies the output contract.",
+        "success_means_stop_all": "Stopping after one successful state violates the collect-all requirement."
       },
-      mentalModelCorrection: "The memoized value must carry enough information to satisfy the caller's result contract.",
-      mistakeTypes: ["output_contract_misread", "memoization_contract_misread"],
-      nextAction: "Match memo value shape to the output needed from that state.",
-      result: "diagnostic",
+      "mentalModelCorrection": "The memoized value must carry enough information to satisfy the caller's result contract.",
+      "mistakeTypes": [
+        "output_contract_misread",
+        "memoization_contract_misread"
+      ],
+      "nextAction": "Match memo value shape to the output needed from that state.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "output_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "Collect-all output needs concrete result paths or continuations, not only existence information.",
+    "options": [
+      {
+        "id": "needs_actual_combinations",
+        "text": "The output requires the actual combinations, not just proof that at least one exists from state X.",
+        "isCorrect": true
+      },
+      {
+        "id": "boolean_invalid_always",
+        "text": "Boolean memoization is never useful in any recursive search.",
+        "isCorrect": false
+      },
+      {
+        "id": "state_x_sorted",
+        "text": "State X must be sorted before it can be used.",
+        "isCorrect": false
+      },
+      {
+        "id": "success_means_stop_all",
+        "text": "A successful state means the whole collect-all search must stop immediately.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "intro",
-    id: "alg-backtracking-memo-008",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["overlapping_subproblems", "strategy_selection"],
-    type: "single_choice",
-    prompt: "Which signal most strongly suggests adding memoization to a recursive search?",
-    options: [
-      { id: "same_state_repeated", text: "Different branches repeatedly reach the same state with the same remaining question." },
-      { id: "path_has_values", text: "The current path contains at least one value." },
-      { id: "input_is_string", text: "The input is a string." },
-      { id: "result_is_array", text: "The result is stored in an array." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "intro",
+    "id": "alg-backtracking-memo-008-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "overlapping_subproblems",
+      "strategy_selection"
     ],
-    correctAnswerId: "same_state_repeated",
-    feedbackModel: {
-      decisionSignal: "Memoization is useful when identical states recur and have reusable answers.",
-      distractorExplanations: {
-        path_has_values: "A non-empty path does not prove overlapping subproblems.",
-        input_is_string: "Strings can have memoizable or non-memoizable searches depending on state overlap.",
-        result_is_array: "Result storage shape alone does not imply repeated states.",
+    "type": "single_choice",
+    "prompt": "Which signal most strongly suggests adding memoization to a recursive search?",
+    "feedbackModel": {
+      "decisionSignal": "Memoization is useful when identical states recur and have reusable answers.",
+      "distractorExplanations": {
+        "path_has_values": "A non-empty path does not prove overlapping subproblems.",
+        "input_is_string": "Strings can have memoizable or non-memoizable searches depending on state overlap.",
+        "result_is_array": "Result storage shape alone does not imply repeated states."
       },
-      mentalModelCorrection: "Memoization targets repeated state, not a particular input type or data structure.",
-      mistakeTypes: ["memoization_opportunity_missed", "irrelevant_condition_used"],
-      nextAction: "Trace whether two branches can call the same state and ask the same question.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memoization targets repeated state, not a particular input type or data structure.",
+      "mistakeTypes": [
+        "memoization_opportunity_missed",
+        "irrelevant_condition_used"
+      ],
+      "nextAction": "Trace whether two branches can call the same state and ask the same question.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_opportunity_missed",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "irrelevant_condition_used",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "Memoization is useful when identical states recur and have reusable answers.",
+    "options": [
+      {
+        "id": "same_state_repeated",
+        "text": "Different branches repeatedly reach the same state with the same remaining question.",
+        "isCorrect": true
+      },
+      {
+        "id": "path_has_values",
+        "text": "The current path contains at least one value.",
+        "isCorrect": false
+      },
+      {
+        "id": "input_is_string",
+        "text": "The input is a string.",
+        "isCorrect": false
+      },
+      {
+        "id": "result_is_array",
+        "text": "The result is stored in an array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-009",
-    learningStage: "foundations",
-    primarySkillAtomId: "memoization_state_key",
-    secondarySkillAtomIds: ["minimal_state_reasoning", "state_model_misread"],
-    type: "single_choice",
-    prompt: "A memoized DFS uses a key that omits remaining, even though remaining changes which target-sum branches can succeed. What is the risk?",
-    options: [
-      { id: "conflates_states", text: "Different states may be treated as the same, causing incorrect reuse of answers." },
-      { id: "only_slower", text: "The result is only slower but always correct." },
-      { id: "forces_all_results", text: "The function automatically changes from boolean search to collect-all search." },
-      { id: "removes_recursion", text: "Omitting remaining removes the need for recursive calls." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-009-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "memoization_state_key",
+    "secondarySkillAtomIds": [
+      "minimal_state_reasoning",
+      "state_model_misread"
     ],
-    correctAnswerId: "conflates_states",
-    feedbackModel: {
-      decisionSignal: "If a field changes the future answer, omitting it from the memo key can merge non-equivalent states.",
-      distractorExplanations: {
-        only_slower: "An incomplete key can be incorrect, not merely inefficient.",
-        forces_all_results: "Memo key choice does not change the requested output type.",
-        removes_recursion: "The search still needs recursion unless replaced by another complete algorithm.",
+    "type": "single_choice",
+    "prompt": "A memoized DFS uses a key that omits remaining, even though remaining changes which target-sum branches can succeed. What is the risk?",
+    "feedbackModel": {
+      "decisionSignal": "If a field changes the future answer, omitting it from the memo key can merge non-equivalent states.",
+      "distractorExplanations": {
+        "only_slower": "An incomplete key can be incorrect, not merely inefficient.",
+        "forces_all_results": "Memo key choice does not change the requested output type.",
+        "removes_recursion": "The search still needs recursion unless replaced by another complete algorithm."
       },
-      mentalModelCorrection: "Memo keys must preserve all information needed to determine the state's answer.",
-      mistakeTypes: ["memoization_contract_misread", "state_model_misread"],
-      nextAction: "Audit whether every omitted state field is truly derivable or irrelevant to the future answer.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Memo keys must preserve all information needed to determine the state's answer.",
+      "mistakeTypes": [
+        "memoization_contract_misread",
+        "state_model_misread"
+      ],
+      "nextAction": "Audit whether every omitted state field is truly derivable or irrelevant to the future answer.",
+      "result": "diagnostic"
     },
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "memoization_state_key",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "memoization_contract_misread",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "state_model_misread",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "If a field changes the future answer, omitting it from the memo key can merge non-equivalent states.",
+    "options": [
+      {
+        "id": "conflates_states",
+        "text": "Different states may be treated as the same, causing incorrect reuse of answers.",
+        "isCorrect": true
+      },
+      {
+        "id": "only_slower",
+        "text": "The result is only slower but always correct.",
+        "isCorrect": false
+      },
+      {
+        "id": "forces_all_results",
+        "text": "The function automatically changes from boolean search to collect-all search.",
+        "isCorrect": false
+      },
+      {
+        "id": "removes_recursion",
+        "text": "Omitting remaining removes the need for recursive calls.",
+        "isCorrect": false
+      }
+    ]
   },
   {
-    contentVersion: "algorithms-core",
-    difficulty: "foundational",
-    id: "alg-backtracking-memo-010",
-    learningStage: "foundations",
-    primarySkillAtomId: "backtracking_vs_memoized_search",
-    secondarySkillAtomIds: ["constraint_pruning", "overlapping_subproblems"],
-    type: "single_choice",
-    prompt: "What is the best distinction between pruning and memoization in recursive search?",
-    options: [
-      { id: "prune_vs_reuse", text: "Pruning stops a branch proven impossible; memoization reuses an answer for a previously solved state." },
-      { id: "same_thing", text: "They are the same technique with different names." },
-      { id: "memo_only_duplicates", text: "Memoization only removes duplicate output values." },
-      { id: "pruning_requires_sorting", text: "Pruning is only valid when the input has been sorted." },
+    "contentVersion": "algorithms-core",
+    "difficulty": "foundational",
+    "id": "alg-backtracking-memo-010-check",
+    "learningStage": "foundations",
+    "primarySkillAtomId": "backtracking_vs_memoized_search",
+    "secondarySkillAtomIds": [
+      "constraint_pruning",
+      "overlapping_subproblems"
     ],
-    correctAnswerId: "prune_vs_reuse",
-    feedbackModel: {
-      decisionSignal: "Pruning and memoization both reduce search, but they rely on different correctness arguments.",
-      distractorExplanations: {
-        same_thing: "Pruning uses impossibility of continuation; memoization uses repeated state answers.",
-        memo_only_duplicates: "Memoization is about repeated subproblems, not duplicate outputs specifically.",
-        pruning_requires_sorting: "Some pruning uses sorted order, but other pruning uses bounds, prefix validity, capacity, or constraints.",
+    "type": "single_choice",
+    "prompt": "What is the best distinction between pruning and memoization in recursive search?",
+    "feedbackModel": {
+      "decisionSignal": "Pruning and memoization both reduce search, but they rely on different correctness arguments.",
+      "distractorExplanations": {
+        "same_thing": "Pruning uses impossibility of continuation; memoization uses repeated state answers.",
+        "memo_only_duplicates": "Memoization is about repeated subproblems, not duplicate outputs specifically.",
+        "pruning_requires_sorting": "Some pruning uses sorted order, but other pruning uses bounds, prefix validity, capacity, or constraints."
       },
-      mentalModelCorrection: "Name why a branch can be skipped: impossible continuation or previously solved state.",
-      mistakeTypes: ["concept_boundary_confused", "wrong_pattern_selected"],
-      nextAction: "For each skipped branch, state whether the reason is a constraint proof or a memo lookup.",
-      result: "diagnostic",
+      "mentalModelCorrection": "Name why a branch can be skipped: impossible continuation or previously solved state.",
+      "mistakeTypes": [
+        "concept_boundary_confused",
+        "wrong_pattern_selected"
+      ],
+      "nextAction": "For each skipped branch, state whether the reason is a constraint proof or a memo lookup.",
+      "result": "diagnostic"
     },
-  },
-];
+    "roadmapNodeId": "backtracking",
+    "status": "active",
+    "taxonomyRefs": [
+      {
+        "axisId": "pattern_family",
+        "nodeId": "backtracking",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "backtracking_vs_memoized_search",
+        "role": "primary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "concept_boundary_confused",
+        "role": "mistake_type"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "wrong_pattern_selected",
+        "role": "mistake_type"
+      }
+    ],
+    "title": "Memo",
+    "trackId": "algorithms",
+    "answerFeedback": "Pruning and memoization both reduce search, but they rely on different correctness arguments.",
+    "options": [
+      {
+        "id": "prune_vs_reuse",
+        "text": "Pruning stops a branch proven impossible; memoization reuses an answer for a previously solved state.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_thing",
+        "text": "They are the same technique with different names.",
+        "isCorrect": false
+      },
+      {
+        "id": "memo_only_duplicates",
+        "text": "Memoization only removes duplicate output values.",
+        "isCorrect": false
+      },
+      {
+        "id": "pruning_requires_sorting",
+        "text": "Pruning is only valid when the input has been sorted.",
+        "isCorrect": false
+      }
+    ]
+  }
+] as const satisfies readonly AlgorithmQuestion[];

@@ -121,13 +121,19 @@ function makeOrderingQuestion(): AlgorithmOrderingQuestion {
 function makeComplexityQuestion(): AlgorithmComplexityQuestion {
   return {
     ...makeBaseQuestion(),
-    correctComplexity: { space: "O(1)", time: "O(n)" },
+    correctComplexity: {
+      dimensions: [
+        { acceptedValues: ["O(n)"], id: "time", values: ["O(1)", "O(n)", "O(n²)"] },
+        { acceptedValues: ["O(1)"], id: "space", values: ["O(1)", "O(n)"] },
+      ],
+    },
     type: "complexity_check",
   };
 }
 
 function makeBaseQuestion() {
   return {
+    contentVersion: "algorithms-core" as const,
     difficulty: "intro" as const,
     feedbackModel: {
       decisionSignal: "Use the authored signal.",

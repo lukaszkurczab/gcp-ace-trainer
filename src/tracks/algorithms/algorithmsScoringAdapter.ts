@@ -118,10 +118,14 @@ function getQuestionPoints(
     }
 
     return {
-      earnedPoints:
-        (response.selectedComplexityAnswer.time === question.correctComplexity.time ? 1 : 0) +
-        (response.selectedComplexityAnswer.space === question.correctComplexity.space ? 1 : 0),
-      maxPoints: 2,
+      earnedPoints: question.correctComplexity.dimensions.filter((dimension) => {
+        const selected = response.selectedComplexityAnswer[dimension.id];
+        return (
+          selected !== undefined &&
+          [...dimension.acceptedValues, ...(dimension.acceptedAliases ?? [])].includes(selected)
+        );
+      }).length,
+      maxPoints: question.correctComplexity.dimensions.length,
     };
   }
 

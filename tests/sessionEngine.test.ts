@@ -16,6 +16,8 @@ import {
 import type { TrainingAttempt, TrainingItem, TrainingSession } from "../src/domain/training";
 import {
   ALGORITHM_TRAINING_ITEMS,
+  algorithmsContentAdapter,
+  algorithmsReviewAdapter,
   createAlgorithmsScoringAdapter,
   createCloudCertificationContentAdapter,
   createCloudCertificationScoringAdapter,
@@ -204,7 +206,7 @@ test("scores a Cloud attempt through the Cloud adapter", () => {
 });
 
 test("scores an Algorithms fixture attempt through the Algorithms adapter", () => {
-  const item = getRequiredItem(ALGORITHM_TRAINING_ITEMS, "alg-hash-map-primer-001");
+  const item = getRequiredItem(ALGORITHM_TRAINING_ITEMS, "alg-recognize-hash-state-signal-001");
   const session = createTrainingSession({
     id: "session-algorithms-score-001",
     items: [item],
@@ -218,24 +220,15 @@ test("scores an Algorithms fixture attempt through the Algorithms adapter", () =
     item,
     response: {
       kind: "option_selection",
-      selectedOptionIds: ["check_complement_first"],
+      selectedOptionIds: ["seen_set"],
     },
     session,
   });
 
   const scored = scoreTrainingAttempt({
     adapter: {
-      content: {
-        getContentVersion: () => "algorithms-core",
-        getItemById: (itemId) => (itemId === item.id ? item : undefined),
-        getItems: () => [item],
-        getItemsForMode: () => [item],
-        trackId: ALGORITHMS_TRACK_ID,
-      },
-      review: {
-        createReviewQueueItems: () => [],
-        trackId: ALGORITHMS_TRACK_ID,
-      },
+      content: algorithmsContentAdapter,
+      review: algorithmsReviewAdapter,
       scoring: createAlgorithmsScoringAdapter(),
       trackId: ALGORITHMS_TRACK_ID,
     },
@@ -367,7 +360,7 @@ function makeAlgorithmsStrategyItem(): TrainingItem {
   };
 }
 
-function getRequiredItem(items: readonly TrainingItem[], itemId: string): TrainingItem {
+function getRequiredItem<Item extends { id: string }>(items: readonly Item[], itemId: string): Item {
   const item = items.find((candidate) => candidate.id === itemId);
 
   if (!item) {

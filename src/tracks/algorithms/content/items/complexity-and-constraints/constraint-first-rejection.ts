@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const constraintFirstRejectionQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -16,43 +18,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_values": "The value range may matter for some strategies, but the first signal here is the number of pair checks."
       }
     },
-    "id": "alg-complexity-constraint-first-001",
+    "id": "alg-complexity-constraint-first-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "n can be 100000, and a candidate plan compares every pair of values. What should you decide first?",
+    "prompt": "Choose the first strategy decision.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "O(n^2) pair enumeration is not viable for n near 100000.",
-        "id": "alg-complexity-constraint-first-001-check",
-        "mistakeTypes": [
-          "brute_force_when_optimized_required",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Reject the pair-enumeration plan because O(n^2) is too large for n near 100000."
-          },
-          {
-            "id": "wrong_short_code",
-            "text": "Prefer the pair-enumeration plan because it is usually the shortest code."
-          },
-          {
-            "id": "wrong_values",
-            "text": "Ignore n first and focus on whether the input values are positive or negative."
-          }
-        ],
-        "prompt": "Choose the first strategy decision.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -87,23 +58,25 @@ export const constraintFirstRejectionQuestions = [
     "rejectedApproachIds": [
       "brute_force_pair_enumeration"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Reject the pair-enumeration plan because O(n^2) is too large for n near 100000."
-        },
-        {
-          "id": "wrong_short_code",
-          "text": "Prefer the pair-enumeration plan because it is usually the shortest code."
-        },
-        {
-          "id": "wrong_values",
-          "text": "Ignore n first and focus on whether the input values are positive or negative."
-        }
-      ]
-    }
+    "instruction": "n can be 100000, and a candidate plan compares every pair of values. What should you decide first?",
+    "answerFeedback": "O(n^2) pair enumeration is not viable for n near 100000.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Reject the pair-enumeration plan because O(n^2) is too large for n near 100000.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_short_code",
+        "text": "Prefer the pair-enumeration plan because it is usually the shortest code.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_values",
+        "text": "Ignore n first and focus on whether the input values are positive or negative.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -123,44 +96,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_memory": "The prompt gives a time-scale problem, not a memory-limit problem."
       }
     },
-    "id": "alg-complexity-constraint-first-003",
+    "id": "alg-complexity-constraint-first-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A teammate says, \"Let's write the double loop first, then check if it passes.\" n can be 100000. What is the reasoning mistake?",
+    "prompt": "Choose the reasoning mistake.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The mistake is implementation-first reasoning; the input limit already rejects the double loop.",
-        "id": "alg-complexity-constraint-first-003-check",
-        "mistakeTypes": [
-          "constraint_reasoning_missed",
-          "constraint_ignored",
-          "brute_force_when_optimized_required"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "They are treating the constraint as a later validation step instead of using it to reject O(n^2) first."
-          },
-          {
-            "id": "wrong_style",
-            "text": "They are mainly choosing a style that will be harder to read."
-          },
-          {
-            "id": "wrong_memory",
-            "text": "They are mainly ignoring that the double loop always uses O(n) extra memory."
-          }
-        ],
-        "prompt": "Choose the reasoning mistake.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -185,7 +126,26 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Catch implementation-first constraint use",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A teammate says, \"Let's write the double loop first, then check if it passes.\" n can be 100000. What is the reasoning mistake?",
+    "answerFeedback": "The mistake is implementation-first reasoning; the input limit already rejects the double loop.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "They are treating the constraint as a later validation step instead of using it to reject O(n^2) first.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_style",
+        "text": "They are mainly choosing a style that will be harder to read.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_memory",
+        "text": "They are mainly ignoring that the double loop always uses O(n) extra memory.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -205,44 +165,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_lines": "Code length is not the deciding signal when the constraint rules out one growth class."
       }
     },
-    "id": "alg-complexity-constraint-first-004",
+    "id": "alg-complexity-constraint-first-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "Plan A compares every pair. Plan B scans once and keeps lookup state. n can be 100000. Which comparison should drive the choice?",
+    "prompt": "Choose the decisive comparison.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "For n = 100000, linear time with lookup state is the viable scaling direction; quadratic pair checks are not.",
-        "id": "alg-complexity-constraint-first-004-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan B trades memory for O(n) time, while Plan A's O(n^2) pair checks do not fit the input limit."
-          },
-          {
-            "id": "wrong_memory",
-            "text": "Plan A is better because it avoids lookup memory, regardless of the input limit."
-          },
-          {
-            "id": "wrong_lines",
-            "text": "Choose whichever plan has fewer lines of code before estimating growth."
-          }
-        ],
-        "prompt": "Choose the decisive comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -268,28 +196,25 @@ export const constraintFirstRejectionQuestions = [
     "title": "Choose viable growth under large n",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "input limit",
-        "time growth",
-        "state tradeoff"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan B trades memory for O(n) time, while Plan A's O(n^2) pair checks do not fit the input limit."
-        },
-        {
-          "id": "wrong_memory",
-          "text": "Plan A is better because it avoids lookup memory, regardless of the input limit."
-        },
-        {
-          "id": "wrong_lines",
-          "text": "Choose whichever plan has fewer lines of code before estimating growth."
-        }
-      ]
-    }
+    "instruction": "Plan A compares every pair. Plan B scans once and keeps lookup state. n can be 100000. Which comparison should drive the choice?",
+    "answerFeedback": "For n = 100000, linear time with lookup state is the viable scaling direction; quadratic pair checks are not.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Plan B trades memory for O(n) time, while Plan A's O(n^2) pair checks do not fit the input limit.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_memory",
+        "text": "Plan A is better because it avoids lookup memory, regardless of the input limit.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_lines",
+        "text": "Choose whichever plan has fewer lines of code before estimating growth.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -308,43 +233,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_ignore_limit": "The limit is the key signal for deciding whether this brute force is acceptable."
       }
     },
-    "id": "alg-complexity-constraint-first-005",
+    "id": "alg-complexity-constraint-first-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "n is at most 40, and a simple plan checks every pair once. What does the constraint suggest?",
+    "prompt": "Choose the constraint-based interpretation.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "With n capped at 40, O(n^2) pair enumeration may be acceptable.",
-        "id": "alg-complexity-constraint-first-005-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The small bound means a pair-enumeration plan may be acceptable."
-          },
-          {
-            "id": "wrong_always_reject",
-            "text": "Reject the plan automatically because any nested loop is always infeasible."
-          },
-          {
-            "id": "wrong_ignore_limit",
-            "text": "Ignore the input limit and choose only by the data structure names."
-          }
-        ],
-        "prompt": "Choose the constraint-based interpretation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -381,23 +275,25 @@ export const constraintFirstRejectionQuestions = [
     "rejectedApproachIds": [
       "reject_brute_force_without_checking_limit"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "The small bound means a pair-enumeration plan may be acceptable."
-        },
-        {
-          "id": "wrong_always_reject",
-          "text": "Reject the plan automatically because any nested loop is always infeasible."
-        },
-        {
-          "id": "wrong_ignore_limit",
-          "text": "Ignore the input limit and choose only by the data structure names."
-        }
-      ]
-    }
+    "instruction": "n is at most 40, and a simple plan checks every pair once. What does the constraint suggest?",
+    "answerFeedback": "With n capped at 40, O(n^2) pair enumeration may be acceptable.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The small bound means a pair-enumeration plan may be acceptable.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_always_reject",
+        "text": "Reject the plan automatically because any nested loop is always infeasible.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_ignore_limit",
+        "text": "Ignore the input limit and choose only by the data structure names.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -416,43 +312,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_syntax": "The syntax of the loop is not the deciding factor; the bound is."
       }
     },
-    "id": "alg-complexity-constraint-first-006",
+    "id": "alg-complexity-constraint-first-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "The same pair-checking approach is considered for two tasks: one has n <= 30, the other has n <= 200000. What should change?",
+    "prompt": "Choose the constraint-aware comparison.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The pair-checking plan may be acceptable at n <= 30 but should be rejected at n <= 200000.",
-        "id": "alg-complexity-constraint-first-006-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The viability changes: O(n^2) may fit n <= 30 but not n <= 200000."
-          },
-          {
-            "id": "wrong_same",
-            "text": "The viability is the same because both tasks compare pairs."
-          },
-          {
-            "id": "wrong_syntax",
-            "text": "The decision should depend mainly on whether the loops are written compactly."
-          }
-        ],
-        "prompt": "Choose the constraint-aware comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -478,28 +343,25 @@ export const constraintFirstRejectionQuestions = [
     "title": "Compare brute force across bounds",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "input bound",
-        "growth class",
-        "viability"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "The viability changes: O(n^2) may fit n <= 30 but not n <= 200000."
-        },
-        {
-          "id": "wrong_same",
-          "text": "The viability is the same because both tasks compare pairs."
-        },
-        {
-          "id": "wrong_syntax",
-          "text": "The decision should depend mainly on whether the loops are written compactly."
-        }
-      ]
-    }
+    "instruction": "The same pair-checking approach is considered for two tasks: one has n <= 30, the other has n <= 200000. What should change?",
+    "answerFeedback": "The pair-checking plan may be acceptable at n <= 30 but should be rejected at n <= 200000.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The viability changes: O(n^2) may fit n <= 30 but not n <= 200000.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_same",
+        "text": "The viability is the same because both tasks compare pairs.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_syntax",
+        "text": "The decision should depend mainly on whether the loops are written compactly.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -518,43 +380,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_same": "Both plans inspect input values, but their growth rates are not the same."
       }
     },
-    "id": "alg-complexity-constraint-first-009",
+    "id": "alg-complexity-constraint-first-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "n can be 200000. Plan A sorts once and scans. Plan B checks every pair without sorting. Which strategy signal matters first?",
+    "prompt": "Choose the strategy signal.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Sorting once and scanning is O(n log n), while pair enumeration is O(n^2).",
-        "id": "alg-complexity-constraint-first-009-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan A has O(n log n) growth, while Plan B has O(n^2) growth that does not fit the large n."
-          },
-          {
-            "id": "wrong_no_sort",
-            "text": "Plan B is better because it avoids the cost of sorting."
-          },
-          {
-            "id": "wrong_same",
-            "text": "Both plans scale the same because both compare values."
-          }
-        ],
-        "prompt": "Choose the strategy signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -580,28 +411,25 @@ export const constraintFirstRejectionQuestions = [
     "title": "Prefer sort-scan over pair checks at scale",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "input limit",
-        "growth class",
-        "candidate viability"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan A has O(n log n) growth, while Plan B has O(n^2) growth that does not fit the large n."
-        },
-        {
-          "id": "wrong_no_sort",
-          "text": "Plan B is better because it avoids the cost of sorting."
-        },
-        {
-          "id": "wrong_same",
-          "text": "Both plans scale the same because both compare values."
-        }
-      ]
-    }
+    "instruction": "n can be 200000. Plan A sorts once and scans. Plan B checks every pair without sorting. Which strategy signal matters first?",
+    "answerFeedback": "Sorting once and scanning is O(n log n), while pair enumeration is O(n^2).",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Plan A has O(n log n) growth, while Plan B has O(n^2) growth that does not fit the large n.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_no_sort",
+        "text": "Plan B is better because it avoids the cost of sorting.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_same",
+        "text": "Both plans scale the same because both compare values.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -621,44 +449,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_pair": "Pair enumeration solves too broad a problem and violates the input-size constraint."
       }
     },
-    "id": "alg-complexity-constraint-first-010",
+    "id": "alg-complexity-constraint-first-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A task has n <= 100000 and asks for a repeated membership decision. Which candidate should survive the first constraint check?",
+    "prompt": "Choose the viable candidate.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "For repeated membership at large n, one pass with lookup state is the viable candidate.",
-        "id": "alg-complexity-constraint-first-010-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "brute_force_when_optimized_required",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A one-pass scan with lookup state, because it avoids repeated scans."
-          },
-          {
-            "id": "wrong_previous_scan",
-            "text": "For each item, scan all previous items to avoid using memory."
-          },
-          {
-            "id": "wrong_pair",
-            "text": "Compare all pairs because membership is about relationships between values."
-          }
-        ],
-        "prompt": "Choose the viable candidate.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -696,23 +492,25 @@ export const constraintFirstRejectionQuestions = [
       "repeated_previous_scan",
       "brute_force_pair_enumeration"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "A one-pass scan with lookup state, because it avoids repeated scans."
-        },
-        {
-          "id": "wrong_previous_scan",
-          "text": "For each item, scan all previous items to avoid using memory."
-        },
-        {
-          "id": "wrong_pair",
-          "text": "Compare all pairs because membership is about relationships between values."
-        }
-      ]
-    }
+    "instruction": "A task has n <= 100000 and asks for a repeated membership decision. Which candidate should survive the first constraint check?",
+    "answerFeedback": "For repeated membership at large n, one pass with lookup state is the viable candidate.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A one-pass scan with lookup state, because it avoids repeated scans.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_previous_scan",
+        "text": "For each item, scan all previous items to avoid using memory.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_pair",
+        "text": "Compare all pairs because membership is about relationships between values.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -731,43 +529,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_constant": "Constant factors cannot usually rescue 100000^2 pair checks."
       }
     },
-    "id": "alg-complexity-constraint-first-011",
+    "id": "alg-complexity-constraint-first-011-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A brute force plan would do about n^2 checks. n can be 100000. Which rough scale explains the rejection?",
+    "prompt": "Choose the rough-scale reasoning.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "100000^2 is about 10^10 checks, which is the rough scale that rejects the plan.",
-        "id": "alg-complexity-constraint-first-011-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Around 10^10 checks, which is too large for a normal candidate plan."
-          },
-          {
-            "id": "wrong_exact",
-            "text": "The plan cannot be judged until exact machine speed is known."
-          },
-          {
-            "id": "wrong_constant",
-            "text": "The plan is probably fine because nested loops can have small constants."
-          }
-        ],
-        "prompt": "Choose the rough-scale reasoning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -792,7 +559,26 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Estimate rough quadratic scale",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A brute force plan would do about n^2 checks. n can be 100000. Which rough scale explains the rejection?",
+    "answerFeedback": "100000^2 is about 10^10 checks, which is the rough scale that rejects the plan.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Around 10^10 checks, which is too large for a normal candidate plan.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_exact",
+        "text": "The plan cannot be judged until exact machine speed is known.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_constant",
+        "text": "The plan is probably fine because nested loops can have small constants.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -811,43 +597,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_examples": "Passing sample inputs does not prove the worst-case growth is viable."
       }
     },
-    "id": "alg-complexity-constraint-first-012",
+    "id": "alg-complexity-constraint-first-012-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A solution has a best case that often returns after a few checks, but its worst case compares every pair. n can be 100000. Which signal should drive acceptance?",
+    "prompt": "Choose the acceptance signal.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The worst-case O(n^2) behavior must fit the constraint, unless early exit is guaranteed by the problem.",
-        "id": "alg-complexity-constraint-first-012-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The worst-case pair enumeration, because early exit is not guaranteed."
-          },
-          {
-            "id": "wrong_best",
-            "text": "The common best case, because many inputs return quickly."
-          },
-          {
-            "id": "wrong_examples",
-            "text": "The sample cases, because passing them means the complexity is acceptable."
-          }
-        ],
-        "prompt": "Choose the acceptance signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -872,7 +627,26 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Use worst-case for constraint fit",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A solution has a best case that often returns after a few checks, but its worst case compares every pair. n can be 100000. Which signal should drive acceptance?",
+    "answerFeedback": "The worst-case O(n^2) behavior must fit the constraint, unless early exit is guaranteed by the problem.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The worst-case pair enumeration, because early exit is not guaranteed.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_best",
+        "text": "The common best case, because many inputs return quickly.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_examples",
+        "text": "The sample cases, because passing them means the complexity is acceptable.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -891,43 +665,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_ignore": "You still need to estimate the repeated work, but the fixed bound changes the result."
       }
     },
-    "id": "alg-complexity-constraint-first-015",
+    "id": "alg-complexity-constraint-first-015-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A plan scans once for each possible threshold value from 1 to 100. n can be 100000. What constraint signal makes this different from pair enumeration?",
+    "prompt": "Choose the correct constraint signal.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "100 scans is O(100n), which simplifies to O(n); this is not pair enumeration.",
-        "id": "alg-complexity-constraint-first-015-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The repeated scan count is fixed at 100, so the plan is still linear in n."
-          },
-          {
-            "id": "wrong_nested",
-            "text": "Any repeated scan should be rejected as O(n^2)."
-          },
-          {
-            "id": "wrong_ignore",
-            "text": "The input limit means repeated work does not need to be estimated."
-          }
-        ],
-        "prompt": "Choose the correct constraint signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -952,7 +695,26 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Accept fixed repeated scans",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A plan scans once for each possible threshold value from 1 to 100. n can be 100000. What constraint signal makes this different from pair enumeration?",
+    "answerFeedback": "100 scans is O(100n), which simplifies to O(n); this is not pair enumeration.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The repeated scan count is fixed at 100, so the plan is still linear in n.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_nested",
+        "text": "Any repeated scan should be rejected as O(n^2).",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_ignore",
+        "text": "The input limit means repeated work does not need to be estimated.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -971,43 +733,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_unknown": "The prompt gives enough information: the inner loop is capped at 5."
       }
     },
-    "id": "alg-complexity-constraint-first-016",
+    "id": "alg-complexity-constraint-first-016-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "n can be 100000. A candidate has an outer loop over n items and an inner loop that always runs at most 5 checks. What should the constraint check conclude?",
+    "prompt": "Choose the constraint-check conclusion.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The plan is O(5n), which is O(n), so this specific nested loop is not rejected as quadratic.",
-        "id": "alg-complexity-constraint-first-016-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "It is still O(n), because the inner work is capped by a constant."
-          },
-          {
-            "id": "wrong_quadratic",
-            "text": "It must be O(n^2), because there is a loop inside a loop."
-          },
-          {
-            "id": "wrong_unknown",
-            "text": "The complexity cannot be estimated because there are two loops."
-          }
-        ],
-        "prompt": "Choose the constraint-check conclusion.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1032,7 +763,26 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Do not reject fixed inner loop",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "n can be 100000. A candidate has an outer loop over n items and an inner loop that always runs at most 5 checks. What should the constraint check conclude?",
+    "answerFeedback": "The plan is O(5n), which is O(n), so this specific nested loop is not rejected as quadratic.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "It is still O(n), because the inner work is capped by a constant.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_quadratic",
+        "text": "It must be O(n^2), because there is a loop inside a loop.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_unknown",
+        "text": "The complexity cannot be estimated because there are two loops.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1051,43 +801,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_space": "The issue is repeated time cost, not necessarily extra space."
       }
     },
-    "id": "alg-complexity-constraint-first-017",
+    "id": "alg-complexity-constraint-first-017-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "n can be 100000 and q can be 100000. A candidate scans all n items for each query. What should the constraint check notice?",
+    "prompt": "Choose the constraint-check signal.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Scanning n items for q queries is O(nq), which is not viable when both can be 100000.",
-        "id": "alg-complexity-constraint-first-017-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The plan does O(nq) work, so it fails when both n and q are large."
-          },
-          {
-            "id": "wrong_single_query",
-            "text": "The plan is O(n), because each individual query scans the list once."
-          },
-          {
-            "id": "wrong_space",
-            "text": "The plan is acceptable because it can answer queries without extra memory."
-          }
-        ],
-        "prompt": "Choose the constraint-check signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1122,23 +841,25 @@ export const constraintFirstRejectionQuestions = [
     "rejectedApproachIds": [
       "scan_each_query"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "The plan does O(nq) work, so it fails when both n and q are large."
-        },
-        {
-          "id": "wrong_single_query",
-          "text": "The plan is O(n), because each individual query scans the list once."
-        },
-        {
-          "id": "wrong_space",
-          "text": "The plan is acceptable because it can answer queries without extra memory."
-        }
-      ]
-    }
+    "instruction": "n can be 100000 and q can be 100000. A candidate scans all n items for each query. What should the constraint check notice?",
+    "answerFeedback": "Scanning n items for q queries is O(nq), which is not viable when both can be 100000.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The plan does O(nq) work, so it fails when both n and q are large.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_single_query",
+        "text": "The plan is O(n), because each individual query scans the list once.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_space",
+        "text": "The plan is acceptable because it can answer queries without extra memory.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1157,43 +878,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_correctness": "Correctness still matters later, but this step asks which growth class survives."
       }
     },
-    "id": "alg-complexity-constraint-first-018",
+    "id": "alg-complexity-constraint-first-018-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A plan uses O(n log n) sorting for n = 100000. Another uses O(n^2) pair checks. Which one survives the first constraint screen?",
+    "prompt": "Choose the candidate that survives the first screen.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "O(n log n) survives the first constraint screen more plausibly than O(n^2) at n = 100000.",
-        "id": "alg-complexity-constraint-first-018-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The O(n log n) sorting-based candidate survives the first growth check."
-          },
-          {
-            "id": "wrong_quadratic",
-            "text": "The O(n^2) pair-check candidate survives because it avoids sorting."
-          },
-          {
-            "id": "wrong_correctness",
-            "text": "Neither can be screened by complexity before writing complete code."
-          }
-        ],
-        "prompt": "Choose the candidate that survives the first screen.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1219,28 +909,25 @@ export const constraintFirstRejectionQuestions = [
     "title": "Screen O(n log n) against O(n squared)",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "growth class",
-        "input limit",
-        "first viability screen"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "The O(n log n) sorting-based candidate survives the first growth check."
-        },
-        {
-          "id": "wrong_quadratic",
-          "text": "The O(n^2) pair-check candidate survives because it avoids sorting."
-        },
-        {
-          "id": "wrong_correctness",
-          "text": "Neither can be screened by complexity before writing complete code."
-        }
-      ]
-    }
+    "instruction": "A plan uses O(n log n) sorting for n = 100000. Another uses O(n^2) pair checks. Which one survives the first constraint screen?",
+    "answerFeedback": "O(n log n) survives the first constraint screen more plausibly than O(n^2) at n = 100000.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The O(n log n) sorting-based candidate survives the first growth check.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_quadratic",
+        "text": "The O(n^2) pair-check candidate survives because it avoids sorting.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_correctness",
+        "text": "Neither can be screened by complexity before writing complete code.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1255,52 +942,12 @@ export const constraintFirstRejectionQuestions = [
       "nextAction": "Practice ordering constraint-first strategy selection.",
       "result": "diagnostic"
     },
-    "id": "alg-complexity-constraint-first-019",
+    "id": "alg-complexity-constraint-first-019-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A problem statement says n <= 100000. What should you do before choosing between a nested pair scan and a one-pass plan?",
+    "prompt": "Tap the reasoning steps in order.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "read_limit",
-          "estimate_pair_scan",
-          "estimate_one_pass",
-          "reject_infeasible"
-        ],
-        "feedback": "Use the input limit first, compare candidate growth, and reject the infeasible plan.",
-        "id": "alg-complexity-constraint-first-019-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "read_limit",
-            "text": "Read the maximum input size."
-          },
-          {
-            "id": "estimate_pair_scan",
-            "text": "Estimate the nested pair scan as quadratic."
-          },
-          {
-            "id": "estimate_one_pass",
-            "text": "Estimate the one-pass plan as linear if each step is constant work."
-          },
-          {
-            "id": "reject_infeasible",
-            "text": "Reject the candidate whose growth does not fit the limit."
-          }
-        ],
-        "prompt": "Tap the reasoning steps in order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "order_steps"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1325,7 +972,33 @@ export const constraintFirstRejectionQuestions = [
     ],
     "title": "Order constraint-first selection",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "instruction": "A problem statement says n <= 100000. What should you do before choosing between a nested pair scan and a one-pass plan?",
+    "answerFeedback": "Use the input limit first, compare candidate growth, and reject the infeasible plan.",
+    "subgoals": [
+      {
+        "id": "read_limit",
+        "text": "Read the maximum input size."
+      },
+      {
+        "id": "estimate_pair_scan",
+        "text": "Estimate the nested pair scan as quadratic."
+      },
+      {
+        "id": "estimate_one_pass",
+        "text": "Estimate the one-pass plan as linear if each step is constant work."
+      },
+      {
+        "id": "reject_infeasible",
+        "text": "Reject the candidate whose growth does not fit the limit."
+      }
+    ],
+    "correctOrder": [
+      "read_limit",
+      "estimate_pair_scan",
+      "estimate_one_pass",
+      "reject_infeasible"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1345,44 +1018,12 @@ export const constraintFirstRejectionQuestions = [
         "wrong_skip_correctness": "Complexity screening does not prove correctness; it only filters candidate viability."
       }
     },
-    "id": "alg-complexity-constraint-first-022",
+    "id": "alg-complexity-constraint-first-022-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "apply_input_constraints",
-    "prompt": "A task has n <= 100000. Plan A checks every pair. Plan B uses a one-pass scan but requires careful state. Which first-pass review is correct?",
+    "prompt": "Choose the correct first-pass review.",
     "roadmapNodeId": "complexity_and_constraints",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Reject Plan A on growth, then review whether Plan B's state is correct for the problem.",
-        "id": "alg-complexity-constraint-first-022-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "constraint_reasoning_missed",
-          "brute_force_when_optimized_required"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Reject Plan A because O(n^2) does not fit, then inspect Plan B's state for correctness."
-          },
-          {
-            "id": "wrong_simplicity",
-            "text": "Keep Plan A because it is simpler, and only optimize after it fails."
-          },
-          {
-            "id": "wrong_skip_correctness",
-            "text": "Accept Plan B immediately because any one-pass plan is automatically correct."
-          }
-        ],
-        "prompt": "Choose the correct first-pass review.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "apply_input_constraints"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1408,27 +1049,24 @@ export const constraintFirstRejectionQuestions = [
     "title": "Screen complexity before state review",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "constraint fit",
-        "growth class",
-        "next correctness review"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Reject Plan A because O(n^2) does not fit, then inspect Plan B's state for correctness."
-        },
-        {
-          "id": "wrong_simplicity",
-          "text": "Keep Plan A because it is simpler, and only optimize after it fails."
-        },
-        {
-          "id": "wrong_skip_correctness",
-          "text": "Accept Plan B immediately because any one-pass plan is automatically correct."
-        }
-      ]
-    }
+    "instruction": "A task has n <= 100000. Plan A checks every pair. Plan B uses a one-pass scan but requires careful state. Which first-pass review is correct?",
+    "answerFeedback": "Reject Plan A on growth, then review whether Plan B's state is correct for the problem.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Reject Plan A because O(n^2) does not fit, then inspect Plan B's state for correctness.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_simplicity",
+        "text": "Keep Plan A because it is simpler, and only optimize after it fails.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_skip_correctness",
+        "text": "Accept Plan B immediately because any one-pass plan is automatically correct.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

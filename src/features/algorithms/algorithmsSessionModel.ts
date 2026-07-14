@@ -453,7 +453,9 @@ export function getAlgorithmsCorrectAnswerText(question: AlgorithmQuestion): str
   }
 
   if (isAlgorithmComplexityQuestion(question)) {
-    return `Time ${question.correctComplexity.time}, space ${question.correctComplexity.space}`;
+    return question.correctComplexity.dimensions
+      .map((dimension) => `${dimension.id === "time" ? "Time" : "space"} ${dimension.acceptedValues.join(" or ")}`)
+      .join(", ");
   }
 
   return assertUnreachableQuestion(question);

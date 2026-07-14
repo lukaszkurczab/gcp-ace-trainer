@@ -1,11 +1,8 @@
 import { ALGORITHMS_TRACK_ID, getTrackDefinition } from "../../domain";
 import type { TrainingItemId, TrainingSessionModeId } from "../../domain/training";
 import type { TrackContentAdapter } from "../types";
-import {
-  ALGORITHM_CONTENT_VERSION,
-  algorithmContentGroups,
-  type AlgorithmContentGroup,
-} from "./content";
+import { ALGORITHM_CONTENT_VERSION } from "./algorithmContentTypes";
+import { algorithmContentGroups, type AlgorithmContentGroup } from "./content";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
 

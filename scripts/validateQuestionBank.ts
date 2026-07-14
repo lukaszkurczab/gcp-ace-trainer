@@ -3,6 +3,11 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import type { Difficulty, ExamDomain, QuestionType } from "../src/types";
+import {
+  algorithmContentItems,
+  algorithmContentManifest,
+  validateAlgorithmQuestion,
+} from "../src/tracks/algorithms/content";
 
 const domains: readonly ExamDomain[] = ["setup_environment", "planning_implementation", "operations", "access_security"];
 const difficulties: readonly Difficulty[] = ["easy", "medium", "hard"];
@@ -243,8 +248,20 @@ export function validateQuestionBankFile(filePath = "data/question-bank/ace-foun
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const summary = validateQuestionBankFile(process.argv[2]);
+  const algorithmErrors: string[] = [];
+  for (const question of algorithmContentItems) {
+    try {
+      validateAlgorithmQuestion(question);
+    } catch (error) {
+      algorithmErrors.push(error instanceof Error ? error.message : `${question.id}: validation failed.`);
+    }
+  }
+  if (algorithmContentManifest.itemCount !== algorithmContentItems.length) {
+    algorithmErrors.push("Algorithms manifest count does not match the active root item count.");
+  }
+  summary.errors.push(...algorithmErrors.map((error) => `Algorithms: ${error}`));
 
-  console.log(JSON.stringify(summary, null, 2));
+  console.log(JSON.stringify({ ...summary, algorithms: { total: algorithmContentItems.length, errors: algorithmErrors } }, null, 2));
 
   if (summary.errors.length > 0) {
     process.exitCode = 1;

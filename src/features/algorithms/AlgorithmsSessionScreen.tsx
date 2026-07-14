@@ -86,8 +86,6 @@ type AlgorithmsSessionScreenProps = {
 
 type ComplexityDimension = "time" | "space";
 
-const complexityChoices = ["O(1)", "O(log n)", "O(n)", "O(n log n)", "O(n^2)"] as const;
-
 export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: AlgorithmsSessionScreenProps) {
   const reviewItemIdsKey = sessionConfig?.reviewItemIds?.join("|") ?? "";
   const [node, setNode] = useState<AlgorithmRoadmapNode>(() => getFirstUsableAlgorithmRoadmapNode());
@@ -655,22 +653,18 @@ function AnswerControl({
   if (isAlgorithmComplexityQuestion(question)) {
     return (
       <View style={styles.complexityGroups}>
-        <ComplexityChoiceGroup
-          expectedValue={question.correctComplexity.time}
-          interactionDisabled={interactionDisabled}
-          label="Time"
-          onSelect={(value) => onSelectComplexity("time", value)}
-          selectedValue={complexityAnswer.time}
-          submitted={submitted}
-        />
-        <ComplexityChoiceGroup
-          expectedValue={question.correctComplexity.space}
-          interactionDisabled={interactionDisabled}
-          label="Space"
-          onSelect={(value) => onSelectComplexity("space", value)}
-          selectedValue={complexityAnswer.space}
-          submitted={submitted}
-        />
+        {question.correctComplexity.dimensions.map((dimension) => (
+          <ComplexityChoiceGroup
+            acceptedValues={[...dimension.acceptedValues, ...(dimension.acceptedAliases ?? [])]}
+            choices={dimension.values}
+            interactionDisabled={interactionDisabled}
+            key={dimension.id}
+            label={dimension.id === "time" ? "Time" : "Space"}
+            onSelect={(value) => onSelectComplexity(dimension.id, value)}
+            selectedValue={complexityAnswer[dimension.id]}
+            submitted={submitted}
+          />
+        ))}
       </View>
     );
   }
@@ -735,7 +729,8 @@ function AnswerControl({
 }
 
 type ComplexityChoiceGroupProps = {
-  expectedValue?: string;
+  acceptedValues: readonly string[];
+  choices: readonly string[];
   interactionDisabled: boolean;
   label: string;
   onSelect: (value: string) => void;
@@ -744,22 +739,21 @@ type ComplexityChoiceGroupProps = {
 };
 
 function ComplexityChoiceGroup({
-  expectedValue,
+  acceptedValues,
+  choices,
   interactionDisabled,
   label,
   onSelect,
   selectedValue,
   submitted,
 }: ComplexityChoiceGroupProps) {
-  const choices = [...new Set([expectedValue, ...complexityChoices].filter((choice): choice is string => Boolean(choice)))];
-
   return (
     <View style={styles.complexityGroup}>
       <Text style={styles.groupLabel}>{label}</Text>
       <View style={styles.choiceWrap}>
         {choices.map((choice) => {
           const visualState = getAnswerOptionVisualState({
-            correct: expectedValue === choice,
+            correct: acceptedValues.includes(choice),
             selected: selectedValue === choice,
             submitted,
           });

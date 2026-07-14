@@ -1,11 +1,16 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const inventoryPath = join(root, "recovery/removal-inventory.json");
 const fixturePath = join(root, "recovery/target-contract-fixtures.json");
+const algorithmsInventoryPath = join(root, "recovery/algorithms-response-shape-inventory.json");
+const algorithmsCutoverPath = join(root, "recovery/algorithms-schema-cutover-report.json");
 const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
 const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
+const algorithmsInventory = JSON.parse(readFileSync(algorithmsInventoryPath, "utf8"));
+const algorithmsCutover = JSON.parse(readFileSync(algorithmsCutoverPath, "utf8"));
 const failures = [];
 
 function fail(message) {
@@ -28,6 +33,32 @@ function projectFiles() {
 }
 
 const files = projectFiles();
+
+const liveAlgorithmsInventory = spawnSync(
+  process.execPath,
+  ["--import", "tsx", "scripts/inventoryAlgorithmsSchema.mjs"],
+  { cwd: root, encoding: "utf8" },
+);
+if (liveAlgorithmsInventory.status !== 0) {
+  fail(`Algorithms schema inventory failed: ${liveAlgorithmsInventory.stderr.trim()}`);
+} else {
+  const live = JSON.parse(liveAlgorithmsInventory.stdout);
+  for (const field of [
+    "totalActiveItems", "rootChoiceIsCorrect", "rootChoiceCorrectOptionId",
+    "nestedStaticMicroChecks", "responseSpecChoice", "rootOrdering", "rootComplexity",
+    "unknownOrUnsupported", "filesByShape",
+  ]) {
+    if (JSON.stringify(live[field]) !== JSON.stringify(algorithmsCutover.after[field])) {
+      fail(`Algorithms cutover after-inventory is stale for ${field}.`);
+    }
+  }
+}
+if (algorithmsInventory.totalActiveItems !== algorithmsCutover.before.totalActiveItems) {
+  fail("Algorithms pre-change inventory does not match the cutover report.");
+}
+if (algorithmsCutover.manifestCounts.total !== algorithmsCutover.after.totalActiveItems) {
+  fail("Algorithms manifest count does not match the canonical after-inventory.");
+}
 
 for (const entry of inventory.searchTargets) {
   const matcher = new RegExp(entry.pattern, "m");
@@ -84,7 +115,7 @@ for (let index = 0; index <= 17; index += 1) {
 for (const source of fixture.sources) {
   if (!existsSync(join(root, source))) fail(`target contract fixture source is missing: ${source}.`);
 }
-for (const key of ["canonicalResultClassification", "adjacentOrdering", "complexityDimensions", "reviewSuccessRules", "journalIdempotency"]) {
+for (const key of ["canonicalResultClassification", "adjacentOrdering", "complexityDimensions", "reviewSuccessRules", "reinsertEligibility", "journalIdempotency"]) {
   if (!Array.isArray(fixture[key]) || fixture[key].length === 0) fail(`target contract fixture ${key} is missing or empty.`);
 }
 

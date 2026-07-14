@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const indexedScanBoundaryQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -17,56 +19,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Practice separating local adjacency from global reorderings such as sorting or all-pairs checks.",
       "result": "diagnostic"
     },
-    "id": "alg-array-string-naming-001",
+    "id": "alg-check-array-naming-001",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
     "secondarySkillAtomIds": [
       "recognize_adjacent_scan"
     ],
-    "prompt": "A task asks you to scan a string and compare each character with the character immediately before it. Which mechanics best describe the work?",
+    "prompt": "Select every mechanic that matches the task.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "linear_scan",
-          "index_boundary"
-        ],
-        "feedback": "Neighbor comparison is local, so one forward scan plus a boundary guard is enough.",
-        "id": "alg-check-array-naming-001",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "linear_scan",
-            "text": "A linear scan over the string."
-          },
-          {
-            "id": "index_boundary",
-            "text": "A boundary guard for the first character or a loop starting at index 1."
-          },
-          {
-            "id": "nested_pair_enumeration",
-            "text": "A nested comparison of every character with every other character."
-          },
-          {
-            "id": "global_sorting",
-            "text": "Sorting the characters first so equal values group together."
-          },
-          {
-            "id": "frequency_counting",
-            "text": "Counting how many times each character appears."
-          }
-        ],
-        "prompt": "Select every mechanic that matches the task.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "multi_select"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -92,7 +52,36 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Recognize a neighbor scan",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks you to scan a string and compare each character with the character immediately before it. Which mechanics best describe the work?",
+    "answerFeedback": "Neighbor comparison is local, so one forward scan plus a boundary guard is enough.",
+    "options": [
+      {
+        "id": "linear_scan",
+        "text": "A linear scan over the string.",
+        "isCorrect": true
+      },
+      {
+        "id": "index_boundary",
+        "text": "A boundary guard for the first character or a loop starting at index 1.",
+        "isCorrect": true
+      },
+      {
+        "id": "nested_pair_enumeration",
+        "text": "A nested comparison of every character with every other character.",
+        "isCorrect": false
+      },
+      {
+        "id": "global_sorting",
+        "text": "Sorting the characters first so equal values group together.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_counting",
+        "text": "Counting how many times each character appears.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -112,49 +101,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Practice tracing what the next live index is after each comparison step.",
       "result": "diagnostic"
     },
-    "id": "alg-array-string-trace-index-001",
+    "id": "alg-array-string-trace-index-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_scan_index",
     "secondarySkillAtomIds": [
       "track_index_boundary"
     ],
-    "prompt": "You are scanning a 5-character string with indexes 0 through 4. The loop has just compared `s[2]` with `s[1]`. What is the next safe index to process?",
+    "prompt": "Choose the next trace step.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "index_3",
-        "feedback": "After processing current index 2, the next unprocessed safe current index in a left-to-right scan is 3.",
-        "id": "alg-array-string-trace-index-001-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "index_3",
-            "text": "Move to index 3."
-          },
-          {
-            "id": "index_4",
-            "text": "Jump to index 4 because it is the last valid index."
-          },
-          {
-            "id": "index_1",
-            "text": "Move back to index 1 because it was used in the comparison."
-          },
-          {
-            "id": "stop",
-            "text": "Stop because a previous character has already been checked."
-          }
-        ],
-        "prompt": "Choose the next trace step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_scan_index"
-        ],
-        "type": "trace_next_step"
-      }
-    ],
     "status": "active",
     "stepByStepTrace": [
       {
@@ -190,7 +144,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Trace the next scan index",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You are scanning a 5-character string with indexes 0 through 4. The loop has just compared `s[2]` with `s[1]`. What is the next safe index to process?",
+    "answerFeedback": "After processing current index 2, the next unprocessed safe current index in a left-to-right scan is 3.",
+    "options": [
+      {
+        "id": "index_3",
+        "text": "Move to index 3.",
+        "isCorrect": true
+      },
+      {
+        "id": "index_4",
+        "text": "Jump to index 4 because it is the last valid index.",
+        "isCorrect": false
+      },
+      {
+        "id": "index_1",
+        "text": "Move back to index 1 because it was used in the comparison.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop",
+        "text": "Stop because a previous character has already been checked.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -210,49 +188,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Check whether neighbor access can happen at index 0 before thinking about larger optimizations.",
       "result": "diagnostic"
     },
-    "id": "alg-array-string-edge-neighbor-001",
+    "id": "alg-array-string-edge-neighbor-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
     ],
-    "prompt": "A routine reads `s[i - 1]` while scanning a string. Which input case is most likely to break a careless implementation?",
+    "prompt": "Choose the boundary case that creates the real risk.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "first_index_access",
-        "feedback": "If the loop starts at index 0, reading the previous character uses a non-existent previous element.",
-        "id": "alg-array-string-edge-neighbor-001-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "first_index_access",
-            "text": "The loop starts at `i = 0` and tries to read `s[-1]`."
-          },
-          {
-            "id": "middle_duplicate",
-            "text": "The string contains the same character twice in the middle."
-          },
-          {
-            "id": "uppercase_letters",
-            "text": "The string contains uppercase letters."
-          },
-          {
-            "id": "long_input",
-            "text": "The string is very long."
-          }
-        ],
-        "prompt": "Choose the boundary case that creates the real risk.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -278,89 +221,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Catch the neighbor-access boundary bug",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
-  },
-  {
-    "complexityExplanation": "Counting adjacent matches only needs one pass through the string and a constant-size counter.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "A very large input still does not change the local nature of adjacency. One scan is enough.",
-      "mentalModelCorrection": "Do not inflate a neighbor problem into sorting or all-pairs work just because the input is large.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "When a prompt only compares neighboring positions, ask whether one pass already covers every required check.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-001",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A problem asks for the number of times adjacent characters are equal in a very large string. What time and extra space should the intended solution use?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "recognize_adjacent_scan",
-      "derive_time_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "edge_case_drill",
+    "instruction": "A routine reads `s[i - 1]` while scanning a string. Which input case is most likely to break a careless implementation?",
+    "answerFeedback": "If the loop starts at index 0, reading the previous character uses a non-existent previous element.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n)"
-        },
-        "feedback": "A single left-to-right scan checks every adjacent pair exactly once and only needs a counter.",
-        "id": "alg-prod-array-string-001-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "complexity_pair"
+        "id": "first_index_access",
+        "text": "The loop starts at `i = 0` and tries to read `s[-1]`.",
+        "isCorrect": true
+      },
+      {
+        "id": "middle_duplicate",
+        "text": "The string contains the same character twice in the middle.",
+        "isCorrect": false
+      },
+      {
+        "id": "uppercase_letters",
+        "text": "The string contains uppercase letters.",
+        "isCorrect": false
+      },
+      {
+        "id": "long_input",
+        "text": "The string is very long.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "track_index_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "recognize_adjacent_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate the cost of a large-input neighbor scan",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -380,49 +265,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Ask whether the task depends on the original sequence before considering any reordering step.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-013",
+    "id": "alg-prod-array-string-013-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_adjacent_scan",
-    "prompt": "A learner solves \"count how many positions have the same character as the previous position\" by sorting the string first. What is the main mistake?",
+    "prompt": "Choose the real flaw in the learner's approach.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "diagnose_order_destroying_transform"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sorting_destroys_position",
-        "feedback": "The task is about original neighboring positions, so sorting changes the very evidence you are supposed to inspect.",
-        "id": "alg-prod-array-string-013-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "sorting_destroys_position",
-            "text": "Sorting destroys the original neighbor relationships."
-          },
-          {
-            "id": "sorting_too_slow_only",
-            "text": "Sorting is wrong only because it is slower than scanning."
-          },
-          {
-            "id": "needs_hash_map",
-            "text": "The task always requires a hash map."
-          },
-          {
-            "id": "needs_nested_loop",
-            "text": "The task requires every pair of characters to be compared."
-          }
-        ],
-        "prompt": "Choose the real flaw in the learner's approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -459,89 +309,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Explain why sorting breaks adjacency questions",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
-  },
-  {
-    "complexityExplanation": "This question asks for the cost of the mistaken nested-pair approach. Mistaken approach: O(n^2) time, O(1) space. Intended adjacency scan: O(n) time, O(1) space.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n^2)",
-    "feedbackModel": {
-      "decisionSignal": "The prompt is about local adjacency, and the mistaken nested approach wastes work by checking non-adjacent pairs too.",
-      "mentalModelCorrection": "A local adjacency condition should scan neighboring pairs once. If code expands that into all-pairs comparison, its O(n^2) cost is evidence of over-solving the adjacency task.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "wrong_approach"
-      ],
-      "nextAction": "Contrast the intended one-pass adjacent scan with what the nested loops actually compare.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-017",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "recognize_adjacent_scan",
-    "prompt": "A learner uses a mistaken approach: each character is checked against every later character to detect adjacent duplicates. What time and extra space does that mistaken approach use?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner solves \"count how many positions have the same character as the previous position\" by sorting the string first. What is the main mistake?",
+    "answerFeedback": "The task is about original neighboring positions, so sorting changes the very evidence you are supposed to inspect.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n^2)"
-        },
-        "feedback": "The mistaken nested approach uses O(n^2) time and O(1) extra space. The intended adjacency scan checks each neighboring pair once in O(n) time and O(1) space.",
-        "id": "alg-prod-array-string-017-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
-        "prompt": "Choose the time and space cost of the mistaken approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "complexity_pair"
+        "id": "sorting_destroys_position",
+        "text": "Sorting destroys the original neighbor relationships.",
+        "isCorrect": true
+      },
+      {
+        "id": "sorting_too_slow_only",
+        "text": "Sorting is wrong only because it is slower than scanning.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_hash_map",
+        "text": "The task always requires a hash map.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_nested_loop",
+        "text": "The task requires every pair of characters to be compared.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "recognize_adjacent_scan",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Measure the mistaken cost of over-solving adjacency",
-    "trackId": "algorithms",
-    "type": "complexity_reasoning"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -561,49 +353,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Trace the first and last loop iterations before judging the algorithm idea.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-026",
+    "id": "alg-prod-array-string-026-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A learner writes: `for (let i = 0; i <= s.length; i++) { if (s[i] === s[i - 1]) return false; }`. What is the main bug?",
+    "prompt": "Choose the bug that actually follows from the loop bounds.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "invalid_boundary_reads",
-        "feedback": "At `i = 0`, the code reads `s[-1]`, outside the valid logical index range. At `i = s.length`, it reads past the last character. The loop boundaries are wrong.",
-        "id": "alg-prod-array-string-026-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "invalid_boundary_reads",
-            "text": "The loop reads `s[-1]` on the first iteration and reads past the end on the last iteration."
-          },
-          {
-            "id": "sorting_missing",
-            "text": "The code should sort the string before checking neighbors."
-          },
-          {
-            "id": "frequency_map_missing",
-            "text": "The code needs a frequency map to compare duplicate counts."
-          },
-          {
-            "id": "nested_loop_missing",
-            "text": "The code needs a nested loop to compare every pair."
-          }
-        ],
-        "prompt": "Choose the bug that actually follows from the loop bounds.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -630,7 +387,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Diagnose both ends of a neighbor loop",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner writes: `for (let i = 0; i <= s.length; i++) { if (s[i] === s[i - 1]) return false; }`. What is the main bug?",
+    "answerFeedback": "At `i = 0`, the code reads `s[-1]`, outside the valid logical index range. At `i = s.length`, it reads past the last character. The loop boundaries are wrong.",
+    "options": [
+      {
+        "id": "invalid_boundary_reads",
+        "text": "The loop reads `s[-1]` on the first iteration and reads past the end on the last iteration.",
+        "isCorrect": true
+      },
+      {
+        "id": "sorting_missing",
+        "text": "The code should sort the string before checking neighbors.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_map_missing",
+        "text": "The code needs a frequency map to compare duplicate counts.",
+        "isCorrect": false
+      },
+      {
+        "id": "nested_loop_missing",
+        "text": "The code needs a nested loop to compare every pair.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -650,49 +431,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Before writing the loop, name the first index where every indexed read is valid.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-032",
+    "id": "alg-prod-array-string-032-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A loop compares `s[i]` with `s[i - 1]`. Which loop start is boundary-safe without adding a separate guard inside the loop?",
+    "prompt": "Choose the safe loop start.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "start_one",
-        "feedback": "Starting at `i = 1` makes both `s[i]` and `s[i - 1]` inside the valid logical index range for the first comparison.",
-        "id": "alg-prod-array-string-032-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "start_one",
-            "text": "Start at `i = 1`."
-          },
-          {
-            "id": "start_zero",
-            "text": "Start at `i = 0`."
-          },
-          {
-            "id": "start_two",
-            "text": "Start at `i = 2`."
-          },
-          {
-            "id": "start_last",
-            "text": "Start at the last index."
-          }
-        ],
-        "prompt": "Choose the safe loop start.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -719,7 +465,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose the first safe previous-neighbor index",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop compares `s[i]` with `s[i - 1]`. Which loop start is boundary-safe without adding a separate guard inside the loop?",
+    "answerFeedback": "Starting at `i = 1` makes both `s[i]` and `s[i - 1]` inside the valid logical index range for the first comparison.",
+    "options": [
+      {
+        "id": "start_one",
+        "text": "Start at `i = 1`.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_zero",
+        "text": "Start at `i = 0`.",
+        "isCorrect": false
+      },
+      {
+        "id": "start_two",
+        "text": "Start at `i = 2`.",
+        "isCorrect": false
+      },
+      {
+        "id": "start_last",
+        "text": "Start at the last index.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -739,50 +509,15 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "When the body reads `arr[i + 1]`, choose a loop condition that keeps `i + 1` inside the valid index range.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-033",
+    "id": "alg-prod-array-string-033-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "recognize_adjacent_scan"
     ],
-    "prompt": "A loop compares `arr[i]` with `arr[i + 1]` while scanning adjacent pairs. Which loop condition keeps the next-neighbor read safe and still checks the final valid pair?",
+    "prompt": "Choose the safe and complete loop condition.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "stop_before_last",
-        "feedback": "Use `i < arr.length - 1`. The last safe current index is `arr.length - 2`, so the final valid pair is checked without reading past the end.",
-        "id": "alg-prod-array-string-033-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "stop_before_last",
-            "text": "`i < arr.length - 1`"
-          },
-          {
-            "id": "inclusive_last",
-            "text": "`i <= arr.length - 1`"
-          },
-          {
-            "id": "start_at_one",
-            "text": "`i = 1; i < arr.length`"
-          },
-          {
-            "id": "all_pairs",
-            "text": "Use nested loops to compare every pair."
-          }
-        ],
-        "prompt": "Choose the safe and complete loop condition.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -808,7 +543,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose a safe next-neighbor bound",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop compares `arr[i]` with `arr[i + 1]` while scanning adjacent pairs. Which loop condition keeps the next-neighbor read safe and still checks the final valid pair?",
+    "answerFeedback": "Use `i < arr.length - 1`. The last safe current index is `arr.length - 2`, so the final valid pair is checked without reading past the end.",
+    "options": [
+      {
+        "id": "stop_before_last",
+        "text": "`i < arr.length - 1`",
+        "isCorrect": true
+      },
+      {
+        "id": "inclusive_last",
+        "text": "`i <= arr.length - 1`",
+        "isCorrect": false
+      },
+      {
+        "id": "start_at_one",
+        "text": "`i = 1; i < arr.length`",
+        "isCorrect": false
+      },
+      {
+        "id": "all_pairs",
+        "text": "Use nested loops to compare every pair.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -828,49 +587,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Trace the first valid iteration and the final attempted iteration separately.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-034",
+    "id": "alg-prod-array-string-034-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A learner writes `for (let i = 1; i <= s.length; i++)` before comparing `s[i]` with `s[i - 1]`. What boundary bug remains?",
+    "prompt": "Choose the remaining boundary bug.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "past_end_read",
-        "feedback": "The loop start is safe, but `i <= s.length` eventually makes the code read `s[s.length]`, outside the valid logical string index range.",
-        "id": "alg-prod-array-string-034-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "cannot_trace_algorithm"
-        ],
-        "options": [
-          {
-            "id": "past_end_read",
-            "text": "The loop still reads `s[s.length]` on the final iteration."
-          },
-          {
-            "id": "start_boundary_only",
-            "text": "There is no bug because starting at 1 fixes every boundary."
-          },
-          {
-            "id": "needs_sorting",
-            "text": "The remaining bug is that the string was not sorted first."
-          },
-          {
-            "id": "needs_nested_loop",
-            "text": "The loop still needs to compare every pair of characters."
-          }
-        ],
-        "prompt": "Choose the remaining boundary bug.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -897,7 +621,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Catch the unsafe inclusive end bound",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner writes `for (let i = 1; i <= s.length; i++)` before comparing `s[i]` with `s[i - 1]`. What boundary bug remains?",
+    "answerFeedback": "The loop start is safe, but `i <= s.length` eventually makes the code read `s[s.length]`, outside the valid logical string index range.",
+    "options": [
+      {
+        "id": "past_end_read",
+        "text": "The loop still reads `s[s.length]` on the final iteration.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_boundary_only",
+        "text": "There is no bug because starting at 1 fixes every boundary.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_sorting",
+        "text": "The remaining bug is that the string was not sorted first.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_nested_loop",
+        "text": "The loop still needs to compare every pair of characters.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -917,49 +665,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Check whether the loop runs at all for the smallest valid inputs.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-035",
+    "id": "alg-prod-array-string-035-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_scan_index",
-    "prompt": "A function uses `for (let i = 1; i < s.length; i++)` to compare `s[i]` with `s[i - 1]`. What happens for strings of length 0 or 1?",
+    "prompt": "Choose the boundary behavior for short strings.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "loop_skips_safely",
-        "feedback": "For length 0 or 1, `i = 1` is not less than `s.length`, so the loop does not run and no invalid previous-neighbor read occurs.",
-        "id": "alg-prod-array-string-035-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "loop_skips_safely",
-            "text": "The loop skips, so no neighbor access occurs."
-          },
-          {
-            "id": "throws_empty",
-            "text": "The loop must throw on empty input."
-          },
-          {
-            "id": "reads_negative",
-            "text": "The first iteration reads `s[-1]`."
-          },
-          {
-            "id": "needs_manual_special_case",
-            "text": "The loop is unsafe unless both cases are manually special-cased."
-          }
-        ],
-        "prompt": "Choose the boundary behavior for short strings.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_scan_index"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -996,6 +709,30 @@ export const indexedScanBoundaryQuestions = [
         ],
         "description": "For length 0 or 1, the condition is false immediately, so there is no current index to process."
       }
+    ],
+    "instruction": "A function uses `for (let i = 1; i < s.length; i++)` to compare `s[i]` with `s[i - 1]`. What happens for strings of length 0 or 1?",
+    "answerFeedback": "For length 0 or 1, `i = 1` is not less than `s.length`, so the loop does not run and no invalid previous-neighbor read occurs.",
+    "options": [
+      {
+        "id": "loop_skips_safely",
+        "text": "The loop skips, so no neighbor access occurs.",
+        "isCorrect": true
+      },
+      {
+        "id": "throws_empty",
+        "text": "The loop must throw on empty input.",
+        "isCorrect": false
+      },
+      {
+        "id": "reads_negative",
+        "text": "The first iteration reads `s[-1]`.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_manual_special_case",
+        "text": "The loop is unsafe unless both cases are manually special-cased.",
+        "isCorrect": false
+      }
     ]
   },
   {
@@ -1016,49 +753,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Pair each guarded expression with the boundary that can break it.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-036",
+    "id": "alg-prod-array-string-036-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A scan starts at `i = 0`, but only reads `s[i - 1]` inside an `if` guard. Which guard protects the previous-neighbor read?",
+    "prompt": "Choose the guard that protects `s[i - 1]`.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "i_greater_than_zero",
-        "feedback": "`i > 0` means the previous index exists before `s[i - 1]` is read.",
-        "id": "alg-prod-array-string-036-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "i_greater_than_zero",
-            "text": "`i > 0`"
-          },
-          {
-            "id": "i_less_than_length",
-            "text": "`i < s.length`"
-          },
-          {
-            "id": "s_i_exists",
-            "text": "`s[i]` is not empty."
-          },
-          {
-            "id": "s_previous_equals_current",
-            "text": "`s[i - 1] === s[i]`"
-          }
-        ],
-        "prompt": "Choose the guard that protects `s[i - 1]`.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1085,7 +787,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose the guard for previous-neighbor access",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A scan starts at `i = 0`, but only reads `s[i - 1]` inside an `if` guard. Which guard protects the previous-neighbor read?",
+    "answerFeedback": "`i > 0` means the previous index exists before `s[i - 1]` is read.",
+    "options": [
+      {
+        "id": "i_greater_than_zero",
+        "text": "`i > 0`",
+        "isCorrect": true
+      },
+      {
+        "id": "i_less_than_length",
+        "text": "`i < s.length`",
+        "isCorrect": false
+      },
+      {
+        "id": "s_i_exists",
+        "text": "`s[i]` is not empty.",
+        "isCorrect": false
+      },
+      {
+        "id": "s_previous_equals_current",
+        "text": "`s[i - 1] === s[i]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1105,49 +831,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "For `i + 1`, trace what happens at the last valid index.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-037",
+    "id": "alg-prod-array-string-037-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A scan starts at `i = 0`, but only reads `arr[i + 1]` inside an `if` guard. Which guard protects the next-neighbor read?",
+    "prompt": "Choose the guard that protects `arr[i + 1]`.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "i_less_than_length_minus_one",
-        "feedback": "`i < arr.length - 1` ensures there is a next element before `arr[i + 1]` is read.",
-        "id": "alg-prod-array-string-037-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "i_less_than_length_minus_one",
-            "text": "`i < arr.length - 1`"
-          },
-          {
-            "id": "i_greater_than_zero",
-            "text": "`i > 0`"
-          },
-          {
-            "id": "i_less_equal_length",
-            "text": "`i <= arr.length`"
-          },
-          {
-            "id": "arr_i_exists",
-            "text": "`arr[i]` exists."
-          }
-        ],
-        "prompt": "Choose the guard that protects `arr[i + 1]`.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1174,7 +865,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose the guard for next-neighbor access",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A scan starts at `i = 0`, but only reads `arr[i + 1]` inside an `if` guard. Which guard protects the next-neighbor read?",
+    "answerFeedback": "`i < arr.length - 1` ensures there is a next element before `arr[i + 1]` is read.",
+    "options": [
+      {
+        "id": "i_less_than_length_minus_one",
+        "text": "`i < arr.length - 1`",
+        "isCorrect": true
+      },
+      {
+        "id": "i_greater_than_zero",
+        "text": "`i > 0`",
+        "isCorrect": false
+      },
+      {
+        "id": "i_less_equal_length",
+        "text": "`i <= arr.length`",
+        "isCorrect": false
+      },
+      {
+        "id": "arr_i_exists",
+        "text": "`arr[i]` exists.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1194,48 +909,13 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Find the most negative index expression and choose the first `i` that makes it zero or greater.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-038",
+    "id": "alg-prod-array-string-038-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A loop compares each value with the value two positions before it using `arr[i - 2]`. What is the first safe index for `i`?",
+    "prompt": "Choose the first safe index.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "start_two",
-        "feedback": "At `i = 2`, `arr[i - 2]` becomes `arr[0]`, the first valid read for that expression.",
-        "id": "alg-prod-array-string-038-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "start_two",
-            "text": "Start at `i = 2`."
-          },
-          {
-            "id": "start_one",
-            "text": "Start at `i = 1`."
-          },
-          {
-            "id": "start_zero",
-            "text": "Start at `i = 0`."
-          },
-          {
-            "id": "start_three",
-            "text": "Start at `i = 3`."
-          }
-        ],
-        "prompt": "Choose the first safe index.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1262,7 +942,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose the boundary for a two-step previous read",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop compares each value with the value two positions before it using `arr[i - 2]`. What is the first safe index for `i`?",
+    "answerFeedback": "At `i = 2`, `arr[i - 2]` becomes `arr[0]`, the first valid read for that expression.",
+    "options": [
+      {
+        "id": "start_two",
+        "text": "Start at `i = 2`.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_one",
+        "text": "Start at `i = 1`.",
+        "isCorrect": false
+      },
+      {
+        "id": "start_zero",
+        "text": "Start at `i = 0`.",
+        "isCorrect": false
+      },
+      {
+        "id": "start_three",
+        "text": "Start at `i = 3`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1282,48 +986,13 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Find the largest forward index expression and choose the final `i` that keeps it within bounds.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-039",
+    "id": "alg-prod-array-string-039-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A loop compares each value with the value two positions after it using `arr[i + 2]`. Which condition keeps the read boundary-safe while checking every valid pair?",
+    "prompt": "Choose the correct loop condition.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "i_less_than_length_minus_two",
-        "feedback": "The last safe current index is `arr.length - 3`, so the condition should be `i < arr.length - 2`.",
-        "id": "alg-prod-array-string-039-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "i_less_than_length_minus_two",
-            "text": "`i < arr.length - 2`"
-          },
-          {
-            "id": "length_minus_one",
-            "text": "`i < arr.length - 1`"
-          },
-          {
-            "id": "length",
-            "text": "`i < arr.length`"
-          },
-          {
-            "id": "length_minus_three",
-            "text": "`i < arr.length - 3`"
-          }
-        ],
-        "prompt": "Choose the correct loop condition.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1350,7 +1019,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Choose the boundary for a two-step next read",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop compares each value with the value two positions after it using `arr[i + 2]`. Which condition keeps the read boundary-safe while checking every valid pair?",
+    "answerFeedback": "The last safe current index is `arr.length - 3`, so the condition should be `i < arr.length - 2`.",
+    "options": [
+      {
+        "id": "i_less_than_length_minus_two",
+        "text": "`i < arr.length - 2`",
+        "isCorrect": true
+      },
+      {
+        "id": "length_minus_one",
+        "text": "`i < arr.length - 1`",
+        "isCorrect": false
+      },
+      {
+        "id": "length",
+        "text": "`i < arr.length`",
+        "isCorrect": false
+      },
+      {
+        "id": "length_minus_three",
+        "text": "`i < arr.length - 3`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1370,48 +1063,13 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "When checking a boundary bug, choose a test that forces the dangerous index expression to execute.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-040",
+    "id": "alg-prod-array-string-040-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A learner scans an array from index 0 and compares `arr[i]` with `arr[i - 1]`. Which test case most directly exposes the boundary bug?",
+    "prompt": "Choose the test case that targets the first-index boundary.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "single_element",
-        "feedback": "A one-element array still enters a careless `i = 0` loop and immediately reads `arr[-1]`, outside the valid logical array index range.",
-        "id": "alg-prod-array-string-040-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "single_element",
-            "text": "`[7]`"
-          },
-          {
-            "id": "large_array",
-            "text": "An array with one million values."
-          },
-          {
-            "id": "negative_values",
-            "text": "`[-3, -2, -1]`"
-          },
-          {
-            "id": "duplicates_late",
-            "text": "`[1, 2, 3, 3]`"
-          }
-        ],
-        "prompt": "Choose the test case that targets the first-index boundary.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1438,7 +1096,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Pick a test for first-index previous access",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A learner scans an array from index 0 and compares `arr[i]` with `arr[i - 1]`. Which test case most directly exposes the boundary bug?",
+    "answerFeedback": "A one-element array still enters a careless `i = 0` loop and immediately reads `arr[-1]`, outside the valid logical array index range.",
+    "options": [
+      {
+        "id": "single_element",
+        "text": "`[7]`",
+        "isCorrect": true
+      },
+      {
+        "id": "large_array",
+        "text": "An array with one million values.",
+        "isCorrect": false
+      },
+      {
+        "id": "negative_values",
+        "text": "`[-3, -2, -1]`",
+        "isCorrect": false
+      },
+      {
+        "id": "duplicates_late",
+        "text": "`[1, 2, 3, 3]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1458,48 +1140,13 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Trace the final iteration, not only the first one.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-041",
+    "id": "alg-prod-array-string-041-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A learner scans with `i < arr.length` and compares `arr[i]` with `arr[i + 1]`. Which test case most directly exposes the end-boundary bug?",
+    "prompt": "Choose the smallest direct boundary test.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "single_element",
-        "feedback": "With `[7]`, the loop reaches `i = 0` and immediately reads `arr[1]`, which is past the end.",
-        "id": "alg-prod-array-string-041-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "single_element",
-            "text": "`[7]`"
-          },
-          {
-            "id": "empty_array",
-            "text": "`[]`"
-          },
-          {
-            "id": "all_same",
-            "text": "`[2, 2, 2]`"
-          },
-          {
-            "id": "sorted_values",
-            "text": "`[1, 2, 3]`"
-          }
-        ],
-        "prompt": "Choose the smallest direct boundary test.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1526,89 +1173,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Pick a test for last-index next access",
     "trackId": "algorithms",
-    "type": "test_case_selection"
-  },
-  {
-    "complexityExplanation": "Checking each adjacent pair once uses one pass and constant auxiliary space. Boundary handling changes where the loop starts or stops, not the asymptotic cost.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "The key signal is local adjacency: each neighboring pair is checked once in a single pass.",
-      "mentalModelCorrection": "Boundary-safe loop bounds protect the current index range while preserving the one-pass adjacency scan; they do not require all-pairs work or extra state.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "off_by_one"
-      ],
-      "nextAction": "Separate correctness of loop bounds from the number of iterations the scan performs.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-042",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "recognize_adjacent_scan",
-    "prompt": "A boundary-safe loop checks every adjacent pair in an array exactly once. What time and auxiliary space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "test_case_selection",
+    "instruction": "A learner scans with `i < arr.length` and compares `arr[i]` with `arr[i + 1]`. Which test case most directly exposes the end-boundary bug?",
+    "answerFeedback": "With `[7]`, the loop reaches `i = 0` and immediately reads `arr[1]`, which is past the end.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n)"
-        },
-        "feedback": "The scan is linear because each adjacent pair is checked once, and it only needs constant auxiliary state such as indexes or a counter.",
-        "id": "alg-prod-array-string-042-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "off_by_one"
-        ],
-        "prompt": "Choose the expected time and auxiliary space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "complexity_pair"
+        "id": "single_element",
+        "text": "`[7]`",
+        "isCorrect": true
+      },
+      {
+        "id": "empty_array",
+        "text": "`[]`",
+        "isCorrect": false
+      },
+      {
+        "id": "all_same",
+        "text": "`[2, 2, 2]`",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_values",
+        "text": "`[1, 2, 3]`",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "recognize_adjacent_scan",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "indexed_scan",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate a boundary-safe adjacent scan",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1628,49 +1217,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "For reverse loops, trace the final iteration near index 0.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-044",
+    "id": "alg-prod-array-string-044-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A reverse loop compares `arr[i]` with `arr[i - 1]`. Which condition lets it stop safely while still checking the pair at indexes 0 and 1?",
+    "prompt": "Choose the safe reverse-loop condition.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "trace_scan_index"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "i_greater_than_zero",
-        "feedback": "The loop can run down to `i = 1`, where `arr[i - 1]` is `arr[0]`. It must not run at `i = 0`.",
-        "id": "alg-prod-array-string-044-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "i_greater_than_zero",
-            "text": "Continue while `i > 0`."
-          },
-          {
-            "id": "i_greater_equal_zero",
-            "text": "Continue while `i >= 0`."
-          },
-          {
-            "id": "i_less_than_length",
-            "text": "Continue while `i < arr.length`."
-          },
-          {
-            "id": "i_greater_than_one",
-            "text": "Continue while `i > 1`."
-          }
-        ],
-        "prompt": "Choose the safe reverse-loop condition.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1697,7 +1251,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Protect index zero in a reverse previous-neighbor scan",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A reverse loop compares `arr[i]` with `arr[i - 1]`. Which condition lets it stop safely while still checking the pair at indexes 0 and 1?",
+    "answerFeedback": "The loop can run down to `i = 1`, where `arr[i - 1]` is `arr[0]`. It must not run at `i = 0`.",
+    "options": [
+      {
+        "id": "i_greater_than_zero",
+        "text": "Continue while `i > 0`.",
+        "isCorrect": true
+      },
+      {
+        "id": "i_greater_equal_zero",
+        "text": "Continue while `i >= 0`.",
+        "isCorrect": false
+      },
+      {
+        "id": "i_less_than_length",
+        "text": "Continue while `i < arr.length`.",
+        "isCorrect": false
+      },
+      {
+        "id": "i_greater_than_one",
+        "text": "Continue while `i > 1`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1717,49 +1295,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Apply the same boundary checklist to `for`, `while`, and manual pointer loops.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-045",
+    "id": "alg-prod-array-string-045-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A learner writes `let i = 0; while (i < s.length) { if (s[i] === s[i - 1]) return false; i++; }`. What is the main bug?",
+    "prompt": "Choose the real bug in the while loop.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "unsafe_first_previous_read",
-        "feedback": "The first loop iteration uses `i = 0`, so `s[i - 1]` reads `s[-1]`, outside the valid logical string index range.",
-        "id": "alg-prod-array-string-045-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "unsafe_first_previous_read",
-            "text": "The first iteration reads `s[-1]`."
-          },
-          {
-            "id": "increment_missing",
-            "text": "The loop never increments `i`."
-          },
-          {
-            "id": "needs_sorting",
-            "text": "The string must be sorted before the loop."
-          },
-          {
-            "id": "nested_loop_missing",
-            "text": "The code needs a nested loop to compare all pairs."
-          }
-        ],
-        "prompt": "Choose the real bug in the while loop.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1786,7 +1329,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Diagnose previous access in a while loop",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner writes `let i = 0; while (i < s.length) { if (s[i] === s[i - 1]) return false; i++; }`. What is the main bug?",
+    "answerFeedback": "The first loop iteration uses `i = 0`, so `s[i - 1]` reads `s[-1]`, outside the valid logical string index range.",
+    "options": [
+      {
+        "id": "unsafe_first_previous_read",
+        "text": "The first iteration reads `s[-1]`.",
+        "isCorrect": true
+      },
+      {
+        "id": "increment_missing",
+        "text": "The loop never increments `i`.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_sorting",
+        "text": "The string must be sorted before the loop.",
+        "isCorrect": false
+      },
+      {
+        "id": "nested_loop_missing",
+        "text": "The code needs a nested loop to compare all pairs.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1806,49 +1373,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "When refactoring boundary bugs, prefer the smallest loop-bound or guard change that preserves the original task.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-046",
+    "id": "alg-prod-array-string-046-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A loop starts at `i = 0` and reads `s[i - 1]`. Which refactor fixes the boundary bug while preserving the same adjacent-scan task?",
+    "prompt": "Choose the boundary-preserving refactor.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "start_at_one",
-        "feedback": "Starting the comparison loop at `i = 1` preserves every adjacent pair and avoids reading a non-existent previous character.",
-        "id": "alg-prod-array-string-046-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "start_at_one",
-            "text": "Start the comparison loop at `i = 1`."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the string first."
-          },
-          {
-            "id": "use_frequency_map",
-            "text": "Build a frequency map before scanning."
-          },
-          {
-            "id": "skip_last",
-            "text": "Stop the loop before the last character."
-          }
-        ],
-        "prompt": "Choose the boundary-preserving refactor.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1875,7 +1407,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Refactor a previous-neighbor boundary bug",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A loop starts at `i = 0` and reads `s[i - 1]`. Which refactor fixes the boundary bug while preserving the same adjacent-scan task?",
+    "answerFeedback": "Starting the comparison loop at `i = 1` preserves every adjacent pair and avoids reading a non-existent previous character.",
+    "options": [
+      {
+        "id": "start_at_one",
+        "text": "Start the comparison loop at `i = 1`.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the string first.",
+        "isCorrect": false
+      },
+      {
+        "id": "use_frequency_map",
+        "text": "Build a frequency map before scanning.",
+        "isCorrect": false
+      },
+      {
+        "id": "skip_last",
+        "text": "Stop the loop before the last character.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1895,49 +1451,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Tie each refactor to the exact boundary threatened by the index expression.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-047",
+    "id": "alg-prod-array-string-047-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
-    "prompt": "A loop scans with `i < arr.length` and reads `arr[i + 1]`. Which refactor fixes the boundary bug while preserving every valid adjacent comparison?",
+    "prompt": "Choose the boundary-preserving refactor.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "stop_before_last",
-        "feedback": "Using `i < arr.length - 1` makes the last safe current index `arr.length - 2`, so the final adjacent pair is checked without reading past the end.",
-        "id": "alg-prod-array-string-047-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "stop_before_last",
-            "text": "Change the condition to `i < arr.length - 1`."
-          },
-          {
-            "id": "start_at_one",
-            "text": "Start at `i = 1`."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the array before scanning."
-          },
-          {
-            "id": "use_frequency_map",
-            "text": "Build a frequency map before the loop."
-          }
-        ],
-        "prompt": "Choose the boundary-preserving refactor.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1964,7 +1485,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Refactor a next-neighbor boundary bug",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A loop scans with `i < arr.length` and reads `arr[i + 1]`. Which refactor fixes the boundary bug while preserving every valid adjacent comparison?",
+    "answerFeedback": "Using `i < arr.length - 1` makes the last safe current index `arr.length - 2`, so the final adjacent pair is checked without reading past the end.",
+    "options": [
+      {
+        "id": "stop_before_last",
+        "text": "Change the condition to `i < arr.length - 1`.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_at_one",
+        "text": "Start at `i = 1`.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the array before scanning.",
+        "isCorrect": false
+      },
+      {
+        "id": "use_frequency_map",
+        "text": "Build a frequency map before the loop.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1984,49 +1529,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "When a prompt says before or after, translate it into `i - 1` or `i + 1` before choosing loop bounds.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-048",
+    "id": "alg-prod-array-string-048-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A task asks whether any character is the same as the character immediately after it. Which boundary matters most?",
+    "prompt": "Choose the boundary signal in the prompt.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "recognize_adjacent_scan",
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "next_neighbor_end_boundary",
-        "feedback": "Immediately after maps to `s[i + 1]`, so the loop must protect the end of the string.",
-        "id": "alg-prod-array-string-048-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "next_neighbor_end_boundary",
-            "text": "A next-neighbor read with an end boundary."
-          },
-          {
-            "id": "previous_boundary",
-            "text": "A previous-neighbor read with a start boundary."
-          },
-          {
-            "id": "frequency_counting",
-            "text": "A count table for each character."
-          },
-          {
-            "id": "global_sorting",
-            "text": "Sorting first so equal characters group together."
-          }
-        ],
-        "prompt": "Choose the boundary signal in the prompt.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2053,7 +1563,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Map immediately-after wording to the end boundary",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks whether any character is the same as the character immediately after it. Which boundary matters most?",
+    "answerFeedback": "Immediately after maps to `s[i + 1]`, so the loop must protect the end of the string.",
+    "options": [
+      {
+        "id": "next_neighbor_end_boundary",
+        "text": "A next-neighbor read with an end boundary.",
+        "isCorrect": true
+      },
+      {
+        "id": "previous_boundary",
+        "text": "A previous-neighbor read with a start boundary.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_counting",
+        "text": "A count table for each character.",
+        "isCorrect": false
+      },
+      {
+        "id": "global_sorting",
+        "text": "Sorting first so equal characters group together.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2073,49 +1607,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "List every indexed expression in the loop body and intersect their safe ranges.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-049",
+    "id": "alg-prod-array-string-049-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A loop compares `arr[i]` with both `arr[i - 1]` and `arr[i + 1]`. Which range is safe for `i`?",
+    "prompt": "Choose the safe current-index range.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one",
       "trace_scan_index"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "interior_only",
-        "feedback": "The current index must be at least 1 for `i - 1` and at most `arr.length - 2` for `i + 1`, so only interior indexes are safe.",
-        "id": "alg-prod-array-string-049-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "interior_only",
-            "text": "`i` from 1 through `arr.length - 2`."
-          },
-          {
-            "id": "start_one_only",
-            "text": "`i` from 1 through `arr.length - 1`."
-          },
-          {
-            "id": "stop_before_last_only",
-            "text": "`i` from 0 through `arr.length - 2`."
-          },
-          {
-            "id": "full_range",
-            "text": "Every index from 0 through `arr.length - 1`."
-          }
-        ],
-        "prompt": "Choose the safe current-index range.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2142,7 +1641,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Intersect both-side neighbor boundaries",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop compares `arr[i]` with both `arr[i - 1]` and `arr[i + 1]`. Which range is safe for `i`?",
+    "answerFeedback": "The current index must be at least 1 for `i - 1` and at most `arr.length - 2` for `i + 1`, so only interior indexes are safe.",
+    "options": [
+      {
+        "id": "interior_only",
+        "text": "`i` from 1 through `arr.length - 2`.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_one_only",
+        "text": "`i` from 1 through `arr.length - 1`.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop_before_last_only",
+        "text": "`i` from 0 through `arr.length - 2`.",
+        "isCorrect": false
+      },
+      {
+        "id": "full_range",
+        "text": "Every index from 0 through `arr.length - 1`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2162,49 +1685,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Mark the safe current-index range first, then trace movement inside that range.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-050",
+    "id": "alg-prod-array-string-050-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_scan_index",
-    "prompt": "You scan a 5-element array and at each current index read both `arr[i - 1]` and `arr[i + 1]`. You just processed index 2. What is the next safe current index?",
+    "prompt": "Choose the next safe trace step.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "index_three",
-        "feedback": "For a 5-element array, the safe current indexes with both neighbors are 1, 2, and 3. After index 2, index 3 is next.",
-        "id": "alg-prod-array-string-050-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "index_three",
-            "text": "Move to index 3."
-          },
-          {
-            "id": "index_four",
-            "text": "Move to index 4."
-          },
-          {
-            "id": "index_zero",
-            "text": "Move back to index 0."
-          },
-          {
-            "id": "stop",
-            "text": "Stop because index 2 has both neighbors."
-          }
-        ],
-        "prompt": "Choose the next safe trace step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_scan_index"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -2241,7 +1729,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Trace an interior-neighbor scan",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You scan a 5-element array and at each current index read both `arr[i - 1]` and `arr[i + 1]`. You just processed index 2. What is the next safe current index?",
+    "answerFeedback": "For a 5-element array, the safe current indexes with both neighbors are 1, 2, and 3. After index 2, index 3 is next.",
+    "options": [
+      {
+        "id": "index_three",
+        "text": "Move to index 3.",
+        "isCorrect": true
+      },
+      {
+        "id": "index_four",
+        "text": "Move to index 4.",
+        "isCorrect": false
+      },
+      {
+        "id": "index_zero",
+        "text": "Move back to index 0.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop",
+        "text": "Stop because index 2 has both neighbors.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2261,61 +1773,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Name the movement first: compare current value with the adjacent value and guard the boundary at one end.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-051",
+    "id": "alg-prod-array-string-051-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_adjacent_scan",
     "secondarySkillAtomIds": [
       "track_index_boundary"
     ],
-    "prompt": "A task asks you to inspect every neighboring pair in an array and count how many pairs match a condition. Which mechanics best describe the work?",
+    "prompt": "Select every mechanic that matches the task.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "left_to_right_scan",
-          "compare_adjacent",
-          "protect_boundary"
-        ],
-        "feedback": "A neighboring-pair task uses one left-to-right scan, compares adjacent values, and protects the boundary where the adjacent value would be outside the array.",
-        "id": "alg-prod-array-string-051-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "left_to_right_scan",
-            "text": "Use a single left-to-right scan."
-          },
-          {
-            "id": "compare_adjacent",
-            "text": "Compare the current value with an adjacent value."
-          },
-          {
-            "id": "protect_boundary",
-            "text": "Protect the boundary at one end of the array."
-          },
-          {
-            "id": "all_pairs",
-            "text": "Compare every pair of values."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the array first."
-          },
-          {
-            "id": "frequency_table",
-            "text": "Build a frequency table."
-          }
-        ],
-        "prompt": "Select every mechanic that matches the task.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "multi_select"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2341,7 +1806,41 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Recognize neighboring-pair traversal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks you to inspect every neighboring pair in an array and count how many pairs match a condition. Which mechanics best describe the work?",
+    "answerFeedback": "A neighboring-pair task uses one left-to-right scan, compares adjacent values, and protects the boundary where the adjacent value would be outside the array.",
+    "options": [
+      {
+        "id": "left_to_right_scan",
+        "text": "Use a single left-to-right scan.",
+        "isCorrect": true
+      },
+      {
+        "id": "compare_adjacent",
+        "text": "Compare the current value with an adjacent value.",
+        "isCorrect": true
+      },
+      {
+        "id": "protect_boundary",
+        "text": "Protect the boundary at one end of the array.",
+        "isCorrect": true
+      },
+      {
+        "id": "all_pairs",
+        "text": "Compare every pair of values.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the array first.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_table",
+        "text": "Build a frequency table.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2361,49 +1860,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Ask whether the prompt means duplicate anywhere or immediately next to it in the original order.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-052",
+    "id": "alg-prod-array-string-052-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_adjacent_scan",
     "secondarySkillAtomIds": [
       "diagnose_order_destroying_transform"
     ],
-    "prompt": "A task asks whether any value is equal to the value immediately next to it. Why is a frequency map not the direct solution?",
+    "prompt": "Choose the correctness reason.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "loses_adjacency",
-        "feedback": "A frequency map can detect repeated values anywhere, but it does not preserve whether the repeats are adjacent in the original order.",
-        "id": "alg-prod-array-string-052-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "loses_adjacency",
-            "text": "It can detect repeated values anywhere, but not whether repeats are adjacent in the original order."
-          },
-          {
-            "id": "always_slower",
-            "text": "It is always slower than scanning."
-          },
-          {
-            "id": "cannot_store_numbers",
-            "text": "It cannot store numbers."
-          },
-          {
-            "id": "sort_required",
-            "text": "Adjacency requires sorting first."
-          }
-        ],
-        "prompt": "Choose the correctness reason.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2429,7 +1893,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Separate adjacent duplicates from duplicates anywhere",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "A task asks whether any value is equal to the value immediately next to it. Why is a frequency map not the direct solution?",
+    "answerFeedback": "A frequency map can detect repeated values anywhere, but it does not preserve whether the repeats are adjacent in the original order.",
+    "options": [
+      {
+        "id": "loses_adjacency",
+        "text": "It can detect repeated values anywhere, but not whether repeats are adjacent in the original order.",
+        "isCorrect": true
+      },
+      {
+        "id": "always_slower",
+        "text": "It is always slower than scanning.",
+        "isCorrect": false
+      },
+      {
+        "id": "cannot_store_numbers",
+        "text": "It cannot store numbers.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_required",
+        "text": "Adjacency requires sorting first.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2450,53 +1938,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Distinguish valid pairs from all indexes: the last element can be the neighbor, but not the current index for `i + 1`.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-053",
+    "id": "alg-prod-array-string-053-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_adjacent_scan",
     "secondarySkillAtomIds": [
       "track_index_boundary"
     ],
-    "prompt": "An array has length `n`. A loop compares each element with the next element. How many adjacent pairs exist?",
+    "prompt": "Choose the number of adjacent pairs.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "n_minus_one",
-        "feedback": "There are `n - 1` adjacent pairs when `n > 0`. The boundary-safe loop does not lose a pair; it simply avoids using the last element as the current index for `i + 1`.",
-        "id": "alg-prod-array-string-053-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "n_minus_one",
-            "text": "`n - 1` pairs, when `n > 0`."
-          },
-          {
-            "id": "n_pairs",
-            "text": "`n` pairs."
-          },
-          {
-            "id": "n_plus_one_pairs",
-            "text": "`n + 1` pairs."
-          },
-          {
-            "id": "n_squared_pairs",
-            "text": "`n * n` pairs."
-          },
-          {
-            "id": "zero_pairs",
-            "text": "Always 0 pairs for boundary safety."
-          }
-        ],
-        "prompt": "Choose the number of adjacent pairs.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_adjacent_scan"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2522,7 +1971,36 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Count adjacent pairs from length",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "An array has length `n`. A loop compares each element with the next element. How many adjacent pairs exist?",
+    "answerFeedback": "There are `n - 1` adjacent pairs when `n > 0`. The boundary-safe loop does not lose a pair; it simply avoids using the last element as the current index for `i + 1`.",
+    "options": [
+      {
+        "id": "n_minus_one",
+        "text": "`n - 1` pairs, when `n > 0`.",
+        "isCorrect": true
+      },
+      {
+        "id": "n_pairs",
+        "text": "`n` pairs.",
+        "isCorrect": false
+      },
+      {
+        "id": "n_plus_one_pairs",
+        "text": "`n + 1` pairs.",
+        "isCorrect": false
+      },
+      {
+        "id": "n_squared_pairs",
+        "text": "`n * n` pairs.",
+        "isCorrect": false
+      },
+      {
+        "id": "zero_pairs",
+        "text": "Always 0 pairs for boundary safety.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2542,50 +2020,15 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "After processing `i`, advance to `i + 1` if that next current index is still safe.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-054",
+    "id": "alg-prod-array-string-054-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_scan_index",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
     ],
-    "prompt": "You scan a 6-element array with `i < arr.length - 1` and compare `arr[i]` with `arr[i + 1]`. You just processed `i = 2`. What is the next current index?",
+    "prompt": "Choose the next current index.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "index_three",
-        "feedback": "After processing current index 2, the next current index is 3. In a 6-element array, 3 is still safe because `arr[4]` exists.",
-        "id": "alg-prod-array-string-054-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "index_three",
-            "text": "Move to `i = 3`."
-          },
-          {
-            "id": "jump_to_last",
-            "text": "Jump to `i = 5`."
-          },
-          {
-            "id": "stop_after_reading_neighbor",
-            "text": "Stop because `i + 1` was already read."
-          },
-          {
-            "id": "move_back",
-            "text": "Move back to `i = 1`."
-          }
-        ],
-        "prompt": "Choose the next current index.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_scan_index"
-        ],
-        "type": "trace_next_step"
-      }
-    ],
     "status": "active",
     "stepByStepTrace": [
       {
@@ -2621,7 +2064,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Trace the next-neighbor current index",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You scan a 6-element array with `i < arr.length - 1` and compare `arr[i]` with `arr[i + 1]`. You just processed `i = 2`. What is the next current index?",
+    "answerFeedback": "After processing current index 2, the next current index is 3. In a 6-element array, 3 is still safe because `arr[4]` exists.",
+    "options": [
+      {
+        "id": "index_three",
+        "text": "Move to `i = 3`.",
+        "isCorrect": true
+      },
+      {
+        "id": "jump_to_last",
+        "text": "Jump to `i = 5`.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop_after_reading_neighbor",
+        "text": "Stop because `i + 1` was already read.",
+        "isCorrect": false
+      },
+      {
+        "id": "move_back",
+        "text": "Move back to `i = 1`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2641,49 +2108,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "For reverse previous-neighbor scans, decrement the current index but stop before `i = 0`.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-055",
+    "id": "alg-prod-array-string-055-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_scan_index",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
     ],
-    "prompt": "A reverse loop checks adjacent pairs by comparing `arr[i]` with `arr[i - 1]` and continues while `i > 0`. In a 5-element array, it just processed `i = 3`. What is the next safe current index?",
+    "prompt": "Choose the next safe current index.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "index_two",
-        "feedback": "After processing `i = 3`, a reverse scan moves to `i = 2`. Index 2 is safe because `arr[1]` exists.",
-        "id": "alg-prod-array-string-055-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "index_two",
-            "text": "Move to `i = 2`."
-          },
-          {
-            "id": "move_to_four",
-            "text": "Move to `i = 4`."
-          },
-          {
-            "id": "stop_after_previous",
-            "text": "Stop because a previous value was read."
-          },
-          {
-            "id": "move_to_zero",
-            "text": "Move to `i = 0`."
-          }
-        ],
-        "prompt": "Choose the next safe current index.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_scan_index"
-        ],
-        "type": "trace_next_step"
-      }
-    ],
     "status": "active",
     "stepByStepTrace": [
       {
@@ -2719,7 +2151,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Trace reverse adjacent movement",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "A reverse loop checks adjacent pairs by comparing `arr[i]` with `arr[i - 1]` and continues while `i > 0`. In a 5-element array, it just processed `i = 3`. What is the next safe current index?",
+    "answerFeedback": "After processing `i = 3`, a reverse scan moves to `i = 2`. Index 2 is safe because `arr[1]` exists.",
+    "options": [
+      {
+        "id": "index_two",
+        "text": "Move to `i = 2`.",
+        "isCorrect": true
+      },
+      {
+        "id": "move_to_four",
+        "text": "Move to `i = 4`.",
+        "isCorrect": false
+      },
+      {
+        "id": "stop_after_previous",
+        "text": "Stop because a previous value was read.",
+        "isCorrect": false
+      },
+      {
+        "id": "move_to_zero",
+        "text": "Move to `i = 0`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2739,50 +2195,15 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Find the last valid current index for `arr[i + 1]` and compare it with the loop condition.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-056",
+    "id": "alg-prod-array-string-056-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
     ],
-    "prompt": "A loop compares `arr[i]` with `arr[i + 1]`, but uses `i < arr.length - 2`. What bug does this create?",
+    "prompt": "Choose the actual boundary bug.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "skips_final_pair",
-        "feedback": "The loop is safe, but it skips the final valid adjacent pair. For `arr[i + 1]`, the last safe current index is `arr.length - 2`.",
-        "id": "alg-prod-array-string-056-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "skips_final_pair",
-            "text": "It is safe, but it skips the final valid adjacent pair."
-          },
-          {
-            "id": "reads_past_end",
-            "text": "It reads past the end."
-          },
-          {
-            "id": "compares_every_pair",
-            "text": "It compares every pair."
-          },
-          {
-            "id": "needs_frequency_map",
-            "text": "It requires a frequency map."
-          }
-        ],
-        "prompt": "Choose the actual boundary bug.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2808,7 +2229,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Diagnose a skipped final adjacent pair",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A loop compares `arr[i]` with `arr[i + 1]`, but uses `i < arr.length - 2`. What bug does this create?",
+    "answerFeedback": "The loop is safe, but it skips the final valid adjacent pair. For `arr[i + 1]`, the last safe current index is `arr.length - 2`.",
+    "options": [
+      {
+        "id": "skips_final_pair",
+        "text": "It is safe, but it skips the final valid adjacent pair.",
+        "isCorrect": true
+      },
+      {
+        "id": "reads_past_end",
+        "text": "It reads past the end.",
+        "isCorrect": false
+      },
+      {
+        "id": "compares_every_pair",
+        "text": "It compares every pair.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_frequency_map",
+        "text": "It requires a frequency map.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2828,50 +2273,15 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "For `arr[i]` with `arr[i + 1]`, ask whether current index 0 is a valid pair start.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-057",
+    "id": "alg-prod-array-string-057-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_off_by_one",
     "secondarySkillAtomIds": [
       "track_index_boundary",
       "recognize_adjacent_scan"
     ],
-    "prompt": "A loop compares `arr[i]` with `arr[i + 1]`, but starts at `i = 1`. What work is skipped?",
+    "prompt": "Choose the skipped work.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "skips_zero_one",
-        "feedback": "The adjacent pair at indexes 0 and 1 is skipped. Starting at 1 is correct for previous-neighbor reads, but too late for this next-neighbor scan.",
-        "id": "alg-prod-array-string-057-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "skips_zero_one",
-            "text": "The adjacent pair at indexes 0 and 1 is skipped."
-          },
-          {
-            "id": "skips_last_pair",
-            "text": "The last pair is skipped."
-          },
-          {
-            "id": "reads_before_array",
-            "text": "The loop reads before the array."
-          },
-          {
-            "id": "all_pairs_checked",
-            "text": "Every pair is still checked."
-          }
-        ],
-        "prompt": "Choose the skipped work.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_off_by_one"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2897,7 +2307,31 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Diagnose a skipped first adjacent pair",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A loop compares `arr[i]` with `arr[i + 1]`, but starts at `i = 1`. What work is skipped?",
+    "answerFeedback": "The adjacent pair at indexes 0 and 1 is skipped. Starting at 1 is correct for previous-neighbor reads, but too late for this next-neighbor scan.",
+    "options": [
+      {
+        "id": "skips_zero_one",
+        "text": "The adjacent pair at indexes 0 and 1 is skipped.",
+        "isCorrect": true
+      },
+      {
+        "id": "skips_last_pair",
+        "text": "The last pair is skipped.",
+        "isCorrect": false
+      },
+      {
+        "id": "reads_before_array",
+        "text": "The loop reads before the array.",
+        "isCorrect": false
+      },
+      {
+        "id": "all_pairs_checked",
+        "text": "Every pair is still checked.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2918,53 +2352,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Check whether any index satisfies both `i >= 1` and `i <= arr.length - 2`.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-058",
+    "id": "alg-prod-array-string-058-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
     "secondarySkillAtomIds": [
       "trace_scan_index"
     ],
-    "prompt": "A loop needs to read both `arr[i - 1]` and `arr[i + 1]`. What should happen for an array of length 2?",
+    "prompt": "Choose the safe behavior.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "no_safe_index",
-        "feedback": "There is no safe interior current index in a length-2 array, so the loop should not run.",
-        "id": "alg-prod-array-string-058-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "no_safe_index",
-            "text": "There is no safe interior current index, so the loop should not run."
-          },
-          {
-            "id": "process_zero",
-            "text": "Process index 0."
-          },
-          {
-            "id": "process_one",
-            "text": "Process index 1."
-          },
-          {
-            "id": "remove_guards",
-            "text": "Process both indexes with guards removed."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort first."
-          }
-        ],
-        "prompt": "Choose the safe behavior.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -2990,7 +2385,36 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "Handle too-short input for both-side neighbors",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A loop needs to read both `arr[i - 1]` and `arr[i + 1]`. What should happen for an array of length 2?",
+    "answerFeedback": "There is no safe interior current index in a length-2 array, so the loop should not run.",
+    "options": [
+      {
+        "id": "no_safe_index",
+        "text": "There is no safe interior current index, so the loop should not run.",
+        "isCorrect": true
+      },
+      {
+        "id": "process_zero",
+        "text": "Process index 0.",
+        "isCorrect": false
+      },
+      {
+        "id": "process_one",
+        "text": "Process index 1.",
+        "isCorrect": false
+      },
+      {
+        "id": "remove_guards",
+        "text": "Process both indexes with guards removed.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort first.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -3011,53 +2435,14 @@ export const indexedScanBoundaryQuestions = [
       "nextAction": "Write down every indexed expression in the loop body before selecting start and stop conditions.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-059",
+    "id": "alg-prod-array-string-059-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
     ],
-    "prompt": "Before choosing loop bounds for a scan, what should you inspect in the loop body?",
+    "prompt": "Choose what to inspect first.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "all_indexed_expressions",
-        "feedback": "Inspect every indexed expression, such as `i - 1`, `i`, and `i + 1`, because the safe current-index range must satisfy all of them.",
-        "id": "alg-prod-array-string-059-check",
-        "mistakeTypes": [
-          "off_by_one",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "all_indexed_expressions",
-            "text": "Every indexed expression, such as `i - 1`, `i`, and `i + 1`."
-          },
-          {
-            "id": "only_length",
-            "text": "Only the array length."
-          },
-          {
-            "id": "only_first_value",
-            "text": "Only the first value."
-          },
-          {
-            "id": "sorted_values",
-            "text": "Only whether values are sorted."
-          },
-          {
-            "id": "duplicates_only",
-            "text": "Only whether duplicates exist."
-          }
-        ],
-        "prompt": "Choose what to inspect first.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "track_index_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -3083,6 +2468,35 @@ export const indexedScanBoundaryQuestions = [
     ],
     "title": "List indexed expressions before bounds",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "Before choosing loop bounds for a scan, what should you inspect in the loop body?",
+    "answerFeedback": "Inspect every indexed expression, such as `i - 1`, `i`, and `i + 1`, because the safe current-index range must satisfy all of them.",
+    "options": [
+      {
+        "id": "all_indexed_expressions",
+        "text": "Every indexed expression, such as `i - 1`, `i`, and `i + 1`.",
+        "isCorrect": true
+      },
+      {
+        "id": "only_length",
+        "text": "Only the array length.",
+        "isCorrect": false
+      },
+      {
+        "id": "only_first_value",
+        "text": "Only the first value.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_values",
+        "text": "Only whether values are sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "duplicates_only",
+        "text": "Only whether duplicates exist.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

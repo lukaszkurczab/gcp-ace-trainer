@@ -1,9 +1,7 @@
 import type { TrackDefinition, TrackId } from "./types";
 import { ALGORITHM_QUESTION_TYPES } from "../../tracks/algorithms/algorithmQuestionTypes";
-import {
-  ALGORITHM_CONTENT_VERSION,
-  algorithmContentItems,
-} from "../../tracks/algorithms/content";
+import { ALGORITHM_CONTENT_VERSION } from "../../tracks/algorithms/algorithmContentTypes";
+import { algorithmContentItems } from "../../tracks/algorithms/content";
 
 export const CLOUD_CERTIFICATION_TRACK_ID: TrackId = "cloud-certification";
 export const ALGORITHMS_TRACK_ID: TrackId = "algorithms";

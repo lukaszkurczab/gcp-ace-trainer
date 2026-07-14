@@ -144,14 +144,14 @@ test("Algorithms adapter exists for algorithms", () => {
 });
 
 test("Algorithms scoring can score an active static item", () => {
-  const item = ALGORITHM_TRAINING_ITEMS.find((candidate) => candidate.id === "alg-hash-map-primer-001");
+  const item = ALGORITHM_TRAINING_ITEMS.find((candidate) => candidate.id === "alg-recognize-hash-state-signal-001");
   const scoring = createAlgorithmsScoringAdapter();
 
   assert.ok(item);
 
   const result = scoring.scoreAttempt(item, {
     kind: "option_selection",
-    selectedOptionIds: ["check_complement_first"],
+    selectedOptionIds: ["seen_set"],
   });
 
   assert.deepEqual(result, {
@@ -217,7 +217,7 @@ function makeAlgorithmsAttempt(
   return {
     answeredAt: "2026-06-29T12:00:00.000Z",
     id: "attempt-algorithms-review-001",
-    itemId: "alg-hash-map-primer-001",
+    itemId: "alg-recognize-hash-state-signal-001",
     itemType: "approach_primer",
     mistakeTypeRefs: [
       {

@@ -179,6 +179,7 @@ function makeQuestion(
   mistakeTypes: readonly string[] = ["test_mistake"],
 ): AlgorithmQuestion {
   return {
+    contentVersion: "algorithms-core",
     difficulty: "intro",
     feedbackModel: {
       decisionSignal: "Use the deciding signal.",

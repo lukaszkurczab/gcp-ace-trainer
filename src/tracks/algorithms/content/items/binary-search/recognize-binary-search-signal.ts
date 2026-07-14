@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const recognizeBinarySearchSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -16,43 +18,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_hash_only": "A hash set can solve membership too, but sorted indexed order gives a direct binary-search route."
       }
     },
-    "id": "alg-binary-search-recognize-001",
+    "id": "alg-binary-search-recognize-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "The input is a sorted ascending array, and the task asks whether a target value exists. Which signal supports binary search?",
+    "prompt": "Choose the binary-search signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Sorted indexed order lets each comparison safely discard half of the remaining positions.",
-        "id": "alg-binary-search-recognize-001-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The array is sorted, so a mid comparison can discard half the indexes."
-          },
-          {
-            "id": "wrong_search_word",
-            "text": "The task says search, so binary search is always valid."
-          },
-          {
-            "id": "wrong_hash_only",
-            "text": "Binary search is invalid because membership tasks always require a hash set."
-          }
-        ],
-        "prompt": "Choose the binary-search signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -89,23 +60,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "linear_scan_default"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "The array is sorted, so a mid comparison can discard half the indexes."
-        },
-        {
-          "id": "wrong_search_word",
-          "text": "The task says search, so binary search is always valid."
-        },
-        {
-          "id": "wrong_hash_only",
-          "text": "Binary search is invalid because membership tasks always require a hash set."
-        }
-      ]
-    }
+    "instruction": "The input is a sorted ascending array, and the task asks whether a target value exists. Which signal supports binary search?",
+    "answerFeedback": "Sorted indexed order lets each comparison safely discard half of the remaining positions.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The array is sorted, so a mid comparison can discard half the indexes.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_search_word",
+        "text": "The task says search, so binary search is always valid.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_hash_only",
+        "text": "Binary search is invalid because membership tasks always require a hash set.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -124,43 +97,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_numeric": "Numeric values alone do not create sorted order."
       }
     },
-    "id": "alg-binary-search-recognize-002",
+    "id": "alg-binary-search-recognize-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "The input array is [7, 1, 5, 3], and the task asks whether 5 exists. Should classic binary search be used directly?",
+    "prompt": "Choose whether direct binary search is valid.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "No. The array is unsorted, so classic binary search cannot safely discard either half.",
-        "id": "alg-binary-search-recognize-002-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "No, because the array is not sorted."
-          },
-          {
-            "id": "wrong_target_exists",
-            "text": "Yes, because the target is present in the array."
-          },
-          {
-            "id": "wrong_numeric",
-            "text": "Yes, because all values are numbers."
-          }
-        ],
-        "prompt": "Choose whether direct binary search is valid.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -195,23 +137,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "No, because the array is not sorted."
-        },
-        {
-          "id": "wrong_target_exists",
-          "text": "Yes, because the target is present in the array."
-        },
-        {
-          "id": "wrong_numeric",
-          "text": "Yes, because all values are numbers."
-        }
-      ]
-    }
+    "instruction": "The input array is [7, 1, 5, 3], and the task asks whether 5 exists. Should classic binary search be used directly?",
+    "answerFeedback": "No. The array is unsorted, so classic binary search cannot safely discard either half.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "No, because the array is not sorted.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_target_exists",
+        "text": "Yes, because the target is present in the array.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_numeric",
+        "text": "Yes, because all values are numbers.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -229,42 +173,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_sorted_values": "The input values themselves do not need to be sorted if the searched predicate over indexes is monotonic."
       }
     },
-    "id": "alg-binary-search-recognize-003",
+    "id": "alg-binary-search-recognize-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A predicate over indexes has the shape false, false, false, true, true. What signal makes binary search valid?",
+    "prompt": "Choose the validity signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The predicate is monotonic, so a mid result tells which side can be discarded.",
-        "id": "alg-binary-search-recognize-003-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The predicate is monotonic and has a single false-to-true boundary."
-          },
-          {
-            "id": "wrong_any_boolean",
-            "text": "The predicate returns booleans, and all boolean predicates are binary-searchable."
-          },
-          {
-            "id": "wrong_sorted_values",
-            "text": "The underlying values must be sorted, otherwise predicate search is impossible."
-          }
-        ],
-        "prompt": "Choose the validity signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -289,7 +203,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Recognize monotonic predicate signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A predicate over indexes has the shape false, false, false, true, true. What signal makes binary search valid?",
+    "answerFeedback": "The predicate is monotonic, so a mid result tells which side can be discarded.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The predicate is monotonic and has a single false-to-true boundary.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_any_boolean",
+        "text": "The predicate returns booleans, and all boolean predicates are binary-searchable.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_sorted_values",
+        "text": "The underlying values must be sorted, otherwise predicate search is impossible.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -308,43 +241,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_sorted_input": "The packages do not need to be sorted if feasibility over capacity is monotonic."
       }
     },
-    "id": "alg-binary-search-recognize-004",
+    "id": "alg-binary-search-recognize-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A task asks for the minimum capacity that allows all packages to ship within d days. Larger capacities never make shipping harder. Which binary-search signal is present?",
+    "prompt": "Choose the binary-search signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Candidate capacities form a monotonic answer space: too small fails, large enough works.",
-        "id": "alg-binary-search-recognize-004-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A monotonic feasible/infeasible split over possible capacity values."
-          },
-          {
-            "id": "wrong_index",
-            "text": "A sorted package index lookup."
-          },
-          {
-            "id": "wrong_sorted_input",
-            "text": "A sorted input array signal."
-          }
-        ],
-        "prompt": "Choose the binary-search signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -381,23 +283,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "A monotonic feasible/infeasible split over possible capacity values."
-        },
-        {
-          "id": "wrong_index",
-          "text": "A sorted package index lookup."
-        },
-        {
-          "id": "wrong_sorted_input",
-          "text": "A sorted input array signal."
-        }
-      ]
-    }
+    "instruction": "A task asks for the minimum capacity that allows all packages to ship within d days. Larger capacities never make shipping harder. Which binary-search signal is present?",
+    "answerFeedback": "Candidate capacities form a monotonic answer space: too small fails, large enough works.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A monotonic feasible/infeasible split over possible capacity values.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_index",
+        "text": "A sorted package index lookup.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_sorted_input",
+        "text": "A sorted input array signal.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -416,43 +320,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_always_search": "Search tasks can require linear scan, hashing, graph search, or other patterns."
       }
     },
-    "id": "alg-binary-search-recognize-005",
+    "id": "alg-binary-search-recognize-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "A learner chooses binary search because the prompt contains the word search, but the input is unsorted and no monotonic predicate is defined. What mistake should you diagnose?",
+    "prompt": "Choose the mistake diagnosis.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "They selected binary search from wording instead of verifying sorted order or monotonicity.",
-        "id": "alg-binary-search-recognize-005-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "They used a keyword cue instead of verifying a legal half-discard condition."
-          },
-          {
-            "id": "wrong_keyword",
-            "text": "They are correct because any prompt containing search implies binary search."
-          },
-          {
-            "id": "wrong_always_search",
-            "text": "They only need to rename the function to binarySearch for the strategy to fit."
-          }
-        ],
-        "prompt": "Choose the mistake diagnosis.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -472,7 +345,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Reject search-keyword reasoning",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A learner chooses binary search because the prompt contains the word search, but the input is unsorted and no monotonic predicate is defined. What mistake should you diagnose?",
+    "answerFeedback": "They selected binary search from wording instead of verifying sorted order or monotonicity.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "They used a keyword cue instead of verifying a legal half-discard condition.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_keyword",
+        "text": "They are correct because any prompt containing search implies binary search.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_always_search",
+        "text": "They only need to rename the function to binarySearch for the strategy to fit.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -491,43 +383,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_threshold": "A threshold phrase does not help if the score relation is non-monotonic."
       }
     },
-    "id": "alg-binary-search-recognize-006",
+    "id": "alg-binary-search-recognize-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A score function over candidate x goes up, down, then up again. The task asks for an x with score(x) >= target. Is binary search on x justified?",
+    "prompt": "Choose whether binary search is justified.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "No. If the predicate can flip more than once, a mid result cannot identify one impossible side.",
-        "id": "alg-binary-search-recognize-006-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "No, because the predicate over x is not monotonic."
-          },
-          {
-            "id": "wrong_numeric",
-            "text": "Yes, because x is numeric."
-          },
-          {
-            "id": "wrong_threshold",
-            "text": "Yes, because every threshold condition is binary-searchable."
-          }
-        ],
-        "prompt": "Choose whether binary search is justified.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -562,23 +423,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "binary_search_on_answer"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "No, because the predicate over x is not monotonic."
-        },
-        {
-          "id": "wrong_numeric",
-          "text": "Yes, because x is numeric."
-        },
-        {
-          "id": "wrong_threshold",
-          "text": "Yes, because every threshold condition is binary-searchable."
-        }
-      ]
-    }
+    "instruction": "A score function over candidate x goes up, down, then up again. The task asks for an x with score(x) >= target. Is binary search on x justified?",
+    "answerFeedback": "No. If the predicate can flip more than once, a mid result cannot identify one impossible side.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "No, because the predicate over x is not monotonic.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_numeric",
+        "text": "Yes, because x is numeric.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_threshold",
+        "text": "Yes, because every threshold condition is binary-searchable.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -596,42 +459,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_unsorted_raw": "Daily increments may vary; the cumulative total is the monotonic object."
       }
     },
-    "id": "alg-binary-search-recognize-007",
+    "id": "alg-binary-search-recognize-007-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A task asks for the first day when a cumulative total reaches at least target. The cumulative total never decreases. Which signal matters?",
+    "prompt": "Choose the binary-search signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The predicate total(day) >= target is false before the boundary and true after it.",
-        "id": "alg-binary-search-recognize-007-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A monotonic first-true predicate over days."
-          },
-          {
-            "id": "wrong_exact",
-            "text": "Binary search is valid only if some day equals target exactly."
-          },
-          {
-            "id": "wrong_unsorted_raw",
-            "text": "Binary search is invalid because individual daily increments may be uneven."
-          }
-        ],
-        "prompt": "Choose the binary-search signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -656,7 +489,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Recognize cumulative first-true signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks for the first day when a cumulative total reaches at least target. The cumulative total never decreases. Which signal matters?",
+    "answerFeedback": "The predicate total(day) >= target is false before the boundary and true after it.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A monotonic first-true predicate over days.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_exact",
+        "text": "Binary search is valid only if some day equals target exactly.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_unsorted_raw",
+        "text": "Binary search is invalid because individual daily increments may be uneven.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -675,43 +527,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_free_sort": "Sorting is not free; it changes the total cost and may also affect order-sensitive tasks."
       }
     },
-    "id": "alg-binary-search-recognize-008",
+    "id": "alg-binary-search-recognize-008-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "Plan A uses classic binary search on an unsorted array. Plan B first sorts the array, then binary-searches several membership queries. Which comparison is relevant?",
+    "prompt": "Choose the relevant comparison.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Sorting can make binary search legal for order-insensitive membership queries, but preprocessing cost must be counted.",
-        "id": "alg-binary-search-recognize-008-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan B may be valid after sorting, but the sort cost must be included and the task must tolerate reordering."
-          },
-          {
-            "id": "wrong_direct",
-            "text": "Plan A is valid because binary search can be used before sorting."
-          },
-          {
-            "id": "wrong_free_sort",
-            "text": "Plan B is always O(log n) total because sorting only prepares the input."
-          }
-        ],
-        "prompt": "Choose the relevant comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -737,28 +558,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "title": "Distinguish direct and after-sort legality",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "sorted precondition",
-        "preprocessing cost",
-        "order sensitivity"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan B may be valid after sorting, but the sort cost must be included and the task must tolerate reordering."
-        },
-        {
-          "id": "wrong_direct",
-          "text": "Plan A is valid because binary search can be used before sorting."
-        },
-        {
-          "id": "wrong_free_sort",
-          "text": "Plan B is always O(log n) total because sorting only prepares the input."
-        }
-      ]
-    }
+    "instruction": "Plan A uses classic binary search on an unsorted array. Plan B first sorts the array, then binary-searches several membership queries. Which comparison is relevant?",
+    "answerFeedback": "Sorting can make binary search legal for order-insensitive membership queries, but preprocessing cost must be counted.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Plan B may be valid after sorting, but the sort cost must be included and the task must tolerate reordering.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_direct",
+        "text": "Plan A is valid because binary search can be used before sorting.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_free_sort",
+        "text": "Plan B is always O(log n) total because sorting only prepares the input.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -777,43 +595,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_target": "Having a target value does not create sorted order or a monotonic predicate."
       }
     },
-    "id": "alg-binary-search-recognize-009",
+    "id": "alg-binary-search-recognize-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "The task asks whether any pair in an unsorted array sums to target. A learner suggests binary search directly on the original array. What is wrong?",
+    "prompt": "Choose what is wrong.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The original array is unsorted and the pair condition does not give a direct half-discard rule.",
-        "id": "alg-binary-search-recognize-009-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The searched space is not ordered or monotonic, so direct binary search is not justified."
-          },
-          {
-            "id": "wrong_pair_numeric",
-            "text": "Binary search is valid because pair sums are numeric."
-          },
-          {
-            "id": "wrong_target",
-            "text": "Binary search is valid because the prompt gives a target value."
-          }
-        ],
-        "prompt": "Choose what is wrong.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -833,7 +620,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Reject direct binary search for unsorted pair sum",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "The task asks whether any pair in an unsorted array sums to target. A learner suggests binary search directly on the original array. What is wrong?",
+    "answerFeedback": "The original array is unsorted and the pair condition does not give a direct half-discard rule.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The searched space is not ordered or monotonic, so direct binary search is not justified.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_pair_numeric",
+        "text": "Binary search is valid because pair sums are numeric.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_target",
+        "text": "Binary search is valid because the prompt gives a target value.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -852,43 +658,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_no_binary": "A monotonic feasible split is exactly what answer-space binary search needs."
       }
     },
-    "id": "alg-binary-search-recognize-010",
+    "id": "alg-binary-search-recognize-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A task asks for the smallest x such that canBuild(x) is true. For every larger x, canBuild is also true. Which strategy family fits?",
+    "prompt": "Choose the strategy family.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Search candidate x values and find the first feasible one.",
-        "id": "alg-binary-search-recognize-010-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Binary search on answer over a monotonic feasible predicate."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "Classic index search for nums[mid] === x."
-          },
-          {
-            "id": "wrong_no_binary",
-            "text": "Binary search cannot apply because there is no sorted input array."
-          }
-        ],
-        "prompt": "Choose the strategy family.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -925,23 +700,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Binary search on answer over a monotonic feasible predicate."
-        },
-        {
-          "id": "wrong_classic",
-          "text": "Classic index search for nums[mid] === x."
-        },
-        {
-          "id": "wrong_no_binary",
-          "text": "Binary search cannot apply because there is no sorted input array."
-        }
-      ]
-    }
+    "instruction": "A task asks for the smallest x such that canBuild(x) is true. For every larger x, canBuild is also true. Which strategy family fits?",
+    "answerFeedback": "Search candidate x values and find the first feasible one.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Binary search on answer over a monotonic feasible predicate.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_classic",
+        "text": "Classic index search for nums[mid] === x.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_no_binary",
+        "text": "Binary search cannot apply because there is no sorted input array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -959,42 +736,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_nonmonotonic": "The prompt says once false, it stays false, which is monotonic."
       }
     },
-    "id": "alg-binary-search-recognize-011",
+    "id": "alg-binary-search-recognize-011-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "A task asks for the maximum x such that canPlace(x) is true. As x grows, canPlace eventually becomes false and stays false. Which signal is present?",
+    "prompt": "Choose the signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "This is a monotonic true-then-false predicate; search for the last true x.",
-        "id": "alg-binary-search-recognize-011-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A last-true boundary over candidate answer values."
-          },
-          {
-            "id": "wrong_first_true",
-            "text": "A first-true boundary over candidate answer values."
-          },
-          {
-            "id": "wrong_nonmonotonic",
-            "text": "No binary-search signal, because the predicate changes from true to false."
-          }
-        ],
-        "prompt": "Choose the signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1019,7 +766,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Recognize maximize-feasible answer search",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks for the maximum x such that canPlace(x) is true. As x grows, canPlace eventually becomes false and stays false. Which signal is present?",
+    "answerFeedback": "This is a monotonic true-then-false predicate; search for the last true x.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A last-true boundary over candidate answer values.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_first_true",
+        "text": "A first-true boundary over candidate answer values.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_nonmonotonic",
+        "text": "No binary-search signal, because the predicate changes from true to false.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1038,43 +804,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_answer_space": "The search space is still array indexes, not arbitrary answer values."
       }
     },
-    "id": "alg-binary-search-recognize-012",
+    "id": "alg-binary-search-recognize-012-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "lower_bound_contract",
-    "prompt": "A sorted array is searched for the first index where nums[i] >= target. Which binary-search family should be recognized?",
+    "prompt": "Choose the recognized family.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "This is lower_bound / boundary search over sorted indexes.",
-        "id": "alg-binary-search-recognize-012-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "lower_bound / boundary binary search."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "classic binary search that returns any equal match."
-          },
-          {
-            "id": "wrong_answer_space",
-            "text": "binary search on answer over a feasibility check."
-          }
-        ],
-        "prompt": "Choose the recognized family.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "lower_bound_contract"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1111,23 +846,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "lower_bound / boundary binary search."
-        },
-        {
-          "id": "wrong_classic",
-          "text": "classic binary search that returns any equal match."
-        },
-        {
-          "id": "wrong_answer_space",
-          "text": "binary search on answer over a feasibility check."
-        }
-      ]
-    }
+    "instruction": "A sorted array is searched for the first index where nums[i] >= target. Which binary-search family should be recognized?",
+    "answerFeedback": "This is lower_bound / boundary search over sorted indexes.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "lower_bound / boundary binary search.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_classic",
+        "text": "classic binary search that returns any equal match.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_answer_space",
+        "text": "binary search on answer over a feasibility check.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1145,42 +882,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_unsorted": "The values are sorted, which is the key signal."
       }
     },
-    "id": "alg-binary-search-recognize-013",
+    "id": "alg-binary-search-recognize-013-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "upper_bound_contract",
-    "prompt": "A prompt gives values [1, 4, 9, 16, 25] and asks for the first value greater than 10. Why can binary search help?",
+    "prompt": "Choose why binary search can help.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The predicate nums[i] > 10 becomes false, false, false, true, true.",
-        "id": "alg-binary-search-recognize-013-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Sorted order creates a monotonic false-then-true boundary."
-          },
-          {
-            "id": "wrong_exact",
-            "text": "Binary search cannot help because 10 is not stored exactly."
-          },
-          {
-            "id": "wrong_unsorted",
-            "text": "Binary search helps because the numbers are positive, not because they are sorted."
-          }
-        ],
-        "prompt": "Choose why binary search can help.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "upper_bound_contract"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1205,7 +912,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Recognize sorted boundary predicate",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A prompt gives values [1, 4, 9, 16, 25] and asks for the first value greater than 10. Why can binary search help?",
+    "answerFeedback": "The predicate nums[i] > 10 becomes false, false, false, true, true.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Sorted order creates a monotonic false-then-true boundary.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_exact",
+        "text": "Binary search cannot help because 10 is not stored exactly.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_unsorted",
+        "text": "Binary search helps because the numbers are positive, not because they are sorted.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1224,43 +950,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_loop_first": "Writing the loop first hides the missing predicate problem."
       }
     },
-    "id": "alg-binary-search-recognize-014",
+    "id": "alg-binary-search-recognize-014-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A learner wants to binary-search the answer because the final answer is an integer. They cannot define a predicate that is false-then-true or true-then-false. What should the review say?",
+    "prompt": "Choose the review feedback.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Reject answer-search until a monotonic predicate over candidate answers is defined.",
-        "id": "alg-binary-search-recognize-014-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Do not choose binary search on answer without a monotonic predicate."
-          },
-          {
-            "id": "wrong_integer",
-            "text": "Proceed because integer answers are always binary-searchable."
-          },
-          {
-            "id": "wrong_loop_first",
-            "text": "Write the binary search loop first and discover the predicate later."
-          }
-        ],
-        "prompt": "Choose the review feedback.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1285,7 +980,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Reject integer-only answer-search signal",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A learner wants to binary-search the answer because the final answer is an integer. They cannot define a predicate that is false-then-true or true-then-false. What should the review say?",
+    "answerFeedback": "Reject answer-search until a monotonic predicate over candidate answers is defined.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Do not choose binary search on answer without a monotonic predicate.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_integer",
+        "text": "Proceed because integer answers are always binary-searchable.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_loop_first",
+        "text": "Write the binary search loop first and discover the predicate later.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1303,42 +1017,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_variable": "Using left/right/mid variables does not prove binary search is valid."
       }
     },
-    "id": "alg-binary-search-recognize-015",
+    "id": "alg-binary-search-recognize-015-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "classic_binary_search_discard_rule",
-    "prompt": "Plan A says: binary search because the input is sorted. Plan B says: binary search because each comparison tells which half cannot contain the target. Which explanation is stronger?",
+    "prompt": "Choose the stronger explanation.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Plan B connects the precondition to the discard rule, which is the core binary-search reasoning.",
-        "id": "alg-binary-search-recognize-015-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan B, because it explains how sorted order enables safe half-discarding."
-          },
-          {
-            "id": "wrong_precondition_only",
-            "text": "Plan A, because naming sorted input is always a complete explanation."
-          },
-          {
-            "id": "wrong_variable",
-            "text": "Neither; binary search is justified only by using variables named left, right, and mid."
-          }
-        ],
-        "prompt": "Choose the stronger explanation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "classic_binary_search_discard_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1359,28 +1043,25 @@ export const recognizeBinarySearchSignalQuestions = [
     "title": "Explain signal through discard rule",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "precondition",
-        "discard rule",
-        "reason quality"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan B, because it explains how sorted order enables safe half-discarding."
-        },
-        {
-          "id": "wrong_precondition_only",
-          "text": "Plan A, because naming sorted input is always a complete explanation."
-        },
-        {
-          "id": "wrong_variable",
-          "text": "Neither; binary search is justified only by using variables named left, right, and mid."
-        }
-      ]
-    }
+    "instruction": "Plan A says: binary search because the input is sorted. Plan B says: binary search because each comparison tells which half cannot contain the target. Which explanation is stronger?",
+    "answerFeedback": "Plan B connects the precondition to the discard rule, which is the core binary-search reasoning.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Plan B, because it explains how sorted order enables safe half-discarding.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_precondition_only",
+        "text": "Plan A, because naming sorted input is always a complete explanation.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_variable",
+        "text": "Neither; binary search is justified only by using variables named left, right, and mid.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1399,43 +1080,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_always": "Rotation alone is not enough; the algorithm must identify which half remains searchable."
       }
     },
-    "id": "alg-binary-search-recognize-016",
+    "id": "alg-binary-search-recognize-016-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "A rotated sorted array is not globally sorted, but one half around mid is sorted on each step. Is this still a possible binary-search family?",
+    "prompt": "Choose whether binary search can fit.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Yes, if each step can identify a sorted half and discard the half that cannot contain target.",
-        "id": "alg-binary-search-recognize-016-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Yes, if the sorted half can be identified and used for safe half-discarding."
-          },
-          {
-            "id": "wrong_global_only",
-            "text": "No, binary search only works on fully sorted arrays and never on rotated arrays."
-          },
-          {
-            "id": "wrong_always",
-            "text": "Yes, any rotated array can be searched with normal classic binary search without extra reasoning."
-          }
-        ],
-        "prompt": "Choose whether binary search can fit.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1460,7 +1110,26 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Recognize rotated-array discard signal",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A rotated sorted array is not globally sorted, but one half around mid is sorted on each step. Is this still a possible binary-search family?",
+    "answerFeedback": "Yes, if each step can identify a sorted half and discard the half that cannot contain target.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Yes, if the sorted half can be identified and used for safe half-discarding.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_global_only",
+        "text": "No, binary search only works on fully sorted arrays and never on rotated arrays.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_always",
+        "text": "Yes, any rotated array can be searched with normal classic binary search without extra reasoning.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1479,43 +1148,12 @@ export const recognizeBinarySearchSignalQuestions = [
         "wrong_price": "Numeric prices do not create monotonicity under an arbitrary custom score."
       }
     },
-    "id": "alg-binary-search-recognize-017",
+    "id": "alg-binary-search-recognize-017-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "A task asks for the cheapest item in an arbitrary unsorted list under a custom scoring function. The score has no monotonic relationship to index or price. Should binary search be selected?",
+    "prompt": "Choose whether binary search should be selected.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "No. There is no sorted order or monotonic predicate that would justify discarding half.",
-        "id": "alg-binary-search-recognize-017-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "No, because there is no ordered or monotonic structure to search."
-          },
-          {
-            "id": "wrong_optimization",
-            "text": "Yes, because optimization tasks should use binary search."
-          },
-          {
-            "id": "wrong_price",
-            "text": "Yes, because prices are numeric."
-          }
-        ],
-        "prompt": "Choose whether binary search should be selected.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1546,23 +1184,25 @@ export const recognizeBinarySearchSignalQuestions = [
       "classic_index_binary_search",
       "binary_search_on_answer"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "No, because there is no ordered or monotonic structure to search."
-        },
-        {
-          "id": "wrong_optimization",
-          "text": "Yes, because optimization tasks should use binary search."
-        },
-        {
-          "id": "wrong_price",
-          "text": "Yes, because prices are numeric."
-        }
-      ]
-    }
+    "instruction": "A task asks for the cheapest item in an arbitrary unsorted list under a custom scoring function. The score has no monotonic relationship to index or price. Should binary search be selected?",
+    "answerFeedback": "No. There is no sorted order or monotonic predicate that would justify discarding half.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "No, because there is no ordered or monotonic structure to search.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_optimization",
+        "text": "Yes, because optimization tasks should use binary search.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_price",
+        "text": "Yes, because prices are numeric.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1577,57 +1217,12 @@ export const recognizeBinarySearchSignalQuestions = [
       "nextAction": "Practice verifying legality before choosing a binary-search template.",
       "result": "diagnostic"
     },
-    "id": "alg-binary-search-recognize-018",
+    "id": "alg-binary-search-recognize-018-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "recognize_binary_search_signal",
-    "prompt": "Order the checks for deciding whether binary search is a valid strategy.",
+    "prompt": "Tap the validity checks in order.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "identify_search_space",
-          "check_order_or_monotonicity",
-          "define_mid_signal",
-          "verify_half_discard",
-          "choose_variant"
-        ],
-        "feedback": "First identify what is being searched, then verify sorted/monotonic structure, define what mid tells you, confirm a half can be discarded, and only then choose the variant.",
-        "id": "alg-binary-search-recognize-018-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "identify_search_space",
-            "text": "Identify what the search space is: indexes, predicate positions, or answer values."
-          },
-          {
-            "id": "check_order_or_monotonicity",
-            "text": "Check for sorted order, a monotonic predicate, or monotonic feasibility."
-          },
-          {
-            "id": "define_mid_signal",
-            "text": "Define what information checking mid provides."
-          },
-          {
-            "id": "verify_half_discard",
-            "text": "Verify that the mid result safely discards one side."
-          },
-          {
-            "id": "choose_variant",
-            "text": "Choose classic search, boundary search, predicate search, rotated search, or answer search."
-          }
-        ],
-        "prompt": "Tap the validity checks in order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "recognize_binary_search_signal"
-        ],
-        "type": "order_steps"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1647,6 +1242,37 @@ export const recognizeBinarySearchSignalQuestions = [
     ],
     "title": "Order binary-search validity checks",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "instruction": "Order the checks for deciding whether binary search is a valid strategy.",
+    "answerFeedback": "First identify what is being searched, then verify sorted/monotonic structure, define what mid tells you, confirm a half can be discarded, and only then choose the variant.",
+    "subgoals": [
+      {
+        "id": "identify_search_space",
+        "text": "Identify what the search space is: indexes, predicate positions, or answer values."
+      },
+      {
+        "id": "check_order_or_monotonicity",
+        "text": "Check for sorted order, a monotonic predicate, or monotonic feasibility."
+      },
+      {
+        "id": "define_mid_signal",
+        "text": "Define what information checking mid provides."
+      },
+      {
+        "id": "verify_half_discard",
+        "text": "Verify that the mid result safely discards one side."
+      },
+      {
+        "id": "choose_variant",
+        "text": "Choose classic search, boundary search, predicate search, rotated search, or answer search."
+      }
+    ],
+    "correctOrder": [
+      "identify_search_space",
+      "check_order_or_monotonicity",
+      "define_mid_signal",
+      "verify_half_discard",
+      "choose_variant"
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

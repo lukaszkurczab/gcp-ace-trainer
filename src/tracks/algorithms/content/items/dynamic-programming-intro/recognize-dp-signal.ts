@@ -8,6 +8,8 @@
 // Target question count: 16.
 // Prefer single_choice, strategy_choice, solution_comparison, recursion-tree comparison, and mistake-review style items.
 // Avoid detailed state design, recurrence formulas, memo-table code, and advanced DP families; those belong in later files.
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const recognizeDpSignalQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -20,42 +22,67 @@ export const recognizeDpSignalQuestions = [
         "sort_only": "Sorting alone does not define reusable subproblem state."
       },
       "mentalModelCorrection": "Dynamic programming starts by naming what each state means before writing transitions.",
-      "mistakeTypes": ["subgoal_order_wrong", "invariant_missing"],
+      "mistakeTypes": [
+        "subgoal_order_wrong",
+        "invariant_missing"
+      ],
       "nextAction": "Practice stating the state definition in one sentence.",
       "result": "diagnostic"
     },
-    "id": "alg-dynamic-programming-intro-naming-001",
+    "id": "alg-dynamic-programming-intro-naming-001-check",
     "learningStage": "strategy_selection",
     "primarySkillAtomId": "define_dynamic_programming_state",
-    "prompt": "A task asks for the best score after a sequence of choices where later choices depend on earlier results. Which signal matters first?",
+    "prompt": "Choose the dynamic-programming signal.",
     "roadmapNodeId": "dynamic_programming_intro",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "state_and_transition",
-        "feedback": "Overlapping subproblems call for a clear state definition and transition.",
-        "id": "alg-dynamic-programming-intro-naming-001-check",
-        "mistakeTypes": ["subgoal_order_wrong", "invariant_missing"],
-        "options": [
-          { "id": "state_and_transition", "text": "Define reusable state and the transition between states." },
-          { "id": "greedy_only", "text": "Always take the locally largest value." },
-          { "id": "plain_recursion", "text": "Recurse without storing any repeated result." },
-          { "id": "sort_only", "text": "Sort the input and stop there." }
-        ],
-        "prompt": "Choose the dynamic-programming signal.",
-        "status": "active",
-        "testedSkillAtomIds": ["define_dynamic_programming_state"],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
-      { "axisId": "pattern_family", "nodeId": "dynamic_programming_intro", "role": "primary" },
-      { "axisId": "skill_atom", "nodeId": "define_dynamic_programming_state", "role": "primary" },
-      { "axisId": "pattern_variant", "nodeId": "state_definition", "role": "secondary" },
-      { "axisId": "mistake_type", "nodeId": "invariant_missing", "role": "mistake_type" }
+      {
+        "axisId": "pattern_family",
+        "nodeId": "dynamic_programming_intro",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "define_dynamic_programming_state",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "state_definition",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "invariant_missing",
+        "role": "mistake_type"
+      }
     ],
     "title": "Name dynamic-programming state",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks for the best score after a sequence of choices where later choices depend on earlier results. Which signal matters first?",
+    "answerFeedback": "Overlapping subproblems call for a clear state definition and transition.",
+    "options": [
+      {
+        "id": "state_and_transition",
+        "text": "Define reusable state and the transition between states.",
+        "isCorrect": true
+      },
+      {
+        "id": "greedy_only",
+        "text": "Always take the locally largest value.",
+        "isCorrect": false
+      },
+      {
+        "id": "plain_recursion",
+        "text": "Recurse without storing any repeated result.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_only",
+        "text": "Sort the input and stop there.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

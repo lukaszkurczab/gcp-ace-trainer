@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "capturedFrom": {
     "branch": "main",
-    "commit": "5997f994e612272bb49a6b4becc5e1ce13909a26",
-    "capturedAt": "2026-07-14T14:58:57+02:00"
+    "commit": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
+    "capturedAt": "2026-07-14T16:34:45+02:00"
   },
-  "purpose": "Exact recovery cutover inventory. Entries identify active paths and their replacement/removal stage; they do not authorize a runtime change in stage 0.",
+  "purpose": "Exact recovery cutover inventory. Entries identify active paths and their replacement/removal stage; Stage 0F normalizes only the Algorithms response schema.",
   "searchTargets": [
     {
       "id": "async-storage",
@@ -141,11 +141,20 @@
   ],
   "baseline": {
     "commands": [
-      { "command": "npm run typecheck", "exitCode": 2, "state": "failed", "owner": "repository maintainer", "cause": "src/tracks/algorithms/content/index.ts imports missing ./items/mixed-pattern-practice and aggregates item modules incompatible with AlgorithmQuestion." },
-      { "command": "npm test", "exitCode": 1, "state": "failed", "owner": "repository maintainer", "cause": "The active test process imports the broken Algorithms content graph; it is blocked by the same content-contract errors." },
-      { "command": "npm run validate:questions", "exitCode": 1, "state": "failed", "owner": "repository maintainer", "cause": "The validator imports the broken Algorithms content graph; it is blocked by the same content-contract errors." },
-      { "command": "npm run qa:static", "exitCode": 2, "state": "failed", "owner": "repository maintainer", "cause": "qa:static reaches typecheck after its recovery check and fails on the same existing Algorithms content-contract errors." }
+      { "command": "npm run typecheck", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "Stage 0F canonical Algorithms types and exports compile without compatibility casts." },
+      { "command": "npm test", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "The active suite executes the canonical Algorithms bank and recovery contract fixtures." },
+      { "command": "npm run validate:questions", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "Cloud Certification and the canonical Algorithms manifest pass their blocking validators." },
+      { "command": "npm run qa:static", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "The recovery inventory, typecheck, tests, and question validation pass as one PR gate." }
     ],
-    "stageZeroDecision": "Record and expose these existing failures; do not change runtime or content contracts in stage 0."
+    "stageZeroDecision": "Stage 0F resolved the recorded Algorithms schema failures through a deterministic root-schema cutover; no obsolete response path remains active."
+  },
+  "algorithmsSchemaCutover": {
+    "report": "recovery/algorithms-schema-cutover-report.json",
+    "preChangeInventory": "recovery/algorithms-response-shape-inventory.json",
+    "sourceCommit": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
+    "beforeActiveItems": 1751,
+    "afterActiveItems": 1692,
+    "removedUnconvertibleComplexityItems": 59,
+    "obsoleteActiveFields": []
   }
 }

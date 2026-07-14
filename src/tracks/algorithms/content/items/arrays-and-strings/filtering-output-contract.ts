@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const filteringOutputContractQuestions = [
   {
     "acceptableApproachIds": [],
@@ -22,10 +24,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Separate order constraints from output-contract constraints.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-002",
+    "id": "alg-prod-array-string-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "Two solutions both preserve the order of accepted values: one builds a new result array, the other writes accepted values back into the input with a write boundary. Which extra constraint decides between them?",
+    "prompt": "Choose the deciding constraint.",
     "reasonSignal": "The decisive constraint is whether the task asks for in-place mutation or a new returned array.",
     "rejectedApproachIds": [
       "sort_then_filter",
@@ -36,41 +38,6 @@ export const filteringOutputContractQuestions = [
     "secondarySkillAtomIds": [
       "use_read_write_boundary",
       "preserve_relative_order"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "mutation_output_contract",
-        "feedback": "If the task requires in-place mutation, use the input buffer and a write boundary. If it asks for a new array or preserved input, build separate output.",
-        "id": "alg-prod-array-string-002-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "mutation_output_contract",
-            "text": "Whether the task requires in-place mutation or asks for a new returned array."
-          },
-          {
-            "id": "sort_order",
-            "text": "Whether the accepted values should be sorted."
-          },
-          {
-            "id": "frequency_counts",
-            "text": "Whether values need full frequency counts."
-          },
-          {
-            "id": "all_pairs",
-            "text": "Whether every pair of values must be compared."
-          }
-        ],
-        "prompt": "Choose the deciding constraint.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -97,7 +64,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Choose between in-place and new-output filtering",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
+    "type": "output_contract_reasoning",
+    "instruction": "Two solutions both preserve the order of accepted values: one builds a new result array, the other writes accepted values back into the input with a write boundary. Which extra constraint decides between them?",
+    "answerFeedback": "If the task requires in-place mutation, use the input buffer and a write boundary. If it asks for a new array or preserved input, build separate output.",
+    "options": [
+      {
+        "id": "mutation_output_contract",
+        "text": "Whether the task requires in-place mutation or asks for a new returned array.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_order",
+        "text": "Whether the accepted values should be sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_counts",
+        "text": "Whether values need full frequency counts.",
+        "isCorrect": false
+      },
+      {
+        "id": "all_pairs",
+        "text": "Whether every pair of values must be compared.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -122,10 +113,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Treat preserve order as a decision signal, not as a minor implementation detail.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-006",
+    "id": "alg-prod-array-string-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "preserve_relative_order",
-    "prompt": "A problem asks you to remove all zeroes from an array while keeping the remaining numbers in the same order. Which constraint should shape the approach?",
+    "prompt": "Choose the constraint that should guide the design.",
     "reasonSignal": "The relative order of the kept values must stay the same, so the compaction must be stable.",
     "rejectedApproachIds": [
       "sort_values",
@@ -135,41 +126,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_order_constraint"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "preserve_order",
-        "feedback": "The same-order constraint is what points you toward a stable scan or read/write boundary.",
-        "id": "alg-prod-array-string-006-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "preserve_order",
-            "text": "The relative order of non-zero values must stay the same."
-          },
-          {
-            "id": "sort_values",
-            "text": "The values should be sorted after zeroes are removed."
-          },
-          {
-            "id": "count_zeroes_only",
-            "text": "Only the number of zeroes matters."
-          },
-          {
-            "id": "compare_all_pairs",
-            "text": "Every number must be compared with every other number."
-          }
-        ],
-        "prompt": "Choose the constraint that should guide the design.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -196,7 +152,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Spot the stable-order signal",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "A problem asks you to remove all zeroes from an array while keeping the remaining numbers in the same order. Which constraint should shape the approach?",
+    "answerFeedback": "The same-order constraint is what points you toward a stable scan or read/write boundary.",
+    "options": [
+      {
+        "id": "preserve_order",
+        "text": "The relative order of non-zero values must stay the same.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_values",
+        "text": "The values should be sorted after zeroes are removed.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_zeroes_only",
+        "text": "Only the number of zeroes matters.",
+        "isCorrect": false
+      },
+      {
+        "id": "compare_all_pairs",
+        "text": "Every number must be compared with every other number.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "complexityExplanation": "The two explanations use different accounting conventions. Counting output memory includes the returned array; auxiliary-space-only analysis may exclude required output storage.",
@@ -217,49 +197,14 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Ask whether output memory is counted or excluded from auxiliary space.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-007",
+    "id": "alg-prod-array-string-007-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_space",
-    "prompt": "A filtering task returns a new array. Why might one explanation say `O(n)` space while another says `O(1)` auxiliary space excluding output?",
+    "prompt": "Choose why both explanations can appear.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_output_contract",
       "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "different_space_conventions",
-        "feedback": "Counting output space includes the returned array, giving O(n). Auxiliary-space-only analysis may exclude the required output and count only small variables.",
-        "id": "alg-prod-array-string-007-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose why both explanations can appear.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_space"
-        ],
-        "type": "single_choice",
-        "options": [
-          {
-            "id": "different_space_conventions",
-            "text": "They use different conventions: counted output space includes the returned array, auxiliary space may exclude it."
-          },
-          {
-            "id": "one_must_be_wrong",
-            "text": "One explanation must always be wrong because space has only one convention."
-          },
-          {
-            "id": "sorting_changes_space",
-            "text": "The difference only happens when the output is sorted."
-          },
-          {
-            "id": "input_size_unknown",
-            "text": "The difference happens because the input length is unknown."
-          }
-        ]
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -291,7 +236,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Separate output space from auxiliary-space convention",
     "trackId": "algorithms",
-    "type": "complexity_reasoning"
+    "type": "complexity_reasoning",
+    "instruction": "A filtering task returns a new array. Why might one explanation say `O(n)` space while another says `O(1)` auxiliary space excluding output?",
+    "answerFeedback": "Counting output space includes the returned array, giving O(n). Auxiliary-space-only analysis may exclude the required output and count only small variables.",
+    "options": [
+      {
+        "id": "different_space_conventions",
+        "text": "They use different conventions: counted output space includes the returned array, auxiliary space may exclude it.",
+        "isCorrect": true
+      },
+      {
+        "id": "one_must_be_wrong",
+        "text": "One explanation must always be wrong because space has only one convention.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_changes_space",
+        "text": "The difference only happens when the output is sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "input_size_unknown",
+        "text": "The difference happens because the input length is unknown.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -316,10 +285,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Compare what changes when order matters versus when it does not.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-011",
+    "id": "alg-prod-array-string-011-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "reason_about_order_constraint",
-    "prompt": "You need to remove rejected values from an array. What changes if the problem says the remaining values do not need to preserve their original order?",
+    "prompt": "Choose what actually changes.",
     "reasonSignal": "Swapping rejected values with the end can become valid because stability is no longer required.",
     "rejectedApproachIds": [
       "sorting_required",
@@ -329,41 +298,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "preserve_relative_order"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "swap_allowed",
-        "feedback": "Once order no longer matters, end-swaps can be acceptable because they avoid stable shifting or copying.",
-        "id": "alg-prod-array-string-011-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "swap_allowed",
-            "text": "Swapping rejected values with the end may become acceptable."
-          },
-          {
-            "id": "sorting_required",
-            "text": "Sorting becomes required."
-          },
-          {
-            "id": "nested_required",
-            "text": "A nested loop becomes required."
-          },
-          {
-            "id": "frequency_required",
-            "text": "A frequency map becomes required."
-          }
-        ],
-        "prompt": "Choose what actually changes.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_order_constraint"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -390,7 +324,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Relaxing order changes the valid mutation",
     "trackId": "algorithms",
-    "type": "constraint_change"
+    "type": "constraint_change",
+    "instruction": "You need to remove rejected values from an array. What changes if the problem says the remaining values do not need to preserve their original order?",
+    "answerFeedback": "Once order no longer matters, end-swaps can be acceptable because they avoid stable shifting or copying.",
+    "options": [
+      {
+        "id": "swap_allowed",
+        "text": "Swapping rejected values with the end may become acceptable.",
+        "isCorrect": true
+      },
+      {
+        "id": "sorting_required",
+        "text": "Sorting becomes required.",
+        "isCorrect": false
+      },
+      {
+        "id": "nested_required",
+        "text": "A nested loop becomes required.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_required",
+        "text": "A frequency map becomes required.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -415,10 +373,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "When you consider a mutation trick, check whether it preserves the exact output order the prompt requires.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-019",
+    "id": "alg-prod-array-string-019-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "preserve_relative_order",
-    "prompt": "A learner wants to remove rejected values by swapping each rejected value with the last unchecked value. Why is that wrong when the kept values must stay in their original order?",
+    "prompt": "Choose the statement that identifies the flaw.",
     "reasonSignal": "Swapping with the end changes the relative order of kept values, so the compaction is no longer stable.",
     "rejectedApproachIds": [
       "swap_with_end",
@@ -428,41 +386,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_order_constraint"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "swap_with_end",
-        "feedback": "The flaw is that swapping with the end can scramble the relative order of values that should be kept. The issue is constraint fit, not memory.",
-        "id": "alg-prod-array-string-019-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "swap_with_end",
-            "text": "Swapping with the end can move later kept values before earlier kept values."
-          },
-          {
-            "id": "too_much_memory",
-            "text": "Swapping with the end is wrong because it always requires O(n) extra memory."
-          },
-          {
-            "id": "sort_after",
-            "text": "Sorting after removal restores the original relative order."
-          },
-          {
-            "id": "count_then_rebuild",
-            "text": "Counting values is required before any rejected entries can be removed."
-          }
-        ],
-        "prompt": "Choose the statement that identifies the flaw.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -489,7 +412,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Reject the swap-with-end trap when order matters",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "A learner wants to remove rejected values by swapping each rejected value with the last unchecked value. Why is that wrong when the kept values must stay in their original order?",
+    "answerFeedback": "The flaw is that swapping with the end can scramble the relative order of values that should be kept. The issue is constraint fit, not memory.",
+    "options": [
+      {
+        "id": "swap_with_end",
+        "text": "Swapping with the end can move later kept values before earlier kept values.",
+        "isCorrect": true
+      },
+      {
+        "id": "too_much_memory",
+        "text": "Swapping with the end is wrong because it always requires O(n) extra memory.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_after",
+        "text": "Sorting after removal restores the original relative order.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_then_rebuild",
+        "text": "Counting values is required before any rejected entries can be removed.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -509,48 +456,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Trace what `write` means after each accepted and rejected value: it is the next open kept slot, not the last written slot.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-020",
+    "id": "alg-prod-array-string-020-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "During stable in-place compaction, the kept prefix already occupies indexes 0 and 1, so `write = 2`. The read index is 4 and `arr[4]` should be kept. Where should `arr[4]` be written?",
+    "prompt": "Choose the correct write location.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "write_at_boundary",
-        "feedback": "The write boundary marks the next open slot in the kept prefix, so the accepted value belongs at index 2.",
-        "id": "alg-prod-array-string-020-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "write_at_boundary",
-            "text": "Write it at index 2."
-          },
-          {
-            "id": "write_next_plus_one",
-            "text": "Write it at index 3 so index 2 remains a boundary marker."
-          },
-          {
-            "id": "write_read_index",
-            "text": "Leave it at index 4 because that is where it was read."
-          },
-          {
-            "id": "buffer_elsewhere",
-            "text": "Store it in a new output array until all reads finish."
-          }
-        ],
-        "prompt": "Choose the correct write location.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -577,7 +489,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Trace the write-boundary invariant",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "During stable in-place compaction, the kept prefix already occupies indexes 0 and 1, so `write = 2`. The read index is 4 and `arr[4]` should be kept. Where should `arr[4]` be written?",
+    "answerFeedback": "The write boundary marks the next open slot in the kept prefix, so the accepted value belongs at index 2.",
+    "options": [
+      {
+        "id": "write_at_boundary",
+        "text": "Write it at index 2.",
+        "isCorrect": true
+      },
+      {
+        "id": "write_next_plus_one",
+        "text": "Write it at index 3 so index 2 remains a boundary marker.",
+        "isCorrect": false
+      },
+      {
+        "id": "write_read_index",
+        "text": "Leave it at index 4 because that is where it was read.",
+        "isCorrect": false
+      },
+      {
+        "id": "buffer_elsewhere",
+        "text": "Store it in a new output array until all reads finish.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -602,10 +538,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Read the output requirement before finalizing both the mutation strategy and the space claim.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-025",
+    "id": "alg-prod-array-string-025-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "A filtering task says, \"return a new array containing the accepted values in order.\" Which statement best matches that contract?",
+    "prompt": "Choose the statement that matches the contract.",
     "reasonSignal": "Building a new output array is valid here, and it changes the extra-space claim compared with in-place compaction.",
     "rejectedApproachIds": [
       "must_be_in_place",
@@ -615,41 +551,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_output_space"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "new_output_space",
-        "feedback": "Returning a new ordered result means the algorithm can append accepted values into a separate output array.",
-        "id": "alg-prod-array-string-025-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "new_output_space",
-            "text": "Returning a new array is valid and usually uses output space proportional to the accepted values."
-          },
-          {
-            "id": "must_be_in_place",
-            "text": "The solution must still overwrite the input in place."
-          },
-          {
-            "id": "sort_first",
-            "text": "The accepted values must be sorted before they are returned."
-          },
-          {
-            "id": "all_pairs",
-            "text": "Returning values requires comparing every pair of elements."
-          }
-        ],
-        "prompt": "Choose the statement that matches the contract.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -676,7 +577,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Match the filtering approach to the output contract",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
+    "type": "output_contract_reasoning",
+    "instruction": "A filtering task says, \"return a new array containing the accepted values in order.\" Which statement best matches that contract?",
+    "answerFeedback": "Returning a new ordered result means the algorithm can append accepted values into a separate output array.",
+    "options": [
+      {
+        "id": "new_output_space",
+        "text": "Returning a new array is valid and usually uses output space proportional to the accepted values.",
+        "isCorrect": true
+      },
+      {
+        "id": "must_be_in_place",
+        "text": "The solution must still overwrite the input in place.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "The accepted values must be sorted before they are returned.",
+        "isCorrect": false
+      },
+      {
+        "id": "all_pairs",
+        "text": "Returning values requires comparing every pair of elements.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -696,49 +621,14 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Before moving read or write, restate what the prefix before write contains.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-029",
+    "id": "alg-prod-array-string-029-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "In stable in-place compaction, which invariant should remain true after each scanned element?",
+    "prompt": "Choose the invariant.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "trace_write_boundary",
       "preserve_relative_order"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "accepted_prefix_in_order",
-        "feedback": "Indexes before write contain exactly the accepted values encountered so far, preserving their original relative order.",
-        "id": "alg-prod-array-string-029-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "accepted_prefix_in_order",
-            "text": "Indexes before `write` contain exactly the accepted values seen so far, in original order."
-          },
-          {
-            "id": "all_scanned_values",
-            "text": "Indexes before `write` contain every scanned value, accepted or rejected."
-          },
-          {
-            "id": "last_read_index",
-            "text": "`write` always equals the last read index."
-          },
-          {
-            "id": "physical_length",
-            "text": "`write` always equals the physical length of the array."
-          }
-        ],
-        "prompt": "Choose the invariant.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -765,89 +655,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "State the write-boundary invariant",
     "trackId": "algorithms",
-    "type": "state_selection"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "Stable in-place compaction reads each element once and keeps only a write boundary, so it is linear time and constant auxiliary space.",
-      "mentalModelCorrection": "In-place does not mean no variables. It means the algorithm does not allocate storage proportional to input size.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "For in-place mutation, separate the input buffer from small pointer/counter variables.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-031",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "An array removes rejected values in-place while preserving the relative order of kept values using a read index and a write boundary. What time and auxiliary space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "state_selection",
+    "instruction": "In stable in-place compaction, which invariant should remain true after each scanned element?",
+    "answerFeedback": "Indexes before write contain exactly the accepted values encountered so far, preserving their original relative order.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n)"
-        },
-        "feedback": "The algorithm scans once and only stores indexes or counters, so it uses O(n) time and O(1) auxiliary space.",
-        "id": "alg-prod-array-string-031-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and auxiliary space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "complexity_pair"
+        "id": "accepted_prefix_in_order",
+        "text": "Indexes before `write` contain exactly the accepted values seen so far, in original order.",
+        "isCorrect": true
+      },
+      {
+        "id": "all_scanned_values",
+        "text": "Indexes before `write` contain every scanned value, accepted or rejected.",
+        "isCorrect": false
+      },
+      {
+        "id": "last_read_index",
+        "text": "`write` always equals the last read index.",
+        "isCorrect": false
+      },
+      {
+        "id": "physical_length",
+        "text": "`write` always equals the physical length of the array.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "use_read_write_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "in_place_update",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate stable in-place compaction cost",
-    "trackId": "algorithms",
-    "type": "complexity_check",
-    "complexityExplanation": "Stable in-place compaction scans each element once and keeps only constant auxiliary state such as read and write indexes."
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -872,10 +704,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Read the mutation contract and the order contract before choosing the filtering strategy.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-100",
+    "id": "alg-prod-array-string-100-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "An array must remove rejected values in-place while preserving the relative order of accepted values. Which approach matches both constraints?",
+    "prompt": "Choose the approach that satisfies both constraints.",
     "reasonSignal": "A read/write boundary compacts accepted values in the original order without allocating a separate result.",
     "rejectedApproachIds": [
       "swap_with_end",
@@ -885,41 +717,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "preserve_relative_order"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "read_write_boundary",
-        "feedback": "A read index scans the original values, and the write boundary grows the kept prefix in order.",
-        "id": "alg-prod-array-string-100-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "read_write_boundary",
-            "text": "Scan with a read index and write accepted values at a write boundary."
-          },
-          {
-            "id": "swap_with_end",
-            "text": "Swap rejected values with the last unchecked value."
-          },
-          {
-            "id": "sort_then_filter",
-            "text": "Sort the array, then remove rejected values."
-          },
-          {
-            "id": "new_output_only",
-            "text": "Always build a separate output array."
-          }
-        ],
-        "prompt": "Choose the approach that satisfies both constraints.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -946,7 +743,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Choose stable in-place filtering",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "An array must remove rejected values in-place while preserving the relative order of accepted values. Which approach matches both constraints?",
+    "answerFeedback": "A read index scans the original values, and the write boundary grows the kept prefix in order.",
+    "options": [
+      {
+        "id": "read_write_boundary",
+        "text": "Scan with a read index and write accepted values at a write boundary.",
+        "isCorrect": true
+      },
+      {
+        "id": "swap_with_end",
+        "text": "Swap rejected values with the last unchecked value.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_then_filter",
+        "text": "Sort the array, then remove rejected values.",
+        "isCorrect": false
+      },
+      {
+        "id": "new_output_only",
+        "text": "Always build a separate output array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -966,48 +787,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Before moving pointers, restate what the kept prefix contains and where the next accepted value goes.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-101",
+    "id": "alg-prod-array-string-101-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "During in-place stable filtering, accepted values already occupy indexes `0..2`. What does `write = 3` mean?",
+    "prompt": "Choose the invariant represented by `write`.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "next_kept_slot",
-        "feedback": "`write = 3` means the next accepted value should be written at index 3.",
-        "id": "alg-prod-array-string-101-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "next_kept_slot",
-            "text": "Index 3 is the next open slot in the kept prefix."
-          },
-          {
-            "id": "last_read",
-            "text": "Index 3 is the last value that was read."
-          },
-          {
-            "id": "last_rejected",
-            "text": "Index 3 is the most recent rejected value."
-          },
-          {
-            "id": "physical_length",
-            "text": "Index 3 is the physical length of the array."
-          }
-        ],
-        "prompt": "Choose the invariant represented by `write`.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1034,7 +820,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Name the next kept slot",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "During in-place stable filtering, accepted values already occupy indexes `0..2`. What does `write = 3` mean?",
+    "answerFeedback": "`write = 3` means the next accepted value should be written at index 3.",
+    "options": [
+      {
+        "id": "next_kept_slot",
+        "text": "Index 3 is the next open slot in the kept prefix.",
+        "isCorrect": true
+      },
+      {
+        "id": "last_read",
+        "text": "Index 3 is the last value that was read.",
+        "isCorrect": false
+      },
+      {
+        "id": "last_rejected",
+        "text": "Index 3 is the most recent rejected value.",
+        "isCorrect": false
+      },
+      {
+        "id": "physical_length",
+        "text": "Index 3 is the physical length of the array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1054,48 +864,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Trace accepted and rejected branches separately.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-102",
+    "id": "alg-prod-array-string-102-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "In stable in-place filtering, `read = 5` points to a rejected value and `write = 3`. What should happen to the write boundary?",
+    "prompt": "Choose the correct rejected-value branch.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "write_stays",
-        "feedback": "Rejected values are not written into the kept prefix, so `write` stays at 3 while the scan advances.",
-        "id": "alg-prod-array-string-102-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "write_stays",
-            "text": "`write` stays at 3."
-          },
-          {
-            "id": "write_rejected",
-            "text": "Write the rejected value at index 3."
-          },
-          {
-            "id": "decrement_write",
-            "text": "Move `write` backward to 2."
-          },
-          {
-            "id": "restart_scan",
-            "text": "Restart the scan from index 0."
-          }
-        ],
-        "prompt": "Choose the correct rejected-value branch.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1133,7 +908,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Trace rejection in stable compaction",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "In stable in-place filtering, `read = 5` points to a rejected value and `write = 3`. What should happen to the write boundary?",
+    "answerFeedback": "Rejected values are not written into the kept prefix, so `write` stays at 3 while the scan advances.",
+    "options": [
+      {
+        "id": "write_stays",
+        "text": "`write` stays at 3.",
+        "isCorrect": true
+      },
+      {
+        "id": "write_rejected",
+        "text": "Write the rejected value at index 3.",
+        "isCorrect": false
+      },
+      {
+        "id": "decrement_write",
+        "text": "Move `write` backward to 2.",
+        "isCorrect": false
+      },
+      {
+        "id": "restart_scan",
+        "text": "Restart the scan from index 0.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1153,48 +952,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "For accepted values, perform two steps: write at boundary, then increment boundary.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-103",
+    "id": "alg-prod-array-string-103-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "In stable in-place filtering, `read = 6` points to an accepted value and `write = 3`. What is the correct update?",
+    "prompt": "Choose the accepted-value update.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "write_then_increment",
-        "feedback": "Write the accepted value at index 3, then increment `write` to 4.",
-        "id": "alg-prod-array-string-103-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "write_then_increment",
-            "text": "Write at index 3, then move `write` to 4."
-          },
-          {
-            "id": "advance_without_write",
-            "text": "Move `write` to 4 without writing."
-          },
-          {
-            "id": "write_at_read_only",
-            "text": "Leave the value only at index 6."
-          },
-          {
-            "id": "write_twice",
-            "text": "Write it at indexes 3 and 4."
-          }
-        ],
-        "prompt": "Choose the accepted-value update.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1232,7 +996,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Trace acceptance in stable compaction",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "In stable in-place filtering, `read = 6` points to an accepted value and `write = 3`. What is the correct update?",
+    "answerFeedback": "Write the accepted value at index 3, then increment `write` to 4.",
+    "options": [
+      {
+        "id": "write_then_increment",
+        "text": "Write at index 3, then move `write` to 4.",
+        "isCorrect": true
+      },
+      {
+        "id": "advance_without_write",
+        "text": "Move `write` to 4 without writing.",
+        "isCorrect": false
+      },
+      {
+        "id": "write_at_read_only",
+        "text": "Leave the value only at index 6.",
+        "isCorrect": false
+      },
+      {
+        "id": "write_twice",
+        "text": "Write it at indexes 3 and 4.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1252,49 +1040,14 @@ export const filteringOutputContractQuestions = [
       "nextAction": "After compaction, read the output from indexes `0` through `write - 1`.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-104",
+    "id": "alg-prod-array-string-104-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "After in-place filtering finishes, `write = 4`. What does that usually represent?",
+    "prompt": "Choose what the final write boundary represents.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "trace_write_boundary",
       "distinguish_output_contract"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "logical_length",
-        "feedback": "`write` is the logical length of the compacted kept prefix.",
-        "id": "alg-prod-array-string-104-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_trace_algorithm"
-        ],
-        "options": [
-          {
-            "id": "logical_length",
-            "text": "The kept prefix has logical length 4."
-          },
-          {
-            "id": "original_length",
-            "text": "The original array length must be 4."
-          },
-          {
-            "id": "last_read",
-            "text": "The last read index was 4."
-          },
-          {
-            "id": "first_rejected",
-            "text": "The first rejected value was at index 4."
-          }
-        ],
-        "prompt": "Choose what the final write boundary represents.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1321,7 +1074,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Interpret final write as logical length",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "After in-place filtering finishes, `write = 4`. What does that usually represent?",
+    "answerFeedback": "`write` is the logical length of the compacted kept prefix.",
+    "options": [
+      {
+        "id": "logical_length",
+        "text": "The kept prefix has logical length 4.",
+        "isCorrect": true
+      },
+      {
+        "id": "original_length",
+        "text": "The original array length must be 4.",
+        "isCorrect": false
+      },
+      {
+        "id": "last_read",
+        "text": "The last read index was 4.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_rejected",
+        "text": "The first rejected value was at index 4.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -1346,10 +1123,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Underline return a new array and choose the memory model accordingly.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-105",
+    "id": "alg-prod-array-string-105-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "A filtering task says: \"return a new array of accepted values in the same order.\" Which output contract is being requested?",
+    "prompt": "Choose the output contract.",
     "reasonSignal": "The task asks for a separate result array rather than in-place compaction.",
     "rejectedApproachIds": [
       "must_mutate_input",
@@ -1359,41 +1136,6 @@ export const filteringOutputContractQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_output_space"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "new_output_buffer",
-        "feedback": "The words return a new array mean a separate output buffer matches the contract.",
-        "id": "alg-prod-array-string-105-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "new_output_buffer",
-            "text": "Build and return a separate output array."
-          },
-          {
-            "id": "must_mutate_input",
-            "text": "Overwrite the input in place."
-          },
-          {
-            "id": "swap_with_end",
-            "text": "Swap rejected values with the end."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the accepted values before returning them."
-          }
-        ],
-        "prompt": "Choose the output contract.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1420,172 +1162,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Recognize a new-output filtering contract",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
-  },
-  {
-    "complexityExplanation": "Building a new filtered output still scans the input once. If output memory is counted, the returned array can grow with the number of accepted values.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(n)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "A new returned array changes the space claim when output memory is counted.",
-      "mentalModelCorrection": "Separate time for scanning from memory for the returned output.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Ask whether output memory is counted before calling the space constant.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-106",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "distinguish_output_space",
-    "prompt": "A filter returns a new array of accepted values. If output memory is counted, what time and space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "distinguish_output_contract",
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "output_contract_reasoning",
+    "instruction": "A filtering task says: \"return a new array of accepted values in the same order.\" Which output contract is being requested?",
+    "answerFeedback": "The words return a new array mean a separate output buffer matches the contract.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n)",
-          "space": "O(n)"
-        },
-        "feedback": "The input is scanned once, and the returned output can grow linearly.",
-        "id": "alg-prod-array-string-106-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and counted output space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_space"
-        ],
-        "type": "complexity_pair"
+        "id": "new_output_buffer",
+        "text": "Build and return a separate output array.",
+        "isCorrect": true
+      },
+      {
+        "id": "must_mutate_input",
+        "text": "Overwrite the input in place.",
+        "isCorrect": false
+      },
+      {
+        "id": "swap_with_end",
+        "text": "Swap rejected values with the end.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the accepted values before returning them.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "distinguish_output_space",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "in_place_update",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate counted output space for filtering",
-    "trackId": "algorithms",
-    "type": "complexity_check"
-  },
-  {
-    "complexityExplanation": "Stable in-place compaction scans once and uses only pointer state. The output is represented inside the input buffer.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "The input buffer is reused, so only constant auxiliary pointer state is needed.",
-      "mentalModelCorrection": "In-place filtering still uses variables; it just avoids auxiliary storage proportional to input size.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Distinguish auxiliary pointer state from a newly allocated output array.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-107",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "A filter compacts accepted values into the original array using read/write pointers. What time and auxiliary space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": {
-          "time": "O(n)",
-          "space": "O(1)"
-        },
-        "feedback": "The algorithm scans once and uses only constant auxiliary state such as read and write indexes.",
-        "id": "alg-prod-array-string-107-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and auxiliary space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "complexity_pair"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "use_read_write_boundary",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "in_place_update",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate in-place filtering cost",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1605,48 +1206,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Before using swap tricks, decide whether stability is required.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-108",
+    "id": "alg-prod-array-string-108-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "reason_about_order_constraint",
-    "prompt": "When can swapping a rejected value with the last unchecked value be acceptable in a filtering task?",
+    "prompt": "Choose the condition that makes swap-with-end viable.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "preserve_relative_order"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "order_not_required",
-        "feedback": "Swap-with-end can be acceptable when the kept values do not need to preserve their original order.",
-        "id": "alg-prod-array-string-108-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "order_not_required",
-            "text": "When the output does not need to preserve original order."
-          },
-          {
-            "id": "stable_order",
-            "text": "When stable order is explicitly required."
-          },
-          {
-            "id": "new_output",
-            "text": "Only when the task returns a new array."
-          },
-          {
-            "id": "frequency_needed",
-            "text": "Only when a frequency table is also used."
-          }
-        ],
-        "prompt": "Choose the condition that makes swap-with-end viable.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_order_constraint"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1673,7 +1239,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Allow swap-with-end only without stability",
     "trackId": "algorithms",
-    "type": "constraint_change"
+    "type": "constraint_change",
+    "instruction": "When can swapping a rejected value with the last unchecked value be acceptable in a filtering task?",
+    "answerFeedback": "Swap-with-end can be acceptable when the kept values do not need to preserve their original order.",
+    "options": [
+      {
+        "id": "order_not_required",
+        "text": "When the output does not need to preserve original order.",
+        "isCorrect": true
+      },
+      {
+        "id": "stable_order",
+        "text": "When stable order is explicitly required.",
+        "isCorrect": false
+      },
+      {
+        "id": "new_output",
+        "text": "Only when the task returns a new array.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_needed",
+        "text": "Only when a frequency table is also used.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1694,49 +1284,14 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Look for a one-pass stable compaction instead of local shifts after every deletion.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-109",
+    "id": "alg-prod-array-string-109-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "use_read_write_boundary",
-    "prompt": "A learner removes each rejected value by immediately shifting all later values left. What is the better stable in-place idea?",
+    "prompt": "Choose the better stable compaction strategy.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "preserve_relative_order",
       "compare_complexity_tradeoffs"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "read_write_boundary",
-        "feedback": "A read/write boundary writes accepted values forward once, preserving order without repeated suffix shifts.",
-        "id": "alg-prod-array-string-109-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "read_write_boundary",
-            "text": "Use a read index and write accepted values to the next kept slot."
-          },
-          {
-            "id": "shift_each_time",
-            "text": "Shift all later values after every rejection."
-          },
-          {
-            "id": "swap_with_end",
-            "text": "Swap each rejected value with the end even when order matters."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the array first."
-          }
-        ],
-        "prompt": "Choose the better stable compaction strategy.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "use_read_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1763,89 +1318,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Replace repeated shifts with write-boundary compaction",
     "trackId": "algorithms",
-    "type": "solution_comparison"
-  },
-  {
-    "complexityExplanation": "Immediate shifting can move many elements for many rejected values. In the worst case, those repeated shifts create quadratic time.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n^2)",
-    "feedbackModel": {
-      "decisionSignal": "The mistaken approach repeats suffix movement after each rejection.",
-      "mentalModelCorrection": "Measure the cost of the actual mutation pattern, not just the number of values being removed.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "wrong_approach"
-      ],
-      "nextAction": "Contrast repeated shifting with one-pass read/write compaction.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-110",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "compare_complexity_tradeoffs",
-    "prompt": "A mistaken in-place filter shifts all later elements left every time it removes a rejected value. What worst-case time and auxiliary space can that mistaken approach use?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "solution_comparison",
+    "instruction": "A learner removes each rejected value by immediately shifting all later values left. What is the better stable in-place idea?",
+    "answerFeedback": "A read/write boundary writes accepted values forward once, preserving order without repeated suffix shifts.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n^2)",
-          "space": "O(1)"
-        },
-        "feedback": "Repeated suffix shifts can create O(n^2) time, even though the mutation uses only constant auxiliary space.",
-        "id": "alg-prod-array-string-110-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
-        "prompt": "Choose the cost of the mistaken shifting approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "compare_complexity_tradeoffs"
-        ],
-        "type": "complexity_pair"
+        "id": "read_write_boundary",
+        "text": "Use a read index and write accepted values to the next kept slot.",
+        "isCorrect": true
+      },
+      {
+        "id": "shift_each_time",
+        "text": "Shift all later values after every rejection.",
+        "isCorrect": false
+      },
+      {
+        "id": "swap_with_end",
+        "text": "Swap each rejected value with the end even when order matters.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the array first.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "compare_complexity_tradeoffs",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "in_place_update",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Measure repeated-shift filtering cost",
-    "trackId": "algorithms",
-    "type": "complexity_reasoning"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1867,48 +1364,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Compare the kept sequence against the original order after rejected values are removed.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-111",
+    "id": "alg-prod-array-string-111-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "preserve_relative_order",
-    "prompt": "Input is `[4, 0, 5, 0, 6]`. A stable filter removes zeroes. Which output satisfies stability?",
+    "prompt": "Choose the stable output.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_order_constraint"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "four_five_six",
-        "feedback": "The non-zero values appear in the original order: 4, then 5, then 6.",
-        "id": "alg-prod-array-string-111-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "four_five_six",
-            "text": "`[4, 5, 6]`"
-          },
-          {
-            "id": "six_five_four",
-            "text": "`[6, 5, 4]`"
-          },
-          {
-            "id": "four_six_five",
-            "text": "`[4, 6, 5]`"
-          },
-          {
-            "id": "sorted_result",
-            "text": "`[5, 4, 6]`"
-          }
-        ],
-        "prompt": "Choose the stable output.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1935,7 +1397,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Identify stable filtered output",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Input is `[4, 0, 5, 0, 6]`. A stable filter removes zeroes. Which output satisfies stability?",
+    "answerFeedback": "The non-zero values appear in the original order: 4, then 5, then 6.",
+    "options": [
+      {
+        "id": "four_five_six",
+        "text": "`[4, 5, 6]`",
+        "isCorrect": true
+      },
+      {
+        "id": "six_five_four",
+        "text": "`[6, 5, 4]`",
+        "isCorrect": false
+      },
+      {
+        "id": "four_six_five",
+        "text": "`[4, 6, 5]`",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_result",
+        "text": "`[5, 4, 6]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1958,48 +1444,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Pick test cases that reveal order scrambling, not merely removal.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-112",
+    "id": "alg-prod-array-string-112-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "preserve_relative_order",
-    "prompt": "A learner removes rejected values by swapping them with the end, but the kept values must stay in order. Which test case best exposes the flaw?",
+    "prompt": "Choose the order-sensitive counterexample.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_order_constraint"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "later_kept_moved_before_earlier",
-        "feedback": "Swapping `0` with the end can move `3` before `2`, breaking the original relative order of kept values.",
-        "id": "alg-prod-array-string-112-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "later_kept_moved_before_earlier",
-            "text": "`[1, 0, 2, 3]` with `0` rejected."
-          },
-          {
-            "id": "all_rejected",
-            "text": "`[0, 0]` with `0` rejected."
-          },
-          {
-            "id": "none_rejected",
-            "text": "`[1, 2]` with no rejected values."
-          },
-          {
-            "id": "single_value",
-            "text": "`[0]` with `0` rejected."
-          }
-        ],
-        "prompt": "Choose the order-sensitive counterexample.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2026,7 +1477,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Pick a counterexample for unstable end-swapping",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A learner removes rejected values by swapping them with the end, but the kept values must stay in order. Which test case best exposes the flaw?",
+    "answerFeedback": "Swapping `0` with the end can move `3` before `2`, breaking the original relative order of kept values.",
+    "options": [
+      {
+        "id": "later_kept_moved_before_earlier",
+        "text": "`[1, 0, 2, 3]` with `0` rejected.",
+        "isCorrect": true
+      },
+      {
+        "id": "all_rejected",
+        "text": "`[0, 0]` with `0` rejected.",
+        "isCorrect": false
+      },
+      {
+        "id": "none_rejected",
+        "text": "`[1, 2]` with no rejected values.",
+        "isCorrect": false
+      },
+      {
+        "id": "single_value",
+        "text": "`[0]` with `0` rejected.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2046,48 +1521,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Ask whether callers expect the original input to remain unchanged.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-113",
+    "id": "alg-prod-array-string-113-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "What is the main contract difference between returning a new filtered array and compacting the input in place?",
+    "prompt": "Choose the contract difference.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_output_space"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "mutation_contract_differs",
-        "feedback": "A new filtered array leaves the input untouched, while in-place compaction can overwrite the input buffer.",
-        "id": "alg-prod-array-string-113-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "mutation_contract_differs",
-            "text": "The mutation contract differs: new output preserves input, in-place can overwrite it."
-          },
-          {
-            "id": "same_contract",
-            "text": "They are exactly the same contract."
-          },
-          {
-            "id": "in_place_preserves_input",
-            "text": "In-place compaction must preserve every original slot unchanged."
-          },
-          {
-            "id": "new_output_mutates_required",
-            "text": "Returning a new array requires mutating the original input."
-          }
-        ],
-        "prompt": "Choose the contract difference.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2114,7 +1554,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Separate new-output and in-place contracts",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
+    "type": "output_contract_reasoning",
+    "instruction": "What is the main contract difference between returning a new filtered array and compacting the input in place?",
+    "answerFeedback": "A new filtered array leaves the input untouched, while in-place compaction can overwrite the input buffer.",
+    "options": [
+      {
+        "id": "mutation_contract_differs",
+        "text": "The mutation contract differs: new output preserves input, in-place can overwrite it.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_contract",
+        "text": "They are exactly the same contract.",
+        "isCorrect": false
+      },
+      {
+        "id": "in_place_preserves_input",
+        "text": "In-place compaction must preserve every original slot unchanged.",
+        "isCorrect": false
+      },
+      {
+        "id": "new_output_mutates_required",
+        "text": "Returning a new array requires mutating the original input.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2134,48 +1598,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Check whether the input is allowed to be mutated before choosing in-place strategies.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-114",
+    "id": "alg-prod-array-string-114-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "A filtering task says the original input must remain unchanged. Which approach matches that contract?",
+    "prompt": "Choose the contract-preserving approach.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_output_space"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "new_output",
-        "feedback": "If the original input must remain unchanged, build and return a separate output array.",
-        "id": "alg-prod-array-string-114-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "new_output",
-            "text": "Build a new array for accepted values."
-          },
-          {
-            "id": "in_place_allowed",
-            "text": "Overwrite the input with accepted values."
-          },
-          {
-            "id": "swap_allowed",
-            "text": "Swap rejected values with the end of the input."
-          },
-          {
-            "id": "sort_input",
-            "text": "Sort the input before filtering."
-          }
-        ],
-        "prompt": "Choose the contract-preserving approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2202,7 +1631,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Preserve input by returning a new array",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
+    "type": "output_contract_reasoning",
+    "instruction": "A filtering task says the original input must remain unchanged. Which approach matches that contract?",
+    "answerFeedback": "If the original input must remain unchanged, build and return a separate output array.",
+    "options": [
+      {
+        "id": "new_output",
+        "text": "Build a new array for accepted values.",
+        "isCorrect": true
+      },
+      {
+        "id": "in_place_allowed",
+        "text": "Overwrite the input with accepted values.",
+        "isCorrect": false
+      },
+      {
+        "id": "swap_allowed",
+        "text": "Swap rejected values with the end of the input.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_input",
+        "text": "Sort the input before filtering.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2222,48 +1675,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Use the returned length to slice the meaningful prefix.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-115",
+    "id": "alg-prod-array-string-115-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "An in-place filter returns `newLength = 3`. What part of the array represents the result?",
+    "prompt": "Choose how to read the in-place result.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "prefix_only",
-        "feedback": "The logical result is the prefix from index 0 through index 2.",
-        "id": "alg-prod-array-string-115-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "prefix_only",
-            "text": "Only the first 3 positions."
-          },
-          {
-            "id": "inspect_full_array",
-            "text": "The entire physical array."
-          },
-          {
-            "id": "must_clear_tail",
-            "text": "Only the values after index 3."
-          },
-          {
-            "id": "tail_is_sorted",
-            "text": "The sorted suffix after the prefix."
-          }
-        ],
-        "prompt": "Choose how to read the in-place result.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2290,7 +1708,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Read only the compacted prefix",
     "trackId": "algorithms",
-    "type": "output_contract_reasoning"
+    "type": "output_contract_reasoning",
+    "instruction": "An in-place filter returns `newLength = 3`. What part of the array represents the result?",
+    "answerFeedback": "The logical result is the prefix from index 0 through index 2.",
+    "options": [
+      {
+        "id": "prefix_only",
+        "text": "Only the first 3 positions.",
+        "isCorrect": true
+      },
+      {
+        "id": "inspect_full_array",
+        "text": "The entire physical array.",
+        "isCorrect": false
+      },
+      {
+        "id": "must_clear_tail",
+        "text": "Only the values after index 3.",
+        "isCorrect": false
+      },
+      {
+        "id": "tail_is_sorted",
+        "text": "The sorted suffix after the prefix.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2310,48 +1752,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Trace the all-rejected case to verify the initial write boundary is still valid.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-116",
+    "id": "alg-prod-array-string-116-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "A stable in-place filter starts with `write = 0`. Every input value is rejected. What is the final logical length?",
+    "prompt": "Choose the final logical length.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "zero",
-        "feedback": "No accepted values are written, so `write` remains 0 and the kept prefix is empty.",
-        "id": "alg-prod-array-string-116-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "cannot_trace_algorithm"
-        ],
-        "options": [
-          {
-            "id": "zero",
-            "text": "0."
-          },
-          {
-            "id": "original_length",
-            "text": "The original input length."
-          },
-          {
-            "id": "one_kept",
-            "text": "1, because the first slot is reserved."
-          },
-          {
-            "id": "negative_length",
-            "text": "-1."
-          }
-        ],
-        "prompt": "Choose the final logical length.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2378,7 +1785,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Handle all-rejected in-place filtering",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A stable in-place filter starts with `write = 0`. Every input value is rejected. What is the final logical length?",
+    "answerFeedback": "No accepted values are written, so `write` remains 0 and the kept prefix is empty.",
+    "options": [
+      {
+        "id": "zero",
+        "text": "0.",
+        "isCorrect": true
+      },
+      {
+        "id": "original_length",
+        "text": "The original input length.",
+        "isCorrect": false
+      },
+      {
+        "id": "one_kept",
+        "text": "1, because the first slot is reserved.",
+        "isCorrect": false
+      },
+      {
+        "id": "negative_length",
+        "text": "-1.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2398,48 +1829,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Trace all-accepted and all-rejected cases as boundary cases for write movement.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-117",
+    "id": "alg-prod-array-string-117-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "A stable in-place filter scans a 5-element array and every value is accepted. What is the final write boundary?",
+    "prompt": "Choose the final write boundary.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "five",
-        "feedback": "Each accepted value advances `write` once, so after 5 accepted values the boundary is 5.",
-        "id": "alg-prod-array-string-117-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "five",
-            "text": "5."
-          },
-          {
-            "id": "zero",
-            "text": "0."
-          },
-          {
-            "id": "one",
-            "text": "1."
-          },
-          {
-            "id": "needs_new_array",
-            "text": "There is no write boundary unless a new array is allocated."
-          }
-        ],
-        "prompt": "Choose the final write boundary.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2466,7 +1862,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Handle all-accepted in-place filtering",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A stable in-place filter scans a 5-element array and every value is accepted. What is the final write boundary?",
+    "answerFeedback": "Each accepted value advances `write` once, so after 5 accepted values the boundary is 5.",
+    "options": [
+      {
+        "id": "five",
+        "text": "5.",
+        "isCorrect": true
+      },
+      {
+        "id": "zero",
+        "text": "0.",
+        "isCorrect": false
+      },
+      {
+        "id": "one",
+        "text": "1.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_new_array",
+        "text": "There is no write boundary unless a new array is allocated.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2486,49 +1906,14 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Trace the output array separately from the input buffer.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-118",
+    "id": "alg-prod-array-string-118-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_output_contract",
-    "prompt": "A task returns a new filtered array while preserving order. What should happen when the scan sees an accepted value?",
+    "prompt": "Choose the new-output update.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "preserve_relative_order",
       "distinguish_output_space"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "append_to_output",
-        "feedback": "Appending accepted values as they are encountered preserves their original relative order.",
-        "id": "alg-prod-array-string-118-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "append_to_output",
-            "text": "Append it to the result array."
-          },
-          {
-            "id": "preallocate_and_sort",
-            "text": "Store it for sorting later."
-          },
-          {
-            "id": "write_into_input",
-            "text": "Overwrite the input buffer."
-          },
-          {
-            "id": "append_rejected",
-            "text": "Append rejected values too."
-          }
-        ],
-        "prompt": "Choose the new-output update.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_output_contract"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -2565,7 +1950,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Trace append behavior for new-output filtering",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "A task returns a new filtered array while preserving order. What should happen when the scan sees an accepted value?",
+    "answerFeedback": "Appending accepted values as they are encountered preserves their original relative order.",
+    "options": [
+      {
+        "id": "append_to_output",
+        "text": "Append it to the result array.",
+        "isCorrect": true
+      },
+      {
+        "id": "preallocate_and_sort",
+        "text": "Store it for sorting later.",
+        "isCorrect": false
+      },
+      {
+        "id": "write_into_input",
+        "text": "Overwrite the input buffer.",
+        "isCorrect": false
+      },
+      {
+        "id": "append_rejected",
+        "text": "Append rejected values too.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2585,48 +1994,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Check whether sorted output is explicitly requested before sorting.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-119",
+    "id": "alg-prod-array-string-119-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "preserve_relative_order",
-    "prompt": "A filtering task says accepted values must remain in their original relative order. Why is sorting before returning the result wrong?",
+    "prompt": "Choose why sorting violates the contract.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_order_constraint"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sorting_changes_relative_order",
-        "feedback": "Sorting can reorder accepted values, violating the original-relative-order constraint.",
-        "id": "alg-prod-array-string-119-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "sorting_changes_relative_order",
-            "text": "Sorting can change the relative order of accepted values."
-          },
-          {
-            "id": "sort_restores_order",
-            "text": "Sorting restores the original relative order."
-          },
-          {
-            "id": "sort_required",
-            "text": "Sorting is always required before filtering."
-          },
-          {
-            "id": "frequency_required",
-            "text": "Filtering always requires frequency counts."
-          }
-        ],
-        "prompt": "Choose why sorting violates the contract.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "preserve_relative_order"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2653,7 +2027,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Reject sorting when original order matters",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A filtering task says accepted values must remain in their original relative order. Why is sorting before returning the result wrong?",
+    "answerFeedback": "Sorting can reorder accepted values, violating the original-relative-order constraint.",
+    "options": [
+      {
+        "id": "sorting_changes_relative_order",
+        "text": "Sorting can change the relative order of accepted values.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_restores_order",
+        "text": "Sorting restores the original relative order.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_required",
+        "text": "Sorting is always required before filtering.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_required",
+        "text": "Filtering always requires frequency counts.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2673,48 +2071,13 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Treat read and write as two different invariants, not interchangeable indexes.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-120",
+    "id": "alg-prod-array-string-120-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "trace_write_boundary",
-    "prompt": "In stable compaction, `read = 6` and `write = 3`. What does it mean that `write` is behind `read`?",
+    "prompt": "Choose what the pointer relationship means.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "some_rejected",
-        "feedback": "`write` lagging behind `read` means fewer accepted values have been written than values scanned, usually because some values were rejected.",
-        "id": "alg-prod-array-string-120-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "some_rejected",
-            "text": "Some scanned values were rejected, so the kept prefix is shorter than the scanned prefix."
-          },
-          {
-            "id": "stop_when_write_lags",
-            "text": "The algorithm must stop immediately."
-          },
-          {
-            "id": "read_equals_write_only",
-            "text": "The pointers must always be equal."
-          },
-          {
-            "id": "reset_write",
-            "text": "The write boundary should reset to 0."
-          }
-        ],
-        "prompt": "Choose what the pointer relationship means.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "trace_write_boundary"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2741,7 +2104,31 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Separate read progress from write progress",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "In stable compaction, `read = 6` and `write = 3`. What does it mean that `write` is behind `read`?",
+    "answerFeedback": "`write` lagging behind `read` means fewer accepted values have been written than values scanned, usually because some values were rejected.",
+    "options": [
+      {
+        "id": "some_rejected",
+        "text": "Some scanned values were rejected, so the kept prefix is shorter than the scanned prefix.",
+        "isCorrect": true
+      },
+      {
+        "id": "stop_when_write_lags",
+        "text": "The algorithm must stop immediately.",
+        "isCorrect": false
+      },
+      {
+        "id": "read_equals_write_only",
+        "text": "The pointers must always be equal.",
+        "isCorrect": false
+      },
+      {
+        "id": "reset_write",
+        "text": "The write boundary should reset to 0.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -2766,10 +2153,10 @@ export const filteringOutputContractQuestions = [
       "nextAction": "Identify whether the task says stable, preserve order, or order does not matter.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-121",
+    "id": "alg-prod-array-string-121-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "reason_about_order_constraint",
-    "prompt": "A task says to partition accepted and rejected values in-place, and the order of values does not matter. Which statement is correct?",
+    "prompt": "Choose what the relaxed order constraint allows.",
     "reasonSignal": "Unstable in-place partitioning can be valid because the order constraint is relaxed.",
     "rejectedApproachIds": [
       "stable_required",
@@ -2780,41 +2167,6 @@ export const filteringOutputContractQuestions = [
     "secondarySkillAtomIds": [
       "preserve_relative_order",
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "unstable_partition_allowed",
-        "feedback": "When order does not matter, an unstable in-place partition can be valid.",
-        "id": "alg-prod-array-string-121-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "unstable_partition_allowed",
-            "text": "An unstable in-place partition can be valid."
-          },
-          {
-            "id": "stable_required",
-            "text": "Stable order is still required."
-          },
-          {
-            "id": "new_output_required",
-            "text": "A new output array is required."
-          },
-          {
-            "id": "sort_required",
-            "text": "The entire array must be sorted."
-          }
-        ],
-        "prompt": "Choose what the relaxed order constraint allows.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_order_constraint"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2841,6 +2193,30 @@ export const filteringOutputContractQuestions = [
     ],
     "title": "Allow unstable partition when order is relaxed",
     "trackId": "algorithms",
-    "type": "constraint_change"
+    "type": "constraint_change",
+    "instruction": "A task says to partition accepted and rejected values in-place, and the order of values does not matter. Which statement is correct?",
+    "answerFeedback": "When order does not matter, an unstable in-place partition can be valid.",
+    "options": [
+      {
+        "id": "unstable_partition_allowed",
+        "text": "An unstable in-place partition can be valid.",
+        "isCorrect": true
+      },
+      {
+        "id": "stable_required",
+        "text": "Stable order is still required.",
+        "isCorrect": false
+      },
+      {
+        "id": "new_output_required",
+        "text": "A new output array is required.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_required",
+        "text": "The entire array must be sorted.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

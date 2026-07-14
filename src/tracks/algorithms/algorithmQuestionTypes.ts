@@ -1,4 +1,4 @@
-export const ALGORITHM_CONTENT_VERSION = "algorithms-core";
+import { ALGORITHM_CONTENT_VERSION } from "./algorithmContentTypes";
 
 export const ALGORITHM_QUESTION_LEARNING_STAGES = [
   "foundations",
@@ -14,9 +14,14 @@ export type AlgorithmQuestionLearningStage =
   (typeof ALGORITHM_QUESTION_LEARNING_STAGES)[number];
 
 export const ALGORITHM_QUESTION_DIFFICULTIES = [
+  "core",
+  "easy",
+  "foundational",
+  "hard",
   "intro",
   "intermediate",
   "advanced",
+  "medium",
 ] as const;
 
 export type AlgorithmQuestionDifficulty =
@@ -24,6 +29,7 @@ export type AlgorithmQuestionDifficulty =
 
 export const ALGORITHM_QUESTION_TYPES = [
   "approach_naming",
+  "approach_primer",
   "code_reading",
   "common_mistake_diagnosis",
   "complexity_check",
@@ -36,13 +42,16 @@ export const ALGORITHM_QUESTION_TYPES = [
   "mistake_review",
   "output_contract_analysis",
   "output_contract_reasoning",
+  "pseudocode_ordering",
   "single_choice",
   "solution_comparison",
   "state_selection",
   "strategy_choice",
   "subgoal_ordering",
   "test_case_selection",
+  "trace_drill",
   "trace_next_step",
+  "worked_example",
 ] as const;
 
 export type AlgorithmQuestionType = (typeof ALGORITHM_QUESTION_TYPES)[number];
@@ -69,9 +78,15 @@ export type AlgorithmQuestionSubgoal = {
   text: string;
 };
 
+export type AlgorithmQuestionComplexityDimension = {
+  acceptedAliases?: readonly string[];
+  acceptedValues: readonly string[];
+  id: "space" | "time";
+  values: readonly string[];
+};
+
 export type AlgorithmQuestionComplexity = {
-  space: string;
-  time: string;
+  dimensions: readonly AlgorithmQuestionComplexityDimension[];
 };
 
 type AlgorithmQuestionBase = {
@@ -80,6 +95,7 @@ type AlgorithmQuestionBase = {
   complexityExplanation?: string;
   complexityVariables?: Readonly<Record<string, string | undefined>>;
   constraintSignal?: string;
+  contentVersion: typeof ALGORITHM_CONTENT_VERSION;
   difficulty: AlgorithmQuestionDifficulty;
   expectedApproachIds?: readonly string[];
   expectedSpaceComplexity?: string;
@@ -92,8 +108,17 @@ type AlgorithmQuestionBase = {
   prompt: string;
   reasonSignal?: string;
   rejectedApproachIds?: readonly string[];
+  roadmapNodeId?: string;
   secondarySkillAtomIds?: readonly string[];
+  status?: "active";
   stepByStepTrace?: readonly unknown[];
+  taxonomyRefs?: readonly {
+    axisId: string;
+    nodeId: string;
+    role: string;
+  }[];
+  title?: string;
+  trackId?: "algorithms";
   type: AlgorithmQuestionType;
 };
 

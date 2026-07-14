@@ -1,4 +1,4 @@
-import type { TrackId } from "../tracks";
+import { isTrackId, type TrackId } from "../tracks";
 import type {
   TrainingContentItem,
   TrainingSession,
@@ -19,9 +19,12 @@ export type CreateTrainingSessionInput = {
 export function createTrainingSession(input: CreateTrainingSessionInput): TrainingSession {
   const itemRefs = input.items
     ? input.items.map((item) => ({
-        itemId: item.id,
-        itemType: item.type,
-        trackId: input.trackId,
+      itemId: item.id,
+      itemType: item.type,
+      trackId:
+        "trackId" in item && typeof item.trackId === "string" && isTrackId(item.trackId)
+          ? item.trackId
+          : input.trackId,
       }))
     : [...(input.itemRefs ?? [])];
 

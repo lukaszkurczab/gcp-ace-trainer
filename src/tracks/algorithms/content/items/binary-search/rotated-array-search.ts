@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const rotatedArraySearchQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -16,43 +18,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_linear": "Linear scan works, but the rotated sorted structure can still support half-discarding."
       }
     },
-    "id": "alg-binary-search-rotated-001",
+    "id": "alg-binary-search-rotated-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "A sorted ascending array was rotated, and you need to find a target. What is the first reasoning signal for rotated binary search?",
+    "prompt": "Choose the first reasoning signal.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "In rotated search, first detect which half is sorted, then decide whether target can be inside it.",
-        "id": "alg-binary-search-rotated-001-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Detect which half of the current range is sorted."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "Use normal binary search exactly as if the whole range were globally sorted."
-          },
-          {
-            "id": "wrong_linear",
-            "text": "Give up immediately and scan linearly because rotation destroys all order."
-          }
-        ],
-        "prompt": "Choose the first reasoning signal.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -89,23 +60,25 @@ export const rotatedArraySearchQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Detect which half of the current range is sorted."
-        },
-        {
-          "id": "wrong_classic",
-          "text": "Use normal binary search exactly as if the whole range were globally sorted."
-        },
-        {
-          "id": "wrong_linear",
-          "text": "Give up immediately and scan linearly because rotation destroys all order."
-        }
-      ]
-    }
+    "instruction": "A sorted ascending array was rotated, and you need to find a target. What is the first reasoning signal for rotated binary search?",
+    "answerFeedback": "In rotated search, first detect which half is sorted, then decide whether target can be inside it.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Detect which half of the current range is sorted.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_classic",
+        "text": "Use normal binary search exactly as if the whole range were globally sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_linear",
+        "text": "Give up immediately and scan linearly because rotation destroys all order.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -124,43 +97,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_target_found": "This comparison does not mean target has been found; it only identifies order structure."
       }
     },
-    "id": "alg-binary-search-rotated-002",
+    "id": "alg-binary-search-rotated-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "In a rotated sorted array without duplicates, nums[left] <= nums[mid]. What does that tell you?",
+    "prompt": "Choose what the comparison proves.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The range from left through mid is sorted.",
-        "id": "alg-binary-search-rotated-002-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "subgoal_order_wrong"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The left half is sorted."
-          },
-          {
-            "id": "wrong_right_sorted",
-            "text": "The right half is definitely the sorted half."
-          },
-          {
-            "id": "wrong_target_found",
-            "text": "target must equal nums[mid]."
-          }
-        ],
-        "prompt": "Choose what the comparison proves.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -185,7 +127,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Detect sorted left half",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "In a rotated sorted array without duplicates, nums[left] <= nums[mid]. What does that tell you?",
+    "answerFeedback": "The range from left through mid is sorted.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The left half is sorted.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_right_sorted",
+        "text": "The right half is definitely the sorted half.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_target_found",
+        "text": "target must equal nums[mid].",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -204,43 +165,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_invalid": "Rotation does not make binary search impossible; it changes the discard rule."
       }
     },
-    "id": "alg-binary-search-rotated-003",
+    "id": "alg-binary-search-rotated-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "In a rotated sorted array without duplicates, nums[left] > nums[mid]. What does that usually tell you?",
+    "prompt": "Choose what the comparison proves.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The right half is sorted when the left half crosses the rotation break.",
-        "id": "alg-binary-search-rotated-003-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "subgoal_order_wrong"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The right half is sorted."
-          },
-          {
-            "id": "wrong_left_sorted",
-            "text": "The left half is sorted."
-          },
-          {
-            "id": "wrong_invalid",
-            "text": "No half can ever be discarded in a rotated array."
-          }
-        ],
-        "prompt": "Choose what the comparison proves.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -265,7 +195,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Detect sorted right half",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "In a rotated sorted array without duplicates, nums[left] > nums[mid]. What does that usually tell you?",
+    "answerFeedback": "The right half is sorted when the left half crosses the rotation break.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The right half is sorted.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_left_sorted",
+        "text": "The left half is sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_invalid",
+        "text": "No half can ever be discarded in a rotated array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -284,43 +233,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_mid_only": "nums[mid] is already known not to be target; containment also needs nums[left] <= target."
       }
     },
-    "id": "alg-binary-search-rotated-004",
+    "id": "alg-binary-search-rotated-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "The left half is sorted, nums[mid] is not target, and nums[left] <= target < nums[mid]. Which side should remain active?",
+    "prompt": "Choose the active side.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Keep the left half because nums[left] <= target < nums[mid].",
-        "id": "alg-binary-search-rotated-004-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Keep the left half and move right toward mid."
-          },
-          {
-            "id": "wrong_right",
-            "text": "Discard the left half and search only right."
-          },
-          {
-            "id": "wrong_mid_only",
-            "text": "Ignore nums[left] and compare only nums[mid] with target."
-          }
-        ],
-        "prompt": "Choose the active side.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -345,7 +263,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Keep sorted left half when target fits",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "The left half is sorted, nums[mid] is not target, and nums[left] <= target < nums[mid]. Which side should remain active?",
+    "answerFeedback": "Keep the left half because nums[left] <= target < nums[mid].",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Keep the left half and move right toward mid.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_right",
+        "text": "Discard the left half and search only right.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_mid_only",
+        "text": "Ignore nums[left] and compare only nums[mid] with target.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -364,43 +301,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_no_discard": "The sorted-half range test gives a legal discard rule."
       }
     },
-    "id": "alg-binary-search-rotated-005",
+    "id": "alg-binary-search-rotated-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "The left half is sorted, nums[mid] is not target, and target does not satisfy nums[left] <= target < nums[mid]. Which side can be discarded?",
+    "prompt": "Choose the discard decision.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Discard the left half because target is outside nums[left] <= target < nums[mid].",
-        "id": "alg-binary-search-rotated-005-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Discard the left half."
-          },
-          {
-            "id": "wrong_keep_left",
-            "text": "Keep the left half because sorted halves are always preferred."
-          },
-          {
-            "id": "wrong_no_discard",
-            "text": "Do not discard either half because rotation makes every comparison useless."
-          }
-        ],
-        "prompt": "Choose the discard decision.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -425,7 +331,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Discard sorted left half when target does not fit",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "The left half is sorted, nums[mid] is not target, and target does not satisfy nums[left] <= target < nums[mid]. Which side can be discarded?",
+    "answerFeedback": "Discard the left half because target is outside nums[left] <= target < nums[mid].",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Discard the left half.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_keep_left",
+        "text": "Keep the left half because sorted halves are always preferred.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_no_discard",
+        "text": "Do not discard either half because rotation makes every comparison useless.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -444,43 +369,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_mid_only": "nums[mid] is already known not to be target; containment also needs target <= nums[right]."
       }
     },
-    "id": "alg-binary-search-rotated-006",
+    "id": "alg-binary-search-rotated-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "The right half is sorted, nums[mid] is not target, and nums[mid] < target <= nums[right]. Which side should remain active?",
+    "prompt": "Choose the active side.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Keep the right half because nums[mid] < target <= nums[right].",
-        "id": "alg-binary-search-rotated-006-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Keep the right half and move left past mid."
-          },
-          {
-            "id": "wrong_left",
-            "text": "Discard the right half and search only left."
-          },
-          {
-            "id": "wrong_mid_only",
-            "text": "Ignore nums[right] and compare only nums[mid] with target."
-          }
-        ],
-        "prompt": "Choose the active side.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -505,7 +399,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Keep sorted right half when target fits",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "The right half is sorted, nums[mid] is not target, and nums[mid] < target <= nums[right]. Which side should remain active?",
+    "answerFeedback": "Keep the right half because nums[mid] < target <= nums[right].",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Keep the right half and move left past mid.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_left",
+        "text": "Discard the right half and search only left.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_mid_only",
+        "text": "Ignore nums[right] and compare only nums[mid] with target.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -524,43 +437,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_no_discard": "A sorted-half range test gives enough structure to discard one side."
       }
     },
-    "id": "alg-binary-search-rotated-007",
+    "id": "alg-binary-search-rotated-007-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "The right half is sorted, nums[mid] is not target, and target does not satisfy nums[mid] < target <= nums[right]. Which side can be discarded?",
+    "prompt": "Choose the discard decision.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Discard the right half because target is outside nums[mid] < target <= nums[right].",
-        "id": "alg-binary-search-rotated-007-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Discard the right half."
-          },
-          {
-            "id": "wrong_keep_right",
-            "text": "Keep the right half because sorted halves are always preferred."
-          },
-          {
-            "id": "wrong_no_discard",
-            "text": "Do not discard either half because the whole array is rotated."
-          }
-        ],
-        "prompt": "Choose the discard decision.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -585,7 +467,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Discard sorted right half when target does not fit",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "The right half is sorted, nums[mid] is not target, and target does not satisfy nums[mid] < target <= nums[right]. Which side can be discarded?",
+    "answerFeedback": "Discard the right half because target is outside nums[mid] < target <= nums[right].",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Discard the right half.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_keep_right",
+        "text": "Keep the right half because sorted halves are always preferred.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_no_discard",
+        "text": "Do not discard either half because the whole array is rotated.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -604,43 +505,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_classic": "Normal nums[mid] > target would suggest left, but rotation requires sorted-half reasoning."
       }
     },
-    "id": "alg-binary-search-rotated-008",
+    "id": "alg-binary-search-rotated-008-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "Trace nums = [4, 5, 6, 7, 0, 1, 2], target = 0. Start left = 0, right = 6, mid = 3. nums[mid] = 7. Which half is sorted and does target fit there?",
+    "prompt": "Choose the trace interpretation.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The left half is sorted, but target is not inside it, so the right half remains active.",
-        "id": "alg-binary-search-rotated-008-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Left half is sorted; target does not fit there, so search right."
-          },
-          {
-            "id": "wrong_left",
-            "text": "Left half is sorted; target fits there, so search left."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "Because nums[mid] > target, always search left as in normal binary search."
-          }
-        ],
-        "prompt": "Choose the trace interpretation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -665,7 +535,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Trace rotated search toward pivot side",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Trace nums = [4, 5, 6, 7, 0, 1, 2], target = 0. Start left = 0, right = 6, mid = 3. nums[mid] = 7. Which half is sorted and does target fit there?",
+    "answerFeedback": "The left half is sorted, but target is not inside it, so the right half remains active.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Left half is sorted; target does not fit there, so search right.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_left",
+        "text": "Left half is sorted; target fits there, so search left.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_classic",
+        "text": "Because nums[mid] > target, always search left as in normal binary search.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -684,43 +573,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_classic": "Normal nums[mid] < target would suggest right, but rotation changes the reasoning."
       }
     },
-    "id": "alg-binary-search-rotated-009",
+    "id": "alg-binary-search-rotated-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "Trace nums = [6, 7, 0, 1, 2, 4, 5], target = 7. Start left = 0, right = 6, mid = 3. nums[mid] = 1. Which half is sorted and where should target be searched?",
+    "prompt": "Choose the trace interpretation.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The right half is sorted, but target is not inside its value range, so search left.",
-        "id": "alg-binary-search-rotated-009-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Right half is sorted; target does not fit there, so search left."
-          },
-          {
-            "id": "wrong_right",
-            "text": "Right half is sorted; target fits there, so search right."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "Because nums[mid] < target, always search right as in normal binary search."
-          }
-        ],
-        "prompt": "Choose the trace interpretation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -745,7 +603,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Trace rotated search toward left side",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Trace nums = [6, 7, 0, 1, 2, 4, 5], target = 7. Start left = 0, right = 6, mid = 3. nums[mid] = 1. Which half is sorted and where should target be searched?",
+    "answerFeedback": "The right half is sorted, but target is not inside its value range, so search left.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Right half is sorted; target does not fit there, so search left.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_right",
+        "text": "Right half is sorted; target fits there, so search right.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_classic",
+        "text": "Because nums[mid] < target, always search right as in normal binary search.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -764,43 +641,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_rotation_irrelevant": "Rotation changes which side may contain larger or smaller values."
       }
     },
-    "id": "alg-binary-search-rotated-010",
+    "id": "alg-binary-search-rotated-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "A learner uses only nums[mid] < target to choose right and nums[mid] > target to choose left in a rotated array. What mistake should you diagnose?",
+    "prompt": "Choose the mistake diagnosis.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "They copied classic binary search and ignored sorted-half detection.",
-        "id": "alg-binary-search-rotated-010-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "They ignored which half is sorted before discarding a side."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "They are correct because rotated search uses the same update rule as classic search."
-          },
-          {
-            "id": "wrong_rotation_irrelevant",
-            "text": "They only need to check whether the target is numeric."
-          }
-        ],
-        "prompt": "Choose the mistake diagnosis.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -825,75 +671,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Diagnose copied classic update rule",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(log n)",
-    "complexityExplanation": "Without duplicates, each step identifies a sorted half and discards one half of the active range. Only fixed boundary state is stored.",
-    "feedbackModel": {
-      "decisionSignal": "A rotated sorted array has n distinct values. Each step identifies a sorted half and discards one half. What time and extra space should you expect?",
-      "mentalModelCorrection": "Rotated search remains logarithmic when every step can discard half the candidates.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "cannot_explain_why"
-      ],
-      "nextAction": "Practice explaining O(log n) from the valid half-discard rule, not from global sortedness.",
-      "result": "diagnostic"
-    },
-    "id": "alg-binary-search-rotated-011",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "A rotated sorted array has n distinct values. Each step identifies a sorted half and discards one half. What time and extra space should you expect?",
-    "roadmapNodeId": "binary_search",
-    "status": "active",
-    "staticMicroChecks": [
+    "type": "edge_case_drill",
+    "instruction": "A learner uses only nums[mid] < target to choose right and nums[mid] > target to choose left in a rotated array. What mistake should you diagnose?",
+    "answerFeedback": "They copied classic binary search and ignored sorted-half detection.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(log n)",
-          "space": "O(1)"
-        },
-        "feedback": "The range still halves each step, and the algorithm stores only left, right, and mid.",
-        "id": "alg-binary-search-rotated-011-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "prompt": "Choose the expected time and extra space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "expected_signal",
+        "text": "They ignored which half is sorted before discarding a side.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_classic",
+        "text": "They are correct because rotated search uses the same update rule as classic search.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_rotation_irrelevant",
+        "text": "They only need to check whether the target is numeric.",
+        "isCorrect": false
       }
-    ],
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "binary_search",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "rotated_array_search",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Cost rotated search with distinct values",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -912,43 +709,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_linear_only": "A rotated array still has enough structure for binary search when the sorted half is identified."
       }
     },
-    "id": "alg-binary-search-rotated-012",
+    "id": "alg-binary-search-rotated-012-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_target_containment",
-    "prompt": "Plan A treats the rotated array as globally sorted. Plan B first detects which half is sorted, then checks whether target fits in that half. Which plan has the correct reasoning?",
+    "prompt": "Choose the correct reasoning plan.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Plan B uses the rotated-array invariant: one side is sorted and can be tested against target.",
-        "id": "alg-binary-search-rotated-012-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan B, because it uses sorted-half detection before discarding a side."
-          },
-          {
-            "id": "wrong_plan_a",
-            "text": "Plan A, because rotated arrays can be handled exactly like globally sorted arrays."
-          },
-          {
-            "id": "wrong_linear_only",
-            "text": "Neither; rotation always forces O(n) scan."
-          }
-        ],
-        "prompt": "Choose the correct reasoning plan.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_target_containment"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -974,28 +740,25 @@ export const rotatedArraySearchQuestions = [
     "title": "Compare classic and rotated reasoning",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "global sortedness",
-        "sorted half",
-        "safe discard"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan B, because it uses sorted-half detection before discarding a side."
-        },
-        {
-          "id": "wrong_plan_a",
-          "text": "Plan A, because rotated arrays can be handled exactly like globally sorted arrays."
-        },
-        {
-          "id": "wrong_linear_only",
-          "text": "Neither; rotation always forces O(n) scan."
-        }
-      ]
-    }
+    "instruction": "Plan A treats the rotated array as globally sorted. Plan B first detects which half is sorted, then checks whether target fits in that half. Which plan has the correct reasoning?",
+    "answerFeedback": "Plan B uses the rotated-array invariant: one side is sorted and can be tested against target.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Plan B, because it uses sorted-half detection before discarding a side.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_plan_a",
+        "text": "Plan A, because rotated arrays can be handled exactly like globally sorted arrays.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_linear_only",
+        "text": "Neither; rotation always forces O(n) scan.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1014,43 +777,12 @@ export const rotatedArraySearchQuestions = [
         "wrong_no_effect": "Duplicates can affect the ability to discard half safely."
       }
     },
-    "id": "alg-binary-search-rotated-013",
+    "id": "alg-binary-search-rotated-013-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_duplicate_ambiguity",
-    "prompt": "In rotated search with many duplicates, nums[left], nums[mid], and nums[right] can all be equal. What edge case should you recognize?",
+    "prompt": "Choose the edge-case warning.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Duplicates can obscure the sorted-half signal and may force cautious boundary shrinking.",
-        "id": "alg-binary-search-rotated-013-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The sorted half may be ambiguous, so the clean half-discard rule can break down."
-          },
-          {
-            "id": "wrong_always_half",
-            "text": "One half is always clearly sorted even when all boundary values are equal."
-          },
-          {
-            "id": "wrong_no_effect",
-            "text": "Duplicates never change rotated search reasoning."
-          }
-        ],
-        "prompt": "Choose the edge-case warning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_duplicate_ambiguity"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1075,7 +807,26 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Recognize duplicate ambiguity edge case",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "In rotated search with many duplicates, nums[left], nums[mid], and nums[right] can all be equal. What edge case should you recognize?",
+    "answerFeedback": "Duplicates can obscure the sorted-half signal and may force cautious boundary shrinking.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The sorted half may be ambiguous, so the clean half-discard rule can break down.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_always_half",
+        "text": "One half is always clearly sorted even when all boundary values are equal.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_no_effect",
+        "text": "Duplicates never change rotated search reasoning.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1090,57 +841,12 @@ export const rotatedArraySearchQuestions = [
       "nextAction": "Practice deriving rotated-search updates from sorted-half containment.",
       "result": "diagnostic"
     },
-    "id": "alg-binary-search-rotated-014",
+    "id": "alg-binary-search-rotated-014-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "rotated_array_sorted_half_detection",
-    "prompt": "Order the reasoning steps for binary search in a rotated sorted array without duplicates.",
+    "prompt": "Tap the rotated-search reasoning steps in order.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "check_mid_equal",
-          "identify_sorted_half",
-          "test_target_range",
-          "discard_impossible_half",
-          "preserve_progress"
-        ],
-        "feedback": "Rotated search depends on equality check, sorted-half detection, target containment, safe discard, and progress.",
-        "id": "alg-binary-search-rotated-014-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "check_mid_equal",
-            "text": "Check whether nums[mid] equals target."
-          },
-          {
-            "id": "identify_sorted_half",
-            "text": "Identify whether the left or right half is sorted."
-          },
-          {
-            "id": "test_target_range",
-            "text": "Check whether target lies inside the sorted half's value range."
-          },
-          {
-            "id": "discard_impossible_half",
-            "text": "Discard the half that cannot contain target."
-          },
-          {
-            "id": "preserve_progress",
-            "text": "Move boundaries so the active range strictly shrinks."
-          }
-        ],
-        "prompt": "Tap the rotated-search reasoning steps in order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "rotated_array_sorted_half_detection"
-        ],
-        "type": "order_steps"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1165,6 +871,37 @@ export const rotatedArraySearchQuestions = [
     ],
     "title": "Order rotated-search reasoning",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "instruction": "Order the reasoning steps for binary search in a rotated sorted array without duplicates.",
+    "answerFeedback": "Rotated search depends on equality check, sorted-half detection, target containment, safe discard, and progress.",
+    "subgoals": [
+      {
+        "id": "check_mid_equal",
+        "text": "Check whether nums[mid] equals target."
+      },
+      {
+        "id": "identify_sorted_half",
+        "text": "Identify whether the left or right half is sorted."
+      },
+      {
+        "id": "test_target_range",
+        "text": "Check whether target lies inside the sorted half's value range."
+      },
+      {
+        "id": "discard_impossible_half",
+        "text": "Discard the half that cannot contain target."
+      },
+      {
+        "id": "preserve_progress",
+        "text": "Move boundaries so the active range strictly shrinks."
+      }
+    ],
+    "correctOrder": [
+      "check_mid_equal",
+      "identify_sorted_half",
+      "test_target_range",
+      "discard_impossible_half",
+      "preserve_progress"
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

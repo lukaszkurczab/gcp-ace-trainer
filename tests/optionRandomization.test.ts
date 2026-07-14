@@ -32,6 +32,7 @@ test("Cloud practice shuffles displayed options without changing scoring ids", (
 test("Algorithms questions shuffle root options without changing authored correctness", () => {
   withFixedRandom(0, () => {
     const question: AlgorithmChoiceQuestion = {
+      contentVersion: "algorithms-core",
       difficulty: "intro",
       feedbackModel: {
         decisionSignal: "Use the decision signal.",

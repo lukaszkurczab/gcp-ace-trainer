@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const frequencyCountingQuestions = [
   {
     "acceptableApproachIds": [],
@@ -22,10 +24,10 @@ export const frequencyCountingQuestions = [
       "nextAction": "Separate membership checks from multiplicity checks before picking a data structure.",
       "result": "diagnostic"
     },
-    "id": "alg-array-string-frequency-signal-001",
+    "id": "alg-array-string-frequency-signal-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "Two strings should match only if each character appears the same number of times in both strings. Which state is necessary?",
+    "prompt": "Choose the state that matches the requirement.",
     "reasonSignal": "Use a count for each character because multiplicity, not just presence, decides the answer.",
     "rejectedApproachIds": [
       "presence_only",
@@ -35,41 +37,6 @@ export const frequencyCountingQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "character_counts",
-        "feedback": "Multiplicity requires counts, not just membership or a few positional samples.",
-        "id": "alg-array-string-frequency-signal-001-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "character_counts",
-            "text": "A count for each character."
-          },
-          {
-            "id": "seen_characters",
-            "text": "A set of characters seen in each string."
-          },
-          {
-            "id": "first_last_characters",
-            "text": "Only the first and last character of each string."
-          },
-          {
-            "id": "adjacent_pairs",
-            "text": "A list of adjacent character pairs."
-          }
-        ],
-        "prompt": "Choose the state that matches the requirement.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -96,94 +63,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Choose frequency state when counts matter",
     "trackId": "algorithms",
-    "type": "strategy_choice"
-  },
-  {
-    "complexityExplanation": "Frequency counting scans both strings once, so time is linear in the combined input length. Extra space is proportional to the number of distinct characters unless the alphabet is fixed and bounded.",
-    "complexityVariables": {
-      "k": "number of distinct characters stored in the count table",
-      "m": "length of the second string",
-      "n": "length of the first string"
-    },
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(k)",
-    "expectedTimeComplexity": "O(n + m)",
-    "feedbackModel": {
-      "decisionSignal": "The time is linear in the combined input size, but the space claim depends on whether the alphabet is bounded.",
-      "mentalModelCorrection": "Use O(k) for distinct-character state unless the prompt gives you a fixed small alphabet.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "When you see a count table, ask what limits the number of buckets before calling it constant space.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-003",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "reason_about_frequency_counting_complexity",
-    "prompt": "You compare two strings by counting each character in both strings. The character set is not guaranteed to be fixed or small. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "strategy_choice",
+    "instruction": "Two strings should match only if each character appears the same number of times in both strings. Which state is necessary?",
+    "answerFeedback": "Multiplicity requires counts, not just membership or a few positional samples.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(k)",
-          "time": "O(n + m)"
-        },
-        "feedback": "The scan is linear in total input length, O(n + m), and the count table uses O(k) extra space for distinct characters rather than O(1).",
-        "id": "alg-prod-array-string-003-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_frequency_counting_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "character_counts",
+        "text": "A count for each character.",
+        "isCorrect": true
+      },
+      {
+        "id": "seen_characters",
+        "text": "A set of characters seen in each string.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_last_characters",
+        "text": "Only the first and last character of each string.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_pairs",
+        "text": "A list of adjacent character pairs.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "reason_about_frequency_counting_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Reason about frequency-counting space",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -203,48 +107,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Test whether a proposed check would still work on a string pair with the same letters but different counts.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-008",
+    "id": "alg-prod-array-string-008-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "You need an approach that accepts `aab` and `aba` as same-frequency strings, but rejects `ab` and `aab`. Which comparison is strong enough?",
+    "prompt": "Choose the stronger comparison.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "frequency_counts",
-        "feedback": "Frequency counts preserve both presence and multiplicity, which is exactly what the prompt asks for.",
-        "id": "alg-prod-array-string-008-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "frequency_counts",
-            "text": "Compare frequency counts for each character."
-          },
-          {
-            "id": "set_presence",
-            "text": "Compare the set of characters present in each string."
-          },
-          {
-            "id": "first_last",
-            "text": "Compare only the first and last characters."
-          },
-          {
-            "id": "adjacent_duplicates",
-            "text": "Check whether each string has adjacent duplicates."
-          }
-        ],
-        "prompt": "Choose the stronger comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -271,7 +140,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Compare presence checks with frequency checks",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "You need an approach that accepts `aab` and `aba` as same-frequency strings, but rejects `ab` and `aab`. Which comparison is strong enough?",
+    "answerFeedback": "Frequency counts preserve both presence and multiplicity, which is exactly what the prompt asks for.",
+    "options": [
+      {
+        "id": "frequency_counts",
+        "text": "Compare frequency counts for each character.",
+        "isCorrect": true
+      },
+      {
+        "id": "set_presence",
+        "text": "Compare the set of characters present in each string.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_last",
+        "text": "Compare only the first and last characters.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_duplicates",
+        "text": "Check whether each string has adjacent duplicates.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [
@@ -298,10 +191,10 @@ export const frequencyCountingQuestions = [
       "nextAction": "When two approaches can both be correct, compare the information each one stores and the cost paid to get it.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-014",
+    "id": "alg-prod-array-string-014-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "Two strings should match if they contain the same characters with the same frequencies. Which comparison is more direct for large inputs when you do not need sorted output?",
+    "prompt": "Choose the more direct comparison under the stated constraint.",
     "reasonSignal": "Counting directly stores multiplicity without paying the sorting cost.",
     "rejectedApproachIds": [
       "set_compare",
@@ -310,41 +203,6 @@ export const frequencyCountingQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "compare_complexity_tradeoffs"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "frequency_counting",
-        "feedback": "Counting directly stores the multiplicity the prompt asks for. Sorting can also compare frequencies, but it is less direct for large inputs when sorted output is unnecessary.",
-        "id": "alg-prod-array-string-014-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "frequency_counting",
-            "text": "Count characters and compare counts."
-          },
-          {
-            "id": "sort_both",
-            "text": "Sort both strings and compare the sorted strings."
-          },
-          {
-            "id": "set_compare",
-            "text": "Compare only the set of characters in each string."
-          },
-          {
-            "id": "first_mismatch",
-            "text": "Return false at the first position where the strings differ."
-          }
-        ],
-        "prompt": "Choose the more direct comparison under the stated constraint.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -371,7 +229,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Prefer counting over sorting when counts are the signal",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "Two strings should match if they contain the same characters with the same frequencies. Which comparison is more direct for large inputs when you do not need sorted output?",
+    "answerFeedback": "Counting directly stores the multiplicity the prompt asks for. Sorting can also compare frequencies, but it is less direct for large inputs when sorted output is unnecessary.",
+    "options": [
+      {
+        "id": "frequency_counting",
+        "text": "Count characters and compare counts.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_both",
+        "text": "Sort both strings and compare the sorted strings.",
+        "isCorrect": false
+      },
+      {
+        "id": "set_compare",
+        "text": "Compare only the set of characters in each string.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_mismatch",
+        "text": "Return false at the first position where the strings differ.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -391,48 +273,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Build test cases that keep one property the same and change only the property your structure forgets.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-016",
+    "id": "alg-prod-array-string-016-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_data_structure_mismatch",
-    "prompt": "A learner checks whether two strings have the same frequencies by converting both strings to sets. Which test case exposes the bug?",
+    "prompt": "Choose the test case that reveals the bug.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "ab_aab",
-        "feedback": "The set of characters matches, but the multiplicities do not, so the bug becomes visible immediately.",
-        "id": "alg-prod-array-string-016-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "ab_aab",
-            "text": "`ab` and `aab`"
-          },
-          {
-            "id": "ab_ba",
-            "text": "`ab` and `ba`"
-          },
-          {
-            "id": "abc_abc",
-            "text": "`abc` and `abc`"
-          },
-          {
-            "id": "empty_empty",
-            "text": "`\"\"` and `\"\"`"
-          }
-        ],
-        "prompt": "Choose the test case that reveals the bug.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_data_structure_mismatch"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -459,89 +306,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Pick a counterexample for set misuse",
     "trackId": "algorithms",
-    "type": "test_case_selection"
-  },
-  {
-    "complexityExplanation": "With a fixed bounded alphabet such as lowercase English letters, the count table size is capped, so the extra space can be treated as constant.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "The alphabet bound is what changes the space claim, not the counting idea itself.",
-      "mentalModelCorrection": "Call the space O(1) only when the prompt truly fixes the number of possible buckets.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Check whether the value domain is fixed before compressing O(k) into O(1).",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-018",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "fixed_alphabet_complexity",
-    "prompt": "You count letter frequencies in a string made only of lowercase English letters. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "reason_about_frequency_counting_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "test_case_selection",
+    "instruction": "A learner checks whether two strings have the same frequencies by converting both strings to sets. Which test case exposes the bug?",
+    "answerFeedback": "The set of characters matches, but the multiplicities do not, so the bug becomes visible immediately.",
+    "options": [
       {
-        "correctAnswer": {
-          "space": "O(1)",
-          "time": "O(n)"
-        },
-        "feedback": "The scan is still linear, and the number of counters is capped by the fixed alphabet.",
-        "id": "alg-prod-array-string-018-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "fixed_alphabet_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "ab_aab",
+        "text": "`ab` and `aab`",
+        "isCorrect": true
+      },
+      {
+        "id": "ab_ba",
+        "text": "`ab` and `ba`",
+        "isCorrect": false
+      },
+      {
+        "id": "abc_abc",
+        "text": "`abc` and `abc`",
+        "isCorrect": false
+      },
+      {
+        "id": "empty_empty",
+        "text": "`\"\"` and `\"\"`",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "fixed_alphabet_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "reason_about_frequency_counting_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Use the fixed-alphabet space caveat correctly",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "acceptableApproachIds": [],
@@ -566,10 +355,10 @@ export const frequencyCountingQuestions = [
       "nextAction": "Underline phrases like same number of times, frequency, and multiplicity before choosing the data structure.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-060",
+    "id": "alg-prod-array-string-060-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "Two arrays should match only if every value appears the same number of times in both arrays. Which state best matches the requirement?",
+    "prompt": "Choose the state that preserves the required information.",
     "reasonSignal": "Use frequency counts because the answer depends on multiplicity.",
     "rejectedApproachIds": [
       "presence_only",
@@ -579,41 +368,6 @@ export const frequencyCountingQuestions = [
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "value_counts",
-        "feedback": "A count per value preserves both presence and multiplicity.",
-        "id": "alg-prod-array-string-060-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "value_counts",
-            "text": "A count for each value."
-          },
-          {
-            "id": "presence_set",
-            "text": "A set of values that appear at least once."
-          },
-          {
-            "id": "sort_by_first_value",
-            "text": "Only the first value of each array."
-          },
-          {
-            "id": "adjacent_scan",
-            "text": "Only whether equal values are adjacent."
-          }
-        ],
-        "prompt": "Choose the state that preserves the required information.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -640,7 +394,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Choose counts when multiplicity matters",
     "trackId": "algorithms",
-    "type": "strategy_choice"
+    "type": "strategy_choice",
+    "instruction": "Two arrays should match only if every value appears the same number of times in both arrays. Which state best matches the requirement?",
+    "answerFeedback": "A count per value preserves both presence and multiplicity.",
+    "options": [
+      {
+        "id": "value_counts",
+        "text": "A count for each value.",
+        "isCorrect": true
+      },
+      {
+        "id": "presence_set",
+        "text": "A set of values that appear at least once.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_by_first_value",
+        "text": "Only the first value of each array.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_scan",
+        "text": "Only whether equal values are adjacent.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -661,48 +439,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Use `ab` versus `aab` as the minimal counterexample for set misuse.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-061",
+    "id": "alg-prod-array-string-061-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "Why does comparing sets give the wrong answer for `ab` and `aab` when the task asks for same character frequencies?",
+    "prompt": "Choose the reason set comparison fails.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_set_lost_count",
-        "feedback": "Both strings have the same set of characters, but `aab` has one extra `a`, so counts are different.",
-        "id": "alg-prod-array-string-061-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "same_set_lost_count",
-            "text": "The set is the same, but the character counts are different."
-          },
-          {
-            "id": "same_length",
-            "text": "The strings have the same length."
-          },
-          {
-            "id": "same_order",
-            "text": "The strings have the same order."
-          },
-          {
-            "id": "adjacent_difference",
-            "text": "The strings differ only by adjacent duplicates."
-          }
-        ],
-        "prompt": "Choose the reason set comparison fails.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -729,171 +472,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Explain why set equality loses counts",
     "trackId": "algorithms",
-    "type": "solution_comparison"
-  },
-  {
-    "complexityExplanation": "Counting each input once gives linear time in the combined input size. Extra space depends on the number of distinct values stored.",
-    "complexityVariables": {
-      "k": "number of distinct values stored in the frequency table",
-      "m": "length of the second input",
-      "n": "length of the first input"
-    },
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(k)",
-    "expectedTimeComplexity": "O(n + m)",
-    "feedbackModel": {
-      "decisionSignal": "Two scans plus a count table give O(n + m) time and O(k) extra space.",
-      "mentalModelCorrection": "Do not call frequency-table space constant unless the value domain is fixed and small.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Name the input lengths and the number of distinct stored keys before writing the complexity.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-062",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "reason_about_frequency_counting_complexity",
-    "prompt": "You compare two arrays by counting values from both arrays. The value range is not fixed. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "solution_comparison",
+    "instruction": "Why does comparing sets give the wrong answer for `ab` and `aab` when the task asks for same character frequencies?",
+    "answerFeedback": "Both strings have the same set of characters, but `aab` has one extra `a`, so counts are different.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n + m)",
-          "space": "O(k)"
-        },
-        "feedback": "The algorithm scans both arrays once, and the table can store up to `k` distinct values.",
-        "id": "alg-prod-array-string-062-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_frequency_counting_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "same_set_lost_count",
+        "text": "The set is the same, but the character counts are different.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_length",
+        "text": "The strings have the same length.",
+        "isCorrect": false
+      },
+      {
+        "id": "same_order",
+        "text": "The strings have the same order.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_difference",
+        "text": "The strings differ only by adjacent duplicates.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "reason_about_frequency_counting_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate unbounded frequency-table cost",
-    "trackId": "algorithms",
-    "type": "complexity_check"
-  },
-  {
-    "complexityExplanation": "A fixed lowercase English alphabet caps the number of counters at 26, so frequency-table space is constant.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n + m)",
-    "feedbackModel": {
-      "decisionSignal": "The fixed alphabet bound turns the count table into constant-size state.",
-      "mentalModelCorrection": "The same counting idea can be O(k) or O(1) space depending on the value domain.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Before giving space complexity, check whether the prompt fixes the alphabet.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-063",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "fixed_alphabet_complexity",
-    "prompt": "You compare two strings made only of lowercase English letters by counting characters. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "reason_about_frequency_counting_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": {
-          "time": "O(n + m)",
-          "space": "O(1)"
-        },
-        "feedback": "The scans are linear in total input length, and the count table has a fixed maximum size of 26.",
-        "id": "alg-prod-array-string-063-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the expected time and bounded-alphabet space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "fixed_alphabet_complexity"
-        ],
-        "type": "complexity_pair"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "fixed_alphabet_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "reason_about_frequency_counting_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Apply the fixed-alphabet space exception",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -913,48 +516,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Classify the target relation: sequence equality, set equality, or multiset equality.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-064",
+    "id": "alg-prod-array-string-064-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "An approach should accept `aab` and `aba`, but reject `ab` and `aab`. What relation is being tested?",
+    "prompt": "Choose the relation these examples define.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_frequency",
-        "feedback": "The relation is same frequency: order can differ, but duplicate counts must match.",
-        "id": "alg-prod-array-string-064-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "same_frequency",
-            "text": "Same frequency of each character."
-          },
-          {
-            "id": "presence_only",
-            "text": "Same set of unique characters."
-          },
-          {
-            "id": "same_order",
-            "text": "Exactly the same character sequence."
-          },
-          {
-            "id": "adjacent_only",
-            "text": "Same adjacent duplicate positions."
-          }
-        ],
-        "prompt": "Choose the relation these examples define.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -981,7 +549,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Recognize multiset equality from examples",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "An approach should accept `aab` and `aba`, but reject `ab` and `aab`. What relation is being tested?",
+    "answerFeedback": "The relation is same frequency: order can differ, but duplicate counts must match.",
+    "options": [
+      {
+        "id": "same_frequency",
+        "text": "Same frequency of each character.",
+        "isCorrect": true
+      },
+      {
+        "id": "presence_only",
+        "text": "Same set of unique characters.",
+        "isCorrect": false
+      },
+      {
+        "id": "same_order",
+        "text": "Exactly the same character sequence.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_only",
+        "text": "Same adjacent duplicate positions.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "acceptableApproachIds": [
@@ -1008,10 +600,10 @@ export const frequencyCountingQuestions = [
       "nextAction": "When two approaches are correct, compare what extra information each approach computes.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-065",
+    "id": "alg-prod-array-string-065-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "compare_complexity_tradeoffs",
-    "prompt": "A learner says sorting both strings is always the best way to compare character frequencies because it avoids a hash table. What tradeoff are they missing for large inputs when sorted output is not needed?",
+    "prompt": "Choose the missing tradeoff.",
     "reasonSignal": "Sorting can be correct, but it pays ordering cost for information that counting can store directly.",
     "rejectedApproachIds": [
       "presence_set",
@@ -1021,41 +613,6 @@ export const frequencyCountingQuestions = [
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count",
       "reason_about_frequency_counting_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sorting_pays_ordering_cost",
-        "feedback": "Sorting can compare frequencies after ordering, but it pays O(n log n) cost for sorted order that the prompt does not need.",
-        "id": "alg-prod-array-string-065-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "sorting_pays_ordering_cost",
-            "text": "Sorting can be correct, but it pays ordering cost that counting avoids."
-          },
-          {
-            "id": "sorting_always_invalid",
-            "text": "Sorting is always logically invalid for same-frequency comparison."
-          },
-          {
-            "id": "set_is_enough",
-            "text": "A set is enough because duplicate counts do not matter."
-          },
-          {
-            "id": "same_index_required",
-            "text": "The strings must have the same character at every index."
-          }
-        ],
-        "prompt": "Choose the missing tradeoff.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "compare_complexity_tradeoffs"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1087,7 +644,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Explain the sorting tradeoff for frequency comparison",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "A learner says sorting both strings is always the best way to compare character frequencies because it avoids a hash table. What tradeoff are they missing for large inputs when sorted output is not needed?",
+    "answerFeedback": "Sorting can compare frequencies after ordering, but it pays O(n log n) cost for sorted order that the prompt does not need.",
+    "options": [
+      {
+        "id": "sorting_pays_ordering_cost",
+        "text": "Sorting can be correct, but it pays ordering cost that counting avoids.",
+        "isCorrect": true
+      },
+      {
+        "id": "sorting_always_invalid",
+        "text": "Sorting is always logically invalid for same-frequency comparison.",
+        "isCorrect": false
+      },
+      {
+        "id": "set_is_enough",
+        "text": "A set is enough because duplicate counts do not matter.",
+        "isCorrect": false
+      },
+      {
+        "id": "same_index_required",
+        "text": "The strings must have the same character at every index.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1107,48 +688,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Build counterexamples that change only the information the wrong structure forgets.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-066",
+    "id": "alg-prod-array-string-066-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_data_structure_mismatch",
-    "prompt": "A learner uses sets to test whether two arrays have the same value frequencies. Which test case best exposes the bug?",
+    "prompt": "Choose the counterexample.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_values_different_counts",
-        "feedback": "Both arrays contain the same unique values, 2 and 4, but the multiplicities differ: one has two 4s, the other has two 2s.",
-        "id": "alg-prod-array-string-066-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "same_values_different_counts",
-            "text": "`[4, 4, 2]` and `[4, 2, 2]`"
-          },
-          {
-            "id": "same_counts_different_order",
-            "text": "`[4, 2]` and `[2, 4]`"
-          },
-          {
-            "id": "different_presence",
-            "text": "`[4, 2]` and `[4, 3]`"
-          },
-          {
-            "id": "empty_empty",
-            "text": "`[]` and `[]`"
-          }
-        ],
-        "prompt": "Choose the counterexample.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_data_structure_mismatch"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1175,7 +721,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Pick an array counterexample for set misuse",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A learner uses sets to test whether two arrays have the same value frequencies. Which test case best exposes the bug?",
+    "answerFeedback": "Both arrays contain the same unique values, 2 and 4, but the multiplicities differ: one has two 4s, the other has two 2s.",
+    "options": [
+      {
+        "id": "same_values_different_counts",
+        "text": "`[4, 4, 2]` and `[4, 2, 2]`",
+        "isCorrect": true
+      },
+      {
+        "id": "same_counts_different_order",
+        "text": "`[4, 2]` and `[2, 4]`",
+        "isCorrect": false
+      },
+      {
+        "id": "different_presence",
+        "text": "`[4, 2]` and `[4, 3]`",
+        "isCorrect": false
+      },
+      {
+        "id": "empty_empty",
+        "text": "`[]` and `[]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1195,48 +765,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "When order can change but counts cannot, choose frequency comparison.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-067",
+    "id": "alg-prod-array-string-067-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "Two strings should be treated as matching even if their characters appear in different order, but duplicate counts must match. What should the comparison use?",
+    "prompt": "Choose the comparison that fits the contract.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "frequency_comparison",
-        "feedback": "Different order is allowed, but duplicate counts must match, so frequency comparison fits.",
-        "id": "alg-prod-array-string-067-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "frequency_comparison",
-            "text": "Compare character frequencies."
-          },
-          {
-            "id": "same_index",
-            "text": "Compare characters at the same indexes."
-          },
-          {
-            "id": "unique_only",
-            "text": "Compare only unique characters."
-          },
-          {
-            "id": "neighbor_only",
-            "text": "Check only adjacent equal characters."
-          }
-        ],
-        "prompt": "Choose the comparison that fits the contract.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1274,6 +809,30 @@ export const frequencyCountingQuestions = [
       "same_index_compare",
       "unique_only",
       "adjacent_scan"
+    ],
+    "instruction": "Two strings should be treated as matching even if their characters appear in different order, but duplicate counts must match. What should the comparison use?",
+    "answerFeedback": "Different order is allowed, but duplicate counts must match, so frequency comparison fits.",
+    "options": [
+      {
+        "id": "frequency_comparison",
+        "text": "Compare character frequencies.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_index",
+        "text": "Compare characters at the same indexes.",
+        "isCorrect": false
+      },
+      {
+        "id": "unique_only",
+        "text": "Compare only unique characters.",
+        "isCorrect": false
+      },
+      {
+        "id": "neighbor_only",
+        "text": "Check only adjacent equal characters.",
+        "isCorrect": false
+      }
     ]
   },
   {
@@ -1295,48 +854,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Trace each character as an increment to its bucket.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-068",
+    "id": "alg-prod-array-string-068-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "You scan `abca` and update a frequency table. What should the count for `a` be after the full scan?",
+    "prompt": "Choose the traced frequency state.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "a_count_two",
-        "feedback": "`a` appears at the first and last positions, so its count is 2.",
-        "id": "alg-prod-array-string-068-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "a_count_two",
-            "text": "`a` has count 2."
-          },
-          {
-            "id": "a_count_one",
-            "text": "`a` has count 1 because it is stored once as a key."
-          },
-          {
-            "id": "sort_required",
-            "text": "The count cannot be known without sorting."
-          },
-          {
-            "id": "adjacent_required",
-            "text": "The count increases only if `a` is adjacent to another `a`."
-          }
-        ],
-        "prompt": "Choose the traced frequency state.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1373,7 +897,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Trace a repeated character count",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You scan `abca` and update a frequency table. What should the count for `a` be after the full scan?",
+    "answerFeedback": "`a` appears at the first and last positions, so its count is 2.",
+    "options": [
+      {
+        "id": "a_count_two",
+        "text": "`a` has count 2.",
+        "isCorrect": true
+      },
+      {
+        "id": "a_count_one",
+        "text": "`a` has count 1 because it is stored once as a key.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_required",
+        "text": "The count cannot be known without sorting.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_required",
+        "text": "The count increases only if `a` is adjacent to another `a`.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1393,48 +941,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Check simple necessary conditions before building heavier state.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-069",
+    "id": "alg-prod-array-string-069-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "Two strings must have exactly the same character frequencies. What can you conclude immediately if their lengths are different?",
+    "prompt": "Choose the valid early conclusion.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_frequency_counting_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "cannot_match",
-        "feedback": "If total lengths differ, at least one total count differs, so the strings cannot have identical frequencies.",
-        "id": "alg-prod-array-string-069-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "cannot_match",
-            "text": "They cannot have identical character frequencies."
-          },
-          {
-            "id": "must_count_all",
-            "text": "You must still count every character before deciding."
-          },
-          {
-            "id": "sets_enough",
-            "text": "Equal sets would still prove they match."
-          },
-          {
-            "id": "sort_needed",
-            "text": "They must be sorted before any conclusion is possible."
-          }
-        ],
-        "prompt": "Choose the valid early conclusion.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1461,7 +974,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Use length as a necessary frequency check",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Two strings must have exactly the same character frequencies. What can you conclude immediately if their lengths are different?",
+    "answerFeedback": "If total lengths differ, at least one total count differs, so the strings cannot have identical frequencies.",
+    "options": [
+      {
+        "id": "cannot_match",
+        "text": "They cannot have identical character frequencies.",
+        "isCorrect": true
+      },
+      {
+        "id": "must_count_all",
+        "text": "You must still count every character before deciding.",
+        "isCorrect": false
+      },
+      {
+        "id": "sets_enough",
+        "text": "Equal sets would still prove they match.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_needed",
+        "text": "They must be sorted before any conclusion is possible.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1481,48 +1018,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "State the default count before updating a bucket.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-070",
+    "id": "alg-prod-array-string-070-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "While building a frequency table, you encounter a value that is not yet in the table. What count should it be treated as before incrementing?",
+    "prompt": "Choose the default count behavior.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "zero_before_increment",
-        "feedback": "An unseen value has count 0 before its first increment.",
-        "id": "alg-prod-array-string-070-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "zero_before_increment",
-            "text": "0, then increment to 1."
-          },
-          {
-            "id": "error_immediately",
-            "text": "Throw an error because the key is missing."
-          },
-          {
-            "id": "presence_true",
-            "text": "Treat it as already present with count 1 before incrementing."
-          },
-          {
-            "id": "sort_first",
-            "text": "Sort the input before assigning any count."
-          }
-        ],
-        "prompt": "Choose the default count behavior.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1549,7 +1051,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Initialize unseen frequency buckets",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "While building a frequency table, you encounter a value that is not yet in the table. What count should it be treated as before incrementing?",
+    "answerFeedback": "An unseen value has count 0 before its first increment.",
+    "options": [
+      {
+        "id": "zero_before_increment",
+        "text": "0, then increment to 1.",
+        "isCorrect": true
+      },
+      {
+        "id": "error_immediately",
+        "text": "Throw an error because the key is missing.",
+        "isCorrect": false
+      },
+      {
+        "id": "presence_true",
+        "text": "Treat it as already present with count 1 before incrementing.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_first",
+        "text": "Sort the input before assigning any count.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1569,48 +1095,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "When subtracting counts, check whether any bucket drops below zero.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-071",
+    "id": "alg-prod-array-string-071-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "You count characters from the first string, then subtract while scanning the second string. What does it mean if a count becomes negative?",
+    "prompt": "Choose what the negative count signals.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "second_uses_too_many",
-        "feedback": "A negative count means the second string contains that character more times than the first string did.",
-        "id": "alg-prod-array-string-071-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "second_uses_too_many",
-            "text": "The second string uses that character too many times."
-          },
-          {
-            "id": "still_possible",
-            "text": "The strings may still have identical frequencies."
-          },
-          {
-            "id": "order_problem",
-            "text": "Only the character order is wrong."
-          },
-          {
-            "id": "adjacency_problem",
-            "text": "Only adjacent duplicate handling is wrong."
-          }
-        ],
-        "prompt": "Choose what the negative count signals.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -1647,7 +1138,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Interpret a negative frequency count",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You count characters from the first string, then subtract while scanning the second string. What does it mean if a count becomes negative?",
+    "answerFeedback": "A negative count means the second string contains that character more times than the first string did.",
+    "options": [
+      {
+        "id": "second_uses_too_many",
+        "text": "The second string uses that character too many times.",
+        "isCorrect": true
+      },
+      {
+        "id": "still_possible",
+        "text": "The strings may still have identical frequencies.",
+        "isCorrect": false
+      },
+      {
+        "id": "order_problem",
+        "text": "Only the character order is wrong.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacency_problem",
+        "text": "Only adjacent duplicate handling is wrong.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1667,48 +1182,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "After decrementing, check whether every stored count is zero.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-072",
+    "id": "alg-prod-array-string-072-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "After counting the first string and subtracting the second string, every count is zero. What does that prove?",
+    "prompt": "Choose what balanced counts prove.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "same_frequencies",
-        "feedback": "Every count returning to zero proves the two strings have the same frequency for every stored character.",
-        "id": "alg-prod-array-string-072-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "same_frequencies",
-            "text": "The strings have the same character frequencies."
-          },
-          {
-            "id": "same_order",
-            "text": "The strings have the same character order."
-          },
-          {
-            "id": "same_set_only",
-            "text": "Only the unique character sets match."
-          },
-          {
-            "id": "adjacent_match",
-            "text": "Adjacent duplicates match at the same positions."
-          }
-        ],
-        "prompt": "Choose what balanced counts prove.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1735,7 +1215,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Explain balanced frequency counts",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "After counting the first string and subtracting the second string, every count is zero. What does that prove?",
+    "answerFeedback": "Every count returning to zero proves the two strings have the same frequency for every stored character.",
+    "options": [
+      {
+        "id": "same_frequencies",
+        "text": "The strings have the same character frequencies.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_order",
+        "text": "The strings have the same character order.",
+        "isCorrect": false
+      },
+      {
+        "id": "same_set_only",
+        "text": "Only the unique character sets match.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_match",
+        "text": "Adjacent duplicates match at the same positions.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1755,48 +1259,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Decide whether the answer needs exact counts, a repeat flag, or only presence.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-074",
+    "id": "alg-prod-array-string-074-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "A task asks which values appear exactly three times. Why is a set of seen values not enough?",
+    "prompt": "Choose why counts are required.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "needs_exact_counts",
-        "feedback": "A set only stores presence. The task needs the exact count for each value.",
-        "id": "alg-prod-array-string-074-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "needs_exact_counts",
-            "text": "The task needs exact counts for each value."
-          },
-          {
-            "id": "seen_set",
-            "text": "A seen set stores exact counts automatically."
-          },
-          {
-            "id": "adjacent_scan",
-            "text": "Only adjacent values can appear exactly three times."
-          },
-          {
-            "id": "length_only",
-            "text": "The array length alone gives each value's count."
-          }
-        ],
-        "prompt": "Choose why counts are required.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1823,7 +1292,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Use exact counts for exact-frequency queries",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "instruction": "A task asks which values appear exactly three times. Why is a set of seen values not enough?",
+    "answerFeedback": "A set only stores presence. The task needs the exact count for each value.",
+    "options": [
+      {
+        "id": "needs_exact_counts",
+        "text": "The task needs exact counts for each value.",
+        "isCorrect": true
+      },
+      {
+        "id": "seen_set",
+        "text": "A seen set stores exact counts automatically.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_scan",
+        "text": "Only adjacent values can appear exactly three times.",
+        "isCorrect": false
+      },
+      {
+        "id": "length_only",
+        "text": "The array length alone gives each value's count.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1843,48 +1336,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "For max-frequency tasks, track both the count table and the best count seen so far.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-077",
+    "id": "alg-prod-array-string-077-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_frequency_state",
-    "prompt": "A task asks for the value that appears most often in an array. Which state is necessary?",
+    "prompt": "Choose the state needed for most-frequent reasoning.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "distinguish_presence_from_count"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "count_table",
-        "feedback": "To know which value appears most often, you need counts for values, not just whether they appeared.",
-        "id": "alg-prod-array-string-077-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "count_table",
-            "text": "A count table by value."
-          },
-          {
-            "id": "presence_set",
-            "text": "A set of values seen."
-          },
-          {
-            "id": "first_value",
-            "text": "Only the first value."
-          },
-          {
-            "id": "adjacent_count",
-            "text": "Only adjacent repeated runs."
-          }
-        ],
-        "prompt": "Choose the state needed for most-frequent reasoning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_frequency_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1911,7 +1369,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Choose counts for most-frequent value",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "A task asks for the value that appears most often in an array. Which state is necessary?",
+    "answerFeedback": "To know which value appears most often, you need counts for values, not just whether they appeared.",
+    "options": [
+      {
+        "id": "count_table",
+        "text": "A count table by value.",
+        "isCorrect": true
+      },
+      {
+        "id": "presence_set",
+        "text": "A set of values seen.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_value",
+        "text": "Only the first value.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_count",
+        "text": "Only adjacent repeated runs.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1934,48 +1416,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Check whether repeated values must be adjacent or can be separated.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-078",
+    "id": "alg-prod-array-string-078-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_data_structure_mismatch",
-    "prompt": "A learner counts only adjacent runs to find the most frequent value. Which input exposes the flaw?",
+    "prompt": "Choose the test case that exposes separated multiplicity.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "separated_repeats",
-        "feedback": "`[1, 2, 1, 2, 1]` has separated repeats of `1`, so adjacent-run counting undercounts the true frequency.",
-        "id": "alg-prod-array-string-078-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "separated_repeats",
-            "text": "`[1, 2, 1, 2, 1]`"
-          },
-          {
-            "id": "single_run",
-            "text": "`[1, 1, 1, 2]`"
-          },
-          {
-            "id": "all_unique",
-            "text": "`[1, 2, 3, 4]`"
-          },
-          {
-            "id": "empty_array",
-            "text": "`[]`"
-          }
-        ],
-        "prompt": "Choose the test case that exposes separated multiplicity.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_data_structure_mismatch"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2002,7 +1449,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Expose run-counting as weak frequency logic",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A learner counts only adjacent runs to find the most frequent value. Which input exposes the flaw?",
+    "answerFeedback": "`[1, 2, 1, 2, 1]` has separated repeats of `1`, so adjacent-run counting undercounts the true frequency.",
+    "options": [
+      {
+        "id": "separated_repeats",
+        "text": "`[1, 2, 1, 2, 1]`",
+        "isCorrect": true
+      },
+      {
+        "id": "single_run",
+        "text": "`[1, 1, 1, 2]`",
+        "isCorrect": false
+      },
+      {
+        "id": "all_unique",
+        "text": "`[1, 2, 3, 4]`",
+        "isCorrect": false
+      },
+      {
+        "id": "empty_array",
+        "text": "`[]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2023,48 +1494,13 @@ export const frequencyCountingQuestions = [
       "nextAction": "Ask whether order is part of the contract before using index-by-index comparison.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-079",
+    "id": "alg-prod-array-string-079-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "distinguish_presence_from_count",
-    "prompt": "A learner compares two same-frequency strings index by index and returns false at the first mismatch. What is the mistake?",
+    "prompt": "Choose the flaw.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "order_too_strict",
-        "feedback": "Same-frequency strings can have different order, so index-by-index equality is too strict.",
-        "id": "alg-prod-array-string-079-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "order_too_strict",
-            "text": "The approach incorrectly requires the same order."
-          },
-          {
-            "id": "set_compare",
-            "text": "The approach compares only unique characters."
-          },
-          {
-            "id": "adjacent_compare",
-            "text": "The approach checks only adjacent duplicates."
-          },
-          {
-            "id": "needs_normalization",
-            "text": "The approach only needs case normalization."
-          }
-        ],
-        "prompt": "Choose the flaw.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "distinguish_presence_from_count"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2091,7 +1527,31 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Reject position equality for frequency equality",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "instruction": "A learner compares two same-frequency strings index by index and returns false at the first mismatch. What is the mistake?",
+    "answerFeedback": "Same-frequency strings can have different order, so index-by-index equality is too strict.",
+    "options": [
+      {
+        "id": "order_too_strict",
+        "text": "The approach incorrectly requires the same order.",
+        "isCorrect": true
+      },
+      {
+        "id": "set_compare",
+        "text": "The approach compares only unique characters.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_compare",
+        "text": "The approach checks only adjacent duplicates.",
+        "isCorrect": false
+      },
+      {
+        "id": "needs_normalization",
+        "text": "The approach only needs case normalization.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -2111,49 +1571,14 @@ export const frequencyCountingQuestions = [
       "nextAction": "For each scanned value, increment its count and compare the new count with the best count.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-080",
+    "id": "alg-prod-array-string-080-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "compare_complexity_tradeoffs",
-    "prompt": "To find the most frequent value, a learner recounts the entire array for every distinct value. What is the better reasoning?",
+    "prompt": "Choose the better reasoning.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "reason_about_frequency_counting_complexity",
       "choose_frequency_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "incremental_counting",
-        "feedback": "Incremental frequency counting avoids repeated full scans and keeps the needed aggregate state.",
-        "id": "alg-prod-array-string-080-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "incremental_counting",
-            "text": "Scan once, update counts, and track the best count."
-          },
-          {
-            "id": "nested_recount",
-            "text": "Recount the full array for each distinct value."
-          },
-          {
-            "id": "sort_required",
-            "text": "Sorting is the only valid solution."
-          },
-          {
-            "id": "presence_only",
-            "text": "A set of seen values is enough to find the most frequent value."
-          }
-        ],
-        "prompt": "Choose the better reasoning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "compare_complexity_tradeoffs"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -2185,170 +1610,30 @@ export const frequencyCountingQuestions = [
     ],
     "title": "Avoid nested recounting for frequency queries",
     "trackId": "algorithms",
-    "type": "solution_comparison"
-  },
-  {
-    "complexityExplanation": "A nested recount for each distinct value can scan the array many times. In the worst case, that becomes quadratic work.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n^2)",
-    "feedbackModel": {
-      "decisionSignal": "The mistaken approach repeats a full scan for many values, so the cost can grow quadratically.",
-      "mentalModelCorrection": "Measure what the code actually does, not what the intended frequency-counting solution would do.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "wrong_approach"
-      ],
-      "nextAction": "Contrast repeated recounting with one-pass count-table construction.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-081",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "reason_about_frequency_counting_complexity",
-    "prompt": "A mistaken solution counts how often each value appears by scanning the whole array once per value. In the worst case, what time and auxiliary space does that mistaken approach use?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "solution_comparison",
+    "instruction": "To find the most frequent value, a learner recounts the entire array for every distinct value. What is the better reasoning?",
+    "answerFeedback": "Incremental frequency counting avoids repeated full scans and keeps the needed aggregate state.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n^2)",
-          "space": "O(1)"
-        },
-        "feedback": "Repeated full scans can create O(n^2) time. If it only keeps counters while rescanning, auxiliary space can remain O(1).",
-        "id": "alg-prod-array-string-081-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
-        "prompt": "Choose the cost of the mistaken recounting approach.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "reason_about_frequency_counting_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "incremental_counting",
+        "text": "Scan once, update counts, and track the best count.",
+        "isCorrect": true
+      },
+      {
+        "id": "nested_recount",
+        "text": "Recount the full array for each distinct value.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_required",
+        "text": "Sorting is the only valid solution.",
+        "isCorrect": false
+      },
+      {
+        "id": "presence_only",
+        "text": "A set of seen values is enough to find the most frequent value.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "reason_about_frequency_counting_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Measure mistaken nested frequency recounting",
-    "trackId": "algorithms",
-    "type": "complexity_reasoning"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "feedbackModel": {
-      "decisionSignal": "If the value domain is fixed to digits 0 through 9, the count table has only 10 buckets.",
-      "distractorExplanations": {
-        "o_k_unbounded": "That would be appropriate when the number of possible values is not fixed.",
-        "o_n_space": "The table does not grow with input length when there are only 10 possible keys.",
-        "sort_needed": "Sorting is not required to count fixed-domain values."
-      },
-      "mentalModelCorrection": "A fixed small domain caps frequency state.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "constraint_ignored"
-      ],
-      "nextAction": "Use the domain bound, not the input length, to size the count table.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-082",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "fixed_alphabet_complexity",
-    "prompt": "An array contains only digits from 0 to 9. You count digit frequencies. What time and extra space should you expect?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "reason_about_frequency_counting_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": {
-          "time": "O(n)",
-          "space": "O(1)"
-        },
-        "feedback": "The scan is O(n), and the count table has at most 10 buckets, so extra space is O(1).",
-        "id": "alg-prod-array-string-082-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "constraint_ignored"
-        ],
-        "prompt": "Choose the time and fixed-domain space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "fixed_alphabet_complexity"
-        ],
-        "type": "complexity_pair"
-      }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "fixed_alphabet_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "frequency_counting",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Use constant space for fixed digit counts",
-    "trackId": "algorithms",
-    "type": "complexity_check",
-    "complexityExplanation": "Counting scans the input once. A fixed digit domain caps the count table at 10 buckets, so the extra space is constant.",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)"
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const recognizeHashMapVsSortingStrategySignalQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -17,48 +19,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "input_contains_numbers": "This alternative misses a stated part of the contract: Whether the input contains numeric values that can be compared."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-001",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "Before comparing a hash-based solution with a sorting-based solution, what should the learner identify first?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "required_structure",
-        "feedback": "The strategy signal comes from the structure required for correctness. Hash-based state provides access by key, while sorting creates order that later logic can exploit.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-001-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "required_structure",
-            "text": "Whether the solution needs keyed access to prior information or an ordered representation that creates adjacency, runs, or deterministic traversal."
-          },
-          {
-            "id": "smaller_big_o",
-            "text": "Which strategy is usually described with the smaller Big-O expression."
-          },
-          {
-            "id": "available_method_names",
-            "text": "Whether the language provides built-in Map and sort methods."
-          },
-          {
-            "id": "input_contains_numbers",
-            "text": "Whether the input contains numeric values that can be compared."
-          }
-        ],
-        "prompt": "Before comparing a hash-based solution with a sorting-based solution, what should the learner identify first?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -83,7 +50,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 001",
     "trackId": "algorithms",
-    "type": "single_choice"
+    "type": "single_choice",
+    "answerFeedback": "The strategy signal comes from the structure required for correctness. Hash-based state provides access by key, while sorting creates order that later logic can exploit.",
+    "options": [
+      {
+        "id": "required_structure",
+        "text": "Whether the solution needs keyed access to prior information or an ordered representation that creates adjacency, runs, or deterministic traversal.",
+        "isCorrect": true
+      },
+      {
+        "id": "smaller_big_o",
+        "text": "Which strategy is usually described with the smaller Big-O expression.",
+        "isCorrect": false
+      },
+      {
+        "id": "available_method_names",
+        "text": "Whether the language provides built-in Map and sort methods.",
+        "isCorrect": false
+      },
+      {
+        "id": "input_contains_numbers",
+        "text": "Whether the input contains numeric values that can be compared.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -103,48 +93,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "adjacent_raw_values": "This alternative misses a stated part of the contract: Compare the current value only with its previous unsorted neighbor."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-002",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "During a left-to-right scan, the algorithm must answer: “Have I already encountered this exact value?” Which strategy signal is present?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "seen_set",
-        "feedback": "The question asks for membership among previously processed values. That is a direct keyed-lookup signal and requires only seen-before state.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-002-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "seen_set",
-            "text": "Maintain hash-based seen-before state keyed by value."
-          },
-          {
-            "id": "sorted_runs",
-            "text": "Sort the entire input to create equal-value runs before processing any element."
-          },
-          {
-            "id": "running_extremes",
-            "text": "Track only the smallest and largest values encountered."
-          },
-          {
-            "id": "adjacent_raw_values",
-            "text": "Compare the current value only with its previous unsorted neighbor."
-          }
-        ],
-        "prompt": "During a left-to-right scan, the algorithm must answer: “Have I already encountered this exact value?” Which strategy signal is present?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -178,7 +133,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "Seen-before reasoning is about keyed membership, not about placing equal values next to one another.",
-    "constraintSignal": "The current element must be checked against information accumulated from earlier elements."
+    "constraintSignal": "The current element must be checked against information accumulated from earlier elements.",
+    "answerFeedback": "The question asks for membership among previously processed values. That is a direct keyed-lookup signal and requires only seen-before state.",
+    "options": [
+      {
+        "id": "seen_set",
+        "text": "Maintain hash-based seen-before state keyed by value.",
+        "isCorrect": true
+      },
+      {
+        "id": "sorted_runs",
+        "text": "Sort the entire input to create equal-value runs before processing any element.",
+        "isCorrect": false
+      },
+      {
+        "id": "running_extremes",
+        "text": "Track only the smallest and largest values encountered.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_raw_values",
+        "text": "Compare the current value only with its previous unsorted neighbor.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -198,48 +176,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "previous_value": "This alternative misses a stated part of the contract: A single variable containing the previous input element."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-003",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "The algorithm must know the exact number of occurrences of each distinct value while scanning an unsorted input. Which structure does the contract call for?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "frequency_map",
-        "feedback": "Exact frequency reasoning requires keyed state whose value changes with every occurrence. Membership alone cannot distinguish one occurrence from several.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-003-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "frequency_map",
-            "text": "A hash map from each value to its current count."
-          },
-          {
-            "id": "seen_set",
-            "text": "A Set recording only whether each value has appeared."
-          },
-          {
-            "id": "sorted_boolean",
-            "text": "One boolean recording whether the input is sorted."
-          },
-          {
-            "id": "previous_value",
-            "text": "A single variable containing the previous input element."
-          }
-        ],
-        "prompt": "The algorithm must know the exact number of occurrences of each distinct value while scanning an unsorted input. Which structure does the contract call for?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -273,7 +216,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "A Set answers whether a key exists; a frequency Map answers how many times it has occurred.",
-    "constraintSignal": "Different positive counts lead to different algorithmic decisions or outputs."
+    "constraintSignal": "Different positive counts lead to different algorithmic decisions or outputs.",
+    "answerFeedback": "Exact frequency reasoning requires keyed state whose value changes with every occurrence. Membership alone cannot distinguish one occurrence from several.",
+    "options": [
+      {
+        "id": "frequency_map",
+        "text": "A hash map from each value to its current count.",
+        "isCorrect": true
+      },
+      {
+        "id": "seen_set",
+        "text": "A Set recording only whether each value has appeared.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorted_boolean",
+        "text": "One boolean recording whether the input is sorted.",
+        "isCorrect": false
+      },
+      {
+        "id": "previous_value",
+        "text": "A single variable containing the previous input element.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -293,48 +259,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "adjacent_scan": "This alternative misses a stated part of the contract: Compare adjacent unsorted values until the original index becomes known."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-004",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-004-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "The algorithm processes an unsorted array and must later recover where a previously seen matching value occurred. What strategy signal does this create?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "keyed_metadata_lookup",
-        "feedback": "The algorithm needs more than membership: it needs to retrieve metadata associated with a key. That is a Map signal rather than a presence-only Set signal.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-004-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "keyed_metadata_lookup",
-            "text": "Store metadata such as an original index under a value-based hash key."
-          },
-          {
-            "id": "sort_raw_values",
-            "text": "Sort raw values and use their sorted positions as original indexes."
-          },
-          {
-            "id": "presence_only_set",
-            "text": "Store only value presence because presence always reveals the original position."
-          },
-          {
-            "id": "adjacent_scan",
-            "text": "Compare adjacent unsorted values until the original index becomes known."
-          }
-        ],
-        "prompt": "The algorithm processes an unsorted array and must later recover where a previously seen matching value occurred. What strategy signal does this create?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -368,7 +299,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "Keyed lookup can retrieve stored metadata; sorting raw values may destroy the association being requested.",
-    "constraintSignal": "The required result includes information attached to an earlier occurrence."
+    "constraintSignal": "The required result includes information attached to an earlier occurrence.",
+    "answerFeedback": "The algorithm needs more than membership: it needs to retrieve metadata associated with a key. That is a Map signal rather than a presence-only Set signal.",
+    "options": [
+      {
+        "id": "keyed_metadata_lookup",
+        "text": "Store metadata such as an original index under a value-based hash key.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_raw_values",
+        "text": "Sort raw values and use their sorted positions as original indexes.",
+        "isCorrect": false
+      },
+      {
+        "id": "presence_only_set",
+        "text": "Store only value presence because presence always reveals the original position.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_scan",
+        "text": "Compare adjacent unsorted values until the original index becomes known.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -388,48 +342,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "adjacent_comparison": "This alternative misses a stated part of the contract: Comparing the current value only with the previous raw input value."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-005",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-005-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "For each current value, an algorithm computes another required value and asks whether that required value has already appeared. What is the strongest strategy signal?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "derived_key_hash_lookup",
-        "feedback": "The current value determines a key that must be queried against prior state. That is the defining signal of complement-style keyed lookup.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-005-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "derived_key_hash_lookup",
-            "text": "A hash lookup using the computed required value as the key."
-          },
-          {
-            "id": "ordered_run_scan",
-            "text": "A scan of equal-value runs created by sorting."
-          },
-          {
-            "id": "global_minimum",
-            "text": "Tracking only the smallest value seen so far."
-          },
-          {
-            "id": "adjacent_comparison",
-            "text": "Comparing the current value only with the previous raw input value."
-          }
-        ],
-        "prompt": "For each current value, an algorithm computes another required value and asks whether that required value has already appeared. What is the strongest strategy signal?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -454,7 +373,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 005",
     "trackId": "algorithms",
-    "type": "single_choice"
+    "type": "single_choice",
+    "answerFeedback": "The current value determines a key that must be queried against prior state. That is the defining signal of complement-style keyed lookup.",
+    "options": [
+      {
+        "id": "derived_key_hash_lookup",
+        "text": "A hash lookup using the computed required value as the key.",
+        "isCorrect": true
+      },
+      {
+        "id": "ordered_run_scan",
+        "text": "A scan of equal-value runs created by sorting.",
+        "isCorrect": false
+      },
+      {
+        "id": "global_minimum",
+        "text": "Tracking only the smallest value seen so far.",
+        "isCorrect": false
+      },
+      {
+        "id": "adjacent_comparison",
+        "text": "Comparing the current value only with the previous raw input value.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -474,48 +416,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "index_only_state": "This alternative misses a stated part of the contract: Store only the current array index."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-006",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "The later scan becomes simple only if equal values are placed next to one another. Original encounter order is irrelevant. Which strategy signal is present?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sort_for_adjacency",
-        "feedback": "Sorting is useful here because it creates the structural invariant needed by the later scan: equal values become contiguous.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-006-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "sort_for_adjacency",
-            "text": "Sort the values to create equal-value adjacency."
-          },
-          {
-            "id": "map_for_sorted_order",
-            "text": "Insert values into a hash map because hash maps automatically place equal keys next to each other."
-          },
-          {
-            "id": "raw_adjacent_scan",
-            "text": "Compare neighboring values without any preprocessing."
-          },
-          {
-            "id": "index_only_state",
-            "text": "Store only the current array index."
-          }
-        ],
-        "prompt": "The later scan becomes simple only if equal values are placed next to one another. Original encounter order is irrelevant. Which strategy signal is present?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -549,7 +456,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "Sorting is not chosen merely because values are comparable; it is chosen because ordered adjacency enables the required reasoning.",
-    "constraintSignal": "The next phase depends on neighboring values representing the same equivalence class."
+    "constraintSignal": "The next phase depends on neighboring values representing the same equivalence class.",
+    "answerFeedback": "Sorting is useful here because it creates the structural invariant needed by the later scan: equal values become contiguous.",
+    "options": [
+      {
+        "id": "sort_for_adjacency",
+        "text": "Sort the values to create equal-value adjacency.",
+        "isCorrect": true
+      },
+      {
+        "id": "map_for_sorted_order",
+        "text": "Insert values into a hash map because hash maps automatically place equal keys next to each other.",
+        "isCorrect": false
+      },
+      {
+        "id": "raw_adjacent_scan",
+        "text": "Compare neighboring values without any preprocessing.",
+        "isCorrect": false
+      },
+      {
+        "id": "index_only_state",
+        "text": "Store only the current array index.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -569,48 +499,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "original_order_scan": "This alternative misses a stated part of the contract: Scan the unsorted input and assume equal values are already contiguous."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-007",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-007-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "A solution should process each distinct value as one contiguous run and detect when the value changes. Which preprocessing best creates the required structure?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sort_into_runs",
-        "feedback": "Run-based processing requires a representation in which all equal values are adjacent. Sorting creates that representation directly.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-007-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "sort_into_runs",
-            "text": "Sort the values so equal elements form contiguous runs."
-          },
-          {
-            "id": "seen_set",
-            "text": "Use a Set, because membership exposes the beginning and end of every run."
-          },
-          {
-            "id": "value_to_index_map",
-            "text": "Map each value to one arbitrary index and infer the run boundaries from it."
-          },
-          {
-            "id": "original_order_scan",
-            "text": "Scan the unsorted input and assume equal values are already contiguous."
-          }
-        ],
-        "prompt": "A solution should process each distinct value as one contiguous run and detect when the value changes. Which preprocessing best creates the required structure?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -644,7 +539,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "A keyed structure can aggregate by value, but it does not create a sequential run for a later ordered scan.",
-    "constraintSignal": "The algorithm wants to reason locally about complete groups of equal values."
+    "constraintSignal": "The algorithm wants to reason locally about complete groups of equal values.",
+    "answerFeedback": "Run-based processing requires a representation in which all equal values are adjacent. Sorting creates that representation directly.",
+    "options": [
+      {
+        "id": "sort_into_runs",
+        "text": "Sort the values so equal elements form contiguous runs.",
+        "isCorrect": true
+      },
+      {
+        "id": "seen_set",
+        "text": "Use a Set, because membership exposes the beginning and end of every run.",
+        "isCorrect": false
+      },
+      {
+        "id": "value_to_index_map",
+        "text": "Map each value to one arbitrary index and infer the run boundaries from it.",
+        "isCorrect": false
+      },
+      {
+        "id": "original_order_scan",
+        "text": "Scan the unsorted input and assume equal values are already contiguous.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -664,48 +582,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "first_encounter_scan": "This alternative misses a stated part of the contract: A left-to-right scan of the original input without reordering."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-008",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-008-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "The output must visit distinct values in ascending order, independent of their original encounter order. Which capability is required?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "order_producing_preprocessing",
-        "feedback": "Keyed access does not inherently create the required numeric ordering. If ascending traversal is part of the contract, the strategy must explicitly produce that order.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-008-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "order_producing_preprocessing",
-            "text": "An order-producing step such as sorting the relevant values or keys."
-          },
-          {
-            "id": "plain_hash_iteration",
-            "text": "A plain hash map because keyed access automatically implies ascending iteration."
-          },
-          {
-            "id": "seen_before_set",
-            "text": "A seen Set because membership determines numeric order."
-          },
-          {
-            "id": "first_encounter_scan",
-            "text": "A left-to-right scan of the original input without reordering."
-          }
-        ],
-        "prompt": "The output must visit distinct values in ascending order, independent of their original encounter order. Which capability is required?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -739,7 +622,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
       "choose_without_contract"
     ],
     "reasonSignal": "Fast access by key and ordered traversal are separate capabilities.",
-    "constraintSignal": "The required sequence is defined by value order rather than insertion or encounter order."
+    "constraintSignal": "The required sequence is defined by value order rather than insertion or encounter order.",
+    "answerFeedback": "Keyed access does not inherently create the required numeric ordering. If ascending traversal is part of the contract, the strategy must explicitly produce that order.",
+    "options": [
+      {
+        "id": "order_producing_preprocessing",
+        "text": "An order-producing step such as sorting the relevant values or keys.",
+        "isCorrect": true
+      },
+      {
+        "id": "plain_hash_iteration",
+        "text": "A plain hash map because keyed access automatically implies ascending iteration.",
+        "isCorrect": false
+      },
+      {
+        "id": "seen_before_set",
+        "text": "A seen Set because membership determines numeric order.",
+        "isCorrect": false
+      },
+      {
+        "id": "first_encounter_scan",
+        "text": "A left-to-right scan of the original input without reordering.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -759,48 +665,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "strategies_exclusive": "This alternative misses a stated part of the contract: Hashing and sorting cannot appear in the same valid grouping solution."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-009",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-009-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "Equivalent collections may arrive in different element orders. The algorithm needs one deterministic representation for each equivalence class and then must store all matching collections together. Which description is most accurate?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "sort_key_then_map_group",
-        "feedback": "Canonicalization and group storage are separate needs. Sorting may normalize the representation, while keyed state retrieves the bucket for that representation.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-009-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "sort_key_then_map_group",
-            "text": "Sorting can construct a canonical key, and a Map can store the group associated with that key."
-          },
-          {
-            "id": "map_canonicalizes_raw_input",
-            "text": "A Map alone automatically recognizes differently ordered raw collections as equivalent."
-          },
-          {
-            "id": "sorting_stores_groups",
-            "text": "Sorting automatically creates and retains all group buckets without another structure."
-          },
-          {
-            "id": "strategies_exclusive",
-            "text": "Hashing and sorting cannot appear in the same valid grouping solution."
-          }
-        ],
-        "prompt": "Equivalent collections may arrive in different element orders. The algorithm needs one deterministic representation for each equivalence class and then must store all matching collections together. Which description is most accurate?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -825,7 +696,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 009",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "answerFeedback": "Canonicalization and group storage are separate needs. Sorting may normalize the representation, while keyed state retrieves the bucket for that representation.",
+    "options": [
+      {
+        "id": "sort_key_then_map_group",
+        "text": "Sorting can construct a canonical key, and a Map can store the group associated with that key.",
+        "isCorrect": true
+      },
+      {
+        "id": "map_canonicalizes_raw_input",
+        "text": "A Map alone automatically recognizes differently ordered raw collections as equivalent.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_stores_groups",
+        "text": "Sorting automatically creates and retains all group buckets without another structure.",
+        "isCorrect": false
+      },
+      {
+        "id": "strategies_exclusive",
+        "text": "Hashing and sorting cannot appear in the same valid grouping solution.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -845,48 +739,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "strategy_depends_on_value_size": "This alternative misses a stated part of the contract: The strategy should be selected only from the maximum numeric value."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-010",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-010-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "A developer says: \"The prompt mentions duplicates, so the solution must use a hash map.\" What is wrong with this reasoning?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "duplicate_word_not_signal",
-        "feedback": "The relevant signal is the information and ordering the task requires. Different duplicate contracts legitimately favor different representations.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-010-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "duplicate_word_not_signal",
-            "text": "Duplicate-related tasks may require seen-before state, exact counts, sorted equal-value runs, or encounter-order preservation; the word duplicates alone does not select one strategy."
-          },
-          {
-            "id": "duplicates_require_sorting",
-            "text": "Every duplicate-related task must use sorting instead."
-          },
-          {
-            "id": "hash_maps_cannot_detect_duplicates",
-            "text": "Hash-based state cannot be used for duplicate detection."
-          },
-          {
-            "id": "strategy_depends_on_value_size",
-            "text": "The strategy should be selected only from the maximum numeric value."
-          }
-        ],
-        "prompt": "A developer says: \"The prompt mentions duplicates, so the solution must use a hash map.\" What is wrong with this reasoning?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -911,7 +770,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 010",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "answerFeedback": "The relevant signal is the information and ordering the task requires. Different duplicate contracts legitimately favor different representations.",
+    "options": [
+      {
+        "id": "duplicate_word_not_signal",
+        "text": "Duplicate-related tasks may require seen-before state, exact counts, sorted equal-value runs, or encounter-order preservation; the word duplicates alone does not select one strategy.",
+        "isCorrect": true
+      },
+      {
+        "id": "duplicates_require_sorting",
+        "text": "Every duplicate-related task must use sorting instead.",
+        "isCorrect": false
+      },
+      {
+        "id": "hash_maps_cannot_detect_duplicates",
+        "text": "Hash-based state cannot be used for duplicate detection.",
+        "isCorrect": false
+      },
+      {
+        "id": "strategy_depends_on_value_size",
+        "text": "The strategy should be selected only from the maximum numeric value.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -931,48 +813,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "ordered_values_cannot_hash": "This alternative misses a stated part of the contract: Values that support comparison cannot also be used as hash keys."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-011",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-011-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "A developer chooses sorting only because “the values can be ordered.” Why is that insufficient?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "ordering_must_enable_reasoning",
-        "feedback": "Comparability makes sorting possible, but it does not make sorting useful. The strategy needs a concrete invariant or output behavior created by the order.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-011-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "ordering_must_enable_reasoning",
-            "text": "Sorting is justified only when the created order enables required adjacency, runs, traversal, canonicalization, or another correctness-relevant operation."
-          },
-          {
-            "id": "sortable_values_require_hashing",
-            "text": "Any values that can be ordered must instead be stored in a hash map."
-          },
-          {
-            "id": "sorting_only_for_numbers",
-            "text": "Sorting is valid only for numeric values."
-          },
-          {
-            "id": "ordered_values_cannot_hash",
-            "text": "Values that support comparison cannot also be used as hash keys."
-          }
-        ],
-        "prompt": "A developer chooses sorting only because “the values can be ordered.” Why is that insufficient?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -997,7 +844,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 011",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "answerFeedback": "Comparability makes sorting possible, but it does not make sorting useful. The strategy needs a concrete invariant or output behavior created by the order.",
+    "options": [
+      {
+        "id": "ordering_must_enable_reasoning",
+        "text": "Sorting is justified only when the created order enables required adjacency, runs, traversal, canonicalization, or another correctness-relevant operation.",
+        "isCorrect": true
+      },
+      {
+        "id": "sortable_values_require_hashing",
+        "text": "Any values that can be ordered must instead be stored in a hash map.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_only_for_numbers",
+        "text": "Sorting is valid only for numeric values.",
+        "isCorrect": false
+      },
+      {
+        "id": "ordered_values_cannot_hash",
+        "text": "Values that support comparison cannot also be used as hash keys.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1017,48 +887,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "both_always_equivalent": "This alternative misses a stated part of the contract: The two strategies always preserve the same information, so only syntax matters."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-012",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-012-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "A reviewer says: \"Hashing has expected O(n) time, so it is automatically the best strategy.\" Which response is correct?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "structure_and_contract_first",
-        "feedback": "Expected linear time can be attractive, but the strategy must first produce the structure and output behavior required by the problem.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-012-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "structure_and_contract_first",
-            "text": "Expected time does not override requirements for ordered traversal, deterministic value order, canonical representation, mutation limits, or information that the chosen hash state does not preserve."
-          },
-          {
-            "id": "hashing_never_best",
-            "text": "Hashing is never appropriate because expected complexity cannot be used in algorithm analysis."
-          },
-          {
-            "id": "sorting_always_faster",
-            "text": "Sorting is automatically faster because it creates a deterministic order."
-          },
-          {
-            "id": "both_always_equivalent",
-            "text": "The two strategies always preserve the same information, so only syntax matters."
-          }
-        ],
-        "prompt": "A reviewer says: \"Hashing has expected O(n) time, so it is automatically the best strategy.\" Which response is correct?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -1083,7 +918,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 012",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
+    "type": "common_mistake_diagnosis",
+    "answerFeedback": "Expected linear time can be attractive, but the strategy must first produce the structure and output behavior required by the problem.",
+    "options": [
+      {
+        "id": "structure_and_contract_first",
+        "text": "Expected time does not override requirements for ordered traversal, deterministic value order, canonical representation, mutation limits, or information that the chosen hash state does not preserve.",
+        "isCorrect": true
+      },
+      {
+        "id": "hashing_never_best",
+        "text": "Hashing is never appropriate because expected complexity cannot be used in algorithm analysis.",
+        "isCorrect": false
+      },
+      {
+        "id": "sorting_always_faster",
+        "text": "Sorting is automatically faster because it creates a deterministic order.",
+        "isCorrect": false
+      },
+      {
+        "id": "both_always_equivalent",
+        "text": "The two strategies always preserve the same information, so only syntax matters.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1103,48 +961,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "only_complexity_differs": "This alternative misses a stated part of the contract: The strategies have no structural difference and can be selected only by comparing Big-O."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-013",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-013-check",
     "learningStage": "guided_application",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "Which comparison most accurately distinguishes the primary strategy signals of hashing and sorting?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "lookup_vs_order",
-        "feedback": "The fundamental contrast is capability: direct access by key versus preprocessing that exposes useful order relationships.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-013-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "lookup_vs_order",
-            "text": "Hash-based state supports retrieving information by a known key; sorting creates an order from which adjacency, runs, or ordered traversal can be derived."
-          },
-          {
-            "id": "same_structure",
-            "text": "Both strategies primarily create the same ordered sequence, but with different syntax."
-          },
-          {
-            "id": "hash_creates_order",
-            "text": "Hashing primarily creates ascending order, while sorting primarily stores value-to-index mappings."
-          },
-          {
-            "id": "only_complexity_differs",
-            "text": "The strategies have no structural difference and can be selected only by comparing Big-O."
-          }
-        ],
-        "prompt": "Which comparison most accurately distinguishes the primary strategy signals of hashing and sorting?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -1169,7 +992,30 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 013",
     "trackId": "algorithms",
-    "type": "solution_comparison"
+    "type": "solution_comparison",
+    "answerFeedback": "The fundamental contrast is capability: direct access by key versus preprocessing that exposes useful order relationships.",
+    "options": [
+      {
+        "id": "lookup_vs_order",
+        "text": "Hash-based state supports retrieving information by a known key; sorting creates an order from which adjacency, runs, or ordered traversal can be derived.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_structure",
+        "text": "Both strategies primarily create the same ordered sequence, but with different syntax.",
+        "isCorrect": false
+      },
+      {
+        "id": "hash_creates_order",
+        "text": "Hashing primarily creates ascending order, while sorting primarily stores value-to-index mappings.",
+        "isCorrect": false
+      },
+      {
+        "id": "only_complexity_differs",
+        "text": "The strategies have no structural difference and can be selected only by comparing Big-O.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1189,48 +1035,13 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
         "choose_smallest_big_o_first": "This alternative misses a stated part of the contract: Choose the strategy with the smallest familiar Big-O before checking what state or ordering the solution needs."
       }
     },
-    "id": "alg-contrast-hash-map-vs-sorting-recognize-014",
+    "id": "alg-contrast-hash-map-vs-sorting-recognize-014-check",
     "learningStage": "independent_attempt",
     "primarySkillAtomId": "choose_lookup_key",
     "prompt": "Which decision rule best captures the strategy signal in the hash-map-versus-sorting contrast?",
     "roadmapNodeId": "contrast_hash_map_vs_sorting",
     "secondarySkillAtomIds": [],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "name_required_structure",
-        "feedback": "The correct strategy follows from the operation the representation must support. Keyed retrieval and order-producing preprocessing are distinct capabilities, and some solutions legitimately require both.",
-        "id": "alg-contrast-hash-map-vs-sorting-recognize-014-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "name_required_structure",
-            "text": "Choose hash-based state when later logic needs access by value or derived key, and choose sorting when later logic needs order-created adjacency, runs, deterministic traversal, or canonical form; combine them when both structures are required."
-          },
-          {
-            "id": "hash_for_duplicates",
-            "text": "Choose hashing whenever the prompt mentions duplicates, frequencies, or matching values."
-          },
-          {
-            "id": "sort_when_comparable",
-            "text": "Choose sorting whenever the input values support a comparator."
-          },
-          {
-            "id": "choose_smallest_big_o_first",
-            "text": "Choose the strategy with the smallest familiar Big-O before checking what state or ordering the solution needs."
-          }
-        ],
-        "prompt": "Which decision rule best captures the strategy signal in the hash-map-versus-sorting contrast?",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "choose_lookup_key"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "learning_stage",
@@ -1255,6 +1066,29 @@ export const recognizeHashMapVsSortingStrategySignalQuestions = [
     ],
     "title": "Hash map versus sorting: recognize 014",
     "trackId": "algorithms",
-    "type": "single_choice"
+    "type": "single_choice",
+    "answerFeedback": "The correct strategy follows from the operation the representation must support. Keyed retrieval and order-producing preprocessing are distinct capabilities, and some solutions legitimately require both.",
+    "options": [
+      {
+        "id": "name_required_structure",
+        "text": "Choose hash-based state when later logic needs access by value or derived key, and choose sorting when later logic needs order-created adjacency, runs, deterministic traversal, or canonical form; combine them when both structures are required.",
+        "isCorrect": true
+      },
+      {
+        "id": "hash_for_duplicates",
+        "text": "Choose hashing whenever the prompt mentions duplicates, frequencies, or matching values.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_when_comparable",
+        "text": "Choose sorting whenever the input values support a comparator.",
+        "isCorrect": false
+      },
+      {
+        "id": "choose_smallest_big_o_first",
+        "text": "Choose the strategy with the smallest familiar Big-O before checking what state or ordering the solution needs.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

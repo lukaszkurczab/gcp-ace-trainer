@@ -24,6 +24,13 @@ const fixtures = JSON.parse(
     attempt: { at: string; result: ResultKind; sameSessionCorrection: boolean };
     expected: { consecutiveSuccesses: number; resolved: boolean };
   }>;
+  reinsertEligibility: Array<{
+    events: Array<{ kind: "submitted" | "preparation_failed" | "unsubmitted" | "displayed_only" }>;
+    alreadyReinserted: boolean;
+    skipped: boolean;
+    persistentReviewBefore: string;
+    expected: { submittedInterveningItems: number; action: "reinsert" | "skip"; persistentReviewAfter: string };
+  }>;
   journalIdempotency: Array<{
     journalId: string;
     deterministicOutcome: string;
@@ -89,6 +96,23 @@ test("target contract fixtures require two eligible review successes", () => {
         : fixture.initialConsecutiveSuccesses;
     assert.deepEqual(
       { consecutiveSuccesses, resolved: eligibleSuccess && consecutiveSuccesses >= 2 },
+      fixture.expected,
+    );
+  }
+});
+
+test("target contract fixtures gate one reinsert after two submitted intervening items", () => {
+  for (const fixture of fixtures.reinsertEligibility) {
+    const submittedInterveningItems = fixture.events.filter((event) => event.kind === "submitted").length;
+    const action = submittedInterveningItems >= 2 && !fixture.alreadyReinserted && !fixture.skipped
+      ? "reinsert"
+      : "skip";
+    assert.deepEqual(
+      {
+        submittedInterveningItems,
+        action,
+        persistentReviewAfter: fixture.persistentReviewBefore,
+      },
       fixture.expected,
     );
   }

@@ -1,19 +1,42 @@
 import { ALGORITHM_APPROACH_TEMPLATES } from "./algorithmApproaches";
 import {
   ALGORITHM_CONTENT_VERSION,
-  ALGORITHM_TRAINING_ITEM_TYPES,
   type AlgorithmApproachId,
   type AlgorithmLearningStage,
   type AlgorithmPatternFamilyId,
-  type AlgorithmTrainingItemType,
 } from "./algorithmContentTypes";
-import { ALGORITHM_FORBIDDEN_MODEL_TERMS } from "./algorithmContentQuality";
+import {
+  ALGORITHM_QUESTION_TYPES,
+  type AlgorithmQuestionType,
+} from "./algorithmQuestionTypes";
 import {
   ALGORITHM_PATTERN_FAMILIES,
   ALGORITHM_PATTERN_VARIANTS,
   ALGORITHM_PROBLEM_ARCHETYPES,
   ALGORITHM_SKILL_ATOMS,
 } from "./algorithmTaxonomy";
+
+export const ALGORITHM_FORBIDDEN_MODEL_TERMS = [
+  "readiness",
+  "retention",
+  "mastery",
+  "streak",
+  "leaderboard",
+  "leetcode",
+  "ai-generated",
+  "llm-generated",
+  "mock",
+  "demo",
+  "legacy",
+  "compatibility",
+  "migration",
+  "alias",
+  "temporary",
+  "provisional",
+  "placeholder",
+  "fallback",
+  "draft",
+] as const;
 
 export type AlgorithmRoadmapNodeId = string;
 
@@ -52,7 +75,7 @@ export type AlgorithmRoadmapNode = {
   prerequisites?: readonly AlgorithmRoadmapPrerequisite[];
   primaryPatternFamilyId?: AlgorithmPatternFamilyId;
   problemArchetypeIds?: readonly string[];
-  recommendedItemTypes: readonly AlgorithmTrainingItemType[];
+  recommendedItemTypes: readonly AlgorithmQuestionType[];
   shortDescription: string;
   skillAtomIds?: readonly string[];
   status: AlgorithmRoadmapStatus;
@@ -115,7 +138,7 @@ const defaultRecommendedItemTypes = [
   "output_contract_reasoning",
   "constraint_change",
   "complexity_reasoning",
-] as const satisfies readonly AlgorithmTrainingItemType[];
+] as const satisfies readonly AlgorithmQuestionType[];
 
 const algorithmRoadmapNodes = [
   makeNode({
@@ -541,7 +564,7 @@ export function validateAlgorithmRoadmap(
   const patternVariantIds = new Set(ALGORITHM_PATTERN_VARIANTS.map((variant) => variant.id));
   const problemArchetypeIds = new Set(ALGORITHM_PROBLEM_ARCHETYPES.map((archetype) => archetype.id));
   const skillAtomIds = new Set(ALGORITHM_SKILL_ATOMS.map((atom) => atom.id));
-  const itemTypes = new Set<string>(ALGORITHM_TRAINING_ITEM_TYPES);
+  const itemTypes = new Set<string>(ALGORITHM_QUESTION_TYPES);
 
   for (const node of roadmap.nodes) {
     if (nodesById.has(node.id)) {
@@ -790,4 +813,3 @@ function validateRoadmapVisibleValues(
     }
   }
 }
-

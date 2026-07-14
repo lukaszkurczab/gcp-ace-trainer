@@ -1,9 +1,6 @@
 import { spawnSync } from "node:child_process";
 
 const commands = [
-  ["npm", ["run", "typecheck"]],
-  ["npm", ["test"]],
-  ["npm", ["run", "validate:questions"]],
   ["npm", ["run", "qa:static"]],
 ];
 

@@ -56,6 +56,7 @@ test("Algorithms review projection explicitly has no item taxonomy", () => {
 
 function makeQuestion(id: string): AlgorithmQuestion {
   return {
+    contentVersion: "algorithms-core",
     difficulty: "intro",
     feedbackModel: {
       decisionSignal: "Use the constraint.",

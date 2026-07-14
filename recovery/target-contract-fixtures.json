@@ -111,6 +111,64 @@
       "expected": { "consecutiveSuccesses": 1, "resolved": false }
     }
   ],
+  "reinsertEligibility": [
+    {
+      "id": "zero-submitted-intervening-items-skips",
+      "events": [],
+      "alreadyReinserted": false,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 0, "action": "skip", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "one-submitted-intervening-item-skips",
+      "events": [{ "kind": "submitted" }],
+      "alreadyReinserted": false,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 1, "action": "skip", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "two-submitted-intervening-items-may-reinsert-once",
+      "events": [{ "kind": "submitted" }, { "kind": "submitted" }],
+      "alreadyReinserted": false,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 2, "action": "reinsert", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "failed-preparation-does-not-count",
+      "events": [{ "kind": "submitted" }, { "kind": "preparation_failed" }],
+      "alreadyReinserted": false,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 1, "action": "skip", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "unsubmitted-and-displayed-only-do-not-count",
+      "events": [{ "kind": "unsubmitted" }, { "kind": "displayed_only" }, { "kind": "submitted" }],
+      "alreadyReinserted": false,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 1, "action": "skip", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "maximum-one-reinsert",
+      "events": [{ "kind": "submitted" }, { "kind": "submitted" }, { "kind": "submitted" }],
+      "alreadyReinserted": true,
+      "skipped": false,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 3, "action": "skip", "persistentReviewAfter": "due" }
+    },
+    {
+      "id": "explicit-skip-does-not-alter-persistent-review",
+      "events": [{ "kind": "submitted" }, { "kind": "submitted" }],
+      "alreadyReinserted": false,
+      "skipped": true,
+      "persistentReviewBefore": "due",
+      "expected": { "submittedInterveningItems": 2, "action": "skip", "persistentReviewAfter": "due" }
+    }
+  ],
   "journalIdempotency": [
     {
       "id": "durable-retry-materializes-one-outcome",

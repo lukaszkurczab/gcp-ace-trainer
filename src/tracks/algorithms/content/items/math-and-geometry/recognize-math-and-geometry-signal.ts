@@ -10,6 +10,8 @@
 // Target question count: 14.
 // Prefer single_choice, strategy_choice, representation selection, solution_comparison, and mistake-review style items.
 // Avoid detailed modulo cases, prime traces, cross-product signs, and full complexity calculations.
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const recognizeMathAndGeometrySignalQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -22,42 +24,67 @@ export const recognizeMathAndGeometrySignalQuestions = [
         "stack_state": "Last-in-first-out state is unrelated to numeric structure."
       },
       "mentalModelCorrection": "Name the numeric or coordinate property before choosing data structures.",
-      "mistakeTypes": ["wrong_approach", "constraint_ignored"],
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
       "nextAction": "Practice stating the formula or coordinate relation in plain language.",
       "result": "diagnostic"
     },
-    "id": "alg-math-and-geometry-naming-001",
+    "id": "alg-math-and-geometry-naming-001-check",
     "learningStage": "pattern_mechanics",
     "primarySkillAtomId": "reason_about_numeric_structure",
-    "prompt": "A task asks whether two rectangles overlap using their corner coordinates. Which signal should guide the approach?",
+    "prompt": "Choose the math-and-geometry signal.",
     "roadmapNodeId": "math_and_geometry",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "coordinate_relation",
-        "feedback": "Rectangle overlap is decided by coordinate inequalities, not broad enumeration.",
-        "id": "alg-math-and-geometry-naming-001-check",
-        "mistakeTypes": ["wrong_approach", "constraint_ignored"],
-        "options": [
-          { "id": "coordinate_relation", "text": "Use the coordinate relationship between rectangle boundaries." },
-          { "id": "nested_search", "text": "Enumerate every possible point in both rectangles." },
-          { "id": "hash_everything", "text": "Store every coordinate in a lookup table first." },
-          { "id": "stack_state", "text": "Use only the most recent coordinate pair." }
-        ],
-        "prompt": "Choose the math-and-geometry signal.",
-        "status": "active",
-        "testedSkillAtomIds": ["reason_about_numeric_structure"],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
-      { "axisId": "pattern_family", "nodeId": "math_and_geometry", "role": "primary" },
-      { "axisId": "skill_atom", "nodeId": "reason_about_numeric_structure", "role": "primary" },
-      { "axisId": "pattern_variant", "nodeId": "coordinate_reasoning", "role": "secondary" },
-      { "axisId": "mistake_type", "nodeId": "constraint_ignored", "role": "mistake_type" }
+      {
+        "axisId": "pattern_family",
+        "nodeId": "math_and_geometry",
+        "role": "primary"
+      },
+      {
+        "axisId": "skill_atom",
+        "nodeId": "reason_about_numeric_structure",
+        "role": "primary"
+      },
+      {
+        "axisId": "pattern_variant",
+        "nodeId": "coordinate_reasoning",
+        "role": "secondary"
+      },
+      {
+        "axisId": "mistake_type",
+        "nodeId": "constraint_ignored",
+        "role": "mistake_type"
+      }
     ],
     "title": "Name coordinate reasoning",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks whether two rectangles overlap using their corner coordinates. Which signal should guide the approach?",
+    "answerFeedback": "Rectangle overlap is decided by coordinate inequalities, not broad enumeration.",
+    "options": [
+      {
+        "id": "coordinate_relation",
+        "text": "Use the coordinate relationship between rectangle boundaries.",
+        "isCorrect": true
+      },
+      {
+        "id": "nested_search",
+        "text": "Enumerate every possible point in both rectangles.",
+        "isCorrect": false
+      },
+      {
+        "id": "hash_everything",
+        "text": "Store every coordinate in a lookup table first.",
+        "isCorrect": false
+      },
+      {
+        "id": "stack_state",
+        "text": "Use only the most recent coordinate pair.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

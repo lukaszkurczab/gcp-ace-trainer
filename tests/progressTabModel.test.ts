@@ -245,12 +245,12 @@ test("Algorithms progress uses only Algorithms training attempts", () => {
     }),
     practiceHistory: [],
     trainingAttempts: [
-      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+      makeAlgorithmAttempt("alg-complexity-big-o-basics-002-check", {
         isCorrect: true,
         kind: "correctness",
       }),
       {
-        ...makeAlgorithmAttempt("alg-array-string-naming-001", {
+        ...makeAlgorithmAttempt("alg-check-array-naming-001", {
           isCorrect: true,
           kind: "correctness",
         }),
@@ -289,14 +289,14 @@ test("Algorithms node completion is based on active roadmap item attempts", () =
     attempts: [],
     practiceHistory: [],
     reviewQueueItems: [
-      makeAlgorithmReviewQueueItem("review-algorithms-progress-001", "alg-hash-map-primer-001"),
+      makeAlgorithmReviewQueueItem("review-algorithms-progress-001", "alg-recognize-hash-state-signal-001"),
     ],
     trainingAttempts: [
-      makeAlgorithmAttempt("alg-complexity-constraint-pair-001", {
+      makeAlgorithmAttempt("alg-complexity-big-o-basics-002-check", {
         isCorrect: true,
         kind: "correctness",
       }),
-      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+      makeAlgorithmAttempt("alg-recognize-hash-state-signal-001", {
         isCorrect: false,
         kind: "correctness",
       }),
@@ -354,7 +354,7 @@ test("Algorithms due review action routes to an Algorithms review practice sessi
     now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     reviewQueueItems: [
-      makeAlgorithmReviewQueueItem("review-algorithms-action-001", "alg-hash-map-primer-001", {
+      makeAlgorithmReviewQueueItem("review-algorithms-action-001", "alg-recognize-hash-state-signal-001", {
         dueAt: "2026-07-03T09:00:00.000Z",
       }),
     ],
@@ -396,12 +396,12 @@ test("Algorithms progress promotes repeated mistakes into the learning priority"
     now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     reviewQueueItems: [
-      makeAlgorithmReviewQueueItem("review-repeated-mistake-001", "alg-hash-map-primer-001", {
+      makeAlgorithmReviewQueueItem("review-repeated-mistake-001", "alg-recognize-hash-state-signal-001", {
         reasons: ["incorrect_attempt", "repeated_mistake"],
       }),
     ],
     trainingAttempts: [
-      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+      makeAlgorithmAttempt("alg-recognize-hash-state-signal-001", {
         isCorrect: false,
         kind: "correctness",
       }),
@@ -438,7 +438,7 @@ test("Algorithms progress counts due review items only", () => {
     now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     reviewQueueItems: [
-      makeAlgorithmReviewQueueItem("review-due-001", "alg-hash-map-primer-001", {
+      makeAlgorithmReviewQueueItem("review-due-001", "alg-recognize-hash-state-signal-001", {
         dueAt: "2026-07-03T09:00:00.000Z",
       }),
       makeAlgorithmReviewQueueItem("review-future-001", "alg-array-string-naming-001", {
@@ -460,7 +460,7 @@ test("Algorithms progress recommends the next useful mode from evidence", () => 
     now: "2026-07-03T10:00:00.000Z",
     practiceHistory: [],
     reviewQueueItems: [
-      makeAlgorithmReviewQueueItem("review-due-001", "alg-hash-map-primer-001"),
+      makeAlgorithmReviewQueueItem("review-due-001", "alg-recognize-hash-state-signal-001"),
     ],
   });
   const weakModel = buildProgressTabModel({
@@ -511,7 +511,7 @@ test("Algorithms review count uses the canonical review queue, not inferred miss
     practiceHistory: [],
     reviewQueueItems: [],
     trainingAttempts: [
-      makeAlgorithmAttempt("alg-hash-map-primer-001", {
+      makeAlgorithmAttempt("alg-recognize-hash-state-signal-001", {
         isCorrect: false,
         kind: "correctness",
       }),

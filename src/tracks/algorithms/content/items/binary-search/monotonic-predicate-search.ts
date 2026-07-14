@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const monotonicPredicateSearchQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -16,43 +18,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_last_true": "The sequence becomes true and stays true, so the meaningful boundary is the first true."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-001",
+    "id": "alg-binary-search-monotonic-predicate-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A boolean predicate over versions looks like false, false, false, true, true. What binary-search boundary is this?",
+    "prompt": "Choose the boundary search.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "This is a first-true search over a monotonic predicate.",
-        "id": "alg-binary-search-monotonic-predicate-001-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Search for the first true position."
-          },
-          {
-            "id": "wrong_any_true",
-            "text": "Search for any true position and return immediately."
-          },
-          {
-            "id": "wrong_last_true",
-            "text": "Search for the last true position."
-          }
-        ],
-        "prompt": "Choose the boundary search.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -77,7 +48,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Recognize first true predicate",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A boolean predicate over versions looks like false, false, false, true, true. What binary-search boundary is this?",
+    "answerFeedback": "This is a first-true search over a monotonic predicate.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Search for the first true position.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_any_true",
+        "text": "Search for any true position and return immediately.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_last_true",
+        "text": "Search for the last true position.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -96,43 +86,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_first_false_only": "First false is also derivable, but if the task asks for the final working position, the boundary is last true."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-002",
+    "id": "alg-binary-search-monotonic-predicate-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A boolean predicate over indexes looks like true, true, true, false, false. What boundary can binary search find for the final working position?",
+    "prompt": "Choose the boundary search.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The final working position is the last true index.",
-        "id": "alg-binary-search-monotonic-predicate-002-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "data_structure_mismatch"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Search for the last true position."
-          },
-          {
-            "id": "wrong_first_true",
-            "text": "Search for the first true position."
-          },
-          {
-            "id": "wrong_first_false_only",
-            "text": "Return any false position because false marks failure."
-          }
-        ],
-        "prompt": "Choose the boundary search.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -157,7 +116,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Recognize last true predicate",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A boolean predicate over indexes looks like true, true, true, false, false. What boundary can binary search find for the final working position?",
+    "answerFeedback": "The final working position is the last true index.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Search for the last true position.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_first_true",
+        "text": "Search for the first true position.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_first_false_only",
+        "text": "Return any false position because false marks failure.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -176,43 +154,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_discard_mid": "Discarding mid can skip the first bad version unless a separate answer variable is saved."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-003",
+    "id": "alg-binary-search-monotonic-predicate-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "first_true_update_rule",
-    "prompt": "In a first-bad-version style task, isBad(version) is false before the first bad version and true from that version onward. At mid, isBad(mid) is true. Which update preserves the first bad candidate?",
+    "prompt": "Choose the boundary update.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Use right = mid in a lower-bound style template because mid may be the first bad version.",
-        "id": "alg-binary-search-monotonic-predicate-003-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "right = mid, because mid is bad and may be the first bad version."
-          },
-          {
-            "id": "wrong_go_right",
-            "text": "left = mid + 1, because bad means later versions should be searched."
-          },
-          {
-            "id": "wrong_discard_mid",
-            "text": "right = mid - 1, because every bad version should be discarded."
-          }
-        ],
-        "prompt": "Choose the boundary update.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "first_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -237,7 +184,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Keep bad mid as first-bad candidate",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "In a first-bad-version style task, isBad(version) is false before the first bad version and true from that version onward. At mid, isBad(mid) is true. Which update preserves the first bad candidate?",
+    "answerFeedback": "Use right = mid in a lower-bound style template because mid may be the first bad version.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "right = mid, because mid is bad and may be the first bad version.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_go_right",
+        "text": "left = mid + 1, because bad means later versions should be searched.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_discard_mid",
+        "text": "right = mid - 1, because every bad version should be discarded.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -256,43 +222,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_go_left": "Earlier versions are also good under the monotonic first-bad assumption."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-004",
+    "id": "alg-binary-search-monotonic-predicate-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "first_true_update_rule",
-    "prompt": "In a first-bad-version style task, isBad(mid) is false. Which update is forced?",
+    "prompt": "Choose the boundary update.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Use left = mid + 1 because mid and earlier versions cannot be first bad.",
-        "id": "alg-binary-search-monotonic-predicate-004-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "left = mid + 1, because the first bad version must be later."
-          },
-          {
-            "id": "wrong_keep_mid",
-            "text": "left = mid, because mid may become bad in a later iteration."
-          },
-          {
-            "id": "wrong_go_left",
-            "text": "right = mid, because a good version means the answer is earlier."
-          }
-        ],
-        "prompt": "Choose the boundary update.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "first_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -317,7 +252,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Discard good mid before first bad",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "In a first-bad-version style task, isBad(mid) is false. Which update is forced?",
+    "answerFeedback": "Use left = mid + 1 because mid and earlier versions cannot be first bad.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "left = mid + 1, because the first bad version must be later.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_keep_mid",
+        "text": "left = mid, because mid may become bad in a later iteration.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_go_left",
+        "text": "right = mid, because a good version means the answer is earlier.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -336,43 +290,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_any_true": "The existence of true values does not make the first true searchable by halving."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-005",
+    "id": "alg-binary-search-monotonic-predicate-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A predicate sequence is false, true, false, true as the index increases. Can binary search safely find the first true by discarding halves?",
+    "prompt": "Choose whether binary search is valid.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "No. The predicate is not monotonic, so a mid result does not identify which half can be discarded.",
-        "id": "alg-binary-search-monotonic-predicate-005-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "No, because the predicate is not monotonic."
-          },
-          {
-            "id": "wrong_numeric_indexes",
-            "text": "Yes, because indexes are numeric and can always be binary searched."
-          },
-          {
-            "id": "wrong_any_true",
-            "text": "Yes, because the sequence contains true values."
-          }
-        ],
-        "prompt": "Choose whether binary search is valid.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -397,7 +320,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Reject non-monotonic predicate",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A predicate sequence is false, true, false, true as the index increases. Can binary search safely find the first true by discarding halves?",
+    "answerFeedback": "No. The predicate is not monotonic, so a mid result does not identify which half can be discarded.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "No, because the predicate is not monotonic.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_numeric_indexes",
+        "text": "Yes, because indexes are numeric and can always be binary searched.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_any_true",
+        "text": "Yes, because the sequence contains true values.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -416,43 +358,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_return": "One true mid does not prove it is the last true."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-006",
+    "id": "alg-binary-search-monotonic-predicate-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "last_true_update_rule",
-    "prompt": "A search wants the last true in a true, true, true, false, false predicate. At mid, predicate(mid) is true. Which direction should the search move?",
+    "prompt": "Choose the update direction.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "A true mid may be the answer, but the last true may be to the right.",
-        "id": "alg-binary-search-monotonic-predicate-006-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Search right while keeping mid as a valid candidate."
-          },
-          {
-            "id": "wrong_go_left",
-            "text": "Search left because true always means the answer is earlier."
-          },
-          {
-            "id": "wrong_return",
-            "text": "Return mid immediately because it is true."
-          }
-        ],
-        "prompt": "Choose the update direction.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "last_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -477,7 +388,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Move right for last true",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A search wants the last true in a true, true, true, false, false predicate. At mid, predicate(mid) is true. Which direction should the search move?",
+    "answerFeedback": "A true mid may be the answer, but the last true may be to the right.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Search right while keeping mid as a valid candidate.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_go_left",
+        "text": "Search left because true always means the answer is earlier.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_return",
+        "text": "Return mid immediately because it is true.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -496,43 +426,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_keep_false": "A false mid cannot be the last true answer."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-007",
+    "id": "alg-binary-search-monotonic-predicate-007-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "last_true_update_rule",
-    "prompt": "A search wants the last true in a true, true, true, false, false predicate. At mid, predicate(mid) is false. Which side can be discarded?",
+    "prompt": "Choose the discarded side.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Discard mid and the right side; the last true must be to the left.",
-        "id": "alg-binary-search-monotonic-predicate-007-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Discard mid and the right side."
-          },
-          {
-            "id": "wrong_right",
-            "text": "Discard the left side because false means the answer is later."
-          },
-          {
-            "id": "wrong_keep_false",
-            "text": "Keep mid because false may still be the last true."
-          }
-        ],
-        "prompt": "Choose the discarded side.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "last_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -557,75 +456,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Discard false suffix for last true",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(log n)",
-    "complexityExplanation": "The search halves the index range of n predicate positions and stores only fixed boundary state.",
-    "feedbackModel": {
-      "decisionSignal": "A monotonic predicate over n positions is searched for the first true. Each predicate call is O(1). What time and extra space should you expect?",
-      "mentalModelCorrection": "Predicate binary search has logarithmic iterations when each check is constant.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "cannot_explain_why"
-      ],
-      "nextAction": "Practice separating the number of predicate calls from the cost of one predicate call.",
-      "result": "diagnostic"
-    },
-    "id": "alg-binary-search-monotonic-predicate-008",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "A monotonic predicate over n positions is searched for the first true. Each predicate call is O(1). What time and extra space should you expect?",
-    "roadmapNodeId": "binary_search",
-    "status": "active",
-    "staticMicroChecks": [
+    "type": "edge_case_drill",
+    "instruction": "A search wants the last true in a true, true, true, false, false predicate. At mid, predicate(mid) is false. Which side can be discarded?",
+    "answerFeedback": "Discard mid and the right side; the last true must be to the left.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(log n)",
-          "space": "O(1)"
-        },
-        "feedback": "The search makes O(log n) predicate calls and stores only left/right/mid.",
-        "id": "alg-binary-search-monotonic-predicate-008-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "prompt": "Choose the expected time and extra space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "expected_signal",
+        "text": "Discard mid and the right side.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_right",
+        "text": "Discard the left side because false means the answer is later.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_keep_false",
+        "text": "Keep mid because false may still be the last true.",
+        "isCorrect": false
       }
-    ],
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "binary_search",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "monotonic_predicate_recognition",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Cost constant predicate search",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -644,43 +494,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_false_side": "The false side has already been ruled out only after the correct boundary update."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-009",
+    "id": "alg-binary-search-monotonic-predicate-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "first_true_update_rule",
-    "prompt": "A first-true search sees predicate(mid) === true and returns mid immediately. What mistake should you diagnose?",
+    "prompt": "Choose the mistake diagnosis.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "mid may be true but not first; the search must continue left while keeping mid as a candidate.",
-        "id": "alg-binary-search-monotonic-predicate-009-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "It returns any true position instead of searching for the first true boundary."
-          },
-          {
-            "id": "wrong_any_true",
-            "text": "It is correct because any true position is always the first true."
-          },
-          {
-            "id": "wrong_false_side",
-            "text": "It should search right because true means earlier positions are impossible."
-          }
-        ],
-        "prompt": "Choose the mistake diagnosis.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "first_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -705,7 +524,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Do not return any true for first true",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A first-true search sees predicate(mid) === true and returns mid immediately. What mistake should you diagnose?",
+    "answerFeedback": "mid may be true but not first; the search must continue left while keeping mid as a candidate.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "It returns any true position instead of searching for the first true boundary.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_any_true",
+        "text": "It is correct because any true position is always the first true.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_false_side",
+        "text": "It should search right because true means earlier positions are impossible.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -724,43 +562,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_any_true": "The result is not any true position; it is the first true boundary."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-010",
+    "id": "alg-binary-search-monotonic-predicate-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "A first-true search ends with left === right. What does left represent in the standard lower-bound style template?",
+    "prompt": "Choose what left represents.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "left is the first true boundary, or the end position if no true value exists.",
-        "id": "alg-binary-search-monotonic-predicate-010-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The first true position, or the end boundary if no true exists."
-          },
-          {
-            "id": "wrong_mid",
-            "text": "The last computed mid, regardless of final bounds."
-          },
-          {
-            "id": "wrong_any_true",
-            "text": "Any position that was ever checked as true."
-          }
-        ],
-        "prompt": "Choose what left represents.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -785,7 +592,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Interpret first-true post-loop boundary",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A first-true search ends with left === right. What does left represent in the standard lower-bound style template?",
+    "answerFeedback": "left is the first true boundary, or the end position if no true value exists.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The first true position, or the end boundary if no true exists.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_mid",
+        "text": "The last computed mid, regardless of final bounds.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_any_true",
+        "text": "Any position that was ever checked as true.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -804,43 +630,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_return": "mid is true, but first true could still be earlier."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-011",
+    "id": "alg-binary-search-monotonic-predicate-011-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "first_true_update_rule",
-    "prompt": "Trace first-true search on predicate values [false, false, true, true]. Start left = 0, right = 4, mid = 2. predicate(mid) is true. What should happen next?",
+    "prompt": "Choose the next trace step.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Set right = mid, so right becomes 2.",
-        "id": "alg-binary-search-monotonic-predicate-011-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Set right = 2 to keep mid as a possible first true."
-          },
-          {
-            "id": "wrong_go_right",
-            "text": "Set left = 3 because true means the answer is later."
-          },
-          {
-            "id": "wrong_return",
-            "text": "Return 2 immediately because predicate(2) is true."
-          }
-        ],
-        "prompt": "Choose the next trace step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "first_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -865,7 +660,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Trace true mid in first-true search",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Trace first-true search on predicate values [false, false, true, true]. Start left = 0, right = 4, mid = 2. predicate(mid) is true. What should happen next?",
+    "answerFeedback": "Set right = mid, so right becomes 2.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Set right = 2 to keep mid as a possible first true.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_go_right",
+        "text": "Set left = 3 because true means the answer is later.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_return",
+        "text": "Return 2 immediately because predicate(2) is true.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -884,43 +698,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_go_left": "Earlier values are also false under the monotonic predicate."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-012",
+    "id": "alg-binary-search-monotonic-predicate-012-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "first_true_update_rule",
-    "prompt": "Trace first-true search on predicate values [false, false, true, true]. After right becomes 2, left = 0 and mid = 1. predicate(mid) is false. What should happen next?",
+    "prompt": "Choose the next trace step.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Set left = mid + 1, so left becomes 2.",
-        "id": "alg-binary-search-monotonic-predicate-012-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "edge_case_missed"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Set left = 2 because mid is false."
-          },
-          {
-            "id": "wrong_keep_mid",
-            "text": "Set left = 1 because mid may still become true."
-          },
-          {
-            "id": "wrong_go_left",
-            "text": "Set right = 1 because false means the answer is earlier."
-          }
-        ],
-        "prompt": "Choose the next trace step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "first_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -945,7 +728,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Trace false mid in first-true search",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "Trace first-true search on predicate values [false, false, true, true]. After right becomes 2, left = 0 and mid = 1. predicate(mid) is false. What should happen next?",
+    "answerFeedback": "Set left = mid + 1, so left becomes 2.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Set left = 2 because mid is false.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_keep_mid",
+        "text": "Set left = 1 because mid may still become true.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_go_left",
+        "text": "Set right = 1 because false means the answer is earlier.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -964,43 +766,12 @@ export const monotonicPredicateSearchQuestions = [
         "wrong_complexity": "The issue is correctness of updates, not the O(log n) iteration count."
       }
     },
-    "id": "alg-binary-search-monotonic-predicate-013",
+    "id": "alg-binary-search-monotonic-predicate-013-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "last_true_update_rule",
-    "prompt": "A learner copies the first-true update rule into a last-true task. What mistake should you diagnose?",
+    "prompt": "Choose the mistake diagnosis.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "They reused a boundary template without checking predicate direction and target boundary.",
-        "id": "alg-binary-search-monotonic-predicate-013-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "They ignored that update direction depends on whether the task wants first true or last true."
-          },
-          {
-            "id": "wrong_template",
-            "text": "They are correct because all monotonic predicate searches use identical updates."
-          },
-          {
-            "id": "wrong_complexity",
-            "text": "They only need to mention O(log n); the boundary direction does not matter."
-          }
-        ],
-        "prompt": "Choose the mistake diagnosis.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "last_true_update_rule"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1025,7 +796,26 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Diagnose copied predicate template",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A learner copies the first-true update rule into a last-true task. What mistake should you diagnose?",
+    "answerFeedback": "They reused a boundary template without checking predicate direction and target boundary.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "They ignored that update direction depends on whether the task wants first true or last true.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_template",
+        "text": "They are correct because all monotonic predicate searches use identical updates.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_complexity",
+        "text": "They only need to mention O(log n); the boundary direction does not matter.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1040,57 +830,12 @@ export const monotonicPredicateSearchQuestions = [
       "nextAction": "Practice deriving predicate binary search from boundary semantics.",
       "result": "diagnostic"
     },
-    "id": "alg-binary-search-monotonic-predicate-014",
+    "id": "alg-binary-search-monotonic-predicate-014-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "monotonic_predicate_boundary",
-    "prompt": "Order the reasoning steps for searching a monotonic boolean predicate.",
+    "prompt": "Tap the predicate-search reasoning steps in order.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "verify_monotonicity",
-          "name_shape",
-          "choose_boundary",
-          "derive_updates",
-          "return_boundary"
-        ],
-        "feedback": "Predicate search starts by proving monotonicity, naming the true/false shape, choosing the boundary, deriving updates, and returning the converged boundary.",
-        "id": "alg-binary-search-monotonic-predicate-014-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "verify_monotonicity",
-            "text": "Verify that the predicate changes in only one direction."
-          },
-          {
-            "id": "name_shape",
-            "text": "Name the shape: false-then-true or true-then-false."
-          },
-          {
-            "id": "choose_boundary",
-            "text": "Choose the requested boundary: first true, first false, last true, or last false."
-          },
-          {
-            "id": "derive_updates",
-            "text": "Derive updates that keep possible boundary candidates and discard impossible ones."
-          },
-          {
-            "id": "return_boundary",
-            "text": "Return the converged boundary variable after the loop."
-          }
-        ],
-        "prompt": "Tap the predicate-search reasoning steps in order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "monotonic_predicate_boundary"
-        ],
-        "type": "order_steps"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1115,6 +860,37 @@ export const monotonicPredicateSearchQuestions = [
     ],
     "title": "Order monotonic predicate reasoning",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "instruction": "Order the reasoning steps for searching a monotonic boolean predicate.",
+    "answerFeedback": "Predicate search starts by proving monotonicity, naming the true/false shape, choosing the boundary, deriving updates, and returning the converged boundary.",
+    "subgoals": [
+      {
+        "id": "verify_monotonicity",
+        "text": "Verify that the predicate changes in only one direction."
+      },
+      {
+        "id": "name_shape",
+        "text": "Name the shape: false-then-true or true-then-false."
+      },
+      {
+        "id": "choose_boundary",
+        "text": "Choose the requested boundary: first true, first false, last true, or last false."
+      },
+      {
+        "id": "derive_updates",
+        "text": "Derive updates that keep possible boundary candidates and discard impossible ones."
+      },
+      {
+        "id": "return_boundary",
+        "text": "Return the converged boundary variable after the loop."
+      }
+    ],
+    "correctOrder": [
+      "verify_monotonicity",
+      "name_shape",
+      "choose_boundary",
+      "derive_updates",
+      "return_boundary"
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

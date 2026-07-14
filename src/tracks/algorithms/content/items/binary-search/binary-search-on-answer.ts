@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const binarySearchOnAnswerQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -16,43 +18,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_linear_scan": "Trying every capacity may work conceptually, but binary search can reduce the answer-space search if feasibility is monotonic."
       }
     },
-    "id": "alg-binary-search-answer-001",
+    "id": "alg-binary-search-answer-001-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "The array is not searched for a stored value. Instead, the task asks for the smallest capacity that makes a schedule possible. What should be searched?",
+    "prompt": "Choose the correct search space.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The search space is candidate answer values, such as possible capacities.",
-        "id": "alg-binary-search-answer-001-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Search possible answer values, such as candidate capacities."
-          },
-          {
-            "id": "wrong_index",
-            "text": "Search array indexes because all binary search must compare nums[mid]."
-          },
-          {
-            "id": "wrong_linear_scan",
-            "text": "Try every possible capacity one by one because the input array is not sorted."
-          }
-        ],
-        "prompt": "Choose the correct search space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -89,23 +60,25 @@ export const binarySearchOnAnswerQuestions = [
     "rejectedApproachIds": [
       "classic_index_binary_search"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Search possible answer values, such as candidate capacities."
-        },
-        {
-          "id": "wrong_index",
-          "text": "Search array indexes because all binary search must compare nums[mid]."
-        },
-        {
-          "id": "wrong_linear_scan",
-          "text": "Try every possible capacity one by one because the input array is not sorted."
-        }
-      ]
-    }
+    "instruction": "The array is not searched for a stored value. Instead, the task asks for the smallest capacity that makes a schedule possible. What should be searched?",
+    "answerFeedback": "The search space is candidate answer values, such as possible capacities.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Search possible answer values, such as candidate capacities.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_index",
+        "text": "Search array indexes because all binary search must compare nums[mid].",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_linear_scan",
+        "text": "Try every possible capacity one by one because the input array is not sorted.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -124,43 +97,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_hour_index": "h is a constraint for feasibility, not the searched index."
       }
     },
-    "id": "alg-binary-search-answer-002",
+    "id": "alg-binary-search-answer-002-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "A task asks for the minimum eating speed that finishes all piles within h hours. What is the candidate answer?",
+    "prompt": "Choose what mid should represent.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The candidate answer is a speed value. The feasibility check asks whether that speed finishes within h hours.",
-        "id": "alg-binary-search-answer-002-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A proposed eating speed."
-          },
-          {
-            "id": "wrong_pile_index",
-            "text": "The index of the middle pile."
-          },
-          {
-            "id": "wrong_hour_index",
-            "text": "The index of the current hour."
-          }
-        ],
-        "prompt": "Choose what mid should represent.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -185,7 +127,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Define candidate speed",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A task asks for the minimum eating speed that finishes all piles within h hours. What is the candidate answer?",
+    "answerFeedback": "The candidate answer is a speed value. The feasibility check asks whether that speed finishes within h hours.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A proposed eating speed.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_pile_index",
+        "text": "The index of the middle pile.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_hour_index",
+        "text": "The index of the current hour.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -203,42 +164,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_final_answer": "A single feasible candidate is not automatically the minimum feasible candidate."
       }
     },
-    "id": "alg-binary-search-answer-003",
+    "id": "alg-binary-search-answer-003-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A candidate capacity is tested by simulating whether all packages can ship within d days. What role does this simulation play?",
+    "prompt": "Choose the role of the simulation.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The simulation is the feasibility predicate: canShip(capacity).",
-        "id": "alg-binary-search-answer-003-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "It is the feasibility check for the proposed capacity."
-          },
-          {
-            "id": "wrong_sorting",
-            "text": "It sorts packages so classic binary search can compare indexes."
-          },
-          {
-            "id": "wrong_final_answer",
-            "text": "It proves the first feasible capacity is the final answer without searching lower values."
-          }
-        ],
-        "prompt": "Choose the role of the simulation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -263,7 +194,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Recognize feasibility check",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A candidate capacity is tested by simulating whether all packages can ship within d days. What role does this simulation play?",
+    "answerFeedback": "The simulation is the feasibility predicate: canShip(capacity).",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "It is the feasibility check for the proposed capacity.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_sorting",
+        "text": "It sorts packages so classic binary search can compare indexes.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_final_answer",
+        "text": "It proves the first feasible capacity is the final answer without searching lower values.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -282,43 +232,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_discard_mid": "If mid is feasible, discarding it with right = mid - 1 can be valid only in a different inclusive template with saved answer; the key reasoning is to keep a feasible candidate."
       }
     },
-    "id": "alg-binary-search-answer-004",
+    "id": "alg-binary-search-answer-004-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_update_direction",
-    "prompt": "You are minimizing a feasible capacity. canShip(mid) is true. Which boundary update preserves the chance to find a smaller feasible answer?",
+    "prompt": "Choose the update for minimizing a feasible answer.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "For a lower-bound style template, use right = mid when mid is feasible.",
-        "id": "alg-binary-search-answer-004-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Move right to mid, because mid works and smaller values may also work."
-          },
-          {
-            "id": "wrong_go_right",
-            "text": "Move left to mid + 1, because feasible means you should search larger answers."
-          },
-          {
-            "id": "wrong_discard_mid",
-            "text": "Throw away mid without recording it, because any feasible value is too large."
-          }
-        ],
-        "prompt": "Choose the update for minimizing a feasible answer.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_update_direction"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -343,7 +262,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Update bounds after feasible mid",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "You are minimizing a feasible capacity. canShip(mid) is true. Which boundary update preserves the chance to find a smaller feasible answer?",
+    "answerFeedback": "For a lower-bound style template, use right = mid when mid is feasible.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Move right to mid, because mid works and smaller values may also work.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_go_right",
+        "text": "Move left to mid + 1, because feasible means you should search larger answers.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_discard_mid",
+        "text": "Throw away mid without recording it, because any feasible value is too large.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -362,43 +300,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_keep_mid": "An infeasible mid cannot be the minimum feasible answer."
       }
     },
-    "id": "alg-binary-search-answer-005",
+    "id": "alg-binary-search-answer-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_update_direction",
-    "prompt": "You are minimizing a feasible speed. canFinish(mid) is false. Which boundary update is forced?",
+    "prompt": "Choose the update after an infeasible mid.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "If mid is too small, move left to mid + 1.",
-        "id": "alg-binary-search-answer-005-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Move left to mid + 1, because mid and smaller speeds cannot work."
-          },
-          {
-            "id": "wrong_left_side",
-            "text": "Move right to mid, because smaller speeds should be tested next."
-          },
-          {
-            "id": "wrong_keep_mid",
-            "text": "Return mid because false means the candidate is near the boundary."
-          }
-        ],
-        "prompt": "Choose the update after an infeasible mid.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_update_direction"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -423,7 +330,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Update bounds after infeasible mid",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "You are minimizing a feasible speed. canFinish(mid) is false. Which boundary update is forced?",
+    "answerFeedback": "If mid is too small, move left to mid + 1.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Move left to mid + 1, because mid and smaller speeds cannot work.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_left_side",
+        "text": "Move right to mid, because smaller speeds should be tested next.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_keep_mid",
+        "text": "Return mid because false means the candidate is near the boundary.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -442,43 +368,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_return": "One feasible candidate is not automatically the maximum feasible candidate."
       }
     },
-    "id": "alg-binary-search-answer-006",
+    "id": "alg-binary-search-answer-006-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_update_direction",
-    "prompt": "You are maximizing a feasible length. canCut(mid) is true. Which direction should the search move?",
+    "prompt": "Choose the maximizing update direction.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "If mid works and you want the maximum feasible value, search larger values.",
-        "id": "alg-binary-search-answer-006-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Move left upward to try larger lengths, while preserving mid as feasible."
-          },
-          {
-            "id": "wrong_minimize",
-            "text": "Move right downward because feasible always means go left."
-          },
-          {
-            "id": "wrong_return",
-            "text": "Return mid immediately because a feasible value has been found."
-          }
-        ],
-        "prompt": "Choose the maximizing update direction.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_update_direction"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -503,7 +398,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Update bounds for maximizing feasible answer",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "You are maximizing a feasible length. canCut(mid) is true. Which direction should the search move?",
+    "answerFeedback": "If mid works and you want the maximum feasible value, search larger values.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Move left upward to try larger lengths, while preserving mid as feasible.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_minimize",
+        "text": "Move right downward because feasible always means go left.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_return",
+        "text": "Return mid immediately because a feasible value has been found.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -522,43 +436,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_sort_answers": "Sorting candidate values does not fix a non-monotonic predicate."
       }
     },
-    "id": "alg-binary-search-answer-007",
+    "id": "alg-binary-search-answer-007-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A proposed answer predicate produces true, false, true, false as the candidate grows. What should you conclude?",
+    "prompt": "Choose the correct conclusion.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The predicate is not monotonic, so binary search on answer is not justified.",
-        "id": "alg-binary-search-answer-007-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Reject binary search on answer because feasibility is not monotonic."
-          },
-          {
-            "id": "wrong_binary_anyway",
-            "text": "Use binary search anyway because the candidates are numeric."
-          },
-          {
-            "id": "wrong_sort_answers",
-            "text": "Sort the answers first so the predicate becomes monotonic."
-          }
-        ],
-        "prompt": "Choose the correct conclusion.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -593,91 +476,25 @@ export const binarySearchOnAnswerQuestions = [
     "rejectedApproachIds": [
       "binary_search_on_answer"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Reject binary search on answer because feasibility is not monotonic."
-        },
-        {
-          "id": "wrong_binary_anyway",
-          "text": "Use binary search anyway because the candidates are numeric."
-        },
-        {
-          "id": "wrong_sort_answers",
-          "text": "Sort the answers first so the predicate becomes monotonic."
-        }
-      ]
-    }
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n log R)",
-    "complexityExplanation": "The binary search tries O(log R) candidate answers, and each feasibility check scans n items.",
-    "feedbackModel": {
-      "decisionSignal": "The answer range has size R. Each feasibility check scans n items. What time and extra space should you expect?",
-      "mentalModelCorrection": "Binary search reduces candidate count, but the feasibility check cost is paid at each mid.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "cannot_explain_why"
-      ],
-      "nextAction": "Practice multiplying answer-space search iterations by check cost.",
-      "result": "diagnostic"
-    },
-    "id": "alg-binary-search-answer-008",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "The answer range has size R. Each feasibility check scans n items. What time and extra space should you expect?",
-    "roadmapNodeId": "binary_search",
-    "status": "active",
-    "staticMicroChecks": [
+    "instruction": "A proposed answer predicate produces true, false, true, false as the candidate grows. What should you conclude?",
+    "answerFeedback": "The predicate is not monotonic, so binary search on answer is not justified.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n log R)",
-          "space": "O(1)"
-        },
-        "feedback": "There are O(log R) candidate checks, and each check costs O(n).",
-        "id": "alg-binary-search-answer-008-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "prompt": "Choose the expected time and extra space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "expected_signal",
+        "text": "Reject binary search on answer because feasibility is not monotonic.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_binary_anyway",
+        "text": "Use binary search anyway because the candidates are numeric.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_sort_answers",
+        "text": "Sort the answers first so the predicate becomes monotonic.",
+        "isCorrect": false
       }
-    ],
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "binary_search",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "binary_search_on_answer",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Cost answer search with linear check",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -696,43 +513,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_index_search": "Classic index binary search may have O(log n) comparisons, but answer search often has a non-constant predicate."
       }
     },
-    "id": "alg-binary-search-answer-009",
+    "id": "alg-binary-search-answer-009-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "A teammate says the answer-search solution is O(log R) because binary search has O(log R) iterations. What correction should you make?",
+    "prompt": "Choose the correction.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The full time is O(log R * checkCost), not just O(log R).",
-        "id": "alg-binary-search-answer-009-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Include the feasibility-check cost: total time is O(log R * checkCost)."
-          },
-          {
-            "id": "wrong_iterations_only",
-            "text": "Agree that O(log R) is complete because only the number of mids matters."
-          },
-          {
-            "id": "wrong_index_search",
-            "text": "Replace R with n because all binary search complexity must be O(log n)."
-          }
-        ],
-        "prompt": "Choose the correction.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -757,7 +543,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Correct missing check-cost claim",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A teammate says the answer-search solution is O(log R) because binary search has O(log R) iterations. What correction should you make?",
+    "answerFeedback": "The full time is O(log R * checkCost), not just O(log R).",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Include the feasibility-check cost: total time is O(log R * checkCost).",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_iterations_only",
+        "text": "Agree that O(log R) is complete because only the number of mids matters.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_index_search",
+        "text": "Replace R with n because all binary search complexity must be O(log n).",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -776,43 +581,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_n": "The number of packages is not a capacity bound."
       }
     },
-    "id": "alg-binary-search-answer-010",
+    "id": "alg-binary-search-answer-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_bounds",
-    "prompt": "For shipping packages within d days, what are good initial bounds for the minimum feasible capacity?",
+    "prompt": "Choose the answer-space bounds.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Use low = maxWeight and high = totalWeight.",
-        "id": "alg-binary-search-answer-010-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "low = heaviest package, high = sum of all package weights."
-          },
-          {
-            "id": "wrong_zero",
-            "text": "low = 0, high = heaviest package."
-          },
-          {
-            "id": "wrong_n",
-            "text": "low = 0, high = number of packages."
-          }
-        ],
-        "prompt": "Choose the answer-space bounds.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_bounds"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -837,7 +611,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Derive capacity search bounds",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "For shipping packages within d days, what are good initial bounds for the minimum feasible capacity?",
+    "answerFeedback": "Use low = maxWeight and high = totalWeight.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "low = heaviest package, high = sum of all package weights.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_zero",
+        "text": "low = 0, high = heaviest package.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_n",
+        "text": "low = 0, high = number of packages.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -856,43 +649,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_array_mid": "The middle input value is not the candidate largest allowed sum."
       }
     },
-    "id": "alg-binary-search-answer-011",
+    "id": "alg-binary-search-answer-011-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "A problem asks for the minimum possible largest subarray sum after splitting an array into k parts. What is the searched answer?",
+    "prompt": "Choose the searched answer.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Search the candidate maximum allowed subarray sum.",
-        "id": "alg-binary-search-answer-011-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "A candidate value for the largest allowed subarray sum."
-          },
-          {
-            "id": "wrong_split_index",
-            "text": "The index where the first split should be placed."
-          },
-          {
-            "id": "wrong_array_mid",
-            "text": "The middle element of the input array."
-          }
-        ],
-        "prompt": "Choose the searched answer.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -917,7 +679,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Define largest-sum candidate",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A problem asks for the minimum possible largest subarray sum after splitting an array into k parts. What is the searched answer?",
+    "answerFeedback": "Search the candidate maximum allowed subarray sum.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "A candidate value for the largest allowed subarray sum.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_split_index",
+        "text": "The index where the first split should be placed.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_array_mid",
+        "text": "The middle element of the input array.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -935,42 +716,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_index_order": "Monotonicity comes from the candidate limit, not from sorted input values."
       }
     },
-    "id": "alg-binary-search-answer-012",
+    "id": "alg-binary-search-answer-012-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "For a candidate largest subarray sum X, the check greedily counts how many parts are needed if no part may exceed X. What makes this predicate monotonic?",
+    "prompt": "Choose the monotonicity explanation.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Larger X makes the constraint looser, so feasibility cannot flip from true back to false.",
-        "id": "alg-binary-search-answer-012-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "As X increases, the limit becomes looser, so a feasible X stays feasible for larger X."
-          },
-          {
-            "id": "wrong_random",
-            "text": "The check is monotonic because greedy algorithms are always monotonic."
-          },
-          {
-            "id": "wrong_index_order",
-            "text": "The check is monotonic only if the input array is sorted."
-          }
-        ],
-        "prompt": "Choose the monotonicity explanation.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -995,7 +746,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Explain monotonic largest-sum check",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "For a candidate largest subarray sum X, the check greedily counts how many parts are needed if no part may exceed X. What makes this predicate monotonic?",
+    "answerFeedback": "Larger X makes the constraint looser, so feasibility cannot flip from true back to false.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "As X increases, the limit becomes looser, so a feasible X stays feasible for larger X.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_random",
+        "text": "The check is monotonic because greedy algorithms are always monotonic.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_index_order",
+        "text": "The check is monotonic only if the input array is sorted.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1014,43 +784,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_return": "One achievable distance does not prove it is the maximum achievable distance."
       }
     },
-    "id": "alg-binary-search-answer-013",
+    "id": "alg-binary-search-answer-013-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_update_direction",
-    "prompt": "A task asks for the maximum minimum distance between placed items. A check says whether distance mid is achievable. If achievable, what should happen?",
+    "prompt": "Choose the update direction.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "If mid is achievable and the goal is maximum distance, search larger distances.",
-        "id": "alg-binary-search-answer-013-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Keep mid as feasible and try larger distances."
-          },
-          {
-            "id": "wrong_minimize",
-            "text": "Move to smaller distances because feasible means the answer is too high."
-          },
-          {
-            "id": "wrong_return",
-            "text": "Return mid immediately because any feasible distance is good enough."
-          }
-        ],
-        "prompt": "Choose the update direction.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_update_direction"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1075,7 +814,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Maximize feasible distance",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A task asks for the maximum minimum distance between placed items. A check says whether distance mid is achievable. If achievable, what should happen?",
+    "answerFeedback": "If mid is achievable and the goal is maximum distance, search larger distances.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Keep mid as feasible and try larger distances.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_minimize",
+        "text": "Move to smaller distances because feasible means the answer is too high.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_return",
+        "text": "Return mid immediately because any feasible distance is good enough.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1094,43 +852,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_classic": "The improvement is not from searching array indexes; it is from reducing candidate answer checks."
       }
     },
-    "id": "alg-binary-search-answer-014",
+    "id": "alg-binary-search-answer-014-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "Plan A tries every possible answer from low to high and runs a check each time. Plan B binary-searches the answer range and runs the same check. Which comparison matters?",
+    "prompt": "Choose the decisive comparison.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The binary-search plan calls the check O(log R) times instead of O(R) times.",
-        "id": "alg-binary-search-answer-014-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Plan B reduces check calls from O(R) to O(log R) if the predicate is monotonic."
-          },
-          {
-            "id": "wrong_same",
-            "text": "The plans are equivalent because both use the same feasibility check."
-          },
-          {
-            "id": "wrong_classic",
-            "text": "Plan B is valid only if the input array itself is sorted."
-          }
-        ],
-        "prompt": "Choose the decisive comparison.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1156,96 +883,25 @@ export const binarySearchOnAnswerQuestions = [
     "title": "Compare answer scan with answer binary search",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "candidate answer count",
-        "predicate monotonicity",
-        "check cost"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "Plan B reduces check calls from O(R) to O(log R) if the predicate is monotonic."
-        },
-        {
-          "id": "wrong_same",
-          "text": "The plans are equivalent because both use the same feasibility check."
-        },
-        {
-          "id": "wrong_classic",
-          "text": "Plan B is valid only if the input array itself is sorted."
-        }
-      ]
-    }
-  },
-  {
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n log V)",
-    "complexityExplanation": "The search tries O(log V) candidate speeds, and each check scans n piles to compute total hours.",
-    "feedbackModel": {
-      "decisionSignal": "There are n piles. Candidate speeds range from 1 to V. Each canFinish(speed) check scans all piles. What time and extra space should you expect?",
-      "mentalModelCorrection": "The answer range and the check cost both appear in the complexity.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "cannot_explain_why"
-      ],
-      "nextAction": "Practice deriving O(log answerRange * checkCost).",
-      "result": "diagnostic"
-    },
-    "id": "alg-binary-search-answer-015",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "There are n piles. Candidate speeds range from 1 to V. Each canFinish(speed) check scans all piles. What time and extra space should you expect?",
-    "roadmapNodeId": "binary_search",
-    "status": "active",
-    "staticMicroChecks": [
+    "instruction": "Plan A tries every possible answer from low to high and runs a check each time. Plan B binary-searches the answer range and runs the same check. Which comparison matters?",
+    "answerFeedback": "The binary-search plan calls the check O(log R) times instead of O(R) times.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n log V)",
-          "space": "O(1)"
-        },
-        "feedback": "There are O(log V) candidate speeds and each check scans n piles.",
-        "id": "alg-binary-search-answer-015-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "prompt": "Choose the expected time and extra space cost.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "complexity_pair"
+        "id": "expected_signal",
+        "text": "Plan B reduces check calls from O(R) to O(log R) if the predicate is monotonic.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_same",
+        "text": "The plans are equivalent because both use the same feasibility check.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_classic",
+        "text": "Plan B is valid only if the input array itself is sorted.",
+        "isCorrect": false
       }
-    ],
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "binary_search",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "primary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "binary_search_on_answer",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Cost eating-speed answer search",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1264,43 +920,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_exact": "Exact target wording does not create a monotonic feasible/infeasible split."
       }
     },
-    "id": "alg-binary-search-answer-016",
+    "id": "alg-binary-search-answer-016-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A problem asks for the exact candidate value where score(candidate) equals target. The score goes up and down as candidate increases. Is binary search on answer justified?",
+    "prompt": "Choose whether answer search is justified.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "No. If the score is non-monotonic, a mid result does not identify the half to discard.",
-        "id": "alg-binary-search-answer-016-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "No, because the candidate-to-score relationship is not monotonic."
-          },
-          {
-            "id": "wrong_numeric",
-            "text": "Yes, because the candidate values are numeric."
-          },
-          {
-            "id": "wrong_exact",
-            "text": "Yes, because binary search is best for exact target values."
-          }
-        ],
-        "prompt": "Choose whether answer search is justified.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1335,23 +960,25 @@ export const binarySearchOnAnswerQuestions = [
     "rejectedApproachIds": [
       "binary_search_on_answer"
     ],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "No, because the candidate-to-score relationship is not monotonic."
-        },
-        {
-          "id": "wrong_numeric",
-          "text": "Yes, because the candidate values are numeric."
-        },
-        {
-          "id": "wrong_exact",
-          "text": "Yes, because binary search is best for exact target values."
-        }
-      ]
-    }
+    "instruction": "A problem asks for the exact candidate value where score(candidate) equals target. The score goes up and down as candidate increases. Is binary search on answer justified?",
+    "answerFeedback": "No. If the score is non-monotonic, a mid result does not identify the half to discard.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "No, because the candidate-to-score relationship is not monotonic.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_numeric",
+        "text": "Yes, because the candidate values are numeric.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_exact",
+        "text": "Yes, because binary search is best for exact target values.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1370,43 +997,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_right_plus": "The returned boundary depends on the template; for lower-bound style, left is the first feasible candidate."
       }
     },
-    "id": "alg-binary-search-answer-017",
+    "id": "alg-binary-search-answer-017-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "You are minimizing the first feasible answer over candidates that look like false false false true true. Where should the final answer be after a lower-bound style loop?",
+    "prompt": "Choose the final answer location.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "The boundary converges to the first true candidate.",
-        "id": "alg-binary-search-answer-017-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "At left, the first feasible candidate."
-          },
-          {
-            "id": "wrong_mid",
-            "text": "At the last computed mid, because mid is always the answer."
-          },
-          {
-            "id": "wrong_right_plus",
-            "text": "At right + 1 regardless of the loop template."
-          }
-        ],
-        "prompt": "Choose the final answer location.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1431,7 +1027,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Return first feasible answer",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "You are minimizing the first feasible answer over candidates that look like false false false true true. Where should the final answer be after a lower-bound style loop?",
+    "answerFeedback": "The boundary converges to the first true candidate.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "At left, the first feasible candidate.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_mid",
+        "text": "At the last computed mid, because mid is always the answer.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_right_plus",
+        "text": "At right + 1 regardless of the loop template.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1450,43 +1065,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_sorted_array": "Answer search does not require the input array itself to be sorted; it requires monotonic feasibility over answers."
       }
     },
-    "id": "alg-binary-search-answer-018",
+    "id": "alg-binary-search-answer-018-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "Classic binary search compares nums[mid] to target. Binary search on answer calls feasible(mid). What is the key difference?",
+    "prompt": "Choose the key difference.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "In answer search, mid is a candidate answer, and feasible(mid) decides which side to discard.",
-        "id": "alg-binary-search-answer-018-check",
-        "mistakeTypes": [
-          "data_structure_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "mid represents a candidate answer, not an index value to match against target."
-          },
-          {
-            "id": "wrong_same",
-            "text": "There is no difference; every binary search compares nums[mid] with target."
-          },
-          {
-            "id": "wrong_sorted_array",
-            "text": "Answer search is valid only when the input array is sorted."
-          }
-        ],
-        "prompt": "Choose the key difference.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1512,28 +1096,25 @@ export const binarySearchOnAnswerQuestions = [
     "title": "Contrast index search with answer search",
     "trackId": "algorithms",
     "type": "solution_comparison",
-    "responseSpec": {
-      "comparisonCriteria": [
-        "meaning of mid",
-        "comparison operation",
-        "monotonic condition"
-      ],
-      "kind": "solution_comparison",
-      "solutions": [
-        {
-          "id": "expected_signal",
-          "text": "mid represents a candidate answer, not an index value to match against target."
-        },
-        {
-          "id": "wrong_same",
-          "text": "There is no difference; every binary search compares nums[mid] with target."
-        },
-        {
-          "id": "wrong_sorted_array",
-          "text": "Answer search is valid only when the input array is sorted."
-        }
-      ]
-    }
+    "instruction": "Classic binary search compares nums[mid] to target. Binary search on answer calls feasible(mid). What is the key difference?",
+    "answerFeedback": "In answer search, mid is a candidate answer, and feasible(mid) decides which side to discard.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "mid represents a candidate answer, not an index value to match against target.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_same",
+        "text": "There is no difference; every binary search compares nums[mid] with target.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_sorted_array",
+        "text": "Answer search is valid only when the input array is sorted.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1551,42 +1132,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_unknown": "The task gives the monotonic relationship: faster speed cannot make completion harder."
       }
     },
-    "id": "alg-binary-search-answer-019",
+    "id": "alg-binary-search-answer-019-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A feasibility check for speed mid returns true when the work can be finished in time. If speed mid works, what can you infer about larger speeds?",
+    "prompt": "Choose the monotonic inference.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "All larger speeds also work under this predicate.",
-        "id": "alg-binary-search-answer-019-check",
-        "mistakeTypes": [
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Larger speeds should also be feasible."
-          },
-          {
-            "id": "wrong_smaller",
-            "text": "Only smaller speeds are guaranteed feasible."
-          },
-          {
-            "id": "wrong_unknown",
-            "text": "Nothing can be inferred, so binary search cannot update either side."
-          }
-        ],
-        "prompt": "Choose the monotonic inference.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1611,7 +1162,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Infer monotonic direction for speed",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A feasibility check for speed mid returns true when the work can be finished in time. If speed mid works, what can you infer about larger speeds?",
+    "answerFeedback": "All larger speeds also work under this predicate.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Larger speeds should also be feasible.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_smaller",
+        "text": "Only smaller speeds are guaranteed feasible.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_unknown",
+        "text": "Nothing can be inferred, so binary search cannot update either side.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1626,57 +1196,12 @@ export const binarySearchOnAnswerQuestions = [
       "nextAction": "Practice designing answer search before writing boundary code.",
       "result": "diagnostic"
     },
-    "id": "alg-binary-search-answer-020",
+    "id": "alg-binary-search-answer-020-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_candidate_model",
-    "prompt": "Order the steps for designing a binary-search-on-answer solution.",
+    "prompt": "Tap the design steps in order.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": [
-          "define_candidate",
-          "define_predicate",
-          "prove_monotonicity",
-          "choose_bounds",
-          "run_binary_search"
-        ],
-        "feedback": "Answer search starts with what mid means, then feasibility, monotonicity, bounds, and only then the loop.",
-        "id": "alg-binary-search-answer-020-check",
-        "mistakeTypes": [
-          "subgoal_order_wrong",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "define_candidate",
-            "text": "Define what candidate answer mid represents."
-          },
-          {
-            "id": "define_predicate",
-            "text": "Define feasible(mid)."
-          },
-          {
-            "id": "prove_monotonicity",
-            "text": "Check that feasibility changes monotonically."
-          },
-          {
-            "id": "choose_bounds",
-            "text": "Choose low and high from valid answer limits."
-          },
-          {
-            "id": "run_binary_search",
-            "text": "Run binary search using the predicate result."
-          }
-        ],
-        "prompt": "Tap the design steps in order.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_candidate_model"
-        ],
-        "type": "order_steps"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1701,7 +1226,38 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Order answer-search design steps",
     "trackId": "algorithms",
-    "type": "subgoal_ordering"
+    "type": "subgoal_ordering",
+    "instruction": "Order the steps for designing a binary-search-on-answer solution.",
+    "answerFeedback": "Answer search starts with what mid means, then feasibility, monotonicity, bounds, and only then the loop.",
+    "subgoals": [
+      {
+        "id": "define_candidate",
+        "text": "Define what candidate answer mid represents."
+      },
+      {
+        "id": "define_predicate",
+        "text": "Define feasible(mid)."
+      },
+      {
+        "id": "prove_monotonicity",
+        "text": "Check that feasibility changes monotonically."
+      },
+      {
+        "id": "choose_bounds",
+        "text": "Choose low and high from valid answer limits."
+      },
+      {
+        "id": "run_binary_search",
+        "text": "Run binary search using the predicate result."
+      }
+    ],
+    "correctOrder": [
+      "define_candidate",
+      "define_predicate",
+      "prove_monotonicity",
+      "choose_bounds",
+      "run_binary_search"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1720,43 +1276,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_sort_once": "The prompt says the check sorts inside each candidate test; that repeats unless moved out safely."
       }
     },
-    "id": "alg-binary-search-answer-021",
+    "id": "alg-binary-search-answer-021-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "derive_time_complexity",
-    "prompt": "A feasibility check itself sorts n items before testing mid. The answer range has size R. What cost warning should you give?",
+    "prompt": "Choose the cost warning.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "If sorting happens inside each check, the total can be O(log R * n log n).",
-        "id": "alg-binary-search-answer-021-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "The total includes repeated check cost, so sorting inside the check gives O(log R * n log n)."
-          },
-          {
-            "id": "wrong_log_only",
-            "text": "The total is still O(log R), because binary search controls the loop count."
-          },
-          {
-            "id": "wrong_sort_once",
-            "text": "The sort is automatically counted once even if it appears inside feasible(mid)."
-          }
-        ],
-        "prompt": "Choose the cost warning.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "derive_time_complexity"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1781,7 +1306,26 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Audit expensive feasibility check",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A feasibility check itself sorts n items before testing mid. The answer range has size R. What cost warning should you give?",
+    "answerFeedback": "If sorting happens inside each check, the total can be O(log R * n log n).",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "The total includes repeated check cost, so sorting inside the check gives O(log R * n log n).",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_log_only",
+        "text": "The total is still O(log R), because binary search controls the loop count.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_sort_once",
+        "text": "The sort is automatically counted once even if it appears inside feasible(mid).",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1800,43 +1344,12 @@ export const binarySearchOnAnswerQuestions = [
         "wrong_numeric": "A numeric answer range alone is not enough."
       }
     },
-    "id": "alg-binary-search-answer-022",
+    "id": "alg-binary-search-answer-022-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "binary_search_answer_feasibility_predicate",
-    "prompt": "A learner wants to binary-search possible answers but cannot define feasible(x). What should the review say?",
+    "prompt": "Choose the review feedback.",
     "roadmapNodeId": "binary_search",
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Ask for a monotonic feasibility predicate first; otherwise binary search has no valid update rule.",
-        "id": "alg-binary-search-answer-022-check",
-        "mistakeTypes": [
-          "cannot_explain_why",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Define a monotonic feasible(x) predicate before choosing binary search on answer."
-          },
-          {
-            "id": "wrong_continue",
-            "text": "Write the binary search loop first and fill in feasible(x) later."
-          },
-          {
-            "id": "wrong_numeric",
-            "text": "Proceed because any numeric answer range can be binary searched."
-          }
-        ],
-        "prompt": "Choose the review feedback.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "binary_search_answer_feasibility_predicate"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -1861,6 +1374,25 @@ export const binarySearchOnAnswerQuestions = [
     ],
     "title": "Require feasibility predicate",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A learner wants to binary-search possible answers but cannot define feasible(x). What should the review say?",
+    "answerFeedback": "Ask for a monotonic feasibility predicate first; otherwise binary search has no valid update rule.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Define a monotonic feasible(x) predicate before choosing binary search on answer.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_continue",
+        "text": "Write the binary search loop first and fill in feasible(x) later.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_numeric",
+        "text": "Proceed because any numeric answer range can be binary searched.",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

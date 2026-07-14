@@ -1,5 +1,4 @@
 export * from "./algorithmApproaches";
-export * from "./algorithmContentQuality";
 export * from "./algorithmContentTypes";
 export * from "./algorithmItems";
 export * from "./algorithmOptionOrder";

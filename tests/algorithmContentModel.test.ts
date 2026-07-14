@@ -14,15 +14,16 @@ import {
   type AlgorithmQuestion,
 } from "../src/tracks/algorithms";
 import {
-  ALGORITHM_CONTENT_VERSION,
   algorithmContentGroups,
   algorithmContentItems,
   algorithmContentManifest,
   validateAlgorithmContentGroups,
+  validateAlgorithmQuestion,
 } from "../src/tracks/algorithms/content";
+import { ALGORITHM_CONTENT_VERSION } from "../src/tracks/algorithms/algorithmContentTypes";
 
-const EXPECTED_QUESTION_COUNT = 1_751;
-const EXPECTED_GROUP_COUNT = 26;
+const EXPECTED_QUESTION_COUNT = 1_692;
+const EXPECTED_GROUP_COUNT = 27;
 
 test("Algorithms content imports and validates as one canonical corpus", () => {
   assert.equal(algorithmContentItems.length, EXPECTED_QUESTION_COUNT);
@@ -60,9 +61,7 @@ test("groups own roadmap placement and question ids are globally unique", () => 
   assert.equal(
     algorithmContentItems.every(
       (question) =>
-        !("roadmapNodeId" in question) &&
-        !("trackId" in question) &&
-        !("contentVersion" in question),
+        question.contentVersion === ALGORITHM_CONTENT_VERSION,
     ),
     true,
   );
@@ -98,14 +97,13 @@ test("every question uses exactly one native response contract", () => {
       );
     } else if (isAlgorithmComplexityQuestion(question)) {
       complexityCount += 1;
-      assert.ok(question.correctComplexity.time.length > 0, question.id);
-      assert.ok(question.correctComplexity.space.length > 0, question.id);
+      assert.ok(question.correctComplexity.dimensions.length > 0, question.id);
     }
   }
 
   assert.deepEqual(
     { choiceCount, complexityCount, orderingCount },
-    { choiceCount: 1_672, complexityCount: 59, orderingCount: 20 },
+    { choiceCount: 1_672, complexityCount: 0, orderingCount: 20 },
   );
 });
 
@@ -153,6 +151,82 @@ test("canonical validator rejects duplicate ids, empty groups, and invalid choic
   );
 });
 
+test("correctOptionId conversion uses one exact stable option id", () => {
+  const options = [
+    { id: "a", text: "A" },
+    { id: "b", text: "B" },
+  ];
+  assert.deepEqual(convertCorrectOptionId(options, "b"), [
+    { id: "a", isCorrect: false, text: "A" },
+    { id: "b", isCorrect: true, text: "B" },
+  ]);
+  assert.throws(() => convertCorrectOptionId(options, "missing"), /exactly one option/);
+  assert.throws(
+    () => convertCorrectOptionId([...options, { id: "b", text: "Duplicate" }], "b"),
+    /duplicate option id/,
+  );
+});
+
+test("flattened micro-checks preserve stable ids, inherited metadata, and child fields", () => {
+  const extracted = algorithmContentItems.find((question) => question.id === "alg-prod-array-string-002-check");
+  assert.ok(extracted && isAlgorithmChoiceQuestion(extracted));
+  assert.equal(algorithmContentItems.some((question) => question.id === "alg-prod-array-string-002"), false);
+  assert.equal(extracted.contentVersion, ALGORITHM_CONTENT_VERSION);
+  assert.equal(extracted.difficulty, "medium");
+  assert.equal(extracted.primarySkillAtomId, "distinguish_output_contract");
+  assert.equal(extracted.prompt, "Choose the deciding constraint.");
+  assert.match(extracted.instruction ?? "", /Two solutions both preserve the order/);
+  assert.match(extracted.answerFeedback ?? "", /in-place mutation/);
+  assert.equal(algorithmContentManifest.itemCount, algorithmContentItems.length);
+});
+
+test("canonical validator rejects every obsolete, mixed, or unknown response shape", () => {
+  for (const obsoleteField of ["staticMicroChecks", "correctOptionId", "responseSpec", "correctAnswerId"]) {
+    assert.throws(
+      () => validateAlgorithmQuestion({ ...makeQuestion(`obsolete-${obsoleteField}`), [obsoleteField]: {} }),
+      new RegExp(`obsolete response field ${obsoleteField}`),
+    );
+  }
+  assert.throws(
+    () => validateAlgorithmQuestion({ ...makeQuestion("choice-and-order"), correctOrder: ["a", "b"], subgoals: [{ id: "a", text: "A" }, { id: "b", text: "B" }] }),
+    /exactly one root response contract/,
+  );
+  assert.throws(
+    () => validateAlgorithmQuestion({ ...makeQuestion("unknown-response"), answerKey: "correct" }),
+    /unknown field answerKey/,
+  );
+});
+
+test("canonical validator covers multiple choice, ordering, and content-defined complexity", () => {
+  validateAlgorithmQuestion({
+    ...makeQuestion("multi-correct"),
+    options: [
+      { id: "a", isCorrect: true, text: "A" },
+      { id: "b", isCorrect: true, text: "B" },
+      { id: "c", isCorrect: false, text: "C" },
+    ],
+  });
+  assert.throws(
+    () => validateAlgorithmQuestion({ ...makeQuestion("duplicate-choice"), options: [{ id: "a", isCorrect: true, text: "A" }, { id: "a", isCorrect: false, text: "B" }] }),
+    /duplicate option id/,
+  );
+  assert.throws(
+    () => validateAlgorithmQuestion({ ...withoutOptions(makeQuestion("short-order")), correctOrder: ["a"], subgoals: [{ id: "a", text: "A" }] }),
+    /at least two unique ids/,
+  );
+  assert.throws(
+    () => validateAlgorithmQuestion({ ...withoutOptions(makeQuestion("missing-order-id")), correctOrder: ["a", "missing"], subgoals: [{ id: "a", text: "A" }, { id: "b", text: "B" }] }),
+    /every subgoal id exactly once/,
+  );
+  validateAlgorithmQuestion({
+    ...withoutOptions(makeQuestion("time-only-complexity")),
+    correctComplexity: {
+      dimensions: [{ id: "time", values: ["O(1)", "O(n)"], acceptedValues: ["O(n)"], acceptedAliases: ["linear"] }],
+    },
+    type: "complexity_check",
+  });
+});
+
 function makeGroup(questions: readonly AlgorithmQuestion[]): AlgorithmContentGroup {
   return {
     id: "complexity_and_constraints",
@@ -161,8 +235,27 @@ function makeGroup(questions: readonly AlgorithmQuestion[]): AlgorithmContentGro
   };
 }
 
+function convertCorrectOptionId(
+  options: readonly { id: string; text: string }[],
+  correctOptionId: string,
+) {
+  if (new Set(options.map((option) => option.id)).size !== options.length) {
+    throw new Error("duplicate option id");
+  }
+  if (options.filter((option) => option.id === correctOptionId).length !== 1) {
+    throw new Error("correctOptionId must match exactly one option");
+  }
+  return options.map((option) => ({ ...option, isCorrect: option.id === correctOptionId }));
+}
+
+function withoutOptions(question: AlgorithmChoiceQuestion) {
+  const { options: _options, ...base } = question;
+  return base;
+}
+
 function makeQuestion(id: string): AlgorithmChoiceQuestion {
   return {
+    contentVersion: ALGORITHM_CONTENT_VERSION,
     difficulty: "intro",
     feedbackModel: {
       decisionSignal: "Use the input constraint.",

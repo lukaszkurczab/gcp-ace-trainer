@@ -1,3 +1,5 @@
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
 export const sortedDuplicateCollapseQuestions = [
   {
     "contentVersion": "algorithms-core",
@@ -17,49 +19,14 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "When collapsing sorted duplicates, decide how the first element enters the result before the main loop starts.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-005",
+    "id": "alg-prod-array-string-005-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
     ],
-    "prompt": "A sorted array `[1, 1, 2, 2, 3]` should be collapsed into `[1, 2, 3]`. A learner only writes a value when it differs from the previous value, but starts checking at index 0. What mistake is most likely?",
+    "prompt": "Choose the most likely bug.",
     "roadmapNodeId": "arrays_and_strings",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "first_value_skipped",
-        "feedback": "Index 0 has no previous value to compare against, so the first unique element is easy to lose unless it is initialized separately.",
-        "id": "alg-prod-array-string-005-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "first_value_skipped",
-            "text": "The first value may be skipped because there is no previous value to compare against."
-          },
-          {
-            "id": "sort_needed",
-            "text": "The array must be sorted first."
-          },
-          {
-            "id": "counts_required",
-            "text": "The algorithm must store the full frequency of each value."
-          },
-          {
-            "id": "nested_required",
-            "text": "The algorithm needs a nested loop to compare all pairs."
-          }
-        ],
-        "prompt": "Choose the most likely bug.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
-    ],
     "status": "active",
     "taxonomyRefs": [
       {
@@ -85,7 +52,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Diagnose the first-value duplicate-collapse bug",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A sorted array `[1, 1, 2, 2, 3]` should be collapsed into `[1, 2, 3]`. A learner only writes a value when it differs from the previous value, but starts checking at index 0. What mistake is most likely?",
+    "answerFeedback": "Index 0 has no previous value to compare against, so the first unique element is easy to lose unless it is initialized separately.",
+    "options": [
+      {
+        "id": "first_value_skipped",
+        "text": "The first value may be skipped because there is no previous value to compare against.",
+        "isCorrect": true
+      },
+      {
+        "id": "sort_needed",
+        "text": "The array must be sorted first.",
+        "isCorrect": false
+      },
+      {
+        "id": "counts_required",
+        "text": "The algorithm must store the full frequency of each value.",
+        "isCorrect": false
+      },
+      {
+        "id": "nested_required",
+        "text": "The algorithm needs a nested loop to compare all pairs.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -105,48 +96,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Whenever an algorithm compares with a previous accepted value, ask how that first accepted value is created.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-010",
+    "id": "alg-prod-array-string-010-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "initialize_duplicate_collapse",
-    "prompt": "You collapse duplicates in a sorted array using a write boundary. Which initialization is safest?",
+    "prompt": "Choose the safest initialization.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "accept_first_then_scan",
-        "feedback": "If the array is non-empty, accepting the first value before the loop avoids a bogus previous-value read at index 0.",
-        "id": "alg-prod-array-string-010-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "accept_first_then_scan",
-            "text": "Accept the first element if the array is non-empty, then scan from the second element."
-          },
-          {
-            "id": "compare_first_previous",
-            "text": "Start at index 0 and compare it with index -1."
-          },
-          {
-            "id": "skip_first",
-            "text": "Skip the first element because duplicates are checked later."
-          },
-          {
-            "id": "start_middle",
-            "text": "Start from the middle to avoid boundary cases."
-          }
-        ],
-        "prompt": "Choose the safest initialization.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "initialize_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -173,7 +129,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Initialize duplicate collapse safely",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "You collapse duplicates in a sorted array using a write boundary. Which initialization is safest?",
+    "answerFeedback": "If the array is non-empty, accepting the first value before the loop avoids a bogus previous-value read at index 0.",
+    "options": [
+      {
+        "id": "accept_first_then_scan",
+        "text": "Accept the first element if the array is non-empty, then scan from the second element.",
+        "isCorrect": true
+      },
+      {
+        "id": "compare_first_previous",
+        "text": "Start at index 0 and compare it with index -1.",
+        "isCorrect": false
+      },
+      {
+        "id": "skip_first",
+        "text": "Skip the first element because duplicates are checked later.",
+        "isCorrect": false
+      },
+      {
+        "id": "start_middle",
+        "text": "Start from the middle to avoid boundary cases.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -196,48 +176,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Ask whether the prompt already provides enough structure to avoid a heavier data structure.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-024",
+    "id": "alg-prod-array-string-024-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "avoid_unnecessary_state",
-    "prompt": "A sorted array should be collapsed so each value appears once. Which extra state is unnecessary for the intended solution?",
+    "prompt": "Choose the state that is unnecessary here.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "frequency_map",
-        "feedback": "Because equal values are already adjacent, a boundary comparison can collapse duplicates without storing full counts.",
-        "id": "alg-prod-array-string-024-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "complexity_mismatch"
-        ],
-        "options": [
-          {
-            "id": "frequency_map",
-            "text": "A frequency map of every value."
-          },
-          {
-            "id": "write_boundary",
-            "text": "A write boundary for the next unique slot."
-          },
-          {
-            "id": "previous_value",
-            "text": "The previous kept or previous read value."
-          },
-          {
-            "id": "scan_index",
-            "text": "A scan index moving left to right."
-          }
-        ],
-        "prompt": "Choose the state that is unnecessary here.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "avoid_unnecessary_state"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -264,7 +209,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Avoid unnecessary frequency state in sorted collapse",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "A sorted array should be collapsed so each value appears once. Which extra state is unnecessary for the intended solution?",
+    "answerFeedback": "Because equal values are already adjacent, a boundary comparison can collapse duplicates without storing full counts.",
+    "options": [
+      {
+        "id": "frequency_map",
+        "text": "A frequency map of every value.",
+        "isCorrect": true
+      },
+      {
+        "id": "write_boundary",
+        "text": "A write boundary for the next unique slot.",
+        "isCorrect": false
+      },
+      {
+        "id": "previous_value",
+        "text": "The previous kept or previous read value.",
+        "isCorrect": false
+      },
+      {
+        "id": "scan_index",
+        "text": "A scan index moving left to right.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -284,48 +253,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Use counterexamples that isolate both initialization of the first run and continued processing of later unique values.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-028",
+    "id": "alg-prod-array-string-028-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "A sorted-duplicate collapse writes later unique values when they differ from the previous value, but it forgets to seed the first run before the loop. Which test case best checks both the missing first run and a later unique run?",
+    "prompt": "Choose the test case that best targets the missing-first-run bug.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "initialize_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "one_then_duplicate_then_new",
-        "feedback": "`[1, 1, 2]` checks that the first run contributes `1` and that the later unique value `2` is still kept.",
-        "id": "alg-prod-array-string-028-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "one_then_duplicate_then_new",
-            "text": "`[1, 1, 2]`"
-          },
-          {
-            "id": "empty_array",
-            "text": "`[]`"
-          },
-          {
-            "id": "unsorted_input",
-            "text": "`[2, 1, 1]`"
-          },
-          {
-            "id": "single_run_only",
-            "text": "`[2, 2, 2]`"
-          }
-        ],
-        "prompt": "Choose the test case that best targets the missing-first-run bug.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -352,7 +286,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Pick a counterexample for the missing first run",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "A sorted-duplicate collapse writes later unique values when they differ from the previous value, but it forgets to seed the first run before the loop. Which test case best checks both the missing first run and a later unique run?",
+    "answerFeedback": "`[1, 1, 2]` checks that the first run contributes `1` and that the later unique value `2` is still kept.",
+    "options": [
+      {
+        "id": "one_then_duplicate_then_new",
+        "text": "`[1, 1, 2]`",
+        "isCorrect": true
+      },
+      {
+        "id": "empty_array",
+        "text": "`[]`",
+        "isCorrect": false
+      },
+      {
+        "id": "unsorted_input",
+        "text": "`[2, 1, 1]`",
+        "isCorrect": false
+      },
+      {
+        "id": "single_run_only",
+        "text": "`[2, 2, 2]`",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -372,48 +330,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "When the input is sorted, ask whether duplicate handling can be reduced to adjacent-run reasoning.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-122",
+    "id": "alg-prod-array-string-122-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "A sorted array should be collapsed so each value appears once. Which property makes a one-pass duplicate collapse possible?",
+    "prompt": "Choose the property that enables the collapse.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "avoid_unnecessary_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "duplicates_adjacent",
-        "feedback": "In a sorted array, equal values appear next to each other, so a scan can keep the first value of each run.",
-        "id": "alg-prod-array-string-122-check",
-        "mistakeTypes": [
-          "wrong_approach",
-          "constraint_ignored"
-        ],
-        "options": [
-          {
-            "id": "duplicates_adjacent",
-            "text": "Equal values are adjacent in the sorted input."
-          },
-          {
-            "id": "frequency_map",
-            "text": "A frequency map is always required."
-          },
-          {
-            "id": "nested_pairs",
-            "text": "Every pair of values must be compared."
-          },
-          {
-            "id": "sort_again",
-            "text": "The array must be sorted again inside the algorithm."
-          }
-        ],
-        "prompt": "Choose the property that enables the collapse.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -440,7 +363,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Use sorted adjacency for duplicate collapse",
     "trackId": "algorithms",
-    "type": "approach_naming"
+    "type": "approach_naming",
+    "instruction": "A sorted array should be collapsed so each value appears once. Which property makes a one-pass duplicate collapse possible?",
+    "answerFeedback": "In a sorted array, equal values appear next to each other, so a scan can keep the first value of each run.",
+    "options": [
+      {
+        "id": "duplicates_adjacent",
+        "text": "Equal values are adjacent in the sorted input.",
+        "isCorrect": true
+      },
+      {
+        "id": "frequency_map",
+        "text": "A frequency map is always required.",
+        "isCorrect": false
+      },
+      {
+        "id": "nested_pairs",
+        "text": "Every pair of values must be compared.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_again",
+        "text": "The array must be sorted again inside the algorithm.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -460,48 +407,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Before writing duplicate-collapse logic, decide how the first run enters the output.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-123",
+    "id": "alg-prod-array-string-123-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "initialize_duplicate_collapse",
-    "prompt": "When collapsing duplicates in a non-empty sorted array, why is the first value usually accepted before the main duplicate check?",
+    "prompt": "Choose why first-value initialization matters.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "first_has_no_previous",
-        "feedback": "The first value starts the first run and has no previous value to compare against.",
-        "id": "alg-prod-array-string-123-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "first_has_no_previous",
-            "text": "It starts the first run and has no previous value."
-          },
-          {
-            "id": "start_at_zero_compare_previous",
-            "text": "It should be compared with index -1."
-          },
-          {
-            "id": "skip_first_run",
-            "text": "The first run should be skipped."
-          },
-          {
-            "id": "count_all_values",
-            "text": "Every value's full frequency must be stored first."
-          }
-        ],
-        "prompt": "Choose why first-value initialization matters.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "initialize_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -528,7 +440,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Explain first-run initialization",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "When collapsing duplicates in a non-empty sorted array, why is the first value usually accepted before the main duplicate check?",
+    "answerFeedback": "The first value starts the first run and has no previous value to compare against.",
+    "options": [
+      {
+        "id": "first_has_no_previous",
+        "text": "It starts the first run and has no previous value.",
+        "isCorrect": true
+      },
+      {
+        "id": "start_at_zero_compare_previous",
+        "text": "It should be compared with index -1.",
+        "isCorrect": false
+      },
+      {
+        "id": "skip_first_run",
+        "text": "The first run should be skipped.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_all_values",
+        "text": "Every value's full frequency must be stored first.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -548,48 +484,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Trace each value as either same run or new run.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-124",
+    "id": "alg-prod-array-string-124-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "In sorted duplicate collapse, when should the current value be written to the next unique slot?",
+    "prompt": "Choose when a value starts a new run.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "use_read_write_boundary"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "different_from_previous_kept",
-        "feedback": "A different value starts a new sorted run, so it should be kept.",
-        "id": "alg-prod-array-string-124-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "cannot_trace_algorithm"
-        ],
-        "options": [
-          {
-            "id": "different_from_previous_kept",
-            "text": "When it differs from the previous kept value."
-          },
-          {
-            "id": "same_as_previous",
-            "text": "When it equals the previous kept value."
-          },
-          {
-            "id": "always_write",
-            "text": "Every time, regardless of duplicates."
-          },
-          {
-            "id": "count_required",
-            "text": "Only after a full frequency table is built."
-          }
-        ],
-        "prompt": "Choose when a value starts a new run.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -616,7 +517,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Write only the first value of each sorted run",
     "trackId": "algorithms",
-    "type": "state_selection"
+    "type": "state_selection",
+    "instruction": "In sorted duplicate collapse, when should the current value be written to the next unique slot?",
+    "answerFeedback": "A different value starts a new sorted run, so it should be kept.",
+    "options": [
+      {
+        "id": "different_from_previous_kept",
+        "text": "When it differs from the previous kept value.",
+        "isCorrect": true
+      },
+      {
+        "id": "same_as_previous",
+        "text": "When it equals the previous kept value.",
+        "isCorrect": false
+      },
+      {
+        "id": "always_write",
+        "text": "Every time, regardless of duplicates.",
+        "isCorrect": false
+      },
+      {
+        "id": "count_required",
+        "text": "Only after a full frequency table is built.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -636,49 +561,14 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "For each read value, ask whether it starts a new run.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-125",
+    "id": "alg-prod-array-string-125-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "You collapse sorted array `[1, 1, 2]`. After keeping the first `1`, what should happen when the scan reaches `2`?",
+    "prompt": "Choose the next duplicate-collapse step.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "trace_write_boundary",
       "initialize_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "write_two",
-        "feedback": "`2` differs from the previous kept value `1`, so it starts a new run and should be written.",
-        "id": "alg-prod-array-string-125-check",
-        "mistakeTypes": [
-          "cannot_trace_algorithm",
-          "duplicate_handling_error"
-        ],
-        "options": [
-          {
-            "id": "write_two",
-            "text": "Write `2` as the next unique value."
-          },
-          {
-            "id": "write_second_one",
-            "text": "Write the second `1` as another unique value first."
-          },
-          {
-            "id": "skip_two",
-            "text": "Skip `2` because a duplicate was seen earlier."
-          },
-          {
-            "id": "need_count_first",
-            "text": "Build a full frequency table before deciding."
-          }
-        ],
-        "prompt": "Choose the next duplicate-collapse step.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "trace_next_step"
-      }
     ],
     "status": "active",
     "stepByStepTrace": [
@@ -716,7 +606,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Trace a new run after duplicates",
     "trackId": "algorithms",
-    "type": "trace_next_step"
+    "type": "trace_next_step",
+    "instruction": "You collapse sorted array `[1, 1, 2]`. After keeping the first `1`, what should happen when the scan reaches `2`?",
+    "answerFeedback": "`2` differs from the previous kept value `1`, so it starts a new run and should be written.",
+    "options": [
+      {
+        "id": "write_two",
+        "text": "Write `2` as the next unique value.",
+        "isCorrect": true
+      },
+      {
+        "id": "write_second_one",
+        "text": "Write the second `1` as another unique value first.",
+        "isCorrect": false
+      },
+      {
+        "id": "skip_two",
+        "text": "Skip `2` because a duplicate was seen earlier.",
+        "isCorrect": false
+      },
+      {
+        "id": "need_count_first",
+        "text": "Build a full frequency table before deciding.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -736,48 +650,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Handle empty input before seeding the first unique value.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-126",
+    "id": "alg-prod-array-string-126-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "initialize_duplicate_collapse",
-    "prompt": "A sorted duplicate-collapse routine normally accepts the first value before scanning from index 1. What should happen for an empty array?",
+    "prompt": "Choose the empty-input behavior.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_off_by_one"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "return_empty",
-        "feedback": "There is no first value to seed, so the result should remain empty or the logical length should be 0.",
-        "id": "alg-prod-array-string-126-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "off_by_one"
-        ],
-        "options": [
-          {
-            "id": "return_empty",
-            "text": "Return an empty result or logical length 0."
-          },
-          {
-            "id": "read_index_zero",
-            "text": "Read index 0 and accept it."
-          },
-          {
-            "id": "write_one",
-            "text": "Return logical length 1."
-          },
-          {
-            "id": "need_dummy",
-            "text": "Insert a dummy value as the first unique value."
-          }
-        ],
-        "prompt": "Choose the empty-input behavior.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "initialize_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -804,7 +683,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Guard first-value initialization on empty input",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "A sorted duplicate-collapse routine normally accepts the first value before scanning from index 1. What should happen for an empty array?",
+    "answerFeedback": "There is no first value to seed, so the result should remain empty or the logical length should be 0.",
+    "options": [
+      {
+        "id": "return_empty",
+        "text": "Return an empty result or logical length 0.",
+        "isCorrect": true
+      },
+      {
+        "id": "read_index_zero",
+        "text": "Read index 0 and accept it.",
+        "isCorrect": false
+      },
+      {
+        "id": "write_one",
+        "text": "Return logical length 1.",
+        "isCorrect": false
+      },
+      {
+        "id": "need_dummy",
+        "text": "Insert a dummy value as the first unique value.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -824,48 +727,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Test empty and single-element arrays separately.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-127",
+    "id": "alg-prod-array-string-127-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "initialize_duplicate_collapse",
-    "prompt": "What should sorted duplicate collapse return for a single-element array like `[7]`?",
+    "prompt": "Choose the single-element behavior.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "diagnose_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "one_unique",
-        "feedback": "`[7]` has one unique run, so the kept result is `[7]` or logical length 1.",
-        "id": "alg-prod-array-string-127-check",
-        "mistakeTypes": [
-          "edge_case_missed",
-          "duplicate_handling_error"
-        ],
-        "options": [
-          {
-            "id": "one_unique",
-            "text": "Keep `[7]` with logical length 1."
-          },
-          {
-            "id": "zero_length",
-            "text": "Return logical length 0."
-          },
-          {
-            "id": "compare_previous",
-            "text": "Compare `7` with a previous element first."
-          },
-          {
-            "id": "need_second_value",
-            "text": "Reject it because there is no second value."
-          }
-        ],
-        "prompt": "Choose the single-element behavior.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "initialize_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -892,7 +760,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Handle single-element duplicate collapse",
     "trackId": "algorithms",
-    "type": "edge_case_drill"
+    "type": "edge_case_drill",
+    "instruction": "What should sorted duplicate collapse return for a single-element array like `[7]`?",
+    "answerFeedback": "`[7]` has one unique run, so the kept result is `[7]` or logical length 1.",
+    "options": [
+      {
+        "id": "one_unique",
+        "text": "Keep `[7]` with logical length 1.",
+        "isCorrect": true
+      },
+      {
+        "id": "zero_length",
+        "text": "Return logical length 0.",
+        "isCorrect": false
+      },
+      {
+        "id": "compare_previous",
+        "text": "Compare `7` with a previous element first.",
+        "isCorrect": false
+      },
+      {
+        "id": "need_second_value",
+        "text": "Reject it because there is no second value.",
+        "isCorrect": false
+      }
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -912,48 +804,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Check whether sortedness is a stated precondition before using previous-value duplicate collapse.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-128",
+    "id": "alg-prod-array-string-128-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "Why does sorted duplicate-collapse logic not automatically work on an unsorted array?",
+    "prompt": "Choose why sortedness matters.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "avoid_unnecessary_state"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "duplicates_may_be_separated",
-        "feedback": "Without sorted order, equal values can be separated, so adjacent-run logic can miss duplicates.",
-        "id": "alg-prod-array-string-128-check",
-        "mistakeTypes": [
-          "constraint_ignored",
-          "wrong_approach"
-        ],
-        "options": [
-          {
-            "id": "duplicates_may_be_separated",
-            "text": "Equal values may be separated rather than adjacent."
-          },
-          {
-            "id": "works_unsorted",
-            "text": "It works the same on every unsorted array."
-          },
-          {
-            "id": "frequency_unneeded_always",
-            "text": "Frequency or seen-state is never useful for unsorted input."
-          },
-          {
-            "id": "sort_destroys_contract",
-            "text": "Sorted duplicate collapse never depends on sorted order."
-          }
-        ],
-        "prompt": "Choose why sortedness matters.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -980,90 +837,31 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Respect the sorted-input precondition",
     "trackId": "algorithms",
-    "type": "common_mistake_diagnosis"
-  },
-  {
-    "complexityExplanation": "Sorted duplicate collapse scans the array once and uses only constant auxiliary state such as indexes or a write boundary.",
-    "contentVersion": "algorithms-core",
-    "difficulty": "medium",
-    "expectedSpaceComplexity": "O(1)",
-    "expectedTimeComplexity": "O(n)",
-    "feedbackModel": {
-      "decisionSignal": "One pass over sorted runs is enough, and no frequency table is needed.",
-      "mentalModelCorrection": "Sorted structure lets the algorithm collapse runs with constant auxiliary state.",
-      "mistakeTypes": [
-        "complexity_mismatch",
-        "wrong_approach"
-      ],
-      "nextAction": "When input is already sorted, compare the one-pass run-collapse cost with heavier state or nested loops.",
-      "result": "diagnostic"
-    },
-    "id": "alg-prod-array-string-129",
-    "learningStage": "foundations",
-    "primarySkillAtomId": "avoid_unnecessary_state",
-    "prompt": "A sorted array is collapsed in place so each value appears once. What time and auxiliary space should the intended solution use?",
-    "roadmapNodeId": "arrays_and_strings",
-    "secondarySkillAtomIds": [
-      "diagnose_duplicate_collapse",
-      "derive_time_complexity",
-      "derive_space_complexity"
-    ],
-    "staticMicroChecks": [
+    "type": "common_mistake_diagnosis",
+    "instruction": "Why does sorted duplicate-collapse logic not automatically work on an unsorted array?",
+    "answerFeedback": "Without sorted order, equal values can be separated, so adjacent-run logic can miss duplicates.",
+    "options": [
       {
-        "correctAnswer": {
-          "time": "O(n)",
-          "space": "O(1)"
-        },
-        "feedback": "The algorithm scans each value once and uses only constant auxiliary state.",
-        "id": "alg-prod-array-string-129-check",
-        "mistakeTypes": [
-          "complexity_mismatch",
-          "wrong_approach"
-        ],
-        "prompt": "Choose the expected time and auxiliary space.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "avoid_unnecessary_state"
-        ],
-        "type": "complexity_pair"
+        "id": "duplicates_may_be_separated",
+        "text": "Equal values may be separated rather than adjacent.",
+        "isCorrect": true
+      },
+      {
+        "id": "works_unsorted",
+        "text": "It works the same on every unsorted array.",
+        "isCorrect": false
+      },
+      {
+        "id": "frequency_unneeded_always",
+        "text": "Frequency or seen-state is never useful for unsorted input.",
+        "isCorrect": false
+      },
+      {
+        "id": "sort_destroys_contract",
+        "text": "Sorted duplicate collapse never depends on sorted order.",
+        "isCorrect": false
       }
-    ],
-    "status": "active",
-    "taxonomyRefs": [
-      {
-        "axisId": "pattern_family",
-        "nodeId": "arrays_and_strings",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "avoid_unnecessary_state",
-        "role": "primary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_time_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "skill_atom",
-        "nodeId": "derive_space_complexity",
-        "role": "secondary"
-      },
-      {
-        "axisId": "pattern_variant",
-        "nodeId": "duplicate_handling",
-        "role": "secondary"
-      },
-      {
-        "axisId": "mistake_type",
-        "nodeId": "complexity_mismatch",
-        "role": "mistake_type"
-      }
-    ],
-    "title": "Estimate sorted duplicate-collapse cost",
-    "trackId": "algorithms",
-    "type": "complexity_check"
+    ]
   },
   {
     "contentVersion": "algorithms-core",
@@ -1083,48 +881,13 @@ export const sortedDuplicateCollapseQuestions = [
       "nextAction": "Use sorted inputs with multiple runs to test both skipping duplicates and keeping new values.",
       "result": "diagnostic"
     },
-    "id": "alg-prod-array-string-130",
+    "id": "alg-prod-array-string-130-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "diagnose_duplicate_collapse",
-    "prompt": "Which sorted input best tests that duplicate collapse skips repeats but keeps later new values?",
+    "prompt": "Choose the strongest sorted-run test case.",
     "roadmapNodeId": "arrays_and_strings",
     "secondarySkillAtomIds": [
       "initialize_duplicate_collapse"
-    ],
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "multiple_runs",
-        "feedback": "`[1, 1, 2, 2, 3]` tests duplicate skipping across multiple runs and keeping later distinct values.",
-        "id": "alg-prod-array-string-130-check",
-        "mistakeTypes": [
-          "duplicate_handling_error",
-          "cannot_explain_why"
-        ],
-        "options": [
-          {
-            "id": "multiple_runs",
-            "text": "`[1, 1, 2, 2, 3]`"
-          },
-          {
-            "id": "all_unique",
-            "text": "`[1, 2, 3]`"
-          },
-          {
-            "id": "empty_array",
-            "text": "`[]`"
-          },
-          {
-            "id": "unsorted_case",
-            "text": "`[2, 1, 2]`"
-          }
-        ],
-        "prompt": "Choose the strongest sorted-run test case.",
-        "status": "active",
-        "testedSkillAtomIds": [
-          "diagnose_duplicate_collapse"
-        ],
-        "type": "single_choice"
-      }
     ],
     "status": "active",
     "taxonomyRefs": [
@@ -1151,6 +914,30 @@ export const sortedDuplicateCollapseQuestions = [
     ],
     "title": "Pick a strong sorted-run collapse test",
     "trackId": "algorithms",
-    "type": "test_case_selection"
+    "type": "test_case_selection",
+    "instruction": "Which sorted input best tests that duplicate collapse skips repeats but keeps later new values?",
+    "answerFeedback": "`[1, 1, 2, 2, 3]` tests duplicate skipping across multiple runs and keeping later distinct values.",
+    "options": [
+      {
+        "id": "multiple_runs",
+        "text": "`[1, 1, 2, 2, 3]`",
+        "isCorrect": true
+      },
+      {
+        "id": "all_unique",
+        "text": "`[1, 2, 3]`",
+        "isCorrect": false
+      },
+      {
+        "id": "empty_array",
+        "text": "`[]`",
+        "isCorrect": false
+      },
+      {
+        "id": "unsorted_case",
+        "text": "`[2, 1, 2]`",
+        "isCorrect": false
+      }
+    ]
   }
-];
+] as const satisfies readonly AlgorithmQuestion[];

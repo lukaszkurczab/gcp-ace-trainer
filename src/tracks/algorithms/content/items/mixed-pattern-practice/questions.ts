@@ -1,10 +1,15 @@
-[
+import type { AlgorithmQuestion } from "../../../algorithmQuestionTypes";
+
+export const mixedPatternPracticeQuestions = [
   {
     "contentVersion": "algorithms-core",
     "feedbackModel": {
       "decisionSignal": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
       "mentalModelCorrection": "Reject sorting when it changes the output contract.",
-      "mistakeTypes": ["wrong_approach", "constraint_ignored"],
+      "mistakeTypes": [
+        "wrong_approach",
+        "constraint_ignored"
+      ],
       "nextAction": "Practice one adjacent item that asks for the deciding signal before code mechanics.",
       "result": "diagnostic",
       "distractorExplanations": {
@@ -13,42 +18,16 @@
       }
     },
     "difficulty": "hard",
-    "id": "alg-prod-mixed-025",
+    "id": "alg-prod-mixed-025-check",
     "learningStage": "foundations",
     "primarySkillAtomId": "track_index_boundary",
-    "prompt": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
+    "prompt": "Choose the reasoning signal that should guide the strategy.",
     "roadmapNodeId": "mixed_pattern_practice",
     "secondarySkillAtomIds": [
       "detect_window_failure_signal",
       "move_decisive_pointer"
     ],
     "status": "active",
-    "staticMicroChecks": [
-      {
-        "correctAnswer": "expected_signal",
-        "feedback": "Reject sorting when it changes the output contract.",
-        "id": "alg-prod-mixed-025-check",
-        "mistakeTypes": ["wrong_approach", "constraint_ignored"],
-        "options": [
-          {
-            "id": "expected_signal",
-            "text": "Reject sorting when it changes the output contract."
-          },
-          {
-            "id": "wrong_1",
-            "text": "Choose the most familiar label before checking the constraint."
-          },
-          {
-            "id": "wrong_2",
-            "text": "Start with implementation details before naming the required state."
-          }
-        ],
-        "prompt": "Choose the reasoning signal that should guide the strategy.",
-        "status": "active",
-        "testedSkillAtomIds": ["track_index_boundary"],
-        "type": "single_choice"
-      }
-    ],
     "taxonomyRefs": [
       {
         "axisId": "pattern_family",
@@ -79,25 +58,32 @@
       "move_decisive_pointer"
     ],
     "constraintSignal": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
-    "expectedApproachIds": ["track_index_boundary"],
+    "expectedApproachIds": [
+      "track_index_boundary"
+    ],
     "reasonSignal": "Reject sorting when it changes the output contract.",
-    "rejectedApproachIds": ["label_only", "implementation_first"],
-    "responseSpec": {
-      "kind": "strategy_selection",
-      "strategies": [
-        {
-          "id": "expected_signal",
-          "text": "Reject sorting when it changes the output contract."
-        },
-        {
-          "id": "wrong_1",
-          "text": "Choose the most familiar label before checking the constraint."
-        },
-        {
-          "id": "wrong_2",
-          "text": "Start with implementation details before naming the required state."
-        }
-      ]
-    }
+    "rejectedApproachIds": [
+      "label_only",
+      "implementation_first"
+    ],
+    "instruction": "A sort would simplify comparison, but original neighbor relationships are required. The input can be large. Which strategy signal should guide the choice?",
+    "answerFeedback": "Reject sorting when it changes the output contract.",
+    "options": [
+      {
+        "id": "expected_signal",
+        "text": "Reject sorting when it changes the output contract.",
+        "isCorrect": true
+      },
+      {
+        "id": "wrong_1",
+        "text": "Choose the most familiar label before checking the constraint.",
+        "isCorrect": false
+      },
+      {
+        "id": "wrong_2",
+        "text": "Start with implementation details before naming the required state.",
+        "isCorrect": false
+      }
+    ]
   }
-]
+] as const satisfies readonly AlgorithmQuestion[];
