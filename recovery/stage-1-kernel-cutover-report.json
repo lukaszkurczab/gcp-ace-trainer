@@ -1,0 +1,741 @@
+{
+  "sourceCommit": "6d95f6dc8e45b116943b50d6c77920a78f1098d8",
+  "generatedAt": "2026-07-14T20:15:00+02:00",
+  "changedFiles": [
+    {
+      "path": "recovery/removal-inventory.json",
+      "status": "modified"
+    },
+    {
+      "path": "recovery/stage-1-kernel-cutover-report.json",
+      "status": "added"
+    },
+    {
+      "path": "recovery/stage-1-kernel-inventory.json",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/checkRecoveryBaseline.mjs",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/validateQuestionBank.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/constants/exam.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/constants/storage.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/domain/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/domain/learning/attemptResult.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/contentItemRef.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/errors.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/index.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/learningEvidence.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/repositoryContracts.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/reviewEvidence.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/reviewQueueEntry.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/trackIdentity.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/trainingAttempt.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/learning/trainingSession.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/sessions/answerTrainingItem.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/completeTrainingSession.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/createTrainingSession.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/index.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/sessionNavigation.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/sessionReview.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/sessions/sessionScoring.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/tracks/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/domain/tracks/trackMetadata.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/domain/tracks/trackRegistry.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/domain/tracks/types.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/index.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingAttempt.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingFeedback.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingItem.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingProgress.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingReview.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/domain/training/trainingSession.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/features/algorithms/algorithmsSessionModel.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/algorithms/AlgorithmsSessionScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/analytics/analyticsService.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/examGeneration.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/ExamReviewScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/ExamScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/examService.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/ResultScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/exam/scoringService.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/HomeScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/localReset.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/SelectTrackScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/tabs/HomeTab.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/tabs/homeTabModel.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/tabs/ProgressTab.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/tabs/progressTabModel.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/home/tabs/SettingsTab.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/practiceFlowModel.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/PracticeHubScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/practiceService.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/PracticeSessionScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/PracticeSetupScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/sessionConfig.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/practice/TopicRoadmapScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/questions/defaultQuestionBank.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/questions/questionBankStats.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/review/AnswerReviewScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/review/MistakesReviewScreen.tsx",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/review/reviewQueueModel.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/features/review/reviewQueueService.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/keys.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/localStorage.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/activeTrackRepository.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/reviewQueueRepository.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/storageResult.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/trainingAttemptRepository.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/trainingModelGuards.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/trainingSessionRepository.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/storage/repositories/userProgressRepository.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/storage/storageCodec.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmContentCatalog.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmItems.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmProgress.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmReview.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmsContentAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmScoring.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmSessionSelection.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmsReviewAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmsScoringAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/algorithms/domain/algorithmModes.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/domain/algorithmResponse.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/domain/algorithmTaxonomy.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/domain/index.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/algorithms/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/cloud-certification/certificationContentCatalog.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/certificationProjections.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/certificationReview.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/certificationScoring.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationProgressBridge.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationReviewAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/cloud-certification/domain/certificationExamState.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/domain/certificationModes.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/domain/certificationQuestion.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/domain/certificationResponse.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/domain/index.ts",
+      "status": "added"
+    },
+    {
+      "path": "src/tracks/cloud-certification/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/index.ts",
+      "status": "modified"
+    },
+    {
+      "path": "src/tracks/trackAdapters.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/tracks/types.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/types/attempt.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/types/index.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/types/question.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "src/utils/domain.ts",
+      "status": "modified"
+    },
+    {
+      "path": "tests/algorithmContentModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/algorithmProgress.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/algorithmSelectionArchitecture.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/algorithmsScoring.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/algorithmsSessionModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/analytics.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/architectureBoundaries.test.ts",
+      "status": "added"
+    },
+    {
+      "path": "tests/canonicalRegistry.test.ts",
+      "status": "added"
+    },
+    {
+      "path": "tests/canonicalRepositories.test.ts",
+      "status": "added"
+    },
+    {
+      "path": "tests/cloudCertificationBridge.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/cloudCertificationSelectors.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/cloudCertificationWriteThrough.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/familyScoring.test.ts",
+      "status": "added"
+    },
+    {
+      "path": "tests/fixtures.ts",
+      "status": "modified"
+    },
+    {
+      "path": "tests/homeTabModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/learningKernel.test.ts",
+      "status": "added"
+    },
+    {
+      "path": "tests/localReset.test.ts",
+      "status": "modified"
+    },
+    {
+      "path": "tests/practiceFlowModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/progressTabModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/reviewQueueModel.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/sessionEngine.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/storageCodec.test.ts",
+      "status": "modified"
+    },
+    {
+      "path": "tests/storageKeys.test.ts",
+      "status": "modified"
+    },
+    {
+      "path": "tests/storageRepositories.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/trackAdapters.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/trackRegistry.test.ts",
+      "status": "deleted"
+    },
+    {
+      "path": "tests/trainingContracts.test.ts",
+      "status": "deleted"
+    }
+  ],
+  "finalOwners": {
+    "trackIdentity": "src/domain/learning",
+    "trackRegistration": "src/domain/tracks",
+    "sessionAttemptResultReviewEvidence": "src/domain/learning",
+    "algorithmsItemsResponsesTaxonomyModesScoring": "src/tracks/algorithms",
+    "certificationItemsResponsesTaxonomyModesScoringExamState": "src/tracks/cloud-certification",
+    "persistenceImplementation": "src/storage"
+  },
+  "deletedSymbols": [
+    {
+      "symbol": "TrainingItem and global variants",
+      "previousPath": "src/domain/training/trainingItem.ts",
+      "reason": "Concrete items now belong exclusively to their track family."
+    },
+    {
+      "symbol": "TrainingAttemptResponse and TrainingAttemptResult",
+      "previousPath": "src/domain/training/trainingAttempt.ts",
+      "reason": "The kernel now owns a generic immutable attempt envelope and one validated result."
+    },
+    {
+      "symbol": "TrainingSessionItemRef and old TrainingSession",
+      "previousPath": "src/domain/training/trainingSession.ts",
+      "reason": "ContentItemRef and canonical TrainingSession replace the competing lifecycle."
+    },
+    {
+      "symbol": "ReviewQueueItem, inferred kind, old reasons",
+      "previousPath": "src/domain/training/trainingReview.ts",
+      "reason": "ReviewQueueEntry is the sole authoritative review record."
+    },
+    {
+      "symbol": "Question",
+      "previousPath": "src/types/question.ts",
+      "reason": "CertificationQuestion is family-owned."
+    },
+    {
+      "symbol": "ActiveExamSession, PracticeAnswerRecord, QuestionReviewState",
+      "previousPath": "src/types/attempt.ts",
+      "reason": "Canonical sessions, attempts, review entries and CertificationExamState replace authoritative feature records."
+    },
+    {
+      "symbol": "all adapter and bridge contracts",
+      "previousPath": "src/tracks/trackAdapters.ts",
+      "reason": "Active consumers construct and consume canonical records directly."
+    }
+  ],
+  "migratedConsumers": [
+    {
+      "path": "src/features/algorithms/algorithmsSessionModel.ts",
+      "oldContract": "global training attempt/result/review",
+      "newContract": "typed TrainingAttempt<AlgorithmResponse>, AttemptResult, ReviewQueueEntry"
+    },
+    {
+      "path": "src/features/algorithms/AlgorithmsSessionScreen.tsx",
+      "oldContract": "old session and item refs",
+      "newContract": "canonical TrainingSession and ContentItemRef"
+    },
+    {
+      "path": "src/features/practice/practiceService.ts",
+      "oldContract": "PracticeAnswerRecord write-through",
+      "newContract": "direct TrainingAttempt<CertificationResponse> and ReviewQueueEntry"
+    },
+    {
+      "path": "src/features/exam/examService.ts",
+      "oldContract": "ActiveExamSession and AttemptSummary persistence",
+      "newContract": "TrainingSession plus CertificationExamState and direct typed attempts"
+    },
+    {
+      "path": "src/tracks/algorithms/algorithmProgress.ts",
+      "oldContract": "global attempts and inferred review kinds",
+      "newContract": "canonical attempts, evidence and persistent review state"
+    },
+    {
+      "path": "src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts",
+      "oldContract": "global attempts and adapters",
+      "newContract": "canonical attempts and evidence"
+    },
+    {
+      "path": "src/features/review/reviewQueueService.ts",
+      "oldContract": "track adapters and ReviewQueueItem",
+      "newContract": "family catalogs and ReviewQueueEntry"
+    },
+    {
+      "path": "src/storage/repositories",
+      "oldContract": "old sessions, attempts, reviews and permissive guards",
+      "newContract": "canonical repositories with rejecting guards"
+    },
+    {
+      "path": "src/features/home",
+      "oldContract": "persisted feature histories and default track",
+      "newContract": "derived Certification view models, canonical attempts, explicit no-track state"
+    },
+    {
+      "path": "tests",
+      "oldContract": "obsolete adapter and old-record tests",
+      "newContract": "kernel, registry, family, repository and architecture boundary suites"
+    }
+  ],
+  "retainedViewModels": [
+    {
+      "symbol": "CertificationExamSummaryViewModel",
+      "path": "src/tracks/cloud-certification/domain/certificationExamState.ts",
+      "reasonItIsNotAuthoritative": "Built from canonical completed sessions and attempts and never written as attempt history."
+    },
+    {
+      "symbol": "CertificationPracticeAnswerViewModel",
+      "path": "src/tracks/cloud-certification/domain/certificationExamState.ts",
+      "reasonItIsNotAuthoritative": "Derived from canonical practice attempts for existing UI projections."
+    },
+    {
+      "symbol": "CertificationExamViewModel",
+      "path": "src/tracks/cloud-certification/domain/certificationExamState.ts",
+      "reasonItIsNotAuthoritative": "A composed in-memory view of canonical TrainingSession and CertificationExamState."
+    }
+  ],
+  "rejectedOldRecordShapes": [
+    "session.currentItemIndex or itemRefs",
+    "session status expired",
+    "attempt confidence, itemId or itemType",
+    "result correctness, partial_credit or mixed",
+    "review kind, priority or retentionPassedAt",
+    "old review reasons including incorrect_attempt",
+    "old ActiveExamSession record"
+  ],
+  "architectureChecks": [
+    {
+      "rule": "kernel imports no family modules",
+      "passed": true
+    },
+    {
+      "rule": "registry imports no content bank or concrete item",
+      "passed": true
+    },
+    {
+      "rule": "Algorithms imports no Certification module",
+      "passed": true
+    },
+    {
+      "rule": "Certification imports no Algorithms module",
+      "passed": true
+    },
+    {
+      "rule": "old owners and adapter paths are absent",
+      "passed": true
+    },
+    {
+      "rule": "active source contains no broad double cast or validation suppression",
+      "passed": true
+    },
+    {
+      "rule": "repository deny-list explicitly rejects old record fields",
+      "passed": true
+    }
+  ],
+  "remainingLaterStageWork": [
+    "Replace AsyncStorage with MMKV.",
+    "Add durable journal and crash-safe materialization.",
+    "Implement final family runtime orchestration and shared session shell.",
+    "Move content to its later-stage source boundary."
+  ]
+}

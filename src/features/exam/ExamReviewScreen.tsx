@@ -6,26 +6,26 @@ import { Alert, StyleSheet, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ListRow, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { getActiveExamSession, getQuestions } from "../../storage";
+import { getCertificationExam, getQuestions } from "../../storage";
 import { spacing } from "../../theme";
-import type { ActiveExamSession } from "../../types";
+import type { CertificationExamViewModel } from "../../tracks/cloud-certification";
 import { formatDuration } from "../../utils";
 import {
   buildExamQuestionViews,
   getRemainingSeconds,
-  submitActiveExamSession,
+  submitCertificationExam,
   type ExamQuestionView
 } from "./examService";
 
 type ExamReviewScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM_REVIEW>;
 
 export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
-  const [session, setSession] = useState<ActiveExamSession | null>(null);
+  const [session, setSession] = useState<CertificationExamViewModel | null>(null);
   const [questions, setQuestions] = useState<ExamQuestionView[]>([]);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const loadReview = useCallback(async () => {
-    const [savedSession, bankQuestions] = await Promise.all([getActiveExamSession(), getQuestions()]);
+    const [savedSession, bankQuestions] = await Promise.all([getCertificationExam(), getQuestions()]);
 
     if (!savedSession) {
       setSession(null);
@@ -56,7 +56,7 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
 
         if (nextRemainingSeconds <= 0) {
           clearInterval(intervalId);
-          void submitActiveExamSession(true).then((attempt) => {
+          void submitCertificationExam(true).then((attempt) => {
             Alert.alert("Time expired", "Your exam was submitted automatically.");
             navigation.replace(ROUTES.RESULT, { attemptId: attempt?.id, autoSubmitted: true });
           });
@@ -68,12 +68,12 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
   );
 
   async function submitExam() {
-    const attempt = await submitActiveExamSession(false);
+    const attempt = await submitCertificationExam(false);
     navigation.replace(ROUTES.RESULT, { attemptId: attempt?.id });
   }
 
   function handleSubmit() {
-    const unansweredCount = questions.filter((question) => (session?.selectedOptionIdsByQuestionId[question.id] ?? []).length === 0).length;
+    const unansweredCount = questions.filter((question) => (session?.examState.responsesByItemId[question.id]?.selectedOptionIds ?? []).length === 0).length;
 
     if (unansweredCount > 0) {
       Alert.alert("Submit with unanswered questions?", `${unansweredCount} question${unansweredCount === 1 ? " is" : "s are"} unanswered.`, [
@@ -94,8 +94,8 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
     );
   }
 
-  const answeredCount = questions.filter((question) => (session.selectedOptionIdsByQuestionId[question.id] ?? []).length > 0).length;
-  const flaggedCount = session.flaggedQuestionIds.length;
+  const answeredCount = questions.filter((question) => (session.examState.responsesByItemId[question.id]?.selectedOptionIds ?? []).length > 0).length;
+  const flaggedCount = session.examState.flaggedItemIds.length;
   const answeredProgress = questions.length > 0 ? answeredCount / questions.length : 0;
 
   return (
@@ -111,13 +111,13 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
 
       <View style={styles.list}>
         {questions.map((question, index) => {
-          const isAnswered = (session.selectedOptionIdsByQuestionId[question.id] ?? []).length > 0;
-          const isFlagged = session.flaggedQuestionIds.includes(question.id);
+          const isAnswered = (session.examState.responsesByItemId[question.id]?.selectedOptionIds ?? []).length > 0;
+          const isFlagged = session.examState.flaggedItemIds.includes(question.id);
 
           return (
             <ListRow
               key={question.id}
-              detail={(session.selectedOptionIdsByQuestionId[question.id] ?? []).length > 0 ? "Answer saved" : "No answer selected"}
+              detail={(session.examState.responsesByItemId[question.id]?.selectedOptionIds ?? []).length > 0 ? "Answer saved" : "No answer selected"}
               onPress={() => navigation.navigate(ROUTES.EXAM, { questionIndex: index })}
               title={`Question ${index + 1}`}
               trailing={

@@ -1,4 +1,4 @@
-import { DEFAULT_TRACK_ID, isTrackId, type TrackId } from "../../domain";
+import { isRegisteredTrackId, type TrackId } from "../../domain";
 import {
   readRepositoryJson,
   removeRepositoryJson,
@@ -8,11 +8,11 @@ import {
 
 const ACTIVE_TRACK_KEY = "ACTIVE_TRACK";
 
-export async function getActiveTrackRepositoryValue(): Promise<StorageRepositoryResult<TrackId>> {
+export async function getActiveTrackRepositoryValue(): Promise<StorageRepositoryResult<TrackId | null>> {
   return readRepositoryJson(
     ACTIVE_TRACK_KEY,
-    DEFAULT_TRACK_ID,
-    (value): value is TrackId => typeof value === "string" && isTrackId(value),
+    null,
+    (value): value is TrackId | null => value === null || (typeof value === "string" && isRegisteredTrackId(value)),
   );
 }
 

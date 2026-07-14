@@ -8,15 +8,15 @@ export type LocalStorageIssue = {
 
 export type LocalJsonDecodeResult<T> =
   | { ok: true; value: T }
-  | { issue: LocalStorageIssue; ok: false; value: T };
+  | { issue: LocalStorageIssue; ok: false };
 
 export function decodeLocalJson<T>(
   key: string,
   value: string | null,
-  fallback: T,
+  missingValue: T,
 ): LocalJsonDecodeResult<T> {
   if (!value) {
-    return { ok: true, value: fallback };
+    return { ok: true, value: missingValue };
   }
 
   try {
@@ -29,7 +29,6 @@ export function decodeLocalJson<T>(
         operation: "parse",
       },
       ok: false,
-      value: fallback,
     };
   }
 }

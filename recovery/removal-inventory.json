@@ -1,160 +1,64 @@
 {
-  "schemaVersion": 1,
-  "capturedFrom": {
-    "branch": "main",
-    "commit": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
-    "capturedAt": "2026-07-14T16:34:45+02:00"
-  },
-  "purpose": "Exact recovery cutover inventory. Entries identify active paths and their replacement/removal stage; Stage 0F normalizes only the Algorithms response schema.",
-  "searchTargets": [
-    {
-      "id": "async-storage",
-      "pattern": "@react-native-async-storage/async-storage",
-      "files": ["src/storage/localStorage.ts", "src/storage/repositories/storageResult.ts", "tests/cloudCertificationSelectors.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/storageRepositories.test.ts"]
-    },
-    {
-      "id": "local-storage-api",
-      "pattern": "storage/localStorage|\\./localStorage",
-      "files": ["src/storage/index.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts"]
-    },
-    {
-      "id": "old-storage-keys",
-      "pattern": "LEGACY_STORAGE_KEYS|getStorageReadKeys|getStorageClearKeys|patternly\\.activeTrack|gcpAceTrainer\\.",
-      "files": ["src/constants/storage.ts", "src/storage/keys.ts", "src/storage/localStorage.ts", "tests/storageKeys.test.ts"]
-    },
-    {
-      "id": "question-model",
-      "pattern": "\\bQuestion\\b",
-      "files": ["data/question-bank/README.md", "scripts/validateQuestionBank.ts", "src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ExamScreen.tsx", "src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/practice/PracticeSessionScreen.tsx", "src/features/practice/practiceService.ts", "src/features/questions/defaultQuestionBank.ts", "src/features/questions/questionBankStats.ts", "src/features/review/AnswerReviewScreen.tsx", "src/storage/localStorage.ts", "src/tracks/algorithms/content/items/complexity-and-constraints/hidden-operation-cost.ts", "src/tracks/algorithms/content/items/complexity-and-constraints/preprocessing-and-queries.ts", "src/tracks/algorithms/content/items/complexity-and-constraints/time-space-tradeoffs.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts", "src/types/attempt.ts", "src/types/question.ts", "tests/fixtures.ts"]
-    },
-    {
-      "id": "attempt-summary-model",
-      "pattern": "\\bAttemptSummary\\b",
-      "files": ["src/features/analytics/analyticsService.ts", "src/features/exam/ResultScreen.tsx", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/home/tabs/ProgressTab.tsx", "src/features/home/tabs/progressTabModel.ts", "src/features/practice/PracticeHubScreen.tsx", "src/features/review/AnswerReviewScreen.tsx", "src/storage/localStorage.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "src/types/attempt.ts", "tests/fixtures.ts"]
-    },
-    {
-      "id": "practice-answer-record-model",
-      "pattern": "\\bPracticeAnswerRecord\\b",
-      "files": ["src/features/analytics/analyticsService.ts", "src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/home/tabs/ProgressTab.tsx", "src/features/home/tabs/progressTabModel.ts", "src/features/practice/PracticeHubScreen.tsx", "src/features/practice/practiceService.ts", "src/storage/localStorage.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "src/types/attempt.ts", "tests/fixtures.ts"]
-    },
-    {
-      "id": "active-exam-session-model",
-      "pattern": "\\bActiveExamSession\\b",
-      "files": ["src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ExamScreen.tsx", "src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/storage/localStorage.ts", "src/types/attempt.ts", "tests/fixtures.ts"]
-    },
-    {
-      "id": "training-item-model",
-      "pattern": "\\bTrainingItem\\b",
-      "files": ["src/domain/index.ts", "src/domain/training/trainingItem.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts", "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts", "src/tracks/trackAdapters.ts", "tests/sessionEngine.test.ts", "tests/trackAdapters.test.ts", "tests/trainingContracts.test.ts"]
-    },
-    {
-      "id": "training-item-type-model",
-      "pattern": "\\bTrainingItemType\\b",
-      "files": ["src/domain/tracks/types.ts", "src/domain/training/trainingAttempt.ts", "src/domain/training/trainingItem.ts", "src/domain/training/trainingSession.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/types.ts"]
-    },
-    {
-      "id": "training-attempt-confidence",
-      "pattern": "\\bTrainingAttemptConfidence\\b",
-      "files": ["src/domain/index.ts", "src/domain/sessions/answerTrainingItem.ts", "src/domain/training/trainingAttempt.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts"]
-    },
-    {
-      "id": "low-confidence-review-reason",
-      "pattern": "\\blow_confidence\\b",
-      "files": ["src/domain/training/trainingReview.ts", "src/storage/repositories/trainingModelGuards.ts"]
-    },
-    {
-      "id": "practice-session-screen",
-      "pattern": "\\bPracticeSessionScreen\\b",
-      "files": ["src/features/practice/PracticeSessionScreen.tsx", "src/navigation/RootNavigator.tsx"]
-    },
-    {
-      "id": "algorithms-session-screen",
-      "pattern": "\\bAlgorithmsSessionScreen\\b",
-      "files": ["src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/features/practice/PracticeSessionScreen.tsx"]
-    },
-    {
-      "id": "exam-screen",
-      "pattern": "\\bExamScreen\\b",
-      "files": ["src/features/exam/ExamScreen.tsx", "src/navigation/RootNavigator.tsx"]
-    },
-    {
-      "id": "practice-service",
-      "pattern": "\\bpracticeService\\b",
-      "files": ["src/features/practice/PracticeSessionScreen.tsx", "tests/cloudCertificationWriteThrough.test.ts", "tests/optionRandomization.test.ts"]
-    },
-    {
-      "id": "exam-service",
-      "pattern": "\\bexamService\\b",
-      "files": ["src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ExamScreen.tsx", "tests/cloudCertificationWriteThrough.test.ts"]
-    },
-    {
-      "id": "cloud-write-through",
-      "pattern": "writeThroughPracticeAnswerRecord|writeThroughAttemptSummary|cloudCertificationWriteThrough",
-      "files": ["src/features/exam/examService.ts", "src/features/practice/practiceService.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "src/tracks/cloud-certification/index.ts", "tests/cloudCertificationWriteThrough.test.ts"]
-    }
+  "schemaVersion": 2,
+  "sourceCommit": "6d95f6dc8e45b116943b50d6c77920a78f1098d8",
+  "generatedAt": "2026-07-14T20:00:00+02:00",
+  "purpose": "Stage 1B atomic canonical learning-kernel removal and enforcement inventory.",
+  "deletedOwners": [
+    "src/domain/training/**",
+    "src/domain/sessions/**",
+    "src/domain/tracks/types.ts",
+    "src/types/question.ts",
+    "src/types/attempt.ts",
+    "src/tracks/types.ts",
+    "src/tracks/trackAdapters.ts",
+    "src/tracks/algorithms/*Adapter.ts",
+    "src/tracks/cloud-certification/*Adapter.ts",
+    "src/tracks/cloud-certification/*Bridge.ts",
+    "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts"
   ],
-  "pathInventory": {
-    "models": ["src/types/question.ts", "src/types/attempt.ts", "src/domain/training/trainingItem.ts", "src/domain/training/trainingAttempt.ts", "src/domain/training/trainingReview.ts", "src/domain/tracks/types.ts"],
-    "screens": ["src/features/practice/PracticeSessionScreen.tsx", "src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/features/exam/ExamScreen.tsx", "src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ResultScreen.tsx", "src/features/review/AnswerReviewScreen.tsx"],
-    "services": ["src/features/practice/practiceService.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/analytics/analyticsService.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts"],
-    "storageApis": ["src/storage/localStorage.ts", "src/storage/keys.ts", "src/storage/storageCodec.ts", "src/storage/index.ts", "src/storage/repositories/storageResult.ts"],
-    "routes": ["src/constants/routes.ts", "src/navigation/types.ts", "src/navigation/RootNavigator.tsx", "src/features/home/shellModel.ts", "src/features/practice/PracticeSessionScreen.tsx", "src/features/exam/ExamScreen.tsx", "src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ResultScreen.tsx", "src/features/review/AnswerReviewScreen.tsx"],
-    "keys": ["src/constants/storage.ts", "src/storage/keys.ts", "src/storage/localStorage.ts", "tests/storageKeys.test.ts"],
-    "tests": {
-      "executedBy": "node --import tsx --test tests/*.test.ts",
-      "files": ["tests/algorithmBigOBasicsContent.test.ts", "tests/algorithmContentModel.test.ts", "tests/algorithmProgress.test.ts", "tests/algorithmSelectionArchitecture.test.ts", "tests/algorithmsScoring.test.ts", "tests/algorithmsSessionModel.test.ts", "tests/analytics.test.ts", "tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationSelectors.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/examGeneration.test.ts", "tests/homeTabModel.test.ts", "tests/localReset.test.ts", "tests/optionRandomization.test.ts", "tests/practiceFlowModel.test.ts", "tests/practiceNavigation.test.ts", "tests/progressTabModel.test.ts", "tests/questionBankValidation.test.ts", "tests/recoveryContractFixtures.test.ts", "tests/reviewQueueModel.test.ts", "tests/scoring.test.ts", "tests/sessionEngine.test.ts", "tests/shellModel.test.ts", "tests/storageCodec.test.ts", "tests/storageKeys.test.ts", "tests/storageRepositories.test.ts", "tests/trackAdapters.test.ts", "tests/trackRegistry.test.ts", "tests/trainingContracts.test.ts"],
-      "noDeadTestsFound": "Every test file matches the active npm test glob. tests/questionBankValidation.test.ts executes the active question validator; all remaining baseline tests import source code."
-    }
-  },
-  "dependencyGraph": [
-    { "from": "src/navigation/RootNavigator.tsx", "to": "src/features/practice/PracticeSessionScreen.tsx", "relationship": "route component" },
-    { "from": "src/navigation/RootNavigator.tsx", "to": "src/features/exam/ExamScreen.tsx", "relationship": "route component" },
-    { "from": "src/features/practice/PracticeSessionScreen.tsx", "to": "src/features/algorithms/AlgorithmsSessionScreen.tsx", "relationship": "track branch" },
-    { "from": "src/features/practice/PracticeSessionScreen.tsx", "to": "src/features/practice/practiceService.ts", "relationship": "Cloud practice operations" },
-    { "from": "src/features/practice/practiceService.ts", "to": "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "relationship": "write-through" },
-    { "from": "src/features/exam/ExamScreen.tsx", "to": "src/features/exam/examService.ts", "relationship": "exam lifecycle" },
-    { "from": "src/features/exam/examService.ts", "to": "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "relationship": "write-through" },
-    { "from": "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "to": "src/storage/localStorage.ts", "relationship": "issue recording" },
-    { "from": "src/storage/localStorage.ts", "to": "@react-native-async-storage/async-storage", "relationship": "persistence client" },
-    { "from": "src/storage/localStorage.ts", "to": "src/constants/storage.ts", "relationship": "old key reads and clears" }
+  "deletedSymbols": [
+    "TrainingItem",
+    "TrainingContentItem",
+    "TrainingItemType",
+    "TrainingAttemptResponse",
+    "TrainingAttemptResult",
+    "TrainingAttemptConfidence",
+    "ReviewQueueItemKind",
+    "getReviewQueueItemKind",
+    "ActiveExamSession",
+    "PracticeAnswerRecord",
+    "QuestionReviewState",
+    "Question"
   ],
-  "defaultAndFallbackBranches": [
-    { "file": "src/storage/localStorage.ts", "lines": [30, 39, 46, 52, 56, 161, 162, 171], "reason": "read fallback, default track, and merged default question bank" },
-    { "file": "src/storage/storageCodec.ts", "lines": [16, 19, 32], "reason": "decode fallback" },
-    { "file": "src/storage/repositories/storageResult.ts", "lines": [32, 41, 44, 47, 51, 62], "reason": "repository fallback result" },
-    { "file": "src/storage/repositories/activeTrackRepository.ts", "lines": [1, 14], "reason": "default active track" },
-    { "file": "src/features/practice/PracticeSessionScreen.tsx", "lines": [27, 37], "reason": "track branch selects two independent session runtimes" },
-    { "file": "src/features/questions/defaultQuestionBank.ts", "lines": [5, 9], "reason": "default bank merge" },
-    { "file": "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "lines": [52, 56], "reason": "write failure is recorded and flow can continue" }
-  ],
-  "designReferences": {
-    "available": ["docs/designs/algorithm_drill_unified/screen.png", "docs/designs/cloud_question_unified_focus_lab_style/screen.png", "docs/designs/complexity_summary/screen.png", "docs/designs/home_choice_enabled/screen.png", "docs/designs/practice_hub_unified/screen.png", "docs/designs/practice_setup/screen.png", "docs/designs/progress_overview_refined_hierarchy/screen.png", "docs/designs/select_track/screen.png", "docs/designs/session_summary_refined_analytics_actions/screen.png", "docs/designs/set_up_your_practice_path_focused/screen.png", "docs/designs/settings_refined_focus_lab_style/screen.png", "docs/designs/topic_performance_detail_gcp_services/screen.png", "docs/designs/topic_roadmap_cloud_certification_unified/screen.png", "docs/designs/welcome/screen.png", "docs/designs/technical_workspace_1/DESIGN.md", "docs/designs/technical_workspace_2/DESIGN.md"],
-    "requiredButMissing": ["canonical session shell", "ordering: unanswered, answered, correct, partial, incorrect", "complexity: unanswered, answered, correct, partial, incorrect", "preparation failure", "journal write failure", "materialization failure", "completion failure", "exit confirmation", "resumed session", "shortened review disclosure", "Algorithms summary", "Certification summary", "Exam navigator variants", "Exam review", "empty review"],
-    "rule": "Each missing reference is a G-01 blocker, not a Codex implementation task."
+  "canonicalOwners": {
+    "learningKernel": "src/domain/learning",
+    "trackRegistry": "src/domain/tracks",
+    "algorithmsFamily": "src/tracks/algorithms",
+    "certificationFamily": "src/tracks/cloud-certification",
+    "persistence": "src/storage/repositories"
   },
-  "gates": [
-    { "id": "G-01", "state": "blocked", "owner": "product/design owner", "blocker": "The required interaction-state references listed in designReferences.requiredButMissing do not exist." },
-    { "id": "G-02", "state": "blocked", "owner": "product owner", "blocker": "Algorithms Interview Simulation profile has no approved product contract." },
-    { "id": "G-03", "state": "blocked", "owner": "product owner", "blocker": "Certification mode matrix has no approved exact contract." },
-    { "id": "G-04", "state": "blocked", "owner": "certification product owner", "blocker": "GCP ACE ExamExperienceProfile requires a current official-source verification and approved profile." },
-    { "id": "G-05", "state": "blocked", "owner": "architecture owner", "blocker": "Corrupt canonical MMKV-record policy is undecided; it blocks production release, not recovery." }
+  "explicitDenyListOnly": [
+    "confidence",
+    "retentionPassedAt",
+    "correctness",
+    "incorrect_attempt"
   ],
-  "baseline": {
-    "commands": [
-      { "command": "npm run typecheck", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "Stage 0F canonical Algorithms types and exports compile without compatibility casts." },
-      { "command": "npm test", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "The active suite executes the canonical Algorithms bank and recovery contract fixtures." },
-      { "command": "npm run validate:questions", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "Cloud Certification and the canonical Algorithms manifest pass their blocking validators." },
-      { "command": "npm run qa:static", "exitCode": 0, "state": "passed", "owner": "repository maintainer", "cause": "The recovery inventory, typecheck, tests, and question validation pass as one PR gate." }
-    ],
-    "stageZeroDecision": "Stage 0F resolved the recorded Algorithms schema failures through a deterministic root-schema cutover; no obsolete response path remains active."
-  },
-  "algorithmsSchemaCutover": {
-    "report": "recovery/algorithms-schema-cutover-report.json",
-    "preChangeInventory": "recovery/algorithms-response-shape-inventory.json",
-    "sourceCommit": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
-    "beforeActiveItems": 1751,
-    "afterActiveItems": 1692,
-    "removedUnconvertibleComplexityItems": 59,
-    "obsoleteActiveFields": []
-  }
+  "activeTests": [
+    "tests/algorithmBigOBasicsContent.test.ts",
+    "tests/architectureBoundaries.test.ts",
+    "tests/canonicalRegistry.test.ts",
+    "tests/canonicalRepositories.test.ts",
+    "tests/examGeneration.test.ts",
+    "tests/familyScoring.test.ts",
+    "tests/learningKernel.test.ts",
+    "tests/localReset.test.ts",
+    "tests/optionRandomization.test.ts",
+    "tests/practiceNavigation.test.ts",
+    "tests/questionBankValidation.test.ts",
+    "tests/recoveryContractFixtures.test.ts",
+    "tests/scoring.test.ts",
+    "tests/shellModel.test.ts",
+    "tests/storageCodec.test.ts",
+    "tests/storageKeys.test.ts"
+  ]
 }

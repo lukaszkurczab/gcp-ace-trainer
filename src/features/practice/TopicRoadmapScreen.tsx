@@ -1,9 +1,10 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  EmptyState,
   Icon,
   Screen,
   type IconName,
@@ -11,11 +12,10 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   CLOUD_CERTIFICATION_TRACK_ID,
-  DEFAULT_TRACK_ID,
-  getTrackDefinition,
+  getTrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { TrainingAttempt } from "../../domain/training";
+import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveTrackId, getTrainingAttempts } from "../../storage";
 import { colorWithOpacity, colors, radius, spacing, typography } from "../../theme";
@@ -40,9 +40,7 @@ const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
 
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
-  const [activeTrackId, setActiveTrackId] = useState<TrackId>(
-    route.params?.trackId ?? DEFAULT_TRACK_ID,
-  );
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
   const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
 
@@ -57,7 +55,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
         ]);
 
         if (isActive) {
-          setActiveTrackId(savedTrackId);
+          if (savedTrackId) setActiveTrackId(savedTrackId);
           setTrainingAttempts(trainingAttemptsResult.value);
         }
       }
@@ -80,9 +78,10 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     }
   }, [route.params?.trackId]);
 
-  const activeTrack = getTrackDefinition(activeTrackId);
+  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="The topic roadmap is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  const activeTrack = getTrackDisplay(activeTrackId);
   const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
-  const rows = useMemo(() => buildRoadmapRows(topics), [topics]);
+  const rows = buildRoadmapRows(topics);
   const resolvedSelectedTopicId = selectedTopicId ?? getDefaultSelectedTopicId(topics);
 
   function selectTopic(topic: TopicRoadmapNodeModel) {

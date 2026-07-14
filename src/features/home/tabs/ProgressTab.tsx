@@ -13,15 +13,12 @@ import {
 } from "../../../components";
 import {
   CLOUD_CERTIFICATION_TRACK_ID,
-  type TrackDefinition,
+  type TrackDisplay,
 } from "../../../domain";
-import type { ReviewQueueItem, TrainingAttempt } from "../../../domain/training";
+import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import { colors, spacing, typography } from "../../../theme";
-import type {
-  AttemptSummary,
-  PracticeAnswerRecord,
-} from "../../../types";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/cloud-certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   buildProgressTabModel,
@@ -30,12 +27,12 @@ import {
 } from "./progressTabModel";
 
 type ProgressTabProps = {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   analytics: AnalyticsData;
-  attempts: AttemptSummary[];
+  attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
-  practiceHistory: PracticeAnswerRecord[];
-  reviewQueueItems?: readonly ReviewQueueItem[];
+  practiceHistory: CertificationPracticeAnswerViewModel[];
+  reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: TrainingAttempt[];
   onProgressAction?: (action: ProgressAction) => void;
 };
@@ -391,14 +388,14 @@ function formatDiagnosticFacts(
   return facts.map((fact) => `${fact.label}: ${fact.value}`).join(" · ");
 }
 
-function getProgressEmptyTitle(trackId: TrackDefinition["id"]): string {
+function getProgressEmptyTitle(trackId: TrackDisplay["id"]): string {
   return trackId === CLOUD_CERTIFICATION_TRACK_ID
     ? "No topic samples yet"
     : "No algorithm progress yet";
 }
 
 function getProgressEmptyDescription(
-  trackId: TrackDefinition["id"],
+  trackId: TrackDisplay["id"],
   hasData: boolean,
 ): string {
   if (trackId !== CLOUD_CERTIFICATION_TRACK_ID) {

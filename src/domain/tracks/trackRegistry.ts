@@ -1,254 +1,67 @@
-import type { TrackDefinition, TrackId } from "./types";
-import { ALGORITHM_QUESTION_TYPES } from "../../tracks/algorithms/algorithmQuestionTypes";
-import { ALGORITHM_CONTENT_VERSION } from "../../tracks/algorithms/algorithmContentTypes";
-import { algorithmContentItems } from "../../tracks/algorithms/content";
+import { UnknownTrackError, UnknownTrackFamilyError, type TrackFamilyId, type TrackId } from "../learning";
+import type { TrackDisplay, TrackRegistration } from "./trackMetadata";
 
-export const CLOUD_CERTIFICATION_TRACK_ID: TrackId = "cloud-certification";
-export const ALGORITHMS_TRACK_ID: TrackId = "algorithms";
-export const DEFAULT_TRACK_ID = CLOUD_CERTIFICATION_TRACK_ID;
+export const CLOUD_CERTIFICATION_TRACK_ID = "cloud-certification";
+export const ALGORITHMS_TRACK_ID = "algorithms";
 
-const cloudCertificationTrack: TrackDefinition = {
-  accentColor: "#0369A1",
-  accentMutedColor: "#E7F5FD",
-  category: "cloud_certification",
-  contentManifest: {
-    itemCount: 360,
-    source: "local_static",
-    supportedItemTypes: ["single_choice_question", "multiple_choice_question"],
-    trackId: CLOUD_CERTIFICATION_TRACK_ID,
-    version: "ace-foundation-320",
+const registrations: readonly TrackRegistration[] = [
+  {
+    id: CLOUD_CERTIFICATION_TRACK_ID,
+    familyId: "certification",
+    metadata: {
+      accentColor: "#0369A1",
+      accentMutedColor: "#E7F5FD",
+      description: "Scenario-based cloud certification practice with domain review and exam simulation.",
+      legalNote: "Independent study content. Not affiliated with or endorsed by Google.",
+      nextActionLabel: "Continue cloud practice",
+      shortTitle: "Cloud",
+      status: "active",
+      subtitle: "Certification track",
+      title: "Cloud Certification",
+    },
   },
-  defaultSessionModeId: "cloud-practice",
-  description:
-    "Scenario-based cloud certification practice with domain review and exam simulation.",
-  id: CLOUD_CERTIFICATION_TRACK_ID,
-  legalNote:
-    "Independent study content. Not affiliated with or endorsed by Google.",
-  nextActionLabel: "Continue cloud practice",
-  sessionModes: [
-    {
-      defaultQuestionCount: 10,
-      description: "Focused domain practice with immediate feedback.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "cloud-practice",
-      order: 1,
-      scoringType: "correctness",
-      supportedItemTypes: ["single_choice_question", "multiple_choice_question"],
-      title: "Practice",
-      type: "practice",
+  {
+    id: ALGORITHMS_TRACK_ID,
+    familyId: "algorithms",
+    metadata: {
+      accentColor: "#7C3AED",
+      accentMutedColor: "#F1ECFF",
+      description: "Pattern recognition, strategy choice, and complexity reasoning for algorithmic problem solving.",
+      legalNote: "Original training content for algorithmic problem solving.",
+      nextActionLabel: "Start algorithms practice",
+      shortTitle: "Algorithms",
+      status: "active",
+      subtitle: "Pattern and strategy track",
+      title: "Algorithms",
     },
-    {
-      defaultQuestionCount: 50,
-      description: "Timed assessment-style session with feedback after submit.",
-      enabled: true,
-      feedbackTiming: "session_summary_only",
-      id: "cloud-exam-simulation",
-      order: 2,
-      scoringType: "correctness",
-      supportedItemTypes: ["single_choice_question", "multiple_choice_question"],
-      title: "Exam simulation",
-      type: "exam_simulation",
-    },
-    {
-      description: "Revisit missed and marked questions.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "cloud-review",
-      order: 3,
-      scoringType: "correctness",
-      supportedItemTypes: ["single_choice_question", "multiple_choice_question"],
-      title: "Review",
-      type: "review",
-    },
-  ],
-  shortTitle: "Cloud",
-  status: "active",
-  subtitle: "Certification track",
-  taxonomy: {
-    primaryAxis: {
-      id: "cloud-domain",
-      label: "Domain",
-      nodes: [
-        { id: "setup_environment", label: "Setup environment", order: 1 },
-        { id: "planning_implementation", label: "Planning and implementation", order: 2 },
-        { id: "operations", label: "Operations", order: 3 },
-        { id: "access_security", label: "Access and security", order: 4 },
-      ],
-      type: "exam_domain",
-    },
-    secondaryAxes: [
-      {
-        id: "cloud-topic",
-        label: "Topic",
-        nodes: [],
-        type: "topic",
-      },
-    ],
   },
-  title: "Cloud Certification",
-};
+];
 
-const algorithmsTrack: TrackDefinition = {
-  accentColor: "#7C3AED",
-  accentMutedColor: "#F1ECFF",
-  category: "algorithms",
-  contentManifest: {
-    itemCount: algorithmContentItems.length,
-    source: "local_static",
-    supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-    trackId: ALGORITHMS_TRACK_ID,
-    version: ALGORITHM_CONTENT_VERSION,
-  },
-  defaultSessionModeId: "algorithms-roadmap-basics",
-  description:
-    "Pattern recognition, strategy choice, and complexity reasoning for algorithmic problem solving.",
-  id: ALGORITHMS_TRACK_ID,
-  legalNote: "Original training content for algorithmic problem solving.",
-  nextActionLabel: "Start algorithms practice",
-  sessionModes: [
-    {
-      description: "Work through roadmap items with immediate diagnostic feedback.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "algorithms-roadmap-basics",
-      order: 1,
-      scoringType: "partial_credit",
-      supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-      title: "Pattern basics",
-      type: "pattern_drill",
-    },
-    {
-      description: "Guided Algorithms explanations and foundation items.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "algorithms-learn",
-      order: 2,
-      scoringType: "partial_credit",
-      supportedItemTypes: [
-        "single_choice",
-        "approach_naming",
-        "code_reading",
-      ],
-      title: "Learn",
-      type: "pattern_drill",
-    },
-    {
-      description: "Focused Algorithms drills for the current roadmap node.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "algorithms-drill",
-      order: 3,
-      scoringType: "partial_credit",
-      supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-      title: "Drill",
-      type: "pattern_drill",
-    },
-    {
-      description: "Review queued Algorithms items.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "algorithms-review",
-      order: 4,
-      scoringType: "partial_credit",
-      supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-      title: "Review",
-      type: "review",
-    },
-    {
-      description: "Focus on the weakest Algorithms roadmap area from local attempts.",
-      enabled: true,
-      feedbackTiming: "immediate",
-      id: "algorithms-weak-area",
-      order: 5,
-      scoringType: "partial_credit",
-      supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-      title: "Weak area",
-      type: "weak_areas",
-    },
-    {
-      description: "Interleave unlocked Algorithms roadmap items.",
-      enabled: true,
-      feedbackTiming: "session_summary_only",
-      id: "algorithms-mixed-practice",
-      order: 6,
-      scoringType: "mixed",
-      supportedItemTypes: [...ALGORITHM_QUESTION_TYPES],
-      title: "Mixed practice",
-      type: "practice",
-    },
-  ],
-  shortTitle: "Algorithms",
-  status: "active",
-  subtitle: "Pattern and strategy track",
-  taxonomy: {
-    primaryAxis: {
-      id: "algorithm-pattern",
-      label: "Pattern",
-      nodes: [
-        { id: "complexity_and_constraints", label: "Complexity and constraints", order: 1 },
-        { id: "arrays_and_strings", label: "Arrays and strings", order: 2 },
-        { id: "hash_map_and_set", label: "Hash map and set", order: 3 },
-        { id: "two_pointers", label: "Two pointers", order: 4 },
-        { id: "sliding_window", label: "Sliding window", order: 5 },
-        { id: "prefix_sums", label: "Prefix sums", order: 6 },
-        { id: "sorting_based", label: "Sorting based", order: 7 },
-        { id: "stack", label: "Stack", order: 8 },
-        { id: "monotonic_stack", label: "Monotonic stack", order: 9 },
-        { id: "binary_search", label: "Binary search", order: 10 },
-        { id: "linked_list", label: "Linked list", order: 11 },
-        { id: "recursion_basics", label: "Recursion basics", order: 12 },
-        { id: "tree_traversal", label: "Tree traversal", order: 13 },
-        { id: "heap_priority_queue", label: "Heap and priority queue", order: 14 },
-        { id: "intervals", label: "Intervals", order: 15 },
-        { id: "backtracking", label: "Backtracking", order: 16 },
-        { id: "graph_traversal", label: "Graph traversal", order: 17 },
-        { id: "greedy_intro", label: "Greedy intro", order: 18 },
-        { id: "dynamic_programming_intro", label: "Dynamic programming intro", order: 19 },
-        { id: "bit_manipulation", label: "Bit manipulation", order: 20 },
-        { id: "math_and_geometry", label: "Math and geometry", order: 21 },
-      ],
-      type: "algorithm_pattern",
-    },
-    secondaryAxes: [
-      {
-        id: "algorithm-difficulty",
-        label: "Difficulty",
-        nodes: [
-          { id: "easy", label: "Easy", order: 1 },
-          { id: "medium", label: "Medium", order: 2 },
-          { id: "hard", label: "Hard", order: 3 },
-        ],
-        type: "difficulty",
-      },
-    ],
-  },
-  title: "Algorithms",
-};
-
-export const TRACK_DEFINITIONS = [
-  cloudCertificationTrack,
-  algorithmsTrack,
-] as const satisfies readonly TrackDefinition[];
-
-export function getTrackDefinitions(): readonly TrackDefinition[] {
-  return TRACK_DEFINITIONS;
+export function getTracks(): readonly TrackRegistration[] {
+  return registrations;
 }
 
-export function isTrackId(value: string): value is TrackId {
-  return TRACK_DEFINITIONS.some((track) => track.id === value);
+export function getTrackDisplays(): readonly TrackDisplay[] {
+  return registrations.map((registration) => ({ id: registration.id, familyId: registration.familyId, ...registration.metadata }));
 }
 
-export function getTrackDefinition(trackId: TrackId): TrackDefinition {
-  const track = TRACK_DEFINITIONS.find((item) => item.id === trackId);
-
-  if (!track) {
-    throw new Error(`Unknown track id: ${trackId}`);
-  }
-
-  return track;
+export function getTrackDisplay(trackId: TrackId): TrackDisplay {
+  const registration = getTrackRegistration(trackId);
+  return { id: registration.id, familyId: registration.familyId, ...registration.metadata };
 }
 
-export function getEnabledSessionModes(trackId: TrackId) {
-  return getTrackDefinition(trackId).sessionModes.filter((mode) => mode.enabled);
+export function getTrackRegistration(trackId: TrackId): TrackRegistration {
+  const registration = registrations.find((candidate) => candidate.id === trackId);
+  if (!registration) throw new UnknownTrackError(trackId);
+  return registration;
+}
+
+export function getTrackFamilyRegistration(familyId: TrackFamilyId): readonly TrackRegistration[] {
+  const familyTracks = registrations.filter((candidate) => candidate.familyId === familyId);
+  if (familyTracks.length === 0) throw new UnknownTrackFamilyError(familyId);
+  return familyTracks;
+}
+
+export function isRegisteredTrackId(value: string): boolean {
+  return registrations.some((candidate) => candidate.id === value);
 }

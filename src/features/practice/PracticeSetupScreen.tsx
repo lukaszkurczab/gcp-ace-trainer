@@ -3,10 +3,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, Screen, SectionHeader } from "../../components";
+import { Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { ALGORITHMS_TRACK_ID, DEFAULT_TRACK_ID, getTrackDefinition, type TrackId } from "../../domain";
-import type { TrainingAttempt } from "../../domain/training";
+import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
+import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveTrackId, getTrainingAttempts } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
@@ -33,9 +33,7 @@ type PracticeSetupScreenProps = NativeStackScreenProps<
 const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
-  const [activeTrackId, setActiveTrackId] = useState<TrackId>(
-    route.params?.trackId ?? DEFAULT_TRACK_ID,
-  );
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
   const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
     route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
@@ -58,7 +56,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         ]);
 
         if (isActive) {
-          setActiveTrackId(route.params?.trackId ?? savedTrackId);
+          const nextTrackId = route.params?.trackId ?? savedTrackId;
+          if (nextTrackId) setActiveTrackId(nextTrackId);
           setTrainingAttempts(trainingAttemptsResult.value);
         }
       }
@@ -77,7 +76,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     }
   }, [feedbackMode]);
 
-  const activeTrack = getTrackDefinition(route.params?.trackId ?? activeTrackId);
+  const resolvedTrackId = route.params?.trackId ?? activeTrackId;
+  if (!resolvedTrackId) return <Screen><EmptyState title="Choose a learning track" description="Session setup is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  const activeTrack = getTrackDisplay(resolvedTrackId);
   const itemNoun = activeTrack.id === ALGORITHMS_TRACK_ID ? "Items" : "Questions";
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopic({
@@ -263,7 +264,7 @@ function resolvePracticeTopic(input: {
   }
 
   return getCurrentPracticeTopic(
-    getTrackDefinition(input.activeTrackId),
+    getTrackDisplay(input.activeTrackId),
     input.trainingAttempts,
   );
 }

@@ -1,6 +1,6 @@
-import type { ExamBlueprint, ExamDomain } from "../types";
+import type { CertificationDomain, CertificationExamBlueprint } from "../tracks/cloud-certification/domain";
 
-export const EXAM_BLUEPRINT: ExamBlueprint = {
+export const EXAM_BLUEPRINT: CertificationExamBlueprint = {
   setup_environment: 12,
   planning_implementation: 15,
   operations: 13,
@@ -13,7 +13,7 @@ export const EXAM_DURATION_MINUTES = 120;
 // Training threshold for this local app, not an official Google passing score.
 export const TRAINING_PASS_THRESHOLD = 75;
 
-export const EXAM_DOMAIN_LABELS: Record<ExamDomain, string> = {
+export const EXAM_DOMAIN_LABELS: Record<CertificationDomain, string> = {
   setup_environment: "Setting up a cloud solution environment",
   planning_implementation: "Planning and configuring a cloud solution",
   operations: "Ensuring successful operation of a cloud solution",

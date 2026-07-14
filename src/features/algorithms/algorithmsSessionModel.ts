@@ -1,13 +1,5 @@
 import { ALGORITHMS_TRACK_ID } from "../../domain";
-import {
-  getReviewQueueItemKind,
-  type ComplexityAnswer,
-  type ReviewReason,
-  type ReviewQueueItem,
-  type TrainingAttempt,
-  type TrainingAttemptResponse,
-  type TrainingSession,
-} from "../../domain/training";
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain/learning";
 import type { PracticeFeedbackMode, PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
   isAlgorithmChoiceQuestion,
@@ -16,19 +8,22 @@ import {
   type AlgorithmQuestion,
 } from "../../tracks/algorithms/algorithmQuestionTypes";
 import {
-  createAlgorithmsReviewQueueItems,
+  createAlgorithmReviewEntry,
   getAlgorithmsTrainingSessionModeId,
   getAlgorithmAttemptStatus,
   scoreAlgorithmQuestion,
   type AlgorithmQuestionScore,
+  type AlgorithmResponse,
   type AlgorithmScoringStatus,
+  updateAlgorithmReviewEntry,
 } from "../../tracks/algorithms";
 
 type ComplexityDimension = "time" | "space";
+export type AlgorithmComplexityAnswer = { time?: string; space?: string };
 
 export type AlgorithmsSubmission = {
-  attempt: TrainingAttempt;
-  reviewQueueItems: readonly ReviewQueueItem[];
+  attempt: TrainingAttempt<AlgorithmResponse>;
+  reviewQueueEntries: readonly ReviewQueueEntry[];
   score: AlgorithmQuestionScore;
 };
 
@@ -124,7 +119,7 @@ export type AlgorithmsSummaryAction = {
 export type AlgorithmsReviewQueueUpdate =
   | {
       action: "keep";
-      reviewQueueItems: readonly ReviewQueueItem[];
+      reviewQueueEntries: readonly ReviewQueueEntry[];
     }
   | {
       action: "none";
@@ -200,7 +195,7 @@ export function buildAlgorithmsImmediateFeedbackModel({
   score,
   selectedOptionIds = [],
 }: {
-  complexityAnswer?: ComplexityAnswer;
+  complexityAnswer?: AlgorithmComplexityAnswer;
   question: AlgorithmQuestion;
   score: AlgorithmQuestionScore;
   selectedOptionIds?: readonly string[];
@@ -313,43 +308,43 @@ export function buildAlgorithmsSubmission({
   session,
 }: {
   answeredAt: string;
-  complexityAnswer: ComplexityAnswer;
+  complexityAnswer: AlgorithmComplexityAnswer;
   question: AlgorithmQuestion;
   selectedOptionIds: readonly string[];
   session: TrainingSession;
 }): AlgorithmsSubmission {
-  const response = buildTrainingAttemptResponse(question, selectedOptionIds, complexityAnswer);
+  const response = buildAlgorithmResponse(question, selectedOptionIds, complexityAnswer);
   const score = scoreAlgorithmQuestion(question, response);
-  const attempt: TrainingAttempt = {
+  const sourceItem = { contentVersion: question.contentVersion, itemId: question.id, trackId: ALGORITHMS_TRACK_ID };
+  const attempt: TrainingAttempt<AlgorithmResponse> = {
     answeredAt,
-    feedbackSignals: [score.status === "correct" ? "correct" : "review_recommended"],
+    committedAt: answeredAt,
     id: `attempt:${session.id}:${question.id}:${answeredAt}`,
-    itemId: question.id,
-    itemType: question.type,
-    mistakeTypeRefs: score.mistakeTypes.map((mistakeType) => ({
-      axisId: "mistake_type",
-      nodeId: mistakeType,
-      role: "mistake_type",
-      trackId: ALGORITHMS_TRACK_ID,
-    })),
+    item: sourceItem,
     modeId: session.modeId,
     response,
     result: score.result,
+    reviewEvidence: {
+      sourceItem,
+      taxonomyOrSkillRefs: [
+        { axisId: "algorithm-skill", nodeId: question.primarySkillAtomId, role: "primary" },
+        ...(question.secondarySkillAtomIds ?? []).map((nodeId) => ({ axisId: "algorithm-skill", nodeId, role: "secondary" })),
+        ...score.mistakeTypes.map((nodeId) => ({ axisId: "mistake_type", nodeId, role: "mistake_type" })),
+      ],
+    },
     sessionId: session.id,
     trackId: ALGORITHMS_TRACK_ID,
   };
 
   return {
     attempt,
-    reviewQueueItems: createAlgorithmsReviewQueueItems(attempt, undefined, {
-      now: answeredAt,
-    }),
+    reviewQueueEntries: [createAlgorithmReviewEntry(attempt)],
     score,
   };
 }
 
 export function buildAlgorithmsSessionSummary(
-  attempts: readonly TrainingAttempt[],
+  attempts: readonly TrainingAttempt<AlgorithmResponse>[],
   questions: readonly AlgorithmQuestion[],
   nodeLabel: string,
   options: { mode?: string } = {},
@@ -359,10 +354,10 @@ export function buildAlgorithmsSessionSummary(
   const reviewedAttempts = attempts
     .map((attempt) => ({
       attempt,
-      question: questionById.get(attempt.itemId),
+      question: questionById.get(attempt.item.itemId),
       status: getAlgorithmAttemptStatus(attempt.result),
     }))
-    .filter((entry): entry is { attempt: TrainingAttempt; question: AlgorithmQuestion; status: AlgorithmScoringStatus } =>
+    .filter((entry): entry is { attempt: TrainingAttempt<AlgorithmResponse>; question: AlgorithmQuestion; status: AlgorithmScoringStatus } =>
       Boolean(entry.question && entry.status),
     );
   const missedAttempts = reviewedAttempts.filter((entry) => entry.status !== "correct");
@@ -393,49 +388,11 @@ export function buildAlgorithmsSessionSummary(
 
 export function buildAlgorithmsReviewQueueUpdate(
   submission: AlgorithmsSubmission,
-  existingReviewItem?: ReviewQueueItem,
+  existingReviewEntry?: ReviewQueueEntry,
 ): AlgorithmsReviewQueueUpdate {
-  const answeredAt = submission.attempt.answeredAt;
-  const isExistingItemDue = Boolean(
-    existingReviewItem &&
-    existingReviewItem.trackId === ALGORITHMS_TRACK_ID &&
-    existingReviewItem.itemId === submission.attempt.itemId &&
-    existingReviewItem.dueAt <= answeredAt,
-  );
-  const existingKind = existingReviewItem
-    ? getReviewQueueItemKind(existingReviewItem)
-    : undefined;
-
-  if (submission.score.status === "correct") {
-    const retentionItem = submission.reviewQueueItems.find((item) => item.kind === "retention");
-    if (retentionItem) {
-      const passedDueRetention = isExistingItemDue && existingKind === "retention";
-      return {
-        action: "keep",
-        reviewQueueItems: [{
-          ...retentionItem,
-          lastReviewedAt: isExistingItemDue ? answeredAt : undefined,
-          retentionPassedAt: passedDueRetention ? answeredAt : undefined,
-        }],
-      };
-    }
-    return { action: "none" };
-  }
-
-  if (submission.reviewQueueItems.length === 0) {
-    return { action: "none" };
-  }
-
-  return {
-    action: "keep",
-    reviewQueueItems: submission.reviewQueueItems.map((item) => ({
-      ...item,
-      lastReviewedAt: isExistingItemDue ? answeredAt : undefined,
-      reasons: submission.score.status === "incorrect" && existingKind === "remediation"
-        ? uniqueReasons([...item.reasons, "repeated_mistake"])
-        : item.reasons,
-    })),
-  };
+  if (!existingReviewEntry) return { action: "keep", reviewQueueEntries: submission.reviewQueueEntries };
+  const updated = updateAlgorithmReviewEntry(existingReviewEntry, submission.attempt);
+  return updated ? { action: "keep", reviewQueueEntries: [updated] } : { action: "none" };
 }
 
 export function getAlgorithmsCorrectAnswerText(question: AlgorithmQuestion): string {
@@ -526,7 +483,7 @@ export function formatAlgorithmItemType(value: string): string {
 
 function buildSessionReviewItems(
   reviewedAttempts: readonly {
-    attempt: TrainingAttempt;
+    attempt: TrainingAttempt<AlgorithmResponse>;
     question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
@@ -540,7 +497,9 @@ function buildSessionReviewItems(
       (orderByQuestionId.get(right.question.id) ?? Number.MAX_SAFE_INTEGER),
     )
     .map((entry) => {
-      const mistakeTypes = entry.attempt.mistakeTypeRefs?.map((ref) => ref.nodeId) ?? [];
+      const mistakeTypes = entry.attempt.reviewEvidence.taxonomyOrSkillRefs
+        .filter((ref) => ref.axisId === "mistake_type")
+        .map((ref) => ref.nodeId);
 
       return {
         commonTrap: getAlgorithmsCommonTrapText(entry.question, { mistakeTypes }),
@@ -560,7 +519,7 @@ function buildSessionReviewItems(
 
 function buildReviewSessionSummary(
   reviewedAttempts: readonly {
-    attempt: TrainingAttempt;
+    attempt: TrainingAttempt<AlgorithmResponse>;
     question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
@@ -577,43 +536,47 @@ function buildReviewSessionSummary(
   };
 }
 
-function buildTrainingAttemptResponse(
+function buildAlgorithmResponse(
   question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
-): TrainingAttemptResponse {
+  complexityAnswer: AlgorithmComplexityAnswer,
+): AlgorithmResponse {
   if (isAlgorithmComplexityQuestion(question)) {
     return {
-      kind: "complexity_check",
-      selectedComplexityAnswer: complexityAnswer,
+      kind: "complexity",
+      selectedValuesByDimension: Object.fromEntries(
+        Object.entries(complexityAnswer).filter((entry): entry is [string, string] => typeof entry[1] === "string"),
+      ),
     };
   }
 
-  if (isAlgorithmChoiceQuestion(question) || isAlgorithmOrderingQuestion(question)) {
+  if (isAlgorithmOrderingQuestion(question)) {
     return {
-      kind: "option_selection",
-      selectedOptionIds: [...selectedOptionIds],
+      kind: "ordering",
+      orderedSubgoalIds: [...selectedOptionIds],
     };
   }
+
+  if (isAlgorithmChoiceQuestion(question)) return { kind: "choice", selectedOptionIds: [...selectedOptionIds] };
 
   return assertUnreachableQuestion(question);
 }
 
 function getSelectedAnswerText(
   question: AlgorithmQuestion,
-  response: TrainingAttemptResponse,
+  response: AlgorithmResponse,
 ): string {
-  if (response.kind === "complexity_check") {
-    return formatComplexityAnswer(response.selectedComplexityAnswer);
+  if (response.kind === "complexity") {
+    return formatComplexityAnswer(response.selectedValuesByDimension);
   }
 
-  if (response.kind === "option_selection") {
-    if (isAlgorithmOrderingQuestion(question)) {
-      return response.selectedOptionIds
+  if (response.kind === "ordering") {
+      return response.orderedSubgoalIds
         .map((optionId, index) => `${index + 1}. ${getQuestionOptionText(question, optionId)}`)
         .join("\n");
-    }
+  }
 
+  if (response.kind === "choice") {
     return response.selectedOptionIds.map((optionId) => getQuestionOptionText(question, optionId)).join(", ");
   }
 
@@ -623,7 +586,7 @@ function getSelectedAnswerText(
 function getCurrentSelectedAnswerText(
   question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
+  complexityAnswer: AlgorithmComplexityAnswer,
 ): string {
   if (isAlgorithmComplexityQuestion(question)) {
     return formatComplexityAnswer(complexityAnswer);
@@ -642,7 +605,7 @@ function getCurrentSelectedAnswerText(
   return assertUnreachableQuestion(question);
 }
 
-function formatComplexityAnswer(answer: ComplexityAnswer): string {
+function formatComplexityAnswer(answer: Readonly<Record<string, string | undefined>>): string {
   const values: Record<ComplexityDimension, string | undefined> = {
     space: answer.space,
     time: answer.time,
@@ -655,11 +618,11 @@ function formatComplexityAnswer(answer: ComplexityAnswer): string {
 }
 
 function getAttemptReviewSignal(entry: {
-  attempt: TrainingAttempt;
+  attempt: TrainingAttempt<AlgorithmResponse>;
   question: AlgorithmQuestion;
   status: AlgorithmScoringStatus;
 }): string {
-  const mistakeType = entry.attempt.mistakeTypeRefs?.[0]?.nodeId;
+  const mistakeType = entry.attempt.reviewEvidence.taxonomyOrSkillRefs.find((ref) => ref.axisId === "mistake_type")?.nodeId;
 
   if (mistakeType) {
     return formatAlgorithmItemType(mistakeType);
@@ -670,7 +633,7 @@ function getAttemptReviewSignal(entry: {
 
 function buildRecommendedNext(
   missedAttempts: readonly {
-    attempt: TrainingAttempt;
+    attempt: TrainingAttempt<AlgorithmResponse>;
     question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
@@ -692,7 +655,7 @@ function buildRecommendedNext(
 
 function buildSessionMainIssue(
   missedAttempts: readonly {
-    attempt: TrainingAttempt;
+    attempt: TrainingAttempt<AlgorithmResponse>;
     question: AlgorithmQuestion;
     status: AlgorithmScoringStatus;
   }[],
@@ -711,7 +674,7 @@ function buildSessionMainIssue(
     currentPattern.itemIds.push(entry.question.id);
     patternCounts.set(pattern, currentPattern);
 
-    for (const mistakeType of entry.attempt.mistakeTypeRefs?.map((ref) => ref.nodeId) ?? []) {
+    for (const mistakeType of entry.attempt.reviewEvidence.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type").map((ref) => ref.nodeId)) {
       mistakeTypeCounts.set(mistakeType, (mistakeTypeCounts.get(mistakeType) ?? 0) + 1);
     }
   }
@@ -818,9 +781,6 @@ function normalizeFeedbackText(value: string | undefined): string {
     .replace(/[.!?]+$/g, "");
 }
 
-function uniqueReasons(values: readonly ReviewReason[]): ReviewReason[] {
-  return [...new Set(values)];
-}
 
 function getQuestionOptionText(question: AlgorithmQuestion, optionId: string): string {
   if (isAlgorithmChoiceQuestion(question)) {

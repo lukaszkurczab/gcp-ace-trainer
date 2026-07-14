@@ -7,6 +7,7 @@ import {
   Badge,
   Button,
   Card,
+  EmptyState,
   Icon,
   IconTile,
   ListRow,
@@ -15,8 +16,8 @@ import {
   SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { DEFAULT_TRACK_ID, getTrackDefinition, type TrackId } from "../../domain";
-import type { TrainingAttempt } from "../../domain/training";
+import { getTrackDisplay, type TrackDisplay, type TrackId } from "../../domain";
+import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
   getActiveTrackId,
@@ -29,7 +30,7 @@ import {
   loadCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
 } from "../../tracks/cloud-certification";
-import type { AttemptSummary, PracticeAnswerRecord } from "../../types";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
@@ -51,16 +52,16 @@ type PracticeHubScreenProps = NativeStackScreenProps<
 >;
 
 type PracticeHubData = {
-  attempts: AttemptSummary[];
+  attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
-  practiceHistory: PracticeAnswerRecord[];
+  practiceHistory: CertificationPracticeAnswerViewModel[];
   trainingAttempts: TrainingAttempt[];
 };
 
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
-  const [activeTrackId, setActiveTrackId] = useState<TrackId>(DEFAULT_TRACK_ID);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<PracticeHubData>({
     attempts: [],
     cloudProgress: null,
@@ -88,7 +89,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         ]);
 
         if (isActive) {
-          setActiveTrackId(savedTrackId);
+          if (savedTrackId) setActiveTrackId(savedTrackId);
           setData({
             attempts: savedAttempts,
             cloudProgress,
@@ -106,11 +107,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     }, []),
   );
 
-  const activeTrack = getTrackDefinition(activeTrackId);
   const analytics = useMemo(
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
+  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="Practice is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  const activeTrack = getTrackDisplay(activeTrackId);
   const topic = resolvePracticeTopic({
     activeTrack,
     routeTopicId: route.params?.topicId,
@@ -247,7 +249,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 }
 
 function resolvePracticeTopic(input: {
-  activeTrack: ReturnType<typeof getTrackDefinition>;
+  activeTrack: TrackDisplay;
   routeTopicId?: string;
   trainingAttempts: readonly TrainingAttempt[];
 }): PracticeTopic {

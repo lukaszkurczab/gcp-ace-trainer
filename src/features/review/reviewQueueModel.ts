@@ -1,10 +1,9 @@
 import type {
-  ReviewPriority,
+  EvidenceRef,
   ReviewReason,
-  TrainingItemTaxonomyRef,
-} from "../../domain/training";
+} from "../../domain";
 import type { LocalStorageIssue } from "../../storage/storageCodec";
-import type { ExamDomain } from "../../types";
+import type { CertificationDomain } from "../../tracks/cloud-certification";
 import { getDomainLabel } from "../../utils";
 
 export type ReviewQueueRowStatus = "due" | "overdue" | "unavailable" | "upcoming";
@@ -14,7 +13,6 @@ export type ReviewQueueRow = {
   id: string;
   itemId: string;
   mistakeTypeLabels: string[];
-  priority: ReviewPriority;
   promptPreview: string;
   reasonLabels: string[];
   sourceAttemptId: string;
@@ -40,18 +38,16 @@ export type ReviewQueueViewItem = {
   isDue: boolean;
   isOverdue: boolean;
   itemId: string;
-  mistakeTypeRefs: TrainingItemTaxonomyRef[];
-  priority: ReviewPriority;
+  mistakeTypeRefs: EvidenceRef[];
   prompt?: string;
   reasons: ReviewReason[];
   sourceAttemptId: string;
-  taxonomyRefs: TrainingItemTaxonomyRef[];
+  taxonomyRefs: EvidenceRef[];
 };
 
 export type ReviewQueueViewModel = {
   degraded: boolean;
   dueItems: ReviewQueueViewItem[];
-  highPriorityItems: ReviewQueueViewItem[];
   issues: readonly LocalStorageIssue[];
   ok: boolean;
   overdueItems: ReviewQueueViewItem[];
@@ -68,7 +64,6 @@ export function buildReviewQueueScreenModel(
   const dueRows = dedupeRows([
     ...viewModel.overdueItems,
     ...viewModel.dueItems,
-    ...viewModel.highPriorityItems,
   ]).map(buildReviewQueueRow);
 
   return {
@@ -95,7 +90,6 @@ function buildReviewQueueRow(item: ReviewQueueViewItem): ReviewQueueRow {
     id: item.id,
     itemId: item.itemId,
     mistakeTypeLabels: item.mistakeTypeRefs.map(formatTaxonomyNodeLabel),
-    priority: item.priority,
     promptPreview:
       status === "unavailable"
         ? "Content metadata is unavailable for this review item."
@@ -156,7 +150,7 @@ function getStatusRank(item: ReviewQueueViewItem): number {
   }
 }
 
-function formatPrimaryTaxonomyLabel(refs: readonly TrainingItemTaxonomyRef[]): string {
+function formatPrimaryTaxonomyLabel(refs: readonly EvidenceRef[]): string {
   const domainRef = refs.find((ref) => ref.axisId === "cloud-domain");
 
   if (domainRef) {
@@ -176,7 +170,7 @@ function formatCloudDomainLabel(nodeId: string): string {
   return formatNodeId(nodeId);
 }
 
-function formatTaxonomyNodeLabel(ref: TrainingItemTaxonomyRef): string {
+function formatTaxonomyNodeLabel(ref: EvidenceRef): string {
   return formatNodeId(ref.nodeId);
 }
 
@@ -192,7 +186,7 @@ function formatNodeId(value: string): string {
     .join(" ");
 }
 
-function isExamDomain(value: string): value is ExamDomain {
+function isExamDomain(value: string): value is CertificationDomain {
   return (
     value === "setup_environment" ||
     value === "planning_implementation" ||

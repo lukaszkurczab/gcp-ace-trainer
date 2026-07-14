@@ -5,12 +5,12 @@ import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
+  EmptyState,
   Screen,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  DEFAULT_TRACK_ID,
-  getTrackDefinition,
+  getTrackDisplay,
   type TrackId,
 } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -28,8 +28,8 @@ import {
   loadCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
 } from "../../tracks/cloud-certification";
-import type { AttemptSummary, PracticeAnswerRecord } from "../../types";
-import type { ReviewQueueItem, TrainingAttempt } from "../../domain/training";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
+import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { buildPracticeSessionConfig } from "../practice/sessionConfig";
@@ -49,10 +49,10 @@ type HomeScreenProps = NativeStackScreenProps<
 >;
 
 type ShellData = {
-  attempts: AttemptSummary[];
+  attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
-  practiceHistory: PracticeAnswerRecord[];
-  reviewQueueItems: ReviewQueueItem[];
+  practiceHistory: CertificationPracticeAnswerViewModel[];
+  reviewQueueItems: ReviewQueueEntry[];
   storageIssues: readonly LocalStorageIssue[];
   trainingAttempts: TrainingAttempt[];
 };
@@ -63,7 +63,7 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
-  const [activeTrackId, setActiveTrackId] = useState<TrackId>(DEFAULT_TRACK_ID);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<ShellData>({
     attempts: [],
     cloudProgress: null,
@@ -101,7 +101,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         ]);
 
         if (isActive) {
-          setActiveTrackId(savedTrackId);
+          if (savedTrackId) setActiveTrackId(savedTrackId);
           setData({
             attempts: savedAttempts,
             cloudProgress,
@@ -121,11 +121,12 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     }, []),
   );
 
-  const activeTrack = getTrackDefinition(activeTrackId);
   const analytics = useMemo(
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
+  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="No active track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  const activeTrack = getTrackDisplay(activeTrackId);
 
   function clearAllLocalData() {
     Alert.alert(

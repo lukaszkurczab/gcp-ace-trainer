@@ -1,5 +1,5 @@
 import type { TrackId } from "../../domain";
-import type { ExamDomain } from "../../types";
+import type { CertificationDomain } from "../../tracks/cloud-certification";
 
 export type PracticeSessionSource =
   | "home"
@@ -41,7 +41,7 @@ export type PracticeSessionConfigInput = Partial<PracticeSessionRouteParams> & {
 export const DEFAULT_PRACTICE_SESSION_LENGTH: PracticeSessionLength = 20;
 export const DEFAULT_FEEDBACK_MODE: PracticeFeedbackMode = "afterEachAnswer";
 
-const cloudDomainTopicIds: readonly ExamDomain[] = [
+const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "setup_environment",
   "planning_implementation",
   "operations",
@@ -64,10 +64,11 @@ export function buildPracticeSessionConfig(
   };
 }
 
-export function isCloudTopicId(topicId: string): topicId is ExamDomain {
-  return cloudDomainTopicIds.includes(topicId as ExamDomain);
+export function isCloudTopicId(topicId: string): topicId is CertificationDomain {
+  return cloudDomainTopicIds.some((domain) => domain === topicId);
 }
 
-export function getCloudDomainForTopicId(topicId: string): ExamDomain {
-  return isCloudTopicId(topicId) ? topicId : "access_security";
+export function getCloudDomainForTopicId(topicId: string): CertificationDomain {
+  if (!isCloudTopicId(topicId)) throw new Error(`Unknown Cloud Certification topic: ${topicId}`);
+  return topicId;
 }

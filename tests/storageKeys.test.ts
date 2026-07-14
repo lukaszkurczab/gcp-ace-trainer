@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  LEGACY_STORAGE_KEYS,
   STORAGE_KEYS,
   getStorageClearKeys,
   getStorageReadKeys,
@@ -19,13 +18,7 @@ test("active storage namespace uses Patternly v1 keys", () => {
   );
 });
 
-test("legacy keys are explicit read and reset fallbacks", () => {
-  assert.deepEqual(getStorageReadKeys("QUESTIONS"), [
-    STORAGE_KEYS.QUESTIONS,
-    LEGACY_STORAGE_KEYS.QUESTIONS,
-  ]);
-  assert.deepEqual(getStorageClearKeys("ATTEMPTS"), [
-    STORAGE_KEYS.ATTEMPTS,
-    LEGACY_STORAGE_KEYS.ATTEMPTS,
-  ]);
+test("storage reads and clears only the canonical key", () => {
+  assert.deepEqual(getStorageReadKeys("QUESTIONS"), [STORAGE_KEYS.QUESTIONS]);
+  assert.deepEqual(getStorageClearKeys("ATTEMPTS"), [STORAGE_KEYS.ATTEMPTS]);
 });

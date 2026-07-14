@@ -1,4 +1,4 @@
-import type { TrainingSession } from "../../domain/training";
+import type { TrainingSession } from "../../domain";
 import {
   mergeRepositoryReadWriteResult,
   readRepositoryJson,

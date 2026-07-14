@@ -14,11 +14,11 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   CLOUD_CERTIFICATION_TRACK_ID,
-  getTrackDefinitions,
-  type TrackDefinition,
+  getTrackDisplays,
+  type TrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { TrainingAttempt } from "../../domain/training";
+import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
   getActiveTrackId,
@@ -28,7 +28,7 @@ import {
   saveActiveTrackId,
 } from "../../storage";
 import { colors, spacing, typography } from "../../theme";
-import type { AttemptSummary, PracticeAnswerRecord } from "../../types";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
@@ -44,15 +44,15 @@ type SelectTrackScreenProps = NativeStackScreenProps<
 >;
 
 type SelectTrackData = {
-  attempts: AttemptSummary[];
-  practiceHistory: PracticeAnswerRecord[];
+  attempts: CertificationExamSummaryViewModel[];
+  practiceHistory: CertificationPracticeAnswerViewModel[];
   trainingAttempts: TrainingAttempt[];
 };
 
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
-  const [activeTrackId, setActiveTrackId] = useState<TrackId>(CLOUD_CERTIFICATION_TRACK_ID);
+  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<SelectTrackData>({
     attempts: [],
     practiceHistory: [],
@@ -77,7 +77,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
         ]);
 
         if (isActive) {
-          setActiveTrackId(savedTrackId);
+          if (savedTrackId) setActiveTrackId(savedTrackId);
           setData({
             attempts: savedAttempts,
             practiceHistory: savedPracticeHistory,
@@ -99,7 +99,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
     [data.attempts, data.practiceHistory],
   );
 
-  async function selectTrack(track: TrackDefinition, destination: "home" | "roadmap") {
+  async function selectTrack(track: TrackDisplay, destination: "home" | "roadmap") {
     if (track.status === "archived") {
       return;
     }
@@ -128,7 +128,7 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
         </View>
 
         <View style={styles.trackList}>
-          {getTrackDefinitions().map((track) => {
+          {getTrackDisplays().map((track) => {
             const isActive = track.id === activeTrackId;
             const progress = buildTrackProgressPercent({
               activeTrackId: track.id,

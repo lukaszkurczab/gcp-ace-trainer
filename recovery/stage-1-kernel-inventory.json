@@ -1,50 +1,206 @@
 {
-  "schemaVersion": 1,
-  "sourceCommit": "ad92e2c27270dcf69626d7c873a8693ad3628df5",
-  "generatedAt": "2026-07-14T17:20:00+02:00",
-  "purpose": "Stage 1 ownership inventory before canonical learning-kernel cutover.",
-  "symbols": [
+  "schemaVersion": 2,
+  "sourceCommit": "6d95f6dc8e45b116943b50d6c77920a78f1098d8",
+  "generatedAt": "2026-07-14T17:45:00+02:00",
+  "purpose": "Complete pre-cutover ownership and consumer inventory for Stage 1B.",
+  "entries": [
     {
       "symbol": "TrackId",
-      "currentOwner": "src/domain/tracks/types.ts",
-      "currentShape": "closed cloud-certification | algorithms union",
-      "finalOwner": "kernel runtime registry resolution"
+      "declarationPaths": ["src/domain/tracks/types.ts"],
+      "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/createTrainingSession.ts", "src/domain/training/trainingAttempt.ts", "src/domain/training/trainingItem.ts", "src/domain/training/trainingProgress.ts", "src/domain/training/trainingReview.ts", "src/domain/training/trainingSession.ts", "src/navigation/types.ts", "src/tracks/contentPack.ts", "src/tracks/trackAdapters.ts", "src/tracks/types.ts"],
+      "repositoryConsumers": ["src/storage/localStorage.ts", "src/storage/repositories/activeTrackRepository.ts", "src/storage/repositories/reviewQueueRepository.ts", "src/storage/repositories/trainingModelGuards.ts", "src/storage/repositories/userProgressRepository.ts"],
+      "screenConsumers": ["src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/practice/PracticeHubScreen.tsx", "src/features/practice/PracticeSetupScreen.tsx", "src/features/practice/TopicRoadmapScreen.tsx", "src/features/review/MistakesReviewScreen.tsx"],
+      "serviceConsumers": ["src/features/practice/practiceFlowModel.ts", "src/features/practice/practiceSetupModel.ts", "src/features/practice/sessionConfig.ts", "src/features/review/reviewQueueService.ts"],
+      "selectorConsumers": ["src/features/home/tabs/progressTabModel.ts"],
+      "testConsumers": ["tests/practiceFlowModel.test.ts", "tests/progressTabModel.test.ts", "tests/trackAdapters.test.ts", "tests/trackRegistry.test.ts"],
+      "currentOwner": "shared track types closed union",
+      "finalOwner": "shared learning kernel identity primitive",
+      "disposition": "replace_with_kernel_contract",
+      "notes": "Open string identifier validated only by the registry; no default track."
     },
     {
-      "symbol": "TrainingItem and TrainingAttemptResponse",
-      "currentOwner": "src/domain/training/trainingItem.ts and trainingAttempt.ts",
-      "currentShape": "global concrete cross-family unions",
-      "finalOwner": "algorithms and cloud-certification families"
+      "symbol": "TrackFamilyId",
+      "declarationPaths": [], "exportPaths": [], "runtimeConsumers": [], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": [],
+      "currentOwner": "missing", "finalOwner": "shared learning kernel identity primitive", "disposition": "replace_with_kernel_contract", "notes": "Introduced by Stage 1B and resolved by the runtime registry."
+    },
+    {
+      "symbol": "TrainingItem",
+      "declarationPaths": ["src/domain/training/trainingItem.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/domain/sessions/createTrainingSession.ts", "src/tracks/trackAdapters.ts", "src/tracks/types.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts"],
+      "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": ["src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts", "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts"],
+      "testConsumers": ["tests/sessionEngine.test.ts", "tests/trackAdapters.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared mixed training domain", "finalOwner": "Algorithms and Certification family item contracts", "disposition": "delete", "notes": "Concrete cross-family union is removed rather than renamed."
+    },
+    {
+      "symbol": "TrainingContentItem",
+      "declarationPaths": ["src/domain/training/trainingItem.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/domain/sessions/createTrainingSession.ts", "src/tracks/types.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": [],
+      "currentOwner": "shared mixed training domain", "finalOwner": "family content catalogs plus kernel ContentItemRef", "disposition": "delete", "notes": "The kernel stores references, never concrete content."
+    },
+    {
+      "symbol": "TrainingItemType",
+      "declarationPaths": ["src/domain/tracks/types.ts", "src/domain/training/trainingItem.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/training/trainingAttempt.ts", "src/domain/training/trainingSession.ts", "src/tracks/types.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": [],
+      "currentOwner": "shared track and training domains", "finalOwner": "family item discriminants", "disposition": "delete", "notes": "No global interaction taxonomy remains."
+    },
+    {
+      "symbol": "TrainingAttempt",
+      "declarationPaths": ["src/domain/training/trainingAttempt.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/domain/sessions/completeTrainingSession.ts", "src/domain/sessions/sessionReview.ts", "src/domain/sessions/sessionScoring.ts", "src/features/algorithms/algorithmsSessionModel.ts", "src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/tracks/algorithms/algorithmProgress.ts", "src/tracks/algorithms/algorithmSessionSelection.ts", "src/tracks/algorithms/algorithmsReviewAdapter.ts", "src/tracks/algorithms/algorithmsScoringAdapter.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationProgressBridge.ts", "src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts", "src/tracks/cloud-certification/cloudCertificationReviewAdapter.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "src/tracks/types.ts"],
+      "repositoryConsumers": ["src/storage/repositories/trainingAttemptRepository.ts", "src/storage/repositories/trainingModelGuards.ts"],
+      "screenConsumers": ["src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/home/tabs/HomeTab.tsx", "src/features/home/tabs/ProgressTab.tsx", "src/features/practice/PracticeHubScreen.tsx", "src/features/practice/PracticeSetupScreen.tsx", "src/features/practice/TopicRoadmapScreen.tsx"],
+      "serviceConsumers": ["src/features/home/localReset.ts", "src/features/practice/practiceFlowModel.ts"], "selectorConsumers": ["src/features/home/tabs/homeTabModel.ts", "src/features/home/tabs/progressTabModel.ts"],
+      "testConsumers": ["tests/algorithmProgress.test.ts", "tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationSelectors.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/homeTabModel.test.ts", "tests/progressTabModel.test.ts", "tests/sessionEngine.test.ts", "tests/storageRepositories.test.ts", "tests/trackAdapters.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared mixed training domain", "finalOwner": "shared learning kernel generic immutable envelope", "disposition": "replace_with_kernel_contract", "notes": "Family constructors provide typed responses; repositories use opaque unknown response."
+    },
+    {
+      "symbol": "TrainingAttemptResponse",
+      "declarationPaths": ["src/domain/training/trainingAttempt.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/features/algorithms/algorithmsSessionModel.ts", "src/tracks/algorithms/algorithmsScoringAdapter.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts", "src/tracks/types.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": [],
+      "currentOwner": "shared concrete response union", "finalOwner": "Algorithms and Certification response contracts", "disposition": "delete", "notes": "No global response union or shared option-selection response."
     },
     {
       "symbol": "TrainingAttemptResult",
-      "currentOwner": "src/domain/training/trainingAttempt.ts",
-      "currentShape": "correctness, partial_credit, mixed variants",
-      "finalOwner": "kernel AttemptResult"
+      "declarationPaths": ["src/domain/training/trainingAttempt.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/completeTrainingSession.ts", "src/domain/sessions/sessionScoring.ts", "src/tracks/algorithms/algorithmsScoringAdapter.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts", "src/tracks/types.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": ["src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts"], "testConsumers": [],
+      "currentOwner": "shared variant union", "finalOwner": "shared learning kernel AttemptResult", "disposition": "replace_with_kernel_contract", "notes": "One validated correct/partial/incorrect envelope."
+    },
+    {
+      "symbol": "TrainingAttemptConfidence",
+      "declarationPaths": ["src/domain/training/trainingAttempt.ts", "src/domain/training/trainingReview.ts", "src/types/attempt.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts", "src/types/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts", "src/features/review/AnswerReviewScreen.tsx", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": ["src/features/review/AnswerReviewScreen.tsx"], "serviceConsumers": ["src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts"], "selectorConsumers": [],
+      "testConsumers": ["tests/analytics.test.ts", "tests/cloudCertificationBridge.test.ts", "tests/fixtures.ts", "tests/homeTabModel.test.ts", "tests/progressTabModel.test.ts", "tests/sessionEngine.test.ts", "tests/trackAdapters.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared attempt plus Cloud feature records", "finalOwner": "none", "disposition": "delete", "notes": "Confidence has no canonical replacement."
     },
     {
       "symbol": "TrainingSession",
-      "currentOwner": "src/domain/training/trainingSession.ts",
-      "currentShape": "itemRefs with optional type and expired status",
-      "finalOwner": "kernel immutable ContentItemRef session"
+      "declarationPaths": ["src/domain/training/trainingSession.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/domain/sessions/completeTrainingSession.ts", "src/domain/sessions/createTrainingSession.ts", "src/domain/sessions/sessionNavigation.ts", "src/domain/sessions/sessionScoring.ts", "src/features/algorithms/algorithmsSessionModel.ts", "src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/tracks/algorithms/algorithmSessionSelection.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/types.ts"],
+      "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts", "src/storage/repositories/trainingSessionRepository.ts"], "screenConsumers": ["src/features/algorithms/AlgorithmsSessionScreen.tsx"], "serviceConsumers": ["src/features/home/localReset.ts"], "selectorConsumers": [],
+      "testConsumers": ["tests/algorithmsSessionModel.test.ts", "tests/sessionEngine.test.ts", "tests/storageRepositories.test.ts"],
+      "currentOwner": "shared training domain old lifecycle", "finalOwner": "shared learning kernel canonical session", "disposition": "replace_with_kernel_contract", "notes": "ContentItemRef replaces optional typed refs; current index is application state."
     },
     {
       "symbol": "ReviewQueueItem",
-      "currentOwner": "src/domain/training/trainingReview.ts",
-      "currentShape": "inferred kind, priority, retention fields, optional taxonomy",
-      "finalOwner": "kernel ReviewQueueEntry with required evidence"
+      "declarationPaths": ["src/domain/training/trainingReview.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/sessionReview.ts", "src/features/algorithms/algorithmsSessionModel.ts", "src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/tracks/algorithms/algorithmProgress.ts", "src/tracks/algorithms/algorithmSessionSelection.ts", "src/tracks/algorithms/algorithmsReviewAdapter.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationProgressBridge.ts", "src/tracks/cloud-certification/cloudCertificationReviewAdapter.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts", "src/tracks/types.ts"],
+      "repositoryConsumers": ["src/storage/repositories/reviewQueueRepository.ts", "src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": ["src/features/home/HomeScreen.tsx", "src/features/home/tabs/ProgressTab.tsx"], "serviceConsumers": ["src/features/home/localReset.ts", "src/features/review/reviewQueueService.ts"],
+      "selectorConsumers": ["src/features/home/tabs/progressTabModel.ts", "src/features/review/reviewQueueModel.ts", "src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts", "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts"],
+      "testConsumers": ["tests/algorithmProgress.test.ts", "tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationSelectors.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/progressTabModel.test.ts", "tests/reviewQueueModel.test.ts", "tests/sessionEngine.test.ts", "tests/storageRepositories.test.ts", "tests/trackAdapters.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared review model with inferred kind", "finalOwner": "shared learning kernel ReviewQueueEntry", "disposition": "replace_with_kernel_contract", "notes": "Kind, priority and retentionPassedAt are deleted; canonical reasons are emitted directly."
+    },
+    {
+      "symbol": "SessionModeType",
+      "declarationPaths": ["src/domain/tracks/types.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/algorithmContentModel.test.ts", "tests/trackRegistry.test.ts"],
+      "currentOwner": "shared registry taxonomy", "finalOwner": "track families", "disposition": "delete", "notes": "Kernel stores only modeId; families preserve current definitions."
+    },
+    {
+      "symbol": "ContentManifest",
+      "declarationPaths": ["src/domain/tracks/types.ts", "src/tracks/algorithms/content/index.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts", "src/tracks/algorithms/index.ts"],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/content/index.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/algorithmContentModel.test.ts"],
+      "currentOwner": "shared registry plus Algorithms content", "finalOwner": "each family content owner", "disposition": "move_to_algorithms_family", "notes": "Certification receives its own family manifest; shared registry owns no content."
     },
     {
       "symbol": "Question",
-      "currentOwner": "src/types/question.ts",
-      "currentShape": "shared application type consumed by Cloud runtime",
-      "finalOwner": "src/tracks/cloud-certification"
+      "declarationPaths": ["src/types/question.ts"], "exportPaths": ["src/types/index.ts"],
+      "runtimeConsumers": ["src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/practice/practiceService.ts", "src/features/questions/defaultQuestionBank.ts", "src/features/questions/questionBankStats.ts", "src/storage/localStorage.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationScoringAdapter.ts"],
+      "repositoryConsumers": ["src/storage/localStorage.ts"], "screenConsumers": ["src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ExamScreen.tsx", "src/features/practice/PracticeSessionScreen.tsx", "src/features/review/AnswerReviewScreen.tsx"], "serviceConsumers": ["src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/practice/practiceService.ts"], "selectorConsumers": [],
+      "testConsumers": ["tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationSelectors.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/examGeneration.test.ts", "tests/fixtures.ts", "tests/optionRandomization.test.ts", "tests/scoring.test.ts", "tests/sessionEngine.test.ts", "tests/trackAdapters.test.ts"],
+      "currentOwner": "shared src/types", "finalOwner": "Certification family", "disposition": "move_to_certification_family", "notes": "Renamed CertificationQuestion and old owner deleted without re-export."
     },
     {
       "symbol": "AlgorithmQuestion",
-      "currentOwner": "src/tracks/algorithms/algorithmQuestionTypes.ts",
-      "currentShape": "family-owned content but routed through global training types",
-      "finalOwner": "src/tracks/algorithms"
+      "declarationPaths": ["src/tracks/algorithms/algorithmQuestionTypes.ts"], "exportPaths": ["src/tracks/algorithms/index.ts", "src/tracks/index.ts"],
+      "runtimeConsumers": ["src/features/algorithms/algorithmsSessionModel.ts", "src/features/algorithms/AlgorithmsSessionScreen.tsx", "src/tracks/algorithms/algorithmItems.ts", "src/tracks/algorithms/algorithmOptionOrder.ts", "src/tracks/algorithms/algorithmProgress.ts", "src/tracks/algorithms/algorithmRoadmap.ts", "src/tracks/algorithms/algorithmSessionSelection.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/algorithms/algorithmsScoringAdapter.ts", "src/tracks/algorithms/content/index.ts", "src/tracks/trackAdapters.ts"], "repositoryConsumers": [], "screenConsumers": ["src/features/algorithms/AlgorithmsSessionScreen.tsx"], "serviceConsumers": [], "selectorConsumers": [],
+      "testConsumers": ["tests/algorithmBigOBasicsContent.test.ts", "tests/algorithmContentModel.test.ts", "tests/algorithmProgress.test.ts", "tests/algorithmSelectionArchitecture.test.ts", "tests/algorithmsScoring.test.ts", "tests/optionRandomization.test.ts"],
+      "currentOwner": "Algorithms family", "finalOwner": "Algorithms family domain", "disposition": "move_to_algorithms_family", "notes": "Schema is preserved; imports move under the explicit family-domain boundary."
+    },
+    {
+      "symbol": "PracticeAnswerRecord",
+      "declarationPaths": ["src/types/attempt.ts"], "exportPaths": ["src/types/index.ts"],
+      "runtimeConsumers": ["src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts", "src/storage/localStorage.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts"], "repositoryConsumers": ["src/storage/localStorage.ts"], "screenConsumers": ["src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/home/tabs/ProgressTab.tsx", "src/features/practice/PracticeHubScreen.tsx"], "serviceConsumers": ["src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts"], "selectorConsumers": ["src/features/home/tabs/progressTabModel.ts"],
+      "testConsumers": ["tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/fixtures.ts"],
+      "currentOwner": "shared authoritative Cloud answer history", "finalOwner": "canonical TrainingAttempt<CertificationResponse>", "disposition": "delete", "notes": "No second answer history or write-through remains."
+    },
+    {
+      "symbol": "ActiveExamSession",
+      "declarationPaths": ["src/types/attempt.ts"], "exportPaths": ["src/types/index.ts"],
+      "runtimeConsumers": ["src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/storage/localStorage.ts"], "repositoryConsumers": ["src/storage/localStorage.ts"], "screenConsumers": ["src/features/exam/ExamReviewScreen.tsx", "src/features/exam/ExamScreen.tsx"], "serviceConsumers": ["src/features/exam/examGeneration.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/features/home/localReset.ts"], "selectorConsumers": [], "testConsumers": ["tests/cloudCertificationWriteThrough.test.ts", "tests/fixtures.ts"],
+      "currentOwner": "shared competing exam lifecycle", "finalOwner": "kernel TrainingSession plus CertificationExamState", "disposition": "convert_to_family_state", "notes": "Lifecycle fields move to canonical session; exam-only state remains family-owned."
+    },
+    {
+      "symbol": "AttemptSummary",
+      "declarationPaths": ["src/types/attempt.ts"], "exportPaths": ["src/types/index.ts"],
+      "runtimeConsumers": ["src/features/analytics/analyticsService.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts", "src/storage/localStorage.ts", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts", "src/tracks/cloud-certification/cloudCertificationProgressBridge.ts", "src/tracks/cloud-certification/cloudCertificationWriteThrough.ts"], "repositoryConsumers": ["src/storage/localStorage.ts"], "screenConsumers": ["src/features/exam/ResultScreen.tsx", "src/features/home/HomeScreen.tsx", "src/features/home/SelectTrackScreen.tsx", "src/features/home/tabs/ProgressTab.tsx", "src/features/practice/PracticeHubScreen.tsx", "src/features/review/AnswerReviewScreen.tsx"], "serviceConsumers": ["src/features/analytics/analyticsService.ts", "src/features/exam/examService.ts", "src/features/exam/scoringService.ts"], "selectorConsumers": ["src/features/home/tabs/progressTabModel.ts"], "testConsumers": ["tests/cloudCertificationBridge.test.ts", "tests/cloudCertificationWriteThrough.test.ts", "tests/fixtures.ts"],
+      "currentOwner": "shared persisted exam outcome", "finalOwner": "Certification non-authoritative ExamSummaryViewModel", "disposition": "keep_as_non_authoritative_view_model", "notes": "Derived from canonical attempts and exam state; never persisted as attempt truth."
+    },
+    {
+      "symbol": "QuestionReviewState",
+      "declarationPaths": ["src/types/attempt.ts"], "exportPaths": ["src/types/index.ts"],
+      "runtimeConsumers": ["src/features/practice/practiceService.ts", "src/storage/localStorage.ts"], "repositoryConsumers": ["src/storage/localStorage.ts"], "screenConsumers": ["src/features/review/AnswerReviewScreen.tsx"], "serviceConsumers": ["src/features/home/localReset.ts", "src/features/practice/practiceService.ts"], "selectorConsumers": [], "testConsumers": [],
+      "currentOwner": "shared authoritative review state", "finalOwner": "canonical ReviewQueueEntry", "disposition": "delete", "notes": "Flags/manual marks are emitted as canonical queue entries; no duplicate state map."
+    },
+    {
+      "symbol": "confidence",
+      "declarationPaths": ["src/domain/training/trainingAttempt.ts", "src/types/attempt.ts"], "exportPaths": [],
+      "runtimeConsumers": ["src/domain/sessions/answerTrainingItem.ts", "src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts", "src/features/review/AnswerReviewScreen.tsx", "src/tracks/cloud-certification/cloudCertificationAttemptBridge.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": ["src/features/review/AnswerReviewScreen.tsx"], "serviceConsumers": ["src/features/analytics/analyticsService.ts", "src/features/practice/practiceService.ts"], "selectorConsumers": [], "testConsumers": ["tests/analytics.test.ts", "tests/cloudCertificationBridge.test.ts", "tests/fixtures.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared attempt and Cloud feature records", "finalOwner": "none", "disposition": "delete", "notes": "Confidence has no canonical replacement."
+    },
+    {
+      "symbol": "low_confidence",
+      "declarationPaths": ["src/domain/training/trainingReview.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/sessionReview.ts", "src/tracks/cloud-certification/cloudCertificationReviewAdapter.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/sessionEngine.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared review reason taxonomy", "finalOwner": "none", "disposition": "delete", "notes": "There is no canonical reason mapping because confidence behavior is removed."
+    },
+    {
+      "symbol": "TrainingSessionItemRef",
+      "declarationPaths": ["src/domain/training/trainingSession.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/createTrainingSession.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/sessionEngine.test.ts", "tests/storageRepositories.test.ts"],
+      "currentOwner": "shared training session model", "finalOwner": "shared learning kernel ContentItemRef", "disposition": "replace_with_kernel_contract", "notes": "Required trackId and contentVersion replace optional typed item references."
+    },
+    {
+      "symbol": "ReviewQueueItemKind",
+      "declarationPaths": ["src/domain/training/trainingReview.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/features/review/reviewQueueModel.ts", "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": ["src/features/review/reviewQueueModel.ts", "src/tracks/cloud-certification/cloudCertificationReviewSelectors.ts"], "testConsumers": ["tests/reviewQueueModel.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared inferred review classification", "finalOwner": "none", "disposition": "delete", "notes": "Canonical queue entries expose evidence and reasons without inferred kind."
+    },
+    {
+      "symbol": "ReviewReason",
+      "declarationPaths": ["src/domain/training/trainingReview.ts"], "exportPaths": ["src/domain/training/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/sessions/sessionReview.ts", "src/features/review/reviewQueueService.ts", "src/tracks/algorithms/algorithmsReviewAdapter.ts", "src/tracks/cloud-certification/cloudCertificationReviewAdapter.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": [], "serviceConsumers": ["src/features/review/reviewQueueService.ts"], "selectorConsumers": [], "testConsumers": ["tests/sessionEngine.test.ts", "tests/trainingContracts.test.ts"],
+      "currentOwner": "shared obsolete review reason union", "finalOwner": "shared learning kernel canonical ReviewReason", "disposition": "replace_with_kernel_contract", "notes": "Call sites emit the fixed canonical reason set directly."
+    },
+    {
+      "symbol": "retentionPassedAt",
+      "declarationPaths": ["src/domain/training/trainingReview.ts"], "exportPaths": [],
+      "runtimeConsumers": ["src/domain/sessions/sessionReview.ts", "src/tracks/cloud-certification/cloudCertificationProgressBridge.ts"], "repositoryConsumers": ["src/storage/repositories/trainingModelGuards.ts"], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": ["src/tracks/cloud-certification/cloudCertificationProgressSelectors.ts"], "testConsumers": ["tests/cloudCertificationBridge.test.ts", "tests/sessionEngine.test.ts", "tests/storageRepositories.test.ts"],
+      "currentOwner": "shared authoritative review record", "finalOwner": "none", "disposition": "delete", "notes": "Resolution is represented by queue removal after the canonical after-due success rule."
+    },
+    {
+      "symbol": "FeedbackTiming",
+      "declarationPaths": ["src/domain/tracks/types.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/trackRegistry.test.ts"],
+      "currentOwner": "shared mode taxonomy", "finalOwner": "track families", "disposition": "delete", "notes": "Feedback behavior remains family-owned."
+    },
+    {
+      "symbol": "ScoringType",
+      "declarationPaths": ["src/domain/tracks/types.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/trackRegistry.test.ts"],
+      "currentOwner": "shared scoring taxonomy", "finalOwner": "track families", "disposition": "delete", "notes": "Scoring semantics remain in family scorers."
+    },
+    {
+      "symbol": "SessionModeDefinition",
+      "declarationPaths": ["src/domain/tracks/types.ts"], "exportPaths": ["src/domain/tracks/index.ts", "src/domain/index.ts"],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/algorithmContentModel.test.ts", "tests/trackRegistry.test.ts"],
+      "currentOwner": "shared registry mode definition", "finalOwner": "track families", "disposition": "delete", "notes": "The kernel retains only modeId."
+    },
+    {
+      "symbol": "supportedItemTypes",
+      "declarationPaths": ["src/domain/tracks/types.ts"], "exportPaths": [],
+      "runtimeConsumers": ["src/domain/tracks/trackRegistry.ts", "src/tracks/algorithms/algorithmsContentAdapter.ts", "src/tracks/cloud-certification/cloudCertificationContentAdapter.ts"], "repositoryConsumers": [], "screenConsumers": [], "serviceConsumers": [], "selectorConsumers": [], "testConsumers": ["tests/trackRegistry.test.ts"],
+      "currentOwner": "shared registry mode definition", "finalOwner": "track families", "disposition": "delete", "notes": "No shared supported-item list survives the family boundary."
     }
   ],
   "unresolvedFinalOwners": []

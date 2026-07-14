@@ -2,18 +2,18 @@ import type { IconName } from "../../components";
 import {
   ALGORITHMS_TRACK_ID,
   CLOUD_CERTIFICATION_TRACK_ID,
-  type TrackDefinition,
+  type TrackDisplay,
   type TrackId,
 } from "../../domain";
-import type { TrainingAttempt } from "../../domain/training";
+import type { TrainingAttempt } from "../../domain";
 import {
   ALGORITHM_ROADMAP,
   buildAlgorithmProgressFacts,
-  getAlgorithmTrainingItemsForRoadmapNode,
+  getAlgorithmItemsForRoadmapNode,
   isRoadmapPrerequisiteSatisfied,
 } from "../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
-import type { ExamDomain } from "../../types";
+import type { CertificationDomain } from "../../tracks/cloud-certification";
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
@@ -150,7 +150,7 @@ const cloudTopics: readonly TopicRoadmapNodeModel[] = [
 ];
 
 export function getCurrentPracticeTopic(
-  activeTrack: TrackDefinition,
+  activeTrack: TrackDisplay,
   trainingAttempts: readonly TrainingAttempt[] = [],
 ): PracticeTopic {
   if (activeTrack.id === ALGORITHMS_TRACK_ID) {
@@ -186,7 +186,7 @@ export function hasTrackProgress(input: {
 }
 
 export function buildRecommendedPracticeModes(input: {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   analytics: AnalyticsData;
   trainingAttempts: readonly TrainingAttempt[];
 }): RecommendedPracticeModel[] {
@@ -229,7 +229,7 @@ export function buildRecommendedPracticeModes(input: {
   ];
 }
 
-export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeModel[] {
+export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel[] {
   return [
     {
       detail: "Guided explanations after each item with solving hints.",
@@ -275,7 +275,7 @@ export function buildPracticeModes(activeTrack: TrackDefinition): PracticeModeMo
 }
 
 export function buildPracticeStatsSummary(input: {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   analytics: AnalyticsData;
   cloudProgress?: CloudCertificationProgressViewModel | null;
   trainingAttempts: readonly TrainingAttempt[];
@@ -335,7 +335,7 @@ export function buildTopicRoadmapNodes(input: {
   );
 
   return ALGORITHM_ROADMAP.nodes.map((node) => {
-    const itemCount = getAlgorithmTrainingItemsForRoadmapNode(node.id).length;
+    const itemCount = getAlgorithmItemsForRoadmapNode(node.id).length;
     const nodeProgress = progress.nodeProgress.find((item) => item.nodeId === node.id);
     const isCurrent = progress.activeRoadmapNode.id === node.id;
     const prerequisitesMet = node.prerequisiteNodeIds.every((nodeId) => readyNodeIds.has(nodeId));
@@ -362,7 +362,7 @@ export function buildTopicRoadmapNodes(input: {
 export function getCloudTopicTitle(topicId: string): string {
   const knownTopic = cloudTopics.find((topic) => topic.id === topicId);
 
-  return knownTopic?.title ?? getDomainLabel(topicId as ExamDomain);
+  return knownTopic?.title ?? getDomainLabel(topicId as CertificationDomain);
 }
 
 function getAlgorithmTopicStatus(

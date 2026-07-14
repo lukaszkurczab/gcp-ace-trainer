@@ -2,25 +2,25 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import type { Difficulty, ExamDomain, QuestionType } from "../src/types";
+import type { CertificationDifficulty, CertificationDomain, CertificationQuestionType } from "../src/tracks/cloud-certification/domain";
 import {
   algorithmContentItems,
   algorithmContentManifest,
   validateAlgorithmQuestion,
 } from "../src/tracks/algorithms/content";
 
-const domains: readonly ExamDomain[] = ["setup_environment", "planning_implementation", "operations", "access_security"];
-const difficulties: readonly Difficulty[] = ["easy", "medium", "hard"];
-const questionTypes: readonly QuestionType[] = ["single", "multiple"];
+const domains: readonly CertificationDomain[] = ["setup_environment", "planning_implementation", "operations", "access_security"];
+const difficulties: readonly CertificationDifficulty[] = ["easy", "medium", "hard"];
+const questionTypes: readonly CertificationQuestionType[] = ["single", "multiple"];
 const optionIds = ["A", "B", "C", "D"] as const;
 
 type OptionId = (typeof optionIds)[number];
 
 type ValidationSummary = {
   total: number;
-  byDomain: Record<ExamDomain, number>;
-  byDifficulty: Record<Difficulty, number>;
-  byType: Record<QuestionType, number>;
+  byDomain: Record<CertificationDomain, number>;
+  byDifficulty: Record<CertificationDifficulty, number>;
+  byType: Record<CertificationQuestionType, number>;
   errors: string[];
 };
 
@@ -118,22 +118,22 @@ export function validateQuestionBankFile(filePath = "data/question-bank/ace-foun
       seenIds.add(question.id);
     }
 
-    if (!domains.includes(question.domain as ExamDomain)) {
+    if (!domains.includes(question.domain as CertificationDomain)) {
       push(summary.errors, label, "domain is invalid.");
     } else {
-      summary.byDomain[question.domain as ExamDomain] += 1;
+      summary.byDomain[question.domain as CertificationDomain] += 1;
     }
 
-    if (!difficulties.includes(question.difficulty as Difficulty)) {
+    if (!difficulties.includes(question.difficulty as CertificationDifficulty)) {
       push(summary.errors, label, "difficulty is invalid.");
     } else {
-      summary.byDifficulty[question.difficulty as Difficulty] += 1;
+      summary.byDifficulty[question.difficulty as CertificationDifficulty] += 1;
     }
 
-    if (!questionTypes.includes(question.type as QuestionType)) {
+    if (!questionTypes.includes(question.type as CertificationQuestionType)) {
       push(summary.errors, label, "type is invalid.");
     } else {
-      summary.byType[question.type as QuestionType] += 1;
+      summary.byType[question.type as CertificationQuestionType] += 1;
     }
 
     if (!isNonEmptyString(question.question)) {

@@ -6,10 +6,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
-import { ALGORITHMS_TRACK_ID } from "../../domain";
+import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, createTrainingSession, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
-import type { Question } from "../../types";
+import { addTrainingSession } from "../../storage";
+import type { CertificationQuestion } from "../../tracks/cloud-certification";
 import { areOptionSetsEqual } from "../../utils";
 import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
 import {
@@ -39,7 +40,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 }
 
 function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<CertificationQuestion[]>([]);
+  const [trainingSession, setTrainingSession] = useState<TrainingSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -66,6 +68,10 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         }
 
         setQuestions(loadedQuestions);
+        const startedAt = new Date().toISOString();
+        const session = createTrainingSession({ id: `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", requestedLength: route.params.sessionLength, actualLength: loadedQuestions.length, itemOrder: loadedQuestions.map((question) => ({ trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion: "ace-foundation-320" })), optionOrderByItem: Object.fromEntries(loadedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])), activeForegroundMs: 0, contentVersion: "ace-foundation-320", status: "active", startedAt });
+        setTrainingSession(session);
+        await addTrainingSession(session);
         setCurrentIndex(0);
         setCompletedAnswers([]);
         setIsReviewPass(false);
@@ -113,7 +119,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
   }
 
   async function submitAnswer() {
-    if (!currentQuestion || selectedOptionIds.length === 0) {
+    if (!currentQuestion || !trainingSession || selectedOptionIds.length === 0) {
       return;
     }
 
@@ -130,6 +136,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     if (!isReviewPass) {
       await savePracticeAnswer({
         question: currentQuestion,
+        session: trainingSession,
         selectedOptionIds,
       });
 
@@ -157,7 +164,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
     const nextNeedsReview = !needsReview;
     setNeedsReview(nextNeedsReview);
-    await setQuestionNeedsReview(currentQuestion.id, nextNeedsReview);
+    await setQuestionNeedsReview(currentQuestion, nextNeedsReview);
   }
 
   function goNext() {
@@ -325,7 +332,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
 type CompletedAnswer = {
   isCorrect: boolean;
-  question: Question;
+  question: CertificationQuestion;
   selectedOptionIds: string[];
 };
 
@@ -402,7 +409,7 @@ function SummaryMetric({ label, value }: { label: string; value: number }) {
 }
 
 type FeedbackCardProps = {
-  question: Question;
+  question: CertificationQuestion;
   selectedOptionIds: string[];
   isCorrect: boolean;
 };
@@ -492,17 +499,17 @@ function OptionMarker({
   );
 }
 
-function getOptionText(question: Question, optionIds: readonly string[]): string {
+function getOptionText(question: CertificationQuestion, optionIds: readonly string[]): string {
   const optionById = new Map(question.options.map((option) => [option.id, option.text]));
   return optionIds.map((optionId) => optionById.get(optionId) ?? optionId).join(", ");
 }
 
-function normalizeWatchOutFor(value: Question["watchOutFor"]): string[] {
+function normalizeWatchOutFor(value: CertificationQuestion["watchOutFor"]): string[] {
   if (!value) {
     return [];
   }
 
-  return Array.isArray(value) ? value : [value];
+  return typeof value === "string" ? [value] : [...value];
 }
 
 function formatSessionMode(value: string): string {

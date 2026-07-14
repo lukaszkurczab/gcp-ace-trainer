@@ -14,14 +14,10 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   ALGORITHMS_TRACK_ID,
-  completeTrainingSession,
   createTrainingSession,
+  type TrainingAttempt,
+  type TrainingSession,
 } from "../../domain";
-import type {
-  ComplexityAnswer,
-  TrainingAttempt,
-  TrainingSession,
-} from "../../domain/training";
 import type { RootStackParamList } from "../../navigation";
 import type { PracticeSessionRouteParams } from "../practice/sessionConfig";
 import {
@@ -50,6 +46,7 @@ import {
   selectAlgorithmSessionItems,
   type AlgorithmQuestionDisplayOption,
   type AlgorithmQuestionScore,
+  type AlgorithmResponse,
   type AlgorithmRoadmapNode,
   type AlgorithmScoringStatus,
 } from "../../tracks/algorithms";
@@ -74,6 +71,7 @@ import {
   hasAlgorithmsFeedbackDetails,
   type AnswerOptionVisualState,
   type AlgorithmsSubmission,
+  type AlgorithmComplexityAnswer,
   type AlgorithmsSummaryAction,
   type AlgorithmsSessionSummary,
 } from "./algorithmsSessionModel";
@@ -93,10 +91,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOptionIds, setSelectedOptionIds] = useState<string[]>([]);
-  const [complexityAnswer, setComplexityAnswer] = useState<ComplexityAnswer>({});
+  const [complexityAnswer, setComplexityAnswer] = useState<AlgorithmComplexityAnswer>({});
   const [checkedScore, setCheckedScore] = useState<AlgorithmQuestionScore | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [attempts, setAttempts] = useState<TrainingAttempt[]>([]);
+  const [attempts, setAttempts] = useState<TrainingAttempt<AlgorithmResponse>[]>([]);
   const [summary, setSummary] = useState<AlgorithmsSessionSummary | null>(null);
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -153,13 +151,22 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       }
 
       const nextSession = createTrainingSession({
-        itemRefs: nextItems.map((item) => ({
+        id: `session:${ALGORITHMS_TRACK_ID}:${startedAt}`,
+        requestedLength: sessionConfig?.sessionLength ?? 20,
+        actualLength: nextItems.length,
+        itemOrder: nextItems.map((item) => ({
+          contentVersion: item.contentVersion,
           itemId: item.id,
-          itemType: item.type,
           trackId: ALGORITHMS_TRACK_ID,
         })),
+        optionOrderByItem: Object.fromEntries(nextItems.flatMap((item) =>
+          isAlgorithmChoiceQuestion(item) ? [[item.id, item.options.map((option) => option.id)]] : [],
+        )),
+        activeForegroundMs: 0,
+        contentVersion: nextItems[0]?.contentVersion ?? "",
         modeId: getAlgorithmsSessionModeIdForRouteMode(sessionConfig?.mode),
         startedAt,
+        status: "active",
         trackId: ALGORITHMS_TRACK_ID,
       });
 
@@ -298,11 +305,7 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
 
     if (currentIndex >= items.length - 1) {
       const completedAt = new Date().toISOString();
-      const completed = completeTrainingSession({
-        attempts: nextAttempts,
-        completedAt,
-        session,
-      });
+      const completed = { session: createTrainingSession({ ...session, completedAt, status: "completed" }) };
       const sessionsResult = await getTrainingSessions();
       const nextSessions = [
         completed.session,
@@ -332,12 +335,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     const existingResult = await getReviewQueueItems();
     const existingItem = existingResult.value.find((item) =>
       item.trackId === ALGORITHMS_TRACK_ID &&
-      item.itemId === submission.attempt.itemId
+      item.sourceItem.itemId === submission.attempt.item.itemId
     );
     const update = buildAlgorithmsReviewQueueUpdate(submission, existingItem);
 
-    if (update.action === "keep" && update.reviewQueueItems.length > 0) {
-      const reviewResult = await addReviewQueueItems([...update.reviewQueueItems]);
+    if (update.action === "keep" && update.reviewQueueEntries.length > 0) {
+      const reviewResult = await addReviewQueueItems([...update.reviewQueueEntries]);
 
       if (!reviewResult.ok) {
         setStorageMessage(formatStorageFailure("The answer was checked, but review scheduling was not saved locally", reviewResult.issues));
@@ -510,8 +513,8 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         feedbackState.hasSubmittedAnswer ? (
           <SubmittedAnswerFooter
             buttonLabel={formatSubmittedSessionActionLabel(currentIndex >= items.length - 1)}
-            correctCount={checkedScore?.result.kind === "partial_credit" ? checkedScore.result.earnedPoints : checkedScore?.status === "correct" ? 1 : 0}
-            maxCount={checkedScore?.result.kind === "partial_credit" ? checkedScore.result.maxPoints : 1}
+            correctCount={checkedScore?.result.earnedPoints ?? 0}
+            maxCount={checkedScore?.result.maxPoints ?? 1}
             onPress={() => void goNext()}
             statusLabel={checkedScore ? formatAlgorithmStatus(checkedScore.status) : ""}
           />
@@ -628,7 +631,7 @@ function SubmittedAnswerFooter({
 }
 
 type AnswerControlProps = {
-  complexityAnswer: ComplexityAnswer;
+  complexityAnswer: AlgorithmComplexityAnswer;
   interactionDisabled: boolean;
   onResetOrder: () => void;
   onSelectComplexity: (dimension: ComplexityDimension, value: string) => void;
@@ -810,7 +813,7 @@ function OptionButton({ interactionDisabled, label, onPress, visualState }: Opti
 }
 
 type FeedbackCardProps = {
-  complexityAnswer: ComplexityAnswer;
+  complexityAnswer: AlgorithmComplexityAnswer;
   question: AlgorithmQuestion;
   score: AlgorithmQuestionScore;
   selectedOptionIds: readonly string[];
@@ -1026,7 +1029,7 @@ function getSummaryActionMode(action: AlgorithmsSummaryAction): PracticeSessionM
 function hasAnswer(
   question: AlgorithmQuestion,
   selectedOptionIds: readonly string[],
-  complexityAnswer: ComplexityAnswer,
+  complexityAnswer: AlgorithmComplexityAnswer,
 ): boolean {
   if (isAlgorithmComplexityQuestion(question)) {
     return Boolean(complexityAnswer.time && complexityAnswer.space);

@@ -8,13 +8,13 @@ import { ROUTES, TRAINING_PASS_THRESHOLD } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { getAttempts } from "../../storage";
 import { colors, spacing, typography } from "../../theme";
-import type { AttemptSummary } from "../../types";
+import type { CertificationExamSummaryViewModel } from "../../tracks/cloud-certification";
 import { formatDuration, getDomainLabel } from "../../utils";
 
 type ResultScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.RESULT>;
 
 export function ResultScreen({ navigation, route }: ResultScreenProps) {
-  const [attempt, setAttempt] = useState<AttemptSummary | null>(null);
+  const [attempt, setAttempt] = useState<CertificationExamSummaryViewModel | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -127,14 +127,14 @@ function ScoreRow({ correct, label, percent, total }: { correct: number; label: 
   );
 }
 
-function getWeakestDomains(attempt: AttemptSummary) {
+function getWeakestDomains(attempt: CertificationExamSummaryViewModel) {
   return [...attempt.domainScores]
     .filter((score) => score.total > 0)
     .sort((left, right) => left.percent - right.percent || right.total - left.total)
     .slice(0, 2);
 }
 
-function getWeakTags(attempt: AttemptSummary) {
+function getWeakTags(attempt: CertificationExamSummaryViewModel) {
   return attempt.tagScores.filter((score) => score.percent < 100).slice(0, 5);
 }
 

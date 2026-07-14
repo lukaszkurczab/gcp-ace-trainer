@@ -12,19 +12,19 @@ import {
 
 export const ALGORITHMS_SESSION_MODE_ID = "algorithms-roadmap-basics";
 
-export const ALGORITHM_TRAINING_ITEMS: readonly AlgorithmQuestion[] = algorithmContentItems;
+export const ALGORITHM_ITEMS: readonly AlgorithmQuestion[] = algorithmContentItems;
 
 export type AlgorithmQuestionEntry = {
   group: AlgorithmContentGroup;
   question: AlgorithmQuestion;
 };
 
-export function getAlgorithmTrainingItems(): readonly AlgorithmQuestion[] {
-  return ALGORITHM_TRAINING_ITEMS;
+export function getAlgorithmItems(): readonly AlgorithmQuestion[] {
+  return ALGORITHM_ITEMS;
 }
 
-export function getAlgorithmTrainingItemById(itemId: string): AlgorithmQuestion | undefined {
-  return ALGORITHM_TRAINING_ITEMS.find((question) => question.id === itemId);
+export function getAlgorithmItemById(itemId: string): AlgorithmQuestion | undefined {
+  return ALGORITHM_ITEMS.find((question) => question.id === itemId);
 }
 
 export function getAlgorithmQuestionEntries(
@@ -44,7 +44,7 @@ export function getAlgorithmContentGroupForItem(
   );
 }
 
-export function getAlgorithmTrainingItemsForRoadmapNode(
+export function getAlgorithmItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
   groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
 ): readonly AlgorithmQuestion[] {
@@ -67,11 +67,11 @@ export function isAlgorithmRoadmapNodeSelectable(
   node: AlgorithmRoadmapNode,
   groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
 ): boolean {
-  return getAlgorithmTrainingItemsForRoadmapNode(node.id, groups).length >=
+  return getAlgorithmItemsForRoadmapNode(node.id, groups).length >=
     node.minimumActiveItemCount;
 }
 
-export function isAlgorithmTrainingItemSelectable(
+export function isAlgorithmItemSelectable(
   question: AlgorithmQuestion,
   groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
 ): boolean {
@@ -88,7 +88,7 @@ export function isAlgorithmTrainingItemSelectable(
   return node ? isAlgorithmRoadmapNodeSelectable(node, groups) : false;
 }
 
-export function getSelectableAlgorithmTrainingItems(
+export function getSelectableAlgorithmItems(
   groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
 ): readonly AlgorithmQuestion[] {
   return groups.flatMap((group) => {

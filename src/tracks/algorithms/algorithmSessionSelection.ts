@@ -1,4 +1,4 @@
-import type { ReviewQueueItem, TrainingAttempt, TrainingSessionModeId } from "../../domain/training";
+import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { shuffleArray } from "../../utils";
 import {
   ALGORITHMS_SESSION_MODE_ID,
@@ -12,10 +12,7 @@ import {
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapNodeId,
 } from "./algorithmRoadmap";
-import {
-  algorithmsContentAdapter,
-  type AlgorithmsContentAdapter,
-} from "./algorithmsContentAdapter";
+import { algorithmContentCatalog, type AlgorithmContentCatalog } from "./algorithmContentCatalog";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
@@ -34,12 +31,12 @@ export type AlgorithmReviewSource = "dueQueue" | "sessionMisses";
 
 export type SelectAlgorithmSessionItemsInput = {
   attempts?: readonly TrainingAttempt[];
-  contentAdapter?: AlgorithmsContentAdapter;
+  contentCatalog?: AlgorithmContentCatalog;
   mode: AlgorithmPracticeSessionMode;
   nodeId: AlgorithmRoadmapNodeId;
   now?: string;
   reviewItemIds?: readonly string[];
-  reviewQueueItems?: readonly ReviewQueueItem[];
+  reviewQueueItems?: readonly ReviewQueueEntry[];
   reviewSource?: AlgorithmReviewSource;
   sessionLength: number;
 };
@@ -75,13 +72,6 @@ const DRILL_ITEM_TYPES = [
   "mistake_review",
 ] as const satisfies readonly AlgorithmQuestionType[];
 
-const reviewPriorityRank: Record<ReviewQueueItem["priority"], number> = {
-  urgent: 0,
-  high: 1,
-  normal: 2,
-  low: 3,
-};
-
 export const ALGORITHMS_SESSION_MODE_IDS = {
   default: ALGORITHMS_SESSION_MODE_ID,
   drill: "algorithms-drill",
@@ -89,23 +79,23 @@ export const ALGORITHMS_SESSION_MODE_IDS = {
   practice: "algorithms-mixed-practice",
   review: "algorithms-review",
   weakArea: "algorithms-weak-area",
-} as const satisfies Record<AlgorithmPracticeSessionMode, TrainingSessionModeId>;
+} as const satisfies Record<AlgorithmPracticeSessionMode, string>;
 
 export function getAlgorithmsTrainingSessionModeId(
   mode: AlgorithmPracticeSessionMode,
-): TrainingSessionModeId {
+): string {
   return ALGORITHMS_SESSION_MODE_IDS[mode];
 }
 
 export function selectAlgorithmSessionItemsForRoadmapNode(input: {
-  contentAdapter?: AlgorithmsContentAdapter;
-  modeId?: TrainingSessionModeId;
+  contentCatalog?: AlgorithmContentCatalog;
+  modeId?: string;
   nodeId: AlgorithmRoadmapNodeId;
   sessionLength: number;
 }): readonly AlgorithmQuestion[] {
-  const adapter = input.contentAdapter ?? algorithmsContentAdapter;
+  const catalog = input.contentCatalog ?? algorithmContentCatalog;
   const entries = getSelectableModeEntries(
-    adapter,
+    catalog,
     input.modeId ?? ALGORITHMS_SESSION_MODE_ID,
   ).filter((entry) => entry.group.roadmapNodeId === input.nodeId);
 
@@ -115,8 +105,8 @@ export function selectAlgorithmSessionItemsForRoadmapNode(input: {
 export function selectAlgorithmSessionItems(
   input: SelectAlgorithmSessionItemsInput,
 ): readonly AlgorithmQuestion[] {
-  const adapter = input.contentAdapter ?? algorithmsContentAdapter;
-  const entries = getSelectableModeEntries(adapter, ALGORITHMS_SESSION_MODE_ID);
+  const catalog = input.contentCatalog ?? algorithmContentCatalog;
+  const entries = getSelectableModeEntries(catalog, ALGORITHMS_SESSION_MODE_ID);
 
   switch (input.mode) {
     case "learn":
@@ -145,7 +135,7 @@ export function selectAlgorithmSessionItems(
     case "weakArea":
       return selectWeakAreaQuestions(
         input.attempts ?? [],
-        adapter.getGroups(),
+        catalog.getGroups(),
         input.nodeId,
         input.sessionLength,
       );
@@ -153,12 +143,12 @@ export function selectAlgorithmSessionItems(
       return buildAlgorithmMixedPracticeSelection({
         attempts: input.attempts ?? [],
         currentRoadmapNodeId: input.nodeId,
-        groups: adapter.getGroups(),
+        groups: catalog.getGroups(),
         sessionLength: input.sessionLength,
       });
     case "default":
       return selectAlgorithmSessionItemsForRoadmapNode({
-        contentAdapter: adapter,
+        contentCatalog: catalog,
         nodeId: input.nodeId,
         sessionLength: input.sessionLength,
       });
@@ -232,12 +222,12 @@ export function buildAlgorithmMixedPracticeSelection(
 }
 
 function getSelectableModeEntries(
-  adapter: AlgorithmsContentAdapter,
-  modeId: TrainingSessionModeId,
+  catalog: AlgorithmContentCatalog,
+  modeId: string,
 ): readonly AlgorithmQuestionEntry[] {
-  const modeItemIds = new Set(adapter.getItemsForMode(modeId).map((question) => question.id));
+  const modeItemIds = new Set(catalog.getItemsForMode(modeId).map((question) => question.id));
 
-  return getSelectableEntries(adapter.getGroups(), ALGORITHM_ROADMAP.nodes)
+  return getSelectableEntries(catalog.getGroups(), ALGORITHM_ROADMAP.nodes)
     .filter((entry) => modeItemIds.has(entry.question.id));
 }
 
@@ -300,7 +290,7 @@ function selectWeakAreaQuestions(
 }
 
 function selectDueReviewQuestions(
-  reviewQueueItems: readonly ReviewQueueItem[],
+  reviewQueueItems: readonly ReviewQueueEntry[],
   entries: readonly AlgorithmQuestionEntry[],
   now: string,
   sessionLength: number,
@@ -312,7 +302,7 @@ function selectDueReviewQuestions(
   for (const reviewItem of [...reviewQueueItems]
     .filter((item) => item.trackId === "algorithms" && item.dueAt <= now)
     .sort(compareReviewQueueItems)) {
-    const question = questionsById.get(reviewItem.itemId);
+    const question = questionsById.get(reviewItem.sourceItem.itemId);
 
     if (question && !selectedIds.has(question.id)) {
       selected.push(question);
@@ -344,9 +334,8 @@ function selectReviewQuestionsById(
   return selected.slice(0, sessionLength);
 }
 
-function compareReviewQueueItems(left: ReviewQueueItem, right: ReviewQueueItem): number {
-  return reviewPriorityRank[left.priority] - reviewPriorityRank[right.priority] ||
-    left.dueAt.localeCompare(right.dueAt) ||
+function compareReviewQueueItems(left: ReviewQueueEntry, right: ReviewQueueEntry): number {
+  return left.dueAt.localeCompare(right.dueAt) ||
     left.createdAt.localeCompare(right.createdAt) ||
     left.id.localeCompare(right.id);
 }

@@ -6,14 +6,14 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { clearActiveExamSession, getActiveExamSession, getQuestions } from "../../storage";
+import { clearCertificationExam, getCertificationExam, getQuestions } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
-import type { ActiveExamSession } from "../../types";
+import type { CertificationExamViewModel } from "../../tracks/cloud-certification";
 import { formatDuration, getDomainLabel } from "../../utils";
 import {
   buildExamQuestionViews,
   getRemainingSeconds,
-  submitActiveExamSession,
+  submitCertificationExam,
   toggleExamFlag,
   updateCurrentQuestionIndex,
   updateExamAnswer,
@@ -23,12 +23,12 @@ import {
 type ExamScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM>;
 
 export function ExamScreen({ navigation, route }: ExamScreenProps) {
-  const [session, setSession] = useState<ActiveExamSession | null>(null);
+  const [session, setSession] = useState<CertificationExamViewModel | null>(null);
   const [questions, setQuestions] = useState<ExamQuestionView[]>([]);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const loadExam = useCallback(async () => {
-    const [savedSession, bankQuestions] = await Promise.all([getActiveExamSession(), getQuestions()]);
+    const [savedSession, bankQuestions] = await Promise.all([getCertificationExam(), getQuestions()]);
 
     if (!savedSession) {
       setSession(null);
@@ -64,7 +64,7 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
 
         if (nextRemainingSeconds <= 0) {
           clearInterval(intervalId);
-          void submitActiveExamSession(true).then((attempt) => {
+          void submitCertificationExam(true).then((attempt) => {
             Alert.alert("Time expired", "Your exam was submitted automatically.");
             navigation.replace(ROUTES.RESULT, { attemptId: attempt?.id, autoSubmitted: true });
           });
@@ -75,13 +75,14 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
     }, [navigation, session])
   );
 
-  const currentQuestion = session ? questions[session.currentQuestionIndex] : undefined;
+  const currentIndex = session?.examState.currentItemId ? session.session.itemOrder.findIndex((item) => item.itemId === session.examState.currentItemId) : 0;
+  const currentQuestion = session ? questions[Math.max(0, currentIndex)] : undefined;
   const selectedOptionIds = useMemo(() => {
     if (!session || !currentQuestion) {
       return [];
     }
 
-    return session.selectedOptionIdsByQuestionId[currentQuestion.id] ?? [];
+    return session.examState.responsesByItemId[currentQuestion.id]?.selectedOptionIds ?? [];
   }, [currentQuestion, session]);
 
   async function handleSelectOption(optionId: string) {
@@ -143,24 +144,24 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
           description="The saved exam references questions that are no longer available locally."
           actionLabel="Clear Session"
           onActionPress={() => {
-            void clearActiveExamSession().then(() => navigation.navigate(ROUTES.HOME));
+            void clearCertificationExam().then(() => navigation.navigate(ROUTES.HOME));
           }}
         />
       </Screen>
     );
   }
 
-  const isFlagged = session.flaggedQuestionIds.includes(currentQuestion.id);
-  const isFirstQuestion = session.currentQuestionIndex === 0;
-  const isLastQuestion = session.currentQuestionIndex === session.questionIds.length - 1;
-  const progress = (session.currentQuestionIndex + 1) / session.questionIds.length;
+  const isFlagged = session.examState.flaggedItemIds.includes(currentQuestion.id);
+  const isFirstQuestion = currentIndex === 0;
+  const isLastQuestion = currentIndex === session.session.itemOrder.length - 1;
+  const progress = (currentIndex + 1) / session.session.itemOrder.length;
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
 
   return (
     <Screen
       footer={
         <View style={styles.footerActions}>
-          <Button style={styles.footerButton} variant="secondary" disabled={isFirstQuestion} onPress={() => void handleMove(session.currentQuestionIndex - 1)}>
+          <Button style={styles.footerButton} variant="secondary" disabled={isFirstQuestion} onPress={() => void handleMove(currentIndex - 1)}>
             Previous
           </Button>
           <Button style={styles.footerButton} variant={isFlagged ? "ghost" : "secondary"} onPress={handleToggleFlag}>
@@ -169,14 +170,14 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
           {isLastQuestion ? (
             <Button style={styles.footerButton} onPress={() => navigation.navigate(ROUTES.EXAM_REVIEW)}>Review</Button>
           ) : (
-            <Button style={styles.footerButton} onPress={() => void handleMove(session.currentQuestionIndex + 1)}>Next</Button>
+            <Button style={styles.footerButton} onPress={() => void handleMove(currentIndex + 1)}>Next</Button>
           )}
         </View>
       }
     >
       <Card>
         <SectionHeader
-          title={`Question ${session.currentQuestionIndex + 1} / ${session.questionIds.length}`}
+          title={`Question ${currentIndex + 1} / ${session.session.itemOrder.length}`}
           subtitle={getDomainLabel(currentQuestion.domain)}
           action={<Badge label={formatDuration(remainingSeconds)} tone={remainingSeconds < 600 ? "warning" : "info"} />}
         />

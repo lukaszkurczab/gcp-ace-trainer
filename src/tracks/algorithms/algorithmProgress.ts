@@ -1,9 +1,8 @@
 import {
-  getReviewQueueItemKind,
-  type ReviewQueueItem,
+  type EvidenceRef,
+  type ReviewQueueEntry,
   type TrainingAttempt,
-  type TrainingItemTaxonomyRef,
-} from "../../domain/training";
+} from "../../domain";
 import {
   getAlgorithmQuestionEntries,
   getRoadmapNodesWithActiveItems,
@@ -19,7 +18,7 @@ import {
 import {
   getAlgorithmAttemptStatus,
   type AlgorithmScoringStatus,
-} from "./algorithmsScoringAdapter";
+} from "./algorithmScoring";
 
 export type AlgorithmRoadmapNodeProgressStatus =
   | "not_started"
@@ -80,13 +79,13 @@ export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
   groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
-  reviewQueueItems: readonly ReviewQueueItem[] = [],
+  reviewQueueItems: readonly ReviewQueueEntry[] = [],
   now = new Date().toISOString(),
 ): AlgorithmProgressFacts {
   const entries = getKnownRoadmapEntries(groups, roadmapNodes);
   const questionIds = new Set(entries.map((entry) => entry.question.id));
   const algorithmAttempts = attempts.filter((attempt) =>
-    attempt.trackId === "algorithms" && questionIds.has(attempt.itemId),
+    attempt.trackId === "algorithms" && questionIds.has(attempt.item.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
   const nodeProgress = getRoadmapNodesWithActiveItems(groups)
@@ -169,7 +168,7 @@ function buildNodeProgress(
   entries: readonly AlgorithmQuestionEntry[],
   attempts: readonly TrainingAttempt[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
-  reviewQueueItems: readonly ReviewQueueItem[],
+  reviewQueueItems: readonly ReviewQueueEntry[],
   now: string,
 ): AlgorithmRoadmapNodeProgress {
   const questions = entries
@@ -200,17 +199,11 @@ function buildNodeProgress(
     : Math.round((coveredCoreSkillAtomCount / coreSkillAtomCount) * 100);
   const questionIds = new Set(questions.map((question) => question.id));
   const dueReviews = reviewQueueItems.filter((item) =>
-    item.trackId === "algorithms" && questionIds.has(item.itemId) && item.dueAt <= now,
+    item.trackId === "algorithms" && questionIds.has(item.sourceItem.itemId) && item.dueAt <= now,
   );
-  const remediationDue = dueReviews.filter((item) =>
-    getReviewQueueItemKind(item) === "remediation",
-  );
-  const retentionDueCount = dueReviews.filter((item) =>
-    getReviewQueueItemKind(item) === "retention",
-  ).length;
+  const remediationDue = dueReviews.filter((item) => item.persistent);
+  const retentionDueCount = dueReviews.filter((item) => !item.persistent).length;
   const criticalRemediationDueCount = remediationDue.filter((item) =>
-    item.priority === "high" ||
-    item.priority === "urgent" ||
     item.reasons.includes("repeated_mistake"),
   ).length;
   const retainedSkills = getRetainedSkills(reviewQueueItems, questions);
@@ -229,7 +222,7 @@ function buildNodeProgress(
     remediationDue.length === 0 &&
     retentionPassedCount === coreSkillAtomCount &&
     !hasRepeatedCriticalMistake(
-      attempts.filter((attempt) => questionIds.has(attempt.itemId)),
+      attempts.filter((attempt) => questionIds.has(attempt.item.itemId)),
     );
   const status = mastered
     ? retentionDueCount > 0 ? "maintenance" : "mastered"
@@ -274,15 +267,15 @@ function buildNodeProgress(
 }
 
 function getRetainedSkills(
-  reviewQueueItems: readonly ReviewQueueItem[],
+  reviewQueueItems: readonly ReviewQueueEntry[],
   questions: readonly AlgorithmQuestion[],
 ): ReadonlySet<string> {
   const questionsById = new Map(questions.map((question) => [question.id, question]));
   const retained = new Set<string>();
 
   for (const review of reviewQueueItems) {
-    if (!review.retentionPassedAt) continue;
-    const question = questionsById.get(review.itemId);
+    if (review.consecutiveAfterDueSuccesses < 2) continue;
+    const question = questionsById.get(review.sourceItem.itemId);
     if (!question) continue;
     retained.add(question.primarySkillAtomId);
   }
@@ -372,7 +365,7 @@ function getLatestAttemptByItemId(
   for (const attempt of [...attempts].sort((left, right) =>
     right.answeredAt.localeCompare(left.answeredAt),
   )) {
-    if (!latest.has(attempt.itemId)) latest.set(attempt.itemId, attempt);
+    if (!latest.has(attempt.item.itemId)) latest.set(attempt.item.itemId, attempt);
   }
 
   return latest;
@@ -431,7 +424,7 @@ function buildWeakAreaStats(
     stats.missedItemTypes.add(entry.question.type);
     status === "incorrect" ? stats.incorrectCount += 1 : stats.partialCount += 1;
 
-    for (const mistakeType of getMistakeTypeIds(attempt.mistakeTypeRefs ?? [])) {
+    for (const mistakeType of getMistakeTypeIds(attempt.reviewEvidence.taxonomyOrSkillRefs)) {
       const nextCount = (stats.mistakeTypeCounts.get(mistakeType) ?? 0) + 1;
       stats.mistakeTypeCounts.set(mistakeType, nextCount);
       if (nextCount > 1) stats.weakScore += 1;
@@ -444,7 +437,7 @@ function buildWeakAreaStats(
 }
 
 function getMistakeTypeIds(
-  refs: readonly TrainingItemTaxonomyRef[],
+  refs: readonly EvidenceRef[],
 ): readonly string[] {
   return refs
     .filter((ref) => ref.role === "mistake_type" || ref.axisId === "mistake_type")
@@ -510,7 +503,7 @@ function hasRepeatedCriticalMistake(attempts: readonly TrainingAttempt[]): boole
 
   for (const attempt of attempts) {
     if (getAttemptScore(attempt) >= 0.75) continue;
-    misses.set(attempt.itemId, (misses.get(attempt.itemId) ?? 0) + 1);
+    misses.set(attempt.item.itemId, (misses.get(attempt.item.itemId) ?? 0) + 1);
   }
 
   return [...misses.values()].some((count) => count >= 2);

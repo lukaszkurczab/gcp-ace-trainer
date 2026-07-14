@@ -8,27 +8,9 @@ export const STORAGE_KEYS = {
   TRAINING_SESSIONS: "patternly:v1:training:sessions",
   TRAINING_ATTEMPTS: "patternly:v1:training:attempts",
   TRAINING_REVIEW_QUEUE: "patternly:v1:training:reviewQueue",
-  TRAINING_USER_PROGRESS: "patternly:v1:training:userProgress"
+  TRAINING_USER_PROGRESS: "patternly:v1:training:userProgress",
 } as const;
 
 export type StorageKeyName = keyof typeof STORAGE_KEYS;
-
-export const LEGACY_STORAGE_KEYS: Partial<Record<StorageKeyName, string>> = {
-  ACTIVE_TRACK: "patternly.activeTrack",
-  QUESTIONS: "gcpAceTrainer.questions",
-  ATTEMPTS: "gcpAceTrainer.attempts",
-  PRACTICE_HISTORY: "gcpAceTrainer.practiceHistory",
-  ACTIVE_EXAM_SESSION: "gcpAceTrainer.activeExamSession",
-  QUESTION_REVIEW_STATE: "gcpAceTrainer.questionReviewState"
-};
-
-export function getStorageReadKeys(keyName: StorageKeyName): readonly string[] {
-  const currentKey: string = STORAGE_KEYS[keyName];
-  const legacyKey: string | undefined = LEGACY_STORAGE_KEYS[keyName];
-
-  return legacyKey && legacyKey !== currentKey ? [currentKey, legacyKey] : [currentKey];
-}
-
-export function getStorageClearKeys(keyName: StorageKeyName): readonly string[] {
-  return getStorageReadKeys(keyName);
-}
+export function getStorageReadKeys(keyName: StorageKeyName): readonly string[] { return [STORAGE_KEYS[keyName]]; }
+export function getStorageClearKeys(keyName: StorageKeyName): readonly string[] { return [STORAGE_KEYS[keyName]]; }

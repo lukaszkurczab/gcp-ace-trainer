@@ -1,13 +1,14 @@
 export * from "./algorithmApproaches";
+export * from "./algorithmContentCatalog";
 export * from "./algorithmContentTypes";
 export * from "./algorithmItems";
 export * from "./algorithmOptionOrder";
 export * from "./algorithmProgress";
 export * from "./algorithmQuestionTypes";
+export * from "./algorithmReview";
 export * from "./algorithmRoadmap";
+export * from "./algorithmScoring";
 export * from "./algorithmSessionSelection";
 export * from "./algorithmTaxonomy";
-export * from "./algorithmsContentAdapter";
-export * from "./algorithmsReviewAdapter";
-export * from "./algorithmsScoringAdapter";
+export * from "./domain";
 export type { AlgorithmContentGroup } from "./content";

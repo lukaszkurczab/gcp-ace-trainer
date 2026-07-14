@@ -1,4 +1,4 @@
-import type { TrainingAttempt } from "../../domain/training";
+import type { TrainingAttempt } from "../../domain";
 import {
   mergeRepositoryReadWriteResult,
   readRepositoryJson,
@@ -10,19 +10,19 @@ import { isTrainingAttemptArray } from "./trainingModelGuards";
 
 const TRAINING_ATTEMPTS_KEY = "TRAINING_ATTEMPTS";
 
-export async function getTrainingAttempts(): Promise<StorageRepositoryResult<TrainingAttempt[]>> {
+export async function getTrainingAttempts(): Promise<StorageRepositoryResult<TrainingAttempt<unknown>[]>> {
   return readRepositoryJson(TRAINING_ATTEMPTS_KEY, [], isTrainingAttemptArray);
 }
 
 export async function saveTrainingAttempts(
-  attempts: TrainingAttempt[],
-): Promise<StorageRepositoryResult<TrainingAttempt[]>> {
+  attempts: TrainingAttempt<unknown>[],
+): Promise<StorageRepositoryResult<TrainingAttempt<unknown>[]>> {
   return writeRepositoryJson(TRAINING_ATTEMPTS_KEY, attempts);
 }
 
 export async function addTrainingAttempt(
-  attempt: TrainingAttempt,
-): Promise<StorageRepositoryResult<TrainingAttempt[]>> {
+  attempt: TrainingAttempt<unknown>,
+): Promise<StorageRepositoryResult<TrainingAttempt<unknown>[]>> {
   const existing = await getTrainingAttempts();
   const attempts = [attempt, ...existing.value];
   const saved = await saveTrainingAttempts(attempts);

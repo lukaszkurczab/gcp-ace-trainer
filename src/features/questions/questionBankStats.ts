@@ -1,8 +1,8 @@
 import { EXAM_BLUEPRINT } from "../../constants";
-import type { ExamDomain, Question } from "../../types";
+import type { CertificationDomain, CertificationQuestion } from "../../tracks/cloud-certification/domain";
 
 export type DomainCoverageItem = {
-  domain: ExamDomain;
+  domain: CertificationDomain;
   current: number;
   required: number;
   missing: number;
@@ -14,9 +14,9 @@ export type QuestionBankSummaryData = {
   examReady: boolean;
 };
 
-const examDomains = Object.keys(EXAM_BLUEPRINT) as ExamDomain[];
+const examDomains = Object.keys(EXAM_BLUEPRINT) as CertificationDomain[];
 
-export function buildQuestionBankSummary(questions: readonly Question[]): QuestionBankSummaryData {
+export function buildQuestionBankSummary(questions: readonly CertificationQuestion[]): QuestionBankSummaryData {
   const domainCoverage = examDomains.map((domain) => {
     const current = questions.filter((question) => question.domain === domain).length;
     const required = EXAM_BLUEPRINT[domain];

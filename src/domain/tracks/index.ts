@@ -1,2 +1,2 @@
 export * from "./trackRegistry";
-export * from "./types";
+export * from "./trackMetadata";

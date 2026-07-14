@@ -1,320 +1,35 @@
-import { CLOUD_CERTIFICATION_TRACK_ID } from "../../domain";
-import type {
-  ReviewQueueItem,
-  TrainingAttempt,
-  TrainingAttemptResult,
-  TrainingItem,
-  TrainingItemTaxonomyRef,
-} from "../../domain/training";
+import { CLOUD_CERTIFICATION_TRACK_ID, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { getReviewQueueItems, getTrainingAttempts } from "../../storage/repositories";
-import { type LocalStorageIssue } from "../../storage/storageCodec";
-import type { TrackContentAdapter } from "../types";
-import {
-  cloudCertificationContentAdapter,
-} from "./cloudCertificationContentAdapter";
+import type { LocalStorageIssue } from "../../storage/storageCodec";
 
-const DEFAULT_RECENT_ATTEMPT_COUNT = 10;
+export type CloudCertificationTaxonomyPerformance = { axisId: string; correctCount: number; incorrectCount: number; label: string; nodeId: string; partialCount: number; percent: number; taxonomyRef: EvidenceRef; totalAttempts: number };
+export type CloudCertificationProgressViewModel = { correctCount: number; degraded: boolean; dueReviewCount: number; examAttemptCount: number; firstAttemptAccuracy: { correct: number; percent: number; total: number }; highPriorityReviewCount: number; incorrectCount: number; issues: LocalStorageIssue[]; ok: boolean; partialCount: number; practiceAttemptCount: number; recentAccuracy: { correct: number; percent: number; total: number; windowAttemptCount: number }; repeatedMistakeTypes: { count: number; taxonomyRef: EvidenceRef }[]; scheduledReviewCount: number; taxonomyPerformance: CloudCertificationTaxonomyPerformance[]; totalAttempts: number; weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[] };
+export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly LocalStorageIssue[]; now?: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
 
-export type CloudCertificationAccuracySummary = {
-  correct: number;
-  percent: number;
-  total: number;
-};
-
-export type CloudCertificationRecentAccuracySummary = CloudCertificationAccuracySummary & {
-  windowAttemptCount: number;
-};
-
-export type CloudCertificationTaxonomyPerformance = {
-  axisId: string;
-  correctCount: number;
-  incorrectCount: number;
-  label: string;
-  nodeId: string;
-  partialCount: number;
-  percent: number;
-  taxonomyRef: TrainingItemTaxonomyRef;
-  totalAttempts: number;
-};
-
-export type CloudCertificationMistakeTypeCount = {
-  count: number;
-  taxonomyRef: TrainingItemTaxonomyRef;
-};
-
-export type CloudCertificationProgressViewModel = {
-  correctCount: number;
-  degraded: boolean;
-  dueReviewCount: number;
-  examAttemptCount: number;
-  firstAttemptAccuracy: CloudCertificationAccuracySummary;
-  highPriorityReviewCount: number;
-  incorrectCount: number;
-  issues: LocalStorageIssue[];
-  ok: boolean;
-  partialCount: number;
-  practiceAttemptCount: number;
-  recentAccuracy: CloudCertificationRecentAccuracySummary;
-  repeatedMistakeTypes: CloudCertificationMistakeTypeCount[];
-  scheduledReviewCount: number;
-  taxonomyPerformance: CloudCertificationTaxonomyPerformance[];
-  totalAttempts: number;
-  weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[];
-};
-
-export type CloudCertificationProgressViewModelInput = {
-  attempts: readonly TrainingAttempt[];
-  contentAdapter?: TrackContentAdapter<TrainingItem>;
-  issues?: readonly LocalStorageIssue[];
-  now?: string;
-  recentAttemptCount?: number;
-  reviewQueueItems?: readonly ReviewQueueItem[];
-};
-
-export async function loadCloudCertificationProgressViewModel(
-  input: {
-    contentAdapter?: TrackContentAdapter<TrainingItem>;
-    now?: string;
-    recentAttemptCount?: number;
-  } = {},
-): Promise<CloudCertificationProgressViewModel> {
-  const [attemptsResult, reviewQueueResult] = await Promise.all([
-    getTrainingAttempts(),
-    getReviewQueueItems(),
-  ]);
-
-  return buildCloudCertificationProgressViewModel({
-    attempts: attemptsResult.value,
-    contentAdapter: input.contentAdapter,
-    issues: [...(attemptsResult.issues ?? []), ...(reviewQueueResult.issues ?? [])],
-    now: input.now,
-    recentAttemptCount: input.recentAttemptCount,
-    reviewQueueItems: reviewQueueResult.value,
-  });
+export async function loadCloudCertificationProgressViewModel(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
+  const [attempts, reviews] = await Promise.all([getTrainingAttempts(), getReviewQueueItems()]);
+  return buildCloudCertificationProgressViewModel({ attempts: attempts.value, issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])], now: input.now, recentAttemptCount: input.recentAttemptCount, reviewQueueItems: reviews.value });
 }
 
-export function buildCloudCertificationProgressViewModel(
-  input: CloudCertificationProgressViewModelInput,
-): CloudCertificationProgressViewModel {
+export function buildCloudCertificationProgressViewModel(input: CloudCertificationProgressViewModelInput): CloudCertificationProgressViewModel {
   const attempts = input.attempts.filter((attempt) => attempt.trackId === CLOUD_CERTIFICATION_TRACK_ID);
-  const reviewQueueItems = (input.reviewQueueItems ?? []).filter(
-    (item) => item.trackId === CLOUD_CERTIFICATION_TRACK_ID,
-  );
-  const recentAttemptCount = input.recentAttemptCount ?? DEFAULT_RECENT_ATTEMPT_COUNT;
+  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === CLOUD_CERTIFICATION_TRACK_ID);
   const now = input.now ?? new Date().toISOString();
-  const taxonomyPerformance = buildTaxonomyPerformance(
-    attempts,
-    input.contentAdapter ?? cloudCertificationContentAdapter,
-  );
-
-  return {
-    correctCount: attempts.filter(isCorrectAttempt).length,
-    degraded: (input.issues ?? []).length > 0,
-    dueReviewCount: reviewQueueItems.filter((item) => isDue(item, now)).length,
-    examAttemptCount: attempts.filter((attempt) => attempt.modeId === "cloud-exam-simulation").length,
-    firstAttemptAccuracy: buildFirstAttemptAccuracy(attempts),
-    highPriorityReviewCount: reviewQueueItems.filter(isHighPriority).length,
-    incorrectCount: attempts.filter(isIncorrectAttempt).length,
-    issues: [...(input.issues ?? [])],
-    ok: (input.issues ?? []).length === 0,
-    partialCount: attempts.filter(isPartialAttempt).length,
-    practiceAttemptCount: attempts.filter((attempt) => attempt.modeId === "cloud-practice").length,
-    recentAccuracy: buildRecentAccuracy(attempts, recentAttemptCount),
-    repeatedMistakeTypes: buildRepeatedMistakeTypes(attempts),
-    scheduledReviewCount: reviewQueueItems.length,
-    taxonomyPerformance,
-    totalAttempts: attempts.length,
-    weakTaxonomyNodes: taxonomyPerformance
-      .filter((node) => node.totalAttempts > 0 && node.percent < 100)
-      .slice(0, 8),
-  };
+  const recentCount = input.recentAttemptCount ?? 10;
+  const taxonomyPerformance = buildTaxonomyPerformance(attempts);
+  const firstByItem = new Map<string, TrainingAttempt<unknown>>();
+  [...attempts].sort((a, b) => a.answeredAt.localeCompare(b.answeredAt)).forEach((attempt) => { if (!firstByItem.has(attempt.item.itemId)) firstByItem.set(attempt.item.itemId, attempt); });
+  const recent = [...attempts].sort((a, b) => b.answeredAt.localeCompare(a.answeredAt)).slice(0, recentCount);
+  const firstAccuracy = accuracy([...firstByItem.values()]);
+  const recentAccuracy = accuracy(recent);
+  return { correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length, degraded: (input.issues ?? []).length > 0, dueReviewCount: reviews.filter((entry) => entry.dueAt <= now).length, examAttemptCount: attempts.filter((attempt) => attempt.modeId === "cloud-exam-simulation").length, firstAttemptAccuracy: firstAccuracy, highPriorityReviewCount: reviews.filter((entry) => entry.reasons.includes("repeated_mistake")).length, incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length, issues: [...(input.issues ?? [])], ok: (input.issues ?? []).length === 0, partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length, practiceAttemptCount: attempts.filter((attempt) => attempt.modeId === "cloud-practice").length, recentAccuracy: { ...recentAccuracy, windowAttemptCount: recentCount }, repeatedMistakeTypes: buildMistakeCounts(attempts), scheduledReviewCount: reviews.length, taxonomyPerformance, totalAttempts: attempts.length, weakTaxonomyNodes: taxonomyPerformance.filter((node) => node.percent < 100).slice(0, 8) };
 }
 
-function buildFirstAttemptAccuracy(attempts: readonly TrainingAttempt[]): CloudCertificationAccuracySummary {
-  const firstAttempts = new Map<string, TrainingAttempt>();
-
-  sortAttemptsAscending(attempts).forEach((attempt) => {
-    if (!firstAttempts.has(attempt.itemId)) {
-      firstAttempts.set(attempt.itemId, attempt);
-    }
-  });
-
-  return buildAccuracySummary([...firstAttempts.values()]);
+function accuracy(attempts: readonly TrainingAttempt<unknown>[]) { const correct = attempts.filter((attempt) => attempt.result.kind === "correct").length; return { correct, percent: attempts.length ? Math.round(correct / attempts.length * 100) : 0, total: attempts.length }; }
+function key(ref: EvidenceRef) { return `${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`; }
+function buildTaxonomyPerformance(attempts: readonly TrainingAttempt<unknown>[]): CloudCertificationTaxonomyPerformance[] {
+  const counts = new Map<string, { ref: EvidenceRef; correct: number; partial: number; incorrect: number; total: number }>();
+  for (const attempt of attempts) for (const ref of attempt.reviewEvidence.taxonomyOrSkillRefs) { const current = counts.get(key(ref)) ?? { ref, correct: 0, partial: 0, incorrect: 0, total: 0 }; current[attempt.result.kind] += 1; current.total += 1; counts.set(key(ref), current); }
+  return [...counts.values()].map(({ ref, correct, partial, incorrect, total }) => ({ axisId: ref.axisId, correctCount: correct, incorrectCount: incorrect, label: ref.nodeId, nodeId: ref.nodeId, partialCount: partial, percent: total ? Math.round(correct / total * 100) : 0, taxonomyRef: ref, totalAttempts: total })).sort((a, b) => a.percent - b.percent || b.totalAttempts - a.totalAttempts);
 }
-
-function buildRecentAccuracy(
-  attempts: readonly TrainingAttempt[],
-  windowAttemptCount: number,
-): CloudCertificationRecentAccuracySummary {
-  const recentAttempts = sortAttemptsDescending(attempts).slice(0, windowAttemptCount);
-  const summary = buildAccuracySummary(recentAttempts);
-
-  return {
-    ...summary,
-    windowAttemptCount,
-  };
-}
-
-function buildAccuracySummary(attempts: readonly TrainingAttempt[]): CloudCertificationAccuracySummary {
-  const scoredAttempts = attempts.filter(hasResult);
-  const correct = scoredAttempts.filter(isCorrectAttempt).length;
-
-  return {
-    correct,
-    percent: calculatePercent(correct, scoredAttempts.length),
-    total: scoredAttempts.length,
-  };
-}
-
-function buildTaxonomyPerformance(
-  attempts: readonly TrainingAttempt[],
-  contentAdapter: TrackContentAdapter<TrainingItem>,
-): CloudCertificationTaxonomyPerformance[] {
-  const counts = new Map<string, {
-    correctCount: number;
-    incorrectCount: number;
-    partialCount: number;
-    taxonomyRef: TrainingItemTaxonomyRef;
-    totalAttempts: number;
-  }>();
-
-  attempts.forEach((attempt) => {
-    const item = contentAdapter.getItemById(attempt.itemId);
-
-    item?.taxonomyRefs.forEach((taxonomyRef) => {
-      const key = buildTaxonomyKey(taxonomyRef);
-      const current = counts.get(key) ?? {
-        correctCount: 0,
-        incorrectCount: 0,
-        partialCount: 0,
-        taxonomyRef,
-        totalAttempts: 0,
-      };
-
-      counts.set(key, {
-        correctCount: current.correctCount + (isCorrectAttempt(attempt) ? 1 : 0),
-        incorrectCount: current.incorrectCount + (isIncorrectAttempt(attempt) ? 1 : 0),
-        partialCount: current.partialCount + (isPartialAttempt(attempt) ? 1 : 0),
-        taxonomyRef,
-        totalAttempts: current.totalAttempts + 1,
-      });
-    });
-  });
-
-  return [...counts.values()]
-    .map((score) => ({
-      axisId: score.taxonomyRef.axisId,
-      correctCount: score.correctCount,
-      incorrectCount: score.incorrectCount,
-      label: score.taxonomyRef.nodeId,
-      nodeId: score.taxonomyRef.nodeId,
-      partialCount: score.partialCount,
-      percent: calculatePercent(score.correctCount, score.totalAttempts),
-      taxonomyRef: score.taxonomyRef,
-      totalAttempts: score.totalAttempts,
-    }))
-    .sort(
-      (left, right) =>
-        left.percent - right.percent ||
-        right.totalAttempts - left.totalAttempts ||
-        buildTaxonomyKey(left.taxonomyRef).localeCompare(buildTaxonomyKey(right.taxonomyRef)),
-    );
-}
-
-function buildRepeatedMistakeTypes(
-  attempts: readonly TrainingAttempt[],
-): CloudCertificationMistakeTypeCount[] {
-  const counts = new Map<string, CloudCertificationMistakeTypeCount>();
-
-  attempts.forEach((attempt) => {
-    attempt.mistakeTypeRefs?.forEach((taxonomyRef) => {
-      const key = buildTaxonomyKey(taxonomyRef);
-      const current = counts.get(key);
-
-      counts.set(key, {
-        count: (current?.count ?? 0) + 1,
-        taxonomyRef,
-      });
-    });
-  });
-
-  return [...counts.values()].sort(
-    (left, right) =>
-      right.count - left.count ||
-      buildTaxonomyKey(left.taxonomyRef).localeCompare(buildTaxonomyKey(right.taxonomyRef)),
-  );
-}
-
-function hasResult(attempt: TrainingAttempt): boolean {
-  return attempt.result !== undefined;
-}
-
-function isCorrectAttempt(attempt: TrainingAttempt): boolean {
-  const result = attempt.result;
-
-  if (!result) {
-    return false;
-  }
-
-  if (result.kind === "correctness") {
-    return result.isCorrect;
-  }
-
-  if (result.kind === "partial_credit") {
-    return result.earnedPoints >= result.maxPoints;
-  }
-
-  if (result.kind === "mixed") {
-    return result.isCorrect === true;
-  }
-
-  return false;
-}
-
-function isIncorrectAttempt(attempt: TrainingAttempt): boolean {
-  const result = attempt.result;
-
-  if (!result) {
-    return false;
-  }
-
-  if (result.kind === "correctness") {
-    return !result.isCorrect;
-  }
-
-  if (result.kind === "mixed") {
-    return result.isCorrect === false;
-  }
-
-  return false;
-}
-
-function isPartialAttempt(attempt: TrainingAttempt): boolean {
-  const result = attempt.result;
-
-  return result?.kind === "partial_credit" && result.earnedPoints < result.maxPoints;
-}
-
-function isDue(item: ReviewQueueItem, now: string): boolean {
-  return new Date(item.dueAt).getTime() <= new Date(now).getTime();
-}
-
-function isHighPriority(item: ReviewQueueItem): boolean {
-  return item.priority === "high" || item.priority === "urgent";
-}
-
-function sortAttemptsAscending(attempts: readonly TrainingAttempt[]): TrainingAttempt[] {
-  return [...attempts].sort((left, right) => left.answeredAt.localeCompare(right.answeredAt));
-}
-
-function sortAttemptsDescending(attempts: readonly TrainingAttempt[]): TrainingAttempt[] {
-  return [...attempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt));
-}
-
-function calculatePercent(count: number, total: number): number {
-  return total > 0 ? Math.round((count / total) * 100) : 0;
-}
-
-function buildTaxonomyKey(ref: TrainingItemTaxonomyRef): string {
-  return `${ref.trackId ?? ""}:${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`;
-}
+function buildMistakeCounts(attempts: readonly TrainingAttempt<unknown>[]) { const counts = new Map<string, { count: number; taxonomyRef: EvidenceRef }>(); for (const attempt of attempts.filter((item) => item.result.kind !== "correct")) for (const ref of attempt.reviewEvidence.taxonomyOrSkillRefs.filter((item) => item.axisId === "mistake_type")) counts.set(key(ref), { count: (counts.get(key(ref))?.count ?? 0) + 1, taxonomyRef: ref }); return [...counts.values()].sort((a, b) => b.count - a.count); }

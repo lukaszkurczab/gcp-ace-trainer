@@ -1,6 +1,5 @@
 import type { IconName } from "../../../components";
-import type { TrackDefinition } from "../../../domain";
-import type { TrainingAttempt } from "../../../domain/training";
+import type { TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   buildRecommendedPracticeModes,
@@ -32,7 +31,7 @@ export type HomeTabModel = {
 };
 
 export type BuildHomeTabModelInput = {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   analytics: AnalyticsData;
   trainingAttempts: readonly TrainingAttempt[];
 };

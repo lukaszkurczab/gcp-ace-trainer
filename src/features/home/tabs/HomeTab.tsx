@@ -9,15 +9,15 @@ import {
   ListRow,
   SectionHeader,
 } from "../../../components";
-import type { TrackDefinition } from "../../../domain";
-import type { TrainingAttempt } from "../../../domain/training";
+import type { TrackDisplay } from "../../../domain";
+import type { TrainingAttempt } from "../../../domain";
 import { colors, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import type { PracticeSessionMode } from "../../practice/sessionConfig";
 import { buildHomeTabModel } from "./homeTabModel";
 
 type HomeTabProps = {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   analytics: AnalyticsData;
   onChangeTrack: () => void;
   onStartLearning: (topicId: string) => void;

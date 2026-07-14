@@ -1,173 +1,117 @@
-import { isTrackId } from "../../domain";
-import type {
-  ReviewQueueItem,
-  TrainingAttempt,
-  TrainingAttemptResponse,
-  TrainingSession,
-  TrainingSessionItemRef,
-  UserProgress,
-} from "../../domain/training";
+import {
+  REVIEW_REASONS,
+  createAttemptResult,
+  createTrainingSession,
+  type AttemptResultComponent,
+  isRegisteredTrackId,
+  type ContentItemRef,
+  type EvidenceRef,
+  type ReviewQueueEntry,
+  type TrainingAttempt,
+  type TrainingSession,
+} from "../../domain";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
   return Array.isArray(value) && value.every(isTrainingSession);
 }
 
-export function isTrainingAttemptArray(value: unknown): value is TrainingAttempt[] {
+export function isTrainingAttemptArray(value: unknown): value is TrainingAttempt<unknown>[] {
   return Array.isArray(value) && value.every(isTrainingAttempt);
 }
 
-export function isReviewQueueItemArray(value: unknown): value is ReviewQueueItem[] {
-  return Array.isArray(value) && value.every(isReviewQueueItem);
+export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEntry[] {
+  return Array.isArray(value) && value.every(isReviewQueueEntry);
 }
 
-export function isUserProgressArray(value: unknown): value is UserProgress[] {
-  return Array.isArray(value) && value.every(isUserProgress);
-}
-
-function isTrainingSession(value: unknown): value is TrainingSession {
-  return (
-    isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.trackId === "string" &&
-    isTrackId(value.trackId) &&
-    typeof value.modeId === "string" &&
-    isTrainingSessionStatus(value.status) &&
-    typeof value.startedAt === "string" &&
+export function isTrainingSession(value: unknown): value is TrainingSession {
+  if (!isRecord(value)) return false;
+  if ("currentItemIndex" in value || "itemRefs" in value || value.status === "expired") return false;
+  if (!(typeof value.id === "string" && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+    typeof value.modeId === "string" && typeof value.requestedLength === "number" &&
+    typeof value.actualLength === "number" && typeof value.startedAt === "string" &&
     (value.completedAt === undefined || typeof value.completedAt === "string") &&
-    typeof value.currentItemIndex === "number" &&
-    Array.isArray(value.itemRefs) &&
-    value.itemRefs.every(isTrainingSessionItemRef)
-  );
-}
-
-function isTrainingAttempt(value: unknown): value is TrainingAttempt {
-  return (
-    isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.trackId === "string" &&
-    isTrackId(value.trackId) &&
-    typeof value.modeId === "string" &&
-    typeof value.itemId === "string" &&
-    typeof value.itemType === "string" &&
-    typeof value.answeredAt === "string" &&
-    isTrainingAttemptResponse(value.response)
-  );
-}
-
-function isReviewQueueItem(value: unknown): value is ReviewQueueItem {
-  return (
-    isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.trackId === "string" &&
-    isTrackId(value.trackId) &&
-    typeof value.itemId === "string" &&
-    typeof value.sourceAttemptId === "string" &&
-    typeof value.createdAt === "string" &&
-    typeof value.dueAt === "string" &&
-    (value.kind === undefined || value.kind === "remediation" || value.kind === "retention") &&
-    (value.retentionPassedAt === undefined || typeof value.retentionPassedAt === "string") &&
-    isReviewPriority(value.priority) &&
-    Array.isArray(value.reasons) &&
-    value.reasons.every(isReviewReason) &&
-    (value.lastReviewedAt === undefined || typeof value.lastReviewedAt === "string") &&
-    (value.mistakeTypeRefs === undefined || (
-      Array.isArray(value.mistakeTypeRefs) &&
-      value.mistakeTypeRefs.every(isTrainingItemTaxonomyRef)
-    )) &&
-    (value.taxonomyRefs === undefined || (
-      Array.isArray(value.taxonomyRefs) &&
-      value.taxonomyRefs.every(isTrainingItemTaxonomyRef)
-    ))
-  );
-}
-
-function isUserProgress(value: unknown): value is UserProgress {
-  return (
-    isRecord(value) &&
-    typeof value.userId === "string" &&
-    typeof value.trackId === "string" &&
-    isTrackId(value.trackId) &&
-    typeof value.updatedAt === "string" &&
-    typeof value.completedSessionCount === "number" &&
-    Array.isArray(value.taxonomyProgress) &&
-    isRecord(value.reviewQueue) &&
-    Array.isArray(value.evidenceSignals)
-  );
-}
-
-function isTrainingSessionItemRef(value: unknown): value is TrainingSessionItemRef {
-  return (
-    isRecord(value) &&
-    typeof value.itemId === "string" &&
-    (value.itemType === undefined || typeof value.itemType === "string") &&
-    (value.trackId === undefined || (typeof value.trackId === "string" && isTrackId(value.trackId)))
-  );
-}
-
-function isTrainingAttemptResponse(value: unknown): value is TrainingAttemptResponse {
-  if (!isRecord(value) || typeof value.kind !== "string") {
+    isOptionOrderByItem(value.optionOrderByItem) && typeof value.activeForegroundMs === "number" &&
+    typeof value.contentVersion === "string" &&
+    (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
+    Array.isArray(value.itemOrder) && value.itemOrder.every(isContentItemRef))) return false;
+  try {
+    createTrainingSession({
+      id: value.id,
+      trackId: value.trackId,
+      modeId: value.modeId,
+      requestedLength: value.requestedLength,
+      actualLength: value.actualLength,
+      itemOrder: value.itemOrder,
+      optionOrderByItem: value.optionOrderByItem,
+      activeForegroundMs: value.activeForegroundMs,
+      contentVersion: value.contentVersion,
+      status: value.status,
+      startedAt: value.startedAt,
+      completedAt: value.completedAt,
+    });
+    return true;
+  } catch {
     return false;
   }
-
-  if (value.kind === "option_selection") {
-    return Array.isArray(value.selectedOptionIds);
-  }
-
-  if (value.kind === "pattern_selection") {
-    return typeof value.selectedPatternId === "string";
-  }
-
-  if (value.kind === "strategy_selection") {
-    return typeof value.selectedStrategyId === "string";
-  }
-
-  if (value.kind === "complexity_check") {
-    return isRecord(value.selectedComplexityAnswer);
-  }
-
-  if (value.kind === "solution_comparison") {
-    return typeof value.selectedSolutionId === "string";
-  }
-
-  if (value.kind === "freeform") {
-    return typeof value.text === "string";
-  }
-
-  return false;
 }
 
-function isTrainingSessionStatus(value: unknown): boolean {
-  return value === "active" || value === "completed" || value === "abandoned" || value === "expired";
+function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
+  if (!isRecord(value) || "confidence" in value || "itemId" in value || "itemType" in value) return false;
+  if (!(typeof value.id === "string" && typeof value.sessionId === "string" && typeof value.trackId === "string" &&
+    isRegisteredTrackId(value.trackId) && typeof value.modeId === "string" && isContentItemRef(value.item) &&
+    typeof value.answeredAt === "string" && typeof value.committedAt === "string" && isReviewEvidence(value.reviewEvidence))) return false;
+  if (!isRecord(value.result) ||
+    (value.result.kind !== "correct" && value.result.kind !== "partial" && value.result.kind !== "incorrect") ||
+    typeof value.result.earnedPoints !== "number" || typeof value.result.maxPoints !== "number" ||
+    (value.result.components !== undefined && !isAttemptResultComponents(value.result.components))) return false;
+  try {
+    createAttemptResult({
+      kind: value.result.kind,
+      earnedPoints: value.result.earnedPoints,
+      maxPoints: value.result.maxPoints,
+      components: value.result.components,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-function isReviewPriority(value: unknown): boolean {
-  return value === "low" || value === "normal" || value === "high" || value === "urgent";
+function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
+  return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
+    !("itemId" in value) && typeof value.id === "string" && typeof value.trackId === "string" &&
+    isRegisteredTrackId(value.trackId) && typeof value.sourceAttemptId === "string" &&
+    isReviewEvidence(value) && Array.isArray(value.reasons) && value.reasons.every((reason) =>
+      typeof reason === "string" && (REVIEW_REASONS as readonly string[]).includes(reason)) &&
+    typeof value.dueAt === "string" && typeof value.createdAt === "string" &&
+    Number.isInteger(value.consecutiveAfterDueSuccesses) && Number(value.consecutiveAfterDueSuccesses) >= 0 &&
+    typeof value.persistent === "boolean" && (value.lastReviewedAt === undefined || typeof value.lastReviewedAt === "string");
 }
 
-function isReviewReason(value: unknown): boolean {
-  return (
-    value === "incorrect_attempt" ||
-    value === "partial_credit" ||
-    value === "low_confidence" ||
-    value === "repeated_mistake" ||
-    value === "manual" ||
-    value === "due_spacing"
-  );
+function isReviewEvidence(value: unknown): boolean {
+  return isRecord(value) && isContentItemRef(value.sourceItem) && Array.isArray(value.taxonomyOrSkillRefs) &&
+    value.taxonomyOrSkillRefs.every(isEvidenceRef);
 }
 
-function isTrainingItemTaxonomyRef(value: unknown): boolean {
-  return (
-    isRecord(value) &&
-    typeof value.axisId === "string" &&
-    typeof value.nodeId === "string" &&
-    (value.role === undefined ||
-      value.role === "primary" ||
-      value.role === "secondary" ||
-      value.role === "prerequisite" ||
-      value.role === "mistake_type") &&
-    (value.trackId === undefined || (typeof value.trackId === "string" && isTrackId(value.trackId))) &&
-    (value.weight === undefined || typeof value.weight === "number")
-  );
+function isContentItemRef(value: unknown): value is ContentItemRef {
+  return isRecord(value) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+    typeof value.itemId === "string" && typeof value.contentVersion === "string";
+}
+
+function isEvidenceRef(value: unknown): value is EvidenceRef {
+  return isRecord(value) && typeof value.axisId === "string" && typeof value.nodeId === "string" &&
+    (value.role === undefined || typeof value.role === "string");
+}
+
+function isOptionOrderByItem(value: unknown): value is Record<string, readonly string[]> {
+  return isRecord(value) && Object.values(value).every((optionIds) =>
+    Array.isArray(optionIds) && optionIds.every((optionId) => typeof optionId === "string"));
+}
+
+function isAttemptResultComponents(value: unknown): value is AttemptResultComponent[] {
+  return Array.isArray(value) && value.every((component) => isRecord(component) &&
+    typeof component.id === "string" && typeof component.earnedPoints === "number" &&
+    typeof component.maxPoints === "number");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -1,6 +1,6 @@
 import { EXAM_DOMAIN_LABELS } from "../constants";
-import type { ExamDomain } from "../types";
+import type { CertificationDomain } from "../tracks/cloud-certification/domain";
 
-export function getDomainLabel(domain: ExamDomain): string {
+export function getDomainLabel(domain: CertificationDomain): string {
   return EXAM_DOMAIN_LABELS[domain];
 }

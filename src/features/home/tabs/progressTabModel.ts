@@ -1,20 +1,16 @@
 import {
   ALGORITHMS_TRACK_ID,
   CLOUD_CERTIFICATION_TRACK_ID,
-  type TrackDefinition,
+  type TrackDisplay,
 } from "../../../domain";
-import { getReviewQueueItemKind, type ReviewQueueItem, type TrainingAttempt } from "../../../domain/training";
+import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
   type AlgorithmRoadmapNodeProgressStatus,
 } from "../../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
-import type {
-  AttemptSummary,
-  ExamDomain,
-  PracticeAnswerRecord,
-} from "../../../types";
+import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/cloud-certification";
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
@@ -139,7 +135,7 @@ export type ProgressTabModel = {
 
 export type ProgressAction =
   | {
-      kind: "legacyMistakesReview";
+      kind: "canonicalReviewQueue";
     }
   | {
       kind: "practiceSession";
@@ -147,13 +143,13 @@ export type ProgressAction =
     };
 
 export type BuildProgressTabModelInput = {
-  activeTrackId: TrackDefinition["id"];
+  activeTrackId: TrackDisplay["id"];
   analytics: AnalyticsData;
-  attempts: readonly AttemptSummary[];
+  attempts: readonly CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
   now?: string;
-  practiceHistory: readonly PracticeAnswerRecord[];
-  reviewQueueItems?: readonly ReviewQueueItem[];
+  practiceHistory: readonly CertificationPracticeAnswerViewModel[];
+  reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: readonly TrainingAttempt[];
 };
 
@@ -170,7 +166,7 @@ export function buildProgressTabModel(input: BuildProgressTabModelInput): Progre
     );
   }
 
-  return buildLegacyProgressTabModel(input);
+  throw new Error(`Progress projection unavailable for track ${input.activeTrackId}.`);
 }
 
 function buildCloudProgressTabModel(progress: CloudCertificationProgressViewModel): ProgressTabModel {
@@ -211,7 +207,7 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
         total: score.totalAttempts,
       })),
     performanceSectionTitle: "Performance by domain",
-    reviewAction: progress.dueReviewCount > 0 ? { kind: "legacyMistakesReview" } : undefined,
+    reviewAction: progress.dueReviewCount > 0 ? { kind: "canonicalReviewQueue" } : undefined,
     reviewActionEnabled: progress.dueReviewCount > 0,
     reviewActionLabel: progress.dueReviewCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
     reviewQueueCount: progress.dueReviewCount,
@@ -226,7 +222,7 @@ function buildCloudProgressTabModel(progress: CloudCertificationProgressViewMode
 
 function buildAlgorithmsProgressTabModel(
   trainingAttempts: readonly TrainingAttempt[],
-  reviewQueueItems: readonly ReviewQueueItem[],
+  reviewQueueItems: readonly ReviewQueueEntry[],
   now: string,
 ): ProgressTabModel {
   const facts = buildAlgorithmProgressFacts(trainingAttempts, undefined, undefined, reviewQueueItems, now);
@@ -278,16 +274,14 @@ type AlgorithmsRemediationState = {
 };
 
 function getAlgorithmsRemediationState(input: {
-  dueReviewItems: readonly ReviewQueueItem[];
+  dueReviewItems: readonly ReviewQueueEntry[];
   nodeProgress: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"];
 }): AlgorithmsRemediationState {
   const remediationItems = input.dueReviewItems.filter(
-    (item) => getReviewQueueItemKind(item) === "remediation",
+    (item) => item.persistent,
   );
   const criticalRemediationCount = remediationItems.filter(
     (item) =>
-      item.priority === "high" ||
-      item.priority === "urgent" ||
       item.reasons.includes("repeated_mistake"),
   ).length;
   const attentionNode = criticalRemediationCount > 0
@@ -303,7 +297,7 @@ function getAlgorithmsRemediationState(input: {
 }
 
 function buildAlgorithmsProgressScreenModel(input: {
-  dueReviewItems: readonly ReviewQueueItem[];
+  dueReviewItems: readonly ReviewQueueEntry[];
   facts: ReturnType<typeof buildAlgorithmProgressFacts>;
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
@@ -383,13 +377,13 @@ function buildAlgorithmsProgressScreenModel(input: {
 }
 
 function buildLearningPriority(input: {
-  dueReviewItems: readonly ReviewQueueItem[];
+  dueReviewItems: readonly ReviewQueueEntry[];
   focusNode: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
   nextNode?: ReturnType<typeof buildAlgorithmProgressFacts>["nodeProgress"][number];
   remediationState: AlgorithmsRemediationState;
 }): LearningPriorityModel {
   const retentionItems = input.dueReviewItems.filter(
-    (item) => getReviewQueueItemKind(item) === "retention",
+    (item) => !item.persistent,
   );
 
   if (input.remediationState.remediationCount > 0) {
@@ -698,56 +692,6 @@ function formatAlgorithmsReviewQueueCopy(dueCount: number, totalCount: number): 
   return `${dueCount} due Algorithms ${dueCount === 1 ? "item needs" : "items need"} review.`;
 }
 
-function buildLegacyProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
-  const hasData = input.attempts.length > 0 || input.practiceHistory.length > 0;
-  const reviewQueueCount = input.analytics.summary.totalPracticeQuestionsAnswered;
-
-  return {
-    activitySummary: {
-      detail:
-        input.practiceHistory.length > 0
-          ? `${input.practiceHistory.length} local practice ${input.practiceHistory.length === 1 ? "answer" : "answers"} recorded.`
-          : "Practice activity appears after local sessions are completed.",
-      label: "Local practice",
-      value: input.practiceHistory.length,
-    },
-    hasData,
-    metrics: [
-      {
-        label: "Completed exams",
-        tone: "info",
-        value: input.analytics.summary.totalCompletedExams,
-      },
-      {
-        label: "Practice answers",
-        tone: "primary",
-        value: input.analytics.summary.totalPracticeQuestionsAnswered,
-      },
-    ],
-    performanceScores:
-      input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID
-        ? input.analytics.domainPerformance
-            .filter((score) => score.total > 0)
-            .map((score) => ({
-              correct: score.correct,
-              id: score.id,
-              label: score.label,
-              percent: score.percent,
-              total: score.total,
-            }))
-        : [],
-    performanceSectionTitle:
-      input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID
-        ? "Performance by domain"
-        : "Performance areas",
-    reviewAction: reviewQueueCount > 0 ? { kind: "legacyMistakesReview" } : undefined,
-    reviewActionEnabled: reviewQueueCount > 0,
-    reviewActionLabel: reviewQueueCount > 0 ? "Open review queue" : "Review from Progress is not available yet.",
-    reviewQueueCount,
-    reviewQueueCopy: formatLegacyReviewQueueCopy(reviewQueueCount),
-  };
-}
-
 function formatCanonicalReviewQueueCopy(
   dueCount: number,
   highPriorityCount: number,
@@ -768,14 +712,6 @@ function formatCanonicalReviewQueueCopy(
   return `${dueCount} due review ${dueCount === 1 ? "item" : "items"}.`;
 }
 
-function formatLegacyReviewQueueCopy(count: number): string {
-  if (count === 0) {
-    return "No local practice records yet.";
-  }
-
-  return `${count} local practice ${count === 1 ? "record" : "records"} available for review.`;
-}
-
 function getCloudDomainLabel(nodeId: string): string {
   if (isExamDomain(nodeId)) {
     return getDomainLabel(nodeId);
@@ -784,7 +720,7 @@ function getCloudDomainLabel(nodeId: string): string {
   return nodeId;
 }
 
-function isExamDomain(value: string): value is ExamDomain {
+function isExamDomain(value: string): value is CertificationDomain {
   return (
     value === "setup_environment" ||
     value === "planning_implementation" ||

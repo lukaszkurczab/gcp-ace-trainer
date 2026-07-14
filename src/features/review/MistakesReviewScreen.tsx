@@ -32,6 +32,7 @@ export function MistakesReviewScreen() {
         setLoading(true);
 
         const activeTrackId = await getActiveTrackId();
+        if (!activeTrackId) { if (isActive) { setModel(null); setLoading(false); } return; }
         const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
         const nextModel = buildReviewQueueScreenModel(viewModel);
 
@@ -96,7 +97,7 @@ export function MistakesReviewScreen() {
             title={model.dueRows.length > 0 ? "Due now" : "Upcoming"}
             subtitle={
               model.dueRows.length > 0
-                ? "Overdue, due, and high-priority items from the canonical queue."
+                ? "Overdue and due items from the canonical queue."
                 : "No due items right now. Upcoming items are listed for visibility."
             }
             tight
@@ -113,9 +114,6 @@ export function MistakesReviewScreen() {
               trailing={
                 <View style={styles.badgeRow}>
                   <Badge label={formatStatus(row.status)} tone={getStatusTone(row.status)} />
-                  {row.priority === "high" || row.priority === "urgent" ? (
-                    <Badge label={formatPriority(row.priority)} tone="danger" />
-                  ) : null}
                 </View>
               }
             />
@@ -147,7 +145,6 @@ function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
       <SectionHeader title="Review item" subtitle={row.taxonomyLabel} />
       <View style={styles.badgeRow}>
         <Badge label={formatStatus(row.status)} tone={getStatusTone(row.status)} />
-        <Badge label={formatPriority(row.priority)} tone={getPriorityTone(row.priority)} />
       </View>
       <DetailBlock label="Prompt" value={row.promptPreview} />
       <DetailBlock label="Reasons" value={formatList(row.reasonLabels)} />
@@ -209,22 +206,6 @@ function getStatusTone(status: ReviewQueueRow["status"]): "danger" | "info" | "n
       return "neutral";
     case "upcoming":
       return "info";
-  }
-}
-
-function formatPriority(priority: ReviewQueueRow["priority"]): string {
-  return `${priority.charAt(0).toUpperCase()}${priority.slice(1)} priority`;
-}
-
-function getPriorityTone(priority: ReviewQueueRow["priority"]): "danger" | "info" | "neutral" | "warning" {
-  switch (priority) {
-    case "urgent":
-    case "high":
-      return "danger";
-    case "normal":
-      return "info";
-    case "low":
-      return "neutral";
   }
 }
 

@@ -1,13 +1,11 @@
 import {
-  clearActiveExamSession,
+  clearCertificationExam,
   clearAttempts,
   clearPracticeHistory,
-  clearQuestionReviewState,
   clearQuestions,
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,
-  clearUserProgress,
 } from "../../storage";
 
 export const CLEAR_LOCAL_HISTORY_DETAIL =
@@ -17,15 +15,13 @@ export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
   "This deletes local practice, exams, review queue, progress, local question overrides, review marks, and active sessions. Built-in content remains available.";
 
 export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
-  "clearActiveExamSession",
+  "clearCertificationExam",
   "clearQuestions",
   "clearAttempts",
   "clearPracticeHistory",
-  "clearQuestionReviewState",
   "clearTrainingSessions",
   "clearTrainingAttempts",
   "clearReviewQueueItems",
-  "clearUserProgress",
 ] as const;
 
 export type ClearLocalHistoryOperationName =
@@ -37,15 +33,13 @@ export type ClearLocalHistoryOperations = Record<
 >;
 
 const defaultClearOperations: ClearLocalHistoryOperations = {
-  clearActiveExamSession,
+  clearCertificationExam,
   clearAttempts,
   clearPracticeHistory,
-  clearQuestionReviewState,
   clearQuestions,
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,
-  clearUserProgress,
 };
 
 export async function clearPatternlyLocalHistory(

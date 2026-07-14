@@ -8,7 +8,7 @@ import {
   type ClearLocalHistoryOperations,
 } from "../src/features/home/localReset";
 
-test("clear local history clears legacy and canonical local stores", async () => {
+test("clear local history clears canonical local stores", async () => {
   const called: string[] = [];
   const operations = Object.fromEntries(
     CLEAR_LOCAL_HISTORY_OPERATION_NAMES.map((operationName) => [

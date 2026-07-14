@@ -1,46 +1,44 @@
 import { TRAINING_PASS_THRESHOLD } from "../../constants";
 import type {
-  ActiveExamSession,
-  AnswerRecord,
-  AttemptSummary,
-  DomainScore,
-  ExamDomain,
-  Question,
-  TagScore
-} from "../../types";
+  CertificationAnswerViewModel,
+  CertificationDomain,
+  CertificationExamSummaryViewModel,
+  CertificationExamViewModel,
+  CertificationQuestion,
+} from "../../tracks/cloud-certification/domain";
 import { areOptionSetsEqual, calculatePercent } from "../../utils";
 
 export type ExamScoreResult = {
-  answers: AnswerRecord[];
+  answers: CertificationAnswerViewModel[];
   correctCount: number;
   totalQuestions: number;
   scorePercent: number;
   passedTrainingThreshold: boolean;
-  domainScores: DomainScore[];
-  tagScores: TagScore[];
+  domainScores: { domain: CertificationDomain; correct: number; total: number; percent: number }[];
+  tagScores: { tag: string; correct: number; total: number; percent: number }[];
   incorrectQuestionIds: string[];
   unansweredQuestionIds: string[];
   flaggedQuestionIds: string[];
 };
 
-const examDomains: ExamDomain[] = ["setup_environment", "planning_implementation", "operations", "access_security"];
+const examDomains: CertificationDomain[] = ["setup_environment", "planning_implementation", "operations", "access_security"];
 
 export function scoreExamSession(
-  session: ActiveExamSession,
-  questions: readonly Question[],
+  runtime: CertificationExamViewModel,
+  questions: readonly CertificationQuestion[],
   answeredAt: string
 ): ExamScoreResult {
   const questionById = new Map(questions.map((question) => [question.id, question]));
-  const flaggedQuestionIds = session.flaggedQuestionIds;
+  const flaggedQuestionIds = runtime.examState.flaggedItemIds;
 
-  const answers = session.questionIds.flatMap((questionId, index) => {
+  const answers = runtime.session.itemOrder.flatMap(({ itemId: questionId }, index) => {
     const question = questionById.get(questionId);
 
     if (!question) {
       return [];
     }
 
-    const selectedOptionIds = session.selectedOptionIdsByQuestionId[questionId] ?? [];
+    const selectedOptionIds = runtime.examState.responsesByItemId[questionId]?.selectedOptionIds ?? [];
     const isAnswered = selectedOptionIds.length > 0;
 
     return [
@@ -75,21 +73,21 @@ export function scoreExamSession(
     tagScores: buildTagScores(answers),
     incorrectQuestionIds,
     unansweredQuestionIds,
-    flaggedQuestionIds
+    flaggedQuestionIds: [...flaggedQuestionIds]
   };
 }
 
-export function buildAttemptSummary(input: {
+export function buildExamSummaryViewModel(input: {
   id: string;
-  session: ActiveExamSession;
+  runtime: CertificationExamViewModel;
   completedAt: string;
   durationSeconds: number;
   score: ExamScoreResult;
-}): AttemptSummary {
+}): CertificationExamSummaryViewModel {
   return {
     id: input.id,
     mode: "exam",
-    startedAt: input.session.startedAt,
+    startedAt: input.runtime.session.startedAt,
     completedAt: input.completedAt,
     durationSeconds: input.durationSeconds,
     questionCount: input.score.totalQuestions,
@@ -105,7 +103,7 @@ export function buildAttemptSummary(input: {
   };
 }
 
-function buildDomainScores(answers: readonly AnswerRecord[]): DomainScore[] {
+function buildDomainScores(answers: readonly CertificationAnswerViewModel[]) {
   return examDomains.map((domain) => {
     const domainAnswers = answers.filter((answer) => answer.questionSnapshot.domain === domain);
     const correct = domainAnswers.filter((answer) => answer.isCorrect).length;
@@ -119,7 +117,7 @@ function buildDomainScores(answers: readonly AnswerRecord[]): DomainScore[] {
   });
 }
 
-function buildTagScores(answers: readonly AnswerRecord[]): TagScore[] {
+function buildTagScores(answers: readonly CertificationAnswerViewModel[]) {
   const totals = new Map<string, { correct: number; total: number }>();
 
   answers.forEach((answer) => {

@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { decodeLocalJson, getStorageErrorMessage } from "../src/storage/storageCodec";
 
-test("decodes missing local JSON as a valid fallback", () => {
+test("decodes a missing local value as the explicit empty-state value", () => {
   const result = decodeLocalJson("patternly.test", null, { enabled: true });
 
   assert.equal(result.ok, true);
@@ -14,8 +14,6 @@ test("reports corrupt local JSON instead of hiding parse failure", () => {
   const result = decodeLocalJson("patternly.test", "{", []);
 
   assert.equal(result.ok, false);
-  assert.deepEqual(result.value, []);
-
   if (!result.ok) {
     assert.equal(result.issue.key, "patternly.test");
     assert.equal(result.issue.operation, "parse");

@@ -1,169 +1,66 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const inventoryPath = join(root, "recovery/removal-inventory.json");
-const fixturePath = join(root, "recovery/target-contract-fixtures.json");
-const algorithmsInventoryPath = join(root, "recovery/algorithms-response-shape-inventory.json");
-const algorithmsCutoverPath = join(root, "recovery/algorithms-schema-cutover-report.json");
-const inventory = JSON.parse(readFileSync(inventoryPath, "utf8"));
-const fixture = JSON.parse(readFileSync(fixturePath, "utf8"));
-const algorithmsInventory = JSON.parse(readFileSync(algorithmsInventoryPath, "utf8"));
-const algorithmsCutover = JSON.parse(readFileSync(algorithmsCutoverPath, "utf8"));
 const failures = [];
+function fail(message) { failures.push(message); }
+function walk(directory) { return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? walk(join(directory, entry.name)) : [join(directory, entry.name)]); }
+function text(paths) { return paths.map((path) => readFileSync(path, "utf8")).join("\n"); }
 
-function fail(message) {
-  failures.push(message);
-}
+const sourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx)$/.test(path));
+const activeSource = text(sourcePaths);
+const guardPath = join(root, "src/storage/repositories/trainingModelGuards.ts");
+const activeSourceWithoutDenyList = text(sourcePaths.filter((path) => path !== guardPath));
+const kernel = text(walk(join(root, "src/domain/learning")));
+const registry = text(walk(join(root, "src/domain/tracks")));
+const algorithms = text(walk(join(root, "src/tracks/algorithms")));
+const certification = text(walk(join(root, "src/tracks/cloud-certification")));
 
-function walk(directory) {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    return entry.isDirectory() ? walk(path) : [path];
-  });
-}
+for (const path of [
+  "recovery/stage-1-kernel-inventory.json",
+  "recovery/removal-inventory.json",
+  "recovery/stage-1-kernel-cutover-report.json",
+]) if (!existsSync(join(root, path))) fail(`required recovery artifact is missing: ${path}`);
 
-function projectFiles() {
-  return ["src", "tests", "scripts", "data"]
-    .filter((directory) => existsSync(join(root, directory)))
-    .flatMap((directory) => walk(join(root, directory)))
-    .filter((path) => /\.(?:ts|tsx|mjs|json|md)$/.test(path))
-    .map((path) => relative(root, path));
+for (const path of ["src/types/question.ts", "src/types/attempt.ts", "src/tracks/trackAdapters.ts", "src/tracks/types.ts"]) {
+  if (existsSync(join(root, path))) fail(`replaced owner still exists: ${path}`);
 }
-
-const files = projectFiles();
-
-const liveAlgorithmsInventory = spawnSync(
-  process.execPath,
-  ["--import", "tsx", "scripts/inventoryAlgorithmsSchema.mjs"],
-  { cwd: root, encoding: "utf8" },
-);
-if (liveAlgorithmsInventory.status !== 0) {
-  fail(`Algorithms schema inventory failed: ${liveAlgorithmsInventory.stderr.trim()}`);
-} else {
-  const live = JSON.parse(liveAlgorithmsInventory.stdout);
-  for (const field of [
-    "totalActiveItems", "rootChoiceIsCorrect", "rootChoiceCorrectOptionId",
-    "nestedStaticMicroChecks", "responseSpecChoice", "rootOrdering", "rootComplexity",
-    "unknownOrUnsupported", "filesByShape",
-  ]) {
-    if (JSON.stringify(live[field]) !== JSON.stringify(algorithmsCutover.after[field])) {
-      fail(`Algorithms cutover after-inventory is stale for ${field}.`);
-    }
-  }
-}
-if (algorithmsInventory.totalActiveItems !== algorithmsCutover.before.totalActiveItems) {
-  fail("Algorithms pre-change inventory does not match the cutover report.");
-}
-if (algorithmsCutover.manifestCounts.total !== algorithmsCutover.after.totalActiveItems) {
-  fail("Algorithms manifest count does not match the canonical after-inventory.");
+for (const path of ["src/domain/training", "src/domain/sessions"]) {
+  if (existsSync(join(root, path)) && walk(join(root, path)).length > 0) fail(`replaced owner still contains files: ${path}`);
 }
 
-for (const entry of inventory.searchTargets) {
-  const matcher = new RegExp(entry.pattern, "m");
-  const observed = files.filter((file) => matcher.test(readFileSync(join(root, file), "utf8"))).sort();
-  const expected = [...entry.files].sort();
-  if (JSON.stringify(observed) !== JSON.stringify(expected)) {
-    fail(`${entry.id}: inventory is stale. Expected ${JSON.stringify(expected)}; observed ${JSON.stringify(observed)}.`);
-  }
-}
+const forbiddenSourcePatterns = [
+  ["global item contract", /\bTraining(?:Content)?Item(?:Type)?\b/],
+  ["global response/result contract", /\bTrainingAttempt(?:Response|Result|Confidence)\b/],
+  ["old review contract", /\bReviewQueueItemKind\b|\bgetReviewQueueItemKind\b|\blow_confidence\b/],
+  ["old result variants", /kind:\s*["'](?:correctness|partial_credit|mixed)["']/],
+  ["shared mode taxonomy", /\b(?:SessionModeType|FeedbackTiming|ScoringType|supportedItemTypes)\b/],
+  ["old feature records", /\b(?:ActiveExamSession|PracticeAnswerRecord|QuestionReviewState)\b/],
+  ["replacement bridge", /\b(?:Legacy|Adapter|Compatibility|toCanonical|fromLegacy)\b/],
+  ["validation suppression", /as unknown as|@ts-ignore|@ts-expect-error/],
+];
+for (const [label, pattern] of forbiddenSourcePatterns) if (pattern.test(activeSource)) fail(`${label} is present in active source.`);
+if (/\bconfidence\b|\bretentionPassedAt\b/.test(activeSourceWithoutDenyList)) fail("removed attempt/review fields are present outside the repository deny-list.");
+if (/type\s+TrackId\s*=\s*["']/.test(activeSource)) fail("TrackId is a closed concrete union.");
+if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path))) fail("an adapter or compatibility source path remains.");
 
-const expectedTests = inventory.pathInventory.tests.files.slice().sort();
-const observedTests = walk(join(root, "tests"))
-  .map((path) => relative(root, path))
-  .filter((path) => path.endsWith(".test.ts"))
-  .sort();
-if (JSON.stringify(observedTests) !== JSON.stringify(expectedTests)) {
-  fail(`test inventory is stale. Expected ${JSON.stringify(expectedTests)}; observed ${JSON.stringify(observedTests)}.`);
-}
+if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion/.test(kernel)) fail("learning kernel imports family semantics.");
+if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test(registry)) fail("track registry imports content or concrete items.");
+if (/cloud-certification/.test(algorithms)) fail("Algorithms imports Certification.");
+if (/tracks\/algorithms/.test(certification)) fail("Certification imports Algorithms.");
 
-const packageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-if (packageJson.scripts.test !== inventory.pathInventory.tests.executedBy) {
-  fail("npm test no longer matches the recorded active test command.");
-}
-for (const script of ["typecheck", "test", "validate:questions", "qa:static", "recovery:check", "baseline:report"]) {
-  if (!packageJson.scripts[script]) fail(`package.json is missing the ${script} script.`);
-}
-if (!packageJson.scripts["qa:static"].includes("recovery:check")) {
-  fail("qa:static must run the recovery inventory/documentation check before the existing quality commands.");
-}
+const removalInventory = JSON.parse(readFileSync(join(root, "recovery/removal-inventory.json"), "utf8"));
+const observedTests = walk(join(root, "tests")).filter((path) => path.endsWith(".test.ts")).map((path) => relative(root, path)).sort();
+const expectedTests = [...removalInventory.activeTests].sort();
+if (JSON.stringify(observedTests) !== JSON.stringify(expectedTests)) fail("removal inventory activeTests is stale.");
 
-for (let index = 0; index <= 17; index += 1) {
-  const document = `docs/${String(index).padStart(2, "0")}-${[
-    "overview",
-    "product-definition",
-    "architecture",
-    "navigation-and-flows",
-    "data-model",
-    "design-system",
-    "branding-and-style-direction",
-    "content-guidelines",
-    "storage-and-offline",
-    "security-and-privacy",
-    "roadmap",
-    "implementation-guidelines",
-    "testing-strategy",
-    "risk-register",
-    "learning-effectiveness-model",
-    "certification-track-learning-system",
-    "leetcode-like-learning-system",
-    "training-runtime-and-interaction-spec",
-  ][index]}.md`;
-  if (!existsSync(join(root, document))) fail(`required canonical document is missing: ${document}.`);
-}
-for (const source of fixture.sources) {
-  if (!existsSync(join(root, source))) fail(`target contract fixture source is missing: ${source}.`);
-}
-for (const key of ["canonicalResultClassification", "adjacentOrdering", "complexityDimensions", "reviewSuccessRules", "reinsertEligibility", "journalIdempotency"]) {
-  if (!Array.isArray(fixture[key]) || fixture[key].length === 0) fail(`target contract fixture ${key} is missing or empty.`);
-}
-
-const workflowDirectory = join(root, ".github/workflows");
-const workflows = existsSync(workflowDirectory)
-  ? readdirSync(workflowDirectory).filter((file) => /\.ya?ml$/.test(file)).sort()
-  : [];
-if (workflows.length !== 1) fail(`exactly one GitHub Actions workflow is required; found ${workflows.length}.`);
-if (workflows.length === 1) {
-  const workflow = readFileSync(join(workflowDirectory, workflows[0]), "utf8");
-  for (const required of ["pull_request:", "push:", "- main", "npm ci", "npm run baseline:report"]) {
-    if (!workflow.includes(required)) fail(`workflow ${workflows[0]} is missing ${required}.`);
-  }
-  const baselineReportPath = join(root, "scripts/recoveryBaselineReport.mjs");
-  if (!packageJson.scripts["baseline:report"].includes("recoveryBaselineReport") || !existsSync(baselineReportPath)) {
-    fail("CI workflow does not have the required baseline report command.");
-  } else if (!readFileSync(baselineReportPath, "utf8").includes('"qa:static"')) {
-    fail("CI baseline report must invoke qa:static.");
-  }
-}
-
-for (const reference of inventory.designReferences.available) {
-  if (!existsSync(join(root, reference))) fail(`design reference is missing: ${reference}.`);
-}
-if (!inventory.designReferences.requiredButMissing.length || !inventory.designReferences.rule.includes("blocker")) {
-  fail("missing design references must be recorded as blockers.");
-}
-const expectedGates = ["G-01", "G-02", "G-03", "G-04", "G-05"];
-if (JSON.stringify(inventory.gates.map((gate) => gate.id)) !== JSON.stringify(expectedGates)) {
-  fail("gate inventory must contain G-01 through G-05 in order.");
-}
-for (const gate of inventory.gates) {
-  if (gate.state !== "blocked" || !gate.owner || !gate.blocker) fail(`${gate.id} must have a blocker and owner.`);
-}
-
-for (const entry of inventory.baseline.commands) {
-  if (typeof entry.exitCode !== "number" || !entry.owner || !entry.cause) {
-    fail(`baseline command ${entry.command} must include exit code, owner, and cause.`);
-  }
-}
-
-if (failures.length > 0) {
+if (failures.length) {
   console.error("RECOVERY_INVENTORY_CHECK=failed");
-  for (const message of failures) console.error(`- ${message}`);
+  failures.forEach((message) => console.error(`- ${message}`));
   process.exitCode = 1;
 } else {
   console.log("RECOVERY_INVENTORY_CHECK=passed");
-  console.log(`RECOVERY_INVENTORY_TARGETS=${inventory.searchTargets.length}`);
-  console.log(`RECOVERY_GATES_BLOCKED=${inventory.gates.length}`);
-  console.log(`RECOVERY_DESIGN_BLOCKERS=${inventory.designReferences.requiredButMissing.length}`);
+  console.log(`RECOVERY_ACTIVE_SOURCE_FILES=${sourcePaths.length}`);
+  console.log(`RECOVERY_ACTIVE_TESTS=${observedTests.length}`);
+  console.log("RECOVERY_STAGE_1_BOUNDARIES=passed");
 }

@@ -7,14 +7,14 @@ import {
   ListRow,
   SettingsGroup,
 } from "../../../components";
-import type { TrackDefinition } from "../../../domain";
+import type { TrackDisplay } from "../../../domain";
 import type { LocalStorageIssue } from "../../../storage";
 import { colors, spacing, typography } from "../../../theme";
 import { CLEAR_LOCAL_HISTORY_DETAIL } from "../localReset";
 import { SETTINGS_ROWS } from "../shellModel";
 
 type SettingsTabProps = {
-  activeTrack: TrackDefinition;
+  activeTrack: TrackDisplay;
   onClearAllLocalData: () => void;
   storageIssues: readonly LocalStorageIssue[];
 };

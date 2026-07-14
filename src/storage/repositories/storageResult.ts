@@ -6,6 +6,7 @@ import {
   getStorageErrorMessage,
   type LocalStorageIssue,
 } from "../storageCodec";
+import { UnsupportedStoredRecordError } from "../../domain";
 
 export type StorageRepositoryResult<T> =
   | { ok: true; value: T; issues?: LocalStorageIssue[] }
@@ -43,22 +44,15 @@ export async function readRepositoryJson<T>(
 
     const decoded = decodeLocalJson<unknown>(key, rawValue, fallback);
 
-    if (!decoded.ok) {
-      return failedRepositoryResult(fallback, [decoded.issue]);
-    }
+    if (!decoded.ok) throw new UnsupportedStoredRecordError(keyName);
 
     if (!isValidValue(decoded.value)) {
-      return failedRepositoryResult(fallback, [
-        {
-          key,
-          message: "Stored local data has an invalid shape.",
-          operation: "parse",
-        },
-      ]);
+      throw new UnsupportedStoredRecordError(keyName);
     }
 
     return successRepositoryResult(decoded.value);
   } catch (error) {
+    if (error instanceof UnsupportedStoredRecordError) throw error;
     return failedRepositoryResult(fallback, [
       {
         key,

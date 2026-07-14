@@ -1,33 +1,33 @@
 import { EXAM_BLUEPRINT } from "../../constants";
-import type { ActiveExamSession, ExamDomain, Question } from "../../types";
+import type { CertificationDomain, CertificationExamViewModel, CertificationQuestion } from "../../tracks/cloud-certification/domain";
 import { shuffleArray } from "../../utils";
 
-export const examDomains = Object.keys(EXAM_BLUEPRINT) as ExamDomain[];
+export const examDomains = Object.keys(EXAM_BLUEPRINT) as CertificationDomain[];
 
 export type ExamSelectionResult =
   | {
       ok: true;
-      questions: Question[];
+      questions: CertificationQuestion[];
       optionOrderByQuestionId: Record<string, string[]>;
     }
   | {
       ok: false;
-      missing: Partial<Record<ExamDomain, { required: number; available: number }>>;
+      missing: Partial<Record<CertificationDomain, { required: number; available: number }>>;
     };
 
-export function groupQuestionsByDomain(questions: readonly Question[]): Record<ExamDomain, Question[]> {
+export function groupQuestionsByDomain(questions: readonly CertificationQuestion[]): Record<CertificationDomain, CertificationQuestion[]> {
   return examDomains.reduce(
     (groups, domain) => ({
       ...groups,
       [domain]: questions.filter((question) => question.domain === domain)
     }),
-    {} as Record<ExamDomain, Question[]>
+    {} as Record<CertificationDomain, CertificationQuestion[]>
   );
 }
 
-export function selectExamQuestions(questions: readonly Question[]): ExamSelectionResult {
+export function selectExamQuestions(questions: readonly CertificationQuestion[]): ExamSelectionResult {
   const groupedQuestions = groupQuestionsByDomain(questions);
-  const missing = examDomains.reduce<Partial<Record<ExamDomain, { required: number; available: number }>>>((result, domain) => {
+  const missing = examDomains.reduce<Partial<Record<CertificationDomain, { required: number; available: number }>>>((result, domain) => {
     const required = EXAM_BLUEPRINT[domain];
     const available = groupedQuestions[domain].length;
 
@@ -58,7 +58,7 @@ export function selectExamQuestions(questions: readonly Question[]): ExamSelecti
   };
 }
 
-export function buildOptionOrderByQuestionId(questions: readonly Question[]): Record<string, string[]> {
+export function buildOptionOrderByQuestionId(questions: readonly CertificationQuestion[]): Record<string, string[]> {
   return questions.reduce<Record<string, string[]>>((orders, question) => {
     return {
       ...orders,
@@ -67,13 +67,13 @@ export function buildOptionOrderByQuestionId(questions: readonly Question[]): Re
   }, {});
 }
 
-export function buildExamQuestionViewsFromSession<TQuestion extends Question>(
-  session: ActiveExamSession,
+export function buildExamQuestionViewsFromSession<TQuestion extends CertificationQuestion>(
+  runtime: CertificationExamViewModel,
   questions: readonly TQuestion[]
 ): Array<TQuestion & { shuffledOptions: TQuestion["options"] }> {
   const questionById = new Map(questions.map((question) => [question.id, question]));
 
-  return session.questionIds.flatMap((questionId) => {
+  return runtime.session.itemOrder.flatMap(({ itemId: questionId }) => {
     const question = questionById.get(questionId);
 
     if (!question) {
@@ -81,7 +81,7 @@ export function buildExamQuestionViewsFromSession<TQuestion extends Question>(
     }
 
     const optionById = new Map(question.options.map((option) => [option.id, option]));
-    const optionOrder = session.optionOrderByQuestionId[question.id] ?? question.options.map((option) => option.id);
+    const optionOrder = runtime.session.optionOrderByItem[question.id] ?? question.options.map((option) => option.id);
     const shuffledOptions = optionOrder.flatMap((optionId) => {
       const option = optionById.get(optionId);
       return option ? [option] : [];
