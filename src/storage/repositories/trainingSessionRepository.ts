@@ -10,6 +10,20 @@ export async function getActiveTrainingSession(): Promise<TrainingSession | null
 export async function saveTrainingSession(session: TrainingSession): Promise<void> {
   const active = await getActiveTrainingSession();
   if (session.status === "active" && active && active.id !== session.id) throw new Error(`Active session ${active.id} must be completed or abandoned first.`);
+  const existing = readStoredJson(STORAGE_KEYS.trainingSession(session.id), isTrainingSession);
+  if (existing) {
+    const immutableExisting = {
+      id: existing.id, trackId: existing.trackId, modeId: existing.modeId, requestedLength: existing.requestedLength,
+      actualLength: existing.actualLength, itemOrder: existing.itemOrder, optionOrderByItem: existing.optionOrderByItem,
+      contentVersion: existing.contentVersion, startedAt: existing.startedAt,
+    };
+    const immutableNext = {
+      id: session.id, trackId: session.trackId, modeId: session.modeId, requestedLength: session.requestedLength,
+      actualLength: session.actualLength, itemOrder: session.itemOrder, optionOrderByItem: session.optionOrderByItem,
+      contentVersion: session.contentVersion, startedAt: session.startedAt,
+    };
+    if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Session ${session.id} has conflicting immutable fields.`);
+  }
   writeStoredJson(STORAGE_KEYS.trainingSession(session.id), session);
   const ids = readStoredJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, isIds) ?? [];
   if (!ids.includes(session.id)) writeStoredJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [session.id, ...ids]);

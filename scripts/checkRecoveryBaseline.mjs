@@ -42,6 +42,23 @@ const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(read
 if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/mmkvClient.ts")) fail("MMKV must have one infrastructure-only client.");
 if ((activeSource.match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");
 
+const implementationChecks = [
+  ["MutationJournalRecord", /export\s+type\s+MutationJournalRecord\b/g],
+  ["materializeMutation", /export\s+async\s+function\s+materializeMutation\b/g],
+  ["verifyMutation", /export\s+async\s+function\s+verifyMutation\b/g],
+  ["commitMutation", /export\s+async\s+function\s+commitMutation\b/g],
+  ["recoverPendingMutation", /export\s+async\s+function\s+recoverPendingMutation\b/g],
+];
+for (const [name, pattern] of implementationChecks) {
+  const count = (activeSource.match(pattern) ?? []).length;
+  if (count !== 1) fail(`${name} must have exactly one implementation; found ${count}.`);
+}
+
+const journalInternals = /(?:mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal)/;
+for (const path of sourcePaths.filter((path) => /src\/features\/(?:algorithms|practice|exam)\//.test(path))) {
+  if (journalInternals.test(readFileSync(path, "utf8"))) fail(`feature imports journal internals: ${path}`);
+}
+
 if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion/.test(kernel)) fail("learning kernel imports family semantics.");
 if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test(registry)) fail("track registry imports content or concrete items.");
 if (/cloud-certification/.test(algorithms)) fail("Algorithms imports Certification.");
