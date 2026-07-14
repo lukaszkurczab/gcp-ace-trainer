@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    "docs/04-data-model.md",
+    "docs/12-testing-strategy.md",
+    "docs/17-training-runtime-and-interaction-spec.md"
+  ],
+  "canonicalResultClassification": [
+    {
+      "id": "exact-selection-is-correct",
+      "selected": ["a", "b"],
+      "correct": ["a", "b"],
+      "expected": "correct"
+    },
+    {
+      "id": "proper-correct-subset-is-partial",
+      "selected": ["a"],
+      "correct": ["a", "b"],
+      "expected": "partial"
+    },
+    {
+      "id": "wrong-option-is-incorrect",
+      "selected": ["a", "c"],
+      "correct": ["a", "b"],
+      "expected": "incorrect"
+    },
+    {
+      "id": "empty-selection-is-incorrect",
+      "selected": [],
+      "correct": ["a"],
+      "expected": "incorrect"
+    }
+  ],
+  "adjacentOrdering": [
+    {
+      "id": "all-canonical-adjacencies-are-correct",
+      "canonical": ["a", "b", "c", "d"],
+      "submitted": ["a", "b", "c", "d"],
+      "expected": { "score": 3, "maxPoints": 3, "result": "correct" }
+    },
+    {
+      "id": "one-preserved-adjacency-is-partial",
+      "canonical": ["a", "b", "c", "d"],
+      "submitted": ["a", "b", "d", "c"],
+      "expected": { "score": 1, "maxPoints": 3, "result": "partial" }
+    },
+    {
+      "id": "no-preserved-adjacency-is-incorrect",
+      "canonical": ["a", "b", "c", "d"],
+      "submitted": ["d", "c", "b", "a"],
+      "expected": { "score": 0, "maxPoints": 3, "result": "incorrect" }
+    }
+  ],
+  "complexityDimensions": [
+    {
+      "id": "time-only-item-accepts-its-declared-value",
+      "dimensions": [{ "id": "time", "accepted": ["O(n)"] }],
+      "response": { "time": "O(n)" },
+      "expected": { "score": 1, "maxPoints": 1, "result": "correct" }
+    },
+    {
+      "id": "time-and-space-item-uses-declared-alias",
+      "dimensions": [
+        { "id": "time", "accepted": ["O(n)", "linear"] },
+        { "id": "space", "accepted": ["O(1)", "constant"] }
+      ],
+      "response": { "time": "linear", "space": "constant" },
+      "expected": { "score": 2, "maxPoints": 2, "result": "correct" }
+    },
+    {
+      "id": "undeclared-value-is-incorrect",
+      "dimensions": [{ "id": "space", "accepted": ["O(1)"] }],
+      "response": { "space": "O(n)" },
+      "expected": { "score": 0, "maxPoints": 1, "result": "incorrect" }
+    }
+  ],
+  "reviewSuccessRules": [
+    {
+      "id": "pre-due-success-does-not-increment",
+      "dueAt": "2026-07-14T10:00:00.000Z",
+      "initialConsecutiveSuccesses": 0,
+      "attempt": { "at": "2026-07-14T09:59:59.000Z", "result": "correct", "sameSessionCorrection": false },
+      "expected": { "consecutiveSuccesses": 0, "resolved": false }
+    },
+    {
+      "id": "first-post-due-success-remains-open",
+      "dueAt": "2026-07-14T10:00:00.000Z",
+      "initialConsecutiveSuccesses": 0,
+      "attempt": { "at": "2026-07-14T10:01:00.000Z", "result": "correct", "sameSessionCorrection": false },
+      "expected": { "consecutiveSuccesses": 1, "resolved": false }
+    },
+    {
+      "id": "second-post-due-success-resolves",
+      "dueAt": "2026-07-14T10:00:00.000Z",
+      "initialConsecutiveSuccesses": 1,
+      "attempt": { "at": "2026-07-14T10:01:00.000Z", "result": "correct", "sameSessionCorrection": false },
+      "expected": { "consecutiveSuccesses": 2, "resolved": true }
+    },
+    {
+      "id": "partial-result-resets-post-due-streak",
+      "dueAt": "2026-07-14T10:00:00.000Z",
+      "initialConsecutiveSuccesses": 1,
+      "attempt": { "at": "2026-07-14T10:01:00.000Z", "result": "partial", "sameSessionCorrection": false },
+      "expected": { "consecutiveSuccesses": 0, "resolved": false }
+    },
+    {
+      "id": "same-session-correction-cannot-resolve-review",
+      "dueAt": "2026-07-14T10:00:00.000Z",
+      "initialConsecutiveSuccesses": 1,
+      "attempt": { "at": "2026-07-14T10:01:00.000Z", "result": "correct", "sameSessionCorrection": true },
+      "expected": { "consecutiveSuccesses": 1, "resolved": false }
+    }
+  ],
+  "journalIdempotency": [
+    {
+      "id": "durable-retry-materializes-one-outcome",
+      "journalId": "submit-001",
+      "operation": "submit",
+      "deterministicOutcome": "attempt-001",
+      "actions": ["persist", "persist", "materialize", "materialize", "clear"],
+      "expected": { "materializedOutcomes": ["attempt-001"], "journalPresent": false }
+    },
+    {
+      "id": "force-close-recovery-reuses-durable-outcome",
+      "journalId": "exam-001",
+      "operation": "complete_exam",
+      "deterministicOutcome": "exam-result-001",
+      "actions": ["persist", "recover", "materialize", "clear"],
+      "expected": { "materializedOutcomes": ["exam-result-001"], "journalPresent": false }
+    }
+  ]
+}
