@@ -56,7 +56,7 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
   }
 }
 
-function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
+export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
   if (!isRecord(value) || "confidence" in value || "itemId" in value || "itemType" in value) return false;
   if (!(typeof value.id === "string" && typeof value.sessionId === "string" && typeof value.trackId === "string" &&
     isRegisteredTrackId(value.trackId) && typeof value.modeId === "string" && isContentItemRef(value.item) &&
@@ -78,7 +78,7 @@ function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
   }
 }
 
-function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
+export function isReviewQueueEntry(value: unknown): value is ReviewQueueEntry {
   return isRecord(value) && !("kind" in value) && !("priority" in value) && !("retentionPassedAt" in value) &&
     !("itemId" in value) && typeof value.id === "string" && typeof value.trackId === "string" &&
     isRegisteredTrackId(value.trackId) && typeof value.sourceAttemptId === "string" && typeof value.sourceSessionId === "string" &&

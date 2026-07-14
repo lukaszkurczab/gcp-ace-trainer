@@ -1,27 +1,7 @@
 import { isRegisteredTrackId, type TrackId } from "../../domain";
-import {
-  readRepositoryJson,
-  removeRepositoryJson,
-  writeRepositoryJson,
-  type StorageRepositoryResult,
-} from "./storageResult";
+import { STORAGE_KEYS } from "../keys";
+import { readStoredJson, removeStoredValue, writeStoredJson } from "../storageCodec";
 
-const ACTIVE_TRACK_KEY = "ACTIVE_TRACK";
-
-export async function getActiveTrackRepositoryValue(): Promise<StorageRepositoryResult<TrackId | null>> {
-  return readRepositoryJson(
-    ACTIVE_TRACK_KEY,
-    null,
-    (value): value is TrackId | null => value === null || (typeof value === "string" && isRegisteredTrackId(value)),
-  );
-}
-
-export async function saveActiveTrackRepositoryValue(
-  trackId: TrackId,
-): Promise<StorageRepositoryResult<TrackId>> {
-  return writeRepositoryJson(ACTIVE_TRACK_KEY, trackId);
-}
-
-export async function clearActiveTrackRepositoryValue(): Promise<StorageRepositoryResult<void>> {
-  return removeRepositoryJson(ACTIVE_TRACK_KEY);
-}
+export async function getActiveTrackId(): Promise<TrackId | null> { return readStoredJson(STORAGE_KEYS.ACTIVE_TRACK, (value): value is TrackId => typeof value === "string" && isRegisteredTrackId(value)); }
+export async function saveActiveTrackId(trackId: TrackId): Promise<void> { writeStoredJson(STORAGE_KEYS.ACTIVE_TRACK, trackId); }
+export async function clearActiveTrackId(): Promise<void> { removeStoredValue(STORAGE_KEYS.ACTIVE_TRACK); }

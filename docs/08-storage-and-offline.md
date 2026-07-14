@@ -4,6 +4,8 @@
 
 Patternly is offline-first with MMKV as the only persistence engine. Infrastructure imports MMKV once and creates one client. Repository implementations are the only read/write boundary. Static content is bundled and versioned; user data is local canonical state.
 
+`react-native-mmkv` v4.3.2 is a native Nitro module. Patternly requires an iOS or Android development build after dependency installation; Expo Go cannot add this native module to an already-installed client. The app starts by recovering a pending mutation, then resolves active cached/remote content, and only then enables navigation.
+
 Delete old keys, local records, read/write APIs, and Cloud write-through. Do not preserve historical sessions, attempts, review, progress, or developer data. Do not implement historical data migration, record repair, translation, or AsyncStorage reads. `contentVersion` identifies the active bank and does not permit historical explanation or item reconstruction.
 
 ## Required recovery rule

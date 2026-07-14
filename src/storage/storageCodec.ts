@@ -1,38 +1,17 @@
-export type LocalStorageOperation = "parse" | "read" | "write" | "remove";
+import { CorruptStoredRecordError, StorageDeleteError, StorageReadError, StorageWriteError, UnsupportedStoredRecordError } from "./errors";
+import { getKeyValueStorage } from "../infrastructure/storage/mmkvClient";
 
-export type LocalStorageIssue = {
-  key: string;
-  message: string;
-  operation: LocalStorageOperation;
-};
-
-export type LocalJsonDecodeResult<T> =
-  | { ok: true; value: T }
-  | { issue: LocalStorageIssue; ok: false };
-
-export function decodeLocalJson<T>(
-  key: string,
-  value: string | null,
-  missingValue: T,
-): LocalJsonDecodeResult<T> {
-  if (!value) {
-    return { ok: true, value: missingValue };
-  }
-
-  try {
-    return { ok: true, value: JSON.parse(value) as T };
-  } catch {
-    return {
-      issue: {
-        key,
-        message: "Stored local data is not valid JSON.",
-        operation: "parse",
-      },
-      ok: false,
-    };
-  }
+export type StorageValueGuard<T> = (value: unknown) => value is T;
+export function readStoredJson<T>(key: string, guard: StorageValueGuard<T>): T | null {
+  let raw: string | undefined;
+  try { raw = getKeyValueStorage().getString(key); } catch (error) { throw new StorageReadError(key, error); }
+  if (raw === undefined) return null;
+  let value: unknown;
+  try { value = JSON.parse(raw); } catch { throw new CorruptStoredRecordError(key); }
+  if (!guard(value)) throw new UnsupportedStoredRecordError(key);
+  return value;
 }
-
-export function getStorageErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "Unknown local storage error.";
+export function writeStoredJson<T>(key: string, value: T): void {
+  try { getKeyValueStorage().setString(key, JSON.stringify(value)); } catch (error) { throw new StorageWriteError(key, error); }
 }
+export function removeStoredValue(key: string): void { try { getKeyValueStorage().remove(key); } catch (error) { throw new StorageDeleteError(key, error); } }

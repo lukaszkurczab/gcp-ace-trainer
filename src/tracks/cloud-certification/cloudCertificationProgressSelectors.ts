@@ -1,10 +1,10 @@
 import { CLOUD_CERTIFICATION_TRACK_ID, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { getReviewQueueItems, getTrainingAttempts } from "../../storage/repositories";
-import type { LocalStorageIssue } from "../../storage/storageCodec";
+import type { StorageIssue } from "../../storage";
 
 export type CloudCertificationTaxonomyPerformance = { axisId: string; correctCount: number; incorrectCount: number; label: string; nodeId: string; partialCount: number; percent: number; taxonomyRef: EvidenceRef; totalAttempts: number };
-export type CloudCertificationProgressViewModel = { correctCount: number; degraded: boolean; dueReviewCount: number; examAttemptCount: number; firstAttemptAccuracy: { correct: number; percent: number; total: number }; highPriorityReviewCount: number; incorrectCount: number; issues: LocalStorageIssue[]; ok: boolean; partialCount: number; practiceAttemptCount: number; recentAccuracy: { correct: number; percent: number; total: number; windowAttemptCount: number }; repeatedMistakeTypes: { count: number; taxonomyRef: EvidenceRef }[]; scheduledReviewCount: number; taxonomyPerformance: CloudCertificationTaxonomyPerformance[]; totalAttempts: number; weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[] };
-export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly LocalStorageIssue[]; now?: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
+export type CloudCertificationProgressViewModel = { correctCount: number; degraded: boolean; dueReviewCount: number; examAttemptCount: number; firstAttemptAccuracy: { correct: number; percent: number; total: number }; highPriorityReviewCount: number; incorrectCount: number; issues: StorageIssue[]; ok: boolean; partialCount: number; practiceAttemptCount: number; recentAccuracy: { correct: number; percent: number; total: number; windowAttemptCount: number }; repeatedMistakeTypes: { count: number; taxonomyRef: EvidenceRef }[]; scheduledReviewCount: number; taxonomyPerformance: CloudCertificationTaxonomyPerformance[]; totalAttempts: number; weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[] };
+export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly StorageIssue[]; now?: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
 
 export async function loadCloudCertificationProgressViewModel(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
   const [attempts, reviews] = await Promise.all([getTrainingAttempts(), getReviewQueueItems()]);

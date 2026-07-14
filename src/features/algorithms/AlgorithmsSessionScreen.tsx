@@ -36,7 +36,7 @@ import {
   getTrainingSessions,
   getTrainingAttempts,
   saveTrainingSessions,
-  type LocalStorageIssue,
+  type StorageIssue,
 } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
 import {
@@ -967,7 +967,7 @@ function StorageNotice({ message }: { message: string }) {
   );
 }
 
-function formatStorageFailure(prefix: string, issues?: readonly LocalStorageIssue[]): string {
+function formatStorageFailure(prefix: string, issues?: readonly StorageIssue[]): string {
   const writeIssue = issues?.find((issue) => issue.operation === "write");
   const issue = writeIssue ?? issues?.[0];
 

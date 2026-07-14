@@ -19,9 +19,8 @@ import {
   getAttempts,
   getPracticeHistory,
   getReviewQueueItems,
-  getStorageIssues,
   getTrainingAttempts,
-  type LocalStorageIssue,
+  type StorageIssue,
 } from "../../storage";
 import { colors } from "../../theme";
 import {
@@ -53,7 +52,7 @@ type ShellData = {
   cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems: ReviewQueueEntry[];
-  storageIssues: readonly LocalStorageIssue[];
+  storageIssues: readonly StorageIssue[];
   trainingAttempts: TrainingAttempt[];
 };
 
@@ -107,7 +106,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             cloudProgress,
             practiceHistory: savedPracticeHistory,
             reviewQueueItems: reviewQueueItemsResult.value,
-            storageIssues: getStorageIssues(),
+            storageIssues: [],
             trainingAttempts: trainingAttemptsResult.value,
           });
         }
@@ -144,7 +143,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 cloudProgress: null,
                 practiceHistory: [],
                 reviewQueueItems: [],
-                storageIssues: getStorageIssues(),
+                storageIssues: [],
                 trainingAttempts: [],
               }),
             );

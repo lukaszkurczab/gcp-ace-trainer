@@ -1,0 +1,9 @@
+import { JournalMaterializationError, JournalVerificationError } from "./errors";
+import { getActiveMutationJournal, clearMutationJournal, type MutationJournalRecord } from "./repositories/mutationJournalRepository";
+import { addReviewQueueItems, addTrainingAttempt, getActiveTrainingSession, removeReviewQueueItem, saveCertificationExam, saveTrainingSession } from "./repositories";
+import { clearCertificationExam } from "./repositories/certificationExamRepository";
+import { removeStoredValue } from "./storageCodec";
+import { STORAGE_KEYS } from "./keys";
+export async function materializeMutation(record: MutationJournalRecord): Promise<void> { try { for (const write of record.writes) { switch (write.kind) { case "put_session": await saveTrainingSession(write.session); break; case "put_attempt": await addTrainingAttempt(write.attempt); break; case "put_review_entry": await addReviewQueueItems([write.entry]); break; case "delete_review_entry": await removeReviewQueueItem(write.trackId as never, write.itemId); break; case "put_certification_exam": await saveCertificationExam(write.exam); break; case "clear_active_session": removeStoredValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION); break; case "clear_active_exam": await clearCertificationExam(); break; } } } catch (error) { throw new JournalMaterializationError(error); } }
+export async function verifyMutation(record: MutationJournalRecord): Promise<void> { for (const write of record.writes) { if (write.kind === "put_session" && (await getActiveTrainingSession())?.id !== write.session.id && write.session.status === "active") throw new JournalVerificationError(); } }
+export async function recoverPendingMutation(): Promise<void> { const record = await getActiveMutationJournal(); if (!record) return; await materializeMutation(record); await verifyMutation(record); await clearMutationJournal(); }

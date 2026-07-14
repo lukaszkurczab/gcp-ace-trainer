@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { createTrainingSession } from "../src/domain";
 import { savePracticeAnswer } from "../src/features/practice/practiceService";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
@@ -34,9 +34,7 @@ test("exam scoring reports raw count and percentage with unanswered diagnostics 
 });
 
 test("Certification practice submission writes one canonical typed attempt and remediation review directly", async (context) => {
-  const memory = new Map<string, string>();
-  context.mock.method(AsyncStorage, "getItem", async (key: string) => memory.get(key) ?? null);
-  context.mock.method(AsyncStorage, "setItem", async (key: string, value: string) => { memory.set(key, value); });
+  installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const question = makeQuestion({ id: "fixture-practice" });
   const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: [question] });
   const ref = catalog.toContentItemRef(question);

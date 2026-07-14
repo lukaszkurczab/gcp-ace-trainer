@@ -8,7 +8,7 @@ import {
   SettingsGroup,
 } from "../../../components";
 import type { TrackDisplay } from "../../../domain";
-import type { LocalStorageIssue } from "../../../storage";
+import type { StorageIssue } from "../../../storage";
 import { colors, spacing, typography } from "../../../theme";
 import { CLEAR_LOCAL_HISTORY_DETAIL } from "../localReset";
 import { SETTINGS_ROWS } from "../shellModel";
@@ -16,7 +16,7 @@ import { SETTINGS_ROWS } from "../shellModel";
 type SettingsTabProps = {
   activeTrack: TrackDisplay;
   onClearAllLocalData: () => void;
-  storageIssues: readonly LocalStorageIssue[];
+  storageIssues: readonly StorageIssue[];
 };
 
 export function SettingsTab({
@@ -170,7 +170,7 @@ function getSettingsRowLabel(id: string): string {
   return SETTINGS_ROWS.find((row) => row.id === id)?.label ?? id;
 }
 
-function formatStorageIssue(issue: LocalStorageIssue): string {
+function formatStorageIssue(issue: StorageIssue): string {
   const action = {
     parse: "read",
     read: "read",

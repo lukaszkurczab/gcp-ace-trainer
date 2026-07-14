@@ -1,7 +1,5 @@
 import {
   clearCertificationExam,
-  clearAttempts,
-  clearPracticeHistory,
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,
@@ -15,8 +13,6 @@ export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
 
 export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
   "clearCertificationExam",
-  "clearAttempts",
-  "clearPracticeHistory",
   "clearTrainingSessions",
   "clearTrainingAttempts",
   "clearReviewQueueItems",
@@ -32,8 +28,6 @@ export type ClearLocalHistoryOperations = Record<
 
 const defaultClearOperations: ClearLocalHistoryOperations = {
   clearCertificationExam,
-  clearAttempts,
-  clearPracticeHistory,
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,

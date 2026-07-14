@@ -1,42 +1,12 @@
 import type { ReviewQueueEntry, TrackId } from "../../domain";
-import { mergeRepositoryReadWriteResult, readRepositoryJson, removeRepositoryJson, writeRepositoryJson, type StorageRepositoryResult } from "./storageResult";
-import { isReviewQueueEntryArray } from "./trainingModelGuards";
-
-const TRAINING_REVIEW_QUEUE_KEY = "TRAINING_REVIEW_QUEUE";
-
-export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  return readRepositoryJson(TRAINING_REVIEW_QUEUE_KEY, [], isReviewQueueEntryArray);
-}
-
-export async function saveReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  return writeRepositoryJson(TRAINING_REVIEW_QUEUE_KEY, items);
-}
-
-export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  const existing = await getReviewQueueItems();
-  const byItem = new Map(existing.value.map((entry) => [`${entry.trackId}:${entry.sourceItem.itemId}`, entry]));
-  for (const entry of items) byItem.set(`${entry.trackId}:${entry.sourceItem.itemId}`, entry);
-  const saved = await saveReviewQueueItems([...byItem.values()]);
-  return mergeRepositoryReadWriteResult(existing, saved);
-}
-
-export async function getDueReviewQueueItems(trackId: TrackId, now: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  const existing = await getReviewQueueItems();
-  const value = existing.value.filter((entry) => entry.trackId === trackId && entry.dueAt <= now)
-    .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.createdAt.localeCompare(right.createdAt));
-  return existing.ok ? { ok: true, value, issues: existing.issues } : { ok: false, value, issues: existing.issues };
-}
-
-export async function updateReviewQueueItem(item: ReviewQueueEntry): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  return addReviewQueueItems([item]);
-}
-
-export async function removeReviewQueueItem(trackId: TrackId, itemId: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> {
-  const existing = await getReviewQueueItems();
-  const saved = await saveReviewQueueItems(existing.value.filter((entry) => entry.trackId !== trackId || entry.sourceItem.itemId !== itemId));
-  return mergeRepositoryReadWriteResult(existing, saved);
-}
-
-export async function clearReviewQueueItems(): Promise<StorageRepositoryResult<void>> {
-  return removeRepositoryJson(TRAINING_REVIEW_QUEUE_KEY);
-}
+import { STORAGE_KEYS } from "../keys";
+import { readStoredJson, removeStoredValue, writeStoredJson } from "../storageCodec";
+import { isReviewQueueEntry } from "./trainingModelGuards";
+import type { StorageRepositoryResult } from "./result";
+const isIds = (value: unknown): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string");
+export async function getReviewQueueItems(): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const ids = readStoredJson(STORAGE_KEYS.REVIEW_INDEX, isIds) ?? []; return { ok: true, value: ids.map((id) => { const entry = readStoredJson(STORAGE_KEYS.reviewEntry(id), isReviewQueueEntry); if (!entry) throw new Error(`Review index references missing entry ${id}.`); return entry; }) }; }
+export async function addReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const current = (await getReviewQueueItems()).value; const byIdentity = new Map(current.map((entry) => [`${entry.trackId}:${entry.sourceItem.itemId}`, entry])); for (const item of items) byIdentity.set(`${item.trackId}:${item.sourceItem.itemId}`, item); const values = [...byIdentity.values()]; values.forEach((item) => writeStoredJson(STORAGE_KEYS.reviewEntry(item.id), item)); writeStoredJson(STORAGE_KEYS.REVIEW_INDEX, values.map((item) => item.id)); return { ok: true, value: values }; }
+export async function saveReviewQueueItems(items: ReviewQueueEntry[]): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return addReviewQueueItems(items); }
+export async function getDueReviewQueueItems(trackId: TrackId, now: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { return { ok: true, value: (await getReviewQueueItems()).value.filter((entry) => entry.trackId === trackId && entry.dueAt <= now).sort((a,b) => a.dueAt.localeCompare(b.dueAt) || a.createdAt.localeCompare(b.createdAt)) }; }
+export async function removeReviewQueueItem(trackId: TrackId, itemId: string): Promise<StorageRepositoryResult<ReviewQueueEntry[]>> { const values = (await getReviewQueueItems()).value.filter((entry) => entry.trackId !== trackId || entry.sourceItem.itemId !== itemId); writeStoredJson(STORAGE_KEYS.REVIEW_INDEX, values.map((entry) => entry.id)); return { ok: true, value: values }; }
+export async function clearReviewQueueItems(): Promise<void> { const ids = (await getReviewQueueItems()).value.map((entry) => entry.id); ids.forEach((id) => removeStoredValue(STORAGE_KEYS.reviewEntry(id))); removeStoredValue(STORAGE_KEYS.REVIEW_INDEX); }

@@ -2,7 +2,7 @@ import type {
   EvidenceRef,
   ReviewReason,
 } from "../../domain";
-import type { LocalStorageIssue } from "../../storage/storageCodec";
+import type { StorageIssue } from "../../storage";
 import type { CertificationDomain } from "../../tracks/cloud-certification";
 import { getDomainLabel } from "../../utils";
 
@@ -48,7 +48,7 @@ export type ReviewQueueViewItem = {
 export type ReviewQueueViewModel = {
   degraded: boolean;
   dueItems: ReviewQueueViewItem[];
-  issues: readonly LocalStorageIssue[];
+  issues: readonly StorageIssue[];
   ok: boolean;
   overdueItems: ReviewQueueViewItem[];
   totalItems: number;

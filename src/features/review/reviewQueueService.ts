@@ -1,10 +1,10 @@
 import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type EvidenceRef, type ReviewQueueEntry, type TrackId } from "../../domain";
 import { getReviewQueueItems } from "../../storage/repositories";
-import type { LocalStorageIssue } from "../../storage/storageCodec";
+import type { StorageIssue } from "../../storage";
 import { getAlgorithmContentCatalog, getCertificationContentCatalog } from "../../content/catalogRepository";
 import type { ReviewQueueViewItem, ReviewQueueViewModel } from "./reviewQueueModel";
 
-export type BuildTrackReviewQueueViewModelInput = { issues?: readonly LocalStorageIssue[]; now?: string; reviewQueueItems: readonly ReviewQueueEntry[]; trackId: TrackId };
+export type BuildTrackReviewQueueViewModelInput = { issues?: readonly StorageIssue[]; now?: string; reviewQueueItems: readonly ReviewQueueEntry[]; trackId: TrackId };
 
 export async function loadTrackReviewQueueViewModel(input: { now?: string; trackId: TrackId }): Promise<ReviewQueueViewModel> {
   const result = await getReviewQueueItems();
