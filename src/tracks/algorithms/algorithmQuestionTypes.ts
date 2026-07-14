@@ -95,7 +95,7 @@ type AlgorithmQuestionBase = {
   complexityExplanation?: string;
   complexityVariables?: Readonly<Record<string, string | undefined>>;
   constraintSignal?: string;
-  contentVersion: typeof ALGORITHM_CONTENT_VERSION;
+  contentVersion: string;
   difficulty: AlgorithmQuestionDifficulty;
   expectedApproachIds?: readonly string[];
   expectedSpaceComplexity?: string;

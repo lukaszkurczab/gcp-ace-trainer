@@ -5,14 +5,15 @@ import {
   getAlgorithmQuestionEntries,
   type AlgorithmQuestionEntry,
 } from "./algorithmItems";
-import type { AlgorithmContentGroup } from "./content";
+import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
 import type { AlgorithmQuestion, AlgorithmQuestionType } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
   type AlgorithmRoadmapNodeId,
 } from "./algorithmRoadmap";
-import { algorithmContentCatalog, type AlgorithmContentCatalog } from "./algorithmContentCatalog";
+import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
+import type { AlgorithmContentCatalog } from "./algorithmContentCatalog";
 import {
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
@@ -93,7 +94,7 @@ export function selectAlgorithmSessionItemsForRoadmapNode(input: {
   nodeId: AlgorithmRoadmapNodeId;
   sessionLength: number;
 }): readonly AlgorithmQuestion[] {
-  const catalog = input.contentCatalog ?? algorithmContentCatalog;
+  const catalog = input.contentCatalog ?? getAlgorithmContentCatalog();
   const entries = getSelectableModeEntries(
     catalog,
     input.modeId ?? ALGORITHMS_SESSION_MODE_ID,
@@ -105,7 +106,7 @@ export function selectAlgorithmSessionItemsForRoadmapNode(input: {
 export function selectAlgorithmSessionItems(
   input: SelectAlgorithmSessionItemsInput,
 ): readonly AlgorithmQuestion[] {
-  const catalog = input.contentCatalog ?? algorithmContentCatalog;
+  const catalog = input.contentCatalog ?? getAlgorithmContentCatalog();
   const entries = getSelectableModeEntries(catalog, ALGORITHMS_SESSION_MODE_ID);
 
   switch (input.mode) {

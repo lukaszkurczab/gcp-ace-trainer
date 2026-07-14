@@ -1,6 +1,6 @@
 import type { TrainingAttempt, TrainingSession } from "../../domain";
 import { calculatePercent } from "../../utils";
-import { certificationContentCatalog } from "./certificationContentCatalog";
+import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import type { CertificationAnswerViewModel, CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel, CertificationResponse } from "./domain";
 
 export function buildCertificationExamSummaries(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): CertificationExamSummaryViewModel[] {
@@ -8,7 +8,7 @@ export function buildCertificationExamSummaries(sessions: readonly TrainingSessi
     const byItem = new Map(attempts.filter((attempt) => attempt.sessionId === session.id).map((attempt) => [attempt.item.itemId, attempt]));
     const answeredAt = session.completedAt ?? session.startedAt;
     const answers: CertificationAnswerViewModel[] = session.itemOrder.map((item, index) => {
-      const question = certificationContentCatalog.getItemById(item.itemId);
+      const question = getCertificationContentCatalog().getItemById(item.itemId);
       const attempt = byItem.get(item.itemId);
       const response = attempt && isCertificationResponse(attempt.response) ? attempt.response : undefined;
       return { questionId: item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: question.correctOptionIds, isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt };
@@ -22,7 +22,7 @@ export function buildCertificationExamSummaries(sessions: readonly TrainingSessi
 export function buildCertificationPracticeHistory(attempts: readonly TrainingAttempt<unknown>[]): CertificationPracticeAnswerViewModel[] {
   return attempts.flatMap((attempt) => {
     if (attempt.modeId !== "cloud-practice" || !isCertificationResponse(attempt.response)) return [];
-    const question = certificationContentCatalog.getItemById(attempt.item.itemId);
+    const question = getCertificationContentCatalog().getItemById(attempt.item.itemId);
     return [{ id: attempt.id, questionId: question.id, questionSnapshot: question, domain: question.domain, tags: question.tags, selectedOptionIds: attempt.response.selectedOptionIds, correctOptionIds: question.correctOptionIds, isCorrect: attempt.result.kind === "correct", answeredAt: attempt.answeredAt }];
   });
 }

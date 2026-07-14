@@ -1,8 +1,7 @@
 import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type EvidenceRef, type ReviewQueueEntry, type TrackId } from "../../domain";
 import { getReviewQueueItems } from "../../storage/repositories";
 import type { LocalStorageIssue } from "../../storage/storageCodec";
-import { algorithmContentCatalog } from "../../tracks/algorithms";
-import { certificationContentCatalog } from "../../tracks/cloud-certification";
+import { getAlgorithmContentCatalog, getCertificationContentCatalog } from "../../content/catalogRepository";
 import type { ReviewQueueViewItem, ReviewQueueViewModel } from "./reviewQueueModel";
 
 export type BuildTrackReviewQueueViewModelInput = { issues?: readonly LocalStorageIssue[]; now?: string; reviewQueueItems: readonly ReviewQueueEntry[]; trackId: TrackId };
@@ -24,8 +23,8 @@ function buildReviewViewItem(entry: ReviewQueueEntry, now: string): ReviewQueueV
 }
 
 function resolvePrompt(entry: ReviewQueueEntry): string {
-  if (entry.trackId === ALGORITHMS_TRACK_ID) return algorithmContentCatalog.getItemById(entry.sourceItem.itemId).prompt;
-  if (entry.trackId === CLOUD_CERTIFICATION_TRACK_ID) return certificationContentCatalog.getItemById(entry.sourceItem.itemId).question;
+  if (entry.trackId === ALGORITHMS_TRACK_ID) return getAlgorithmContentCatalog().getItemById(entry.sourceItem.itemId).prompt;
+  if (entry.trackId === CLOUD_CERTIFICATION_TRACK_ID) return getCertificationContentCatalog().getItemById(entry.sourceItem.itemId).question;
   return getTrackDisplay(entry.trackId).title;
 }
 

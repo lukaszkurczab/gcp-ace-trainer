@@ -1,8 +1,5 @@
-import {
-  algorithmContentGroups,
-  algorithmContentItems,
-  type AlgorithmContentGroup,
-} from "./content";
+import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
+import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
@@ -12,23 +9,21 @@ import {
 
 export const ALGORITHMS_SESSION_MODE_ID = "algorithms-roadmap-basics";
 
-export const ALGORITHM_ITEMS: readonly AlgorithmQuestion[] = algorithmContentItems;
-
 export type AlgorithmQuestionEntry = {
   group: AlgorithmContentGroup;
   question: AlgorithmQuestion;
 };
 
 export function getAlgorithmItems(): readonly AlgorithmQuestion[] {
-  return ALGORITHM_ITEMS;
+  return getAlgorithmContentCatalog().getItems();
 }
 
 export function getAlgorithmItemById(itemId: string): AlgorithmQuestion | undefined {
-  return ALGORITHM_ITEMS.find((question) => question.id === itemId);
+  return getAlgorithmItems().find((question) => question.id === itemId);
 }
 
 export function getAlgorithmQuestionEntries(
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): readonly AlgorithmQuestionEntry[] {
   return groups.flatMap((group) =>
     group.questions.map((question) => ({ group, question })),
@@ -37,7 +32,7 @@ export function getAlgorithmQuestionEntries(
 
 export function getAlgorithmContentGroupForItem(
   itemId: string,
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): AlgorithmContentGroup | undefined {
   return groups.find((group) =>
     group.questions.some((question) => question.id === itemId),
@@ -46,13 +41,13 @@ export function getAlgorithmContentGroupForItem(
 
 export function getAlgorithmItemsForRoadmapNode(
   nodeId: AlgorithmRoadmapNodeId,
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): readonly AlgorithmQuestion[] {
   return groups.find((group) => group.roadmapNodeId === nodeId)?.questions ?? [];
 }
 
 export function getRoadmapNodesWithActiveItems(
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): readonly AlgorithmRoadmapNode[] {
   const nodeIdsWithItems = new Set(
     groups
@@ -65,7 +60,7 @@ export function getRoadmapNodesWithActiveItems(
 
 export function isAlgorithmRoadmapNodeSelectable(
   node: AlgorithmRoadmapNode,
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): boolean {
   return getAlgorithmItemsForRoadmapNode(node.id, groups).length >=
     node.minimumActiveItemCount;
@@ -73,7 +68,7 @@ export function isAlgorithmRoadmapNodeSelectable(
 
 export function isAlgorithmItemSelectable(
   question: AlgorithmQuestion,
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): boolean {
   const group = getAlgorithmContentGroupForItem(question.id, groups);
 
@@ -89,7 +84,7 @@ export function isAlgorithmItemSelectable(
 }
 
 export function getSelectableAlgorithmItems(
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): readonly AlgorithmQuestion[] {
   return groups.flatMap((group) => {
     const node = ALGORITHM_ROADMAP.nodes.find(
@@ -103,7 +98,7 @@ export function getSelectableAlgorithmItems(
 }
 
 export function getFirstUsableAlgorithmRoadmapNode(
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
 ): AlgorithmRoadmapNode {
   const node = ALGORITHM_ROADMAP.nodes.find((candidate) =>
     isAlgorithmRoadmapNodeSelectable(candidate, groups),

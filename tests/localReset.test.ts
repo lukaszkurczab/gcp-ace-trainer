@@ -29,6 +29,5 @@ test("clear local history copy covers progress and review data", () => {
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /exams/);
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /review queue/);
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /progress/);
-  assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /overrides/);
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /active sessions/);
 });

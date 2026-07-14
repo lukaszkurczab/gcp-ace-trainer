@@ -1,10 +1,14 @@
 import { MissingContentItemError, type ContentItemRef } from "../../domain/learning";
 import { ALGORITHMS_TRACK_ID } from "../../domain/tracks";
-import { ALGORITHM_CONTENT_VERSION } from "./algorithmContentTypes";
-import { algorithmContentGroups, type AlgorithmContentGroup } from "./content";
 import { getAlgorithmMode } from "./domain";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
+
+export type AlgorithmContentGroup = {
+  id: AlgorithmRoadmapNodeId;
+  questions: readonly AlgorithmQuestion[];
+  roadmapNodeId: AlgorithmRoadmapNodeId;
+};
 
 export class AlgorithmContentCatalog {
   private readonly questions: readonly AlgorithmQuestion[];
@@ -12,14 +16,14 @@ export class AlgorithmContentCatalog {
   private readonly groupsByItemId: ReadonlyMap<string, AlgorithmContentGroup>;
   private readonly groupsByRoadmapNodeId: ReadonlyMap<AlgorithmRoadmapNodeId, AlgorithmContentGroup>;
 
-  constructor(private readonly groups: readonly AlgorithmContentGroup[] = algorithmContentGroups) {
+  constructor(private readonly groups: readonly AlgorithmContentGroup[]) {
     this.questions = groups.flatMap((group) => group.questions);
     this.questionsById = new Map(this.questions.map((question) => [question.id, question]));
     this.groupsByItemId = new Map(groups.flatMap((group) => group.questions.map((question) => [question.id, group])));
     this.groupsByRoadmapNodeId = new Map(groups.map((group) => [group.roadmapNodeId, group]));
   }
 
-  getContentVersion(): string { return ALGORITHM_CONTENT_VERSION; }
+  getContentVersion(): string { return this.questions[0]?.contentVersion ?? ""; }
   getGroups(): readonly AlgorithmContentGroup[] { return this.groups; }
   getItems(): readonly AlgorithmQuestion[] { return this.questions; }
   getGroupForItemId(itemId: string): AlgorithmContentGroup | undefined { return this.groupsByItemId.get(itemId); }
@@ -37,5 +41,3 @@ export class AlgorithmContentCatalog {
     return { contentVersion: item.contentVersion, itemId: item.id, trackId: ALGORITHMS_TRACK_ID };
   }
 }
-
-export const algorithmContentCatalog = new AlgorithmContentCatalog();

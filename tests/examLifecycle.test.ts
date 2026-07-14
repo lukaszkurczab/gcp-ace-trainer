@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { createExamSession, getRemainingSeconds, isExamExpired, submitCertificationExam, toggleExamFlag, updateCurrentQuestionIndex, updateExamAnswer } from "../src/features/exam/examService";
 import { getAttempts, getCertificationExam, getTrainingAttempts, getTrainingSessions } from "../src/storage";
+import { installCertificationCatalog } from "../src/content/catalogRepository";
+import { makeQuestionBank } from "./fixtures";
 
 const memory = new Map<string, string>();
 beforeEach(() => {
@@ -12,6 +14,7 @@ beforeEach(() => {
     setItem: async (key: string, value: string) => { memory.set(key, value); },
     removeItem: async (key: string) => { memory.delete(key); },
   });
+  installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: makeQuestionBank() });
 });
 
 async function create() {

@@ -1,6 +1,5 @@
 export const STORAGE_KEYS = {
   ACTIVE_TRACK: "patternly:v1:activeTrack",
-  QUESTIONS: "patternly:v1:cloudCertification:questions",
   ATTEMPTS: "patternly:v1:cloudCertification:attempts",
   PRACTICE_HISTORY: "patternly:v1:cloudCertification:practiceHistory",
   ACTIVE_EXAM_SESSION: "patternly:v1:cloudCertification:activeExamSession",

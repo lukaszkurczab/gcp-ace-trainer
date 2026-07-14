@@ -11,19 +11,20 @@
     "audit:ux-ui": "npm run audit:ux-ui:report && PATTERNLY_DEV_CLIENT_URL=\"com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081\" maestro test --test-output-dir docs/audits/ux-ui/patternly-core-flow-v1/maestro --flatten-debug-output .audit/ux-ui/maestro/flows/core-app-flow.ios.yaml",
     "audit:ux-ui:android": "npm run audit:ux-ui:report && PATTERNLY_DEV_CLIENT_URL=\"com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081\" maestro test --test-output-dir docs/audits/ux-ui/patternly-core-flow-v1/maestro --flatten-debug-output .audit/ux-ui/maestro/flows/core-app-flow.android.yaml",
     "audit:ux-ui:report": "node scripts/validateUxUiAuditConfig.mjs",
-    "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:questions",
+    "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary",
     "recovery:check": "node scripts/checkRecoveryBaseline.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
     "inventory:algorithms": "node --import tsx scripts/inventoryAlgorithmsSchema.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "validate:questions": "node --import tsx scripts/validateQuestionBank.ts"
+    "validate:content-boundary": "node scripts/validateContentBoundary.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "~2.2.0",
     "@react-navigation/native": "^7.2.4",
     "@react-navigation/native-stack": "^7.15.0",
     "expo": "~54.0.33",
+    "expo-crypto": "~15.0.9",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
     "react-native": "0.81.5",

@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createTrainingAttempt, type ReviewQueueEntry } from "../src/domain";
-import { buildCloudCertificationProgressViewModel, certificationContentCatalog } from "../src/tracks/cloud-certification";
+import { buildCloudCertificationProgressViewModel } from "../src/tracks/cloud-certification";
+import { makeQuestion } from "./fixtures";
 
-const question = certificationContentCatalog.getItems()[0]!;
-const ref = certificationContentCatalog.toContentItemRef(question);
+const question = makeQuestion({ id: "fixture-certification-progress" });
+const ref = { trackId: "cloud-certification" as const, itemId: question.id, contentVersion: "fixture" };
 function attempt(kind: "correct" | "partial" | "incorrect", id: string, modeId = "cloud-practice") { return createTrainingAttempt({ id, sessionId: id, trackId: "cloud-certification", modeId, item: ref, response: { kind: "option_selection", selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, { axisId: "mistake_type", nodeId: "confused_services" }] }, answeredAt: `2026-01-0${id.length}T00:00:00.000Z`, committedAt: `2026-01-0${id.length}T00:00:00.000Z` }); }
 function review(): ReviewQueueEntry { return { id: "review", trackId: "cloud-certification", sourceAttemptId: "bad", sourceSessionId: "bad", reasons: ["repeated_mistake"], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2025-12-31T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }; }
 

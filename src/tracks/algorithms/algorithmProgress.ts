@@ -8,7 +8,8 @@ import {
   getRoadmapNodesWithActiveItems,
   type AlgorithmQuestionEntry,
 } from "./algorithmItems";
-import { algorithmContentGroups, type AlgorithmContentGroup } from "./content";
+import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
+import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
 import type { AlgorithmQuestion, AlgorithmQuestionType } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
@@ -77,7 +78,7 @@ export type AlgorithmWeakAreaRecommendation = {
 
 export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   reviewQueueItems: readonly ReviewQueueEntry[] = [],
   now = new Date().toISOString(),
@@ -115,7 +116,7 @@ export function buildAlgorithmProgressFacts(
 
 export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
-  groups: readonly AlgorithmContentGroup[] = algorithmContentGroups,
+  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {

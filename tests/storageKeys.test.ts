@@ -19,6 +19,5 @@ test("active storage namespace uses Patternly v1 keys", () => {
 });
 
 test("storage reads and clears only the canonical key", () => {
-  assert.deepEqual(getStorageReadKeys("QUESTIONS"), [STORAGE_KEYS.QUESTIONS]);
   assert.deepEqual(getStorageClearKeys("ATTEMPTS"), [STORAGE_KEYS.ATTEMPTS]);
 });

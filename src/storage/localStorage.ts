@@ -1,8 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { UnsupportedStoredRecordError, isRegisteredTrackId, type TrackId } from "../domain";
-import { mergeWithDefaultQuestionBank } from "../features/questions/defaultQuestionBank";
-import { buildCertificationExamSummaries, buildCertificationPracticeHistory, type CertificationExamSummaryViewModel, type CertificationExamViewModel, type CertificationPracticeAnswerViewModel, type CertificationQuestion } from "../tracks/cloud-certification";
+import { buildCertificationExamSummaries, buildCertificationPracticeHistory, type CertificationExamSummaryViewModel, type CertificationExamViewModel, type CertificationPracticeAnswerViewModel } from "../tracks/cloud-certification";
 import { getTrainingAttempts, getTrainingSessions } from "./repositories";
 import { getStorageClearKeys, getStorageReadKeys, STORAGE_KEYS, type StorageKeyName } from "./keys";
 import { decodeLocalJson, getStorageErrorMessage, type LocalStorageIssue } from "./storageCodec";
@@ -43,9 +42,6 @@ async function removeStorageValue(keyName: StorageKeyName): Promise<void> {
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function isStringArray(value: unknown): value is string[] { return Array.isArray(value) && value.every((item) => typeof item === "string"); }
-function isQuestion(value: unknown): value is CertificationQuestion {
-  return isRecord(value) && typeof value.id === "string" && typeof value.domain === "string" && typeof value.difficulty === "string" && typeof value.type === "string" && typeof value.question === "string" && Array.isArray(value.options) && value.options.every((option) => isRecord(option) && typeof option.id === "string" && typeof option.text === "string") && isStringArray(value.correctOptionIds) && typeof value.explanation === "string";
-}
 
 export async function getActiveTrackId(): Promise<TrackId | null> {
   const value = await readLocalJson<unknown>("ACTIVE_TRACK", null);
@@ -54,14 +50,6 @@ export async function getActiveTrackId(): Promise<TrackId | null> {
   return value;
 }
 export async function saveActiveTrackId(trackId: TrackId): Promise<void> { await writeLocalJson("ACTIVE_TRACK", trackId); }
-
-export async function getQuestions(): Promise<readonly CertificationQuestion[]> {
-  const value = await readLocalJson<unknown>("QUESTIONS", []);
-  if (!Array.isArray(value) || !value.every(isQuestion)) throw new UnsupportedStoredRecordError("questions");
-  return mergeWithDefaultQuestionBank(value);
-}
-export async function saveQuestions(questions: readonly CertificationQuestion[]): Promise<void> { await writeLocalJson("QUESTIONS", questions); }
-export async function clearQuestions(): Promise<void> { await removeStorageValue("QUESTIONS"); }
 
 export async function getCertificationExam(): Promise<CertificationExamViewModel | null> {
   const value = await readLocalJson<unknown>("ACTIVE_EXAM_SESSION", null);
