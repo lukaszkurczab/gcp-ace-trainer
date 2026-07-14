@@ -22,7 +22,7 @@ import {
 } from "../src/tracks/algorithms/content";
 import { ALGORITHM_CONTENT_VERSION } from "../src/tracks/algorithms/algorithmContentTypes";
 
-const EXPECTED_QUESTION_COUNT = 1_692;
+const EXPECTED_QUESTION_COUNT = 1_683;
 const EXPECTED_GROUP_COUNT = 27;
 
 test("Algorithms content imports and validates as one canonical corpus", () => {
@@ -103,7 +103,7 @@ test("every question uses exactly one native response contract", () => {
 
   assert.deepEqual(
     { choiceCount, complexityCount, orderingCount },
-    { choiceCount: 1_672, complexityCount: 0, orderingCount: 20 },
+    { choiceCount: 1_664, complexityCount: 0, orderingCount: 19 },
   );
 });
 

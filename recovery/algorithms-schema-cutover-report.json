@@ -1,6 +1,6 @@
 {
   "sourceCommit": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
-  "generatedAt": "2026-07-14T14:34:16.380Z",
+  "generatedAt": "2026-07-14T15:25:30.029Z",
   "before": {
     "totalActiveItems": 1751,
     "rootChoiceIsCorrect": 610,
@@ -171,12 +171,12 @@
     }
   },
   "after": {
-    "totalActiveItems": 1692,
-    "rootChoiceIsCorrect": 1672,
+    "totalActiveItems": 1683,
+    "rootChoiceIsCorrect": 1664,
     "rootChoiceCorrectOptionId": 0,
     "nestedStaticMicroChecks": 0,
     "responseSpecChoice": 0,
-    "rootOrdering": 20,
+    "rootOrdering": 19,
     "rootComplexity": 0,
     "unknownOrUnsupported": 0,
     "filesByShape": {
@@ -317,7 +317,6 @@
         "src/tracks/algorithms/content/items/binary-search/monotonic-predicate-search.ts",
         "src/tracks/algorithms/content/items/binary-search/recognize-binary-search-signal.ts",
         "src/tracks/algorithms/content/items/binary-search/rotated-array-search.ts",
-        "src/tracks/algorithms/content/items/complexity-and-constraints/big-o-basics.ts",
         "src/tracks/algorithms/content/items/complexity-and-constraints/constraint-first-rejection.ts",
         "src/tracks/algorithms/content/items/complexity-and-constraints/hidden-operation-cost.ts",
         "src/tracks/algorithms/content/items/complexity-and-constraints/preprocessing-and-queries.ts",
@@ -1974,8 +1973,8 @@
   ],
   "duplicateIdsResolved": [],
   "manifestCounts": {
-    "total": 1692,
-    "complexity_and_constraints": 94,
+    "total": 1683,
+    "complexity_and_constraints": 85,
     "arrays_and_strings": 111,
     "hash_map_and_set": 160,
     "two_pointers": 164,
@@ -2006,7 +2005,7 @@
   "contentIntegrity": {
     "sourceCommitCompared": "3ec27fb2b5756c19afadf94bc1b98436883a7943",
     "oldActiveItems": 1751,
-    "currentActiveItems": 1692,
+    "currentActiveItems": 1683,
     "removedComplexityItems": 59,
     "wordingOrCorrectnessChanges": 0,
     "status": "passed"
