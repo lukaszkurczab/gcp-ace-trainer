@@ -38,7 +38,7 @@ import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsTab } from "./tabs/SettingsTab";
 import {
   CLEAR_LOCAL_HISTORY_CONFIRMATION,
-  clearPatternlyLocalHistory,
+  tryClearPatternlyLocalHistory,
 } from "./localReset";
 import type { ShellTab } from "./types";
 
@@ -137,18 +137,32 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           text: "Clear",
           style: "destructive",
           onPress: () => {
-            void clearPatternlyLocalHistory().then(() =>
-              setData({
-                attempts: [],
-                cloudProgress: null,
-                practiceHistory: [],
-                reviewQueueItems: [],
-                storageIssues: [],
-                trainingAttempts: [],
-              }),
-            );
+            void runLocalHistoryReset();
           },
         },
+      ],
+    );
+  }
+
+  async function runLocalHistoryReset() {
+    const result = await tryClearPatternlyLocalHistory();
+    if (result.ok) {
+      setData({
+        attempts: [],
+        cloudProgress: null,
+        practiceHistory: [],
+        reviewQueueItems: [],
+        storageIssues: [],
+        trainingAttempts: [],
+      });
+      return;
+    }
+    Alert.alert(
+      "Local data was not cleared",
+      result.message,
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Try again", onPress: () => { void runLocalHistoryReset(); } },
       ],
     );
   }

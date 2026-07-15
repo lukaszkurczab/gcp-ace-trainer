@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { createExamSession, getRemainingSeconds, isExamExpired, submitCertificationExam, toggleExamFlag, updateCurrentQuestionIndex, updateExamAnswer } from "../src/features/exam/examService";
-import { getAttempts, getCertificationExam, getTrainingAttempts, getTrainingSessions } from "../src/storage";
+import { addReviewQueueItems, getAttempts, getCertificationExam, getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from "../src/storage";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
 import { makeQuestionBank } from "./fixtures";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
@@ -72,4 +72,21 @@ test("final submission preserves unanswered diagnostics, answer review projectio
   assert.equal(restoredSummary?.flaggedQuestionIds.includes(first), true);
   assert.equal(restoredSummary?.answers.find((answer) => answer.questionId === first)?.wasFlagged, true);
   assert.equal(await getCertificationExam(), null);
+});
+
+test("exam finalization retains an existing review identity for the same missed item", async () => {
+  const runtime = await create();
+  const firstId = runtime.session.itemOrder[0]!.itemId;
+  const question = makeQuestionBank().find((item) => item.id === firstId)!;
+  const wrong = question.options.find((option) => !question.correctOptionIds.includes(option.id));
+  assert.ok(wrong);
+  const sourceItem = { trackId: "cloud-certification" as const, itemId: question.id, contentVersion: "fixture" };
+  const existing = { id: "review-existing-exam", trackId: "cloud-certification" as const, sourceAttemptId: "older-attempt", sourceSessionId: "older-session", sourceItem, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag }))], reasons: ["incorrect" as const], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2026-01-01T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true };
+  await addReviewQueueItems([existing]);
+  await updateExamAnswer(firstId, [wrong.id]);
+  await toggleExamFlag(firstId);
+  await submitCertificationExam();
+  const reviews = (await getReviewQueueItems()).value;
+  assert.equal(reviews.length, 1);
+  assert.equal(reviews[0]?.id, existing.id);
 });

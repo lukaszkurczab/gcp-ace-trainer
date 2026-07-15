@@ -1,6 +1,6 @@
-import { CLOUD_CERTIFICATION_TRACK_ID, createTrainingAttempt, type TrainingAttempt, type TrainingSession } from "../../domain";
-import { addReviewQueueItems, getReviewQueueItems, removeReviewQueueItem } from "../../storage";
-import { commitTrainingOutcome } from "../../application/learningMutations";
+import { CLOUD_CERTIFICATION_TRACK_ID, createTrainingAttempt, retainReviewQueueEntryIdentity, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
+import { getReviewQueueItems } from "../../storage";
+import { commitReviewEntryChange, commitReviewEntryRemoval, commitTrainingOutcome } from "../../application/learningMutations";
 import { createAttemptId } from "../../application/learningMutations/identity";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { createCertificationReviewEntry, scoreCertificationQuestion, type CertificationDomain, type CertificationPracticeAnswerViewModel, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
@@ -23,12 +23,17 @@ export async function savePracticeAnswer(input: { session: TrainingSession; ques
   const result = scoreCertificationQuestion(input.question, response);
   const attempt: TrainingAttempt<CertificationResponse> = createTrainingAttempt({ id: await createAttemptId(input.session.id, input.question.id, response), sessionId: input.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: input.session.modeId, item: getCertificationContentCatalog().toContentItemRef(input.question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(input.question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: input.question.domain }, ...input.question.tags.map((tag) => ({ axisId: "tag", nodeId: tag }))] }, answeredAt, committedAt: answeredAt });
   const review = createCertificationReviewEntry(attempt);
-  await commitTrainingOutcome({ attempt, session: input.session, reviews: review ? [review] : [], createdAt: answeredAt });
+  const existingReview = review ? (await getReviewQueueItems()).value.find((entry) => entry.trackId === review.trackId && entry.sourceItem.itemId === review.sourceItem.itemId) : undefined;
+  const durableReview = review && existingReview ? retainReviewQueueEntryIdentity(existingReview, review) : review;
+  await commitTrainingOutcome({ attempt, session: input.session, reviews: durableReview ? [durableReview] : [], createdAt: answeredAt });
   return { id: attempt.id, questionId: input.question.id, questionSnapshot: input.question, domain: input.question.domain, tags: input.question.tags, selectedOptionIds: input.selectedOptionIds, correctOptionIds: input.question.correctOptionIds, isCorrect: result.kind === "correct", answeredAt };
 }
 
 export async function setQuestionNeedsReview(question: CertificationQuestion, needsReview: boolean): Promise<void> {
-  if (!needsReview) { await removeReviewQueueItem(CLOUD_CERTIFICATION_TRACK_ID, question.id); return; }
   const now = new Date().toISOString();
-  await addReviewQueueItems([{ id: `review:manual:${question.id}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, sourceAttemptId: `manual-mark:${question.id}:${now}`, sourceSessionId: `manual-mark:${question.id}`, reasons: ["manual_mark"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }]);
+  const existing = (await getReviewQueueItems()).value.find((entry) => entry.trackId === CLOUD_CERTIFICATION_TRACK_ID && entry.sourceItem.itemId === question.id);
+  if (!needsReview) { if (existing) await commitReviewEntryRemoval(existing, now); return; }
+  const created = { id: `review:manual:${question.id}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, sourceAttemptId: `manual-mark:${question.id}:${now}`, sourceSessionId: `manual-mark:${question.id}`, reasons: ["manual_mark"], dueAt: now, createdAt: now, consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] } satisfies ReviewQueueEntry;
+  const record = existing ? { ...existing, reasons: [...new Set([...existing.reasons, "manual_mark" as const])], dueAt: now, consecutiveAfterDueSuccesses: 0, persistent: true } : created;
+  await commitReviewEntryChange({ record, isUpdate: Boolean(existing), transitionId: `manual-review:${question.id}:${now}`, createdAt: now });
 }

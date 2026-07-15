@@ -12,7 +12,7 @@ import {
 
 const refs = ["one", "two", "three"].map((itemId) => ({ trackId: "algorithms", itemId, contentVersion: "v1" }));
 function active() {
-  return createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: refs, optionOrderByItem: { one: ["b", "a"] }, activeForegroundMs: 12, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  return createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", configurationSnapshot: { kind: "practice" }, requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: refs, optionOrderByItem: { one: ["b", "a"] }, activeForegroundMs: 12, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
 }
 
 test("session creation preserves requested and actual lengths, immutable item order, option order, and no response", () => {

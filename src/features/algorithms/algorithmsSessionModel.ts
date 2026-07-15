@@ -123,7 +123,8 @@ export type AlgorithmsReviewQueueUpdate =
       reviewQueueEntries: readonly ReviewQueueEntry[];
     }
   | {
-      action: "none";
+      action: "resolve";
+      reviewQueueEntry: ReviewQueueEntry;
     };
 
 const MIN_MISSED_ITEMS_FOR_WEAK_AREA = 2;
@@ -147,16 +148,6 @@ export function formatElapsedTime(totalSeconds: number): string {
   const seconds = totalSeconds % 60;
 
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-}
-
-export function getElapsedSessionSeconds(startedAt: string, nowMs: number): number {
-  const startedAtMs = Date.parse(startedAt);
-
-  if (Number.isNaN(startedAtMs) || nowMs <= startedAtMs) {
-    return 0;
-  }
-
-  return Math.floor((nowMs - startedAtMs) / 1000);
 }
 
 export function formatSubmittedSessionActionLabel(isFinalItem: boolean): "Finish" | "Next" {
@@ -393,7 +384,7 @@ export function buildAlgorithmsReviewQueueUpdate(
 ): AlgorithmsReviewQueueUpdate {
   if (!existingReviewEntry) return { action: "keep", reviewQueueEntries: submission.reviewQueueEntries };
   const updated = updateAlgorithmReviewEntry(existingReviewEntry, submission.attempt);
-  return updated ? { action: "keep", reviewQueueEntries: [updated] } : { action: "none" };
+  return updated ? { action: "keep", reviewQueueEntries: [updated] } : { action: "resolve", reviewQueueEntry: existingReviewEntry };
 }
 
 export function getAlgorithmsCorrectAnswerText(question: AlgorithmQuestion): string {

@@ -3,11 +3,14 @@ import { InvalidTrainingSessionError } from "./errors";
 import type { TrackId } from "./trackIdentity";
 
 export type TrainingSessionStatus = "active" | "completed" | "abandoned";
+export type TrainingSessionConfigurationValue = string | number | boolean | readonly string[];
+export type TrainingSessionConfigurationSnapshot = Readonly<Record<string, TrainingSessionConfigurationValue>>;
 
 export type TrainingSession = Readonly<{
   id: string;
   trackId: TrackId;
   modeId: string;
+  configurationSnapshot: TrainingSessionConfigurationSnapshot;
   requestedLength: number;
   actualLength: number;
   currentItemIndex: number;
@@ -26,6 +29,12 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   }
   if (!Number.isInteger(session.requestedLength) || session.requestedLength < 0) {
     throw new InvalidTrainingSessionError("requestedLength must be a non-negative integer.");
+  }
+  if (!isConfigurationSnapshot(session.configurationSnapshot)) {
+    throw new InvalidTrainingSessionError("configurationSnapshot must be a non-empty canonical configuration object.");
+  }
+  if (!Number.isFinite(session.activeForegroundMs) || session.activeForegroundMs < 0) {
+    throw new InvalidTrainingSessionError("activeForegroundMs must be a non-negative finite number.");
   }
   if (!Number.isInteger(session.actualLength) || session.actualLength <= 0) {
     throw new InvalidTrainingSessionError("actualLength must be a positive integer.");
@@ -52,7 +61,26 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   if (Object.keys(session.optionOrderByItem).some((itemId) => !itemIds.has(itemId))) {
     throw new InvalidTrainingSessionError("Option order cannot reference an item outside the session.");
   }
-  return Object.freeze({ ...session, itemOrder: Object.freeze([...session.itemOrder]), optionOrderByItem: Object.freeze({ ...session.optionOrderByItem }) });
+  if (Object.values(session.optionOrderByItem).some((optionIds) => new Set(optionIds).size !== optionIds.length)) {
+    throw new InvalidTrainingSessionError("Option order cannot contain duplicate option IDs.");
+  }
+  return Object.freeze({
+    ...session,
+    configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
+    itemOrder: Object.freeze([...session.itemOrder]),
+    optionOrderByItem: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByItem).map(([itemId, optionIds]) => [itemId, Object.freeze([...optionIds])]))),
+  });
+}
+
+export function accumulateTrainingSessionForegroundTime(session: TrainingSession, elapsedMs: number): TrainingSession {
+  if (session.status !== "active") throw new InvalidTrainingSessionError("Only an active session can accumulate foreground time.");
+  if (!Number.isFinite(elapsedMs) || elapsedMs < 0) throw new InvalidTrainingSessionError("Foreground elapsed time must be non-negative and finite.");
+  return createTrainingSession({ ...session, activeForegroundMs: session.activeForegroundMs + elapsedMs });
+}
+
+export function areTrainingSessionConfigurationsEqual(left: TrainingSessionConfigurationSnapshot, right: TrainingSessionConfigurationSnapshot): boolean {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+  return [...keys].every((key) => JSON.stringify(left[key]) === JSON.stringify(right[key]));
 }
 
 export function getCurrentSessionItem(session: TrainingSession): ContentItemRef {
@@ -81,4 +109,17 @@ export function completeTrainingSession(session: TrainingSession, completedAt: s
 export function abandonTrainingSession(session: TrainingSession, completedAt?: string): TrainingSession {
   if (session.status !== "active") throw new InvalidTrainingSessionError("Only an active session can be abandoned.");
   return createTrainingSession({ ...session, status: "abandoned", completedAt });
+}
+
+function isConfigurationSnapshot(value: unknown): value is TrainingSessionConfigurationSnapshot {
+  if (typeof value !== "object" || value === null || Array.isArray(value) || Object.keys(value).length === 0) return false;
+  return Object.entries(value).every(([key, entry]) => key.length > 0 && (
+    typeof entry === "string" || typeof entry === "boolean" ||
+    (typeof entry === "number" && Number.isFinite(entry)) ||
+    (Array.isArray(entry) && entry.every((item) => typeof item === "string"))
+  ));
+}
+
+function freezeConfigurationSnapshot(snapshot: TrainingSessionConfigurationSnapshot): TrainingSessionConfigurationSnapshot {
+  return Object.freeze(Object.fromEntries(Object.entries(snapshot).map(([key, value]) => [key, Array.isArray(value) ? Object.freeze([...value]) : value])));
 }

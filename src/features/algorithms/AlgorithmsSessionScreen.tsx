@@ -1,6 +1,6 @@
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useEffect, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
   Badge,
@@ -14,7 +14,7 @@ import {
 import { ROUTES } from "../../constants/routes";
 import {
   ALGORITHMS_TRACK_ID,
-  advanceTrainingSession,
+  accumulateTrainingSessionForegroundTime,
   completeTrainingSession,
   createTrainingSession,
   type TrainingAttempt,
@@ -29,13 +29,13 @@ import {
   type AlgorithmQuestion,
 } from "../../tracks/algorithms/algorithmQuestionTypes";
 import {
-  addTrainingSession,
   getReviewQueueItems,
-  getTrainingSessions,
+  getActiveTrainingSession,
   getTrainingAttempts,
-  saveTrainingSessions,
   type StorageIssue,
 } from "../../storage";
+import { advanceTrainingSessionDurably, assertTrainingSessionOptionPlan, getTrainingSessionProgress, persistTrainingSessionForegroundTime, startOrResumeTrainingSession } from "../../application/trainingSessions";
+import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
 import { commitSessionCompletion, commitTrainingOutcome } from "../../application/learningMutations";
 import { colors, radius, spacing, typography } from "../../theme";
 import {
@@ -45,6 +45,7 @@ import {
   getShuffledAlgorithmQuestionOptions,
   isAlgorithmRoadmapNodeSelectable,
   selectAlgorithmSessionItems,
+  scoreAlgorithmQuestion,
   type AlgorithmQuestionDisplayOption,
   type AlgorithmQuestionScore,
   type AlgorithmResponse,
@@ -65,7 +66,6 @@ import {
   formatSessionItemCount,
   formatSubmittedSessionActionLabel,
   getAnswerOptionVisualState,
-  getElapsedSessionSeconds,
   formatAlgorithmItemType,
   formatAlgorithmStatus,
   getAlgorithmsFeedbackState,
@@ -100,6 +100,36 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   const [storageMessage, setStorageMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const foregroundStartedAt = useRef<number | null>(null);
+  const latestSession = useRef<TrainingSession | null>(null);
+  const foregroundPersistence = useRef<Promise<void>>(Promise.resolve());
+  const transitionInFlight = useRef(false);
+  latestSession.current = session;
+
+  const flushForegroundTime = useCallback(() => {
+    const startedAt = foregroundStartedAt.current;
+    if (startedAt === null) return;
+    foregroundStartedAt.current = null;
+    const elapsed = Math.max(0, Date.now() - startedAt);
+    foregroundPersistence.current = foregroundPersistence.current
+      .then(async () => {
+        const active = latestSession.current;
+        if (!active || active.status !== "active") return;
+        const persisted = await persistTrainingSessionForegroundTime(active, elapsed);
+        latestSession.current = persisted;
+        setSession(persisted);
+      })
+      .catch((error) => setSessionError(error instanceof Error ? error.message : "Foreground session time could not be saved locally."));
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", flushForegroundTime);
+    return () => {
+      unsubscribe();
+      flushForegroundTime();
+    };
+  }, [flushForegroundTime, navigation]);
 
   useEffect(() => {
     let isActive = true;
@@ -109,17 +139,19 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       const startedAt = new Date().toISOString();
       setIsLoading(true);
       setStorageMessage(null);
+      setSessionError(null);
 
-      const [attemptsResult, reviewQueueResult] = await Promise.all([
+      const [attemptsResult, reviewQueueResult, activeSession] = await Promise.all([
         getTrainingAttempts(),
         getReviewQueueItems(),
+        getActiveTrainingSession(),
       ]);
 
       if (!isActive) {
         return;
       }
 
-      const nextItems = selectAlgorithmSessionItems({
+      const selectedItems = selectAlgorithmSessionItems({
         attempts: attemptsResult.value,
         mode: sessionConfig?.mode ?? "default",
         nodeId: nextNode.id,
@@ -129,6 +161,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         reviewSource: sessionConfig?.reviewSource,
         sessionLength: sessionConfig?.sessionLength ?? 20,
       });
+      const catalog = getAlgorithmContentCatalog();
+      const nextItems = activeSession?.trackId === ALGORITHMS_TRACK_ID
+        ? activeSession.itemOrder.map((ref) => catalog.getItemById(ref.itemId))
+        : selectedItems;
       const nextDisplayNode = resolveDisplayNode(nextItems, nextNode, sessionConfig?.mode ?? "default");
       const loadIssues = [
         ...(attemptsResult.issues ?? []),
@@ -167,25 +203,55 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         activeForegroundMs: 0,
         contentVersion: nextItems[0]?.contentVersion ?? "",
         modeId: getAlgorithmsSessionModeIdForRouteMode(sessionConfig?.mode),
+        configurationSnapshot: buildSessionConfigurationSnapshot(sessionConfig, nextNode.id),
         startedAt,
         status: "active",
         trackId: ALGORITHMS_TRACK_ID,
       });
 
-      setNode(nextDisplayNode);
-      setItems(nextItems);
-      setSession(nextSession);
-      setCurrentIndex(0);
-      setAttempts([]);
-      setSummary(null);
-      resetAnswerState();
-      setIsLoading(false);
-
-      void addTrainingSession(nextSession).then((result) => {
-        if (!result.ok) {
-          setStorageMessage(formatStorageFailure("The session is running, but it was not saved locally", result.issues));
+      try {
+        const durableSession = await startOrResumeTrainingSession(nextSession);
+        if (!isActive) return;
+        const durableItems = durableSession.itemOrder.map((ref) => catalog.getItemById(ref.itemId));
+        assertTrainingSessionOptionPlan(durableSession, Object.fromEntries(durableItems.flatMap((item) => isAlgorithmChoiceQuestion(item) ? [[item.id, item.options.map((option) => option.id)]] : [])));
+        const progress = getTrainingSessionProgress(durableSession, attemptsResult.value.filter(isAlgorithmTrainingAttempt));
+        const currentAttempt = progress.currentAttempt;
+        setNode(resolveDisplayNode(durableItems, nextNode, sessionConfig?.mode ?? "default"));
+        setItems(durableItems);
+        setSession(durableSession);
+        setCurrentIndex(durableSession.currentItemIndex);
+        setElapsedSeconds(Math.floor(durableSession.activeForegroundMs / 1000));
+        foregroundStartedAt.current = Date.now();
+        setAttempts([...progress.attempts]);
+        setSummary(null);
+        resetAnswerState();
+        if (currentAttempt) {
+          hydrateAlgorithmResponse(currentAttempt.response);
+          if ((sessionConfig?.feedbackMode ?? "afterEachAnswer") === "atSessionEnd") {
+            if (durableSession.currentItemIndex >= durableItems.length - 1) {
+              const completedAt = new Date().toISOString();
+              const completed = completeTrainingSession(durableSession, completedAt);
+              await commitSessionCompletion(completed, completedAt);
+              if (!isActive) return;
+              setSession(completed);
+              foregroundStartedAt.current = null;
+              setSummary(buildAlgorithmsSessionSummary(progress.attempts, durableItems, nextDisplayNode.label, { mode: sessionConfig?.mode ?? "default" }));
+            } else {
+              const advanced = await advanceTrainingSessionDurably(durableSession, 0);
+              if (!isActive) return;
+              setSession(advanced);
+              setCurrentIndex(advanced.currentItemIndex);
+              resetAnswerState();
+            }
+          } else {
+            setCheckedScore(scoreAlgorithmQuestion(durableItems[durableSession.currentItemIndex]!, currentAttempt.response));
+          }
         }
-      });
+      } catch (error) {
+        if (isActive) setSessionError(error instanceof Error ? error.message : "The session could not be saved locally.");
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
     }
 
     void loadSession();
@@ -196,10 +262,12 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
   }, [nodeId, reviewItemIdsKey, sessionConfig?.mode, sessionConfig?.reviewSource, sessionConfig?.sessionLength]);
 
   const currentItem = items[currentIndex];
-  const currentOptions = useMemo(
-    () => currentItem ? getShuffledAlgorithmQuestionOptions(currentItem) : [],
-    [currentItem?.id],
-  );
+  const currentOptions = useMemo(() => {
+    if (!currentItem) return [];
+    const options = getShuffledAlgorithmQuestionOptions(currentItem);
+    const order = session?.optionOrderByItem[currentItem.id];
+    return order ? [...options].sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id)) : options;
+  }, [currentItem?.id, session]);
   const progress = items.length > 0 ? (currentIndex + 1) / items.length : 0;
   const canCheck = currentItem ? hasAnswer(currentItem, selectedOptionIds, complexityAnswer) : false;
   const feedbackMode = sessionConfig?.feedbackMode ?? "afterEachAnswer";
@@ -215,14 +283,29 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
       return;
     }
 
-    setElapsedSeconds(getElapsedSessionSeconds(session.startedAt, Date.now()));
+    if (AppState.currentState === "active" && foregroundStartedAt.current === null) {
+      foregroundStartedAt.current = Date.now();
+    }
+    setElapsedSeconds(Math.floor(session.activeForegroundMs / 1000));
 
     const intervalId = setInterval(() => {
-      setElapsedSeconds(getElapsedSessionSeconds(session.startedAt, Date.now()));
+      const startedAt = foregroundStartedAt.current;
+      setElapsedSeconds(Math.floor((session.activeForegroundMs + (startedAt === null ? 0 : Date.now() - startedAt)) / 1000));
     }, 1000);
 
-    return () => clearInterval(intervalId);
-  }, [session, summary]);
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        foregroundStartedAt.current = Date.now();
+        return;
+      }
+      flushForegroundTime();
+    });
+
+    return () => {
+      clearInterval(intervalId);
+      subscription.remove();
+    };
+  }, [flushForegroundTime, session, summary]);
 
   function resetAnswerState() {
     setSelectedOptionIds([]);
@@ -271,59 +354,64 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     }
 
     setIsSubmitting(true);
-    const answeredAt = new Date().toISOString();
-    const submission = await buildAlgorithmsSubmission({
-      answeredAt,
-      complexityAnswer,
-      question: currentItem,
-      selectedOptionIds,
-      session,
-    });
-    const reviews = await buildReviewQueueUpdate(submission);
-    await commitTrainingOutcome({ attempt: submission.attempt, session, reviews, createdAt: answeredAt });
-
-    const nextAttempts = [submission.attempt, ...attempts];
-    setAttempts(nextAttempts);
-
-    if (feedbackMode === "atSessionEnd") {
-      await goNext(nextAttempts);
+    setSessionError(null);
+    try {
+      const answeredAt = new Date().toISOString();
+      const timedSession = snapshotForegroundTime(session, foregroundStartedAt);
+      const submission = await buildAlgorithmsSubmission({ answeredAt, complexityAnswer, question: currentItem, selectedOptionIds, session: timedSession });
+      const reviewUpdate = await buildReviewQueueUpdate(submission);
+      await commitTrainingOutcome({ attempt: submission.attempt, session: timedSession, reviews: reviewUpdate.reviews, resolvedReviews: reviewUpdate.resolvedReviews, createdAt: answeredAt });
+      setSession(timedSession);
+      const nextAttempts = [...attempts.filter((attempt) => attempt.id !== submission.attempt.id), submission.attempt];
+      setAttempts(nextAttempts);
+      if (feedbackMode === "atSessionEnd") {
+        await goNext(nextAttempts, timedSession);
+        return;
+      }
+      setCheckedScore(submission.score);
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The answer could not be saved locally.");
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    setCheckedScore(submission.score);
-    setIsSubmitting(false);
   }
 
-  async function goNext(nextAttempts = attempts) {
-    if (!session) {
+  function hydrateAlgorithmResponse(response: AlgorithmResponse) {
+    if (response.kind === "choice") setSelectedOptionIds([...response.selectedOptionIds]);
+    if (response.kind === "ordering") setSelectedOptionIds([...response.orderedSubgoalIds]);
+    if (response.kind === "complexity") setComplexityAnswer({ ...response.selectedValuesByDimension });
+  }
+
+  async function goNext(nextAttempts = attempts, currentSession = session) {
+    if (!currentSession || transitionInFlight.current) {
       return;
     }
-
-    if (currentIndex >= items.length - 1) {
-      const completedAt = new Date().toISOString();
-      const completed = { session: completeTrainingSession(session, completedAt) };
-      await commitSessionCompletion(completed.session, completedAt);
-
-      setSession(completed.session);
-      setSummary(buildAlgorithmsSessionSummary(nextAttempts, items, node.label, {
-        mode: sessionConfig?.mode ?? "default",
-      }));
-      return;
+    transitionInFlight.current = true;
+    try {
+      if (currentIndex >= items.length - 1) {
+        const completedAt = new Date().toISOString();
+        const timedSession = snapshotForegroundTime(currentSession, foregroundStartedAt);
+        foregroundStartedAt.current = null;
+        const completed = completeTrainingSession(timedSession, completedAt);
+        await commitSessionCompletion(completed, completedAt);
+        latestSession.current = completed;
+        setSession(completed);
+        setSummary(buildAlgorithmsSessionSummary(nextAttempts, items, node.label, { mode: sessionConfig?.mode ?? "default" }));
+        return;
+      }
+      const startedAt = foregroundStartedAt.current;
+      foregroundStartedAt.current = Date.now();
+      const advancedSession = await advanceTrainingSessionDurably(currentSession, startedAt === null ? 0 : Math.max(0, Date.now() - startedAt));
+      latestSession.current = advancedSession;
+      setSession(advancedSession);
+      setCurrentIndex(advancedSession.currentItemIndex);
+      resetAnswerState();
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The next position could not be saved locally.");
+      if (currentSession.status === "active" && foregroundStartedAt.current === null && AppState.currentState === "active") foregroundStartedAt.current = Date.now();
+    } finally {
+      transitionInFlight.current = false;
     }
-
-    const advancedSession = advanceTrainingSession(session);
-    const sessionsResult = await getTrainingSessions();
-    const saveResult = await saveTrainingSessions([
-      advancedSession,
-      ...sessionsResult.value.filter((candidate) => candidate.id !== session.id),
-    ]);
-    if (!saveResult.ok) {
-      setStorageMessage(formatStorageFailure("The next item is available, but session position was not saved locally", saveResult.issues));
-    }
-    setSession(advancedSession);
-    setCurrentIndex(advancedSession.currentItemIndex);
-    resetAnswerState();
   }
 
   async function buildReviewQueueUpdate(submission: AlgorithmsSubmission) {
@@ -334,7 +422,9 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
     );
     const update = buildAlgorithmsReviewQueueUpdate(submission, existingItem);
 
-    return update.action === "keep" ? [...update.reviewQueueEntries] : [];
+    return update.action === "keep"
+      ? { reviews: [...update.reviewQueueEntries], resolvedReviews: [] }
+      : { reviews: [], resolvedReviews: [update.reviewQueueEntry] };
   }
 
   function handleSummaryAction(action: AlgorithmsSummaryAction) {
@@ -466,6 +556,10 @@ export function AlgorithmsSessionScreen({ navigation, nodeId, sessionConfig }: A
         {storageMessage ? <StorageNotice message={storageMessage} /> : null}
       </Screen>
     );
+  }
+
+  if (sessionError) {
+    return <Screen><EmptyState title="Session unavailable" description={sessionError} actionLabel="Back to Practice" onActionPress={() => resetToPracticeHubAfterSession(navigation, node.id)} /></Screen>;
   }
 
   if (isLoading) {
@@ -966,6 +1060,43 @@ function resolveSessionNode(nodeId: string | undefined): AlgorithmRoadmapNode {
   }
 
   return getFirstUsableAlgorithmRoadmapNode();
+}
+
+function buildSessionConfigurationSnapshot(
+  config: PracticeSessionRouteParams | undefined,
+  topicId: string,
+): TrainingSession["configurationSnapshot"] {
+  return {
+    feedbackMode: config?.feedbackMode ?? "afterEachAnswer",
+    kind: "practice",
+    mode: config?.mode ?? "default",
+    reviewBehaviorEnabled: config?.reviewBehaviorEnabled ?? false,
+    ...(config?.reviewItemIds ? { reviewItemIds: config.reviewItemIds } : {}),
+    ...(config?.reviewSource ? { reviewSource: config.reviewSource } : {}),
+    sessionLength: config?.sessionLength ?? 20,
+    timer: "elapsedForeground",
+    topicId,
+  };
+}
+
+function snapshotForegroundTime(
+  session: TrainingSession,
+  startedAtRef: { current: number | null },
+): TrainingSession {
+  const now = Date.now();
+  const startedAt = startedAtRef.current;
+  startedAtRef.current = AppState.currentState === "active" ? now : null;
+  return startedAt === null
+    ? session
+    : accumulateTrainingSessionForegroundTime(session, Math.max(0, now - startedAt));
+}
+
+function isAlgorithmTrainingAttempt(attempt: TrainingAttempt): attempt is TrainingAttempt<AlgorithmResponse> {
+  const response = attempt.response;
+  if (typeof response !== "object" || response === null || !("kind" in response)) return false;
+  if (response.kind === "choice") return "selectedOptionIds" in response && Array.isArray(response.selectedOptionIds) && response.selectedOptionIds.every((id) => typeof id === "string");
+  if (response.kind === "ordering") return "orderedSubgoalIds" in response && Array.isArray(response.orderedSubgoalIds) && response.orderedSubgoalIds.every((id) => typeof id === "string");
+  return response.kind === "complexity" && "selectedValuesByDimension" in response && typeof response.selectedValuesByDimension === "object" && response.selectedValuesByDimension !== null && Object.values(response.selectedValuesByDimension).every((value) => typeof value === "string");
 }
 
 function resolveDisplayNode(

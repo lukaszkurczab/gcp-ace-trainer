@@ -14,9 +14,11 @@ type ResultKind = 'correct' | 'partial' | 'incorrect';
 type TrainingSession = {
   id: string;
   trackId: string;
-  mode: string;
+  modeId: string;
+  configurationSnapshot: Readonly<Record<string, string | number | boolean | readonly string[]>>;
   requestedLength: number;
   actualLength: number;
+  currentItemIndex: number;
   itemOrder: readonly ContentItemRef[];
   optionOrderByItem: Readonly<Record<string, readonly string[]>>;
   activeForegroundMs: number;
@@ -75,14 +77,25 @@ If the already selected session plan cannot provide two other submitted items be
 
 ```ts
 type MutationJournal = {
-  id: string;
-  operation: 'submit' | 'complete_exam';
-  deterministicOutcome: unknown;
-  state: 'durable' | 'materialized';
+  journalId: `journal:${string}`;
+  operation:
+    | 'submit_training_outcome'
+    | 'complete_training_session'
+    | 'abandon_training_session'
+    | 'finalize_certification_exam'
+    | 'set_review_entry'
+    | 'remove_review_entry';
+  status: 'prepared';
+  createdAt: string;
+  sessionId: string;
+  trackId: string;
+  commandFingerprint: string;
+  planFingerprint: string;
+  writes: readonly JournalWrite[];
 };
 ```
 
-Submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
+The command fingerprint is a canonical SHA-256 identity and the plan fingerprint detects changes to the exact prepared write plan. Each operation admits only its complete, scoped write set; unknown, duplicate, cross-session, or incomplete writes are rejected before persistence. Submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
 
 ## Exam profile
 
