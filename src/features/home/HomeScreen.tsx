@@ -31,7 +31,10 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
-import { buildPracticeSessionConfig } from "../practice/sessionConfig";
+import {
+  buildPracticeSessionConfig,
+  getGeneralPracticeReviewSource,
+} from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
@@ -194,6 +197,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
                 ROUTES.PRACTICE_SESSION,
                 buildPracticeSessionConfig({
                   mode,
+                  reviewSource: getGeneralPracticeReviewSource(mode),
                   source: "home",
                   topicId,
                   trackId: activeTrack.id,

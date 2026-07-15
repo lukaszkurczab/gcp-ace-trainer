@@ -9,5 +9,8 @@ export const ROUTES = {
   ANSWER_REVIEW: "AnswerReview",
   PRACTICE_SETUP: "PracticeSetup",
   PRACTICE_SESSION: "PracticeSession",
+  ALGORITHMS_INTERVIEW_SIMULATION: "AlgorithmsInterviewSimulation",
+  ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY: "AlgorithmsInterviewSimulationSummary",
+  ALGORITHMS_INTERVIEW_SIMULATION_REVIEW: "AlgorithmsInterviewSimulationReview",
   MISTAKES_REVIEW: "MistakesReview",
 } as const;

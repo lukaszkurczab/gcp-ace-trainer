@@ -1,7 +1,7 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import type { ReactNode } from "react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
@@ -15,7 +15,8 @@ import { getCertificationContentCatalog } from "../../content/catalogRepository"
 import type { CertificationQuestion, CertificationResponse } from "../../tracks/cloud-certification";
 import { getActiveTrainingSession, getTrainingAttempts } from "../../storage";
 import { areOptionSetsEqual } from "../../utils";
-import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
+import { AlgorithmsPracticeSessionScreen } from "../algorithms/AlgorithmsPracticeSessionScreen";
+import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms";
 import {
   loadPracticeQuestions,
   savePracticeAnswer,
@@ -30,8 +31,11 @@ type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typ
 
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   if (route.params.trackId === ALGORITHMS_TRACK_ID) {
+    if (route.params.mode === ALGORITHM_MODE_IDS.interviewSimulation) {
+      return <InterviewSimulationRouteDispatch navigation={navigation} nodeId={route.params.topicId} />;
+    }
     return (
-      <AlgorithmsSessionScreen
+      <AlgorithmsPracticeSessionScreen
         navigation={navigation}
         nodeId={route.params.topicId}
         sessionConfig={route.params}
@@ -40,6 +44,17 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   return <CloudPracticeSessionScreen navigation={navigation} route={route} />;
+}
+
+function InterviewSimulationRouteDispatch({ navigation, nodeId }: Readonly<{
+  navigation: PracticeSessionScreenProps["navigation"];
+  nodeId: string;
+}>) {
+  useEffect(() => {
+    navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { nodeId });
+  }, [navigation, nodeId]);
+
+  return <SessionPreparingShell description="Opening your saved Interview Simulation." title="Preparing simulation" />;
 }
 
 function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
@@ -98,17 +113,20 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         const catalog = getCertificationContentCatalog();
         const contentVersion = catalog.getContentVersion();
         const plannedQuestions = activeSession?.trackId === CLOUD_CERTIFICATION_TRACK_ID
-          ? activeSession.itemOrder.map((ref) => catalog.getItemById(ref.itemId))
+          ? activeSession.itemOrder.map((occurrence) => catalog.getItemById(occurrence.item.itemId))
           : loadedQuestions;
         const startedAt = new Date().toISOString();
-        const session = createTrainingSession({ id: `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", configurationSnapshot: { feedbackMode: route.params.feedbackMode, kind: "practice", mode: route.params.mode, reviewBehaviorEnabled: route.params.reviewBehaviorEnabled, sessionLength: route.params.sessionLength, timer: "elapsedForeground", topicId: route.params.topicId }, requestedLength: route.params.sessionLength, actualLength: plannedQuestions.length, currentItemIndex: 0, itemOrder: plannedQuestions.map((question) => ({ trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion })), optionOrderByItem: activeSession?.trackId === CLOUD_CERTIFICATION_TRACK_ID ? activeSession.optionOrderByItem : Object.fromEntries(plannedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])), activeForegroundMs: 0, contentVersion, status: "active", startedAt });
+        const sessionId = `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`;
+        const activeCloudSession = activeSession?.trackId === CLOUD_CERTIFICATION_TRACK_ID ? activeSession : null;
+        const itemOrder = activeCloudSession?.itemOrder ?? plannedQuestions.map((question, index) => ({ occurrenceId: `${sessionId}:occurrence:${index}`, item: { trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion } }));
+        const session = createTrainingSession({ id: sessionId, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", configurationSnapshot: { feedbackMode: route.params.feedbackMode, kind: "practice", mode: route.params.mode, reviewBehaviorEnabled: route.params.reviewBehaviorEnabled, sessionLength: route.params.sessionLength, timer: "elapsedForeground", topicId: route.params.topicId }, requestedLength: route.params.sessionLength, actualLength: plannedQuestions.length, currentItemIndex: 0, itemOrder, optionOrderByOccurrence: activeCloudSession?.optionOrderByOccurrence ?? Object.fromEntries(plannedQuestions.map((question, index) => [itemOrder[index]!.occurrenceId, question.options.map((option) => option.id)])), flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion, status: "active", startedAt });
         try {
           const durableSession = await startOrResumeTrainingSession(session);
           if (!isActive) return;
-          assertTrainingSessionOptionPlan(durableSession, Object.fromEntries(plannedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])));
-          const durableQuestions = durableSession.itemOrder.map((ref) => {
-            const question = catalog.getItemById(ref.itemId);
-            const order = durableSession.optionOrderByItem[ref.itemId] ?? [];
+          assertTrainingSessionOptionPlan(durableSession, Object.fromEntries(plannedQuestions.map((question, index) => [durableSession.itemOrder[index]!.occurrenceId, question.options.map((option) => option.id)])));
+          const durableQuestions = durableSession.itemOrder.map((occurrence) => {
+            const question = catalog.getItemById(occurrence.item.itemId);
+            const order = durableSession.optionOrderByOccurrence[occurrence.occurrenceId] ?? [];
             return { ...question, options: [...question.options].sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id)) };
           });
           const progress = getTrainingSessionProgress(durableSession, attemptsResult.value.filter(isCertificationTrainingAttempt));

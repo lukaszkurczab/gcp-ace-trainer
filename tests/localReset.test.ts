@@ -10,7 +10,8 @@ import {
   type ClearLocalHistoryOperations,
 } from "../src/features/home/localReset";
 import { recoverPendingMutation } from "../src/application/learningMutations";
-import { addReviewQueueItems, addTrainingAttempt, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessions, getActiveMutationJournal, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession } from "../src/storage/repositories";
+import { createTrainingSessionDraft } from "../src/domain";
+import { addReviewQueueItems, addTrainingAttempt, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessions, getActiveMutationJournal, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, saveTrainingSessionDraft } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { attempt, installMemoryStorage, journal, review, session } from "./journalTestSupport";
 
@@ -54,7 +55,7 @@ test("clear local history reports an operation failure and stops later clears", 
     if (operationName === "clearTrainingSessions") throw new Error("injected reset failure");
   }])) as ClearLocalHistoryOperations;
   await assert.rejects(() => clearPatternlyLocalHistory(operations), /injected reset failure/);
-  assert.deepEqual(called, ["clearMutationJournal", "clearCertificationExam", "clearTrainingSessions"]);
+  assert.deepEqual(called, ["clearMutationJournal", "clearCertificationExam", "clearTrainingSessionDrafts", "clearTrainingSessions"]);
 });
 
 test("clear local history exposes a retryable failure result without reporting success", async () => {
@@ -66,6 +67,16 @@ test("clear local history exposes a retryable failure result without reporting s
 
   assert.deepEqual(result, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE });
   assert.match(CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE, /Try again/);
+});
+
+test("reset clears a draft before a later session-clear failure can orphan it", async () => {
+  const storage = installMemoryStorage();
+  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
+  await saveTrainingSession(active);
+  await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: active.startedAt }));
+  storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX });
+  await assert.rejects(clearPatternlyLocalHistory());
+  assert.equal(await getActiveTrainingSessionDraft(), null);
 });
 
 test("repository clears retry after index removal fails", async () => {

@@ -23,14 +23,14 @@ test("exam creation persists canonical session, absolute deadline, item/option o
   assert.equal(runtime.session.status, "active");
   assert.equal(runtime.session.currentItemIndex, 0);
   assert.equal(runtime.session.itemOrder.length, 50);
-  assert.equal(Object.keys(runtime.session.optionOrderByItem).length, 50);
+  assert.equal(Object.keys(runtime.session.optionOrderByOccurrence).length, 50);
   assert.equal(typeof runtime.examState.deadlineAt, "string");
   assert.equal((await getCertificationExam())?.session.id, runtime.session.id);
 });
 
 test("exam stores answer changes, flags, and canonical current position", async () => {
   const runtime = await create();
-  const first = runtime.session.itemOrder[0]!.itemId;
+  const first = runtime.session.itemOrder[0]!.item.itemId;
   assert.deepEqual((await updateExamAnswer(first, ["A"]))?.examState.responsesByItemId[first]?.selectedOptionIds, ["A"]);
   assert.deepEqual((await updateExamAnswer(first, ["B"]))?.examState.responsesByItemId[first]?.selectedOptionIds, ["B"]);
   assert.equal((await toggleExamFlag(first))?.examState.flaggedItemIds.includes(first), true);
@@ -56,8 +56,9 @@ test("an expired exam can follow the automatic final-submission path", async () 
 
 test("final submission preserves unanswered diagnostics, answer review projection, attempts, and completed session without pass inference", async () => {
   const runtime = await create();
-  const first = runtime.session.itemOrder[0]!.itemId;
-  await updateExamAnswer(first, [runtime.session.optionOrderByItem[first]![0]!]);
+  const first = runtime.session.itemOrder[0]!.item.itemId;
+  const firstOccurrenceId = runtime.session.itemOrder[0]!.occurrenceId;
+  await updateExamAnswer(first, [runtime.session.optionOrderByOccurrence[firstOccurrenceId]![0]!]);
   await toggleExamFlag(first);
   const summary = await submitCertificationExam();
   assert.ok(summary);
@@ -76,7 +77,7 @@ test("final submission preserves unanswered diagnostics, answer review projectio
 
 test("exam finalization retains an existing review identity for the same missed item", async () => {
   const runtime = await create();
-  const firstId = runtime.session.itemOrder[0]!.itemId;
+  const firstId = runtime.session.itemOrder[0]!.item.itemId;
   const question = makeQuestionBank().find((item) => item.id === firstId)!;
   const wrong = question.options.find((option) => !question.correctOptionIds.includes(option.id));
   assert.ok(wrong);

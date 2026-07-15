@@ -37,15 +37,36 @@ test("rejects attempts and reviews that conflict with the durable session plan",
   const mismatchedReview = { ...review(), taxonomyOrSkillRefs: [{ axisId: "topic", nodeId: "different" }] };
   await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_review_entry", record: mismatchedReview }, { kind: "put_session", record: session() }])));
 });
+test("rejects an immediate submit for a planned but non-current occurrence", async () => {
+  installMemoryStorage();
+  const baseSession = session();
+  const secondItem = { ...baseSession.itemOrder[0]!.item, itemId: "item-2" };
+  const sessionAtFirstOccurrence = { ...baseSession, requestedLength: 2, actualLength: 2, itemOrder: [baseSession.itemOrder[0]!, { occurrenceId: "occurrence-2", item: secondItem }], optionOrderByOccurrence: {} };
+  const nonCurrentAttempt = { ...attempt(), occurrenceId: "occurrence-2", item: secondItem, reviewEvidence: { ...attempt().reviewEvidence, sourceItem: secondItem } };
+  await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: nonCurrentAttempt }, { kind: "put_session", record: sessionAtFirstOccurrence }])));
+});
 test("rejects contradictory review actions and duplicate exam item outcomes", async () => {
   installMemoryStorage();
   const oldReview = review("older-review", "older-attempt");
   await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: attempt() }, { kind: "put_review_entry", record: review() }, { kind: "delete_review_entry", record: oldReview }, { kind: "put_session", record: session() }])));
   const cloudRef = { trackId: "cloud-certification", itemId: "question-1", contentVersion: "v1" };
-  const completedCloudSession = { ...session("completed"), trackId: "cloud-certification", modeId: "cloud-exam-simulation", itemOrder: [cloudRef], configurationSnapshot: { kind: "certificationSimulation" } };
+  const completedCloudSession = { ...session("completed"), trackId: "cloud-certification", modeId: "cloud-exam-simulation", itemOrder: [{ occurrenceId: "occurrence-1", item: cloudRef }], configurationSnapshot: { kind: "certificationSimulation", timer: "absoluteDeadline" } };
   const first = { ...attempt("exam-a"), trackId: "cloud-certification", modeId: "cloud-exam-simulation", item: cloudRef, reviewEvidence: { sourceItem: cloudRef, taxonomyOrSkillRefs: [] } };
   const second = { ...first, id: "exam-b" };
-  await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: first }, { kind: "put_attempt", record: second }, { kind: "put_session", record: completedCloudSession }, { kind: "clear_active_session", sessionId: completedCloudSession.id }, { kind: "clear_active_exam", sessionId: completedCloudSession.id }], "finalize_certification_exam")));
+  await assert.rejects(() => persistMutationJournal(journal([{ kind: "put_attempt", record: first }, { kind: "put_attempt", record: second }, { kind: "put_session", record: completedCloudSession }, { kind: "clear_active_session", sessionId: completedCloudSession.id }, { kind: "clear_active_exam", sessionId: completedCloudSession.id }], "finalize_training_session")));
+});
+
+test("journal accepts duplicate exact content through distinct occurrences and rejects occurrence mismatches", async () => {
+  installMemoryStorage();
+  const item = { trackId: "cloud-certification", itemId: "question-1", contentVersion: "v1" };
+  const completed = { ...session("completed"), trackId: "cloud-certification", modeId: "cloud-exam-simulation", requestedLength: 2, actualLength: 2, currentItemIndex: 1, itemOrder: [{ occurrenceId: "first", item }, { occurrenceId: "second", item }], optionOrderByOccurrence: {}, configurationSnapshot: { kind: "certificationSimulation", timer: "absoluteDeadline" } };
+  const first = { ...attempt("first-attempt"), trackId: "cloud-certification", modeId: "cloud-exam-simulation", occurrenceId: "first", item, reviewEvidence: { ...attempt().reviewEvidence, sourceItem: item } };
+  const second = { ...first, id: "second-attempt", occurrenceId: "second" };
+  const writes = [{ kind: "put_attempt", record: first } as const, { kind: "put_attempt", record: second } as const, { kind: "put_session", record: completed } as const, { kind: "clear_active_session", sessionId: completed.id } as const, { kind: "clear_active_exam", sessionId: completed.id } as const];
+  await assert.doesNotReject(() => persistMutationJournal(journal(writes, "finalize_training_session")));
+  installMemoryStorage();
+  const mismatchedWrites = [{ kind: "put_attempt", record: { ...first, occurrenceId: "missing" } } as const, { kind: "put_attempt", record: second } as const, { kind: "put_session", record: completed } as const, { kind: "clear_active_session", sessionId: completed.id } as const, { kind: "clear_active_exam", sessionId: completed.id } as const];
+  await assert.rejects(() => persistMutationJournal(journal(mismatchedWrites, "finalize_training_session")));
 });
 test("accepts a review update that retains its original durable source identity", async () => {
   installMemoryStorage(); const prior = { ...review("stable-review", "older-attempt"), sourceSessionId: "older-session" }; await addReviewQueueItems([prior]);

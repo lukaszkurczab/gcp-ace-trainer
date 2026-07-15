@@ -2,6 +2,7 @@ import {
   REVIEW_REASONS,
   createAttemptResult,
   createTrainingSession,
+  createTrainingSessionDraft,
   type AttemptResultComponent,
   isRegisteredTrackId,
   type ContentItemRef,
@@ -9,10 +10,29 @@ import {
   type ReviewQueueEntry,
   type TrainingAttempt,
   type TrainingSession,
+  type TrainingSessionDraft,
+  type TrainingSessionDraftResponse,
 } from "../../domain";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
   return Array.isArray(value) && value.every(isTrainingSession);
+}
+
+export function isTrainingSessionDraft(value: unknown): value is TrainingSessionDraft {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["sessionId", "trackId", "responsesByOccurrenceId", "updatedAt"])) return false;
+  if (!isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
+    !isTimestamp(value.updatedAt) || !isDraftResponseRecord(value.responsesByOccurrenceId)) return false;
+  try {
+    createTrainingSessionDraft({
+      sessionId: value.sessionId,
+      trackId: value.trackId,
+      responsesByOccurrenceId: value.responsesByOccurrenceId,
+      updatedAt: value.updatedAt,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isTrainingAttemptArray(value: unknown): value is TrainingAttempt<unknown>[] {
@@ -25,16 +45,16 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByItem", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "flaggedOccurrenceIds", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
-    isOptionOrderByItem(value.optionOrderByItem) && typeof value.activeForegroundMs === "number" &&
+    isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.flaggedOccurrenceIds) && value.flaggedOccurrenceIds.every(isNonEmptyString) && typeof value.activeForegroundMs === "number" &&
     typeof value.contentVersion === "string" &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
-    Array.isArray(value.itemOrder) && value.itemOrder.every(isContentItemRef))) return false;
+    Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
   try {
     createTrainingSession({
       id: value.id,
@@ -45,7 +65,8 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       actualLength: value.actualLength,
       currentItemIndex: value.currentItemIndex,
       itemOrder: value.itemOrder,
-      optionOrderByItem: value.optionOrderByItem,
+      optionOrderByOccurrence: value.optionOrderByOccurrence,
+      flaggedOccurrenceIds: value.flaggedOccurrenceIds,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
       status: value.status,
@@ -60,9 +81,9 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
 
 export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unknown> {
   if (!isRecord(value) || "confidence" in value || "itemId" in value || "itemType" in value) return false;
-  if (!hasOnlyKeys(value, ["id", "sessionId", "trackId", "modeId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
+  if (!hasOnlyKeys(value, ["id", "sessionId", "trackId", "modeId", "occurrenceId", "item", "response", "result", "reviewEvidence", "answeredAt", "committedAt", "durationMs"])) return false;
   if (!(isNonEmptyString(value.id) && isNonEmptyString(value.sessionId) && typeof value.trackId === "string" &&
-    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isContentItemRef(value.item) &&
+    isRegisteredTrackId(value.trackId) && isNonEmptyString(value.modeId) && isNonEmptyString(value.occurrenceId) && isContentItemRef(value.item) &&
     isTimestamp(value.answeredAt) && isTimestamp(value.committedAt) && isJsonValue(value.response) &&
     (value.durationMs === undefined || (Number.isFinite(value.durationMs) && Number(value.durationMs) >= 0)) && isExactReviewEvidence(value.reviewEvidence))) return false;
   if (!isRecord(value.result) ||
@@ -117,7 +138,11 @@ function isEvidenceRef(value: unknown): value is EvidenceRef {
     (value.role === undefined || isNonEmptyString(value.role));
 }
 
-function isOptionOrderByItem(value: unknown): value is Record<string, readonly string[]> {
+function isSessionItemOccurrence(value: unknown): value is { occurrenceId: string; item: ContentItemRef } {
+  return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isContentItemRef(value.item);
+}
+
+function isOptionOrderByOccurrence(value: unknown): value is Record<string, readonly string[]> {
   return isRecord(value) && Object.values(value).every((optionIds) =>
     Array.isArray(optionIds) && optionIds.every(isNonEmptyString) && new Set(optionIds).size === optionIds.length);
 }
@@ -151,4 +176,8 @@ function isJsonValue(value: unknown): boolean {
   if (typeof value === "number") return Number.isFinite(value);
   if (Array.isArray(value)) return value.every(isJsonValue);
   return isRecord(value) && Object.values(value).every(isJsonValue);
+}
+
+function isDraftResponseRecord(value: unknown): value is Record<string, TrainingSessionDraftResponse> {
+  return isRecord(value) && Object.keys(value).every(isNonEmptyString) && Object.values(value).every(isJsonValue);
 }

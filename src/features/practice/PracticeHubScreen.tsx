@@ -27,6 +27,9 @@ import {
 } from "../../storage";
 import { colors, spacing, typography } from "../../theme";
 import {
+  ALGORITHM_MODE_IDS,
+} from "../../tracks/algorithms";
+import {
   loadCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
 } from "../../tracks/cloud-certification";
@@ -43,6 +46,7 @@ import {
 } from "./practiceFlowModel";
 import {
   buildPracticeSessionConfig,
+  getGeneralPracticeReviewSource,
   type PracticeSessionMode,
 } from "./sessionConfig";
 
@@ -126,14 +130,18 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     trainingAttempts: data.trainingAttempts,
   });
 
-  function startSession(mode: PracticeSessionMode = "default") {
+  function startSession(mode?: PracticeSessionMode) {
+    const resolvedMode = mode ?? (
+      activeTrack.id === "algorithms"
+        ? ALGORITHM_MODE_IDS.guidedPractice
+        : "default"
+    );
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
-        feedbackMode: mode === "practice" ? "atSessionEnd" : "afterEachAnswer",
-        mode,
-        sessionLength: mode === "practice" ? 40 : 20,
-        source: mode === "default" ? "practiceHub" : "modeShortcut",
+        mode: resolvedMode,
+        reviewSource: getGeneralPracticeReviewSource(resolvedMode),
+        source: mode === undefined ? "practiceHub" : "modeShortcut",
         topicId: topic.id,
         trackId: activeTrack.id,
       }),
@@ -177,7 +185,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             tight
           />
           <View style={styles.heroActions}>
-            <Button onPress={() => startSession("default")}>
+            <Button onPress={() => startSession()}>
               Start session
             </Button>
             <Pressable
@@ -186,7 +194,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: "default",
+                    mode: activeTrack.id === "algorithms" ? ALGORITHM_MODE_IDS.guidedPractice : "default",
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

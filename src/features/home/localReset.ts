@@ -4,17 +4,19 @@ import {
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,
+  clearTrainingSessionDrafts,
 } from "../../storage";
 
 export const CLEAR_LOCAL_HISTORY_DETAIL =
-  "Clears local practice, exams, review queue, progress, and active sessions.";
+  "Clears local practice, exams, review queue, progress, active sessions, and saved draft responses.";
 
 export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
-  "This deletes local practice, exams, review queue, progress, review marks, and active sessions.";
+  "This deletes local practice, exams, review queue, progress, review marks, active sessions, and saved draft responses.";
 
 export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
   "clearMutationJournal",
   "clearCertificationExam",
+  "clearTrainingSessionDrafts",
   "clearTrainingSessions",
   "clearTrainingAttempts",
   "clearReviewQueueItems",
@@ -41,6 +43,7 @@ const defaultClearOperations: ClearLocalHistoryOperations = {
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessions,
+  clearTrainingSessionDrafts,
 };
 
 export async function clearPatternlyLocalHistory(

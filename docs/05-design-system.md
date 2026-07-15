@@ -8,7 +8,7 @@ The interface is a calm, accessible focus lab. It makes the next training action
 
 - Track and mode cards use the canonical labels. Algorithms cards are `Learn Approach`, `Guided Practice`, `Recognize Patterns`, `Contrast Practice`, `Weak Area Review`, `Independent Practice`, and `Interview Simulation`.
 - Session setup shows requested and actual length. A shortened review clearly says why the compatible pool is smaller; it never implies unrelated fill content.
-- Timer has elapsed-foreground and absolute-countdown variants, each readable by assistive technology.
+- Timer has elapsed-foreground count-up, foreground-countdown, and absolute-countdown variants, each readable by assistive technology. The Algorithms simulation foreground countdown pauses outside the foreground and is never labelled or implemented as a deadline.
 - Choice controls expose selected, submitted-correct, submitted-partial, and submitted-incorrect states without relying only on colour.
 - Ordering provides accessible move controls and visible ordering. Its feedback represents preserved adjacent relations, not exact-position score.
 - Complexity controls render only the dimensions and accepted values declared by content; a UI must not assume time and space are always present.

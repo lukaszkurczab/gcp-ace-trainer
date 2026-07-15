@@ -28,13 +28,13 @@ export type TrainingSessionProgress<Response = unknown> = Readonly<{
 
 export function assertTrainingSessionOptionPlan(
   session: TrainingSession,
-  expectedOptionIdsByItem: Readonly<Record<string, readonly string[]>>,
+  expectedOptionIdsByOccurrence: Readonly<Record<string, readonly string[]>>,
 ): void {
-  for (const [itemId, expectedIds] of Object.entries(expectedOptionIdsByItem)) {
-    const durableIds = session.optionOrderByItem[itemId];
+  for (const [occurrenceId, expectedIds] of Object.entries(expectedOptionIdsByOccurrence)) {
+    const durableIds = session.optionOrderByOccurrence[occurrenceId];
     if (!durableIds || durableIds.length !== expectedIds.length || new Set(durableIds).size !== durableIds.length ||
       durableIds.some((id) => !expectedIds.includes(id)) || expectedIds.some((id) => !durableIds.includes(id))) {
-      throw new TrainingSessionOptionPlanError(`Durable option plan for ${itemId} does not match the active content item.`);
+      throw new TrainingSessionOptionPlanError(`Durable option plan for ${occurrenceId} does not match the active content item occurrence.`);
     }
   }
 }
@@ -43,24 +43,25 @@ export function getTrainingSessionProgress<Response>(
   session: TrainingSession,
   attempts: readonly TrainingAttempt<Response>[],
 ): TrainingSessionProgress<Response> {
-  const itemPosition = new Map(session.itemOrder.map((item, index) => [item.itemId, index]));
+  const occurrencePosition = new Map(session.itemOrder.map((occurrence, index) => [occurrence.occurrenceId, index]));
+  const plannedOccurrences = new Map(session.itemOrder.map((occurrence) => [occurrence.occurrenceId, occurrence]));
   const sessionAttempts = attempts
     .filter((attempt) => attempt.sessionId === session.id)
-    .sort((left, right) => (itemPosition.get(left.item.itemId) ?? Number.MAX_SAFE_INTEGER) - (itemPosition.get(right.item.itemId) ?? Number.MAX_SAFE_INTEGER));
+    .sort((left, right) => (occurrencePosition.get(left.occurrenceId) ?? Number.MAX_SAFE_INTEGER) - (occurrencePosition.get(right.occurrenceId) ?? Number.MAX_SAFE_INTEGER));
   for (const attempt of sessionAttempts) {
-    const plannedItem = itemPosition.get(attempt.item.itemId);
-    if (plannedItem === undefined || attempt.trackId !== session.trackId || attempt.modeId !== session.modeId || attempt.item.contentVersion !== session.contentVersion) {
+    const plannedOccurrence = plannedOccurrences.get(attempt.occurrenceId);
+    if (!plannedOccurrence || !equalItemRef(plannedOccurrence.item, attempt.item) || attempt.trackId !== session.trackId || attempt.modeId !== session.modeId) {
       throw new TrainingSessionProgressError(`Attempt ${attempt.id} does not belong to the durable session plan.`);
     }
   }
-  const itemAttemptCounts = new Map<string, number>();
-  for (const attempt of sessionAttempts) itemAttemptCounts.set(attempt.item.itemId, (itemAttemptCounts.get(attempt.item.itemId) ?? 0) + 1);
-  const duplicateItemId = [...itemAttemptCounts].find(([, count]) => count > 1)?.[0];
-  if (duplicateItemId) throw new TrainingSessionProgressError(`Durable session item ${duplicateItemId} has multiple committed attempts.`);
-  const currentItemId = session.itemOrder[session.currentItemIndex]?.itemId;
+  const occurrenceAttemptCounts = new Map<string, number>();
+  for (const attempt of sessionAttempts) occurrenceAttemptCounts.set(attempt.occurrenceId, (occurrenceAttemptCounts.get(attempt.occurrenceId) ?? 0) + 1);
+  const duplicateOccurrenceId = [...occurrenceAttemptCounts].find(([, count]) => count > 1)?.[0];
+  if (duplicateOccurrenceId) throw new TrainingSessionProgressError(`Durable session occurrence ${duplicateOccurrenceId} has multiple committed attempts.`);
+  const currentOccurrenceId = session.itemOrder[session.currentItemIndex]?.occurrenceId;
   return {
     attempts: sessionAttempts,
-    currentAttempt: sessionAttempts.find((attempt) => attempt.item.itemId === currentItemId) ?? null,
+    currentAttempt: sessionAttempts.find((attempt) => attempt.occurrenceId === currentOccurrenceId) ?? null,
   };
 }
 
@@ -87,7 +88,11 @@ export async function startOrResumeTrainingSession(
 
 function areItemPlansEqual(left: TrainingSession, right: TrainingSession): boolean {
   return JSON.stringify(left.itemOrder) === JSON.stringify(right.itemOrder) &&
-    JSON.stringify(left.optionOrderByItem) === JSON.stringify(right.optionOrderByItem);
+    JSON.stringify(left.optionOrderByOccurrence) === JSON.stringify(right.optionOrderByOccurrence);
+}
+
+function equalItemRef(left: TrainingAttempt["item"], right: TrainingAttempt["item"]): boolean {
+  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion;
 }
 
 export async function advanceTrainingSessionDurably(

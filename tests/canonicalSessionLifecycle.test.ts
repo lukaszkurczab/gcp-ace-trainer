@@ -11,16 +11,17 @@ import {
 } from "../src/domain";
 
 const refs = ["one", "two", "three"].map((itemId) => ({ trackId: "algorithms", itemId, contentVersion: "v1" }));
+const occurrences = refs.map((item, index) => ({ occurrenceId: `occurrence-${index}`, item }));
 function active() {
-  return createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", configurationSnapshot: { kind: "practice" }, requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: refs, optionOrderByItem: { one: ["b", "a"] }, activeForegroundMs: 12, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  return createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", configurationSnapshot: { kind: "practice" }, requestedLength: 5, actualLength: 3, currentItemIndex: 0, itemOrder: occurrences, optionOrderByOccurrence: { "occurrence-0": ["b", "a"] }, flaggedOccurrenceIds: [], activeForegroundMs: 12, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
 }
 
 test("session creation preserves requested and actual lengths, immutable item order, option order, and no response", () => {
   const session = active();
   assert.equal(session.requestedLength, 5);
   assert.equal(session.actualLength, 3);
-  assert.deepEqual(session.itemOrder, refs);
-  assert.deepEqual(session.optionOrderByItem.one, ["b", "a"]);
+  assert.deepEqual(session.itemOrder, occurrences);
+  assert.deepEqual(session.optionOrderByOccurrence["occurrence-0"], ["b", "a"]);
   assert.equal("response" in session, false);
 });
 
@@ -53,8 +54,8 @@ test("abandonment preserves committed position and cannot advance", () => {
 
 test("session rejects mismatched track, content version, duplicate references, and invalid completion position", () => {
   const session = active();
-  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...refs[0]!, trackId: "cloud-certification" }, refs[1]!, refs[2]!] }), InvalidTrainingSessionError);
-  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...refs[0]!, contentVersion: "v2" }, refs[1]!, refs[2]!] }), InvalidTrainingSessionError);
-  assert.throws(() => createTrainingSession({ ...session, itemOrder: [refs[0]!, refs[0]!, refs[2]!] }), InvalidTrainingSessionError);
+  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...occurrences[0]!, item: { ...refs[0]!, trackId: "cloud-certification" } }, occurrences[1]!, occurrences[2]!] }), InvalidTrainingSessionError);
+  assert.throws(() => createTrainingSession({ ...session, itemOrder: [{ ...occurrences[0]!, item: { ...refs[0]!, contentVersion: "v2" } }, occurrences[1]!, occurrences[2]!] }), InvalidTrainingSessionError);
+  assert.throws(() => createTrainingSession({ ...session, itemOrder: [occurrences[0]!, occurrences[0]!, occurrences[2]!] }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, status: "completed", currentItemIndex: 1 }), InvalidTrainingSessionError);
 });

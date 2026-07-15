@@ -6,7 +6,7 @@ import { createCertificationReviewEntry } from "../src/tracks/cloud-certificatio
 
 const item = { trackId: "algorithms", itemId: "item", contentVersion: "v1" };
 function attempt(kind: AttemptResult["kind"], id: string, sessionId: string, committedAt: string) {
-  return createTrainingAttempt({ id, sessionId, trackId: "algorithms", modeId: "review", item, response: { kind: "choice" as const, selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{ axisId: "skill", nodeId: "two-pointers" }, { axisId: "mistake_type", nodeId: "wrong_pattern" }] }, answeredAt: committedAt, committedAt });
+  return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId, trackId: "algorithms", modeId: "review", item, response: { kind: "choice" as const, selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{ axisId: "skill", nodeId: "two-pointers" }, { axisId: "mistake_type", nodeId: "wrong_pattern" }] }, answeredAt: committedAt, committedAt });
 }
 
 test("incorrect and partial attempts create remediation entries with source and taxonomy evidence", () => {

@@ -16,12 +16,18 @@ The only Algorithms labels are `Learn Approach`, `Guided Practice`, `Recognize P
 
 ```txt
 setup → show actual configuration → persist one active session → first item
-→ submit and durable journal → feedback or next item → summary
+→ practice submit and durable journal → feedback or next item → summary
 ```
 
-All non-simulation sessions use elapsed foreground time and show a count-up timer. `Interview Simulation` and certification `Exam Simulation` use an absolute deadline and countdown. The learner can continue an active session or explicitly abandon it. An abandoned session is absent from history; committed attempts remain.
+All non-simulation sessions use elapsed foreground time and show a count-up timer. Algorithms `Interview Simulation` uses a 45-minute foreground countdown: `remainingMs = max(0, 45 minutes - activeForegroundMs)`. It is not a deadline, and background or closed-app time does not consume it. Certification `Exam Simulation` uses the absolute deadline required by its profile. The learner can continue an active session or explicitly abandon it. An abandoned session is absent from history; committed attempts remain.
 
-Practice gives feedback after each answer. Simulation gives no per-item feedback before final submit. The runner has a visible question counter, accessible response controls, explicit content/preparation errors, and no unsubmitted response persistence.
+Practice gives feedback after each answer and does not persist an unsubmitted selection. Simulation gives no per-item feedback before final submit. The runner has a visible question counter, accessible response controls, and explicit content/preparation errors.
+
+## Algorithms Interview Simulation
+
+`Interview Simulation` has exactly 40 items. It permits free navigation and answer changes until final submission. Each draft response, the current position, and accumulated foreground time are persisted so resume restores the draft and timer state. Draft changes create no attempt, review mutation, score, or feedback.
+
+Manual submission or exhaustion of 45 minutes of foreground time freezes the drafts and starts one idempotent finalization. That atomic finalization creates immutable attempts and persistent-review mutations only for answered, submitted outcomes, completes the session, and deletes its draft state. Unanswered item IDs are allowed and reported separately; they create neither attempts nor review entries. Feedback appears only after finalization. Reinsert is disabled.
 
 ## Certification simulation
 

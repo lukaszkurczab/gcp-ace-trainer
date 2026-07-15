@@ -20,9 +20,13 @@ Test that zero intervening submitted items skips reinsert, and that one interven
 
 Test each remaining review trigger, two-level evidence, two successful after-due attempts to resolve, pre-due non-increment, same-session non-resolution, and reset after partial/incorrect.
 
+Test the fixed Algorithms `Interview Simulation` contract: exactly 40 items; free navigation; response add, overwrite, and removal until final submission; session-end feedback only; no reinsert; and manual or 45-minute foreground-time finalization. Assert `remainingMs = max(0, 45 minutes - activeForegroundMs)`, background and closed-app time do not decrement it, and no deadline or wall-clock expiry is used. Resume must restore persisted drafts, current position, and foreground timer state.
+
+Assert that draft changes create no attempts, review mutations, score, or feedback. Manual and timeout finalization must be idempotent and atomic across immutable attempts, submitted-outcome review mutations, session completion, and draft deletion, including force-close recovery. Unanswered item IDs remain separate summary diagnostics and create neither attempts nor review entries.
+
 ## Persistence tests
 
-Test one active session, persistence before first item, item/option order, foreground timer, no unsubmitted selection, abandon/history behavior, content mismatch block, and durable journal order. Test idempotent retry and force-close journal completion. Assert that old keys, AsyncStorage access, dual reads/writes, translators, and default substitutes are absent or fail explicitly.
+Test one active session, persistence before first item, item/option order, foreground timer, no unsubmitted selection in immediate-feedback practice, abandon/history behavior, content mismatch block, and durable journal order. Test idempotent retry and force-close journal completion. Assert that old keys, AsyncStorage access, dual reads/writes, translators, and default substitutes are absent or fail explicitly.
 
 ## Certification tests
 

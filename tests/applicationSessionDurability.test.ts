@@ -21,13 +21,14 @@ function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
   return createTrainingSession({
     id: "session-1",
     trackId: "algorithms",
-    modeId: "algorithms-learn",
-    configurationSnapshot: { feedbackMode: "afterEachAnswer", kind: "practice", mode: "learn", timer: "elapsedForeground", topicId: "arrays" },
+    modeId: "algorithms-learn-approach",
+    configurationSnapshot: { feedbackMode: "afterEachAnswer", kind: "practice", mode: "algorithms-learn-approach", timer: "elapsedForeground", topicId: "arrays" },
     requestedLength: 2,
     actualLength: 2,
     currentItemIndex: 0,
-    itemOrder: ["one", "two"].map((itemId) => ({ trackId: "algorithms", itemId, contentVersion: "v1" })),
-    optionOrderByItem: { one: ["b", "a"], two: ["d", "c"] },
+    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "algorithms", itemId, contentVersion: "v1" } })),
+    optionOrderByOccurrence: { "occurrence-one": ["b", "a"], "occurrence-two": ["d", "c"] },
+    flaggedOccurrenceIds: [],
     activeForegroundMs: 100,
     contentVersion: "v1",
     status: "active",
@@ -48,33 +49,34 @@ test("configuration snapshot is validated, frozen, and preserved for determinist
   assert.ok(Object.isFrozen(resumed.configurationSnapshot));
   assert.throws(() => createTrainingSession({ ...session(), configurationSnapshot: {} }), InvalidTrainingSessionError);
   await assert.rejects(
-    startOrResumeTrainingSession(session({ configurationSnapshot: { kind: "practice", mode: "drill" } }), boundary({ active })),
+    startOrResumeTrainingSession(session({ configurationSnapshot: { kind: "practice", mode: "algorithms-guided-practice" } }), boundary({ active })),
     TrainingSessionStartError,
   );
 });
 
 test("resume rejects a different mode or durable item and option plan", async () => {
   const active = session();
-  await assert.rejects(startOrResumeTrainingSession(session({ modeId: "algorithms-review" }), boundary({ active })), /mode/);
+  await assert.rejects(startOrResumeTrainingSession(session({ modeId: "algorithms-weak-area-review" }), boundary({ active })), /mode/);
   await assert.rejects(startOrResumeTrainingSession(session({ itemOrder: [...active.itemOrder].reverse() }), boundary({ active })), /item and option plan/);
-  await assert.rejects(startOrResumeTrainingSession(session({ optionOrderByItem: { ...active.optionOrderByItem, one: ["a", "b"] } }), boundary({ active })), /item and option plan/);
+  await assert.rejects(startOrResumeTrainingSession(session({ optionOrderByOccurrence: { ...active.optionOrderByOccurrence, "occurrence-one": ["a", "b"] } }), boundary({ active })), /item and option plan/);
 });
 
 test("content validation rejects missing, duplicate, and unknown durable option IDs", () => {
-  const expected = { one: ["a", "b"], two: ["c", "d"] };
+  const expected = { "occurrence-one": ["a", "b"], "occurrence-two": ["c", "d"] };
   assert.doesNotThrow(() => assertTrainingSessionOptionPlan(session(), expected));
-  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByItem: { one: ["a"], two: ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
-  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByItem: { one: ["a", "x"], two: ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
-  assert.throws(() => assertTrainingSessionOptionPlan({ ...session(), optionOrderByItem: { one: ["a", "a"], two: ["c", "d"] } }, expected), TrainingSessionOptionPlanError);
+  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByOccurrence: { "occurrence-one": ["a"], "occurrence-two": ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
+  assert.throws(() => assertTrainingSessionOptionPlan(session({ optionOrderByOccurrence: { "occurrence-one": ["a", "x"], "occurrence-two": ["c", "d"] } }), expected), TrainingSessionOptionPlanError);
+  assert.throws(() => assertTrainingSessionOptionPlan({ ...session(), optionOrderByOccurrence: { "occurrence-one": ["a", "a"], "occurrence-two": ["c", "d"] } }, expected), TrainingSessionOptionPlanError);
 });
 
 test("durable progress hydrates prior attempts and the answered current item in plan order", () => {
   const active = session({ currentItemIndex: 1 });
   const makeAttempt = (id: string, itemId: string) => ({
     id, sessionId: active.id, trackId: active.trackId, modeId: active.modeId,
-    item: active.itemOrder.find((item) => item.itemId === itemId)!, response: { selectedOptionIds: ["a"] },
+    occurrenceId: `occurrence-${itemId}`,
+    item: active.itemOrder.find((occurrence) => occurrence.item.itemId === itemId)!.item, response: { selectedOptionIds: ["a"] },
     result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 },
-    reviewEvidence: { sourceItem: active.itemOrder.find((item) => item.itemId === itemId)!, taxonomyOrSkillRefs: [] },
+    reviewEvidence: { sourceItem: active.itemOrder.find((occurrence) => occurrence.item.itemId === itemId)!.item, taxonomyOrSkillRefs: [] },
     answeredAt: active.startedAt, committedAt: active.startedAt,
   });
   const prior = makeAttempt("a1", "one");
@@ -85,6 +87,18 @@ test("durable progress hydrates prior attempts and the answered current item in 
   assert.equal(progress.currentAttempt?.id, "a2");
   assert.throws(() => getTrainingSessionProgress(active, [current, { ...current, id: "duplicate" }]), /multiple committed attempts/);
   assert.throws(() => getTrainingSessionProgress(active, [{ ...current, item: { ...current.item, itemId: "outside-plan" } }]), /does not belong/);
+});
+
+test("duplicate exact content items are distinct through immutable occurrence identities", () => {
+  const duplicatePlan = session({
+    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "algorithms", itemId: "one", contentVersion: "v1" } })),
+    optionOrderByOccurrence: { "occurrence-first": ["a", "b"], "occurrence-second": ["a", "b"] },
+  });
+  const makeAttempt = (id: string, occurrenceId: string) => ({ id, occurrenceId, sessionId: duplicatePlan.id, trackId: duplicatePlan.trackId, modeId: duplicatePlan.modeId, item: duplicatePlan.itemOrder[0]!.item, response: {}, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: duplicatePlan.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: duplicatePlan.startedAt, committedAt: duplicatePlan.startedAt });
+  assert.equal(getTrainingSessionProgress(duplicatePlan, [makeAttempt("a1", "occurrence-first"), makeAttempt("a2", "occurrence-second")]).attempts.length, 2);
+  assert.throws(() => createTrainingSession({ ...duplicatePlan, itemOrder: [duplicatePlan.itemOrder[0]!, duplicatePlan.itemOrder[0]!] }), /occurrence identities/);
+  assert.throws(() => getTrainingSessionProgress(duplicatePlan, [makeAttempt("a1", "occurrence-first"), makeAttempt("a2", "occurrence-first")]), /multiple committed attempts/);
+  assert.throws(() => getTrainingSessionProgress(duplicatePlan, [{ ...makeAttempt("a1", "occurrence-first"), item: { ...duplicatePlan.itemOrder[0]!.item, itemId: "two" } }]), /does not belong/);
 });
 
 test("foreground accumulation persists only the supplied active interval", async () => {

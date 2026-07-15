@@ -14,11 +14,11 @@ If an existing model, record, flow, or module cannot be moved into the canonical
 
 ## Session persistence
 
-Persist a session before its first item appears. Only one active session exists. Persist item order, shuffled option order, active foreground time for practice, mode/configuration, and active content version. Do not persist an unsubmitted current selection. Abandoned sessions do not appear in history, while already committed attempts remain. A content mismatch blocks resume with an explicit error.
+Persist a session before its first item appears. Only one active session exists. Persist item order, shuffled option order, active foreground time, mode/configuration, and active content version. Do not persist an unsubmitted current selection in immediate-feedback practice. Algorithms `Interview Simulation` instead persists editable draft responses, occurrence-keyed flags on the session, current position, and accumulated foreground time so response, flag, and timer state resume. Its 45-minute foreground countdown is `max(0, 45 minutes - activeForegroundMs)`; it has no deadline and does not consume background or closed-app time. Abandoned sessions do not appear in history, while already committed attempts remain. A content mismatch blocks resume with an explicit error.
 
 ## Hybrid durable journal
 
-Submit follows this order:
+An immediate-feedback practice submit follows this order:
 
 ```txt
 validate and freeze
@@ -33,6 +33,8 @@ No feedback or advance occurs before journal durability. Retry is idempotent. Af
 
 Journal and attempt identities use SHA-256 of canonical serialized command data. One materializer replays the complete immutable plan, one verifier reads every intended final record, and the journal clears only after that verification succeeds.
 
+Saving an Algorithms simulation draft creates no attempt, review mutation, score, or feedback. Manual submission or foreground-time exhaustion freezes the drafts and writes one deterministic finalization journal. It atomically creates immutable attempts and review mutations only for answered, submitted outcomes, completes the session, deletes its draft record, and retains unanswered item IDs as separate summary diagnostics. Unanswered items create neither attempts nor review entries. Recovery finishes this operation idempotently after force-close.
+
 ## Reset, errors, and privacy
 
-Reset deletes local canonical learning records. Storage failure, unknown ID, unsupported payload, missing content, and content mismatch are explicit errors. Future policy for corrupt canonical MMKV records is a separate pre-release decision; it must never heuristically alter scoring or review semantics. Local-only storage minimizes personal data and there is no export/import contract in this recovery scope.
+Reset deletes local canonical learning records, including Algorithms simulation drafts. Storage failure, unknown ID, unsupported payload, missing content, and content mismatch are explicit errors. Future policy for corrupt canonical MMKV records is a separate pre-release decision; it must never heuristically alter scoring or review semantics. Local-only storage minimizes personal data and there is no export/import contract in this recovery scope.

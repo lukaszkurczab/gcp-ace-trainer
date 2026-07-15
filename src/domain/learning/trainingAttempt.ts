@@ -8,6 +8,7 @@ export type TrainingAttempt<TResponse = unknown> = Readonly<{
   sessionId: string;
   trackId: TrackId;
   modeId: string;
+  occurrenceId: string;
   item: ContentItemRef;
   response: TResponse;
   result: AttemptResult;
@@ -18,7 +19,10 @@ export type TrainingAttempt<TResponse = unknown> = Readonly<{
 }>;
 
 export function createTrainingAttempt<TResponse>(attempt: TrainingAttempt<TResponse>): TrainingAttempt<TResponse> {
-  if (attempt.item.trackId !== attempt.trackId || attempt.reviewEvidence.sourceItem.itemId !== attempt.item.itemId) {
+  if (!attempt.occurrenceId.trim()) {
+    throw new Error("Training attempt occurrence identity is required.");
+  }
+  if (attempt.item.trackId !== attempt.trackId || attempt.reviewEvidence.sourceItem.trackId !== attempt.item.trackId || attempt.reviewEvidence.sourceItem.itemId !== attempt.item.itemId || attempt.reviewEvidence.sourceItem.contentVersion !== attempt.item.contentVersion) {
     throw new Error("Training attempt item and review evidence must identify the same track item.");
   }
   return Object.freeze({ ...attempt });

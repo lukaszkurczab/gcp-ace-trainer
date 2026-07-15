@@ -20,16 +20,15 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
     } else {
       const immutableExisting = {
         id: existing.id, trackId: existing.trackId, modeId: existing.modeId, configurationSnapshot: existing.configurationSnapshot, requestedLength: existing.requestedLength,
-        actualLength: existing.actualLength, itemOrder: existing.itemOrder, optionOrderByItem: existing.optionOrderByItem,
+        actualLength: existing.actualLength, itemOrder: existing.itemOrder, optionOrderByOccurrence: existing.optionOrderByOccurrence,
         contentVersion: existing.contentVersion, startedAt: existing.startedAt,
       };
       const immutableNext = {
         id: session.id, trackId: session.trackId, modeId: session.modeId, configurationSnapshot: session.configurationSnapshot, requestedLength: session.requestedLength,
-        actualLength: session.actualLength, itemOrder: session.itemOrder, optionOrderByItem: session.optionOrderByItem,
+        actualLength: session.actualLength, itemOrder: session.itemOrder, optionOrderByOccurrence: session.optionOrderByOccurrence,
         contentVersion: session.contentVersion, startedAt: session.startedAt,
       };
       if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Session ${session.id} has conflicting immutable fields.`);
-      if (session.currentItemIndex < existing.currentItemIndex) throw new Error(`Session ${session.id} cannot move backward.`);
       if (session.activeForegroundMs < existing.activeForegroundMs) throw new Error(`Session ${session.id} foreground time cannot decrease.`);
     }
   }

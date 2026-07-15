@@ -293,9 +293,9 @@ Wymagane przed etapami UI: session shell, ordering, complexity, błędy persiste
 
 Codex nie projektuje brakujących ekranów.
 
-## G-02 — Algorithms Interview Simulation profile
+## G-02 — Algorithms Interview Simulation profile — resolved
 
-Wymaga decyzji o duration, item count, navigation, answer changes, timer, completion i diagnostics.
+Zatwierdzony profil: dokładnie 40 itemów; 45 minut foreground time; free navigation; edytowalne, persystowane draft responses do final submission; manual submission albo foreground-time timeout; feedback tylko po zakończeniu; unanswered dozwolone i raportowane osobno, bez attemptu i review entry; brak reinsert; immutable attempts powstają wyłącznie podczas finalization; persistent review wynika wyłącznie z answered, submitted outcomes; resume przywraca draft responses, current position i timer state. Countdown to `max(0, 45 minutes - activeForegroundMs)`, nie deadline ani wall clock. Finalization atomowo tworzy attempts i review mutations, kończy session i usuwa draft.
 
 ## G-03 — Certification mode matrix
 
@@ -446,7 +446,7 @@ Usunąć stary storage i wprowadzić jeden MMKV subsystem.
 - immutable attempts;
 - review evidence;
 - jedna aktywna sesja;
-- brak unsubmitted selection persistence.
+- brak unsubmitted selection persistence w immediate-feedback practice; persystowany draft jest wymaganym stanem `Interview Simulation`.
 
 ## Durable submit
 
@@ -475,7 +475,7 @@ validate and freeze
 
 - repository CRUD;
 - one active session;
-- no unsubmitted response;
+- no unsubmitted response in immediate-feedback practice;
 - item/option order;
 - foreground timer;
 - journal-before-feedback;
@@ -560,7 +560,11 @@ Naprawiamy tylko itemy łamiące runtime, scoring albo renderer. Nie robimy peł
 - scoring;
 - journal failure;
 - resume/abandon;
-- timer;
+- 40-item Interview Simulation z free navigation i editable persisted drafts;
+- 45-minute foreground countdown bez deadline/wall clock;
+- manual/foreground-timeout atomic finalization;
+- unanswered diagnostics bez attempt/review;
+- finalization-only immutable attempts i submitted-outcome review;
 - no old orchestration.
 
 ## Kryteria zakończenia
@@ -570,7 +574,7 @@ Naprawiamy tylko itemy łamiące runtime, scoring albo renderer. Nie robimy peł
 - jeden runtime;
 - brak duplicate scoring i feedback fallbacku.
 
-G-02 musi być zamknięte przed pełnym `Interview Simulation`.
+G-02 jest zamknięte przez zatwierdzony profil w sekcji bram i pełny `Interview Simulation` należy implementować dokładnie według niego.
 
 ---
 

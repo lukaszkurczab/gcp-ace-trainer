@@ -90,7 +90,7 @@ Macierz:
 | Weak Area Review — due queue | 10 | after each | elapsed foreground | yes |
 | Weak Area Review — session misses | 10 | after each | elapsed foreground | yes |
 | Independent Practice | 20 | after each | elapsed foreground | no |
-| Interview Simulation | profile/config | session end | countdown | no |
+| Interview Simulation | 40 | session end | 45-minute foreground countdown | no |
 
 Review sessions:
 
@@ -198,9 +198,9 @@ Reinsert:
 - no heuristic repair of old records;
 - one active session maximum;
 - session is persisted before first item;
-- unsubmitted current selection is not persisted;
+- unsubmitted current selection is not persisted in immediate-feedback practice; Algorithms Interview Simulation persists editable drafts until finalization;
 - item order and shuffled option order are persisted;
-- practice timer stores foreground active time;
+- practice timer stores foreground active time; Algorithms Interview Simulation resumes from persisted foreground time and uses `max(0, 45 minutes - activeForegroundMs)`, never a deadline or wall clock;
 - abandoned sessions are not shown in history;
 - completed attempts remain even when the active session is abandoned;
 - content mismatch may prevent resume and must produce an explicit error.
@@ -432,7 +432,7 @@ Canonical contract:
 - hybrid commit behavior;
 - one active session;
 - persist session/item order/shuffled options;
-- do not persist unsubmitted response;
+- do not persist unsubmitted response in immediate-feedback practice; persist Algorithms Interview Simulation drafts;
 - content mismatch blocks resume explicitly;
 - abandoned sessions excluded from user history;
 - canonical data corruption policy for future production records remains a separately documented pre-release decision.
