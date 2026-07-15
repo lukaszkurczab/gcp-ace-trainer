@@ -70,10 +70,10 @@ export function buildOptionOrderByQuestionId(questions: readonly CertificationQu
 export function buildExamQuestionViewsFromSession<TQuestion extends CertificationQuestion>(
   runtime: CertificationExamViewModel,
   questions: readonly TQuestion[]
-): Array<TQuestion & { shuffledOptions: TQuestion["options"] }> {
+): Array<TQuestion & { occurrenceId: string; shuffledOptions: TQuestion["options"] }> {
   const questionById = new Map(questions.map((question) => [question.id, question]));
 
-  return runtime.session.itemOrder.flatMap(({ itemId: questionId }) => {
+  return runtime.session.itemOrder.flatMap(({ occurrenceId, item: { itemId: questionId } }) => {
     const question = questionById.get(questionId);
 
     if (!question) {
@@ -81,7 +81,7 @@ export function buildExamQuestionViewsFromSession<TQuestion extends Certificatio
     }
 
     const optionById = new Map(question.options.map((option) => [option.id, option]));
-    const optionOrder = runtime.session.optionOrderByItem[question.id] ?? question.options.map((option) => option.id);
+    const optionOrder = runtime.session.optionOrderByOccurrence[occurrenceId] ?? question.options.map((option) => option.id);
     const shuffledOptions = optionOrder.flatMap((optionId) => {
       const option = optionById.get(optionId);
       return option ? [option] : [];
@@ -90,6 +90,7 @@ export function buildExamQuestionViewsFromSession<TQuestion extends Certificatio
     return [
       {
         ...question,
+        occurrenceId,
         shuffledOptions: shuffledOptions.length === question.options.length ? shuffledOptions : question.options
       }
     ];

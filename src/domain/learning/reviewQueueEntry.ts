@@ -20,3 +20,19 @@ export type ReviewQueueEntry = ReviewEvidence & Readonly<{
   persistent: boolean;
   lastReviewedAt?: string;
 }>;
+
+export function retainReviewQueueEntryIdentity(existing: ReviewQueueEntry, updated: ReviewQueueEntry): ReviewQueueEntry {
+  if (existing.trackId !== updated.trackId || existing.sourceItem.trackId !== updated.sourceItem.trackId ||
+    existing.sourceItem.itemId !== updated.sourceItem.itemId || existing.sourceItem.contentVersion !== updated.sourceItem.contentVersion) {
+    throw new Error("A review update must preserve its canonical item identity.");
+  }
+  return {
+    ...updated,
+    id: existing.id,
+    sourceAttemptId: existing.sourceAttemptId,
+    sourceSessionId: existing.sourceSessionId,
+    sourceItem: existing.sourceItem,
+    taxonomyOrSkillRefs: existing.taxonomyOrSkillRefs,
+    createdAt: existing.createdAt,
+  };
+}

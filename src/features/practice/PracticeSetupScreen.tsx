@@ -10,6 +10,7 @@ import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getActiveTrackId, getTrainingAttempts } from "../../storage";
 import { colors, radius, spacing, typography } from "../../theme";
+import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import {
   buildTopicRoadmapNodes,
@@ -79,7 +80,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const resolvedTrackId = route.params?.trackId ?? activeTrackId;
   if (!resolvedTrackId) return <Screen><EmptyState title="Choose a learning track" description="Session setup is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
   const activeTrack = getTrackDisplay(resolvedTrackId);
-  const itemNoun = activeTrack.id === ALGORITHMS_TRACK_ID ? "Items" : "Questions";
+  const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
+    ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
+    : null;
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
@@ -88,13 +91,21 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   });
 
   function startSession() {
+    const mode = route.params?.mode ?? (
+      activeTrack.id === ALGORITHMS_TRACK_ID
+        ? ALGORITHM_MODE_IDS.guidedPractice
+        : "default"
+    );
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
-        feedbackMode,
-        mode: route.params?.mode ?? "default",
-        reviewBehaviorEnabled: activeTrack.id === ALGORITHMS_TRACK_ID ? false : reviewBehaviorEnabled,
-        sessionLength,
+        ...(activeTrack.id === ALGORITHMS_TRACK_ID
+          ? {
+              reviewItemRefs: route.params?.reviewItemRefs,
+              reviewSource: route.params?.reviewSource,
+            }
+          : { feedbackMode, reviewBehaviorEnabled, sessionLength }),
+        mode,
         source: "practiceSetup",
         topicId: topic.id,
         trackId: activeTrack.id,
@@ -114,69 +125,91 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         <View style={styles.intro}>
           <Text style={styles.title}>Practice setup</Text>
           <Text style={styles.subtitle}>
-            Configure the next session for {topic.title}.
+            {algorithmMode
+              ? `Review the fixed ${algorithmMode.title} profile for ${topic.title}.`
+              : `Configure the next session for ${topic.title}.`}
           </Text>
         </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Session length" tight />
-          <View style={styles.lengthGrid}>
-            {sessionLengths.map((length) => (
-              <SelectableOption
-                key={length}
-                label={String(length)}
-                meta={itemNoun}
-                onPress={() => setSessionLength(length)}
-                selected={sessionLength === length}
-              />
-            ))}
+        {algorithmMode ? (
+          <View style={styles.section}>
+            <SectionHeader
+              title="Fixed mode profile"
+              subtitle="Algorithms session settings are owned by the selected mode."
+              tight
+            />
+            <Card style={styles.reviewCard}>
+              <View style={styles.reviewCopy}>
+                <Text style={styles.reviewTitle}>{algorithmMode.title}</Text>
+                <Text style={styles.subtitle}>
+                  {algorithmMode.profile.sessionLength} items · {algorithmMode.profile.feedbackMode === "afterEachAnswer" ? "Feedback after each answer" : "Feedback at session end"} · {algorithmMode.profile.timer.kind === "elapsedForeground" ? "Elapsed foreground timer" : "45-minute foreground countdown"} · {algorithmMode.profile.reinsertEnabled ? "Reinsert enabled" : "Reinsert disabled"}
+                </Text>
+              </View>
+            </Card>
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader title="Feedback mode" tight />
-          <SelectablePanel
-            detail="Correctness and explanation are shown after every item."
-            label="After each answer"
-            onPress={() => setFeedbackMode("afterEachAnswer")}
-            selected={feedbackMode === "afterEachAnswer"}
-          />
-          <SelectablePanel
-            detail="Correctness is hidden until the final summary and review."
-            label="At session end"
-            onPress={() => setFeedbackMode("atSessionEnd")}
-            selected={feedbackMode === "atSessionEnd"}
-          />
-        </View>
-
-        {feedbackMode === "afterEachAnswer" ? (
-          <Card style={styles.reviewCard}>
-            <View style={styles.reviewCopy}>
-              <Text style={styles.reviewTitle}>{reviewBehaviorCopy.title}</Text>
-              <Text style={styles.subtitle}>
-                {reviewBehaviorCopy.detail}
-              </Text>
+        ) : (
+          <>
+            <View style={styles.section}>
+              <SectionHeader title="Session length" tight />
+              <View style={styles.lengthGrid}>
+                {sessionLengths.map((length) => (
+                  <SelectableOption
+                    key={length}
+                    label={String(length)}
+                    meta="Questions"
+                    onPress={() => setSessionLength(length)}
+                    selected={sessionLength === length}
+                  />
+                ))}
+              </View>
             </View>
-            {reviewBehaviorCopy.showToggle ? (
-              <Pressable
-                accessibilityRole="switch"
-                accessibilityState={{ checked: reviewBehaviorEnabled }}
-                onPress={() => setReviewBehaviorEnabled((current) => !current)}
-                style={[
-                  styles.switchTrack,
-                  reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.switchThumb,
-                    reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
-                  ]}
-                />
-              </Pressable>
+
+            <View style={styles.section}>
+              <SectionHeader title="Feedback mode" tight />
+              <SelectablePanel
+                detail="Correctness and explanation are shown after every item."
+                label="After each answer"
+                onPress={() => setFeedbackMode("afterEachAnswer")}
+                selected={feedbackMode === "afterEachAnswer"}
+              />
+              <SelectablePanel
+                detail="Correctness is hidden until the final summary and review."
+                label="At session end"
+                onPress={() => setFeedbackMode("atSessionEnd")}
+                selected={feedbackMode === "atSessionEnd"}
+              />
+            </View>
+
+            {feedbackMode === "afterEachAnswer" ? (
+              <Card style={styles.reviewCard}>
+                <View style={styles.reviewCopy}>
+                  <Text style={styles.reviewTitle}>{reviewBehaviorCopy.title}</Text>
+                  <Text style={styles.subtitle}>
+                    {reviewBehaviorCopy.detail}
+                  </Text>
+                </View>
+                {reviewBehaviorCopy.showToggle ? (
+                  <Pressable
+                    accessibilityRole="switch"
+                    accessibilityState={{ checked: reviewBehaviorEnabled }}
+                    onPress={() => setReviewBehaviorEnabled((current) => !current)}
+                    style={[
+                      styles.switchTrack,
+                      reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.switchThumb,
+                        reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
+                      ]}
+                    />
+                  </Pressable>
+                ) : null}
+              </Card>
             ) : null}
-          </Card>
-        ) : null}
+          </>
+        )}
 
         <View style={styles.actions}>
           <Button onPress={startSession}>Start session</Button>

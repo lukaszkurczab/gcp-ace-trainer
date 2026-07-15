@@ -7,8 +7,6 @@ import {
   type AlgorithmRoadmapNodeId,
 } from "./algorithmRoadmap";
 
-export const ALGORITHMS_SESSION_MODE_ID = "algorithms-roadmap-basics";
-
 export type AlgorithmQuestionEntry = {
   group: AlgorithmContentGroup;
   question: AlgorithmQuestion;

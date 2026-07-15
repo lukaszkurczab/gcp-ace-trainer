@@ -1,6 +1,6 @@
 import { createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../src/domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
-import type { MutationJournalRecord } from "../src/storage/repositories/mutationJournalRepository";
+import { createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../src/storage/repositories/mutationJournalRepository";
 import type { CertificationExamViewModel } from "../src/tracks/cloud-certification";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
@@ -16,11 +16,13 @@ export function session(status: TrainingSession["status"] = "active", id = "sess
     id,
     trackId: "algorithms",
     modeId: "practice",
+    configurationSnapshot: { kind: "practice", mode: "practice" },
     requestedLength: 1,
     actualLength: 1,
     currentItemIndex: 0,
-    itemOrder: [{ trackId: "algorithms", itemId: "item-1", contentVersion: "v1" }],
-    optionOrderByItem: { "item-1": ["a", "b"] },
+    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "algorithms", itemId: "item-1", contentVersion: "v1" } }],
+    optionOrderByOccurrence: { "occurrence-1": ["a", "b"] },
+    flaggedOccurrenceIds: [],
     activeForegroundMs: 0,
     contentVersion: "v1",
     status,
@@ -35,6 +37,7 @@ export function attempt(id = "attempt-1", sessionId = "session-1"): TrainingAtte
     sessionId,
     trackId: "algorithms",
     modeId: "practice",
+    occurrenceId: "occurrence-1",
     item: { trackId: "algorithms", itemId: "item-1", contentVersion: "v1" },
     response: { choice: "a" },
     result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
@@ -65,11 +68,13 @@ export function exam(id = "session-1"): CertificationExamViewModel {
     id,
     trackId: "cloud-certification",
     modeId: "cloud-exam-simulation",
+    configurationSnapshot: { kind: "certificationSimulation", mode: "exam" },
     requestedLength: 1,
     actualLength: 1,
     currentItemIndex: 0,
-    itemOrder: [{ trackId: "cloud-certification", itemId: "question-1", contentVersion: "v1" }],
-    optionOrderByItem: { "question-1": ["a", "b"] },
+    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "cloud-certification", itemId: "question-1", contentVersion: "v1" } }],
+    optionOrderByOccurrence: { "occurrence-1": ["a", "b"] },
+    flaggedOccurrenceIds: [],
     activeForegroundMs: 0,
     contentVersion: "v1",
     status: "active",
@@ -79,14 +84,22 @@ export function exam(id = "session-1"): CertificationExamViewModel {
 }
 
 export function journal(writes: MutationJournalRecord["writes"], operation: MutationJournalRecord["operation"] = "submit_training_outcome"): MutationJournalRecord {
-  return {
-    journalId: "journal-1",
+  const identifiedWrite = writes.find((write) => write.kind === "put_session" || write.kind === "put_attempt" || write.kind === "put_review_entry");
+  const sessionId = identifiedWrite?.kind === "put_session" ? identifiedWrite.record.id : identifiedWrite?.kind === "put_attempt" ? identifiedWrite.record.sessionId : identifiedWrite?.kind === "put_review_entry" ? identifiedWrite.record.sourceSessionId : "session-1";
+  const trackId = identifiedWrite?.kind === "put_session" || identifiedWrite?.kind === "put_attempt" || identifiedWrite?.kind === "put_review_entry" ? identifiedWrite.record.trackId : "algorithms";
+  const commandFingerprint = "0".repeat(64);
+  const plan: MutationJournalPlan = {
     operation,
     status: "prepared",
     createdAt: timestamp,
-    sessionId: "session-1",
-    trackId: "algorithms",
-    inputFingerprint: "fingerprint-1",
+    sessionId,
+    trackId,
+    commandFingerprint,
     writes,
+  };
+  return {
+    journalId: `journal:${commandFingerprint}`,
+    ...plan,
+    planFingerprint: createMutationPlanFingerprint(plan),
   };
 }

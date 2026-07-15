@@ -29,7 +29,7 @@ export function scoreExamSession(
   const questionById = new Map(questions.map((question) => [question.id, question]));
   const flaggedQuestionIds = runtime.examState.flaggedItemIds;
 
-  const answers = runtime.session.itemOrder.flatMap(({ itemId: questionId }, index) => {
+  const answers = runtime.session.itemOrder.flatMap(({ item: { itemId: questionId } }, index) => {
     const question = questionById.get(questionId);
 
     if (!question) {

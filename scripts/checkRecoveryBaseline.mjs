@@ -59,6 +59,32 @@ for (const path of sourcePaths.filter((path) => /src\/features\/(?:algorithms|pr
   if (journalInternals.test(readFileSync(path, "utf8"))) fail(`feature imports journal internals: ${path}`);
 }
 
+// Stage 3: one runtime and two explicit presentations (immediate practice and
+// Interview Simulation). The historical god screen and its screen-owned model
+// are not valid compatibility paths.
+for (const path of [
+  "src/features/algorithms/AlgorithmsSessionScreen.tsx",
+  "src/features/algorithms/algorithmsSessionModel.ts",
+]) {
+  if (existsSync(join(root, path))) fail(`obsolete Algorithms runner remains: ${path}`);
+}
+const algorithmsPresentationPaths = sourcePaths.filter((path) => /src\/features\/algorithms\/.+\.(?:ts|tsx)$/.test(path));
+const prohibitedAlgorithmsPresentation = /from\s+["'][^"']*(?:storage|repositories|scoring|learningMutations|trainingSessions)[^"']*["']|\b(?:scoreAlgorithmQuestion|createTrainingAttempt|commitTrainingOutcome|commitMutation)\b/;
+for (const path of algorithmsPresentationPaths) {
+  if (prohibitedAlgorithmsPresentation.test(readFileSync(path, "utf8"))) fail(`Algorithms presentation bypasses its application controller: ${path}`);
+}
+const practiceSessionPath = join(root, "src/features/practice/PracticeSessionScreen.tsx");
+const practiceSessionSource = readFileSync(practiceSessionPath, "utf8");
+if (!/AlgorithmsPracticeSessionScreen/.test(practiceSessionSource)) fail("Practice dispatch does not use the canonical Algorithms immediate presentation.");
+if (/AlgorithmsSessionScreen/.test(practiceSessionSource)) fail("Practice dispatch retains the obsolete Algorithms runner.");
+if (!/mode === ALGORITHM_MODE_IDS\.interviewSimulation/.test(practiceSessionSource) || !/navigation\.replace\(ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION/.test(practiceSessionSource)) fail("Interview Simulation does not keep its dedicated route dispatch.");
+const immediateScreenPath = join(root, "src/features/algorithms/AlgorithmsPracticeSessionScreen.tsx");
+if (!existsSync(immediateScreenPath)) fail("canonical Algorithms immediate presentation is missing.");
+const simulationScreenPath = join(root, "src/features/algorithms/interviewSimulation/AlgorithmsInterviewSimulationScreen.tsx");
+if (!existsSync(simulationScreenPath)) fail("canonical Interview Simulation presentation is missing.");
+if ((activeSource.match(/export\s+function\s+AlgorithmsPracticeSessionScreen\b/g) ?? []).length !== 1) fail("Algorithms immediate presentation must have exactly one runner.");
+if ((activeSource.match(/export\s+function\s+AlgorithmsInterviewSimulationScreen\b/g) ?? []).length !== 1) fail("Interview Simulation must have exactly one active runner.");
+
 if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion/.test(kernel)) fail("learning kernel imports family semantics.");
 if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test(registry)) fail("track registry imports content or concrete items.");
 if (/cloud-certification/.test(algorithms)) fail("Algorithms imports Certification.");

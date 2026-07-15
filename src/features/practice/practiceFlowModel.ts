@@ -7,6 +7,7 @@ import {
 } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import {
+  ALGORITHM_MODE_IDS,
   ALGORITHM_ROADMAP,
   buildAlgorithmProgressFacts,
   getAlgorithmItemsForRoadmapNode,
@@ -198,6 +199,29 @@ export function buildRecommendedPracticeModes(input: {
     return [];
   }
 
+  if (input.activeTrack.id === ALGORITHMS_TRACK_ID) {
+    return [
+      {
+        detail: "Practice Algorithms review items that are currently due.",
+        enabled: true,
+        icon: "rotate-ccw",
+        label: "Weak area review",
+        mode: ALGORITHM_MODE_IDS.weakAreaReview,
+        title: "Weak Area Review",
+        tone: "primary",
+      },
+      {
+        detail: "Interleave unlocked topics without hints or reinsert.",
+        enabled: true,
+        icon: "clipboard",
+        label: "Independent practice",
+        mode: ALGORITHM_MODE_IDS.independentPractice,
+        title: "Independent Practice",
+        tone: "info",
+      },
+    ];
+  }
+
   return [
     {
       detail: "Revisit recent misses from the current track.",
@@ -230,6 +254,18 @@ export function buildRecommendedPracticeModes(input: {
 }
 
 export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel[] {
+  if (activeTrack.id === ALGORITHMS_TRACK_ID) {
+    return [
+      { detail: "Study the decision signals and mechanism of an approach.", enabled: true, icon: "book-open", mode: ALGORITHM_MODE_IDS.learnApproach, title: "Learn Approach", tone: "info" },
+      { detail: "Practice the current topic with immediate feedback and reinsert.", enabled: true, icon: "zap", mode: ALGORITHM_MODE_IDS.guidedPractice, title: "Guided Practice", tone: "primary" },
+      { detail: "Identify the pattern from constraints, signals, and invariants.", enabled: true, icon: "practice", mode: ALGORITHM_MODE_IDS.recognizePatterns, title: "Recognize Patterns", tone: "success" },
+      { detail: "Choose between adjacent approaches and explain the tradeoff.", enabled: true, icon: "route", mode: ALGORITHM_MODE_IDS.contrastPractice, title: "Contrast Practice", tone: "warning" },
+      { detail: "Practice Algorithms review items that are currently due.", enabled: true, icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
+      { detail: "Interleave unlocked topics without hints or reinsert.", enabled: true, icon: "clipboard", mode: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice", tone: "success" },
+      { detail: "Forty freely navigable items with feedback after final submission.", enabled: true, icon: "shield-check", mode: ALGORITHM_MODE_IDS.interviewSimulation, title: "Interview Simulation", tone: "warning" },
+    ];
+  }
+
   return [
     {
       detail: "Guided explanations after each item with solving hints.",

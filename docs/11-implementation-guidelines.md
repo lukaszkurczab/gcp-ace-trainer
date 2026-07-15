@@ -16,7 +16,9 @@ Implementation must therefore migrate ownership or delete the old path. It must 
 
 ## Contract implementation
 
-Validate unknown IDs and unsupported payloads at the boundary and fail explicitly. Persist durable submit intent before feedback or advance. Keep attempts immutable and retry idempotent. Persist only committed state, session/item/option order, and foreground timer state; never unsubmitted selection.
+Validate unknown IDs and unsupported payloads at the boundary and fail explicitly. Persist durable practice-submit intent before feedback or advance. Keep attempts immutable and retry idempotent. Immediate-feedback practice persists only committed state, session/item/option order, and foreground timer state; it never persists an unsubmitted selection.
+
+Algorithms `Interview Simulation` has a different canonical contract, not a fallback: persist its editable response drafts, current position, and accumulated foreground time, but create no attempt, review mutation, score, or feedback before finalization. Use `max(0, 45 minutes - activeForegroundMs)`, never a deadline or wall clock. Manual submission or foreground-time exhaustion must use one idempotent journal to create immutable attempts and review mutations only for answered, submitted outcomes, complete the session, and delete its draft state. Unanswered items create neither attempts nor review entries and remain separate summary diagnostics.
 
 Implement only the specified modes and score contracts. Ordering scores correct adjacent relations. Complexity is content-defined. Reinsert exists only in `Guided Practice` and Algorithms `Weak Area Review`, maximum once and with compatible reviewed content.
 

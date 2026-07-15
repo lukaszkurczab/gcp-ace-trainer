@@ -7,7 +7,7 @@ const question = { id: "fixture-progress", contentVersion: ALGORITHM_CONTENT_VER
 const groups: readonly AlgorithmContentGroup[] = [{ id: "complexity_and_constraints", roadmapNodeId: "complexity_and_constraints", questions: [question] }];
 const ref = { trackId: "algorithms" as const, itemId: question.id, contentVersion: question.contentVersion };
 function attempt(kind: "correct" | "partial" | "incorrect", id: string, answeredAt = "2026-01-01T00:00:00.000Z") {
-  return createTrainingAttempt({ id, sessionId: "session", trackId: "algorithms", modeId: "guided", item: ref, response: {}, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "mistake_type", nodeId: "wrong_pattern" }] }, answeredAt, committedAt: answeredAt });
+  return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId: "session", trackId: "algorithms", modeId: "guided", item: ref, response: {}, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "mistake_type", nodeId: "wrong_pattern" }] }, answeredAt, committedAt: answeredAt });
 }
 function review(): ReviewQueueEntry { return { id: "review", trackId: "algorithms", sourceAttemptId: "bad", sourceSessionId: "session", reasons: ["incorrect", "repeated_mistake"], dueAt: "2026-01-02T00:00:00.000Z", createdAt: "2026-01-01T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "mistake_type", nodeId: "wrong_pattern" }] }; }
 

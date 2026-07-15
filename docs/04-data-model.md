@@ -14,14 +14,34 @@ type ResultKind = 'correct' | 'partial' | 'incorrect';
 type TrainingSession = {
   id: string;
   trackId: string;
-  mode: string;
+  modeId: string;
+  configurationSnapshot: Readonly<Record<string, string | number | boolean | readonly string[]>>;
   requestedLength: number;
   actualLength: number;
-  itemOrder: readonly ContentItemRef[];
-  optionOrderByItem: Readonly<Record<string, readonly string[]>>;
+  currentItemIndex: number;
+  itemOrder: readonly {
+    occurrenceId: string;
+    item: ContentItemRef;
+  }[];
+  optionOrderByOccurrence: Readonly<Record<string, readonly string[]>>;
+  flaggedOccurrenceIds: readonly string[];
   activeForegroundMs: number;
   contentVersion: string;
   status: 'active' | 'completed' | 'abandoned';
+};
+
+type TrainingAttempt<Response> = {
+  id: string;
+  sessionId: string;
+  trackId: string;
+  modeId: string;
+  occurrenceId: string;
+  item: ContentItemRef;
+  response: Response;
+  result: AttemptResult;
+  reviewEvidence: ReviewEvidence;
+  answeredAt: string;
+  committedAt: string;
 };
 
 type ReviewEvidence = {
@@ -53,9 +73,31 @@ type EvidenceModel = {
   learningStageEvidence: unknown;
   performanceSignals: unknown;
 };
+
+type AlgorithmsInterviewSimulationProfile = {
+  itemCount: 40;
+  durationForegroundMinutes: 45;
+  navigationPolicy: 'free_navigation';
+  answerChangePolicy: 'editable_until_final_submit';
+  completionPolicy: 'manual_or_foreground_timeout';
+  feedbackPolicy: 'session_end';
+  unansweredPolicy: 'reported_separately';
+  reinsertPolicy: 'disabled';
+  attemptPolicy: 'finalization_only';
+  persistentReviewPolicy: 'submitted_outcomes_only';
+};
+
+type AlgorithmsInterviewSimulationDraft = {
+  sessionId: string;
+  trackId: string;
+  responsesByOccurrenceId: Readonly<Record<string, AlgorithmResponse>>;
+  updatedAt: string;
+};
 ```
 
-`TrainingAttempt` is immutable and stores deterministic response, result, score, review evidence, and committed time. It has no confidence field. One active session exists. Current selection is UI state and is never persisted.
+Each session-plan occurrence has its own immutable `occurrenceId`. Exact duplicate content may therefore appear more than once without collapsing option order, flag state, response state, or attempts by `itemId`. `flaggedOccurrenceIds` is an immutable, occurrence-keyed session field: it may contain only unique entries in `itemOrder`, is never stored in a draft, and is retained on completed and abandoned session records. `TrainingAttempt.occurrenceId` must identify the exact matching session-plan occurrence, while review remains content-level evidence tied to an exact source attempt or transition.
+
+`TrainingAttempt` is immutable and stores deterministic response, result, score, review evidence, and committed time. It has no confidence field. One active session exists. An unsubmitted practice selection is UI state and is never persisted. Algorithms `Interview Simulation` is the exception by contract: its editable responses are persisted by occurrence in `TrainingSessionDraft`, while current position and foreground timer state remain canonical on the owning `TrainingSession`. Its foreground countdown is `max(0, 45 minutes - activeForegroundMs)` and never uses a wall-clock deadline.
 
 ## Scoring models
 
@@ -75,14 +117,27 @@ If the already selected session plan cannot provide two other submitted items be
 
 ```ts
 type MutationJournal = {
-  id: string;
-  operation: 'submit' | 'complete_exam';
-  deterministicOutcome: unknown;
-  state: 'durable' | 'materialized';
+  journalId: `journal:${string}`;
+  operation:
+    | 'submit_training_outcome'
+    | 'complete_training_session'
+    | 'abandon_training_session'
+    | 'finalize_training_session'
+    | 'set_review_entry'
+    | 'remove_review_entry';
+  status: 'prepared';
+  createdAt: string;
+  sessionId: string;
+  trackId: string;
+  commandFingerprint: string;
+  planFingerprint: string;
+  writes: readonly JournalWrite[];
 };
 ```
 
-Submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
+The command fingerprint is a canonical SHA-256 identity and the plan fingerprint detects changes to the exact prepared write plan. Each operation admits only its complete, scoped write set; unknown, duplicate, cross-session, or incomplete writes are rejected before persistence. A practice submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
+
+`finalize_training_session` is the shared batch-finalization operation. For Algorithms `Interview Simulation`, it atomically creates immutable attempts and at most one deterministic content-level review mutation per reviewed content identity, completes the session, and deletes its persisted draft. Each review mutation names the exact source attempt or transition attempt. Unanswered occurrences create neither an attempt nor a review entry and remain separate summary diagnostics. No attempt, review mutation, score, or feedback exists before this finalization.
 
 ## Exam profile
 

@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
 import { scoreAlgorithmQuestion, type AlgorithmQuestion } from "../src/tracks/algorithms";
-import { buildAlgorithmsSubmission } from "../src/features/algorithms/algorithmsSessionModel";
-import { createTrainingSession } from "../src/domain";
 
 const feedbackModel = { mentalModelCorrection: "Review.", mistakeTypes: [], nextAction: "Continue.", result: "correct" as const, decisionSignal: "Signal." };
 const base = { contentVersion: "algorithms-core", difficulty: "core", learningStage: "foundations", primarySkillAtomId: "skill", prompt: "Prompt", feedbackModel } as const;
@@ -33,13 +32,4 @@ test("Algorithms scorer rejects response-kind, ordering, and complexity payload 
   assert.throws(() => scoreAlgorithmQuestion(choice, { kind: "ordering", orderedSubgoalIds: [] }));
   assert.throws(() => scoreAlgorithmQuestion(ordering, { kind: "ordering", orderedSubgoalIds: ["a", "a", "c", "d"] }));
   assert.throws(() => scoreAlgorithmQuestion(complexity, { kind: "complexity", selectedValuesByDimension: { time: "O(log n)", space: "O(1)" } }));
-});
-
-test("Algorithms submission constructs an immutable typed canonical attempt and review entry directly", async () => {
-  const session = createTrainingSession({ id: "session", trackId: "algorithms", modeId: "guided", requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ trackId: "algorithms", itemId: choice.id, contentVersion: choice.contentVersion }], optionOrderByItem: { [choice.id]: choice.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: choice.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
-  const submission = await buildAlgorithmsSubmission({ answeredAt: "2026-01-01T00:01:00.000Z", complexityAnswer: {}, question: choice, selectedOptionIds: ["a", "b"], session });
-  assert.equal(Object.isFrozen(submission.attempt), true);
-  assert.equal(submission.attempt.sessionId, session.id);
-  assert.equal(submission.attempt.response.kind, "choice");
-  assert.equal(submission.reviewQueueEntries[0]?.sourceSessionId, session.id);
 });

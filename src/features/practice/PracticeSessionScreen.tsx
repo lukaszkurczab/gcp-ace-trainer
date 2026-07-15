@@ -1,19 +1,22 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import type { ReactNode } from "react";
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Badge, Button, Card, EmptyState, Icon, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
-import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, advanceTrainingSession, completeTrainingSession, createTrainingSession, type TrainingSession } from "../../domain";
+import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, accumulateTrainingSessionForegroundTime, completeTrainingSession, createTrainingSession, type TrainingAttempt, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { colors, radius, spacing, typography } from "../../theme";
-import { addTrainingSession, getTrainingSessions, saveTrainingSessions } from "../../storage";
 import { commitSessionCompletion } from "../../application/learningMutations";
-import type { CertificationQuestion } from "../../tracks/cloud-certification";
+import { advanceTrainingSessionDurably, assertTrainingSessionOptionPlan, getTrainingSessionProgress, persistTrainingSessionForegroundTime, startOrResumeTrainingSession } from "../../application/trainingSessions";
+import { getCertificationContentCatalog } from "../../content/catalogRepository";
+import type { CertificationQuestion, CertificationResponse } from "../../tracks/cloud-certification";
+import { getActiveTrainingSession, getTrainingAttempts } from "../../storage";
 import { areOptionSetsEqual } from "../../utils";
-import { AlgorithmsSessionScreen } from "../algorithms/AlgorithmsSessionScreen";
+import { AlgorithmsPracticeSessionScreen } from "../algorithms/AlgorithmsPracticeSessionScreen";
+import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms";
 import {
   loadPracticeQuestions,
   savePracticeAnswer,
@@ -28,8 +31,11 @@ type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typ
 
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   if (route.params.trackId === ALGORITHMS_TRACK_ID) {
+    if (route.params.mode === ALGORITHM_MODE_IDS.interviewSimulation) {
+      return <InterviewSimulationRouteDispatch navigation={navigation} nodeId={route.params.topicId} />;
+    }
     return (
-      <AlgorithmsSessionScreen
+      <AlgorithmsPracticeSessionScreen
         navigation={navigation}
         nodeId={route.params.topicId}
         sessionConfig={route.params}
@@ -38,6 +44,17 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   return <CloudPracticeSessionScreen navigation={navigation} route={route} />;
+}
+
+function InterviewSimulationRouteDispatch({ navigation, nodeId }: Readonly<{
+  navigation: PracticeSessionScreenProps["navigation"];
+  nodeId: string;
+}>) {
+  useEffect(() => {
+    navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { nodeId });
+  }, [navigation, nodeId]);
+
+  return <SessionPreparingShell description="Opening your saved Interview Simulation." title="Preparing simulation" />;
 }
 
 function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
@@ -51,6 +68,29 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
   const [isReviewPass, setIsReviewPass] = useState(false);
   const [sessionComplete, setSessionComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUpdatingReview, setIsUpdatingReview] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+  const foregroundStartedAt = useRef<number | null>(null);
+  const latestTrainingSession = useRef<TrainingSession | null>(null);
+  const foregroundPersistence = useRef<Promise<void>>(Promise.resolve());
+  latestTrainingSession.current = trainingSession;
+
+  const flushForegroundTime = useCallback(() => {
+    const startedAt = foregroundStartedAt.current;
+    if (startedAt === null) return;
+    foregroundStartedAt.current = null;
+    const elapsed = Math.max(0, Date.now() - startedAt);
+    foregroundPersistence.current = foregroundPersistence.current
+      .then(async () => {
+        const active = latestTrainingSession.current;
+        if (!active || active.status !== "active") return;
+        const persisted = await persistTrainingSessionForegroundTime(active, elapsed);
+        latestTrainingSession.current = persisted;
+        setTrainingSession(persisted);
+      })
+      .catch((error) => setSessionError(error instanceof Error ? error.message : "Foreground session time could not be saved locally."));
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -58,27 +98,78 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
       async function loadSessionQuestions() {
         setIsLoading(true);
+        setSessionError(null);
 
-        const loadedQuestions = await loadPracticeQuestions(
-          getCloudDomainForTopicId(route.params.topicId),
-          route.params.sessionLength,
-        );
+        const [loadedQuestions, activeSession, attemptsResult] = await Promise.all([
+          loadPracticeQuestions(getCloudDomainForTopicId(route.params.topicId), route.params.sessionLength),
+          getActiveTrainingSession(),
+          getTrainingAttempts(),
+        ]);
 
         if (!isActive) {
           return;
         }
 
-        setQuestions(loadedQuestions);
+        const catalog = getCertificationContentCatalog();
+        const contentVersion = catalog.getContentVersion();
+        const plannedQuestions = activeSession?.trackId === CLOUD_CERTIFICATION_TRACK_ID
+          ? activeSession.itemOrder.map((occurrence) => catalog.getItemById(occurrence.item.itemId))
+          : loadedQuestions;
         const startedAt = new Date().toISOString();
-        const session = createTrainingSession({ id: `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", requestedLength: route.params.sessionLength, actualLength: loadedQuestions.length, currentItemIndex: 0, itemOrder: loadedQuestions.map((question) => ({ trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion: "ace-foundation-320" })), optionOrderByItem: Object.fromEntries(loadedQuestions.map((question) => [question.id, question.options.map((option) => option.id)])), activeForegroundMs: 0, contentVersion: "ace-foundation-320", status: "active", startedAt });
-        setTrainingSession(session);
-        await addTrainingSession(session);
-        setCurrentIndex(0);
-        setCompletedAnswers([]);
-        setIsReviewPass(false);
-        setSessionComplete(false);
-        resetQuestionState();
-        setIsLoading(false);
+        const sessionId = `session:${CLOUD_CERTIFICATION_TRACK_ID}:${startedAt}`;
+        const activeCloudSession = activeSession?.trackId === CLOUD_CERTIFICATION_TRACK_ID ? activeSession : null;
+        const itemOrder = activeCloudSession?.itemOrder ?? plannedQuestions.map((question, index) => ({ occurrenceId: `${sessionId}:occurrence:${index}`, item: { trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion } }));
+        const session = createTrainingSession({ id: sessionId, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-practice", configurationSnapshot: { feedbackMode: route.params.feedbackMode, kind: "practice", mode: route.params.mode, reviewBehaviorEnabled: route.params.reviewBehaviorEnabled, sessionLength: route.params.sessionLength, timer: "elapsedForeground", topicId: route.params.topicId }, requestedLength: route.params.sessionLength, actualLength: plannedQuestions.length, currentItemIndex: 0, itemOrder, optionOrderByOccurrence: activeCloudSession?.optionOrderByOccurrence ?? Object.fromEntries(plannedQuestions.map((question, index) => [itemOrder[index]!.occurrenceId, question.options.map((option) => option.id)])), flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion, status: "active", startedAt });
+        try {
+          const durableSession = await startOrResumeTrainingSession(session);
+          if (!isActive) return;
+          assertTrainingSessionOptionPlan(durableSession, Object.fromEntries(plannedQuestions.map((question, index) => [durableSession.itemOrder[index]!.occurrenceId, question.options.map((option) => option.id)])));
+          const durableQuestions = durableSession.itemOrder.map((occurrence) => {
+            const question = catalog.getItemById(occurrence.item.itemId);
+            const order = durableSession.optionOrderByOccurrence[occurrence.occurrenceId] ?? [];
+            return { ...question, options: [...question.options].sort((left, right) => order.indexOf(left.id) - order.indexOf(right.id)) };
+          });
+          const progress = getTrainingSessionProgress(durableSession, attemptsResult.value.filter(isCertificationTrainingAttempt));
+          const durableAnswers = progress.attempts.map((attempt) => {
+            const question = durableQuestions.find((candidate) => candidate.id === attempt.item.itemId);
+            if (!question) throw new Error(`Durable attempt references missing question ${attempt.item.itemId}.`);
+            return { isCorrect: attempt.result.kind === "correct", question, selectedOptionIds: [...attempt.response.selectedOptionIds] };
+          });
+          setQuestions(durableQuestions);
+          setTrainingSession(durableSession);
+          setCurrentIndex(durableSession.currentItemIndex);
+          foregroundStartedAt.current = Date.now();
+          setCompletedAnswers(durableAnswers);
+          setIsReviewPass(false);
+          setSessionComplete(false);
+          resetQuestionState();
+          if (progress.currentAttempt) {
+            if (route.params.feedbackMode === "atSessionEnd") {
+              if (durableSession.currentItemIndex >= durableQuestions.length - 1) {
+                const completedAt = new Date().toISOString();
+                const completed = completeTrainingSession(durableSession, completedAt);
+                await commitSessionCompletion(completed, completedAt);
+                if (!isActive) return;
+                setTrainingSession(completed);
+                foregroundStartedAt.current = null;
+                setSessionComplete(true);
+              } else {
+                const advanced = await advanceTrainingSessionDurably(durableSession, 0);
+                if (!isActive) return;
+                setTrainingSession(advanced);
+                setCurrentIndex(advanced.currentItemIndex);
+                resetQuestionState();
+              }
+            } else {
+              setSelectedOptionIds([...progress.currentAttempt.response.selectedOptionIds]);
+              setIsSubmitted(true);
+            }
+          }
+        } catch (error) {
+          if (isActive) setSessionError(error instanceof Error ? error.message : "The session could not be saved locally.");
+        } finally {
+          if (isActive) setIsLoading(false);
+        }
       }
 
       void loadSessionQuestions();
@@ -87,6 +178,24 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         isActive = false;
       };
     }, [route.params.sessionLength, route.params.topicId])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!trainingSession || trainingSession.status !== "active" || sessionComplete) return undefined;
+      if (AppState.currentState === "active" && foregroundStartedAt.current === null) foregroundStartedAt.current = Date.now();
+      const subscription = AppState.addEventListener("change", (nextState) => {
+        if (nextState === "active") {
+          foregroundStartedAt.current = Date.now();
+          return;
+        }
+        flushForegroundTime();
+      });
+      return () => {
+        subscription.remove();
+        flushForegroundTime();
+      };
+    }, [flushForegroundTime, sessionComplete, trainingSession]),
   );
 
   const currentQuestion = questions[currentIndex];
@@ -104,26 +213,26 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     setNeedsReview(false);
   }
 
-  async function persistSession(nextSession: TrainingSession): Promise<void> {
-    const sessions = await getTrainingSessions();
-    const result = await saveTrainingSessions([
-      nextSession,
-      ...sessions.value.filter((session) => session.id !== nextSession.id),
-    ]);
-    if (!result.ok) throw new Error("Cloud practice session state could not be persisted.");
-    setTrainingSession(nextSession);
+  async function advanceSession(currentSession = trainingSession): Promise<void> {
+    if (!currentSession) return;
+    try {
+      const now = Date.now();
+      const nextSession = await advanceTrainingSessionDurably(currentSession, Math.max(0, now - (foregroundStartedAt.current ?? now)));
+      setTrainingSession(nextSession);
+      setCurrentIndex(nextSession.currentItemIndex);
+      foregroundStartedAt.current = Date.now();
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The next position could not be saved locally.");
+      throw error;
+    }
   }
 
-  async function advanceSession(): Promise<void> {
-    if (!trainingSession) return;
-    const nextSession = advanceTrainingSession(trainingSession);
-    await persistSession(nextSession);
-    setCurrentIndex(nextSession.currentItemIndex);
-  }
-
-  async function completeSession(): Promise<void> {
-    if (!trainingSession || trainingSession.status !== "active") return;
-    const completed = completeTrainingSession(trainingSession, new Date().toISOString());
+  async function completeSession(currentSession = trainingSession): Promise<void> {
+    if (!currentSession || currentSession.status !== "active") return;
+    const now = Date.now();
+    const timed = accumulateTrainingSessionForegroundTime(currentSession, Math.max(0, now - (foregroundStartedAt.current ?? now)));
+    foregroundStartedAt.current = null;
+    const completed = completeTrainingSession(timed, new Date(now).toISOString());
     await commitSessionCompletion(completed, completed.completedAt!);
     setTrainingSession(completed);
   }
@@ -144,9 +253,13 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
   }
 
   async function submitAnswer() {
-    if (!currentQuestion || !trainingSession || selectedOptionIds.length === 0) {
+    if (!currentQuestion || !trainingSession || selectedOptionIds.length === 0 || isSubmitting) {
       return;
     }
+
+    setIsSubmitting(true);
+    setSessionError(null);
+    try {
 
     const answer: CompletedAnswer = {
       isCorrect,
@@ -159,13 +272,29 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
       : [...completedAnswers, answer];
 
     if (!isReviewPass) {
+      const now = Date.now();
+      const timedSession = accumulateTrainingSessionForegroundTime(trainingSession, Math.max(0, now - (foregroundStartedAt.current ?? now)));
+      foregroundStartedAt.current = now;
       await savePracticeAnswer({
         question: currentQuestion,
-        session: trainingSession,
+        session: timedSession,
         selectedOptionIds,
       });
 
+      setTrainingSession(timedSession);
       setCompletedAnswers(nextCompletedAnswers);
+
+      if (route.params.feedbackMode === "atSessionEnd") {
+        if (currentIndex >= questions.length - 1) {
+          await completeSession(timedSession);
+          setSessionComplete(true);
+          return;
+        }
+
+        await advanceSession(timedSession);
+        resetQuestionState();
+        return;
+      }
     }
 
     if (route.params.feedbackMode === "atSessionEnd") {
@@ -181,6 +310,11 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     }
 
     setIsSubmitted(true);
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The answer could not be saved locally.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function toggleNeedsReview() {
@@ -189,33 +323,43 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
     }
 
     const nextNeedsReview = !needsReview;
-    setNeedsReview(nextNeedsReview);
-    await setQuestionNeedsReview(currentQuestion, nextNeedsReview);
+    setIsUpdatingReview(true);
+    try {
+      await setQuestionNeedsReview(currentQuestion, nextNeedsReview);
+      setNeedsReview(nextNeedsReview);
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The review mark could not be saved locally.");
+    } finally {
+      setIsUpdatingReview(false);
+    }
   }
 
   async function goNext() {
-    if (currentIndex >= questions.length - 1) {
-      if (!isReviewPass && route.params.reviewBehaviorEnabled) {
-        const missedQuestions = completedAnswers
-          .filter((answer) => !answer.isCorrect)
-          .map((answer) => answer.question);
-
-        if (missedQuestions.length > 0) {
-          setQuestions(missedQuestions);
-          setCurrentIndex(0);
-          setIsReviewPass(true);
-          resetQuestionState();
-          return;
+    setIsSubmitting(true);
+    setSessionError(null);
+    try {
+      if (currentIndex >= questions.length - 1) {
+        if (!isReviewPass && route.params.reviewBehaviorEnabled) {
+          const missedQuestions = completedAnswers.filter((answer) => !answer.isCorrect).map((answer) => answer.question);
+          if (missedQuestions.length > 0) {
+            setQuestions(missedQuestions);
+            setCurrentIndex(0);
+            setIsReviewPass(true);
+            resetQuestionState();
+            return;
+          }
         }
+        await completeSession();
+        setSessionComplete(true);
+        return;
       }
-
-      await completeSession();
-      setSessionComplete(true);
-      return;
+      await advanceSession();
+      resetQuestionState();
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : "The session transition could not be saved locally.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    await advanceSession();
-    resetQuestionState();
   }
 
   if (isLoading) {
@@ -226,6 +370,10 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         onClose={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)}
       />
     );
+  }
+
+  if (sessionError) {
+    return <Screen><EmptyState title="Session unavailable" description={sessionError} actionLabel="Back to Practice" onActionPress={() => resetToPracticeHubAfterSession(navigation, route.params.topicId)} /></Screen>;
   }
 
   if (!currentQuestion) {
@@ -254,9 +402,9 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
   const chooseLabel = currentQuestion.type === "single" ? "Choose one" : `Choose ${currentQuestion.correctOptionIds.length}`;
   const progress = (currentIndex + 1) / questions.length;
   const immediateFeedback = route.params.feedbackMode === "afterEachAnswer";
-  const canSubmit = immediateFeedback
+  const canSubmit = !isSubmitting && (immediateFeedback
     ? canCheckAnswer(selectedOptionIds, isSubmitted)
-    : selectedOptionIds.length > 0;
+    : selectedOptionIds.length > 0);
   const primaryActionLabel = immediateFeedback
     ? "Check Answer"
     : currentIndex >= questions.length - 1
@@ -344,7 +492,7 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
         <>
           <FeedbackCard question={currentQuestion} selectedOptionIds={selectedOptionIds} isCorrect={isCorrect} />
           <View style={styles.inlineActions}>
-            <Button variant={needsReview ? "primary" : "ghost"} onPress={() => void toggleNeedsReview()}>
+            <Button disabled={isUpdatingReview} variant={needsReview ? "primary" : "ghost"} onPress={() => void toggleNeedsReview()}>
               {needsReview ? "Marked Needs Review" : "Mark Needs Review"}
             </Button>
             <Button onPress={goNext}>{currentIndex >= questions.length - 1 ? "Finish Practice" : "Next Question"}</Button>
@@ -355,6 +503,12 @@ function CloudPracticeSessionScreen({ navigation, route }: PracticeSessionScreen
 
     </Screen>
   );
+}
+
+function isCertificationTrainingAttempt(attempt: TrainingAttempt): attempt is TrainingAttempt<CertificationResponse> {
+  const response = attempt.response;
+  return typeof response === "object" && response !== null && "kind" in response && response.kind === "option_selection" &&
+    "selectedOptionIds" in response && Array.isArray(response.selectedOptionIds) && response.selectedOptionIds.every((id) => typeof id === "string");
 }
 
 type CompletedAnswer = {

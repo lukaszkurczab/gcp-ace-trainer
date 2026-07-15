@@ -1,2 +1,7 @@
 export interface ContentHasher { sha256(value: string): Promise<string>; }
-export const contentHasher: ContentHasher = { async sha256(value) { if (typeof process !== "undefined" && process.release?.name === "node") { const { createHash } = require("node:crypto") as typeof import("node:crypto"); return createHash("sha256").update(value).digest("hex"); } const Crypto = require("expo-crypto") as typeof import("expo-crypto"); return Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, value, { encoding: Crypto.CryptoEncoding.HEX }); } };
+export const contentHasher: ContentHasher = {
+  async sha256(value) {
+    const { createHash } = require("node:crypto") as typeof import("node:crypto");
+    return createHash("sha256").update(value).digest("hex");
+  },
+};

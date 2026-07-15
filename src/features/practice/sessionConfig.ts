@@ -1,4 +1,11 @@
-import type { TrackId } from "../../domain";
+import { ALGORITHMS_TRACK_ID, type ContentItemRef, type TrackId } from "../../domain";
+import {
+  ALGORITHM_MODE_IDS,
+  getAlgorithmSessionNodeById,
+  getAlgorithmMode,
+  isAlgorithmModeId,
+  type AlgorithmModeId,
+} from "../../tracks/algorithms";
 import type { CertificationDomain } from "../../tracks/cloud-certification";
 
 export type PracticeSessionSource =
@@ -7,25 +14,26 @@ export type PracticeSessionSource =
   | "practiceSetup"
   | "modeShortcut";
 
-export type PracticeSessionMode =
+export type CertificationPracticeSessionMode =
   | "learn"
   | "drill"
   | "review"
   | "weakArea"
   | "practice"
   | "default";
+export type PracticeSessionMode = AlgorithmModeId | CertificationPracticeSessionMode;
 
 export type PracticeSessionLength = 10 | 20 | 40;
 
 export type PracticeFeedbackMode = "afterEachAnswer" | "atSessionEnd";
 
-export type PracticeReviewSource = "dueQueue" | "sessionMisses";
+export type PracticeReviewSource = "due_queue" | "session_misses";
 
 export type PracticeSessionRouteParams = {
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
   reviewBehaviorEnabled: boolean;
-  reviewItemIds?: readonly string[];
+  reviewItemRefs?: readonly ContentItemRef[];
   reviewSource?: PracticeReviewSource;
   sessionLength: PracticeSessionLength;
   source: PracticeSessionSource;
@@ -47,21 +55,80 @@ const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "operations",
   "access_security",
 ];
+const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = [
+  "learn",
+  "drill",
+  "review",
+  "weakArea",
+  "practice",
+  "default",
+];
 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
 ): PracticeSessionRouteParams {
+  if (input.trackId === ALGORITHMS_TRACK_ID) {
+    const mode = input.mode ?? ALGORITHM_MODE_IDS.guidedPractice;
+    if (!isAlgorithmModeId(mode)) {
+      throw new Error(`Unknown Algorithms mode id: ${mode}`);
+    }
+
+    const profile = getAlgorithmMode(mode).profile;
+    if (input.feedbackMode !== undefined && input.feedbackMode !== profile.feedbackMode) {
+      throw new Error(`Algorithms mode ${mode} owns feedback mode ${profile.feedbackMode}.`);
+    }
+    if (input.sessionLength !== undefined && input.sessionLength !== profile.sessionLength) {
+      throw new Error(`Algorithms mode ${mode} owns session length ${profile.sessionLength}.`);
+    }
+    if (input.reviewBehaviorEnabled !== undefined && input.reviewBehaviorEnabled !== profile.reinsertEnabled) {
+      throw new Error(`Algorithms mode ${mode} owns reinsert setting ${profile.reinsertEnabled}.`);
+    }
+    if ((input.reviewSource || input.reviewItemRefs) && mode !== ALGORITHM_MODE_IDS.weakAreaReview) {
+      throw new Error(`Algorithms review source requires mode ${ALGORITHM_MODE_IDS.weakAreaReview}.`);
+    }
+    if (mode === ALGORITHM_MODE_IDS.weakAreaReview && !input.reviewSource) {
+      throw new Error("Algorithms Weak Area Review requires due_queue or session_misses source.");
+    }
+    if (input.reviewItemRefs && input.reviewSource !== "session_misses") {
+      throw new Error("Algorithms review item refs require session_misses source.");
+    }
+    const topicId = getAlgorithmSessionNodeById(input.topicId).id;
+
+    return {
+      feedbackMode: profile.feedbackMode,
+      mode,
+      reviewBehaviorEnabled: profile.reinsertEnabled,
+      reviewItemRefs: input.reviewItemRefs,
+      reviewSource: input.reviewSource,
+      sessionLength: profile.sessionLength,
+      source: input.source ?? "practiceHub",
+      topicId,
+      trackId: input.trackId,
+    };
+  }
+
+  const mode = input.mode ?? "default";
+  if (!certificationPracticeModes.some((candidate) => candidate === mode)) {
+    throw new Error(`Unknown Certification practice mode id: ${mode}`);
+  }
+
   return {
     feedbackMode: input.feedbackMode ?? DEFAULT_FEEDBACK_MODE,
-    mode: input.mode ?? "default",
+    mode,
     reviewBehaviorEnabled: input.reviewBehaviorEnabled ?? false,
-    reviewItemIds: input.reviewItemIds,
+    reviewItemRefs: input.reviewItemRefs,
     reviewSource: input.reviewSource,
     sessionLength: input.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
     source: input.source ?? "practiceHub",
     topicId: input.topicId,
     trackId: input.trackId,
   };
+}
+
+export function getGeneralPracticeReviewSource(
+  mode: PracticeSessionMode,
+): PracticeReviewSource | undefined {
+  return mode === ALGORITHM_MODE_IDS.weakAreaReview ? "due_queue" : undefined;
 }
 
 export function isCloudTopicId(topicId: string): topicId is CertificationDomain {

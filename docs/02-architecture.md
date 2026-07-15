@@ -13,7 +13,7 @@ application composition root
 
 The shared learning kernel owns session lifecycle, immutable attempts, canonical results, review mutation commands, evidence aggregation contracts, and repository interfaces. It is family-agnostic: it does not know certification domains, Algorithms patterns, item renderers, or a global list of interaction types.
 
-`CertificationFamilyRuntime` owns certification scoring, competency evidence, practice semantics, and profile-driven simulation. `AlgorithmsFamilyRuntime` owns mental units, taxonomy evidence, choice/ordering/complexity interactions, and algorithmic review policy. A new track is an instance of a family, not a new parallel runtime.
+`CertificationFamilyRuntime` owns certification scoring, competency evidence, practice semantics, and profile-driven simulation. `AlgorithmsFamilyRuntime` owns mental units, taxonomy evidence, choice/ordering/complexity interactions, algorithmic review policy, and the fixed `Interview Simulation` profile. That runtime also owns persisted simulation drafts, foreground-time expiry, and finalization-only scoring and review. A new track is an instance of a family, not a new parallel runtime.
 
 ## Ownership and dependencies
 

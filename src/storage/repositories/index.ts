@@ -6,3 +6,4 @@ export * from "./result";
 export * from "./mutationJournalRepository";
 export * from "./trainingAttemptRepository";
 export * from "./trainingSessionRepository";
+export * from "./trainingSessionDraftRepository";

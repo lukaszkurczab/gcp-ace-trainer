@@ -5,13 +5,13 @@ import type { CertificationAnswerViewModel, CertificationDomain, CertificationEx
 
 export function buildCertificationExamSummaries(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): CertificationExamSummaryViewModel[] {
   return sessions.filter((session) => session.modeId === "cloud-exam-simulation" && session.status === "completed").map<CertificationExamSummaryViewModel>((session) => {
-    const byItem = new Map(attempts.filter((attempt) => attempt.sessionId === session.id).map((attempt) => [attempt.item.itemId, attempt]));
+    const byOccurrence = new Map(attempts.filter((attempt) => attempt.sessionId === session.id).map((attempt) => [attempt.occurrenceId, attempt]));
     const answeredAt = session.completedAt ?? session.startedAt;
-    const answers: CertificationAnswerViewModel[] = session.itemOrder.map((item, index) => {
-      const question = getCertificationContentCatalog().getItemById(item.itemId);
-      const attempt = byItem.get(item.itemId);
+    const answers: CertificationAnswerViewModel[] = session.itemOrder.map((occurrence, index) => {
+      const question = getCertificationContentCatalog().getItemById(occurrence.item.itemId);
+      const attempt = byOccurrence.get(occurrence.occurrenceId);
       const response = attempt && isCertificationResponse(attempt.response) ? attempt.response : undefined;
-      return { questionId: item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: question.correctOptionIds, isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt };
+      return { questionId: occurrence.item.itemId, questionNumber: index + 1, questionSnapshot: question, selectedOptionIds: response?.selectedOptionIds ?? [], correctOptionIds: question.correctOptionIds, isAnswered: Boolean(response), isCorrect: attempt?.result.kind === "correct", wasFlagged: attempt?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged") ?? false, answeredAt };
     });
     const correctCount = answers.filter((answer) => answer.isCorrect).length;
     const scorePercent = calculatePercent(correctCount, answers.length);

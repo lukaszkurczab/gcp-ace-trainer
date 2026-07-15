@@ -1,8 +1,9 @@
-import type { ReviewQueueEntry, TrainingAttempt } from "../../domain";
+import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt } from "../../domain";
 import { shuffleArray } from "../../utils";
 import {
-  ALGORITHMS_SESSION_MODE_ID,
+  getFirstUsableAlgorithmRoadmapNode,
   getAlgorithmQuestionEntries,
+  isAlgorithmRoadmapNodeSelectable,
   type AlgorithmQuestionEntry,
 } from "./algorithmItems";
 import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
@@ -19,24 +20,33 @@ import {
   buildAlgorithmWeakAreaRecommendation,
   isRoadmapPrerequisiteSatisfied,
 } from "./algorithmProgress";
+import {
+  ALGORITHM_MODE_IDS,
+  getAlgorithmMode,
+  type AlgorithmModeId,
+} from "./domain/algorithmModes";
+import {
+  selectAlgorithmReviewItems,
+  type AlgorithmReviewSource,
+} from "./algorithmReviewSelection";
 
-export type AlgorithmPracticeSessionMode =
-  | "learn"
-  | "drill"
-  | "review"
-  | "weakArea"
-  | "practice"
-  | "default";
-
-export type AlgorithmReviewSource = "dueQueue" | "sessionMisses";
+export type { AlgorithmReviewSource } from "./algorithmReviewSelection";
+export type AlgorithmSessionEntryPoint =
+  | "topic_default"
+  | "pattern_recognition"
+  | "contrast"
+  | "due_queue"
+  | "session_misses"
+  | "mixed_practice"
+  | "timed_validation";
 
 export type SelectAlgorithmSessionItemsInput = {
   attempts?: readonly TrainingAttempt[];
   contentCatalog?: AlgorithmContentCatalog;
-  mode: AlgorithmPracticeSessionMode;
+  mode: AlgorithmModeId;
   nodeId: AlgorithmRoadmapNodeId;
   now?: string;
-  reviewItemIds?: readonly string[];
+  reviewItemRefs?: readonly ContentItemRef[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
   reviewSource?: AlgorithmReviewSource;
   sessionLength: number;
@@ -73,19 +83,42 @@ const DRILL_ITEM_TYPES = [
   "mistake_review",
 ] as const satisfies readonly AlgorithmQuestionType[];
 
-export const ALGORITHMS_SESSION_MODE_IDS = {
-  default: ALGORITHMS_SESSION_MODE_ID,
-  drill: "algorithms-drill",
-  learn: "algorithms-learn",
-  practice: "algorithms-mixed-practice",
-  review: "algorithms-review",
-  weakArea: "algorithms-weak-area",
-} as const satisfies Record<AlgorithmPracticeSessionMode, string>;
+export const ALGORITHM_ENTRY_MODE_IDS = Object.freeze({
+  topic_default: ALGORITHM_MODE_IDS.guidedPractice,
+  pattern_recognition: ALGORITHM_MODE_IDS.recognizePatterns,
+  contrast: ALGORITHM_MODE_IDS.contrastPractice,
+  due_queue: ALGORITHM_MODE_IDS.weakAreaReview,
+  session_misses: ALGORITHM_MODE_IDS.weakAreaReview,
+  mixed_practice: ALGORITHM_MODE_IDS.independentPractice,
+  timed_validation: ALGORITHM_MODE_IDS.interviewSimulation,
+} as const satisfies Record<AlgorithmSessionEntryPoint, AlgorithmModeId>);
 
-export function getAlgorithmsTrainingSessionModeId(
-  mode: AlgorithmPracticeSessionMode,
-): string {
-  return ALGORITHMS_SESSION_MODE_IDS[mode];
+export function getAlgorithmModeIdForEntryPoint(
+  entryPoint: AlgorithmSessionEntryPoint,
+): AlgorithmModeId {
+  const modeId: AlgorithmModeId | undefined = ALGORITHM_ENTRY_MODE_IDS[entryPoint];
+  if (!modeId) throw new Error(`Unknown Algorithms entry point: ${entryPoint}`);
+  return modeId;
+}
+
+export function resolveAlgorithmSessionNode(
+  nodeId?: string,
+): AlgorithmRoadmapNode {
+  if (nodeId === undefined) {
+    return getFirstUsableAlgorithmRoadmapNode();
+  }
+
+  const node = getAlgorithmSessionNodeById(nodeId);
+  if (!isAlgorithmRoadmapNodeSelectable(node)) {
+    throw new Error(`Unknown or unavailable Algorithms topic: ${nodeId}`);
+  }
+  return node;
+}
+
+export function getAlgorithmSessionNodeById(nodeId: string): AlgorithmRoadmapNode {
+  const node = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === nodeId);
+  if (!node) throw new Error(`Unknown Algorithms topic: ${nodeId}`);
+  return node;
 }
 
 export function selectAlgorithmSessionItemsForRoadmapNode(input: {
@@ -97,7 +130,7 @@ export function selectAlgorithmSessionItemsForRoadmapNode(input: {
   const catalog = input.contentCatalog ?? getAlgorithmContentCatalog();
   const entries = getSelectableModeEntries(
     catalog,
-    input.modeId ?? ALGORITHMS_SESSION_MODE_ID,
+    input.modeId ?? ALGORITHM_MODE_IDS.guidedPractice,
   ).filter((entry) => entry.group.roadmapNodeId === input.nodeId);
 
   return shuffleArray(entries.map((entry) => entry.question)).slice(0, input.sessionLength);
@@ -106,53 +139,57 @@ export function selectAlgorithmSessionItemsForRoadmapNode(input: {
 export function selectAlgorithmSessionItems(
   input: SelectAlgorithmSessionItemsInput,
 ): readonly AlgorithmQuestion[] {
+  const mode = getAlgorithmMode(input.mode);
+  if (mode.id === ALGORITHM_MODE_IDS.weakAreaReview && !input.reviewSource) {
+    throw new Error("Algorithms Weak Area Review requires due_queue or session_misses source.");
+  }
   const catalog = input.contentCatalog ?? getAlgorithmContentCatalog();
-  const entries = getSelectableModeEntries(catalog, ALGORITHMS_SESSION_MODE_ID);
+  const entries = getSelectableModeEntries(catalog, input.mode);
 
   switch (input.mode) {
-    case "learn":
+    case ALGORITHM_MODE_IDS.learnApproach:
       return takeQuestions(
         selectPreferredNodeEntries(entries, input.nodeId, LEARN_ITEM_TYPES),
         input.sessionLength,
       );
-    case "drill":
+    case ALGORITHM_MODE_IDS.guidedPractice:
       return takeQuestions(
         selectPreferredNodeEntries(entries, input.nodeId, DRILL_ITEM_TYPES),
         input.sessionLength,
       );
-    case "review":
-      return input.reviewSource === "sessionMisses"
-        ? selectReviewQuestionsById(
-            input.reviewItemIds ?? [],
-            entries,
-            input.sessionLength,
-          )
-        : selectDueReviewQuestions(
-            input.reviewQueueItems ?? [],
-            entries,
-            input.now ?? new Date().toISOString(),
-            input.sessionLength,
-          );
-    case "weakArea":
-      return selectWeakAreaQuestions(
-        input.attempts ?? [],
-        catalog.getGroups(),
-        input.nodeId,
+    case ALGORITHM_MODE_IDS.recognizePatterns:
+    case ALGORITHM_MODE_IDS.contrastPractice:
+      return takeQuestions(
+        selectPreferredNodeEntries(entries, input.nodeId, mode.itemTypes),
         input.sessionLength,
       );
-    case "practice":
+    case ALGORITHM_MODE_IDS.weakAreaReview:
+      return selectAlgorithmReviewItems({
+        entries,
+        reviewedItemRefs: [
+          ...(input.attempts ?? []).map((attempt) => attempt.item),
+          ...(input.reviewQueueItems ?? []).map((entry) => entry.sourceItem),
+        ].filter((ref) => ref.trackId === "algorithms"),
+        requestedLength: input.sessionLength,
+        source: input.reviewSource === "session_misses"
+          ? { itemRefs: input.reviewItemRefs ?? [], kind: "session_misses" }
+          : {
+              kind: "due_queue",
+              now: input.now ?? new Date().toISOString(),
+              reviewQueueItems: (input.reviewQueueItems ?? [])
+                .filter((entry) => entry.sourceItem.trackId === "algorithms"),
+            },
+      }).items;
+    case ALGORITHM_MODE_IDS.independentPractice:
+    case ALGORITHM_MODE_IDS.interviewSimulation:
       return buildAlgorithmMixedPracticeSelection({
         attempts: input.attempts ?? [],
         currentRoadmapNodeId: input.nodeId,
         groups: catalog.getGroups(),
         sessionLength: input.sessionLength,
       });
-    case "default":
-      return selectAlgorithmSessionItemsForRoadmapNode({
-        contentCatalog: catalog,
-        nodeId: input.nodeId,
-        sessionLength: input.sessionLength,
-      });
+    default:
+      throw new Error(`Unknown Algorithms mode id: ${input.mode}`);
   }
 }
 
@@ -266,79 +303,6 @@ function selectPreferredNodeEntries(
 
 function normalizeTypePriority(index: number): number {
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
-}
-
-function selectWeakAreaQuestions(
-  attempts: readonly TrainingAttempt[],
-  groups: readonly AlgorithmContentGroup[],
-  nodeId: AlgorithmRoadmapNodeId,
-  sessionLength: number,
-): readonly AlgorithmQuestion[] {
-  const recommendation = buildAlgorithmWeakAreaRecommendation(
-    attempts,
-    groups,
-    ALGORITHM_ROADMAP.nodes,
-    nodeId,
-  );
-  const questionsById = new Map(
-    groups.flatMap((group) => group.questions).map((question) => [question.id, question]),
-  );
-
-  return recommendation.candidateItemIds.flatMap((itemId) => {
-    const question = questionsById.get(itemId);
-    return question ? [question] : [];
-  }).slice(0, sessionLength);
-}
-
-function selectDueReviewQuestions(
-  reviewQueueItems: readonly ReviewQueueEntry[],
-  entries: readonly AlgorithmQuestionEntry[],
-  now: string,
-  sessionLength: number,
-): readonly AlgorithmQuestion[] {
-  const questionsById = new Map(entries.map((entry) => [entry.question.id, entry.question]));
-  const selectedIds = new Set<string>();
-  const selected: AlgorithmQuestion[] = [];
-
-  for (const reviewItem of [...reviewQueueItems]
-    .filter((item) => item.trackId === "algorithms" && item.dueAt <= now)
-    .sort(compareReviewQueueItems)) {
-    const question = questionsById.get(reviewItem.sourceItem.itemId);
-
-    if (question && !selectedIds.has(question.id)) {
-      selected.push(question);
-      selectedIds.add(question.id);
-    }
-  }
-
-  return selected.slice(0, sessionLength);
-}
-
-function selectReviewQuestionsById(
-  itemIds: readonly string[],
-  entries: readonly AlgorithmQuestionEntry[],
-  sessionLength: number,
-): readonly AlgorithmQuestion[] {
-  const questionsById = new Map(entries.map((entry) => [entry.question.id, entry.question]));
-  const selectedIds = new Set<string>();
-  const selected: AlgorithmQuestion[] = [];
-
-  for (const itemId of itemIds) {
-    const question = questionsById.get(itemId);
-
-    if (question && !selectedIds.has(question.id)) {
-      selected.push(question);
-      selectedIds.add(question.id);
-    }
-  }
-
-  return selected.slice(0, sessionLength);
-}
-
-function compareReviewQueueItems(left: ReviewQueueEntry, right: ReviewQueueEntry): number {
-  return left.dueAt.localeCompare(right.dueAt) ||
-    left.createdAt.localeCompare(right.createdAt) ||
-    left.id.localeCompare(right.id);
 }
 
 function buildMixedPracticeNodeOrder(

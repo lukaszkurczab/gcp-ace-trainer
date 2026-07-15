@@ -5,8 +5,10 @@ import {
 } from "../../../domain";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import {
+  ALGORITHM_MODE_IDS,
   buildAlgorithmProgressFacts,
   buildAlgorithmWeakAreaRecommendation,
+  type AlgorithmModeId,
   type AlgorithmRoadmapNodeProgressStatus,
 } from "../../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
@@ -250,9 +252,8 @@ function buildAlgorithmsProgressTabModel(
       ? {
           kind: "practiceSession",
           params: buildPracticeSessionConfig({
-            feedbackMode: "afterEachAnswer",
-            mode: "review",
-            reviewSource: "dueQueue",
+            mode: ALGORITHM_MODE_IDS.weakAreaReview,
+            reviewSource: "due_queue",
             source: "modeShortcut",
             topicId: facts.activeRoadmapNode.id,
             trackId: ALGORITHMS_TRACK_ID,
@@ -393,12 +394,12 @@ function buildLearningPriority(input: {
     return {
       detail: `Your recent ${remediationNodeLabel} attempts show ${remediationCount === 1 ? "a mistake pattern that needs" : "mistake patterns that need"} repair before more new work.`,
       label: input.remediationState.criticalRemediationCount > 0 ? "Critical remediation" : "Needs attention",
-      primaryAction: buildAlgorithmsAction("review", remediationNodeId, "dueQueue"),
+      primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.weakAreaReview, remediationNodeId, "due_queue"),
       primaryActionLabel: "Review remediation",
-      primaryActionMode: "review",
-      secondaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
+      primaryActionMode: ALGORITHM_MODE_IDS.weakAreaReview,
+      secondaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
       secondaryActionLabel: "Continue practice",
-      secondaryActionMode: "drill",
+      secondaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
       title: `Review ${remediationCount} remediation ${remediationCount === 1 ? "item" : "items"}`,
       tone: input.remediationState.criticalRemediationCount > 0 ? "danger" : "warning",
     };
@@ -408,9 +409,9 @@ function buildLearningPriority(input: {
     return {
       detail: buildBreadthPriorityDetail(input.focusNode),
       label: "Build evidence",
-      primaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
+      primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
       primaryActionLabel: `Continue ${input.focusNode.label} practice`,
-      primaryActionMode: "drill",
+      primaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
       title: input.focusNode.coreSkillAtomCoveragePercent < 80
         ? "Build core-skill breadth"
         : "Strengthen your current evidence",
@@ -422,14 +423,14 @@ function buildLearningPriority(input: {
     return {
       detail: "This is a scheduled memory check. It does not block the next topic.",
       label: "Scheduled check",
-      primaryAction: buildAlgorithmsAction("review", input.focusNode.nodeId, "dueQueue"),
+      primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.weakAreaReview, input.focusNode.nodeId, "due_queue"),
       primaryActionLabel: "Run retention check",
-      primaryActionMode: "review",
+      primaryActionMode: ALGORITHM_MODE_IDS.weakAreaReview,
       secondaryAction: input.nextNode
-        ? buildAlgorithmsAction("drill", input.nextNode.nodeId)
-        : buildAlgorithmsAction("drill", input.focusNode.nodeId),
+        ? buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.nextNode.nodeId)
+        : buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
       secondaryActionLabel: "Continue practice",
-      secondaryActionMode: "drill",
+      secondaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
       title: "Retention check pending",
       tone: "info",
     };
@@ -439,12 +440,12 @@ function buildLearningPriority(input: {
     return {
       detail: `You can start ${input.nextNode.label}. Mastery of ${input.focusNode.label} can still be confirmed later through retention checks.`,
       label: "Ready for next",
-      primaryAction: buildAlgorithmsAction("drill", input.nextNode.nodeId),
+      primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.nextNode.nodeId),
       primaryActionLabel: `Start ${input.nextNode.label}`,
-      primaryActionMode: "drill",
-      secondaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
+      primaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
+      secondaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
       secondaryActionLabel: "Review current topic",
-      secondaryActionMode: "drill",
+      secondaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
       title: "Ready for next topic",
       tone: "success",
     };
@@ -456,9 +457,9 @@ function buildLearningPriority(input: {
         ? "Keep this topic durable with its scheduled maintenance work."
         : "This topic has the required practice, breadth, accuracy, and retention evidence.",
       label: input.focusNode.status === "maintenance" ? "Maintenance" : "Mastered",
-      primaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
+      primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
       primaryActionLabel: input.focusNode.status === "maintenance" ? "Continue maintenance" : "Continue practice",
-      primaryActionMode: "drill",
+      primaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
       title: input.focusNode.status === "maintenance" ? "Maintenance is due" : "Topic mastered",
       tone: "success",
     };
@@ -467,23 +468,22 @@ function buildLearningPriority(input: {
   return {
     detail: "Practice items to build evidence for your first roadmap node.",
     label: "Get started",
-    primaryAction: buildAlgorithmsAction("drill", input.focusNode.nodeId),
+    primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
     primaryActionLabel: "Start practice",
-    primaryActionMode: "drill",
+    primaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
     title: "Start your first Algorithms session",
     tone: "info",
   };
 }
 
 function buildAlgorithmsAction(
-  mode: PracticeSessionMode,
+  mode: AlgorithmModeId,
   topicId: string,
-  reviewSource?: "dueQueue",
+  reviewSource?: "due_queue",
 ): ProgressAction {
   return {
     kind: "practiceSession",
     params: buildPracticeSessionConfig({
-      feedbackMode: "afterEachAnswer",
       mode,
       reviewSource,
       source: "modeShortcut",

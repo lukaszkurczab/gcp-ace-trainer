@@ -20,3 +20,13 @@ test("families do not import one another and source contains no replacement brid
   const source = sourcePaths.map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(source, /as unknown as|@ts-ignore|@ts-expect-error|toCanonical|fromLegacy/);
 });
+
+test("application mutations depend on repositories rather than raw storage internals", () => {
+  const mutations = files("src/application/learningMutations").map((path) => readFileSync(path, "utf8")).join("\n");
+  assert.doesNotMatch(mutations, /infrastructure\/storage\/mmkvClient|storage\/(?:keys|storageCodec)/);
+});
+
+test("the public storage barrel does not expose raw keys or codec", () => {
+  const barrel = readFileSync("src/storage/index.ts", "utf8");
+  assert.doesNotMatch(barrel, /export \* from "\.\/(?:keys|storageCodec)"/);
+});

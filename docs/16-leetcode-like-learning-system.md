@@ -15,9 +15,15 @@ Algorithms is a strategy-first learning track, not an online judge or clone of a
 | Weak Area Review — due queue | 10 | after each | elapsed foreground | yes |
 | Weak Area Review — session misses | 10 | after each | elapsed foreground | yes |
 | Independent Practice | 20 | after each | elapsed foreground | no |
-| Interview Simulation | exam/session profile | session end | countdown | no |
+| Interview Simulation | 40 | session end | 45-minute foreground countdown | no |
 
 Topic/default practice maps to `Guided Practice`; pattern recognition to `Recognize Patterns`; contrast to `Contrast Practice`; due and session-miss sources to `Weak Area Review`; mixed to `Independent Practice`; timed validation to `Interview Simulation`. No second mode taxonomy exists.
+
+## Interview Simulation
+
+`Interview Simulation` uses one fixed 40-item plan, free navigation, and editable responses until final submission. It persists draft responses, current position, and accumulated foreground time for resume. Its remaining time is `max(0, 45 minutes - activeForegroundMs)`: background and closed-app time pause the countdown, and no wall-clock deadline exists.
+
+Manual submission or foreground-time exhaustion performs one idempotent atomic finalization. Only then are immutable attempts and persistent-review mutations created, and only for answered, submitted outcomes; the completed session is persisted and its draft is deleted in the same operation. Unanswered item IDs are allowed and reported separately, with no attempt or review entry. Feedback is session-end only. Reinsert is disabled.
 
 ## Review selection and reinsert
 

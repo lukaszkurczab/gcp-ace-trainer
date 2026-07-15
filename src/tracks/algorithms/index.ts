@@ -6,6 +6,7 @@ export * from "./algorithmOptionOrder";
 export * from "./algorithmProgress";
 export * from "./algorithmQuestionTypes";
 export * from "./algorithmReview";
+export * from "./algorithmReviewSelection";
 export * from "./algorithmRoadmap";
 export * from "./algorithmScoring";
 export * from "./algorithmSessionSelection";

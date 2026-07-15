@@ -1,0 +1,71 @@
+import type { TrackId } from "./trackIdentity";
+import type { TrainingSession } from "./trainingSession";
+
+export type TrainingSessionDraftResponse =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly TrainingSessionDraftResponse[]
+  | Readonly<{ [key: string]: TrainingSessionDraftResponse }>;
+
+export type TrainingSessionDraft = Readonly<{
+  sessionId: string;
+  trackId: TrackId;
+  responsesByOccurrenceId: Readonly<Record<string, TrainingSessionDraftResponse>>;
+  updatedAt: string;
+}>;
+
+export function createTrainingSessionDraft(draft: TrainingSessionDraft): TrainingSessionDraft {
+  if (!draft.sessionId.trim()) throw new Error("Training session draft session identity is required.");
+  if (!draft.trackId.trim()) throw new Error("Training session draft track identity is required.");
+  if (!isTimestamp(draft.updatedAt)) throw new Error("Training session draft update time is invalid.");
+  if (!isPlainRecord(draft.responsesByOccurrenceId)) throw new Error("Training session draft responses must be a canonical response record.");
+  if (Object.keys(draft.responsesByOccurrenceId).some((occurrenceId) => !occurrenceId.trim())) {
+    throw new Error("Training session draft response occurrence identities must be non-empty.");
+  }
+  if (!Object.values(draft.responsesByOccurrenceId).every(isJsonValue)) {
+    throw new Error("Training session draft responses must contain only canonical JSON values.");
+  }
+  return Object.freeze({
+    ...draft,
+    responsesByOccurrenceId: Object.freeze(Object.fromEntries(
+      Object.entries(draft.responsesByOccurrenceId).map(([occurrenceId, response]) => [occurrenceId, freezeJsonValue(response)]),
+    )),
+  });
+}
+
+export function canPersistTrainingSessionDraft(session: TrainingSession): boolean {
+  return session.configurationSnapshot.feedbackMode === "atSessionEnd" &&
+    session.configurationSnapshot.answerChanges === "untilFinalSubmission" &&
+    session.configurationSnapshot.submission === "manualOrForegroundTimeout";
+}
+
+export function getTrainingSessionFinalizationCleanupKind(session: TrainingSession): "active_exam" | "session_draft" | null {
+  if (canPersistTrainingSessionDraft(session)) return "session_draft";
+  if (session.configurationSnapshot.kind === "certificationSimulation" && session.configurationSnapshot.timer === "absoluteDeadline") return "active_exam";
+  return null;
+}
+
+function isTimestamp(value: string): boolean {
+  return value.trim().length > 0 && !Number.isNaN(Date.parse(value));
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
+}
+
+function isJsonValue(value: unknown): value is TrainingSessionDraftResponse {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return true;
+  if (typeof value === "number") return Number.isFinite(value);
+  if (Array.isArray(value)) return value.every(isJsonValue);
+  return isPlainRecord(value) && Object.values(value).every(isJsonValue);
+}
+
+function freezeJsonValue(value: TrainingSessionDraftResponse): TrainingSessionDraftResponse {
+  if (Array.isArray(value)) return Object.freeze(value.map(freezeJsonValue));
+  if (isPlainRecord(value)) {
+    return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, freezeJsonValue(entry as TrainingSessionDraftResponse)])));
+  }
+  return value;
+}

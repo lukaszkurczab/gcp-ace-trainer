@@ -1,7 +1,7 @@
 import { EXAM_DURATION_MINUTES } from "../../constants";
-import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, moveTrainingSessionToIndex, type TrainingAttempt } from "../../domain";
-import { addTrainingSession, getCertificationExam, saveCertificationExam } from "../../storage";
-import { commitCertificationExamFinalization } from "../../application/learningMutations";
+import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, moveTrainingSessionToIndex, retainReviewQueueEntryIdentity, type TrainingAttempt } from "../../domain";
+import { getCertificationExam, getReviewQueueItems, saveCertificationExam, saveTrainingSession } from "../../storage";
+import { commitTrainingSessionFinalization } from "../../application/learningMutations";
 import { createAttemptId } from "../../application/learningMutations/identity";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { createCertificationReviewEntry, scoreCertificationQuestion, type CertificationExamSummaryViewModel, type CertificationExamViewModel, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
@@ -10,7 +10,7 @@ import { buildExamQuestionViewsFromSession, selectExamQuestions } from "./examGe
 import { buildExamSummaryViewModel, scoreExamSession } from "./scoringService";
 
 export type ExamGenerationResult = { ok: true; session: CertificationExamViewModel } | { ok: false; reason: string };
-export type ExamQuestionView = CertificationQuestion & { shuffledOptions: CertificationQuestion["options"] };
+export type ExamQuestionView = CertificationQuestion & { occurrenceId: string; shuffledOptions: CertificationQuestion["options"] };
 function createId(prefix: string): string { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`; }
 
 export function getRemainingSeconds(runtime: CertificationExamViewModel, now = Date.now()): number { return Math.max(0, Math.ceil((new Date(runtime.examState.deadlineAt).getTime() - now) / 1000)); }
@@ -23,9 +23,11 @@ export async function createExamSession(): Promise<ExamGenerationResult> {
   if (!selection.ok) return { ok: false, reason: "The question bank does not have enough questions for the exam blueprint." };
   const startedAt = new Date();
   const deadlineAt = new Date(startedAt.getTime() + EXAM_DURATION_MINUTES * 60 * 1000).toISOString();
-  const session = createTrainingSession({ id: createId("exam"), trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-exam-simulation", requestedLength: selection.questions.length, actualLength: selection.questions.length, currentItemIndex: 0, itemOrder: selection.questions.map((question) => getCertificationContentCatalog().toContentItemRef(question)), optionOrderByItem: selection.optionOrderByQuestionId, activeForegroundMs: 0, contentVersion: getCertificationContentCatalog().getContentVersion(), status: "active", startedAt: startedAt.toISOString() });
+  const sessionId = createId("exam");
+  const itemOrder = selection.questions.map((question, index) => ({ occurrenceId: `${sessionId}:occurrence:${index}`, item: getCertificationContentCatalog().toContentItemRef(question) }));
+  const session = createTrainingSession({ id: sessionId, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-exam-simulation", configurationSnapshot: { durationMinutes: EXAM_DURATION_MINUTES, kind: "certificationSimulation", questionCount: selection.questions.length, timer: "absoluteDeadline" }, requestedLength: selection.questions.length, actualLength: selection.questions.length, currentItemIndex: 0, itemOrder, optionOrderByOccurrence: Object.fromEntries(itemOrder.map((occurrence, index) => [occurrence.occurrenceId, selection.optionOrderByQuestionId[selection.questions[index]!.id]!])), flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: getCertificationContentCatalog().getContentVersion(), status: "active", startedAt: startedAt.toISOString() });
   const runtime: CertificationExamViewModel = { session, examState: { sessionId: session.id, deadlineAt, responsesByItemId: {}, flaggedItemIds: [] } };
-  await Promise.all([saveCertificationExam(runtime), addTrainingSession(session)]);
+  await Promise.all([saveCertificationExam(runtime), saveTrainingSession(session)]);
   return { ok: true, session: runtime };
 }
 
@@ -55,16 +57,17 @@ export async function submitCertificationExam(autoSubmitted = false): Promise<Ce
   const questions = buildExamQuestionViews(runtime, getCertificationContentCatalog().getItems());
   const completedAt = new Date().toISOString();
   const score = scoreExamSession(runtime, questions, completedAt);
-  const attempts: TrainingAttempt<CertificationResponse>[] = []; const reviews = [] as ReturnType<typeof createCertificationReviewEntry>[];
+  const existingReviewsByItem = new Map((await getReviewQueueItems()).value.filter((entry) => entry.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((entry) => [entry.sourceItem.itemId, entry]));
+  const attempts: TrainingAttempt<CertificationResponse>[] = []; const reviewMutations = [] as { action: "put" | "update"; record: NonNullable<ReturnType<typeof createCertificationReviewEntry>>; transitionAttemptId: string }[];
   for (const question of questions) {
     const response = runtime.examState.responsesByItemId[question.id];
     if (!response) continue;
     const result = scoreCertificationQuestion(question, response);
-    const attempt = createTrainingAttempt({ id: await createAttemptId(runtime.session.id, question.id, response), sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: getCertificationContentCatalog().toContentItemRef(question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag })), ...(runtime.examState.flaggedItemIds.includes(question.id) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: completedAt, committedAt: completedAt });
-    attempts.push(attempt); const review = createCertificationReviewEntry(attempt); if (review) reviews.push(review);
+    const attempt = createTrainingAttempt({ id: await createAttemptId(runtime.session.id, question.occurrenceId, response), occurrenceId: question.occurrenceId, sessionId: runtime.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: runtime.session.modeId, item: getCertificationContentCatalog().toContentItemRef(question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((tag) => ({ axisId: "tag", nodeId: tag })), ...(runtime.examState.flaggedItemIds.includes(question.id) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: completedAt, committedAt: completedAt });
+    attempts.push(attempt); const review = createCertificationReviewEntry(attempt); if (review) { const existing = existingReviewsByItem.get(review.sourceItem.itemId); reviewMutations.push({ action: existing ? "update" : "put", record: existing ? retainReviewQueueEntryIdentity(existing, review) : review, transitionAttemptId: attempt.id }); }
   }
   const completedSession = completeTrainingSession(runtime.session, completedAt);
-  await commitCertificationExamFinalization({ session: completedSession, attempts, reviews: reviews.filter((review): review is NonNullable<typeof review> => review !== null), createdAt: completedAt });
+  await commitTrainingSessionFinalization({ session: completedSession, attempts, reviewMutations, cleanup: { kind: "certification_exam" }, createdAt: completedAt });
   const durationSeconds = Math.max(0, Math.round((Date.parse(completedAt) - Date.parse(runtime.session.startedAt)) / 1000));
   const summary = buildExamSummaryViewModel({ id: runtime.session.id, runtime, completedAt, durationSeconds, score });
   return summary;

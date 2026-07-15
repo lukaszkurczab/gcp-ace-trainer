@@ -8,3 +8,4 @@ export * from "./reviewQueueEntry";
 export * from "./trackIdentity";
 export * from "./trainingAttempt";
 export * from "./trainingSession";
+export * from "./trainingSessionDraft";

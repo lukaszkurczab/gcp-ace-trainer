@@ -1,6 +1,7 @@
 import type { PublishedTrackManifest } from "../contracts";
 import { CorruptContentCacheError } from "../errors";
-import { STORAGE_KEYS, readStoredJson, removeStoredValue, writeStoredJson } from "../../storage";
+import { STORAGE_KEYS } from "../../storage/keys";
+import { readStoredJson, removeStoredValue, writeStoredJson } from "../../storage/storageCodec";
 
 export type CachedTrackContent = { trackId: string; familyId: string; contentVersion: string; manifest: PublishedTrackManifest; bankJson: string; sha256: string; activatedAt: string };
 export interface ContentCache { readActive(trackId: string): Promise<CachedTrackContent | null>; readStaged(trackId: string, version: string): Promise<CachedTrackContent | null>; stage(candidate: CachedTrackContent): Promise<void>; activate(trackId: string, contentVersion: string): Promise<void>; discardStaged(trackId: string, contentVersion: string): Promise<void>; }
