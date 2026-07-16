@@ -10,6 +10,26 @@ export type TrainingSessionItemOccurrence = Readonly<{
   item: ContentItemRef;
 }>;
 
+/** A branch is prepared with the session, never created while a session runs. */
+export type TrainingSessionConditionalReinsertBranch = Readonly<{
+  occurrence: TrainingSessionItemOccurrence;
+  optionOrder: readonly string[];
+}>;
+
+/**
+ * An immutable position in a prepared session plan. `ordinaryBranch` is the
+ * occurrence already present in itemOrder; exactly one alternative branch is
+ * reserved in advance for an eligible Algorithms reinsert.
+ */
+export type TrainingSessionConditionalReinsertSlot = Readonly<{
+  slotId: string;
+  sourceOccurrenceId: string;
+  ordinaryBranch: TrainingSessionConditionalReinsertBranch;
+  reviewedVariantBranch?: TrainingSessionConditionalReinsertBranch;
+  exactSourceBranch?: TrainingSessionConditionalReinsertBranch;
+  resolutionRule: "incorrect_or_partial_after_three_materialized_submissions";
+}>;
+
 export type TrainingSession = Readonly<{
   id: string;
   trackId: TrackId;
@@ -20,6 +40,7 @@ export type TrainingSession = Readonly<{
   currentItemIndex: number;
   itemOrder: readonly TrainingSessionItemOccurrence[];
   optionOrderByOccurrence: Readonly<Record<string, readonly string[]>>;
+  conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
   flaggedOccurrenceIds: readonly string[];
   activeForegroundMs: number;
   contentVersion: string;
@@ -77,6 +98,8 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   if (Object.values(session.optionOrderByOccurrence).some((optionIds) => new Set(optionIds).size !== optionIds.length)) {
     throw new InvalidTrainingSessionError("Option order cannot contain duplicate option IDs.");
   }
+  const conditionalReinsertSlots = session.conditionalReinsertSlots ?? [];
+  validateConditionalReinsertSlots(session, conditionalReinsertSlots, occurrenceIds);
   if (new Set(session.flaggedOccurrenceIds).size !== session.flaggedOccurrenceIds.length ||
     session.flaggedOccurrenceIds.some((occurrenceId) => !occurrenceIds.has(occurrenceId))) {
     throw new InvalidTrainingSessionError("Flagged occurrences must be unique members of the immutable session plan.");
@@ -86,6 +109,7 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
     configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
     itemOrder: Object.freeze(session.itemOrder.map((occurrence) => Object.freeze({ ...occurrence, item: Object.freeze({ ...occurrence.item }) }))),
     optionOrderByOccurrence: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByOccurrence).map(([occurrenceId, optionIds]) => [occurrenceId, Object.freeze([...optionIds])]))),
+    conditionalReinsertSlots: Object.freeze(conditionalReinsertSlots.map(freezeConditionalReinsertSlot)),
     flaggedOccurrenceIds: Object.freeze([...session.flaggedOccurrenceIds]),
   });
 }
@@ -151,4 +175,101 @@ function isConfigurationSnapshot(value: unknown): value is TrainingSessionConfig
 
 function freezeConfigurationSnapshot(snapshot: TrainingSessionConfigurationSnapshot): TrainingSessionConfigurationSnapshot {
   return Object.freeze(Object.fromEntries(Object.entries(snapshot).map(([key, value]) => [key, Array.isArray(value) ? Object.freeze([...value]) : value])));
+}
+
+function validateConditionalReinsertSlots(
+  session: TrainingSession,
+  slots: readonly TrainingSessionConditionalReinsertSlot[],
+  occurrenceIds: ReadonlySet<string>,
+): void {
+  const slotIds = new Set<string>();
+  const sourceOccurrenceIds = new Set<string>();
+  const ordinaryOccurrenceIds = new Set<string>();
+  const alternateOccurrenceIds = new Set<string>();
+  const itemOrderIndexByOccurrenceId = new Map(session.itemOrder.map((occurrence, index) => [occurrence.occurrenceId, index]));
+  for (const slot of slots) {
+    if (!slot.slotId.trim() || slotIds.has(slot.slotId)) throw new InvalidTrainingSessionError("Conditional reinsert slot IDs must be unique non-empty strings.");
+    slotIds.add(slot.slotId);
+    if (!slot.sourceOccurrenceId.trim() || sourceOccurrenceIds.has(slot.sourceOccurrenceId) || !occurrenceIds.has(slot.sourceOccurrenceId)) {
+      throw new InvalidTrainingSessionError("A conditional reinsert source must be a unique immutable session occurrence.");
+    }
+    sourceOccurrenceIds.add(slot.sourceOccurrenceId);
+    if (slot.resolutionRule !== "incorrect_or_partial_after_three_materialized_submissions") {
+      throw new InvalidTrainingSessionError("Conditional reinsert slots must use the canonical resolution rule.");
+    }
+    const ordinary = slot.ordinaryBranch;
+    const targetIndex = itemOrderIndexByOccurrenceId.get(ordinary.occurrence.occurrenceId);
+    const sourceIndex = itemOrderIndexByOccurrenceId.get(slot.sourceOccurrenceId);
+    if (targetIndex === undefined || sourceIndex === undefined || targetIndex - sourceIndex < 4 || ordinaryOccurrenceIds.has(ordinary.occurrence.occurrenceId)) {
+      throw new InvalidTrainingSessionError("A conditional reinsert slot must reserve one later ordinary plan position after three intervening positions.");
+    }
+    ordinaryOccurrenceIds.add(ordinary.occurrence.occurrenceId);
+    const planOccurrence = session.itemOrder[targetIndex];
+    if (!planOccurrence || !sameOccurrence(planOccurrence, ordinary.occurrence) || !sameOptionOrder(session.optionOrderByOccurrence[ordinary.occurrence.occurrenceId] ?? [], ordinary.optionOrder)) {
+      throw new InvalidTrainingSessionError("A conditional reinsert ordinary branch must exactly match its persisted plan occurrence and option order.");
+    }
+    assertBranchMatchesSession(slot.ordinaryBranch, session, false, alternateOccurrenceIds);
+    const alternatives = [slot.reviewedVariantBranch, slot.exactSourceBranch].filter((branch): branch is TrainingSessionConditionalReinsertBranch => branch !== undefined);
+    if (alternatives.length !== 1) throw new InvalidTrainingSessionError("A conditional reinsert slot must reserve exactly one reviewed-variant or exact-source branch.");
+    const sourceOccurrence = session.itemOrder[sourceIndex]!;
+    if (slot.reviewedVariantBranch) {
+      if (sameContentItem(slot.reviewedVariantBranch.occurrence.item, sourceOccurrence.item)) {
+        throw new InvalidTrainingSessionError("A reviewed reinsert branch must not duplicate the exact source item.");
+      }
+      assertBranchMatchesSession(slot.reviewedVariantBranch, session, true, alternateOccurrenceIds);
+    }
+    if (slot.exactSourceBranch) {
+      if (!sameContentItem(slot.exactSourceBranch.occurrence.item, sourceOccurrence.item)) {
+        throw new InvalidTrainingSessionError("An exact-source reinsert branch must reference the source item.");
+      }
+      assertBranchMatchesSession(slot.exactSourceBranch, session, true, alternateOccurrenceIds);
+    }
+  }
+}
+
+function assertBranchMatchesSession(
+  branch: TrainingSessionConditionalReinsertBranch,
+  session: TrainingSession,
+  alternate: boolean,
+  alternateOccurrenceIds: Set<string>,
+): void {
+  if (!branch.occurrence.occurrenceId.trim() || branch.occurrence.item.trackId !== session.trackId || branch.occurrence.item.contentVersion !== session.contentVersion ||
+    new Set(branch.optionOrder).size !== branch.optionOrder.length || branch.optionOrder.some((id) => !id.trim())) {
+    throw new InvalidTrainingSessionError("A conditional reinsert branch must contain a valid session-versioned occurrence and unique option order.");
+  }
+  if (alternate) {
+    const planOccurrenceIds = new Set(session.itemOrder.map((occurrence) => occurrence.occurrenceId));
+    if (planOccurrenceIds.has(branch.occurrence.occurrenceId) || alternateOccurrenceIds.has(branch.occurrence.occurrenceId)) {
+      throw new InvalidTrainingSessionError("Conditional reinsert alternative occurrences must be preallocated unique identities outside ordinary plan occurrences.");
+    }
+    alternateOccurrenceIds.add(branch.occurrence.occurrenceId);
+  }
+}
+
+function sameOccurrence(left: TrainingSessionItemOccurrence, right: TrainingSessionItemOccurrence): boolean {
+  return left.occurrenceId === right.occurrenceId && sameContentItem(left.item, right.item);
+}
+
+function sameContentItem(left: ContentItemRef, right: ContentItemRef): boolean {
+  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion;
+}
+
+function sameOptionOrder(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((id, index) => id === right[index]);
+}
+
+function freezeConditionalReinsertSlot(slot: TrainingSessionConditionalReinsertSlot): TrainingSessionConditionalReinsertSlot {
+  return Object.freeze({
+    ...slot,
+    ordinaryBranch: freezeConditionalReinsertBranch(slot.ordinaryBranch),
+    ...(slot.reviewedVariantBranch ? { reviewedVariantBranch: freezeConditionalReinsertBranch(slot.reviewedVariantBranch) } : {}),
+    ...(slot.exactSourceBranch ? { exactSourceBranch: freezeConditionalReinsertBranch(slot.exactSourceBranch) } : {}),
+  });
+}
+
+function freezeConditionalReinsertBranch(branch: TrainingSessionConditionalReinsertBranch): TrainingSessionConditionalReinsertBranch {
+  return Object.freeze({
+    occurrence: Object.freeze({ ...branch.occurrence, item: Object.freeze({ ...branch.occurrence.item }) }),
+    optionOrder: Object.freeze([...branch.optionOrder]),
+  });
 }

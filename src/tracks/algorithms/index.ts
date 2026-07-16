@@ -2,6 +2,7 @@ export * from "./algorithmApproaches";
 export * from "./algorithmsBlueprints";
 export * from "./algorithmContentCatalog";
 export * from "./algorithmContentTypes";
+export * from "./algorithmConditionalReinsert";
 export * from "./algorithmItems";
 export * from "./algorithmInteractionHandlers";
 export * from "./algorithmOptionOrder";

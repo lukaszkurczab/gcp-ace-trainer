@@ -1,4 +1,4 @@
-import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt } from "../../domain";
+import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
 import { AlgorithmContentCatalog } from "../../tracks/algorithms/algorithmContentCatalog";
 import {
   ALGORITHMS_PRACTICE_BLUEPRINT,
@@ -13,6 +13,8 @@ import {
   type AlgorithmSelectionScope,
   type AlgorithmSessionSelection,
 } from "../../tracks/algorithms/algorithmSessionSelection";
+import { prepareAlgorithmsConditionalReinsertPlan } from "../../tracks/algorithms/algorithmConditionalReinsert";
+import { getAlgorithmQuestionEntries } from "../../tracks/algorithms/algorithmItems";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
 
 export type AlgorithmsPreparationRequest = Readonly<{
@@ -79,6 +81,23 @@ export class AlgorithmsFamilyRuntime {
       reviewSource: input.source,
       scope: input.request.scope,
       sessionLength: input.request.requestedLength,
+    });
+  }
+
+  /** Prepares immutable conditional branches; lifecycle use cases persist the returned session. */
+  prepareConditionalReinsertPlan(input: Readonly<{
+    optionOrderByItemId: Readonly<Record<string, readonly string[]>>;
+    reviewedItemRefs: readonly ContentItemRef[];
+    reviewSource?: AlgorithmReviewSource;
+    session: TrainingSession;
+  }>): TrainingSession {
+    return prepareAlgorithmsConditionalReinsertPlan({
+      entries: getAlgorithmQuestionEntries(this.catalog.getGroups()),
+      mode: input.session.modeId as AlgorithmModeId,
+      optionOrderByItemId: input.optionOrderByItemId,
+      reviewedItemRefs: input.reviewedItemRefs,
+      reviewSource: input.reviewSource,
+      session: input.session,
     });
   }
 

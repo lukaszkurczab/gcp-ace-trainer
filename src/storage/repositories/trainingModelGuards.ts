@@ -75,13 +75,13 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "flaggedOccurrenceIds", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "flaggedOccurrenceIds", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
-    isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.flaggedOccurrenceIds) && value.flaggedOccurrenceIds.every(isNonEmptyString) && typeof value.activeForegroundMs === "number" &&
+    isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && Array.isArray(value.flaggedOccurrenceIds) && value.flaggedOccurrenceIds.every(isNonEmptyString) && typeof value.activeForegroundMs === "number" &&
     typeof value.contentVersion === "string" &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
     Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
@@ -96,6 +96,7 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       currentItemIndex: value.currentItemIndex,
       itemOrder: value.itemOrder,
       optionOrderByOccurrence: value.optionOrderByOccurrence,
+      conditionalReinsertSlots: value.conditionalReinsertSlots,
       flaggedOccurrenceIds: value.flaggedOccurrenceIds,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
@@ -170,6 +171,19 @@ function isEvidenceRef(value: unknown): value is EvidenceRef {
 
 function isSessionItemOccurrence(value: unknown): value is { occurrenceId: string; item: ContentItemRef } {
   return isRecord(value) && hasOnlyKeys(value, ["occurrenceId", "item"]) && isNonEmptyString(value.occurrenceId) && isContentItemRef(value.item);
+}
+
+function isConditionalReinsertSlot(value: unknown): boolean {
+  return isRecord(value) && hasOnlyKeys(value, ["slotId", "sourceOccurrenceId", "ordinaryBranch", "reviewedVariantBranch", "exactSourceBranch", "resolutionRule"]) &&
+    isNonEmptyString(value.slotId) && isNonEmptyString(value.sourceOccurrenceId) && isConditionalReinsertBranch(value.ordinaryBranch) &&
+    (value.reviewedVariantBranch === undefined || isConditionalReinsertBranch(value.reviewedVariantBranch)) &&
+    (value.exactSourceBranch === undefined || isConditionalReinsertBranch(value.exactSourceBranch)) &&
+    value.resolutionRule === "incorrect_or_partial_after_three_materialized_submissions";
+}
+
+function isConditionalReinsertBranch(value: unknown): boolean {
+  return isRecord(value) && hasOnlyKeys(value, ["occurrence", "optionOrder"]) && isSessionItemOccurrence(value.occurrence) &&
+    Array.isArray(value.optionOrder) && value.optionOrder.every(isNonEmptyString) && new Set(value.optionOrder).size === value.optionOrder.length;
 }
 
 function isOptionOrderByOccurrence(value: unknown): value is Record<string, readonly string[]> {
