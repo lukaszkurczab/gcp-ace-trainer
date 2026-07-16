@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState, Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
@@ -49,7 +49,7 @@ const INITIAL_STATE: AlgorithmsInterviewSimulationControllerState = {
 
 /**
  * The sole active-session presentation for the fixed Interview Simulation.
- * It owns only view state and foreground measurement; every mutable session
+ * It owns only view state; every mutable session
  * operation crosses the application controller boundary first.
  */
 export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props) {
@@ -62,8 +62,6 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   const [panel, setPanel] = useState<SimulationPanel>("active");
   const [navigatorFilter, setNavigatorFilter] = useState<NavigatorFilter>("all");
   const [foregroundPaused, setForegroundPaused] = useState(AppState.currentState !== "active");
-  const [clockNow, setClockNow] = useState(Date.now());
-  const foregroundStartedAt = useRef<number | null>(null);
   const foregroundFlush = useRef<Promise<AlgorithmsInterviewSimulationControllerState> | null>(null);
   const timeoutStarted = useRef(false);
   const completionKind = useRef<"manual" | "timeout">("manual");
@@ -91,19 +89,10 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     }, [discover]),
   );
 
-  const recordMeasuredForeground = useCallback(async (): Promise<AlgorithmsInterviewSimulationControllerState> => {
+  const checkpointForeground = useCallback(async (): Promise<AlgorithmsInterviewSimulationControllerState> => {
     if (foregroundFlush.current) return foregroundFlush.current;
-    const startedAt = foregroundStartedAt.current;
-    if (startedAt === null || stateRef.current.status !== "active") return stateRef.current;
-    foregroundStartedAt.current = null;
-    const elapsedMs = Math.max(0, Date.now() - startedAt);
-    const operation = controller.recordForegroundTime(elapsedMs)
-      .then((next) => {
-        if (next.status === "active" && AppState.currentState === "active") {
-          foregroundStartedAt.current = Date.now();
-        }
-        return next;
-      })
+    if (stateRef.current.status !== "active") return stateRef.current;
+    const operation = controller.checkpointForegroundTimer()
       .finally(() => {
         foregroundFlush.current = null;
       });
@@ -111,44 +100,37 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     return operation;
   }, [controller]);
 
-  const afterForegroundMeasurement = useCallback(async (action: () => Promise<AlgorithmsInterviewSimulationControllerState>) => {
-    const measured = await recordMeasuredForeground();
+  const afterForegroundCheckpoint = useCallback(async (action: () => Promise<AlgorithmsInterviewSimulationControllerState>) => {
+    const measured = await checkpointForeground();
     if (measured.status !== "active") return measured;
     return action();
-  }, [recordMeasuredForeground]);
+  }, [checkpointForeground]);
 
   useEffect(() => {
     if (controllerState.status !== "active") {
-      foregroundStartedAt.current = null;
       return undefined;
     }
-    if (AppState.currentState === "active" && foregroundStartedAt.current === null) foregroundStartedAt.current = Date.now();
+    if (AppState.currentState === "active") void controller.enterForeground();
 
     const subscription = AppState.addEventListener("change", (nextState) => {
       if (nextState === "active") {
         setForegroundPaused(false);
-        if (foregroundStartedAt.current === null) foregroundStartedAt.current = Date.now();
+        void controller.enterForeground();
         return;
       }
       setForegroundPaused(true);
-      void recordMeasuredForeground();
+      void controller.leaveForeground();
     });
-    const interval = setInterval(() => setClockNow(Date.now()), 1_000);
+    const interval = setInterval(() => void checkpointForeground(), 1_000);
     return () => {
       clearInterval(interval);
       subscription.remove();
-      void recordMeasuredForeground();
+      void controller.leaveForeground();
     };
-  }, [controllerState.status, recordMeasuredForeground]);
+  }, [checkpointForeground, controller, controllerState.status]);
 
   const runtime = controllerState.runtime;
-  const remainingMs = useMemo(() => {
-    if (!runtime || runtime.remainingMs === null) return 0;
-    const activeElapsed = foregroundPaused || foregroundStartedAt.current === null
-      ? 0
-      : Math.max(0, clockNow - foregroundStartedAt.current);
-    return Math.max(0, runtime.remainingMs - activeElapsed);
-  }, [clockNow, foregroundPaused, runtime]);
+  const remainingMs = runtime?.remainingMs ?? 0;
 
   useEffect(() => {
     if (!runtime || controllerState.status !== "active" || remainingMs > 0 || timeoutStarted.current) return;
@@ -156,7 +138,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     completionKind.current = "timeout";
     setPanel("finalizing");
     void triggerTimeoutFinalization();
-  }, [controllerState.status, recordMeasuredForeground, remainingMs, runtime]);
+  }, [controllerState.status, remainingMs, runtime]);
 
   useEffect(() => {
     if (controllerState.status !== "terminal" || !controllerState.terminal) return;
@@ -178,7 +160,6 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       completionKind.current = "manual";
       timeoutStarted.current = false;
       draftQueue.clear();
-      foregroundStartedAt.current = AppState.currentState === "active" ? Date.now() : null;
       setPanel("active");
       return;
     }
@@ -193,7 +174,6 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       completionKind.current = "manual";
       timeoutStarted.current = false;
       draftQueue.clear();
-      foregroundStartedAt.current = AppState.currentState === "active" ? Date.now() : null;
       setPanel("active");
       return;
     }
@@ -202,7 +182,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
 
   async function abandonAndStartNew(): Promise<void> {
     setPanel("finalizing");
-    const abandoned = await afterForegroundMeasurement(() => controller.abandon());
+    const abandoned = await afterForegroundCheckpoint(() => controller.abandon());
     if (abandoned.status !== "abandoned") {
       beginRetry(abandonAndStartNew);
       return;
@@ -213,14 +193,14 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   function saveResponse(occurrenceId: string, response: unknown | null): void {
     setRetryAction(null);
     draftQueue.enqueue(occurrenceId, response, async () => {
-      const next = await afterForegroundMeasurement(() => controller.saveDraftResponse(occurrenceId, response as never));
+      const next = await afterForegroundCheckpoint(() => controller.saveDraftResponse(occurrenceId, response as never));
       return next.status === "active" && !isOperationFailed(next);
     });
   }
 
   async function moveTo(index: number): Promise<void> {
     setRetryAction(null);
-    const next = await afterForegroundMeasurement(() => controller.moveToIndex(index));
+    const next = await afterForegroundCheckpoint(() => controller.moveToIndex(index));
     if (next.status !== "active") beginRetry(() => moveTo(index));
   }
 
@@ -230,19 +210,19 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     if (!occurrenceId) return;
     const isFlagged = runtime.session.flaggedOccurrenceIds.includes(occurrenceId);
     setRetryAction(null);
-    const next = await afterForegroundMeasurement(() => controller.setFlag(occurrenceId, !isFlagged));
+    const next = await afterForegroundCheckpoint(() => controller.setFlag(occurrenceId, !isFlagged));
     if (next.status !== "active") beginRetry(toggleFlag);
   }
 
   async function submitSimulation(): Promise<void> {
     setPanel("finalizing");
     setRetryAction(null);
-    const next = await afterForegroundMeasurement(() => controller.finalize());
+    const next = await afterForegroundCheckpoint(() => controller.finalize());
     if (next.status !== "terminal") beginRetry(submitSimulation);
   }
 
   async function triggerTimeoutFinalization(): Promise<void> {
-    const next = await recordMeasuredForeground();
+    const next = await checkpointForeground();
     if (next.status === "terminal") return;
     beginRetry(retryTimeoutFinalization);
   }
@@ -256,7 +236,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
 
   async function abandonSimulation(): Promise<void> {
     setRetryAction(null);
-    const next = await afterForegroundMeasurement(() => controller.abandon());
+    const next = await afterForegroundCheckpoint(() => controller.abandon());
     if (next.status === "abandoned") {
       navigation.reset({ index: 0, routes: [{ name: ROUTES.HOME }] });
       return;

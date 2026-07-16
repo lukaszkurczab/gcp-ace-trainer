@@ -95,7 +95,7 @@ test("abandonment removes resumability and history excludes abandoned sessions w
 test("recovery, reset, family queries, resume, and draft commands remain application entry points", async () => {
   const f = fixture(); f.setActive(session());
   await f.useCases.recoverPendingJournal(); await f.useCases.resetLearningState(); await f.useCases.resumeActiveSession();
-  await f.useCases.saveSimulationDraft({ draft: { sessionId: "session-1", trackId: "test-track", responsesByOccurrenceId: {}, updatedAt: "2026-07-16T12:00:00.000Z" }, expectedPreviousRevision: 0 });
+  await f.useCases.saveSimulationDraft({ draft: { schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: "session-1", trackId: "test-track", responsesByOccurrenceId: {}, updatedAt: "2026-07-16T12:00:00.000Z" }, expectedPreviousRevision: 0 });
   assert.deepEqual(await f.useCases.queryDashboard("test-track"), { kind: "dashboard" }); assert.deepEqual(await f.useCases.queryProgress("test-track"), { kind: "progress" }); assert.deepEqual(await f.useCases.queryReview("test-track"), { kind: "review" });
   assert.ok(f.calls.includes("recover") && f.calls.includes("reset") && f.calls.includes("validate-draft") && f.calls.includes("save-draft"));
 });

@@ -10,10 +10,14 @@ import {
   type ClearLocalHistoryOperations,
 } from "../src/features/home/localReset";
 import { recoverPendingMutation } from "../src/application/learningMutations";
-import { createTrainingSessionDraft } from "../src/domain";
-import { addReviewQueueItems, addTrainingAttempt, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessions, getActiveMutationJournal, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, saveTrainingSessionDraft } from "../src/storage/repositories";
+import { createTrainingSessionDraft, type TrainingSessionDraft } from "../src/domain";
+import { addReviewQueueItems, addTrainingAttempt, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessions, getActiveMutationJournal, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession, saveTrainingSessionDraft as persistTrainingSessionDraft } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { attempt, installMemoryStorage, journal, review, session } from "./journalTestSupport";
+
+async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
+  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
+}
 
 test("clear local history clears canonical local stores", async () => {
   const called: string[] = [];
@@ -55,7 +59,7 @@ test("clear local history reports an operation failure and stops later clears", 
     if (operationName === "clearTrainingSessions") throw new Error("injected reset failure");
   }])) as ClearLocalHistoryOperations;
   await assert.rejects(() => clearPatternlyLocalHistory(operations), /injected reset failure/);
-  assert.deepEqual(called, ["clearMutationJournal", "clearActiveSessionRuntime", "clearTrainingSessionDrafts", "clearTrainingSessions"]);
+  assert.deepEqual(called, ["clearMutationJournal", "clearActiveSessionRuntime", "clearForegroundTimers", "clearTrainingSessionDrafts", "clearTrainingSessions"]);
 });
 
 test("clear local history exposes a retryable failure result without reporting success", async () => {

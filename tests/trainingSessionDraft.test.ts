@@ -1,18 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createTrainingSessionDraft } from "../src/domain";
+import { createTrainingSessionDraft, type TrainingSessionDraft } from "../src/domain";
 import { clearPatternlyLocalHistory } from "../src/features/home/localReset";
+import { STORAGE_KEYS } from "../src/storage/keys";
+import { writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 import {
   getActiveTrainingSessionDraft,
   getReviewQueueItems,
   getTrainingAttempts,
   saveTrainingSession,
-  saveTrainingSessionDraft,
+  saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../src/storage/repositories";
 import { installMemoryStorage, session, timestamp } from "./journalTestSupport";
 
 const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
+
+async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
+  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
+}
 
 test("an occurrence-keyed draft persists, edits, and resumes without learning side effects", async () => {
   installMemoryStorage();
@@ -24,27 +30,29 @@ test("an occurrence-keyed draft persists, edits, and resumes without learning si
     responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["a"] } },
     updatedAt: timestamp,
   });
-  await saveTrainingSessionDraft(first);
+  const persistedFirst = await persistTrainingSessionDraft(first, null);
   const edited = createTrainingSessionDraft({
-    ...first,
+    ...persistedFirst,
     responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["b"] } },
     updatedAt: "2026-07-15T10:01:00.000Z",
   });
-  await saveTrainingSessionDraft(edited);
-  await assert.doesNotReject(saveTrainingSessionDraft(edited));
-  await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({ ...edited, responsesByOccurrenceId: {}, updatedAt: edited.updatedAt })), /already persisted update time/);
+  const persistedEdited = await persistTrainingSessionDraft(edited, persistedFirst.revision);
+  await assert.rejects(
+    persistTrainingSessionDraft(createTrainingSessionDraft({ ...persistedEdited, responsesByOccurrenceId: {}, updatedAt: persistedEdited.updatedAt }), persistedFirst.revision),
+    /expected revision is stale/,
+  );
 
   const resumed = await getActiveTrainingSessionDraft();
-  assert.deepEqual(resumed, edited);
+  assert.deepEqual(resumed, persistedEdited);
   assert.ok(Object.isFrozen(resumed));
   assert.ok(Object.isFrozen(resumed?.responsesByOccurrenceId["occurrence-1"]));
   const removed = createTrainingSessionDraft({
-    ...edited,
+    ...persistedEdited,
     responsesByOccurrenceId: {},
     updatedAt: "2026-07-15T10:02:00.000Z",
   });
-  await saveTrainingSessionDraft(removed);
-  assert.deepEqual(await getActiveTrainingSessionDraft(), removed);
+  const persistedRemoved = await persistTrainingSessionDraft(removed, persistedEdited.revision);
+  assert.deepEqual(await getActiveTrainingSessionDraft(), persistedRemoved);
   assert.deepEqual((await getTrainingAttempts()).value, []);
   assert.deepEqual((await getReviewQueueItems()).value, []);
 });
@@ -72,6 +80,18 @@ test("immediate-feedback sessions cannot persist draft responses", async () => {
   const active = session();
   await saveTrainingSession(active);
   await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp })), /does not permit persisted draft/);
+});
+
+test("Algorithms drafts reject non-contract flag fields instead of treating them as draft payload", async () => {
+  installMemoryStorage();
+  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };
+  await saveTrainingSession(active);
+  writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, {
+    schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1,
+    sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp,
+    flaggedOccurrenceIds: ["occurrence-1"],
+  });
+  await assert.rejects(getActiveTrainingSessionDraft(), /unsupported/);
 });
 
 test("clear local history removes the resumable draft", async () => {

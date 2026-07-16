@@ -3,6 +3,7 @@ import {
   createAttemptResult,
   createTrainingSession,
   createTrainingSessionDraft,
+  createForegroundTimerState,
   type AttemptResultComponent,
   isRegisteredTrackId,
   type ContentItemRef,
@@ -12,6 +13,7 @@ import {
   type TrainingSession,
   type TrainingSessionDraft,
   type TrainingSessionDraftResponse,
+  type ForegroundTimerState,
 } from "../../domain";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
@@ -19,15 +21,43 @@ export function isTrainingSessionArray(value: unknown): value is TrainingSession
 }
 
 export function isTrainingSessionDraft(value: unknown): value is TrainingSessionDraft {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["sessionId", "trackId", "responsesByOccurrenceId", "updatedAt"])) return false;
-  if (!isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
+  if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "familyId", "draftVersion", "revision", "sessionId", "trackId", "responsesByOccurrenceId", "updatedAt"])) return false;
+  if (value.schemaVersion !== 1 || value.draftVersion !== 1 || !isNonEmptyString(value.familyId) || !Number.isSafeInteger(value.revision) || Number(value.revision) < 0 ||
+    !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
     !isTimestamp(value.updatedAt) || !isDraftResponseRecord(value.responsesByOccurrenceId)) return false;
   try {
     createTrainingSessionDraft({
+      schemaVersion: value.schemaVersion,
+      familyId: value.familyId,
+      draftVersion: value.draftVersion,
+      revision: value.revision as number,
       sessionId: value.sessionId,
       trackId: value.trackId,
       responsesByOccurrenceId: value.responsesByOccurrenceId,
       updatedAt: value.updatedAt,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isForegroundTimerState(value: unknown): value is ForegroundTimerState {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "timerVersion", "familyId", "sessionId", "trackId", "accumulatedForegroundMs", "checkpointRevision", "lastCheckpointAt", "running"])) return false;
+  if (value.schemaVersion !== 1 || value.timerVersion !== 1 || !isNonEmptyString(value.familyId) || !isNonEmptyString(value.sessionId) ||
+    typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) || !Number.isSafeInteger(value.accumulatedForegroundMs) || Number(value.accumulatedForegroundMs) < 0 ||
+    !Number.isSafeInteger(value.checkpointRevision) || Number(value.checkpointRevision) < 1 || !isTimestamp(value.lastCheckpointAt) || typeof value.running !== "boolean") return false;
+  try {
+    createForegroundTimerState({
+      schemaVersion: value.schemaVersion,
+      timerVersion: value.timerVersion,
+      familyId: value.familyId,
+      sessionId: value.sessionId,
+      trackId: value.trackId,
+      accumulatedForegroundMs: value.accumulatedForegroundMs as number,
+      checkpointRevision: value.checkpointRevision as number,
+      lastCheckpointAt: value.lastCheckpointAt,
+      running: value.running,
     });
     return true;
   } catch {

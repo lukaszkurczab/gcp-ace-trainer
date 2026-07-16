@@ -10,10 +10,12 @@ import {
   setTrainingSessionOccurrenceFlagged,
   type ReviewQueueEntry,
   type ContentItemRef,
+  type ForegroundTimerState,
   type TrainingAttempt,
   type TrainingSession,
   type TrainingSessionDraft,
 } from "../../domain";
+import { ForegroundSimulationTimer, type MonotonicClock } from "../runtime/ForegroundSimulationTimer";
 import { areTrainingSessionConfigurationsEqual } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import type { AlgorithmContentCatalog } from "../../tracks/algorithms/algorithmContentCatalog";
@@ -89,16 +91,20 @@ export type AlgorithmsRuntimeDependencies = Readonly<{
   commitFinalization(input: { session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; reviewMutations: readonly TrainingSessionFinalizationReviewMutation[]; cleanup: { kind: "training_session_draft"; draft: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }; createdAt: string }): Promise<void>;
   commitOutcome(input: { attempt: TrainingAttempt<unknown>; session: TrainingSession; reviews: readonly ReviewQueueEntry[]; resolvedReviews?: readonly ReviewQueueEntry[]; createdAt: string }): Promise<void>;
   commitStart(input: { session: TrainingSession; draft: TrainingSessionDraft | null; createdAt: string }): Promise<void>;
+  clearForegroundTimer(sessionId: string): Promise<void>;
   createAttemptId(sessionId: string, occurrenceId: string, response: unknown): Promise<string>;
   createSessionId(now: string): string;
   getActiveDraft(): Promise<TrainingSessionDraft | null>;
   getActiveSession(): Promise<TrainingSession | null>;
+  getForegroundTimer(): Promise<ForegroundTimerState | null>;
   getAttempts(): Promise<readonly TrainingAttempt<unknown>[]>;
   getReviews(): Promise<readonly ReviewQueueEntry[]>;
   now(): string;
+  monotonicClock: MonotonicClock;
   planOptionIds(question: AlgorithmQuestion): readonly string[];
   resolveNextOccurrenceIndex(input: Readonly<{ attempts: readonly TrainingAttempt<AlgorithmResponse>[]; questions: readonly AlgorithmQuestion[]; session: TrainingSession }>): number;
-  saveDraft(draft: TrainingSessionDraft): Promise<void>;
+  saveDraft(draft: TrainingSessionDraft, expectedPreviousRevision: number | null): Promise<TrainingSessionDraft>;
+  saveForegroundTimer(timer: ForegroundTimerState, expectedPreviousCheckpointRevision: number | null): Promise<ForegroundTimerState>;
   saveSession(session: TrainingSession): Promise<void>;
   select(input: SelectAlgorithmSessionItemsInput): readonly AlgorithmQuestion[];
 }>;
@@ -106,6 +112,7 @@ export type AlgorithmsRuntimeDependencies = Readonly<{
 export class AlgorithmsFamilyRuntime {
   private attempts: TrainingAttempt<AlgorithmResponse>[] = [];
   private draft: TrainingSessionDraft | null = null;
+  private foregroundTimer: ForegroundSimulationTimer | null = null;
   private feedback: AlgorithmsRuntimeFeedback | null = null;
   private catalog: AlgorithmContentCatalog | null = null;
   private input: AlgorithmsRuntimeStartInput | null = null;
@@ -119,8 +126,6 @@ export class AlgorithmsFamilyRuntime {
   private readonly scheduledReinsertSourceByTarget = new Map<string, string>();
   private finalizationPromise: Promise<AlgorithmsRuntimeState> | null = null;
   private finalizationCreatedAt: string | null = null;
-  private finalizationForegroundElapsedMs = 0;
-  private finalizationElapsedCutoffReached = false;
   private simulationMutationTail: Promise<void> = Promise.resolve();
   private simulationAbandonmentPromise: Promise<AlgorithmsRuntimeState> | null = null;
 
@@ -152,7 +157,7 @@ export class AlgorithmsFamilyRuntime {
       session = createTrainingSession({ id: sessionId, trackId: ALGORITHMS_TRACK_ID, modeId: mode.id, configurationSnapshot: configuration(mode, input), requestedLength: mode.profile.sessionLength, actualLength: questions.length, currentItemIndex: 0, itemOrder, optionOrderByOccurrence, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: catalog.getContentVersion(), status: "active", startedAt });
       validateSessionContent(session, questions);
       createdDraft = mode.id === ALGORITHM_MODE_IDS.interviewSimulation
-        ? createTrainingSessionDraft({ sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: startedAt })
+        ? createTrainingSessionDraft({ familyId: "algorithms", revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: startedAt })
         : null;
       await this.dependencies.commitStart({ session, draft: createdDraft, createdAt: startedAt });
     }
@@ -194,6 +199,26 @@ export class AlgorithmsFamilyRuntime {
       if (!storedDraft) throw new Error("Active Interview Simulation is missing its atomically persisted draft.");
       this.draft = storedDraft;
       validateDraftResponses(this.draft, session, questions);
+      const storedTimer = await this.dependencies.getForegroundTimer();
+      if (!storedTimer) {
+        if (!createdDraft) throw new Error("Active Interview Simulation is missing its canonical foreground timer checkpoint.");
+        const initialized = await this.dependencies.saveForegroundTimer({
+          schemaVersion: 1,
+          timerVersion: 1,
+          familyId: "algorithms",
+          sessionId: session.id,
+          trackId: session.trackId,
+          accumulatedForegroundMs: 0,
+          checkpointRevision: 1,
+          lastCheckpointAt: this.dependencies.now(),
+          running: false,
+        }, null);
+        this.foregroundTimer = ForegroundSimulationTimer.restore({ state: initialized, port: { save: this.dependencies.saveForegroundTimer }, monotonicClock: this.dependencies.monotonicClock, wallClock: { now: this.dependencies.now } });
+      } else {
+        if (storedTimer.sessionId !== session.id || storedTimer.trackId !== session.trackId || storedTimer.familyId !== "algorithms") throw new Error("Canonical foreground timer does not match the active Interview Simulation.");
+        this.foregroundTimer = ForegroundSimulationTimer.restore({ state: storedTimer, port: { save: this.dependencies.saveForegroundTimer }, monotonicClock: this.dependencies.monotonicClock, wallClock: { now: this.dependencies.now } });
+      }
+      await this.foregroundTimer.enterForeground();
     } else if (await this.dependencies.getActiveDraft()) {
       throw new Error("Immediate-feedback Algorithms sessions cannot own persisted drafts.");
     }
@@ -204,7 +229,8 @@ export class AlgorithmsFamilyRuntime {
     const { mode, session } = this.requireStarted();
     const currentQuestion = this.questions[session.currentItemIndex];
     if (!currentQuestion) throw new Error("Current Algorithms question is unavailable.");
-    return Object.freeze({ attempts: [...this.attempts], currentQuestion, draftResponsesByOccurrenceId: this.draft ? draftResponses(this.draft, session, this.questions) : {}, feedback: this.feedback, mode, navigator: buildNavigatorProjection(session, this.questions, this.draft, this.attempts), questions: this.questions, remainingMs: mode.profile.timer.kind === "countdownForeground" ? Math.max(0, mode.profile.timer.durationMs - session.activeForegroundMs) : null, session, summary: this.summary });
+    const foregroundMs = this.foregroundTimer?.getAccumulatedForegroundMs() ?? session.activeForegroundMs;
+    return Object.freeze({ attempts: [...this.attempts], currentQuestion, draftResponsesByOccurrenceId: this.draft ? draftResponses(this.draft, session, this.questions) : {}, feedback: this.feedback, mode, navigator: buildNavigatorProjection(session, this.questions, this.draft, this.attempts), questions: this.questions, remainingMs: mode.profile.timer.kind === "countdownForeground" ? Math.max(0, mode.profile.timer.durationMs - foregroundMs) : null, session, summary: this.summary });
   }
 
   getScheduledReinsertAssignments(): Readonly<Record<string, string>> {
@@ -280,22 +306,46 @@ export class AlgorithmsFamilyRuntime {
       if (response) responses[occurrenceId] = response;
       else delete responses[occurrenceId];
       const next = createTrainingSessionDraft({ ...this.draft, responsesByOccurrenceId: responses, updatedAt: nextTimestamp(this.draft.updatedAt, this.dependencies.now()) });
-      await this.dependencies.saveDraft(next);
-      this.draft = next;
+      await this.requireForegroundTimer().checkpointForDraftSave();
+      this.draft = await this.dependencies.saveDraft(next, this.draft.revision);
       return this.getState();
     });
   }
 
-  async moveSimulationToIndex(index: number, foregroundElapsedMs = 0): Promise<AlgorithmsRuntimeState> {
+  async moveSimulationToIndex(index: number): Promise<AlgorithmsRuntimeState> {
     this.assertSimulationWritable();
     return this.enqueueSimulationMutation(async () => {
       const { mode, session } = this.requireStarted();
       if (mode.id !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Free navigation is available only in Interview Simulation.");
-      const next = moveTrainingSessionToIndex(accumulateTrainingSessionForegroundTime(session, foregroundElapsedMs), index);
+      const next = moveTrainingSessionToIndex(session, index);
       await this.dependencies.saveSession(next);
       this.session = next;
       return this.getState();
     });
+  }
+
+  async enterSimulationForeground(): Promise<AlgorithmsRuntimeState> {
+    this.assertSimulationWritable();
+    await this.requireForegroundTimer().enterForeground();
+    return this.getState();
+  }
+
+  async leaveSimulationForeground(): Promise<AlgorithmsRuntimeState> {
+    this.assertSimulationWritable();
+    await this.requireForegroundTimer().leaveForeground();
+    return this.getState();
+  }
+
+  async checkpointSimulationForegroundTimer(): Promise<AlgorithmsRuntimeState> {
+    this.assertSimulationWritable();
+    const timer = this.requireForegroundTimer();
+    await timer.checkpointIfDue();
+    const { mode } = this.requireStarted();
+    if (mode.profile.timer.kind === "countdownForeground" && mode.profile.timer.durationMs <= timer.getAccumulatedForegroundMs()) {
+      await timer.checkpointForExpiry();
+      return this.finalizeSimulation();
+    }
+    return this.getState();
   }
 
   async setSimulationFlag(occurrenceId: string, flagged?: boolean): Promise<AlgorithmsRuntimeState> {
@@ -318,6 +368,7 @@ export class AlgorithmsFamilyRuntime {
       const abandonedAt = this.dependencies.now();
       const abandoned = abandonTrainingSession(session, abandonedAt);
       await this.dependencies.commitAbandonment(abandoned, abandonedAt);
+      await this.dependencies.clearForegroundTimer(session.id);
       this.session = abandoned;
       this.draft = null;
       return this.getState();
@@ -327,33 +378,11 @@ export class AlgorithmsFamilyRuntime {
     return shared;
   }
 
-  recordForegroundTime(elapsedMs: number): Promise<AlgorithmsRuntimeState> {
+  recordPracticeForegroundTime(elapsedMs: number): Promise<AlgorithmsRuntimeState> {
     const { mode, session } = this.requireStarted();
-    if (mode.id !== ALGORITHM_MODE_IDS.interviewSimulation) {
-      const next = accumulateTrainingSessionForegroundTime(session, elapsedMs);
-      return this.dependencies.saveSession(next).then(() => { this.session = next; return this.getState(); });
-    }
-    if (this.finalizationCreatedAt && !this.finalizationPromise) return Promise.reject(new Error("Interview Simulation has a pending finalization that must be retried before foreground time can change."));
+    if (mode.id === ALGORITHM_MODE_IDS.interviewSimulation) return Promise.reject(new Error("Interview Simulation foreground time is owned by its canonical timer."));
     const next = accumulateTrainingSessionForegroundTime(session, elapsedMs);
-    const expires = mode.profile.timer.kind === "countdownForeground" && Math.max(0, mode.profile.timer.durationMs - next.activeForegroundMs) === 0;
-    if (this.finalizationPromise) {
-      if (expires) return this.finalizeSimulation(elapsedMs);
-      return Promise.reject(new Error("Interview Simulation finalization is already in progress."));
-    }
-    if (this.simulationAbandonmentPromise) return Promise.reject(new Error("Interview Simulation abandonment is already in progress."));
-    return this.enqueueSimulationMutation(async () => {
-      const { mode: queuedMode, session: queuedSession } = this.requireStarted();
-      const queuedNext = accumulateTrainingSessionForegroundTime(queuedSession, elapsedMs);
-      const queuedExpires = queuedMode.profile.timer.kind === "countdownForeground" && Math.max(0, queuedMode.profile.timer.durationMs - queuedNext.activeForegroundMs) === 0;
-      if (!queuedExpires) {
-        await this.dependencies.saveSession(queuedNext);
-        this.session = queuedNext;
-        return this.getState();
-      }
-      this.noteFinalizationForegroundElapsed(elapsedMs);
-      if (this.finalizationPromise) return this.getState();
-      return this.startSimulationFinalizationFromCurrentMutation();
-    });
+    return this.dependencies.saveSession(next).then(() => { this.session = next; return this.getState(); });
   }
 
   finalizeSimulation(foregroundElapsedMs = 0): Promise<AlgorithmsRuntimeState> {
@@ -361,13 +390,12 @@ export class AlgorithmsFamilyRuntime {
     if (mode.id !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only Interview Simulation uses batch finalization.");
     if (this.summary) return Promise.resolve(this.getState());
     if (this.simulationAbandonmentPromise) return Promise.reject(new Error("Interview Simulation abandonment is already in progress."));
-    try {
-      this.noteFinalizationForegroundElapsed(foregroundElapsedMs);
-    } catch (error) {
-      return Promise.reject(error);
-    }
+    if (foregroundElapsedMs !== 0) return Promise.reject(new Error("Simulation foreground time is owned by the canonical timer."));
     if (this.finalizationPromise) return this.finalizationPromise;
-    const operation = this.enqueueSimulationMutation(() => this.startSimulationFinalizationFromCurrentMutation(true));
+    const operation = this.enqueueSimulationMutation(async () => {
+      await this.requireForegroundTimer().checkpointForFinalization();
+      return this.startSimulationFinalizationFromCurrentMutation(true);
+    });
     const shared = operation.finally(() => { if (this.finalizationPromise === shared) this.finalizationPromise = null; });
     this.finalizationPromise = shared;
     return shared;
@@ -384,12 +412,11 @@ export class AlgorithmsFamilyRuntime {
       if (!isCompleteAlgorithmResponse(question, response)) continue;
       attempts.push(await this.createAttempt(session, question, response, completedAt, occurrence.occurrenceId));
     }
-    this.finalizationElapsedCutoffReached = true;
-    const timed = accumulateTrainingSessionForegroundTime(session, this.finalizationForegroundElapsedMs);
     const reviewMutations = buildFinalizationReviewMutations(attempts, await this.dependencies.getReviews());
-    const completed = completeTrainingSession(timed, completedAt);
+    const completed = completeTrainingSession(session, completedAt);
     const submittedOccurrenceIds = attempts.map((attempt) => attempt.occurrenceId);
     await this.dependencies.commitFinalization({ session: completed, attempts, reviewMutations, cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds }, createdAt: completedAt });
+    await this.dependencies.clearForegroundTimer(session.id);
     const answered = new Set(attempts.map((attempt) => attempt.occurrenceId));
     const unanswered = completed.itemOrder.filter((occurrence) => !answered.has(occurrence.occurrenceId));
     this.session = completed;
@@ -397,8 +424,6 @@ export class AlgorithmsFamilyRuntime {
     this.draft = null;
     this.summary = buildRuntimeSummary(attempts, unanswered);
     this.finalizationCreatedAt = null;
-    this.finalizationForegroundElapsedMs = 0;
-    this.finalizationElapsedCutoffReached = false;
     return this.getState();
   }
 
@@ -411,12 +436,6 @@ export class AlgorithmsFamilyRuntime {
   private assertSimulationWritable(): void {
     if (this.finalizationPromise || this.finalizationCreatedAt) throw new Error("Interview Simulation finalization is in progress or pending recovery.");
     if (this.simulationAbandonmentPromise) throw new Error("Interview Simulation abandonment is in progress.");
-  }
-
-  private noteFinalizationForegroundElapsed(elapsedMs: number): void {
-    if (elapsedMs <= this.finalizationForegroundElapsedMs) return;
-    if (this.finalizationElapsedCutoffReached) throw new Error("Interview Simulation finalization no longer accepts foreground time after its durable payload cutoff.");
-    this.finalizationForegroundElapsedMs = elapsedMs;
   }
 
   private startSimulationFinalizationFromCurrentMutation(reservedByQueuedCommand = false): Promise<AlgorithmsRuntimeState> {
@@ -441,6 +460,11 @@ export class AlgorithmsFamilyRuntime {
   private requireStarted(): { mode: AlgorithmModeDefinition; session: TrainingSession } {
     if (!this.mode || !this.session) throw new Error("Algorithms runtime has not started.");
     return { mode: this.mode, session: this.session };
+  }
+
+  private requireForegroundTimer(): ForegroundSimulationTimer {
+    if (!this.foregroundTimer) throw new Error("Active Interview Simulation is missing its canonical foreground timer.");
+    return this.foregroundTimer;
   }
 
   private refreshScheduledReinserts(session: TrainingSession): void {

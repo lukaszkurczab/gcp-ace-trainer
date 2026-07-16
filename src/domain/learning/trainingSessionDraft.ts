@@ -10,13 +10,27 @@ export type TrainingSessionDraftResponse =
   | Readonly<{ [key: string]: TrainingSessionDraftResponse }>;
 
 export type TrainingSessionDraft = Readonly<{
+  schemaVersion: 1;
+  familyId: string;
+  draftVersion: 1;
+  revision: number;
   sessionId: string;
   trackId: TrackId;
   responsesByOccurrenceId: Readonly<Record<string, TrainingSessionDraftResponse>>;
   updatedAt: string;
 }>;
 
-export function createTrainingSessionDraft(draft: TrainingSessionDraft): TrainingSessionDraft {
+export function createTrainingSessionDraft(
+  draft: Omit<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision"> &
+    Partial<Pick<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision">>,
+): TrainingSessionDraft {
+  const schemaVersion = draft.schemaVersion ?? 1;
+  const familyId = draft.familyId ?? "algorithms";
+  const draftVersion = draft.draftVersion ?? 1;
+  const revision = draft.revision ?? 1;
+  if (schemaVersion !== 1 || draftVersion !== 1) throw new Error("Training session draft schema is unsupported.");
+  if (!familyId.trim()) throw new Error("Training session draft family identity is required.");
+  if (!Number.isSafeInteger(revision) || revision < 0) throw new Error("Training session draft revision is invalid.");
   if (!draft.sessionId.trim()) throw new Error("Training session draft session identity is required.");
   if (!draft.trackId.trim()) throw new Error("Training session draft track identity is required.");
   if (!isTimestamp(draft.updatedAt)) throw new Error("Training session draft update time is invalid.");
@@ -29,6 +43,10 @@ export function createTrainingSessionDraft(draft: TrainingSessionDraft): Trainin
   }
   return Object.freeze({
     ...draft,
+    schemaVersion,
+    familyId,
+    draftVersion,
+    revision,
     responsesByOccurrenceId: Object.freeze(Object.fromEntries(
       Object.entries(draft.responsesByOccurrenceId).map(([occurrenceId, response]) => [occurrenceId, freezeJsonValue(response)]),
     )),

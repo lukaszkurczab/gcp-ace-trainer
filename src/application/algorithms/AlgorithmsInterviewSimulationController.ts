@@ -52,7 +52,9 @@ export type AlgorithmsInterviewSimulationOperationKind =
   | "saving_draft"
   | "saving_flag"
   | "moving"
-  | "recording_foreground"
+  | "timer_enter"
+  | "timer_exit"
+  | "timer_checkpoint"
   | "finalizing"
   | "abandoning"
   | "loading_terminal";
@@ -203,21 +205,21 @@ export class AlgorithmsInterviewSimulationController {
     return this.runActive("saving_flag", (runtime) => runtime.setSimulationFlag(occurrenceId, flagged));
   }
 
-  async moveToIndex(index: number, foregroundElapsedMs = 0): Promise<AlgorithmsInterviewSimulationControllerState> {
-    return this.runActive("moving", (runtime) => runtime.moveSimulationToIndex(index, foregroundElapsedMs));
+  async moveToIndex(index: number): Promise<AlgorithmsInterviewSimulationControllerState> {
+    return this.runActive("moving", (runtime) => runtime.moveSimulationToIndex(index));
   }
 
-  async recordForegroundTime(elapsedMs: number): Promise<AlgorithmsInterviewSimulationControllerState> {
-    return this.runActive("recording_foreground", (runtime) => runtime.recordForegroundTime(elapsedMs));
-  }
+  async enterForeground(): Promise<AlgorithmsInterviewSimulationControllerState> { return this.runActive("timer_enter", (runtime) => runtime.enterSimulationForeground()); }
+  async leaveForeground(): Promise<AlgorithmsInterviewSimulationControllerState> { return this.runActive("timer_exit", (runtime) => runtime.leaveSimulationForeground()); }
+  async checkpointForegroundTimer(): Promise<AlgorithmsInterviewSimulationControllerState> { return this.runActive("timer_checkpoint", (runtime) => runtime.checkpointSimulationForegroundTimer()); }
 
   /** Finalizes once through the runtime, then loads only durable terminal records. */
-  async finalize(foregroundElapsedMs = 0): Promise<AlgorithmsInterviewSimulationControllerState> {
+  async finalize(): Promise<AlgorithmsInterviewSimulationControllerState> {
     const runtime = this.activeRuntime;
     if (!runtime) return this.fail("finalizing", new Error("Interview Simulation is not active."));
     this.setPending("finalizing");
     try {
-      const terminalRuntimeState = await runtime.finalizeSimulation(foregroundElapsedMs);
+      const terminalRuntimeState = await runtime.finalizeSimulation();
       return await this.loadTerminalProjection(terminalRuntimeState.session.id, terminalRuntimeState, "finalizing");
     } catch (error) {
       return this.fail("finalizing", error);

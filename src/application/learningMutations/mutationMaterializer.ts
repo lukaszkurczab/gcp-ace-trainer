@@ -4,6 +4,7 @@ import {
   addReviewQueueItems,
   addTrainingAttempt,
   clearActiveTrainingSession,
+  clearActiveForegroundTimer,
   clearActiveTrainingSessionDraft,
   clearActiveSessionRuntime,
   getActiveTrainingSessionDraft,
@@ -42,7 +43,10 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
         }
         case "put_session": await saveTrainingSession(write.record); break;
         case "put_active_session_draft": await materializeActiveTrainingSessionDraft(write.record); break;
-        case "clear_active_session": await clearActiveTrainingSession(write.sessionId); break;
+        case "clear_active_session":
+          await clearActiveTrainingSession(write.sessionId);
+          await clearActiveForegroundTimer(write.sessionId);
+          break;
         case "clear_active_session_draft": await clearActiveTrainingSessionDraft(write.sessionId); break;
         case "delete_active_session_draft": {
           const activeDraft = await getActiveTrainingSessionDraft();

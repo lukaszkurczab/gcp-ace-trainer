@@ -1,5 +1,6 @@
 import {
   clearActiveSessionRuntime,
+  clearForegroundTimers,
   clearMutationJournal,
   clearReviewQueueItems,
   clearTrainingAttempts,
@@ -16,6 +17,7 @@ export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
 export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
   "clearMutationJournal",
   "clearActiveSessionRuntime",
+  "clearForegroundTimers",
   "clearTrainingSessionDrafts",
   "clearTrainingSessions",
   "clearTrainingAttempts",
@@ -39,6 +41,7 @@ export const CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE =
 
 const defaultClearOperations: ClearLocalHistoryOperations = {
   clearActiveSessionRuntime,
+  clearForegroundTimers,
   clearMutationJournal,
   clearReviewQueueItems,
   clearTrainingAttempts,

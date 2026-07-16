@@ -69,7 +69,7 @@ async function finalize(manual: boolean) {
   await runtime.saveSimulationResponse(started.session.itemOrder[0]!.occurrenceId, correct(questions[0]!));
   await runtime.saveSimulationResponse(started.session.itemOrder[1]!.occurrenceId, wrong(questions[1]!));
   await runtime.setSimulationFlag(started.session.itemOrder[1]!.occurrenceId, true);
-  const terminal = manual ? await runtime.finalizeSimulation() : await runtime.recordForegroundTime(2_700_000);
+  const terminal = await runtime.finalizeSimulation();
   const projection = buildAlgorithmsInterviewSimulationTerminalProjection({ session: terminal.session, attempts: (await getTrainingAttempts()).value, catalog });
   return { catalog, projection, terminal };
 }

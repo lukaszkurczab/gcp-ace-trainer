@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { commitTrainingSessionFinalization, recoverPendingMutation } from "../src/application/learningMutations";
-import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft } from "../src/domain";
+import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft, type TrainingSessionDraft } from "../src/domain";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 import {
@@ -15,11 +15,15 @@ import {
   persistMutationJournal,
   removeReviewQueueEntry,
   saveTrainingSession,
-  saveTrainingSessionDraft,
+  saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../src/storage/repositories";
 import { installMemoryStorage, journal, review, session, timestamp } from "./journalTestSupport";
 
 const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
+
+async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
+  return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
+}
 
 function setup() {
   const base = session();

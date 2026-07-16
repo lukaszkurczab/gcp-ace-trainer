@@ -13,3 +13,4 @@ export * from "./trackIdentity";
 export * from "./trainingAttempt";
 export * from "./trainingSession";
 export * from "./trainingSessionDraft";
+export * from "./foregroundTimerState";

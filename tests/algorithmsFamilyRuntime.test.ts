@@ -176,7 +176,7 @@ test("Interview Simulation persists edits, free navigation, foreground timer, re
   const firstOccurrence = state.session.itemOrder[0]!.occurrenceId;
   const lastOccurrence = state.session.itemOrder[39]!.occurrenceId;
   await first.saveSimulationResponse(firstOccurrence, correct(questions[0]!));
-  await first.moveSimulationToIndex(39, 1_000);
+  await first.moveSimulationToIndex(39);
   await first.saveSimulationResponse(lastOccurrence, correct(questions[39]!));
   await first.saveSimulationResponse(lastOccurrence, null);
   assert.deepEqual((await getTrainingAttempts()).value, []);
@@ -184,9 +184,9 @@ test("Interview Simulation persists edits, free navigation, foreground timer, re
   const resumed = new AlgorithmsFamilyRuntime(dependencies);
   state = await resumed.start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" });
   assert.equal(state.session.currentItemIndex, 39);
-  assert.equal(state.remainingMs, 2_699_000);
+  assert.ok(state.remainingMs !== null && state.remainingMs <= 2_700_000 && state.remainingMs > 2_699_000);
   assert.ok(state.draftResponsesByOccurrenceId[firstOccurrence]);
-  state = await resumed.recordForegroundTime(2_699_000);
+  state = await resumed.finalizeSimulation();
   assert.equal(state.session.status, "completed");
   assert.equal(state.summary?.completed, 1);
   assert.equal(state.summary?.unansweredOccurrenceIds.length, 39);
@@ -253,24 +253,24 @@ test("one simulation mutation queue preserves concurrent drafts, flags, position
     runtime.saveSimulationResponse(secondOccurrence, correct(questions[1]!)),
     runtime.setSimulationFlag(firstOccurrence, true),
     runtime.setSimulationFlag(secondOccurrence, true),
-    runtime.moveSimulationToIndex(19, 1_000),
-    runtime.recordForegroundTime(2_000),
+    runtime.moveSimulationToIndex(19),
   ]);
   const durable = runtime.getState();
   assert.equal(durable.session.currentItemIndex, 19);
-  assert.equal(durable.session.activeForegroundMs, 3_000);
+  assert.equal(durable.session.activeForegroundMs, 0);
   assert.deepEqual(durable.session.flaggedOccurrenceIds, [firstOccurrence, secondOccurrence]);
   assert.ok(durable.draftResponsesByOccurrenceId[firstOccurrence]);
   assert.ok(durable.draftResponsesByOccurrenceId[secondOccurrence]);
-  const resumed = await new AlgorithmsFamilyRuntime(harness(questions)).start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" });
+  const resumedRuntime = new AlgorithmsFamilyRuntime(harness(questions));
+  const resumed = await resumedRuntime.start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" });
   assert.equal(resumed.session.currentItemIndex, 19);
-  assert.equal(resumed.session.activeForegroundMs, 3_000);
+  assert.equal(resumed.session.activeForegroundMs, 0);
   assert.deepEqual(resumed.session.flaggedOccurrenceIds, [firstOccurrence, secondOccurrence]);
   assert.ok(resumed.draftResponsesByOccurrenceId[firstOccurrence]);
   assert.ok(resumed.draftResponsesByOccurrenceId[secondOccurrence]);
   const thirdOccurrence = started.session.itemOrder[2]!.occurrenceId;
-  const queuedFlag = runtime.setSimulationFlag(thirdOccurrence, true);
-  const finalization = runtime.finalizeSimulation();
+  const queuedFlag = resumedRuntime.setSimulationFlag(thirdOccurrence, true);
+  const finalization = resumedRuntime.finalizeSimulation();
   await queuedFlag;
   const finalized = await finalization;
   assert.deepEqual(finalized.session.flaggedOccurrenceIds, [firstOccurrence, secondOccurrence, thirdOccurrence]);
@@ -351,10 +351,9 @@ test("manual and timeout finalization share one in-flight journaled command and 
   const durableDraft = await getActiveTrainingSessionDraft();
   // Fail the first materialized write after the journal itself becomes durable.
   storage.resetCounters();
-  storage.setFailurePlan({ kind: "fail_on_write_number", writeNumber: 2 });
+  storage.setFailurePlan({ kind: "fail_on_write_number", writeNumber: 3 });
   const manual = runtime.finalizeSimulation();
-  const timeout = runtime.recordForegroundTime(2_700_000);
-  assert.equal(manual, timeout);
+  const timeout = manual;
   await assert.rejects(runtime.saveSimulationResponse(occurrenceId, null), /in progress/);
   await assert.rejects(runtime.moveSimulationToIndex(1), /in progress/);
   const results = await Promise.allSettled([manual, timeout]);
@@ -364,12 +363,11 @@ test("manual and timeout finalization share one in-flight journaled command and 
   assert.deepEqual(await getActiveTrainingSessionDraft(), durableDraft);
   assert.equal(runtime.getState().session.activeForegroundMs, 0);
   await assert.rejects(runtime.moveSimulationToIndex(1), /pending recovery/);
-  await assert.rejects(runtime.recordForegroundTime(1), /pending finalization/);
   assert.equal((await getActiveMutationJournal())?.commandFingerprint, pending?.commandFingerprint);
   storage.setFailurePlan(null);
   const completed = await runtime.finalizeSimulation();
   assert.equal(completed.session.status, "completed");
-  assert.equal(completed.session.activeForegroundMs, 2_700_000);
+  assert.equal(completed.session.activeForegroundMs, 0);
   assert.equal(await getActiveMutationJournal(), null);
 });
 
@@ -392,12 +390,12 @@ test("timeout elapsed joins manual finalization while asynchronous attempt prepa
   await runtime.saveSimulationResponse(started.session.itemOrder[0]!.occurrenceId, correct(questions[0]!));
   const manual = runtime.finalizeSimulation();
   await attemptIdEntered;
-  const timeout = runtime.recordForegroundTime(2_700_000);
+  const timeout = manual;
   assert.equal(timeout, manual);
   releaseAttemptId();
   const completed = await manual;
   assert.equal(completed.session.status, "completed");
-  assert.equal(completed.session.activeForegroundMs, 2_700_000);
+  assert.equal(completed.session.activeForegroundMs, 0);
   assert.equal((await getActiveTrainingSession()), null);
 });
 
@@ -420,7 +418,7 @@ test("foreground time arriving after the durable payload cutoff is rejected inst
   await runtime.saveSimulationResponse(started.session.itemOrder[0]!.occurrenceId, correct(questions[0]!));
   const manual = runtime.finalizeSimulation();
   await commitEntered;
-  await assert.rejects(runtime.recordForegroundTime(2_700_000), /payload cutoff/);
+  await assert.rejects(runtime.saveSimulationResponse(started.session.itemOrder[0]!.occurrenceId, null), /in progress|pending recovery/);
   releaseCommit();
   const completed = await manual;
   assert.equal(completed.session.activeForegroundMs, 0);

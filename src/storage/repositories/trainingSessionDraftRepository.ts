@@ -15,7 +15,7 @@ export async function getActiveTrainingSessionDraftRevision(): Promise<number | 
   return readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft)?.revision ?? null;
 }
 
-export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expectedRevision?: number | null): Promise<void> {
+export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expectedRevision: number | null): Promise<TrainingSessionDraft> {
   if (!isTrainingSessionDraft(draft)) throw new Error("Training session draft is invalid.");
   if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
   const activeSession = await getActiveTrainingSession();
@@ -27,23 +27,24 @@ export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expe
   const occurrenceIds = new Set(activeSession.itemOrder.map((occurrence) => occurrence.occurrenceId));
   const unknownOccurrenceId = Object.keys(draft.responsesByOccurrenceId).find((occurrenceId) => !occurrenceIds.has(occurrenceId));
   if (unknownOccurrenceId) throw new Error(`Training session draft occurrence ${unknownOccurrenceId} is outside the active session plan.`);
-  const existing = await getActiveTrainingSessionDraft();
+  const envelope = readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
+  const existing = envelope?.payload ? createTrainingSessionDraft(envelope.payload) : null;
   if (existing && (existing.sessionId !== draft.sessionId || existing.trackId !== draft.trackId)) {
     throw new Error("A different training session draft is already active.");
   }
-  if (existing && Date.parse(draft.updatedAt) < Date.parse(existing.updatedAt)) {
-    throw new Error("Training session draft update time cannot move backwards.");
-  }
-  if (existing && draft.updatedAt === existing.updatedAt && canonicalSerialize(existing) !== canonicalSerialize(draft)) {
-    throw new Error("Training session draft cannot change at an already persisted update time.");
-  }
+  const previousRevision = existing?.revision ?? null;
+  if (expectedRevision !== previousRevision) throw new Error("Training session draft expected revision is stale.");
+  const nextRevision = (previousRevision ?? 0) + 1;
+  const durable = createTrainingSessionDraft({ ...draft, revision: nextRevision });
   if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
   try {
-    writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft), expectedRevision);
+    writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, durable, envelope?.revision ?? null);
   } catch (error) {
-    if (expectedRevision !== undefined) throw new Error("Training session draft expected revision is stale.");
-    throw error;
+    throw new Error("Training session draft write failed; the previous durable revision remains authoritative.", { cause: error });
   }
+  const verified = await getActiveTrainingSessionDraft();
+  if (!verified || canonicalSerialize(verified) !== canonicalSerialize(durable)) throw new Error("Training session draft durable write could not be verified.");
+  return durable;
 }
 
 export async function materializeActiveTrainingSessionDraft(draft: TrainingSessionDraft): Promise<void> {

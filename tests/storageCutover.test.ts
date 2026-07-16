@@ -30,7 +30,7 @@ test("canonical storage uses envelopes and rejects an unsupported schema identit
 test("draft replacement verifies its expected revision", async () => {
   const session = simulation();
   await saveTrainingSession(session);
-  const draft = { sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: session.startedAt } as const;
+  const draft = { schemaVersion: 1 as const, familyId: "algorithms", draftVersion: 1 as const, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: session.startedAt } as const;
   await saveTrainingSessionDraft(draft, null);
   const revision = await getActiveTrainingSessionDraftRevision();
   assert.equal(revision, 1);
@@ -60,7 +60,7 @@ test("bootstrap runs resolution only after recovery/content validation and expos
   assert.deepEqual(blocked.kind, "ready");
   const session = simulation();
   await saveTrainingSession(session);
-  await saveTrainingSessionDraft({ sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: session.startedAt });
+  await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: session.startedAt }, null);
   const mismatch = await bootstrapApplication(async () => undefined, async () => { throw new Error("content/profile mismatch"); });
   assert.deepEqual(mismatch, { kind: "blocking", reason: "content/profile mismatch" });
 });

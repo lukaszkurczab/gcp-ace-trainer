@@ -127,7 +127,7 @@ export class AlgorithmsImmediatePracticeController {
   }
 
   async recordForegroundTime(elapsedMs: number): Promise<AlgorithmsImmediatePracticeControllerState> {
-    return this.run("recording_foreground", (runtime) => runtime.recordForegroundTime(elapsedMs));
+    return this.run("recording_foreground", (runtime) => runtime.recordPracticeForegroundTime(elapsedMs));
   }
 
   private async run(

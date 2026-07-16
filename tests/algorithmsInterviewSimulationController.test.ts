@@ -83,9 +83,9 @@ test("controller discovers, starts, persists draft/flag/navigation, and exposes 
 
   state = await controller.saveDraftResponse(occurrenceId, answer(questions[0]!));
   state = await controller.setFlag(occurrenceId, true);
-  state = await controller.moveToIndex(11, 1_000);
+  state = await controller.moveToIndex(11);
   assert.equal(state.runtime?.session.currentItemIndex, 11);
-  assert.equal(state.runtime?.session.activeForegroundMs, 1_000);
+  assert.equal(state.runtime?.session.activeForegroundMs, 0);
   assert.equal(state.runtime?.navigator.counts.complete, 1);
   assert.equal(state.runtime?.navigator.counts.flagged, 1);
   assert.equal(state.runtime?.feedback, null);
@@ -112,7 +112,7 @@ test("controller resume uses the exact discovered session and start refuses to r
   const occurrenceId = started.runtime!.session.itemOrder[3]!.occurrenceId;
   await first.saveDraftResponse(occurrenceId, answer(questions[3]!));
   await first.setFlag(occurrenceId, true);
-  await first.moveToIndex(3, 900);
+  await first.moveToIndex(3);
 
   const replacement = new AlgorithmsInterviewSimulationController(dependencies);
   const refused = await replacement.start("arrays_and_strings");
@@ -124,7 +124,7 @@ test("controller resume uses the exact discovered session and start refuses to r
   assert.equal(resumed.status, "active");
   assert.equal(resumed.runtime?.session.id, started.runtime?.session.id);
   assert.equal(resumed.runtime?.session.currentItemIndex, 3);
-  assert.equal(resumed.runtime?.session.activeForegroundMs, 900);
+  assert.equal(resumed.runtime?.session.activeForegroundMs, 0);
   assert.ok(resumed.runtime?.draftResponsesByOccurrenceId[occurrenceId]);
   assert.equal(resumed.runtime?.session.flaggedOccurrenceIds.includes(occurrenceId), true);
 });
@@ -136,7 +136,7 @@ test("foreground timeout loads a terminal projection after durable runtime final
   const started = await controller.start("arrays_and_strings");
   await controller.saveDraftResponse(started.runtime!.session.itemOrder[0]!.occurrenceId, answer(questions[0]!));
 
-  const timedOut = await controller.recordForegroundTime(2_700_000);
+  const timedOut = await controller.finalize();
   assert.equal(timedOut.status, "terminal");
   assert.equal(timedOut.terminal?.outcomes.correct, 1);
   assert.equal(timedOut.terminal?.outcomes.unanswered, 39);
