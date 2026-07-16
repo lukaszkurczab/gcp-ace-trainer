@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
-import { clearMutationJournal, getActiveMutationJournal, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession } from "../src/storage";
+import { clearMutationJournal, getActiveMutationJournal, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, persistMutationJournal, saveTrainingSession } from "../src/storage";
+import { STORAGE_KEYS } from "../src/storage/keys";
 import { buildMutationJournal, commitTrainingOutcome, recoverPendingMutation } from "../src/application/learningMutations";
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 const session = { id: "s", trackId: "algorithms", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "algorithms", itemId: "i", contentVersion: "v" } }], optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v", status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" };
@@ -15,6 +16,40 @@ test("journal has a versioned SHA-256 command identity and rejects stale expecte
   assert.ok(record.expectedRevisions.some((condition) => condition.target === "session:s" && condition.revision === null));
   await saveTrainingSession(session);
   await assert.rejects(persistMutationJournal(record), (error: Error & { cause?: unknown }) => error.cause instanceof Error && /expected revisions are stale/.test(error.cause.message));
+});
+test("practice submission recovers identically after every durable write boundary", async () => {
+  const submittedAttempt = { ...attempt, id: "practice-failure-attempt", result: { kind: "incorrect" as const, earnedPoints: 0, maxPoints: 1 } };
+  const review = {
+    id: "practice-failure-review", trackId: "algorithms", sourceAttemptId: submittedAttempt.id, sourceSessionId: "s",
+    sourceItem: submittedAttempt.item, taxonomyOrSkillRefs: submittedAttempt.reviewEvidence.taxonomyOrSkillRefs,
+    reasons: ["incorrect"] as const, dueAt: session.startedAt, createdAt: session.startedAt,
+    consecutiveAfterDueSuccesses: 0, persistent: true,
+  };
+  const boundaries = [
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(submittedAttempt.id) },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.TRAINING_ATTEMPT_INDEX },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.reviewEntry(review.id) },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.REVIEW_INDEX },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.trainingSession(session.id) },
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL },
+  ] as const;
+  for (const boundary of boundaries) {
+    const storage = new MemoryKeyValueStorage();
+    installKeyValueStorageForTests(storage);
+    await saveTrainingSession(session);
+    storage.setFailurePlan(boundary);
+    const submit = () => commitTrainingOutcome({ attempt: submittedAttempt, session, reviews: [review], createdAt: session.startedAt });
+    await assert.rejects(submit(), boundary.key);
+    storage.setFailurePlan(null);
+    if (boundary.key === STORAGE_KEYS.ACTIVE_JOURNAL && boundary.kind === "fail_on_key_write") await submit();
+    else await recoverPendingMutation();
+    assert.equal(await getActiveMutationJournal(), null, boundary.key);
+    assert.deepEqual((await getTrainingAttempts()).value, [submittedAttempt], boundary.key);
+    assert.deepEqual((await getReviewQueueItems()).value, [review], boundary.key);
+    assert.deepEqual((await getTrainingSessions()).value, [session], boundary.key);
+  }
 });
 test("concurrent conflicting journal persists use one CAS winner and ownership-checked clear", async () => {
   const make = (identity: string) => buildMutationJournal({ operation: "submit_training_outcome" as const, sessionId: "s", trackId: "algorithms", identity, writes: [{ kind: "put_attempt" as const, record: attempt }, { kind: "put_session" as const, record: session }], createdAt: session.startedAt });

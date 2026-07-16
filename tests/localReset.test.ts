@@ -27,13 +27,17 @@ async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
   return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
 }
 
-test("clear local history is one journaled learning-state mutation", async () => {
-  installMemoryStorage();
+async function seedResettableLearningState() {
   const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: active.startedAt }));
   await addTrainingAttempt(attempt());
   await addReviewQueueItems([review()]);
+}
+
+test("clear local history is one journaled learning-state mutation", async () => {
+  installMemoryStorage();
+  await seedResettableLearningState();
 
   await clearPatternlyLocalHistory();
 
@@ -64,20 +68,33 @@ test("reset recovers a pending command before deleting its fully materialized le
   assert.deepEqual((await getTrainingAttempts()).value, []);
 });
 
-test("reset failure remains an explicit pending journal until recovery verifies every deletion", async () => {
-  const storage = installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
-  await saveTrainingSession(active);
-  await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: active.startedAt }));
-  storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX });
-
-  const result = await tryClearPatternlyLocalHistory();
-
-  assert.deepEqual(result, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE });
-  assert.notEqual(await getActiveMutationJournal(), null);
-  storage.setFailurePlan(null);
-  await recoverPendingMutation();
-  assert.equal(await getActiveMutationJournal(), null);
-  assert.deepEqual((await getTrainingSessions()).value, []);
-  assert.equal(await getActiveTrainingSessionDraft(), null);
+test("reset failure remains explicit and recovery is identical after every deletion boundary", async () => {
+  const boundaries = [
+    { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_SESSION_RUNTIME },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.trainingSession("session-1") },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_SESSION_INDEX },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.trainingAttempt("attempt-1") },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.TRAINING_ATTEMPT_INDEX },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.reviewEntry("review-1") },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.REVIEW_INDEX },
+    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_JOURNAL },
+  ] as const;
+  for (const boundary of boundaries) {
+    const storage = installMemoryStorage();
+    await seedResettableLearningState();
+    storage.setFailurePlan(boundary);
+    const result = await tryClearPatternlyLocalHistory();
+    assert.deepEqual(result, { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE }, boundary.key);
+    storage.setFailurePlan(null);
+    if (boundary.key === STORAGE_KEYS.ACTIVE_JOURNAL && boundary.kind === "fail_on_key_write") await clearPatternlyLocalHistory();
+    else await recoverPendingMutation();
+    assert.equal(await getActiveMutationJournal(), null, boundary.key);
+    assert.deepEqual((await getTrainingSessions()).value, [], boundary.key);
+    assert.deepEqual((await getTrainingAttempts()).value, [], boundary.key);
+    assert.deepEqual((await getReviewQueueItems()).value, [], boundary.key);
+    assert.equal(await getActiveTrainingSessionDraft(), null, boundary.key);
+  }
 });
