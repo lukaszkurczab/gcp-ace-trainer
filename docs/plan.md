@@ -5,7 +5,7 @@
 **Product:** Patternly
 **Repository baseline:** audited `main` at `ac412949a3d53c0712aebfb04476445b833bc41a`
 **Baseline date:** 2026-07-16
-**Stage 0 closure evidence:** audited input `main` commit `ac412949a3d53c0712aebfb04476445b833bc41a`; the closing documentation commit is `docs: close canonical documentation stage`.
+**Stage 0 closure evidence:** closing documentation commit `05dc5594aa12558bc6c701a8f322b6a6dc0f7442` (`docs: close canonical documentation stage`), audited against input `main` commit `ac412949a3d53c0712aebfb04476445b833bc41a`.
 
 ## 1. Purpose
 
