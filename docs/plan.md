@@ -3,8 +3,8 @@
 **Status:** active execution-control document
 **Repository:** `lukaszkurczab/gcp-ace-trainer`
 **Product:** Patternly
-**Repository baseline:** `main` at `20469446355f0031df941a273435674037793d18`
-**Baseline date:** 2026-07-15
+**Repository baseline:** audited `main` at `ac412949a3d53c0712aebfb04476445b833bc41a`
+**Baseline date:** 2026-07-16
 
 ## 1. Purpose
 
@@ -448,6 +448,16 @@ Active instructional content requires:
 
 Renderable content is not automatically production-ready.
 
+### Stage 1 audit evidence — 2026-07-16
+
+Immutable repository evidence is recorded in [2026-07-16-repository-contract-delta-audit.md](audits/2026-07-16-repository-contract-delta-audit.md), audited at `ac412949a3d53c0712aebfb04476445b833bc41a`.
+
+The audit confirms D-04, D-05, D-06, D-09, and D-10 as mismatches; D-07 has sufficient deterministic-selection evidence but must survive ownership cutover; D-08 has verified Algorithms finalization visibility evidence but Certification lifecycle writes remain outside the canonical boundary.
+
+Missing product/design decisions are: the approved content-network boundary; a versioned official-source Certification `ExamExperienceProfile`; a recorded human editorial/technical content-approval contract; approved designs for draft conflict/recovery and the full Certification mode set; and verified backup, encryption, logging-redaction, and permission policy.
+
+The audited `main` does not contain the pushed Stage 0 closure commit. Stage 1 is therefore `BLOCKED` from verification and Stage 2 cannot become active on this branch until Stage 0 is integrated into `main`.
+
 ## 9. Execution sequence
 
 ## Stage 0 — Canonical documentation closure
@@ -568,6 +578,10 @@ Produce a repository-grounded matrix containing:
 - current test baseline is recorded;
 - missing design and product decisions are listed;
 - the exact next implementation stage is bounded.
+
+### Audit status
+
+`BLOCKED` — the repository-to-contract matrix and verification baseline are complete, but the audited `main` still has Stage 0 active and D-01–D-03 open. The audit does not treat a closure commit on a non-ancestor branch as current-main evidence.
 
 ## Stage 2 — Canonical model, application, and persistence correction
 
@@ -852,6 +866,7 @@ Prove the canonical implementation under supported runtime conditions.
 | Canonical documentation            | `NEEDS_CORRECTION`     | Accepted revisions are not yet applied                                    |
 | Document 14                        | `REJECTED`             | It duplicates other canonical owners                                      |
 | Previous recovery plan             | `REJECTED`             | Separate execution sequencing is no longer permitted                      |
+| Repository-to-contract audit        | `BLOCKED`              | Evidence recorded; Stage 0 closure is not in audited `main`              |
 | Shared kernel and mutations        | `PARTIAL`              | Significant implementation exists but requires contract audit             |
 | MMKV and repositories              | `PARTIAL`              | Revision, reset, bootstrap, and ownership require verification            |
 | Algorithms immediate practice      | `PARTIAL`              | New controller exists but must be audited against final lifecycle         |
@@ -869,31 +884,17 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-00 — Canonical documentation closure`
+`WEP3-00 — Integrate canonical documentation closure into main`
 
 ### Goal
 
-Apply the accepted documentation set and establish this file as the only execution-order source.
+Integrate the already-pushed Stage 0 closure into `main`, then independently recheck its canonical-document inventory before Stage 1 verification.
 
 ### Required changes
 
-- update documents `00–13`;
-- delete document `14`;
-- update documents `15–17`;
-- remove all references to document `14`;
-- remove all references to document `18`;
-- delete or retire the existing architecture recovery plan;
-- delete or retire previous active working plans;
-- update indexes and authority sections;
-- remove stale claims about:
-  - compatibility;
-  - historical migration;
-  - backend content sources;
-  - Algorithms flags;
-  - two-item reinsert;
-  - simulation feedback after journal durability;
-  - family-owned persistence orchestration;
-  - postponed active-content quality.
+- merge or otherwise integrate the Stage 0 closure commit without changing its contract;
+- verify the exact canonical document set and absence of retired references on `main`;
+- retain this audit as immutable evidence and then update Stage 1 from `BLOCKED` using the integrated SHA.
 
 ### Out of scope
 
@@ -906,15 +907,9 @@ Apply the accepted documentation set and establish this file as the only executi
 
 ### Required verification
 
-- documentation-reference audit;
-- no active reference to document `14`;
-- no active reference to document `18`;
+- documentation-reference audit on `main`;
+- Stage 0 closure SHA is an ancestor of `main`;
 - no second execution-order document;
-- no conflicting mode lists;
-- no conflicting reinsert gap;
-- no conflicting timer semantics;
-- no conflicting feedback boundary;
-- `npm run qa:static`;
 - exact changed-file inventory;
 - pushed commit SHA.
 
@@ -931,15 +926,17 @@ The report must include:
 - unresolved documentation conflicts;
 - confirmation that no application code changed.
 
-## 12. Next task after documentation closure
+## 12. First Stage 2 task after the Stage 0 unblock
 
-After `WEP3-00` is independently verified, the next task is:
+After `WEP3-00` is integrated and the Stage 1 audit status can be verified, the first bounded Stage 2 cutover is:
 
 ```txt
-WEP3-01 — Repository-to-contract delta audit
+WEP3-02 — Algorithms simulation persistence-boundary cutover
 ```
 
-Do not proceed directly to another implementation pass.
+Its exact scope is limited to removing unsupported Algorithms flagging, moving simulation draft/session/timer/finalization orchestration from `AlgorithmsFamilyRuntime` into application use cases and repositories, and replacing timestamp-only draft persistence with schema/draft revision plus expected-previous-revision rejection. It must preserve the existing fixed-plan reinsert semantics and verified no-results-before-finalization boundary.
+
+It must not implement Certification modes, content activation, product-surface redesign, compatibility/migration readers, or new UI features.
 
 The audit determines which parts of the current implementation are:
 
