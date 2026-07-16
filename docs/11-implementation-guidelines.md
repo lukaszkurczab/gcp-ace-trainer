@@ -6,7 +6,7 @@ This document defines how the canonical Patternly contracts are implemented.
 
 It does not redefine product behaviour, scoring, review, persistence semantics, content quality, or visual interaction.
 
-Implementation must reproduce the approved contracts from documents `00`–`17`. Current repository behaviour is evidence of the existing state, not evidence of correct target behaviour.
+Implementation must reproduce the approved contracts from documents `00`–`13` and `15`–`17`. Current repository behaviour is evidence of the existing state, not evidence of correct target behaviour.
 
 When required behaviour is missing or contradictory, implementation stops at that boundary. The responsible canonical document and its contract tests must be corrected before code chooses an interpretation.
 

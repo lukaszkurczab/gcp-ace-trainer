@@ -3,8 +3,9 @@
 **Status:** active execution-control document
 **Repository:** `lukaszkurczab/gcp-ace-trainer`
 **Product:** Patternly
-**Repository baseline:** `main` at `20469446355f0031df941a273435674037793d18`
-**Baseline date:** 2026-07-15
+**Repository baseline:** audited `main` at `ac412949a3d53c0712aebfb04476445b833bc41a`
+**Baseline date:** 2026-07-16
+**Stage 0 closure evidence:** closing documentation commit `05dc5594aa12558bc6c701a8f322b6a6dc0f7442` (`docs: close canonical documentation stage`), audited against input `main` commit `ac412949a3d53c0712aebfb04476445b833bc41a`.
 
 ## 1. Purpose
 
@@ -35,15 +36,7 @@ Conflicts are resolved by contract ownership, not by document age, existing code
 
 Documents `00–13` and `15–17` define the target product.
 
-Document `14 — Learning Effectiveness Model` is retired because its content is owned by:
-
-- `01-product-definition.md`;
-- `07-content-guidelines.md`;
-- `15-certification-track-learning-system.md`;
-- `16-leetcode-like-learning-system.md`;
-- `17-training-runtime-and-interaction-spec.md`.
-
-Document `14` defines no independent contract and must not remain an authority reference.
+No separate learning-effectiveness document is an authority. Its responsibilities are owned by `01-product-definition.md`, `07-content-guidelines.md`, `15-certification-track-learning-system.md`, `16-leetcode-like-learning-system.md`, and `17-training-runtime-and-interaction-spec.md`.
 
 ### 2.2. Approved design references
 
@@ -342,22 +335,6 @@ The current implementation was produced against an older documentation set and m
 
 The repository audit must verify at least these known deltas.
 
-### D-01 — Canonical documentation is not yet applied
-
-Repository documents do not yet contain the complete accepted corrections.
-
-No further product implementation should be accepted before documentation closure.
-
-### D-02 — Document 14 remains referenced
-
-Document `14` must be deleted and all authority references removed.
-
-### D-03 — Stale recovery-plan documents remain
-
-Any previous architecture recovery plan or separate implementation roadmap must be deleted or explicitly retired.
-
-This Working Execution Plan is the only active execution-order source.
-
 ### D-04 — Algorithms runtime ownership
 
 Current code must be checked for family-runtime ownership of:
@@ -456,17 +433,13 @@ Renderable content is not automatically production-ready.
 
 Make the accepted documentation the only target contract and make this document the only execution-order source.
 
-### Scope
+### Closure evidence
 
-- replace documents `00–13` with accepted versions;
-- delete document `14`;
-- replace documents `15–17` with accepted versions;
-- remove every reference to document `14`;
-- remove references to a future document `18`;
-- delete or explicitly retire the existing architecture recovery plan;
-- delete or retire previous parallel working plans;
-- update documentation indexes and authority declarations;
-- resolve conflicting terminology and contracts.
+- documents `00–13` and `15–17` are present as the canonical set;
+- the excluded document slots have no files or authority references;
+- `docs/plan.md` is the only repository execution-order source;
+- stale indexes, ADR references, and the obsolete parallel execution plan were removed or corrected;
+- the baseline above was audited with the documentation and static QA checks required by this plan.
 
 ### Required consistency checks
 
@@ -493,20 +466,9 @@ Confirm one definition for:
 - no opportunistic cleanup outside documentation;
 - no compatibility note preserving rejected documentation.
 
-### Exit criteria
-
-- documents `00–13` and `15–17` are present;
-- document `14` is absent;
-- no document `18` exists or is planned;
-- no active recovery-plan document exists beside this plan;
-- no active reference points to document `14` or `18`;
-- cross-document contracts agree;
-- documentation checks pass;
-- exact commit SHA is recorded.
-
 ### Status
 
-`ACTIVE NEXT TASK`
+`VERIFIED`
 
 ## Stage 1 — Repository-to-contract delta audit
 
@@ -849,9 +811,8 @@ Prove the canonical implementation under supported runtime conditions.
 
 | Area                               | Current classification | Reason                                                                    |
 | ---------------------------------- | ---------------------- | ------------------------------------------------------------------------- |
-| Canonical documentation            | `NEEDS_CORRECTION`     | Accepted revisions are not yet applied                                    |
-| Document 14                        | `REJECTED`             | It duplicates other canonical owners                                      |
-| Previous recovery plan             | `REJECTED`             | Separate execution sequencing is no longer permitted                      |
+| Canonical documentation            | `VERIFIED`             | Exact canonical set and authority index audited at the recorded baseline  |
+| Execution-order ownership          | `VERIFIED`             | `docs/plan.md` is the only active repository execution-order source       |
 | Shared kernel and mutations        | `PARTIAL`              | Significant implementation exists but requires contract audit             |
 | MMKV and repositories              | `PARTIAL`              | Revision, reset, bootstrap, and ownership require verification            |
 | Algorithms immediate practice      | `PARTIAL`              | New controller exists but must be audited against final lifecycle         |
@@ -869,35 +830,22 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-00 — Canonical documentation closure`
+`WEP3-01 — Repository-to-contract delta audit`
 
 ### Goal
 
-Apply the accepted documentation set and establish this file as the only execution-order source.
+Audit the recorded `main` baseline against the accepted canonical documentation before any implementation stage.
 
 ### Required changes
 
-- update documents `00–13`;
-- delete document `14`;
-- update documents `15–17`;
-- remove all references to document `14`;
-- remove all references to document `18`;
-- delete or retire the existing architecture recovery plan;
-- delete or retire previous active working plans;
-- update indexes and authority sections;
-- remove stale claims about:
-  - compatibility;
-  - historical migration;
-  - backend content sources;
-  - Algorithms flags;
-  - two-item reinsert;
-  - simulation feedback after journal durability;
-  - family-owned persistence orchestration;
-  - postponed active-content quality.
+- inspect the areas and produce the evidence matrix required by Stage 1;
+- verify D-04 through D-10 against current source, tests, and runtime evidence;
+- identify canonical owners, obsolete owners, and required deletions;
+- record the current test baseline and the next bounded implementation stage.
 
 ### Out of scope
 
-- application code;
+- application code changes;
 - runtime fixes;
 - new content;
 - UI implementation;
@@ -906,34 +854,27 @@ Apply the accepted documentation set and establish this file as the only executi
 
 ### Required verification
 
-- documentation-reference audit;
-- no active reference to document `14`;
-- no active reference to document `18`;
-- no second execution-order document;
-- no conflicting mode lists;
-- no conflicting reinsert gap;
-- no conflicting timer semantics;
-- no conflicting feedback boundary;
-- `npm run qa:static`;
-- exact changed-file inventory;
-- pushed commit SHA.
+- repository-grounded requirement matrix;
+- explicit status for every D-04 through D-10 item;
+- current static QA baseline;
+- exact inspected-path inventory;
+- bounded recommendation for the first implementation correction.
 
 ### Completion report
 
 The report must include:
 
-- starting SHA;
-- ending SHA;
-- exact documents changed;
-- documents deleted or retired;
-- references removed;
+- starting and ending SHA;
+- evidence matrix and inspected paths;
+- D-04 through D-10 status;
 - checks run;
-- unresolved documentation conflicts;
+- unresolved implementation conflicts;
+- first bounded implementation task;
 - confirmation that no application code changed.
 
-## 12. Next task after documentation closure
+## 12. Active Stage 1 context
 
-After `WEP3-00` is independently verified, the next task is:
+Stage 0 is verified. The active next task is:
 
 ```txt
 WEP3-01 — Repository-to-contract delta audit
