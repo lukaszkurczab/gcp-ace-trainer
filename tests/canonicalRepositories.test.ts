@@ -3,7 +3,7 @@ import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { addReviewQueueItems, addTrainingAttempt, getActiveTrackId, getActiveTrainingSession, getTrainingAttempts, getTrainingSessions, saveActiveTrackId, saveTrainingSession } from "../src/storage";
 import { STORAGE_KEYS } from "../src/storage/keys";
-import { writeStoredJson } from "../src/storage/storageCodec";
+import { writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
 test("canonical repositories use individual immutable records and one active session", async () => {
  const ref = { trackId: "algorithms", itemId: "i", contentVersion: "v" }; const session = { id: "s", trackId: "algorithms", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v", status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" }; const attempt = { id: "a", sessionId: "s", trackId: "algorithms", modeId: "m", occurrenceId: "occurrence-1", item: ref, response: {}, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [] }, answeredAt: session.startedAt, committedAt: session.startedAt };
@@ -20,7 +20,7 @@ test("training sessions permit free navigation while rejecting regressing foregr
  await saveTrainingSession({ ...session, currentItemIndex: 0 });
  await assert.rejects(() => saveTrainingSession({ ...session, activeForegroundMs: 499 }), /cannot decrease/);
  installKeyValueStorageForTests(new MemoryKeyValueStorage());
- writeStoredJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
+ writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION, session.id);
  await assert.rejects(() => getActiveTrainingSession(), /references missing session/);
 });
 

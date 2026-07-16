@@ -1,2 +1,2 @@
 export * from "./contentCatalogRepository";
-export * from "./loadTrackContent";
+export * from "./validateBundledContent";

@@ -2,7 +2,7 @@ import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessio
 import { getTrainingSessionFinalizationCleanupKind, isRegisteredTrackId } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
-import { readStoredJson, removeStoredValue, writeStoredJson } from "../storageCodec";
+import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { JournalWriteError } from "../errors";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
@@ -213,7 +213,7 @@ export function isMutationJournalRecord(value: unknown): value is MutationJourna
 
 export function assertMutationJournalIntegrity(value: unknown): asserts value is MutationJournalRecord { if (!hasValidMutationJournalIntegrity(value)) throw new Error("Mutation journal record is unsupported."); }
 export function assertValidMutationJournal(value: unknown): asserts value is MutationJournalRecord { if (!isMutationJournalRecord(value)) throw new Error("Mutation journal record is unsupported."); }
-export async function getActiveMutationJournal(): Promise<MutationJournalRecord | null> { return readStoredJson(STORAGE_KEYS.ACTIVE_JOURNAL, isMutationJournalRecord); }
+export async function getActiveMutationJournal(): Promise<MutationJournalRecord | null> { return readCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, isMutationJournalRecord); }
 let journalCriticalSection: Promise<void> = Promise.resolve();
 async function inJournalCriticalSection<T>(operation: () => Promise<T>): Promise<T> {
   const previous = journalCriticalSection;
@@ -240,7 +240,7 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
       }
     }
     const prepared = current ?? record;
-    writeStoredJson(STORAGE_KEYS.ACTIVE_JOURNAL, prepared);
+    writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, prepared);
     return prepared;
   } catch (error) {
     if (error instanceof JournalWriteError) throw error;
@@ -259,6 +259,6 @@ export async function clearMutationJournal(expectedCommandFingerprint?: string):
     if (expectedCommandFingerprint && current.commandFingerprint !== expectedCommandFingerprint) {
       throw new JournalWriteError(new Error("Mutation journal ownership changed before clear."), "Mutation journal ownership changed before clear.");
     }
-    removeStoredValue(STORAGE_KEYS.ACTIVE_JOURNAL);
+    removeCanonicalValue(STORAGE_KEYS.ACTIVE_JOURNAL);
   });
 }

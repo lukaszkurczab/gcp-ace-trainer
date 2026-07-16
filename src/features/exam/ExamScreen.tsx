@@ -6,7 +6,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { getCertificationExam } from "../../storage";
+import { getActiveSessionRuntime } from "../../storage";
 import { abandonTrainingSession } from "../../domain";
 import { commitSessionAbandonment } from "../../application/learningMutations";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
@@ -31,7 +31,7 @@ export function ExamScreen({ navigation, route }: ExamScreenProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const loadExam = useCallback(async () => {
-    const savedSession = await getCertificationExam();
+    const savedSession = await getActiveSessionRuntime();
     const bankQuestions = getCertificationContentCatalog().getItems();
 
     if (!savedSession) {

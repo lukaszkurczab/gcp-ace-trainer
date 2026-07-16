@@ -42,6 +42,16 @@ if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path))) fail("an ada
 const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
 if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/mmkvClient.ts")) fail("MMKV must have one infrastructure-only client.");
 if ((activeSource.match(/createMMKV\s*\(/g) ?? []).length !== 1) fail("MMKV must have one production instance.");
+for (const path of sourcePaths) {
+  const source = readFileSync(path, "utf8");
+  if (/infrastructure\/storage\/mmkvClient/.test(source) && !/src\/storage\/repositories\//.test(path)) {
+    fail(`only repository implementations may import the MMKV client: ${path}`);
+  }
+}
+for (const path of ["src/storage/storageCodec.ts", "src/storage/repositories/certificationExamRepository.ts", "src/content/cache", "src/content/source"]) {
+  if (existsSync(join(root, path))) fail(`obsolete persistence or remote-content path remains: ${path}`);
+}
+if (/patternly:v1:|HttpContentSource|ContentCacheRepository|loadTrackContent/.test(activeSource)) fail("old namespace, remote-content cache, or compatibility content path remains in production source.");
 
 const implementationChecks = [
   ["MutationJournalRecord", /export\s+type\s+MutationJournalRecord\b/g],
@@ -105,8 +115,7 @@ const observedTestCount = (testSource.match(/\btest\s*\(\s*["']/g) ?? []).length
 if (observedTestCount === 0) fail("no active test cases are present.");
 
 for (const path of ["src/tracks/algorithms/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) fail(`production content remains in application: ${path}`);
-for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /BundledContentSource/, /LocalContentSource/]) if (pattern.test(activeSource)) fail(`forbidden content source remains: ${pattern}`);
-if (!activeSource.includes("HttpContentSource")) fail("HTTP content source is missing.");
+for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/]) if (pattern.test(activeSource)) fail(`obsolete content storage path remains: ${pattern}`);
 
 if (failures.length) {
   console.error("RECOVERY_INVENTORY_CHECK=failed");

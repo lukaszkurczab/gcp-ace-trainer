@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { createExamSession, getRemainingSeconds, isExamExpired, submitCertificationExam, toggleExamFlag, updateCurrentQuestionIndex, updateExamAnswer } from "../src/features/exam/examService";
-import { addReviewQueueItems, getAttempts, getCertificationExam, getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from "../src/storage";
+import { addReviewQueueItems, getAttempts, getActiveSessionRuntime, getReviewQueueItems, getTrainingAttempts, getTrainingSessions } from "../src/storage";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
 import { makeQuestionBank } from "./fixtures";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
@@ -25,7 +25,7 @@ test("exam creation persists canonical session, absolute deadline, item/option o
   assert.equal(runtime.session.itemOrder.length, 50);
   assert.equal(Object.keys(runtime.session.optionOrderByOccurrence).length, 50);
   assert.equal(typeof runtime.examState.deadlineAt, "string");
-  assert.equal((await getCertificationExam())?.session.id, runtime.session.id);
+  assert.equal((await getActiveSessionRuntime())?.session.id, runtime.session.id);
 });
 
 test("exam stores answer changes, flags, and canonical current position", async () => {
@@ -35,7 +35,7 @@ test("exam stores answer changes, flags, and canonical current position", async 
   assert.deepEqual((await updateExamAnswer(first, ["B"]))?.examState.responsesByItemId[first]?.selectedOptionIds, ["B"]);
   assert.equal((await toggleExamFlag(first))?.examState.flaggedItemIds.includes(first), true);
   assert.equal((await updateCurrentQuestionIndex(2))?.session.currentItemIndex, 2);
-  assert.equal((await getCertificationExam())?.session.currentItemIndex, 2);
+  assert.equal((await getActiveSessionRuntime())?.session.currentItemIndex, 2);
 });
 
 test("exam timeout uses persisted absolute deadline", async () => {
@@ -72,7 +72,7 @@ test("final submission preserves unanswered diagnostics, answer review projectio
   const restoredSummary = (await getAttempts()).find((item) => item.id === runtime.session.id);
   assert.equal(restoredSummary?.flaggedQuestionIds.includes(first), true);
   assert.equal(restoredSummary?.answers.find((answer) => answer.questionId === first)?.wasFlagged, true);
-  assert.equal(await getCertificationExam(), null);
+  assert.equal(await getActiveSessionRuntime(), null);
 });
 
 test("exam finalization retains an existing review identity for the same missed item", async () => {

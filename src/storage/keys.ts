@@ -1,5 +1,7 @@
-const PREFIX = "patternly:v1:";
+/** The only namespace for canonical user-owned records. */
+const PREFIX = "patternly:canonical:v1:";
 export const STORAGE_KEYS = {
+  METADATA: `${PREFIX}metadata`,
   ACTIVE_TRACK: `${PREFIX}active-track`,
   ACTIVE_TRAINING_SESSION: `${PREFIX}active-training-session`,
   ACTIVE_TRAINING_SESSION_DRAFT: `${PREFIX}active-training-session-draft`,
@@ -9,10 +11,8 @@ export const STORAGE_KEYS = {
   TRAINING_ATTEMPT_INDEX: `${PREFIX}training-attempt-index`,
   reviewEntry: (id: string) => `${PREFIX}review-entry:${id}`,
   REVIEW_INDEX: `${PREFIX}review-index`,
-  ACTIVE_CERTIFICATION_EXAM: `${PREFIX}active-certification-exam`,
+  ACTIVE_SESSION_RUNTIME: `${PREFIX}active-session-runtime`,
   SETTINGS: `${PREFIX}settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
-  contentActive: (trackId: string) => `${PREFIX}content:active:${trackId}`,
-  contentVersion: (trackId: string, version: string) => `${PREFIX}content:version:${trackId}:${version}`,
 } as const;
 export const STORAGE_NAMESPACE = PREFIX;

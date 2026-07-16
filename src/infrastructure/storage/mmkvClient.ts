@@ -8,6 +8,11 @@ export interface KeyValueStorage {
 
 let client: KeyValueStorage | null = null;
 
+/** Initializes the one native client before repositories are opened. */
+export function initializeKeyValueStorage(): KeyValueStorage {
+  return getKeyValueStorage();
+}
+
 export function getKeyValueStorage(): KeyValueStorage {
   if (!client) {
     // Native code is intentionally loaded only by the production client. Node tests install memory storage first.

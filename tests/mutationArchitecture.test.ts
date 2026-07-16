@@ -21,5 +21,5 @@ test("obsolete Algorithms runner and feature scoring model are deleted", () => {
   assert.equal(existsSync(join(root, "src/features/algorithms/AlgorithmsSessionScreen.tsx")), false);
   assert.equal(existsSync(join(root, "src/features/algorithms/algorithmsSessionModel.ts")), false);
 });
-test("startup recovery uses canonical recovery", () => assert.match(read("src/content/application/ContentPreparationGate.tsx"), /recoverPendingMutation/));
+test("startup recovery uses canonical bootstrap recovery", () => assert.match(read("src/content/application/ContentPreparationGate.tsx"), /bootstrapApplication/));
 test("no fallback direct-write orchestration remains", () => assert.doesNotMatch(read("src/application/learningMutations/commitMutation.ts"), /catch\s*\(/));

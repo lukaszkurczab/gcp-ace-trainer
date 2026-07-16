@@ -10,6 +10,7 @@ import { ALGORITHM_MODE_IDS, ALGORITHM_MODES, AlgorithmContentCatalog, type Algo
 import { addReviewQueueItems, getActiveMutationJournal, getActiveTrainingSession, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, saveTrainingSession } from "../src/storage/repositories";
 import { commitTrainingSessionFinalization, commitTrainingSessionStart, recoverPendingMutation } from "../src/application/learningMutations";
 import { STORAGE_KEYS } from "../src/storage/keys";
+import { writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 import { installMemoryStorage } from "./journalTestSupport";
 
 function choice(id: string, type: AlgorithmQuestionType = "single_choice", skill = `skill:${id}`): AlgorithmQuestion {
@@ -464,7 +465,7 @@ test("resume rejects terminal active slots, corrupt simulation length, and full 
   let runtime = new AlgorithmsFamilyRuntime(dependencies);
   let state = await runtime.start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" });
   const shortened = { ...state.session, actualLength: 39, itemOrder: state.session.itemOrder.slice(0, 39), optionOrderByOccurrence: Object.fromEntries(state.session.itemOrder.slice(0, 39).map((occurrence) => [occurrence.occurrenceId, state.session.optionOrderByOccurrence[occurrence.occurrenceId]!])) };
-  storage.setString(STORAGE_KEYS.trainingSession(state.session.id), JSON.stringify(shortened));
+  writeCanonicalJson(STORAGE_KEYS.trainingSession(state.session.id), shortened);
   await assert.rejects(new AlgorithmsFamilyRuntime(dependencies).start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" }), /exactly 40/);
 
   storage = installMemoryStorage();
@@ -472,7 +473,7 @@ test("resume rejects terminal active slots, corrupt simulation length, and full 
   runtime = new AlgorithmsFamilyRuntime(dependencies);
   state = await runtime.start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" });
   const terminal = { ...state.session, currentItemIndex: 39, status: "completed", completedAt: "2026-07-15T11:00:00.000Z" };
-  storage.setString(STORAGE_KEYS.trainingSession(state.session.id), JSON.stringify(terminal));
+  writeCanonicalJson(STORAGE_KEYS.trainingSession(state.session.id), terminal);
   await assert.rejects(new AlgorithmsFamilyRuntime(dependencies).start({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, nodeId: "arrays_and_strings" }), /terminal session/);
 
   storage = installMemoryStorage();
@@ -498,7 +499,7 @@ test("resume rejects corrupt response, result, and canonical review evidence", a
     runtime.setTransientResponse(correct(started.currentQuestion));
     await runtime.submitCurrent();
     const durable = (await getTrainingAttempts()).value[0]!;
-    storage.setString(STORAGE_KEYS.trainingAttempt(durable.id), JSON.stringify(mutate(durable)));
+    writeCanonicalJson(STORAGE_KEYS.trainingAttempt(durable.id), mutate(durable));
     await assert.rejects(new AlgorithmsFamilyRuntime(dependencies).start({ modeId: ALGORITHM_MODE_IDS.learnApproach, nodeId: "arrays_and_strings" }));
   }
 });

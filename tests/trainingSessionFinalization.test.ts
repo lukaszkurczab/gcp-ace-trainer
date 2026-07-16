@@ -4,6 +4,7 @@ import test from "node:test";
 import { commitTrainingSessionFinalization, recoverPendingMutation } from "../src/application/learningMutations";
 import { completeTrainingSession, createTrainingAttempt, createTrainingSessionDraft } from "../src/domain";
 import { STORAGE_KEYS } from "../src/storage/keys";
+import { writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 import {
   getActiveMutationJournal,
   getActiveTrainingSessionDraft,
@@ -207,10 +208,10 @@ test("journaled transition delete rejects a same-id review conflict before outco
   storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.trainingAttempt(correctAttempt.id) });
   await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [correctAttempt], reviewMutations: [{ action: "delete", record: existing, transitionAttemptId: correctAttempt.id }], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [correctAttempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
-  storage.setString(STORAGE_KEYS.reviewEntry(existing.id), JSON.stringify({ ...existing, dueAt: "2026-07-16T10:00:00.000Z" }));
+  writeCanonicalJson(STORAGE_KEYS.reviewEntry(existing.id), { ...existing, dueAt: "2026-07-16T10:00:00.000Z" });
   await assert.rejects(recoverPendingMutation(), /materialize/);
   assert.deepEqual((await getTrainingAttempts()).value, []);
-  storage.setString(STORAGE_KEYS.reviewEntry(existing.id), JSON.stringify(existing));
+  writeCanonicalJson(STORAGE_KEYS.reviewEntry(existing.id), existing);
   await recoverPendingMutation();
   assert.deepEqual((await getReviewQueueItems()).value, []);
 
@@ -266,7 +267,7 @@ test("persisted finalization journal preflights a stale durable draft before rep
   await assert.rejects(commitTrainingSessionFinalization({ session: completed, attempts: [attempt], reviewMutations: [], cleanup: { kind: "training_session_draft", draft, submittedOccurrenceIds: [attempt.occurrenceId] }, createdAt: timestamp }));
   storage.setFailurePlan(null);
   const stale = createTrainingSessionDraft({ ...draft, responsesByOccurrenceId: { "occurrence-1": { selectedOptionIds: ["b"] } }, updatedAt: "2026-07-15T10:01:00.000Z" });
-  storage.setString(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, JSON.stringify(stale));
+  writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, stale);
   await assert.rejects(recoverPendingMutation(), /materialize/i);
   assert.deepEqual((await getTrainingAttempts()).value, []);
   assert.equal((await getTrainingSessions()).value[0]?.status, "active");

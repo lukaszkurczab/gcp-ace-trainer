@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { materializeMutation } from "../src/application/learningMutations/mutationMaterializer";
 import { JournalMaterializationError } from "../src/storage/errors";
-import { getCertificationExam, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, saveCertificationExam, saveTrainingSession } from "../src/storage/repositories";
+import { getActiveSessionRuntime, getReviewQueueItems, getTrainingAttempts, getTrainingSessions, saveActiveSessionRuntime, saveTrainingSession } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { installMemoryStorage, attempt, exam, journal, review, session } from "./journalTestSupport";
 
@@ -28,8 +28,8 @@ test("clears active session pointer", async () => {
   assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false);
 });
 test("clears active certification exam", async () => {
-  installMemoryStorage(); await saveCertificationExam(exam()); await materializeMutation(journal([{ kind: "clear_active_exam", sessionId: "session-1" }]));
-  assert.equal(await getCertificationExam(), null);
+  installMemoryStorage(); await saveActiveSessionRuntime(exam()); await materializeMutation(journal([{ kind: "clear_active_exam", sessionId: "session-1" }]));
+  assert.equal(await getActiveSessionRuntime(), null);
 });
 test("materializes a complete training outcome in canonical order", async () => {
   const storage = installMemoryStorage(); const completed = session("completed");

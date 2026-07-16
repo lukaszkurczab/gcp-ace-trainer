@@ -1,5 +1,5 @@
 import {
-  clearCertificationExam,
+  clearActiveSessionRuntime,
   clearMutationJournal,
   clearReviewQueueItems,
   clearTrainingAttempts,
@@ -15,7 +15,7 @@ export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
 
 export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
   "clearMutationJournal",
-  "clearCertificationExam",
+  "clearActiveSessionRuntime",
   "clearTrainingSessionDrafts",
   "clearTrainingSessions",
   "clearTrainingAttempts",
@@ -38,7 +38,7 @@ export const CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE =
   "Your local data could not be fully cleared. Some data may remain. Try again.";
 
 const defaultClearOperations: ClearLocalHistoryOperations = {
-  clearCertificationExam,
+  clearActiveSessionRuntime,
   clearMutationJournal,
   clearReviewQueueItems,
   clearTrainingAttempts,

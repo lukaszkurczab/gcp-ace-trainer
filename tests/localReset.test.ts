@@ -55,12 +55,12 @@ test("clear local history reports an operation failure and stops later clears", 
     if (operationName === "clearTrainingSessions") throw new Error("injected reset failure");
   }])) as ClearLocalHistoryOperations;
   await assert.rejects(() => clearPatternlyLocalHistory(operations), /injected reset failure/);
-  assert.deepEqual(called, ["clearMutationJournal", "clearCertificationExam", "clearTrainingSessionDrafts", "clearTrainingSessions"]);
+  assert.deepEqual(called, ["clearMutationJournal", "clearActiveSessionRuntime", "clearTrainingSessionDrafts", "clearTrainingSessions"]);
 });
 
 test("clear local history exposes a retryable failure result without reporting success", async () => {
   const operations = Object.fromEntries(CLEAR_LOCAL_HISTORY_OPERATION_NAMES.map((operationName) => [operationName, async () => {
-    if (operationName === "clearCertificationExam") throw new Error("injected reset failure");
+    if (operationName === "clearActiveSessionRuntime") throw new Error("injected reset failure");
   }])) as ClearLocalHistoryOperations;
 
   const result = await tryClearPatternlyLocalHistory(operations);

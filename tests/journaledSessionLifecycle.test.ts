@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { commitSessionAbandonment, commitSessionCompletion, recoverPendingMutation } from "../src/application/learningMutations";
 import { STORAGE_KEYS } from "../src/storage/keys";
-import { getCertificationExam, getTrainingSessions, saveCertificationExam, saveTrainingSession } from "../src/storage/repositories";
+import { getActiveSessionRuntime, getTrainingSessions, saveActiveSessionRuntime, saveTrainingSession } from "../src/storage/repositories";
 import { getActiveMutationJournal } from "../src/storage/repositories/mutationJournalRepository";
 import { installMemoryStorage, exam, session, timestamp } from "./journalTestSupport";
 
@@ -11,5 +11,5 @@ test("session completion replay is idempotent", async () => { installMemoryStora
 test("session completion clear failure recovers safely", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION }); await assert.rejects(() => commitSessionCompletion(session("completed"), timestamp)); storage.setFailurePlan(null); await recoverPendingMutation(); assert.equal((await getTrainingSessions()).value[0]?.status, "completed"); assert.equal(await getActiveMutationJournal(), null); });
 test("session abandonment persists abandoned session before clearing active pointer", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned"); assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false); });
 test("session abandonment replay is idempotent", async () => { installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value.length, 1); });
-test("exam abandonment clears only the exam owned by the session", async () => { installMemoryStorage(); await saveCertificationExam(exam("other-session")); await commitSessionAbandonment(session("abandoned"), timestamp, true); assert.equal((await getCertificationExam())?.session.id, "other-session"); });
+test("abandonment clears only the active runtime owned by the session", async () => { installMemoryStorage(); await saveActiveSessionRuntime(exam("other-session")); await commitSessionAbandonment(session("abandoned"), timestamp, true); assert.equal((await getActiveSessionRuntime())?.session.id, "other-session"); });
 test("abandonment does not navigate before durability", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); storage.setFailurePlan({ kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL }); await assert.rejects(() => commitSessionAbandonment(session("abandoned"), timestamp)); assert.equal((await getTrainingSessions()).value[0]?.status, "active"); });

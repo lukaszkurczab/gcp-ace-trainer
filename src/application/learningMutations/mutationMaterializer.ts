@@ -5,9 +5,9 @@ import {
   addTrainingAttempt,
   clearActiveTrainingSession,
   clearActiveTrainingSessionDraft,
-  clearCertificationExam,
+  clearActiveSessionRuntime,
   getActiveTrainingSessionDraft,
-  getCertificationExam,
+  getActiveSessionRuntime,
   getReviewQueueItems,
   getTrainingSessions,
   materializeActiveTrainingSessionDraft,
@@ -51,8 +51,8 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
           break;
         }
         case "clear_active_exam": {
-          const activeExam = await getCertificationExam();
-          if (activeExam?.session.id === write.sessionId) await clearCertificationExam();
+          const activeRuntime = await getActiveSessionRuntime();
+          if (activeRuntime?.session.id === write.sessionId) await clearActiveSessionRuntime();
           break;
         }
         default: unsupportedWrite(write);

@@ -1,6 +1,6 @@
 import { EXAM_DURATION_MINUTES } from "../../constants";
 import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, moveTrainingSessionToIndex, retainReviewQueueEntryIdentity, type TrainingAttempt } from "../../domain";
-import { getCertificationExam, getReviewQueueItems, saveCertificationExam, saveTrainingSession } from "../../storage";
+import { getActiveSessionRuntime, getReviewQueueItems, saveActiveSessionRuntime, saveTrainingSession } from "../../storage";
 import { commitTrainingSessionFinalization } from "../../application/learningMutations";
 import { createAttemptId } from "../../application/learningMutations/identity";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
@@ -27,33 +27,33 @@ export async function createExamSession(): Promise<ExamGenerationResult> {
   const itemOrder = selection.questions.map((question, index) => ({ occurrenceId: `${sessionId}:occurrence:${index}`, item: getCertificationContentCatalog().toContentItemRef(question) }));
   const session = createTrainingSession({ id: sessionId, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "cloud-exam-simulation", configurationSnapshot: { durationMinutes: EXAM_DURATION_MINUTES, kind: "certificationSimulation", questionCount: selection.questions.length, timer: "absoluteDeadline" }, requestedLength: selection.questions.length, actualLength: selection.questions.length, currentItemIndex: 0, itemOrder, optionOrderByOccurrence: Object.fromEntries(itemOrder.map((occurrence, index) => [occurrence.occurrenceId, selection.optionOrderByQuestionId[selection.questions[index]!.id]!])), flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: getCertificationContentCatalog().getContentVersion(), status: "active", startedAt: startedAt.toISOString() });
   const runtime: CertificationExamViewModel = { session, examState: { sessionId: session.id, deadlineAt, responsesByItemId: {}, flaggedItemIds: [] } };
-  await Promise.all([saveCertificationExam(runtime), saveTrainingSession(session)]);
+  await Promise.all([saveActiveSessionRuntime(runtime), saveTrainingSession(session)]);
   return { ok: true, session: runtime };
 }
 
 export function buildExamQuestionViews(runtime: CertificationExamViewModel, questions: readonly CertificationQuestion[]): ExamQuestionView[] { return buildExamQuestionViewsFromSession(runtime, questions); }
 export async function updateCurrentQuestionIndex(index: number): Promise<CertificationExamViewModel | null> {
-  const runtime = await getCertificationExam(); if (!runtime) return null;
+  const runtime = await getActiveSessionRuntime(); if (!runtime) return null;
   const bounded = Math.max(0, Math.min(index, runtime.session.itemOrder.length - 1));
   const next = { ...runtime, session: moveTrainingSessionToIndex(runtime.session, bounded) };
-  await saveCertificationExam(next); return next;
+  await saveActiveSessionRuntime(next); return next;
 }
 export async function updateExamAnswer(itemId: string, selectedOptionIds: string[]): Promise<CertificationExamViewModel | null> {
-  const runtime = await getCertificationExam(); if (!runtime) return null;
+  const runtime = await getActiveSessionRuntime(); if (!runtime) return null;
   const responses = { ...runtime.examState.responsesByItemId };
   if (selectedOptionIds.length === 0) delete responses[itemId]; else responses[itemId] = { kind: "option_selection", selectedOptionIds };
   const next = { ...runtime, examState: { ...runtime.examState, responsesByItemId: responses } };
-  await saveCertificationExam(next); return next;
+  await saveActiveSessionRuntime(next); return next;
 }
 export async function toggleExamFlag(itemId: string): Promise<CertificationExamViewModel | null> {
-  const runtime = await getCertificationExam(); if (!runtime) return null;
+  const runtime = await getActiveSessionRuntime(); if (!runtime) return null;
   const flagged = new Set(runtime.examState.flaggedItemIds); flagged.has(itemId) ? flagged.delete(itemId) : flagged.add(itemId);
   const next = { ...runtime, examState: { ...runtime.examState, flaggedItemIds: [...flagged] } };
-  await saveCertificationExam(next); return next;
+  await saveActiveSessionRuntime(next); return next;
 }
 
 export async function submitCertificationExam(autoSubmitted = false): Promise<CertificationExamSummaryViewModel | null> {
-  const runtime = await getCertificationExam(); if (!runtime) return null;
+  const runtime = await getActiveSessionRuntime(); if (!runtime) return null;
   const questions = buildExamQuestionViews(runtime, getCertificationContentCatalog().getItems());
   const completedAt = new Date().toISOString();
   const score = scoreExamSession(runtime, questions, completedAt);

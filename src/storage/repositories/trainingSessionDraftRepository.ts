@@ -1,17 +1,21 @@
 import { canPersistTrainingSessionDraft, createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
-import { readStoredJson, removeStoredValue, writeStoredJson } from "../storageCodec";
+import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isTrainingSessionDraft } from "./trainingModelGuards";
 import { getActiveMutationJournal } from "./mutationJournalRepository";
 
 export async function getActiveTrainingSessionDraft(): Promise<TrainingSessionDraft | null> {
-  const stored = readStoredJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
+  const stored = readCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft);
   return stored ? createTrainingSessionDraft(stored) : null;
 }
 
-export async function saveTrainingSessionDraft(draft: TrainingSessionDraft): Promise<void> {
+export async function getActiveTrainingSessionDraftRevision(): Promise<number | null> {
+  return readCanonicalEnvelope(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, isTrainingSessionDraft)?.revision ?? null;
+}
+
+export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expectedRevision?: number | null): Promise<void> {
   if (!isTrainingSessionDraft(draft)) throw new Error("Training session draft is invalid.");
   if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
   const activeSession = await getActiveTrainingSession();
@@ -34,7 +38,12 @@ export async function saveTrainingSessionDraft(draft: TrainingSessionDraft): Pro
     throw new Error("Training session draft cannot change at an already persisted update time.");
   }
   if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");
-  writeStoredJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft));
+  try {
+    writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft), expectedRevision);
+  } catch (error) {
+    if (expectedRevision !== undefined) throw new Error("Training session draft expected revision is stale.");
+    throw error;
+  }
 }
 
 export async function materializeActiveTrainingSessionDraft(draft: TrainingSessionDraft): Promise<void> {
@@ -52,14 +61,14 @@ export async function materializeActiveTrainingSessionDraft(draft: TrainingSessi
   if (existing && canonicalSerialize(existing) !== canonicalSerialize(draft)) {
     throw new Error("A conflicting active training session draft is already durable.");
   }
-  if (!existing) writeStoredJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft));
+  if (!existing) writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, createTrainingSessionDraft(draft));
 }
 
 export async function clearActiveTrainingSessionDraft(sessionId: string): Promise<void> {
   const draft = await getActiveTrainingSessionDraft();
-  if (draft?.sessionId === sessionId) removeStoredValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  if (draft?.sessionId === sessionId) removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
 }
 
 export async function clearTrainingSessionDrafts(): Promise<void> {
-  removeStoredValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
+  removeCanonicalValue(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT);
 }

@@ -6,7 +6,7 @@ import { Alert, StyleSheet, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ListRow, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import type { RootStackParamList } from "../../navigation";
-import { getCertificationExam } from "../../storage";
+import { getActiveSessionRuntime } from "../../storage";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { spacing } from "../../theme";
 import type { CertificationExamViewModel } from "../../tracks/cloud-certification";
@@ -26,7 +26,7 @@ export function ExamReviewScreen({ navigation }: ExamReviewScreenProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const loadReview = useCallback(async () => {
-    const savedSession = await getCertificationExam();
+    const savedSession = await getActiveSessionRuntime();
     const bankQuestions = getCertificationContentCatalog().getItems();
 
     if (!savedSession) {
