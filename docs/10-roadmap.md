@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is a capability roadmap, not an implementation recovery plan. Implementation sequencing is defined by the separately regenerated architecture recovery plan after this documentation is accepted.
+This is a capability roadmap, not an implementation recovery plan. `docs/plan.md` is the sole source of repository implementation sequencing and stage status.
 
 ## Capability order
 

@@ -1,6 +1,6 @@
 # Patternly — dokumentacja
 
-Status: **draft v0.1**  
+Status: **canonical documentation index**
 Zakres: **cała aplikacja**  
 Kontekst: **Patternly** jest wielotrackowym narzędziem treningowym do technicznej nauki, focused practice, rozpoznawania wzorców i review błędów. Starszy kontekst GCP ACE pozostaje historią pierwszego tracka certyfikacyjnego, ale nie jest już zakresem całego produktu.
 
@@ -34,9 +34,9 @@ docs/
   11-implementation-guidelines.md
   12-testing-strategy.md
   13-risk-register.md
-  14-learning-effectiveness-model.md
   15-certification-track-learning-system.md
   16-leetcode-like-learning-system.md
+  17-training-runtime-and-interaction-spec.md
 
   adr/
     ADR-001-local-first-mvp.md
@@ -46,28 +46,11 @@ docs/
     ADR-005-dark-first-focus-lab-ui.md
 ```
 
-## Główne decyzje
+## Authority
 
-1. Kanoniczna nazwa i kierunek produktu to **Patternly**.
-2. Patternly jest **wielotrackową aplikacją treningową** dla technicznej nauki, a nie pojedynczym trenerem GCP ACE.
-3. Pierwsze tracki produktowe to `cloud-certification` oraz `algorithms`.
-4. Certification-style practice i LeetCode-like / algorithmic practice mają osobne mechaniki uczenia. Mogą współdzielić shell, nawigację, język wizualny, storage primitives, historię sesji, progress infrastructure i review infrastructure, ale nie mogą zostać spłaszczone do jednego generycznego quiz/question loopu.
-5. Aplikacja w MVP jest **local-first/offline-first**.
-6. Nie ma backendu, kont użytkownika ani synchronizacji w MVP.
-7. Stack aplikacji: **Expo / React Native / TypeScript**.
-8. Content jest dostarczany jako lokalne, wersjonowane paczki per track. Pytania egzaminacyjne są tylko jednym wariantem `TrainingItem`.
-9. UI ma być dark-first **Focus Lab**: spokojny, premium, techniczny i neutralny domenowo.
-10. Nie traktować syntetycznych procentów typu `readiness` lub `retention` jako kanonicznych metryk produktu, jeżeli nie są jawnie wyliczone z zachowań użytkownika i opisane jako ostrożne sygnały diagnostyczne.
-11. Aplikacja nie może sugerować oficjalnej afiliacji z Google, LeetCode ani właścicielami certyfikacji lub platform coding-practice.
-12. Wspólne style i komponenty powinny żyć w design systemie, nie w jednorazowych stylach ekranów.
+Dokumenty `00`–`13` oraz `15`–`17` są jedynym kanonicznym zestawem kontraktów produktu, architektury i runtime. `docs/plan.md` jest jedynym źródłem kolejności wykonania i statusu etapów.
 
-## Kanoniczne modele uczenia
-
-- `14-learning-effectiveness-model.md` jest nadrzędnym, ogólnym modelem uczenia dla Patternly.
-- `15-certification-track-learning-system.md` jest kanonicznym modelem dla tracków certyfikacyjnych.
-- `16-leetcode-like-learning-system.md` jest kanonicznym modelem dla tracków LeetCode-like / algorithmic problem-solving.
-
-Jeżeli starszy dokument, ADR albo implementacja używa pojęć takich jak `Question`, `ExamDomain`, `ExamScreen` albo `gcpAceTrainer.*`, należy traktować je jako historyczny lub aktualny stan implementacji, a nie jako kanoniczną wspólną architekturę.
+ADR-y zachowują historyczne decyzje techniczne, ale nie tworzą drugiego planu wykonawczego i nie zastępują kanonicznych kontraktów. Artefakty audytowe oraz materiały projektowe są dowodami lub referencjami wizualnymi, nie źródłami kontraktu ani kolejności wykonania.
 
 ## Najważniejsza zasada produktu
 

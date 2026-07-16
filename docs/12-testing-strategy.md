@@ -4,7 +4,7 @@
 
 Patternly testing verifies the canonical product contract, ownership boundaries, deterministic learning behaviour, persistence recovery, active-content validity, accessibility, and explicit failure states.
 
-Tests assert target behaviour from documents `00`–`17`.
+Tests assert target behaviour from documents `00`–`13` and `15`–`17`.
 
 They do not preserve:
 

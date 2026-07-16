@@ -9,8 +9,9 @@ The current canonical product direction is defined by:
 - `docs/03-navigation-and-flows.md`,
 - `docs/05-design-system.md`,
 - `docs/06-branding-and-style-direction.md`,
-- `docs/14-learning-effectiveness-model.md`,
-- track-specific learning-system docs.
+- `docs/15-certification-track-learning-system.md`,
+- `docs/16-leetcode-like-learning-system.md`,
+- `docs/17-training-runtime-and-interaction-spec.md`.
 
 If an individual design conflicts with those documents, with current repository behavior, or with verified product constraints, the canonical docs and repository evidence win.
 

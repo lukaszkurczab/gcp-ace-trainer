@@ -11,7 +11,7 @@ Patternly nie jest już pojedynczym trenerem GCP ACE ani light-first exam simula
 - LeetCode-like / algorithmic problem-solving practice,
 - przyszłych tracków technicznych, jeżeli zostaną dodane.
 
-Dokumenty `00-overview.md`, `01-product-definition.md`, `05-design-system.md`, `06-branding-and-style-direction.md`, `14-learning-effectiveness-model.md`, `15-certification-track-learning-system.md` i `16-leetcode-like-learning-system.md` przesuwają kierunek produktu w stronę Focus Lab: spokojnego, premium, technicznego i neutralnego domenowo środowiska praktyki.
+Dokumenty `00-overview.md`, `01-product-definition.md`, `05-design-system.md`, `06-branding-and-style-direction.md`, `15-certification-track-learning-system.md`, `16-leetcode-like-learning-system.md` i `17-training-runtime-and-interaction-spec.md` przesuwają kierunek produktu w stronę Focus Lab: spokojnego, premium, technicznego i neutralnego domenowo środowiska praktyki.
 
 ## Decyzja
 
@@ -52,5 +52,6 @@ Dark-first Focus Lab lepiej wspiera aktualne pozycjonowanie Patternly jako osobi
 - `docs/00-overview.md`
 - `docs/05-design-system.md`
 - `docs/06-branding-and-style-direction.md`
-- `docs/14-learning-effectiveness-model.md`
-- `planning/patternly-product-audit-and-execution-plan.md`
+- `docs/15-certification-track-learning-system.md`
+- `docs/16-leetcode-like-learning-system.md`
+- `docs/17-training-runtime-and-interaction-spec.md`

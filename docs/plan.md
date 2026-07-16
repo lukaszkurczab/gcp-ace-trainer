@@ -35,15 +35,7 @@ Conflicts are resolved by contract ownership, not by document age, existing code
 
 Documents `00–13` and `15–17` define the target product.
 
-Document `14 — Learning Effectiveness Model` is retired because its content is owned by:
-
-- `01-product-definition.md`;
-- `07-content-guidelines.md`;
-- `15-certification-track-learning-system.md`;
-- `16-leetcode-like-learning-system.md`;
-- `17-training-runtime-and-interaction-spec.md`.
-
-Document `14` defines no independent contract and must not remain an authority reference.
+No separate learning-effectiveness document is an authority. Its responsibilities are owned by `01-product-definition.md`, `07-content-guidelines.md`, `15-certification-track-learning-system.md`, `16-leetcode-like-learning-system.md`, and `17-training-runtime-and-interaction-spec.md`.
 
 ### 2.2. Approved design references
 
@@ -342,22 +334,6 @@ The current implementation was produced against an older documentation set and m
 
 The repository audit must verify at least these known deltas.
 
-### D-01 — Canonical documentation is not yet applied
-
-Repository documents do not yet contain the complete accepted corrections.
-
-No further product implementation should be accepted before documentation closure.
-
-### D-02 — Document 14 remains referenced
-
-Document `14` must be deleted and all authority references removed.
-
-### D-03 — Stale recovery-plan documents remain
-
-Any previous architecture recovery plan or separate implementation roadmap must be deleted or explicitly retired.
-
-This Working Execution Plan is the only active execution-order source.
-
 ### D-04 — Algorithms runtime ownership
 
 Current code must be checked for family-runtime ownership of:
@@ -466,17 +442,13 @@ The audited `main` does not contain the pushed Stage 0 closure commit. Stage 1 i
 
 Make the accepted documentation the only target contract and make this document the only execution-order source.
 
-### Scope
+### Closure evidence
 
-- replace documents `00–13` with accepted versions;
-- delete document `14`;
-- replace documents `15–17` with accepted versions;
-- remove every reference to document `14`;
-- remove references to a future document `18`;
-- delete or explicitly retire the existing architecture recovery plan;
-- delete or retire previous parallel working plans;
-- update documentation indexes and authority declarations;
-- resolve conflicting terminology and contracts.
+- documents `00–13` and `15–17` are present as the canonical set;
+- the excluded document slots have no files or authority references;
+- `docs/plan.md` is the only repository execution-order source;
+- stale indexes, ADR references, and the obsolete parallel execution plan were removed or corrected;
+- the baseline above was audited with the documentation and static QA checks required by this plan.
 
 ### Required consistency checks
 
@@ -503,20 +475,9 @@ Confirm one definition for:
 - no opportunistic cleanup outside documentation;
 - no compatibility note preserving rejected documentation.
 
-### Exit criteria
-
-- documents `00–13` and `15–17` are present;
-- document `14` is absent;
-- no document `18` exists or is planned;
-- no active recovery-plan document exists beside this plan;
-- no active reference points to document `14` or `18`;
-- cross-document contracts agree;
-- documentation checks pass;
-- exact commit SHA is recorded.
-
 ### Status
 
-`ACTIVE NEXT TASK`
+`VERIFIED`
 
 ## Stage 1 — Repository-to-contract delta audit
 
@@ -898,7 +859,7 @@ Integrate the already-pushed Stage 0 closure into `main`, then independently rec
 
 ### Out of scope
 
-- application code;
+- application code changes;
 - runtime fixes;
 - new content;
 - UI implementation;
@@ -917,13 +878,12 @@ Integrate the already-pushed Stage 0 closure into `main`, then independently rec
 
 The report must include:
 
-- starting SHA;
-- ending SHA;
-- exact documents changed;
-- documents deleted or retired;
-- references removed;
+- starting and ending SHA;
+- evidence matrix and inspected paths;
+- D-04 through D-10 status;
 - checks run;
-- unresolved documentation conflicts;
+- unresolved implementation conflicts;
+- first bounded implementation task;
 - confirmation that no application code changed.
 
 ## 12. First Stage 2 task after the Stage 0 unblock
