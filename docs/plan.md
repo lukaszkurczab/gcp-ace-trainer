@@ -655,23 +655,23 @@ Delete:
 
 ### Prompt 12 design-gate inventory — 2026-07-16
 
-**Audited commit:** `a0b46c2095e530aa0d926cc09454f71204ea2209`
+**Audited commit:** `163b310de1350b6aa1c26cb5a4c27bd8ae85039c`
 
-**Decision:** `BLOCKED` — **G-D is BLOCKED**. No Algorithms UI cutover was implemented.
+**Decision:** `NEEDS_CORRECTION` — the product owner has approved the complete reference packet in `docs/designs/algorithms_stage3_ui/DESIGN.md` and its four companion graphics. **G-D is not yet VERIFIED**: the canonical UI, route cutover, automated checks, and visual QA have not yet been completed.
 
-The only Algorithms-specific reference, `docs/designs/algorithm_drill_unified`, is not an approved implementation reference for the canonical session shell: it renders a Patternly wordmark/logo and a non-canonical top bar. The historical core-flow screenshots in `docs/audits/ux-ui/patternly-core-flow-v1` capture only a legacy happy-path practice flow. Their own report records missing loading, error, storage-degraded, accessibility, dynamic-text, and simulation coverage. Neither source specifies the required canonical simulation navigator or recovery states.
+`docs/designs/algorithms_stage3_ui/DESIGN.md` is now the approved implementation reference. It defines the compliant shared shell plus P-01…P-15 and S-01…S-29, including preparation, durability, error, recovery, exit, finalization, and result states. The older `docs/designs/algorithm_drill_unified` and historical core-flow screenshots remain non-canonical historical material: their wordmark/logo and close control must not be copied.
 
-| Required surface | States without an approved visual and interaction reference |
+| Required surface | Approved visual and interaction reference | Remaining G-D evidence |
 | --- | --- |
-| Algorithms Practice | preparation/loading; submitting; commit pending; feedback with immediately visible authored Reason and collapsed Details; advance failure; finish; content error; storage error. The historical unanswered/selected screenshots are not reusable as canonical references because their top bar has a wordmark and dedicated close control. |
-| Algorithms Interview Simulation | draft loading; editable unanswered and answered; saving; saved; save failure; 40-occurrence free navigator; resume; timer exhausted; frozen; finalizing; finalization recovery/retry; finalized result; insufficient-40-item content. No approved Simulation reference exists. |
-| Cross-cutting accessibility and responsive evidence | structural non-colour correct/incorrect response treatment; accessible saving/frozen/error announcements; reduced motion; dynamic text; route smoke and screenshot states. The available audit explicitly marks these as untested or uncaptured. |
+| Algorithms Practice | P-01…P-15 in the approved packet, including preparation, submit, pending/recovery, feedback, advance, exit, and abandonment. | Implement projections and the single runner; remove old routes/owners; component, architecture, accessibility, and screenshot checks. |
+| Algorithms Interview Simulation | S-01…S-29 in the approved packet, including 40-position navigation, draft durability, freeze/finalization, recovery, mismatch, and verified result. | Implement projections and the single runner; remove old routes/owners; component, architecture, accessibility, and screenshot checks. |
+| Cross-cutting accessibility and responsive evidence | The approved packet specifies non-colour state treatment, action semantics, shell geometry, and required notices. | Capture and compare implementation screenshots; run route, reduced-motion/dynamic-text, and accessibility checks. |
 
-The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` specifies the required behaviour and copy, but it is not a substitute for the required state-by-state approved visual and interaction reference. Creating a generic modal, status card, error screen, navigator, or interim layout would violate the design gate.
+The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` remains binding with the approved packet. The implementation must not add a generic modal, status card, error screen, navigator, or interim layout outside those references.
 
-**Stage 3 gate status:** `BLOCKED`. G-C, G-A, G-P, G-L, and G-Q are not sufficient to close Stage 3 while G-D is blocked. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
+**Stage 3 gate status:** `NEEDS_CORRECTION`. G-D has approved design evidence but cannot become `VERIFIED` until the implementation and evidence named above pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
 
-**ACTIVE NEXT TASK:** `S3-ALGORITHMS-UI-DESIGN-01` — approve canonical visual and interaction references for every state listed above, including the compliant Algorithms top bar, practice durable-feedback boundary, and all Interview Simulation draft/freeze/recovery/result states. This task is design evidence only; it must not add substitute product behaviour.
+**ACTIVE NEXT TASK:** `S3-ALGORITHMS-UI-IMPLEMENT-01` — implement the approved Practice and Interview Simulation projections and route cutover, then prove G-D with automated and visual QA.
 
 ## Stage 4 — Certification family and GCP track cutover
 
