@@ -3,6 +3,7 @@ import {
   createAttemptResult,
   createTrainingSession,
   createTrainingSessionDraft,
+  createTrainingSessionResult,
   createForegroundTimerState,
   type AttemptResultComponent,
   isRegisteredTrackId,
@@ -13,11 +14,23 @@ import {
   type TrainingSession,
   type TrainingSessionDraft,
   type TrainingSessionDraftResponse,
+  type TrainingSessionResult,
   type ForegroundTimerState,
 } from "../../domain";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
   return Array.isArray(value) && value.every(isTrainingSession);
+}
+
+export function isTrainingSessionResult(value: unknown): value is TrainingSessionResult {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["id", "sessionId", "trackId", "totalOccurrences", "answeredOccurrenceIds", "unansweredOccurrenceIds", "completedAt", "evidence"])) return false;
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
+    typeof value.totalOccurrences !== "number" || !Array.isArray(value.answeredOccurrenceIds) || !value.answeredOccurrenceIds.every(isNonEmptyString) ||
+    !Array.isArray(value.unansweredOccurrenceIds) || !value.unansweredOccurrenceIds.every(isNonEmptyString) || !isTimestamp(value.completedAt) || !isRecord(value.evidence)) return false;
+  try {
+    createTrainingSessionResult({ id: value.id, sessionId: value.sessionId, trackId: value.trackId, totalOccurrences: value.totalOccurrences, answeredOccurrenceIds: value.answeredOccurrenceIds, unansweredOccurrenceIds: value.unansweredOccurrenceIds, completedAt: value.completedAt, evidence: value.evidence as TrainingSessionResult["evidence"] });
+    return true;
+  } catch { return false; }
 }
 
 export function isTrainingSessionDraft(value: unknown): value is TrainingSessionDraft {
@@ -75,13 +88,13 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "flaggedOccurrenceIds", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
-    isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && Array.isArray(value.flaggedOccurrenceIds) && value.flaggedOccurrenceIds.every(isNonEmptyString) && typeof value.activeForegroundMs === "number" &&
+    isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && typeof value.activeForegroundMs === "number" &&
     typeof value.contentVersion === "string" &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
     Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
@@ -97,7 +110,6 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       itemOrder: value.itemOrder,
       optionOrderByOccurrence: value.optionOrderByOccurrence,
       conditionalReinsertSlots: value.conditionalReinsertSlots,
-      flaggedOccurrenceIds: value.flaggedOccurrenceIds,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
       status: value.status,

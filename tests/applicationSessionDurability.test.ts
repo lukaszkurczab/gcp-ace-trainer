@@ -28,7 +28,6 @@ function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
     currentItemIndex: 0,
     itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "algorithms", itemId, contentVersion: "v1" } })),
     optionOrderByOccurrence: { "occurrence-one": ["b", "a"], "occurrence-two": ["d", "c"] },
-    flaggedOccurrenceIds: [],
     activeForegroundMs: 100,
     contentVersion: "v1",
     status: "active",

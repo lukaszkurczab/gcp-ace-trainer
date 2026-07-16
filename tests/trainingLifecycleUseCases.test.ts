@@ -15,7 +15,7 @@ import {
 } from "../src/application/trainingLifecycle";
 
 function session(status: "active" | "completed" | "abandoned" = "active"): TrainingSession {
-  return createTrainingSession({ id: "session-1", trackId: "test-track", modeId: "practice", configurationSnapshot: { kind: "test" }, requestedLength: 2, actualLength: 2, currentItemIndex: status === "completed" ? 1 : 0, itemOrder: ["one", "two"].map((itemId, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "test-track", itemId, contentVersion: "v1" } })), optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v1", status, startedAt: "2026-07-16T12:00:00.000Z", ...(status === "completed" ? { completedAt: "2026-07-16T12:01:00.000Z" } : {}) });
+  return createTrainingSession({ id: "session-1", trackId: "test-track", modeId: "practice", configurationSnapshot: { kind: "test" }, requestedLength: 2, actualLength: 2, currentItemIndex: status === "completed" ? 1 : 0, itemOrder: ["one", "two"].map((itemId, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "test-track", itemId, contentVersion: "v1" } })), optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v1", status, startedAt: "2026-07-16T12:00:00.000Z", ...(status === "completed" ? { completedAt: "2026-07-16T12:01:00.000Z" } : {}) });
 }
 
 function fixture() {

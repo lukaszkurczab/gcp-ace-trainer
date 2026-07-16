@@ -39,7 +39,7 @@ test("Certification practice submission writes one canonical typed attempt and r
   const question = makeQuestion({ id: "fixture-practice" });
   const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: [question] });
   const ref = catalog.toContentItemRef(question);
-  const session = createTrainingSession({ id: "practice-session", trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  const session = createTrainingSession({ id: "practice-session", trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   const wrongOption = question.options.find((option) => !question.correctOptionIds.includes(option.id));
   assert.ok(wrongOption);
   await savePracticeAnswer({ session, question, selectedOptionIds: [wrongOption.id] });
@@ -54,7 +54,7 @@ test("repeated Certification remediation retains one durable review identity", a
   const question = makeQuestion({ id: "fixture-repeat" });
   const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: [question] });
   const ref = catalog.toContentItemRef(question);
-  const makePracticeSession = (id: string) => createTrainingSession({ id, trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  const makePracticeSession = (id: string) => createTrainingSession({ id, trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   const wrongOption = question.options.find((option) => !question.correctOptionIds.includes(option.id));
   assert.ok(wrongOption);
   const firstSession = makePracticeSession("practice-first");

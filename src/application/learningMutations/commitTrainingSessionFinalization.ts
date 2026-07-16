@@ -1,4 +1,4 @@
-import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft } from "../../domain";
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { getActiveTrainingSessionDraft } from "../../storage/repositories";
@@ -18,6 +18,7 @@ export async function commitTrainingSessionFinalization(input: {
   session: TrainingSession;
   attempts: readonly TrainingAttempt<unknown>[];
   reviewMutations: readonly TrainingSessionFinalizationReviewMutation[];
+  result?: TrainingSessionResult;
   cleanup: TrainingSessionFinalizationCleanup;
   createdAt: string;
 }): Promise<void> {
@@ -59,6 +60,7 @@ export async function commitTrainingSessionFinalization(input: {
       if (action === "put") return { kind: "put_review_entry_for_attempt", record, transitionId: transitionAttemptId } as const;
       return { kind: "update_review_entry", record, transitionId: transitionAttemptId } as const;
     }),
+    ...(input.result ? [{ kind: "put_session_result", record: input.result } as const] : []),
     { kind: "put_session", record: input.session } as const,
     { kind: "clear_active_session", sessionId: input.session.id } as const,
     { kind: "delete_active_session_draft", record: input.cleanup.draft, submittedOccurrenceIds: [...input.cleanup.submittedOccurrenceIds] } as const,
@@ -67,7 +69,7 @@ export async function commitTrainingSessionFinalization(input: {
     operation: "finalize_training_session",
     sessionId: input.session.id,
     trackId: input.session.trackId,
-    identity: JSON.parse(JSON.stringify([input.session, input.attempts, [...reviewMutationByContent.values()], input.cleanup])),
+    identity: JSON.parse(JSON.stringify([input.session, input.attempts, [...reviewMutationByContent.values()], input.result, input.cleanup])),
     writes,
     createdAt: input.createdAt,
   }));

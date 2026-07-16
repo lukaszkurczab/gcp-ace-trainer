@@ -5,6 +5,7 @@ export * from "./algorithmContentTypes";
 export * from "./algorithmConditionalReinsert";
 export * from "./algorithmItems";
 export * from "./algorithmInteractionHandlers";
+export * from "./algorithmInterviewSimulation";
 export * from "./algorithmOptionOrder";
 export * from "./algorithmProgress";
 export * from "./algorithmQuestionTypes";

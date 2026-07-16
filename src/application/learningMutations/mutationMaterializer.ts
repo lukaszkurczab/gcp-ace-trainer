@@ -17,6 +17,7 @@ import {
   materializeActiveTrainingSessionDraft,
   removeReviewQueueEntry,
   saveTrainingSession,
+  saveTrainingSessionResult,
 } from "../../storage/repositories";
 import { assertMutationJournalIntegrity, type MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 
@@ -45,6 +46,7 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
           break;
         }
         case "put_session": await saveTrainingSession(write.record); break;
+        case "put_session_result": await saveTrainingSessionResult(write.record); break;
         case "put_active_session_draft": await materializeActiveTrainingSessionDraft(write.record); break;
         case "clear_active_session":
           await clearActiveTrainingSession(write.sessionId);

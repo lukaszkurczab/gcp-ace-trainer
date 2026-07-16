@@ -29,7 +29,7 @@ function baseSession(): TrainingSession {
     requestedLength: 5, actualLength: 5, currentItemIndex: 0,
     itemOrder: questions.slice(0, 5).map((question, index) => ({ occurrenceId: `occurrence-${index}`, item: { contentVersion: "v1", itemId: question.id, trackId: "algorithms" } })),
     optionOrderByOccurrence: Object.fromEntries(questions.slice(0, 5).map((question, index) => [`occurrence-${index}`, [`${question.id}:yes`, `${question.id}:no`]])),
-    flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-07-16T12:00:00.000Z",
+    activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-07-16T12:00:00.000Z",
   });
 }
 

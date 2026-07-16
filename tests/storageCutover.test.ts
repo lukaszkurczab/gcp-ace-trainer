@@ -16,7 +16,7 @@ const simulation = () => createTrainingSession({
   configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "interviewSimulation", submission: "manualOrForegroundTimeout" },
   requestedLength: 1, actualLength: 1, currentItemIndex: 0,
   itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "algorithms", itemId: "item", contentVersion: "content-v1" } }],
-  optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "content-v1", status: "active", startedAt: "2026-07-16T00:00:00.000Z",
+  optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", status: "active", startedAt: "2026-07-16T00:00:00.000Z",
 });
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));

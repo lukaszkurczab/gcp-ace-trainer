@@ -4,7 +4,7 @@ import { InvalidAttemptResultError, InvalidTrainingSessionError, REVIEW_REASONS,
 
 const ref = { trackId: "future-certification", itemId: "item-1", contentVersion: "v1" };
 test("kernel accepts open track ids and enforces canonical session invariants", () => {
-  const session = createTrainingSession({ id: "s1", trackId: ref.trackId, modeId: "practice", configurationSnapshot: { kind: "practice" }, requestedLength: 3, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": ["b", "a"] }, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  const session = createTrainingSession({ id: "s1", trackId: ref.trackId, modeId: "practice", configurationSnapshot: { kind: "practice" }, requestedLength: 3, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": ["b", "a"] }, activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   assert.equal(session.requestedLength, 3); assert.deepEqual(session.optionOrderByOccurrence["occurrence-1"], ["b", "a"]); assert.equal(session.currentItemIndex, 0); assert.equal("response" in session, false);
   assert.throws(() => createTrainingSession({ ...session, actualLength: 2 }), InvalidTrainingSessionError);
   assert.throws(() => createTrainingSession({ ...session, requestedLength: 0 }), InvalidTrainingSessionError);
@@ -28,7 +28,7 @@ test("attempt, evidence, reasons, and learning evidence stay family neutral", ()
 });
 
 test("lifecycle record guards and completed-result coverage are explicit", () => {
-  const active = createTrainingSession({ id: "lifecycle", trackId: ref.trackId, modeId: "practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  const active = createTrainingSession({ id: "lifecycle", trackId: ref.trackId, modeId: "practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   const completed = { ...active, status: "completed" as const, completedAt: "2026-01-01T00:01:00.000Z" };
   const abandoned = { ...active, status: "abandoned" as const };
   assert.equal(isActiveTrainingSession(active), true);

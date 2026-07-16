@@ -1,15 +1,16 @@
-import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft } from "../../domain";
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind, isRegisteredTrackId } from "../../domain";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { JournalWriteError } from "../errors";
-import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft } from "./trainingModelGuards";
+import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft, isTrainingSessionResult } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 
 export type JournalWrite =
   | { kind: "put_session"; record: TrainingSession }
+  | { kind: "put_session_result"; record: TrainingSessionResult }
   | { kind: "put_attempt"; record: TrainingAttempt<unknown> }
   | { kind: "put_review_entry"; record: ReviewQueueEntry }
   | { kind: "put_review_entry_for_attempt"; record: ReviewQueueEntry; transitionId: string }
@@ -54,6 +55,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
   if (!isRecord(value) || !isNonEmptyString(value.kind)) return false;
   switch (value.kind) {
     case "put_session": return hasExactKeys(value, ["kind", "record"]) && isTrainingSession(value.record);
+    case "put_session_result": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionResult(value.record);
     case "put_attempt": return hasExactKeys(value, ["kind", "record"]) && isTrainingAttempt(value.record);
     case "put_review_entry": return hasExactKeys(value, ["kind", "record"]) && isReviewQueueEntry(value.record);
     case "put_review_entry_for_attempt": return hasExactKeys(value, ["kind", "record", "transitionId"]) && isReviewQueueEntry(value.record) && isNonEmptyString(value.transitionId);
@@ -72,6 +74,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
 function writeTarget(write: JournalWrite): string {
   switch (write.kind) {
     case "put_session": return `session:${write.record.id}`;
+    case "put_session_result": return `result:${write.record.sessionId}`;
     case "put_attempt": return `attempt:${write.record.id}`;
     case "put_review_entry": return `review:${write.record.id}`;
     case "put_review_entry_for_attempt": return `review:${write.record.id}`;
@@ -89,6 +92,7 @@ function writeTarget(write: JournalWrite): string {
 function writePreconditionTargets(write: JournalWrite): string[] {
   switch (write.kind) {
     case "put_session": return [`session:${write.record.id}`, "session_index", "active_session"];
+    case "put_session_result": return [`result:${write.record.sessionId}`];
     case "put_attempt": return [`attempt:${write.record.id}`, "attempt_index"];
     case "put_review_entry":
     case "put_review_entry_for_attempt":
@@ -111,6 +115,7 @@ function targetStorageKey(target: string): string {
   if (target === "attempt_index") return STORAGE_KEYS.TRAINING_ATTEMPT_INDEX;
   if (target === "review_index") return STORAGE_KEYS.REVIEW_INDEX;
   if (target.startsWith("session:")) return STORAGE_KEYS.trainingSession(target.slice("session:".length));
+  if (target.startsWith("result:")) return STORAGE_KEYS.trainingSessionResult(target.slice("result:".length));
   if (target.startsWith("attempt:")) return STORAGE_KEYS.trainingAttempt(target.slice("attempt:".length));
   if (target.startsWith("review:")) return STORAGE_KEYS.reviewEntry(target.slice("review:".length));
   throw new Error(`Unknown mutation precondition target ${target}.`);
@@ -159,6 +164,7 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
   const count = (kind: JournalWrite["kind"]) => record.writes.filter((write) => write.kind === kind).length;
   const only = (...kinds: JournalWrite["kind"][]) => record.writes.every((write) => kinds.includes(write.kind));
   const sessionWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session" }> => write.kind === "put_session");
+  const resultWrite = record.writes.find((write): write is Extract<JournalWrite, { kind: "put_session_result" }> => write.kind === "put_session_result");
   const attemptWrites = record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt");
   const attemptItemIds = new Set(record.writes.filter((write): write is Extract<JournalWrite, { kind: "put_attempt" }> => write.kind === "put_attempt").map((write) => write.record.item.itemId));
   const attemptOccurrenceIds = attemptWrites.map((write) => write.record.occurrenceId);
@@ -222,9 +228,10 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
     case "finalize_training_session": {
       const cleanupKind = sessionWrite ? getTrainingSessionFinalizationCleanupKind(sessionWrite.record) : null;
       const cleanupMatchesSession = cleanupKind === "session_draft" && count("delete_active_session_draft") === 1 && draftResponsesMatchAttempts;
-      return only("put_attempt", "put_review_entry_for_attempt", "update_review_entry", "delete_review_entry_for_attempt", "put_session", "clear_active_session", "delete_active_session_draft") &&
+      return only("put_attempt", "put_review_entry_for_attempt", "update_review_entry", "delete_review_entry_for_attempt", "put_session_result", "put_session", "clear_active_session", "delete_active_session_draft") &&
         count("put_session") === 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed" &&
-        cleanupMatchesSession && hasUniqueOutcomeSemantics && attemptsMatchSessionPlan && reviewsMatchAttempts && transitionedReviewDeletesMatchAttempts;
+        cleanupMatchesSession && hasUniqueOutcomeSemantics && attemptsMatchSessionPlan && reviewsMatchAttempts && transitionedReviewDeletesMatchAttempts &&
+        (!resultWrite || (resultWrite.record.sessionId === sessionWrite.record.id && resultWrite.record.trackId === sessionWrite.record.trackId && resultWrite.record.totalOccurrences === sessionWrite.record.itemOrder.length));
     }
     case "set_review_entry":
       return only("put_review_entry", "update_review_entry") && count("put_review_entry") + count("update_review_entry") === 1;
@@ -242,6 +249,7 @@ function equalItemRef(left: { trackId: string; itemId: string; contentVersion: s
 function hasConsistentScope(record: MutationJournalPlan): boolean {
   return record.writes.every((write) => {
     if (write.kind === "put_session") return write.record.id === record.sessionId && write.record.trackId === record.trackId;
+    if (write.kind === "put_session_result") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_attempt") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt") return write.record.sourceSessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "update_review_entry") return write.record.trackId === record.trackId;

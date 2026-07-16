@@ -41,7 +41,6 @@ export type TrainingSession = Readonly<{
   itemOrder: readonly TrainingSessionItemOccurrence[];
   optionOrderByOccurrence: Readonly<Record<string, readonly string[]>>;
   conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
-  flaggedOccurrenceIds: readonly string[];
   activeForegroundMs: number;
   contentVersion: string;
   status: TrainingSessionStatus;
@@ -100,17 +99,12 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   }
   const conditionalReinsertSlots = session.conditionalReinsertSlots ?? [];
   validateConditionalReinsertSlots(session, conditionalReinsertSlots, occurrenceIds);
-  if (new Set(session.flaggedOccurrenceIds).size !== session.flaggedOccurrenceIds.length ||
-    session.flaggedOccurrenceIds.some((occurrenceId) => !occurrenceIds.has(occurrenceId))) {
-    throw new InvalidTrainingSessionError("Flagged occurrences must be unique members of the immutable session plan.");
-  }
   return Object.freeze({
     ...session,
     configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
     itemOrder: Object.freeze(session.itemOrder.map((occurrence) => Object.freeze({ ...occurrence, item: Object.freeze({ ...occurrence.item }) }))),
     optionOrderByOccurrence: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByOccurrence).map(([occurrenceId, optionIds]) => [occurrenceId, Object.freeze([...optionIds])]))),
     conditionalReinsertSlots: Object.freeze(conditionalReinsertSlots.map(freezeConditionalReinsertSlot)),
-    flaggedOccurrenceIds: Object.freeze([...session.flaggedOccurrenceIds]),
   });
 }
 
@@ -134,17 +128,6 @@ export function getCurrentSessionItem(session: TrainingSession): ContentItemRef 
 export function moveTrainingSessionToIndex(session: TrainingSession, currentItemIndex: number): TrainingSession {
   if (session.status !== "active") throw new InvalidTrainingSessionError("Only an active session can change position.");
   return createTrainingSession({ ...session, currentItemIndex });
-}
-
-export function setTrainingSessionOccurrenceFlagged(session: TrainingSession, occurrenceId: string, flagged: boolean): TrainingSession {
-  if (session.status !== "active") throw new InvalidTrainingSessionError("Only an active session can change flags.");
-  if (!session.itemOrder.some((occurrence) => occurrence.occurrenceId === occurrenceId)) {
-    throw new InvalidTrainingSessionError("A session flag must identify an occurrence in the immutable session plan.");
-  }
-  const flags = new Set(session.flaggedOccurrenceIds);
-  if (flagged) flags.add(occurrenceId);
-  else flags.delete(occurrenceId);
-  return createTrainingSession({ ...session, flaggedOccurrenceIds: [...flags] });
 }
 
 export function advanceTrainingSession(session: TrainingSession): TrainingSession {

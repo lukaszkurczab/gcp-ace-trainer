@@ -82,18 +82,6 @@ test("immediate-feedback sessions cannot persist draft responses", async () => {
   await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp })), /does not permit persisted draft/);
 });
 
-test("Algorithms drafts reject non-contract flag fields instead of treating them as draft payload", async () => {
-  installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };
-  await saveTrainingSession(active);
-  writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, {
-    schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1,
-    sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp,
-    flaggedOccurrenceIds: ["occurrence-1"],
-  });
-  await assert.rejects(getActiveTrainingSessionDraft(), /unsupported/);
-});
-
 test("clear local history removes the resumable draft", async () => {
   installMemoryStorage();
   const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };

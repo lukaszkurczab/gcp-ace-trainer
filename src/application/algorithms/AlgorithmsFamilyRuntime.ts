@@ -14,6 +14,11 @@ import {
   type AlgorithmSessionSelection,
 } from "../../tracks/algorithms/algorithmSessionSelection";
 import { prepareAlgorithmsConditionalReinsertPlan } from "../../tracks/algorithms/algorithmConditionalReinsert";
+import {
+  finalizeAlgorithmsInterviewSimulation,
+  mutateAlgorithmsInterviewSimulationDraft,
+  prepareAlgorithmsInterviewSimulation,
+} from "../../tracks/algorithms/algorithmInterviewSimulation";
 import { getAlgorithmQuestionEntries } from "../../tracks/algorithms/algorithmItems";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
 
@@ -99,6 +104,19 @@ export class AlgorithmsFamilyRuntime {
       reviewSource: input.reviewSource,
       session: input.session,
     });
+  }
+
+  /** Simulation semantics remain family-owned; lifecycle use cases persist the returned records. */
+  prepareInterviewSimulation(input: Omit<Parameters<typeof prepareAlgorithmsInterviewSimulation>[0], "catalog">) {
+    return prepareAlgorithmsInterviewSimulation({ ...input, catalog: this.catalog });
+  }
+
+  mutateInterviewSimulationDraft(input: Parameters<typeof mutateAlgorithmsInterviewSimulationDraft>[0]) {
+    return mutateAlgorithmsInterviewSimulationDraft(input);
+  }
+
+  finalizeInterviewSimulation(input: Parameters<typeof finalizeAlgorithmsInterviewSimulation>[0]) {
+    return finalizeAlgorithmsInterviewSimulation(input);
   }
 
   recommend(input: Readonly<{ evidence: AlgorithmsEvidence; learnerChoice?: AlgorithmModeId }>): AlgorithmsRecommendation {

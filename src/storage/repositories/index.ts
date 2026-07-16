@@ -7,5 +7,6 @@ export * from "./result";
 export * from "./mutationJournalRepository";
 export * from "./trainingAttemptRepository";
 export * from "./trainingSessionRepository";
+export * from "./trainingSessionResultRepository";
 export * from "./trainingSessionDraftRepository";
 export * from "./foregroundTimerRepository";
