@@ -1,25 +1,51 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
 const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
-test("one journal contract", () => assert.match(read("src/storage/repositories/mutationJournalRepository.ts"), /export type MutationJournalRecord/));
-test("one materializer", () => assert.match(read("src/application/learningMutations/mutationMaterializer.ts"), /export async function materializeMutation/));
-test("one verifier", () => assert.match(read("src/application/learningMutations/mutationVerifier.ts"), /export async function verifyMutation/));
-test("one commit coordinator", () => assert.match(read("src/application/learningMutations/commitMutation.ts"), /export async function commitMutation/));
-test("one recovery coordinator", () => assert.match(read("src/application/learningMutations/recoverPendingMutation.ts"), /export async function recoverPendingMutation/));
-test("Algorithms presentation calls only its application controller", () => {
-  const screen = read("src/features/algorithms/AlgorithmsPracticeSessionScreen.tsx");
-  assert.match(screen, /createAlgorithmsImmediatePracticeController/);
-  assert.doesNotMatch(screen, /from\s+["'][^"']*(?:storage|repositories|scoring|learningMutations|trainingSessions)[^"']*["']/);
-  assert.doesNotMatch(screen, /scoreAlgorithmQuestion|createTrainingAttempt|commitTrainingOutcome|commitMutation/);
+function files(path: string): string[] {
+  return readdirSync(join(root, path), { withFileTypes: true }).flatMap((entry) =>
+    entry.isDirectory() ? files(join(path, entry.name)) : [join(path, entry.name)],
+  );
+}
+
+test("one journal contract, materializer, verifier, and coordinator remain", () => {
+  assert.match(read("src/storage/repositories/mutationJournalRepository.ts"), /export type MutationJournalRecord/);
+  assert.match(read("src/application/learningMutations/mutationMaterializer.ts"), /export async function materializeMutation/);
+  assert.match(read("src/application/learningMutations/mutationVerifier.ts"), /export async function verifyMutation/);
+  assert.match(read("src/application/learningMutations/commitMutation.ts"), /export async function commitMutation/);
+  assert.match(read("src/application/learningMutations/recoverPendingMutation.ts"), /export async function recoverPendingMutation/);
 });
-test("feature modules do not import journal internals", () => { for (const path of ["src/features/algorithms/AlgorithmsPracticeSessionScreen.tsx", "src/features/practice/practiceService.ts", "src/features/exam/examService.ts"]) assert.doesNotMatch(read(path), /mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal/); });
-test("obsolete Algorithms runner and feature scoring model are deleted", () => {
-  assert.equal(existsSync(join(root, "src/features/algorithms/AlgorithmsSessionScreen.tsx")), false);
-  assert.equal(existsSync(join(root, "src/features/algorithms/algorithmsSessionModel.ts")), false);
+
+test("features and track semantics cannot import storage or repository implementations", () => {
+  for (const path of [...files("src/features"), ...files("src/tracks")]) {
+    const source = read(path);
+    assert.doesNotMatch(source, /from\s+["'][^"']*(?:\/storage(?:\/|["'])|storage\/repositories)[^"']*["']/, `direct persistence import in ${path}`);
+  }
 });
+
+test("Algorithms runtime composition has no persistence binding", () => {
+  const runtime = read("src/application/algorithms/AlgorithmsFamilyRuntime.ts");
+  const composition = read("src/application/algorithms/createAlgorithmsRuntime.ts");
+  assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
+  assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
+});
+
+test("old active exam persistence owner and feature services are deleted", () => {
+  assert.equal(existsSync(join(root, "src/storage/repositories/activeSessionRuntimeRepository.ts")), false);
+  assert.equal(existsSync(join(root, "src/features/exam/examService.ts")), false);
+  assert.equal(existsSync(join(root, "src/features/practice/practiceService.ts")), false);
+  const source = files("src").map(read).join("\n");
+  assert.doesNotMatch(source, /ACTIVE_SESSION_RUNTIME|clear_active_exam|saveActiveSessionRuntime|getActiveSessionRuntime/);
+});
+
+test("presentation routes use application ports or explicit blocking states", () => {
+  const features = files("src/features").map(read).join("\n");
+  assert.doesNotMatch(features, /mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal/);
+  assert.match(read("src/features/practice/PracticeSessionScreen.tsx"), /Practice runtime unavailable/);
+  assert.match(read("src/features/runtime/CanonicalRuntimeUnavailableScreen.tsx"), /canonical application lifecycle/);
+});
+
 test("startup recovery uses canonical bootstrap recovery", () => assert.match(read("src/content/application/ContentPreparationGate.tsx"), /bootstrapApplication/));
-test("no fallback direct-write orchestration remains", () => assert.doesNotMatch(read("src/application/learningMutations/commitMutation.ts"), /catch\s*\(/));

@@ -71,7 +71,6 @@ test("reset recovers a pending command before deleting its fully materialized le
 test("reset failure remains explicit and recovery is identical after every deletion boundary", async () => {
   const boundaries = [
     { kind: "fail_on_key_write", key: STORAGE_KEYS.ACTIVE_JOURNAL },
-    { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_SESSION_RUNTIME },
     { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER },
     { kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT },
     { kind: "fail_on_key_remove", key: STORAGE_KEYS.trainingSession("session-1") },

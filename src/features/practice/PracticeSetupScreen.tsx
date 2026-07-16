@@ -8,7 +8,7 @@ import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { getActiveTrackId, getTrainingAttempts } from "../../storage";
+import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { colors, radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";

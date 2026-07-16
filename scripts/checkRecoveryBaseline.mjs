@@ -70,9 +70,8 @@ for (const path of sourcePaths.filter((path) => /src\/features\/(?:algorithms|pr
   if (journalInternals.test(readFileSync(path, "utf8"))) fail(`feature imports journal internals: ${path}`);
 }
 
-// Stage 3: one runtime and two explicit presentations (immediate practice and
-// Interview Simulation). The historical god screen and its screen-owned model
-// are not valid compatibility paths.
+// Before a canonical Algorithms runtime is installed, product routes must expose
+// an explicit blocking state rather than retain a feature-owned session runner.
 for (const path of [
   "src/features/algorithms/AlgorithmsSessionScreen.tsx",
   "src/features/algorithms/algorithmsSessionModel.ts",
@@ -86,15 +85,10 @@ for (const path of algorithmsPresentationPaths) {
 }
 const practiceSessionPath = join(root, "src/features/practice/PracticeSessionScreen.tsx");
 const practiceSessionSource = readFileSync(practiceSessionPath, "utf8");
-if (!/AlgorithmsPracticeSessionScreen/.test(practiceSessionSource)) fail("Practice dispatch does not use the canonical Algorithms immediate presentation.");
-if (/AlgorithmsSessionScreen/.test(practiceSessionSource)) fail("Practice dispatch retains the obsolete Algorithms runner.");
-if (!/mode === ALGORITHM_MODE_IDS\.interviewSimulation/.test(practiceSessionSource) || !/navigation\.replace\(ROUTES\.ALGORITHMS_INTERVIEW_SIMULATION/.test(practiceSessionSource)) fail("Interview Simulation does not keep its dedicated route dispatch.");
-const immediateScreenPath = join(root, "src/features/algorithms/AlgorithmsPracticeSessionScreen.tsx");
-if (!existsSync(immediateScreenPath)) fail("canonical Algorithms immediate presentation is missing.");
-const simulationScreenPath = join(root, "src/features/algorithms/interviewSimulation/AlgorithmsInterviewSimulationScreen.tsx");
-if (!existsSync(simulationScreenPath)) fail("canonical Interview Simulation presentation is missing.");
-if ((activeSource.match(/export\s+function\s+AlgorithmsPracticeSessionScreen\b/g) ?? []).length !== 1) fail("Algorithms immediate presentation must have exactly one runner.");
-if ((activeSource.match(/export\s+function\s+AlgorithmsInterviewSimulationScreen\b/g) ?? []).length !== 1) fail("Interview Simulation must have exactly one active runner.");
+if (!/Practice runtime unavailable/.test(practiceSessionSource)) fail("Practice route must expose its explicit unavailable state until the canonical lifecycle is installed.");
+const rootNavigator = readFileSync(join(root, "src/navigation/RootNavigator.tsx"), "utf8");
+if (!/CanonicalRuntimeUnavailableScreen/.test(rootNavigator)) fail("Algorithms routes must expose the explicit canonical-runtime blocking state.");
+if (/createAlgorithms(?:ImmediatePractice|InterviewSimulation)Controller|createAlgorithmsFamilyRuntime/.test(rootNavigator)) fail("Algorithms route retains a persistence-owning runner.");
 
 if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");
 for (const path of walk(join(root, "src/domain/learning"))) {

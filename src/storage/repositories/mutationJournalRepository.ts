@@ -20,7 +20,6 @@ export type JournalWrite =
   | { kind: "clear_active_session_draft"; sessionId: string }
   | { kind: "put_active_session_draft"; record: TrainingSessionDraft }
   | { kind: "delete_active_session_draft"; record: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }
-  | { kind: "clear_active_exam"; sessionId: string }
   | { kind: "clear_learning_state" };
 
 export type MutationOperation = "start_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
@@ -41,7 +40,7 @@ export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: 
 const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"];
 const SHA_256 = /^[a-f0-9]{64}$/;
 const PLAN_FINGERPRINT = /^[a-f0-9]{64}$/;
-const RESET_STATIC_TARGETS = ["active_session", "active_session_draft", "active_foreground_timer", "active_session_runtime", "session_index", "attempt_index", "review_index"] as const;
+const RESET_STATIC_TARGETS = ["active_session", "active_session_draft", "active_foreground_timer", "session_index", "attempt_index", "review_index"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function hasExactKeys(value: Record<string, unknown>, required: readonly string[]): boolean { const keys = Object.keys(value); return keys.length === required.length && required.every((key) => keys.includes(key)); }
@@ -62,8 +61,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
     case "delete_review_entry": return hasExactKeys(value, ["kind", "record"]) && isReviewQueueEntry(value.record);
     case "delete_review_entry_for_attempt": return hasExactKeys(value, ["kind", "record", "transitionId"]) && isReviewQueueEntry(value.record) && isNonEmptyString(value.transitionId);
     case "clear_active_session":
-    case "clear_active_session_draft":
-    case "clear_active_exam": return hasExactKeys(value, ["kind", "sessionId"]) && isNonEmptyString(value.sessionId);
+    case "clear_active_session_draft": return hasExactKeys(value, ["kind", "sessionId"]) && isNonEmptyString(value.sessionId);
     case "clear_learning_state": return hasExactKeys(value, ["kind"]);
     case "put_active_session_draft": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionDraft(value.record);
     case "delete_active_session_draft": return hasExactKeys(value, ["kind", "record", "submittedOccurrenceIds"]) && isTrainingSessionDraft(value.record) && Array.isArray(value.submittedOccurrenceIds) && value.submittedOccurrenceIds.every(isNonEmptyString) && new Set(value.submittedOccurrenceIds).size === value.submittedOccurrenceIds.length;
@@ -80,7 +78,6 @@ function writeTarget(write: JournalWrite): string {
     case "update_review_entry": return `review:${write.record.id}`;
     case "delete_review_entry": return `review:${write.record.id}`;
     case "delete_review_entry_for_attempt": return `review:${write.record.id}`;
-    case "clear_active_exam": return "active_exam";
     case "put_active_session_draft":
     case "delete_active_session_draft": return "active_session_draft";
     case "clear_active_session_draft": return "active_session_draft";
@@ -102,7 +99,6 @@ function writePreconditionTargets(write: JournalWrite): string[] {
     case "clear_active_session_draft":
     case "put_active_session_draft":
     case "delete_active_session_draft": return ["active_session_draft"];
-    case "clear_active_exam": return ["active_session_runtime"];
     case "clear_learning_state": return [...RESET_STATIC_TARGETS];
   }
 }
@@ -111,7 +107,6 @@ function targetStorageKey(target: string): string {
   if (target === "active_session") return STORAGE_KEYS.ACTIVE_TRAINING_SESSION;
   if (target === "active_session_draft") return STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT;
   if (target === "active_foreground_timer") return STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER;
-  if (target === "active_session_runtime") return STORAGE_KEYS.ACTIVE_SESSION_RUNTIME;
   if (target === "session_index") return STORAGE_KEYS.TRAINING_SESSION_INDEX;
   if (target === "attempt_index") return STORAGE_KEYS.TRAINING_ATTEMPT_INDEX;
   if (target === "review_index") return STORAGE_KEYS.REVIEW_INDEX;
@@ -218,18 +213,16 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
       return only("put_session", "clear_active_session") && count("put_session") === 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed";
     case "abandon_training_session": {
       const draftExpected = Boolean(sessionWrite && getTrainingSessionFinalizationCleanupKind(sessionWrite.record) === "session_draft");
-      return only("put_session", "clear_active_session", "clear_active_session_draft", "clear_active_exam") &&
-        count("put_session") === 1 && count("clear_active_session") === 1 && count("clear_active_exam") <= 1 &&
+      return only("put_session", "clear_active_session", "clear_active_session_draft") &&
+        count("put_session") === 1 && count("clear_active_session") === 1 &&
         count("clear_active_session_draft") === (draftExpected ? 1 : 0) &&
         record.writes.filter((write): write is Extract<JournalWrite, { kind: "clear_active_session_draft" }> => write.kind === "clear_active_session_draft").every((write) => write.sessionId === sessionWrite?.record.id) &&
         sessionWrite?.record.status === "abandoned";
     }
     case "finalize_training_session": {
       const cleanupKind = sessionWrite ? getTrainingSessionFinalizationCleanupKind(sessionWrite.record) : null;
-      const cleanupMatchesSession = cleanupKind === "active_exam"
-        ? count("clear_active_exam") === 1 && count("delete_active_session_draft") === 0
-        : cleanupKind === "session_draft" && count("clear_active_exam") === 0 && count("delete_active_session_draft") === 1 && draftResponsesMatchAttempts;
-      return only("put_attempt", "put_review_entry_for_attempt", "update_review_entry", "delete_review_entry_for_attempt", "put_session", "clear_active_session", "clear_active_exam", "delete_active_session_draft") &&
+      const cleanupMatchesSession = cleanupKind === "session_draft" && count("delete_active_session_draft") === 1 && draftResponsesMatchAttempts;
+      return only("put_attempt", "put_review_entry_for_attempt", "update_review_entry", "delete_review_entry_for_attempt", "put_session", "clear_active_session", "delete_active_session_draft") &&
         count("put_session") === 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed" &&
         cleanupMatchesSession && hasUniqueOutcomeSemantics && attemptsMatchSessionPlan && reviewsMatchAttempts && transitionedReviewDeletesMatchAttempts;
     }
@@ -254,7 +247,7 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
     if (write.kind === "update_review_entry") return write.record.trackId === record.trackId;
     if (write.kind === "delete_review_entry") return write.record.trackId === record.trackId;
     if (write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId;
-    if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft" || write.kind === "clear_active_exam") return write.sessionId === record.sessionId;
+    if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft") return write.sessionId === record.sessionId;
     if (write.kind === "put_active_session_draft" || write.kind === "delete_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
     if (write.kind === "clear_learning_state") return record.sessionId === "learning-state-reset";
     return true;

@@ -6,14 +6,12 @@ import {
   clearActiveTrainingSession,
   clearActiveForegroundTimer,
   clearActiveTrainingSessionDraft,
-  clearActiveSessionRuntime,
   clearForegroundTimers,
   clearReviewQueueItems,
   clearTrainingAttempts,
   clearTrainingSessionDrafts,
   clearTrainingSessions,
   getActiveTrainingSessionDraft,
-  getActiveSessionRuntime,
   getReviewQueueItems,
   getTrainingSessions,
   materializeActiveTrainingSessionDraft,
@@ -59,13 +57,7 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
           if (activeDraft) await clearActiveTrainingSessionDraft(write.record.sessionId);
           break;
         }
-        case "clear_active_exam": {
-          const activeRuntime = await getActiveSessionRuntime();
-          if (activeRuntime?.session.id === write.sessionId) await clearActiveSessionRuntime();
-          break;
-        }
         case "clear_learning_state":
-          await clearActiveSessionRuntime();
           await clearForegroundTimers();
           await clearTrainingSessionDrafts();
           await clearTrainingSessions();

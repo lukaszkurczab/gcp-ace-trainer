@@ -12,7 +12,6 @@ export const STORAGE_KEYS = {
   TRAINING_ATTEMPT_INDEX: `${PREFIX}training-attempt-index`,
   reviewEntry: (id: string) => `${PREFIX}review-entry:${id}`,
   REVIEW_INDEX: `${PREFIX}review-index`,
-  ACTIVE_SESSION_RUNTIME: `${PREFIX}active-session-runtime`,
   SETTINGS: `${PREFIX}settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
 } as const;

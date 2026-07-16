@@ -6,8 +6,7 @@ import { buildMutationJournal } from "./mutationJournalBuilder";
 import { commitMutation } from "./commitMutation";
 
 export type TrainingSessionFinalizationCleanup =
-  | Readonly<{ kind: "certification_exam" }>
-  | Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }>;
+  Readonly<{ kind: "training_session_draft"; draft: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }>;
 
 export type TrainingSessionFinalizationReviewMutation = Readonly<{
   action: "put" | "update" | "delete";
@@ -24,7 +23,7 @@ export async function commitTrainingSessionFinalization(input: {
 }): Promise<void> {
   if (input.session.status !== "completed") throw new Error("Training session finalization requires a completed session.");
   const expectedCleanup = getTrainingSessionFinalizationCleanupKind(input.session);
-  if ((input.cleanup.kind === "certification_exam" ? "active_exam" : "session_draft") !== expectedCleanup) {
+  if (expectedCleanup !== "session_draft") {
     throw new Error("Training session finalization cleanup does not match the session configuration.");
   }
   if (input.cleanup.kind === "training_session_draft") {
@@ -62,9 +61,7 @@ export async function commitTrainingSessionFinalization(input: {
     }),
     { kind: "put_session", record: input.session } as const,
     { kind: "clear_active_session", sessionId: input.session.id } as const,
-    ...(input.cleanup.kind === "certification_exam"
-      ? [{ kind: "clear_active_exam", sessionId: input.session.id } as const]
-      : [{ kind: "delete_active_session_draft", record: input.cleanup.draft, submittedOccurrenceIds: [...input.cleanup.submittedOccurrenceIds] } as const]),
+    { kind: "delete_active_session_draft", record: input.cleanup.draft, submittedOccurrenceIds: [...input.cleanup.submittedOccurrenceIds] } as const,
   ];
   await commitMutation(await buildMutationJournal({
     operation: "finalize_training_session",

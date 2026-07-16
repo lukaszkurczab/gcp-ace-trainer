@@ -2,8 +2,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { ROUTES } from "../constants/routes";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
-import { AlgorithmsInterviewSimulationScreen } from "../features/algorithms/interviewSimulation/AlgorithmsInterviewSimulationScreen";
-import { AlgorithmsInterviewSimulationReviewRouteScreen, AlgorithmsInterviewSimulationSummaryRouteScreen } from "../features/algorithms/interviewSimulation/AlgorithmsInterviewSimulationTerminalRouteScreens";
+import { CanonicalRuntimeUnavailableScreen } from "../features/runtime/CanonicalRuntimeUnavailableScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
@@ -83,17 +82,17 @@ export function RootNavigator() {
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}
-        component={AlgorithmsInterviewSimulationScreen}
+        component={CanonicalRuntimeUnavailableScreen}
         options={{ headerShown: false, title: "Interview Simulation" }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY}
-        component={AlgorithmsInterviewSimulationSummaryRouteScreen}
+        component={CanonicalRuntimeUnavailableScreen}
         options={{ headerShown: false, title: "Simulation complete" }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW}
-        component={AlgorithmsInterviewSimulationReviewRouteScreen}
+        component={CanonicalRuntimeUnavailableScreen}
         options={{ headerShown: false, title: "Simulation review" }}
       />
       <Stack.Screen

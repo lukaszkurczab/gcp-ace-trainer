@@ -1,7 +1,6 @@
 export * from "./activeTrackRepository";
 export * from "./canonicalRepositories";
 export * from "./storageMetadataRepository";
-export * from "./activeSessionRuntimeRepository";
 export * from "./reviewQueueRepository";
 export * from "./settingsRepository";
 export * from "./result";

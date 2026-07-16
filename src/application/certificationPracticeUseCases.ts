@@ -1,10 +1,23 @@
-import { CLOUD_CERTIFICATION_TRACK_ID, createTrainingAttempt, retainReviewQueueEntryIdentity, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
-import { getReviewQueueItems } from "../../storage";
-import { commitReviewEntryChange, commitReviewEntryRemoval, commitTrainingOutcome } from "../../application/learningMutations";
-import { createAttemptId } from "../../application/learningMutations/identity";
-import { getCertificationContentCatalog } from "../../content/catalogRepository";
-import { createCertificationReviewEntry, scoreCertificationQuestion, type CertificationDomain, type CertificationPracticeAnswerViewModel, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
-import { shuffleArray } from "../../utils";
+import {
+  CLOUD_CERTIFICATION_TRACK_ID,
+  createTrainingAttempt,
+  retainReviewQueueEntryIdentity,
+  type ReviewQueueEntry,
+  type TrainingSession,
+} from "../domain";
+import { getReviewQueueItems } from "../storage/repositories";
+import { commitReviewEntryChange, commitReviewEntryRemoval, commitTrainingOutcome } from "./learningMutations";
+import { createAttemptId } from "./learningMutations/identity";
+import { getCertificationContentCatalog } from "../content/catalogRepository";
+import {
+  createCertificationReviewEntry,
+  scoreCertificationQuestion,
+  type CertificationDomain,
+  type CertificationPracticeAnswerViewModel,
+  type CertificationQuestion,
+  type CertificationResponse,
+} from "../tracks/cloud-certification";
+import { shuffleArray } from "../utils";
 
 export type PracticeQuestionCount = 10 | 20 | 40 | "all";
 export type PracticeDomainCount = { domain: CertificationDomain; count: number };
@@ -23,7 +36,7 @@ export async function savePracticeAnswer(input: { session: TrainingSession; ques
   const result = scoreCertificationQuestion(input.question, response);
   const occurrence = input.session.itemOrder[input.session.currentItemIndex];
   if (!occurrence || occurrence.item.itemId !== input.question.id) throw new Error("The submitted question does not match the current session occurrence.");
-  const attempt: TrainingAttempt<CertificationResponse> = createTrainingAttempt({ id: await createAttemptId(input.session.id, occurrence.occurrenceId, response), occurrenceId: occurrence.occurrenceId, sessionId: input.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: input.session.modeId, item: getCertificationContentCatalog().toContentItemRef(input.question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(input.question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: input.question.domain }, ...input.question.tags.map((tag) => ({ axisId: "tag", nodeId: tag }))] }, answeredAt, committedAt: answeredAt });
+  const attempt = createTrainingAttempt({ id: await createAttemptId(input.session.id, occurrence.occurrenceId, response), occurrenceId: occurrence.occurrenceId, sessionId: input.session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: input.session.modeId, item: getCertificationContentCatalog().toContentItemRef(input.question), response, result, reviewEvidence: { sourceItem: getCertificationContentCatalog().toContentItemRef(input.question), taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: input.question.domain }, ...input.question.tags.map((tag) => ({ axisId: "tag", nodeId: tag }))] }, answeredAt, committedAt: answeredAt });
   const review = createCertificationReviewEntry(attempt);
   const existingReview = review ? (await getReviewQueueItems()).value.find((entry) => entry.trackId === review.trackId && entry.sourceItem.itemId === review.sourceItem.itemId) : undefined;
   const durableReview = review && existingReview ? retainReviewQueueEntryIdentity(existingReview, review) : review;

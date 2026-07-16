@@ -2,7 +2,7 @@ import type {
   EvidenceRef,
   ReviewReason,
 } from "../../domain";
-import type { StorageIssue } from "../../storage";
+import type { StorageIssue } from "../../application/learningReadModels";
 import type { CertificationDomain } from "../../tracks/cloud-certification";
 import { getDomainLabel } from "../../utils";
 

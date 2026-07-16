@@ -6,16 +6,6 @@ import {
   type TrainingSession,
   type TrainingSessionDraft,
 } from "../../domain";
-import {
-  CorruptStoredRecordError,
-  JournalMaterializationError,
-  JournalVerificationError,
-  JournalWriteError,
-  StorageDeleteError,
-  StorageReadError,
-  StorageWriteError,
-  UnsupportedStoredRecordError as UnsupportedStorageRecordError,
-} from "../../storage/errors";
 import type { AlgorithmContentCatalog } from "../../tracks/algorithms/algorithmContentCatalog";
 import {
   ALGORITHM_MODE_IDS,
@@ -272,9 +262,10 @@ export function inspectActiveAlgorithmsInterviewSimulation(input: Readonly<{
 /** Maps known durability/content/session errors to an explicit presentation state. */
 export function classifyAlgorithmsRuntimeFailure(error: unknown): AlgorithmsRuntimeFailure {
   if (error instanceof MissingContentItemError) return Object.freeze({ kind: "content_missing", disposition: "blocking", cause: error });
-  if (error instanceof StorageReadError || error instanceof StorageWriteError || error instanceof StorageDeleteError) return Object.freeze({ kind: "storage_failure", disposition: "retryable", cause: error });
-  if (error instanceof JournalWriteError || error instanceof JournalMaterializationError || error instanceof JournalVerificationError) return Object.freeze({ kind: "journal_failure", disposition: "retryable", cause: error });
-  if (error instanceof CorruptStoredRecordError || error instanceof UnsupportedStorageRecordError) return Object.freeze({ kind: "stored_record_invalid", disposition: "fatal", cause: error });
+  const errorName = error instanceof Error ? error.name : "";
+  if (["StorageReadError", "StorageWriteError", "StorageDeleteError"].includes(errorName)) return Object.freeze({ kind: "storage_failure", disposition: "retryable", cause: error });
+  if (["JournalWriteError", "JournalMaterializationError", "JournalVerificationError"].includes(errorName)) return Object.freeze({ kind: "journal_failure", disposition: "retryable", cause: error });
+  if (["CorruptStoredRecordError", "UnsupportedStoredRecordError"].includes(errorName)) return Object.freeze({ kind: "stored_record_invalid", disposition: "fatal", cause: error });
   if (error instanceof InvalidTrainingSessionError) return Object.freeze({ kind: "session_invalid", disposition: "blocking", cause: error });
   const message = error instanceof Error ? error.message : "";
   if (/content version|content.*mismatch/i.test(message)) return Object.freeze({ kind: "content_version_mismatch", disposition: "blocking", cause: error });

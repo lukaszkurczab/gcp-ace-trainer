@@ -3,7 +3,7 @@ import test from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { abandonTrainingSession, createTrainingSession } from "../src/domain";
 import { commitSessionAbandonment } from "../src/application/learningMutations";
-import { savePracticeAnswer } from "../src/features/practice/practiceService";
+import { savePracticeAnswer } from "../src/application/certificationPracticeUseCases";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
 import { getReviewQueueItems, getTrainingAttempts } from "../src/storage";
 import { scoreExamSession } from "../src/features/exam/scoringService";

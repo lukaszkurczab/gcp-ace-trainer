@@ -15,18 +15,16 @@ import {
 } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
-  getActiveTrackId,
-  getAttempts,
-  getPracticeHistory,
-  getReviewQueueItems,
-  getTrainingAttempts,
+  loadActiveTrackId as getActiveTrackId,
+  loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
+  loadExamSummaries as getAttempts,
+  loadPracticeHistory as getPracticeHistory,
+  loadReviewQueueItems as getReviewQueueItems,
+  loadTrainingAttempts as getTrainingAttempts,
   type StorageIssue,
-} from "../../storage";
+} from "../../application/learningReadModels";
 import { colors } from "../../theme";
-import {
-  loadCloudCertificationProgressViewModel,
-  type CloudCertificationProgressViewModel,
-} from "../../tracks/cloud-certification";
+import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { buildAnalyticsData } from "../analytics/analyticsService";

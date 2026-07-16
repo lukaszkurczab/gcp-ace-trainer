@@ -21,12 +21,12 @@ import {
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
-  getActiveTrackId,
-  getAttempts,
-  getPracticeHistory,
-  getTrainingAttempts,
-  saveActiveTrackId,
-} from "../../storage";
+  loadActiveTrackId as getActiveTrackId,
+  loadExamSummaries as getAttempts,
+  loadPracticeHistory as getPracticeHistory,
+  loadTrainingAttempts as getTrainingAttempts,
+  selectActiveTrack as saveActiveTrackId,
+} from "../../application/learningReadModels";
 import { colors, spacing, typography } from "../../theme";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";

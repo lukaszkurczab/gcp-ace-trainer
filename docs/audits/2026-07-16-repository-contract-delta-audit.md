@@ -168,3 +168,31 @@ The one MMKV client, canonical namespace, no-AsyncStorage condition, revisioned 
 ### Closure decision
 
 **Stage 2: `NEEDS_CORRECTION`.** The required Stage 2 ownership gate fails despite passing automated commands. No Stage 3 task is activated. The first corrective task must remove the identified direct feature/family persistence owners and extend architecture tests so the same violation fails CI; it must not add product capability or a compatibility path.
+
+## Stage 2 ownership closure — 2026-07-16
+
+**Corrective-task base:** `11c3befdc7c2dc89f431c597a373911527cd7149`
+
+This addendum supersedes only the closure decision immediately above; the original Stage 1 findings and the earlier failed closure evidence remain historical evidence.
+
+### Ownership changes and deletion evidence
+
+- Feature screens and feature services now use application-owned read/query or mutation use cases. No reachable `src/features/**` or `src/tracks/**` file imports storage or repository implementations.
+- `features/exam/examService.ts` and the parallel active-exam repository/key were deleted. The journal no longer supports `clear_active_exam` or an active-session-runtime reset target.
+- The old direct feature session runners were removed from registered routes. Their routes now show an explicit unavailable state until a canonical runtime is installed; no old runner is kept as a fallback.
+- `createAlgorithmsRuntime.ts` no longer binds repositories, timers, sessions, drafts, attempts, reviews, or mutation functions. It exposes an explicit unavailable error until Prompt 08 provides the pure canonical Algorithms runtime.
+- Application read ports own presentation queries; application mutation use cases remain the only path to canonical writes.
+
+### Verification
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Static QA | PASS | `npm run qa:static`: recovery inventory, typecheck, 224 tests, and content-boundary validation passed. |
+| UX/UI audit configuration | PASS | `npm run audit:ux-ui:report` passed for `patternly-core-flow-v1`. |
+| Architecture enforcement | PASS | New architecture tests reject feature/track storage imports, Algorithms composition bindings, old active-exam ownership, and journal-internal imports from presentation. |
+| MMKV boundary | PASS | `rg react-native-mmkv src` returns only `src/infrastructure/storage/mmkvClient.ts`. |
+| Old-store boundary | PASS | Searches return zero for AsyncStorage, browser stores, old namespace, active-exam runtime APIs, direct feature/track storage imports, and Algorithms composition persistence bindings. |
+
+### Closure decision
+
+**Stage 2: `VERIFIED`.** The canonical persistence owner, application mutation coordinator, and application read boundary are now the only reachable owners. Algorithms and Certification product runtimes are deliberately unavailable rather than represented as ready; their implementation is Stage 3 work, not Stage 2 evidence.

@@ -10,14 +10,14 @@ import {
   Screen,
   SectionHeader,
 } from "../../components";
-import { getActiveTrackId } from "../../storage";
+import { loadActiveTrackId as getActiveTrackId } from "../../application/learningReadModels";
 import { colors, spacing, typography } from "../../theme";
 import {
   buildReviewQueueScreenModel,
   type ReviewQueueRow,
   type ReviewQueueScreenModel,
 } from "./reviewQueueModel";
-import { loadTrackReviewQueueViewModel } from "./reviewQueueService";
+import { loadTrackReviewQueueViewModel } from "../../application/reviewQueueQueries";
 
 export function MistakesReviewScreen() {
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);

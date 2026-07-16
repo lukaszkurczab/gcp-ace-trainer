@@ -8,7 +8,7 @@ import {
   SettingsGroup,
 } from "../../../components";
 import type { TrackDisplay } from "../../../domain";
-import type { StorageIssue } from "../../../storage";
+import type { StorageIssue } from "../../../application/learningReadModels";
 import { colors, spacing, typography } from "../../../theme";
 import { CLEAR_LOCAL_HISTORY_DETAIL } from "../localReset";
 import { SETTINGS_ROWS } from "../shellModel";

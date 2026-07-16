@@ -6,8 +6,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { getAttempts, getReviewQueueItems } from "../../storage";
-import { setQuestionNeedsReview } from "../practice/practiceService";
+import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
+import { setQuestionNeedsReview } from "../../application/certificationPracticeUseCases";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel, CertificationQuestion } from "../../tracks/cloud-certification";
 import { colors, radius, spacing, typography } from "../../theme";
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { shuffleQuestionOptions } from "../src/features/practice/practiceService";
+import { shuffleQuestionOptions } from "../src/application/certificationPracticeUseCases";
 import { getShuffledAlgorithmQuestionOptions } from "../src/tracks/algorithms/algorithmOptionOrder";
 import type { AlgorithmChoiceQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
 import { makeQuestion } from "./fixtures";

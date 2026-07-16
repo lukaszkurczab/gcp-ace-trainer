@@ -20,19 +20,17 @@ import { getTrackDisplay, type TrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
-  getActiveTrackId,
-  getAttempts,
-  getPracticeHistory,
-  getTrainingAttempts,
-} from "../../storage";
+  loadActiveTrackId as getActiveTrackId,
+  loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
+  loadExamSummaries as getAttempts,
+  loadPracticeHistory as getPracticeHistory,
+  loadTrainingAttempts as getTrainingAttempts,
+} from "../../application/learningReadModels";
 import { colors, spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
 } from "../../tracks/algorithms";
-import {
-  loadCloudCertificationProgressViewModel,
-  type CloudCertificationProgressViewModel,
-} from "../../tracks/cloud-certification";
+import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
