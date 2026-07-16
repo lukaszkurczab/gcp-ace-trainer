@@ -1,4 +1,4 @@
-import type { PublishedAlgorithmsBank, PublishedCertificationBank, PublishedRootManifest, PublishedRootTrack, PublishedTrackManifest } from "../contracts";
+import type { PublishedAlgorithmsBank, PublishedCertificationBank, PublishedTrackManifest } from "../contracts";
 import { ContentValidationError } from "../errors";
 import { validateAlgorithmInteractionItem } from "../../tracks/algorithms/algorithmInteractionHandlers";
 
@@ -7,25 +7,6 @@ function keys(value: Record<string, unknown>, allowed: readonly string[]): void 
 function string(value: unknown, field: string): string { if (typeof value !== "string" || !value) throw new ContentValidationError(`${field} must be a non-empty string.`); return value; }
 function array(value: unknown, field: string): readonly unknown[] { if (!Array.isArray(value)) throw new ContentValidationError(`${field} must be an array.`); return value; }
 
-export function validateRootManifest(value: unknown): PublishedRootManifest {
-  const root = record(value); keys(root, ["formatVersion", "publishedAt", "tracks"]);
-  if (root.formatVersion !== 1) throw new ContentValidationError("Unsupported root manifest format.");
-  string(root.publishedAt, "publishedAt");
-  const ids = new Set<string>();
-  const tracks = array(root.tracks, "tracks").map((entry): PublishedRootTrack => {
-    const track = record(entry); keys(track, ["trackId", "familyId", "contentVersion", "manifestPath"]);
-    const trackId = string(track.trackId, "trackId"); if (ids.has(trackId)) throw new ContentValidationError("Root manifest contains a duplicate track."); ids.add(trackId);
-    return { trackId, familyId: string(track.familyId, "familyId"), contentVersion: string(track.contentVersion, "contentVersion"), manifestPath: string(track.manifestPath, "manifestPath") };
-  });
-  return { formatVersion: 1, publishedAt: root.publishedAt as string, tracks };
-}
-export function validateTrackManifest(value: unknown, entry: PublishedRootTrack): PublishedTrackManifest {
-  const manifest = record(value); keys(manifest, ["formatVersion", "trackId", "familyId", "contentVersion", "itemCount", "bankPath", "sha256"]);
-  if (manifest.formatVersion !== 1) throw new ContentValidationError("Unsupported track manifest format.");
-  const result: PublishedTrackManifest = { formatVersion: 1, trackId: string(manifest.trackId, "trackId"), familyId: string(manifest.familyId, "familyId"), contentVersion: string(manifest.contentVersion, "contentVersion"), itemCount: typeof manifest.itemCount === "number" && Number.isInteger(manifest.itemCount) && manifest.itemCount >= 0 ? manifest.itemCount : (() => { throw new ContentValidationError("itemCount must be a non-negative integer."); })(), bankPath: string(manifest.bankPath, "bankPath"), sha256: string(manifest.sha256, "sha256") };
-  if (result.trackId !== entry.trackId || result.familyId !== entry.familyId || result.contentVersion !== entry.contentVersion) throw new ContentValidationError("Track manifest identity does not match root manifest.");
-  return result;
-}
 function validateItems(items: readonly unknown[], expectedCount: number): readonly Record<string, unknown>[] {
   if (items.length !== expectedCount) throw new ContentValidationError("Bank item count does not match manifest.");
   const ids = new Set<string>();

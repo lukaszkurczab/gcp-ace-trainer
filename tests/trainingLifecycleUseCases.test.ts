@@ -39,6 +39,7 @@ function fixture() {
     clock: { now: () => "2026-07-16T12:00:00.000Z" },
     tracks: { getTrackRegistration(trackId) { if (trackId !== "test-track") throw new Error("unknown"); return { id: trackId, familyId: "test-family" }; } },
     runtimes: { resolve(familyId) { if (familyId !== "test-family") throw new Error("unknown family"); calls.push(`resolve:${familyId}`); return runtime; } },
+    content: { async requireAvailable(trackId, modeId) { calls.push(`content:${trackId}:${modeId}`); }, async assertPreparedSession() { calls.push("content-prepared"); }, async assertActiveSession() { calls.push("content-resume"); } },
     repositories: {
       async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return []; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); },
     },
@@ -52,13 +53,32 @@ function fixture() {
 test("start resolves the exact family and exposes its first item only after active-session verification", async () => {
   const f = fixture(); const started = await f.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} });
   assert.equal(started.firstOccurrence.itemId, "one");
-  assert.deepEqual(f.calls.slice(0, 7), ["get-active", "resolve:test-family", "attempts", "reviews", "prepare:test-track:practice", "start", "get-active"]);
+  assert.deepEqual(f.calls.slice(0, 9), ["get-active", "content:test-track:practice", "resolve:test-family", "attempts", "reviews", "prepare:test-track:practice", "content-prepared", "start", "get-active"]);
 });
 
 test("one active session and unknown identifiers fail explicitly without a substitute", async () => {
   const f = fixture(); f.setActive(session());
   await assert.rejects(() => f.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "active_session_conflict");
   await assert.rejects(() => f.useCases.prepareSession({ trackId: "missing", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_track");
+});
+
+test("missing track content blocks preparation and start without selecting another track or mutating a session", async () => {
+  const f = fixture();
+  f.ports.content.requireAvailable = async () => { throw new Error("missing_artifact"); };
+  await assert.rejects(() => f.useCases.prepareSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
+  await assert.rejects(() => f.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
+  assert.equal(f.calls.some((call) => call.startsWith("prepare:") || call === "start"), false);
+});
+
+test("a prepared or active session with a mismatched artifact identity is never persisted or resumed", async () => {
+  const prepared = fixture();
+  prepared.ports.content.assertPreparedSession = async () => { throw new Error("plan fingerprint mismatch"); };
+  await assert.rejects(() => prepared.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
+  assert.equal(prepared.calls.includes("start"), false);
+  const active = fixture(); active.setActive(session());
+  active.ports.content.assertActiveSession = async () => { throw new Error("content version mismatch"); };
+  await assert.rejects(() => active.useCases.resumeActiveSession(), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "resume_unavailable");
+  assert.equal(active.calls.includes("resume"), false);
 });
 
 test("runtime resolution rejects an unknown or mismatched family without substituting another runtime", async () => {
@@ -73,7 +93,7 @@ test("runtime resolution rejects an unknown or mismatched family without substit
 
 test("practice response is handed to the family runtime and only its deterministic outcome reaches the coordinator", async () => {
   const f = fixture(); f.setActive(session()); await f.useCases.submitPracticeResponse({ selected: "a" });
-  assert.deepEqual(f.calls, ["get-active", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
+  assert.deepEqual(f.calls, ["get-active", "content-resume", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
 });
 
 test("advance verifies the new durable position and no active-session command defaults", async () => {

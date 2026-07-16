@@ -88,14 +88,15 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
     isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && typeof value.activeForegroundMs === "number" &&
-    typeof value.contentVersion === "string" &&
+    typeof value.contentVersion === "string" && (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
+    (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && /^[a-f0-9]{64}$/.test(value.planFingerprint))) &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
     Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
   try {
@@ -112,6 +113,8 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       conditionalReinsertSlots: value.conditionalReinsertSlots,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
+      taxonomyVersion: value.taxonomyVersion,
+      planFingerprint: typeof value.planFingerprint === "string" ? value.planFingerprint : undefined,
       status: value.status,
       startedAt: value.startedAt,
       completedAt: value.completedAt,

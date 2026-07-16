@@ -1,11 +1,219 @@
-import { ContentUnavailableError } from "../errors";
+import { ALGORITHM_MODES } from "../../tracks/algorithms/domain/algorithmModes";
+import { ALGORITHM_ROADMAP } from "../../tracks/algorithms/algorithmRoadmap";
+import { CERTIFICATION_MODES } from "../../tracks/cloud-certification/domain/certificationModes";
+import { getContentFamilyHandler } from "../../tracks/contentFamilyHandlers";
+import { getTracks, type TrackRegistration } from "../../domain/tracks";
+import { contentHasher } from "../../infrastructure/identity/contentHasher";
+import { clearInstalledContentCatalogs } from "../catalogRepository";
+import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../bundled";
+import type {
+  BundledContentRelease,
+  BundledTrackArtifactReference,
+  PublishedArtifactEnvelope,
+} from "../contracts";
 
-/**
- * This build intentionally contains no bundled content bank.  The absence is
- * explicit: content is never fetched, cached, translated, or copied into
- * user-owned storage.  A release that ships a bank must replace this with
- * structural validation of that bundled manifest before navigation is ready.
- */
-export async function validateBundledContent(): Promise<void> {
-  throw new ContentUnavailableError();
+export const BUNDLED_CONTENT_CONSUMER_VERSION = 1 as const;
+
+export const CONTENT_UNAVAILABLE_REASONS = [
+  "missing_artifact",
+  "invalid_envelope",
+  "checksum_mismatch",
+  "schema_mismatch",
+  "version_mismatch",
+  "missing_approval_coverage",
+  "insufficient_fixed_pool",
+  "unsupported_interaction",
+  "invalid_taxonomy_reference",
+  "declared_mode_unsupported",
+] as const;
+
+export type ContentUnavailableReason = (typeof CONTENT_UNAVAILABLE_REASONS)[number];
+export type AvailableBundledTrack = Readonly<{
+  kind: "available";
+  trackId: string;
+  familyId: string;
+  contentVersion: string;
+  taxonomyVersion: string;
+  schemaVersion: "published-bank-v1";
+  checksumSha256: string;
+  sourceRepositoryCommit: string;
+  approvalCoverageIdentity: string;
+  declaredModes: readonly string[];
+  itemIds: readonly string[];
+}>;
+export type UnavailableBundledTrack = Readonly<{
+  kind: "unavailable";
+  trackId: string;
+  familyId: string;
+  reason: ContentUnavailableReason;
+  detail: string;
+}>;
+export type BundledTrackAvailability = AvailableBundledTrack | UnavailableBundledTrack;
+export type BundledContentValidationResult = Readonly<{
+  consumerVersion: 1;
+  tracks: readonly BundledTrackAvailability[];
+}>;
+
+let latestResult: BundledContentValidationResult = Object.freeze({ consumerVersion: 1, tracks: Object.freeze([]) });
+
+/** Validates exact build-time bytes and installs only independently valid track catalogs. */
+export async function validateBundledContent(
+  release: unknown = GENERATED_BUNDLED_CONTENT_RELEASE,
+  registrations: readonly TrackRegistration[] = getTracks(),
+): Promise<BundledContentValidationResult> {
+  const rootFailure = validateReleaseEnvelope(release);
+  if (rootFailure) return publish(registrations.map((track) => unavailable(track, "invalid_envelope", rootFailure)), []);
+  const typedRelease = release as BundledContentRelease;
+  const references = new Map<string, BundledTrackArtifactReference>();
+  for (const reference of typedRelease.artifacts) {
+    if (!isRecord(reference) || typeof reference.trackId !== "string") {
+      return publish(registrations.map((track) => unavailable(track, "invalid_envelope", "Artifact reference is not an object with a track identity.")), []);
+    }
+    if (references.has(reference.trackId)) {
+      return publish(registrations.map((track) => unavailable(track, "invalid_envelope", `Duplicate artifact reference for ${reference.trackId}.`)), []);
+    }
+    references.set(reference.trackId, reference);
+  }
+
+  const validated: Array<Readonly<{ availability: BundledTrackAvailability; payload: unknown; reference: BundledTrackArtifactReference }>> = [];
+  const unavailableTracks: BundledTrackAvailability[] = [];
+  for (const track of registrations) {
+    const reference = references.get(track.id);
+    if (!reference) {
+      unavailableTracks.push(unavailable(track, "missing_artifact", `No pinned artifact is bundled for ${track.id}.`));
+      continue;
+    }
+    const outcome = await validateTrackArtifact(track, reference);
+    if (outcome.kind === "unavailable") unavailableTracks.push(outcome);
+    else validated.push(outcome);
+  }
+  return publish([...validated.map((entry) => entry.availability), ...unavailableTracks], validated);
 }
+
+/** Explicit projection for selection and preparation; no missing track affects another track. */
+export function getBundledContentAvailability(trackId: string): BundledTrackAvailability {
+  return latestResult.tracks.find((track) => track.trackId === trackId) ?? Object.freeze({
+    kind: "unavailable", trackId, familyId: "unknown", reason: "missing_artifact", detail: `No validated artifact is installed for ${trackId}.`,
+  });
+}
+
+export function requireBundledTrackMode(trackId: string, modeId: string): AvailableBundledTrack {
+  const track = getBundledContentAvailability(trackId);
+  if (track.kind !== "available") throw new Error(`Content unavailable for ${trackId}: ${track.reason}.`);
+  if (!track.declaredModes.includes(modeId)) throw new Error(`Content unavailable for ${trackId}: declared_mode_unsupported.`);
+  return track;
+}
+
+function validateReleaseEnvelope(value: unknown): string | null {
+  if (!isRecord(value) || !hasExactKeys(value, ["manifest", "artifacts"]) || !isRecord(value.manifest) || !hasExactKeys(value.manifest, ["envelopeVersion", "releaseId", "sourceRepositoryCommit"]) ||
+    value.manifest.envelopeVersion !== 1 || !nonEmpty(value.manifest.releaseId) || !commit(value.manifest.sourceRepositoryCommit) || !Array.isArray(value.artifacts)) {
+    return "Bundled release manifest is invalid.";
+  }
+  return null;
+}
+
+async function validateTrackArtifact(
+  track: TrackRegistration,
+  reference: BundledTrackArtifactReference,
+): Promise<UnavailableBundledTrack | Readonly<{ kind: "available"; availability: AvailableBundledTrack; payload: unknown; reference: BundledTrackArtifactReference }>> {
+  const invalid = validateReference(track, reference);
+  if (invalid) return unavailable(track, "invalid_envelope", invalid);
+  if (reference.trackId !== track.id || reference.familyId !== track.familyId) {
+    return unavailable(track, "invalid_taxonomy_reference", "Artifact track/family identity does not match the canonical registry.");
+  }
+  const supportedModes = modesFor(track.familyId);
+  if (!supportedModes || reference.declaredModes.some((mode) => !supportedModes.has(mode))) {
+    return unavailable(track, "declared_mode_unsupported", "Artifact declares a mode unsupported by its family runtime.");
+  }
+  const actualChecksum = await contentHasher.sha256(reference.artifactBytes);
+  if (actualChecksum !== reference.checksumSha256) {
+    return unavailable(track, "checksum_mismatch", "Pinned artifact bytes do not match their SHA-256 checksum.");
+  }
+  const artifact = parseArtifact(reference.artifactBytes);
+  if (!artifact) return unavailable(track, "invalid_envelope", "Pinned artifact bytes are not a JSON object.");
+  if (artifact.envelopeVersion !== 1 || artifact.schemaVersion !== "published-bank-v1") {
+    return unavailable(track, "schema_mismatch", "Artifact schema version is unsupported.");
+  }
+  if (artifact.contentVersion !== reference.contentVersion || artifact.taxonomyVersion !== reference.taxonomyVersion) {
+    return unavailable(track, "version_mismatch", "Artifact versions do not match the pinned track reference.");
+  }
+  const itemIds = getItemIds(artifact.bank);
+  if (!itemIds || !hasExactCoverage(reference.approvalCoverage.itemIds, itemIds) || !nonEmpty(reference.approvalCoverage.identity)) {
+    return unavailable(track, "missing_approval_coverage", "Artifact lacks approval coverage for every item identity.");
+  }
+  if (track.id === "algorithms" && reference.declaredModes.includes("algorithms-interview-simulation") && itemIds.length < 40) {
+    return unavailable(track, "insufficient_fixed_pool", "Interview Simulation requires an immutable fixed pool of 40 items.");
+  }
+  try {
+    const handler = getContentFamilyHandler(track.familyId);
+    handler.validate(artifact.bank, { formatVersion: 1, trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, itemCount: itemIds.length, bankPath: "bundled:immutable", sha256: reference.checksumSha256 });
+    validateTaxonomyReferences(track, artifact.bank);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "Artifact payload is invalid.";
+    return unavailable(track, /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
+  }
+  return Object.freeze({
+    kind: "available",
+    availability: Object.freeze({ kind: "available", trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, taxonomyVersion: reference.taxonomyVersion, schemaVersion: reference.schemaVersion, checksumSha256: reference.checksumSha256, sourceRepositoryCommit: reference.sourceRepositoryCommit, approvalCoverageIdentity: reference.approvalCoverage.identity, declaredModes: Object.freeze([...reference.declaredModes]), itemIds: Object.freeze([...itemIds]) }),
+    payload: artifact.bank,
+    reference,
+  });
+}
+
+function publish(
+  tracks: readonly BundledTrackAvailability[],
+  installable: readonly Readonly<{ availability: BundledTrackAvailability; payload: unknown; reference: BundledTrackArtifactReference }>[],
+): BundledContentValidationResult {
+  clearInstalledContentCatalogs();
+  for (const entry of installable) {
+    if (entry.availability.kind === "available") getContentFamilyHandler(entry.availability.familyId).install(entry.payload, { formatVersion: 1, trackId: entry.availability.trackId, familyId: entry.availability.familyId, contentVersion: entry.availability.contentVersion, itemCount: entry.availability.itemIds.length, bankPath: "bundled:immutable", sha256: entry.reference.checksumSha256 });
+  }
+  latestResult = Object.freeze({ consumerVersion: BUNDLED_CONTENT_CONSUMER_VERSION, tracks: Object.freeze([...tracks]) });
+  return latestResult;
+}
+
+function validateReference(track: TrackRegistration, reference: unknown): string | null {
+  if (!isRecord(reference) || !hasExactKeys(reference, ["trackId", "familyId", "contentVersion", "taxonomyVersion", "schemaVersion", "checksumSha256", "sourceRepositoryCommit", "approvalCoverage", "declaredModes", "artifactBytes"]) ||
+    !nonEmpty(reference.trackId) || !nonEmpty(reference.familyId) || !nonEmpty(reference.contentVersion) || !nonEmpty(reference.taxonomyVersion) || reference.schemaVersion !== "published-bank-v1" || !sha256(reference.checksumSha256) || !commit(reference.sourceRepositoryCommit) || !isRecord(reference.approvalCoverage) || !hasExactKeys(reference.approvalCoverage, ["identity", "itemIds"]) || typeof reference.approvalCoverage.identity !== "string" || !Array.isArray(reference.approvalCoverage.itemIds) || !reference.approvalCoverage.itemIds.every(nonEmpty) || !Array.isArray(reference.declaredModes) || reference.declaredModes.length === 0 || !reference.declaredModes.every(nonEmpty) || new Set(reference.declaredModes).size !== reference.declaredModes.length || typeof reference.artifactBytes !== "string") {
+    return `Artifact reference for ${track.id} is malformed.`;
+  }
+  return null;
+}
+
+function parseArtifact(bytes: string): PublishedArtifactEnvelope | null {
+  try {
+    const value: unknown = JSON.parse(bytes);
+    if (!isRecord(value) || !hasExactKeys(value, ["envelopeVersion", "schemaVersion", "contentVersion", "taxonomyVersion", "bank"]) || value.envelopeVersion !== 1 || typeof value.schemaVersion !== "string" || !nonEmpty(value.contentVersion) || !nonEmpty(value.taxonomyVersion)) return null;
+    return value as PublishedArtifactEnvelope;
+  } catch { return null; }
+}
+
+function getItemIds(bank: unknown): readonly string[] | null {
+  if (!isRecord(bank) || !Array.isArray(bank.items) || !bank.items.every((item) => isRecord(item) && nonEmpty(item.id))) return null;
+  const ids = bank.items.map((item) => (item as Record<string, unknown>).id as string);
+  return new Set(ids).size === ids.length ? ids : null;
+}
+
+function validateTaxonomyReferences(track: TrackRegistration, bank: unknown): void {
+  if (track.id !== "algorithms") return;
+  if (!isRecord(bank) || !Array.isArray(bank.groups)) throw new Error("Algorithms artifact omits canonical taxonomy groups.");
+  const canonicalNodeIds = new Set(ALGORITHM_ROADMAP.nodes.map((node) => node.id));
+  if (bank.groups.some((group) => !isRecord(group) || !nonEmpty(group.roadmapNodeId) || !canonicalNodeIds.has(group.roadmapNodeId))) {
+    throw new Error("Algorithms artifact references an unknown taxonomy node.");
+  }
+}
+
+function modesFor(familyId: string): ReadonlySet<string> | null {
+  if (familyId === "algorithms") return new Set(ALGORITHM_MODES.map((mode) => mode.id));
+  if (familyId === "certification") return new Set(CERTIFICATION_MODES.filter((mode) => mode.enabled).map((mode) => mode.id));
+  return null;
+}
+function unavailable(track: Pick<TrackRegistration, "id" | "familyId">, reason: ContentUnavailableReason, detail: string): UnavailableBundledTrack {
+  return Object.freeze({ kind: "unavailable", trackId: track.id, familyId: track.familyId, reason, detail });
+}
+function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean { return Object.keys(value).length === keys.length && Object.keys(value).every((key) => keys.includes(key)); }
+function nonEmpty(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
+function sha256(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{64}$/.test(value); }
+function commit(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{40}$/.test(value); }
+function hasExactCoverage(approved: readonly string[], itemIds: readonly string[]): boolean { return approved.length === itemIds.length && new Set(approved).size === approved.length && approved.every((id) => itemIds.includes(id)); }

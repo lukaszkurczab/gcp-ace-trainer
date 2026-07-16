@@ -16,7 +16,7 @@ export type ApplicationBootstrapState =
  * repository validation parallel with navigation or content resolution.
  */
 export async function bootstrapApplication(
-  validateBundledContent: () => Promise<void>,
+  validateBundledContent: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void>,
 ): Promise<ApplicationBootstrapState> {
   try {

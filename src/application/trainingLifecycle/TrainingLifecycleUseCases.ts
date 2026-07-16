@@ -17,18 +17,23 @@ export class TrainingLifecycleUseCases {
   constructor(private readonly ports: TrainingLifecyclePorts) {}
 
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
+    await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
     const runtime = this.resolveRuntime(input.trackId);
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    return this.run("unknown_mode", () => runtime.prepare({ ...input, attempts, reviews, now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts, reviews, now: this.ports.clock.now() }));
+    await this.run("missing_content", () => this.ports.content.assertPreparedSession(prepared.session));
+    return prepared;
   }
 
   async startSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);
+    await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
     const runtime = this.resolveRuntime(input.trackId);
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
     const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts, reviews, now: this.ports.clock.now() }));
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
+    await this.run("missing_content", () => this.ports.content.assertPreparedSession(prepared.session));
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== prepared.session.id || verified.status !== "active") throw new TrainingApplicationFailure("verification_failure", "The active session was not verified before its first occurrence could be exposed.");
@@ -125,6 +130,7 @@ export class TrainingLifecycleUseCases {
   private async requireActive(): Promise<TrainingSession> {
     const session = await this.run("no_active_session", () => this.ports.repositories.getActiveSession());
     if (!session || session.status !== "active") throw new TrainingApplicationFailure("no_active_session", "No active session is available.");
+    await this.run("resume_unavailable", () => this.ports.content.assertActiveSession(session));
     return session;
   }
 

@@ -74,6 +74,13 @@ export interface TrainingFamilyRuntime {
 
 export interface FamilyRuntimeRegistryPort { resolve(familyId: TrackFamilyId): TrainingFamilyRuntime; }
 
+/** Content ownership stays outside family runtimes and is checked per track. */
+export interface BundledContentAvailabilityPort {
+  requireAvailable(trackId: TrackId, modeId: string): Promise<void>;
+  assertPreparedSession(session: TrainingSession): Promise<void>;
+  assertActiveSession(session: TrainingSession): Promise<void>;
+}
+
 export interface TrainingLifecycleRepositoryPort {
   getActiveSession(): Promise<TrainingSession | null>;
   getSession(sessionId: string): Promise<TrainingSession | null>;
@@ -101,6 +108,7 @@ export type TrainingLifecyclePorts = Readonly<{
   clock: Readonly<{ now(): string }>;
   tracks: TrackRegistryPort;
   runtimes: FamilyRuntimeRegistryPort;
+  content: BundledContentAvailabilityPort;
   repositories: TrainingLifecycleRepositoryPort;
   mutations: TrainingMutationCoordinatorPort;
 }>;

@@ -43,6 +43,9 @@ export type TrainingSession = Readonly<{
   conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
   activeForegroundMs: number;
   contentVersion: string;
+  /** Required for resumability against a bundled artifact; old records remain explicitly unavailable. */
+  taxonomyVersion?: string;
+  planFingerprint?: string;
   status: TrainingSessionStatus;
   startedAt: string;
   completedAt?: string;
@@ -86,6 +89,9 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   }
   if (session.itemOrder.some((occurrence) => !occurrence.occurrenceId.trim() || occurrence.item.trackId !== session.trackId || occurrence.item.contentVersion !== session.contentVersion)) {
     throw new InvalidTrainingSessionError("Every item reference must match the session track and content version.");
+  }
+  if ((session.taxonomyVersion === undefined) !== (session.planFingerprint === undefined) || (session.taxonomyVersion !== undefined && !session.taxonomyVersion.trim()) || (session.planFingerprint !== undefined && !/^[a-f0-9]{64}$/.test(session.planFingerprint))) {
+    throw new InvalidTrainingSessionError("Session content identity must contain a taxonomy version and SHA-256 plan fingerprint.");
   }
   const occurrenceIds = new Set(session.itemOrder.map((occurrence) => occurrence.occurrenceId));
   if (occurrenceIds.size !== session.itemOrder.length) {

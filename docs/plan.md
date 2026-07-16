@@ -659,7 +659,7 @@ Delete:
 
 **Decision:** `NEEDS_CORRECTION` — the product owner has approved the complete reference packet in `docs/designs/algorithms_stage3_ui/DESIGN.md` and its four companion graphics. **G-D is not yet VERIFIED**: the canonical UI, route cutover, automated checks, and visual QA have not yet been completed.
 
-**Implementation blocker found after approval:** `src/content/application/validateBundledContent.ts` intentionally throws `ContentUnavailableError` unconditionally. Consequently `ContentPreparationGate` blocks navigation before any Algorithms session route can prepare a persisted plan or render an active occurrence. `PracticeSessionScreen` is still an explicit unavailable surface and all Interview Simulation routes still mount `CanonicalRuntimeUnavailableScreen`. The repository contains no bundled Algorithms bank that may be installed without changing content. Creating an empty session, synthetic occurrence, substitute content, or fallback runner would violate the canonical content and persistence contracts.
+**Content consumer status:** `S3-CONTENT-CONSUMER-01` is `VERIFIED` at the contract boundary. `validateBundledContent()` now consumes exact, immutable build-time artifact bytes through a versioned release and track envelope, verifies checksum, schema, versions, approval coverage, taxonomy/reference validity, declared modes, and the fixed 40-item Algorithms pool. Availability is projected per track: a missing Certification artifact cannot block a valid Algorithms artifact. The committed release intentionally has no real Algorithms artifact, so Algorithms remains explicitly unavailable; no empty session, synthetic occurrence, substitute content, fallback runner, or network source is permitted.
 
 `docs/designs/algorithms_stage3_ui/DESIGN.md` is now the approved implementation reference. It defines the compliant shared shell plus P-01…P-15 and S-01…S-29, including preparation, durability, error, recovery, exit, finalization, and result states. The older `docs/designs/algorithm_drill_unified` and historical core-flow screenshots remain non-canonical historical material: their wordmark/logo and close control must not be copied.
 
@@ -673,7 +673,7 @@ The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` re
 
 **Stage 3 gate status:** `NEEDS_CORRECTION`. G-D has approved design evidence but cannot become `VERIFIED` until the implementation and evidence named above pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
 
-**ACTIVE NEXT TASK:** `S3-ALGORITHMS-CONTENT-01` — provide and approve the canonical bundled Algorithms content manifest required by `validateBundledContent`, or explicitly authorize its addition. Only after that content gate can the UI task prepare real persisted sessions, capture the required active-state screenshots, and prove G-D.
+**ACTIVE NEXT TASK:** `CONTENT-ARCH-AUDIT-01` — audit the manually prepared artifact publishing path, approval-coverage identity, and the lifecycle composition that supplies the verified content-availability port. Do not mark Stage 3 or G-D `VERIFIED`; real Algorithms content remains blocked until the manually prepared artifact is pinned.
 
 ## Stage 4 — Certification family and GCP track cutover
 
@@ -862,8 +862,9 @@ Prove the canonical implementation under supported runtime conditions.
 | Repository-to-contract audit        | `DONE`                 | Historical findings preserved; closure addendum records current evidence  |
 | Shared kernel and mutations        | `VERIFIED`             | One journal/coordinator and recovery paths pass architecture and recovery checks |
 | MMKV and repositories              | `VERIFIED`             | One infrastructure MMKV owner; no reachable parallel repository/store path |
-| Algorithms immediate practice      | `BLOCKED`              | Approved UI packet exists, but no bundled Algorithms bank can pass bootstrap and prepare a canonical occurrence |
-| Algorithms Interview Simulation    | `BLOCKED`              | Approved UI packet exists, but no bundled Algorithms bank can prepare the required fixed 40-occurrence session |
+| S3-CONTENT-CONSUMER-01             | `VERIFIED`             | Track-scoped byte consumer, immutable envelope, checksums, approval coverage, taxonomy, interaction, fixed-pool, lifecycle port, and boundary tests pass; it ships no real content |
+| Algorithms immediate practice      | `BLOCKED`              | No manually prepared and approved Algorithms artifact is pinned, so preparation remains explicitly unavailable |
+| Algorithms Interview Simulation    | `BLOCKED`              | No manually prepared and approved Algorithms artifact can prove the required fixed 40-occurrence session |
 | Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
 | Certification Exam Simulation      | `NEEDS_CORRECTION`     | Parallel exam runtime was removed; canonical profile/runtime is required  |
 | Product surfaces                   | `PARTIAL`              | Runtime routes remain explicitly unavailable pending Stage 3 work         |
@@ -877,37 +878,25 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`S3-ALGORITHMS-CONTENT-01 — Canonical Algorithms bundled-content activation`
+`CONTENT-ARCH-AUDIT-01 — Manually prepared artifact and lifecycle composition audit`
 
 ### Status
 
-`BLOCKED` — approved visual evidence is present, but bootstrap intentionally rejects all application navigation because the repository has no bundled Algorithms content. Do not add substitute UI states or content.
+`ACTIVE` — `S3-CONTENT-CONSUMER-01` is verified, but the release has no manually prepared Algorithms artifact and no UI readiness claim follows from the consumer contract.
 
 ### Goal
 
-Provide the product-approved canonical bundled Algorithms content manifest required for structural validation and exact persisted-session preparation.
+Audit and approve the real artifact publishing path, approval-coverage identity, and the composition that connects `bundledContentAvailabilityPort` to the canonical lifecycle.
 
-### Remaining work before this task can close
+### Required evidence
 
-- supply a bundled Algorithms bank with the approved content identity/version contract;
-- validate it structurally without copying it into user storage;
-- prove that the bank can prepare every canonical mode and exactly 40 unique Interview Simulation occurrences;
-- retain explicit insufficient-content failure when the fixed pool cannot be prepared.
-
-### Out of scope
-
-- React implementation, persistence changes, new routes, generated questions, or substitute content;
-- generic modals, placeholder states, fallback navigators, compatibility paths, or substitute error layouts.
-
-### Required verification on completion
-
-- product approval for the exact bank and content version;
-- structural content validation and exact fixed-40 preparation evidence;
-- no generated, synthetic, user-storage, or fallback content path.
+- a manually prepared Algorithms artifact with exact source commit, schema/content/taxonomy versions, checksum, approval coverage, declared modes, and fixed 40-item proof;
+- lifecycle composition passes the track-scoped availability port to every prepare/start/resume path;
+- no real-content claim, Stage 3 completion claim, or G-D verification before the artifact and UI evidence both exist.
 
 ## 12. Stage 3 activation
 
-Stage 3 is blocked at `S3-ALGORITHMS-CONTENT-01`. UI and Certification remain unavailable and are not marked ready.
+Stage 3 remains blocked on the manually prepared Algorithms artifact and its audited lifecycle/UI activation. UI and Certification remain unavailable and are not marked ready.
 
 ## 13. Required implementation report
 
