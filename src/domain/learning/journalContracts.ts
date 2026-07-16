@@ -1,0 +1,30 @@
+import type { TrackId } from "./trackIdentity";
+
+export const JOURNAL_OPERATIONS = [
+  "start_training_session",
+  "submit_training_outcome",
+  "complete_training_session",
+  "abandon_training_session",
+  "finalize_training_session",
+  "set_review_entry",
+  "remove_review_entry",
+] as const;
+
+export type JournalOperation = (typeof JOURNAL_OPERATIONS)[number];
+
+/** A family-neutral identity for an immutable, recoverable mutation plan. */
+export type JournalOperationContract = Readonly<{
+  operation: JournalOperation;
+  sessionId: string;
+  trackId: TrackId;
+  commandFingerprint: string;
+  planFingerprint: string;
+  createdAt: string;
+}>;
+
+export function createJournalOperationContract(input: JournalOperationContract): JournalOperationContract {
+  if (!(JOURNAL_OPERATIONS as readonly string[]).includes(input.operation) || !input.sessionId.trim() || !input.trackId.trim() || !input.commandFingerprint.trim() || !input.planFingerprint.trim()) {
+    throw new Error("A journal operation contract is incomplete.");
+  }
+  return Object.freeze({ ...input });
+}

@@ -37,6 +37,7 @@ const forbiddenSourcePatterns = [
 for (const [label, pattern] of forbiddenSourcePatterns) if (pattern.test(activeSource)) fail(`${label} is present in active source.`);
 if (/\bconfidence\b|\bretentionPassedAt\b/.test(activeSourceWithoutDenyList)) fail("removed attempt/review fields are present outside the repository deny-list.");
 if (/type\s+TrackId\s*=\s*["']/.test(activeSource)) fail("TrackId is a closed concrete union.");
+if (/type\s+TrackFamilyId\s*=\s*["']/.test(activeSource)) fail("TrackFamilyId is a closed concrete union.");
 if (sourcePaths.some((path) => /Adapter|Compatibility/.test(path))) fail("an adapter or compatibility source path remains.");
 const mmkvConsumers = sourcePaths.filter((path) => /react-native-mmkv/.test(readFileSync(path, "utf8")));
 if (mmkvConsumers.length !== 1 || !mmkvConsumers[0].endsWith("src/infrastructure/storage/mmkvClient.ts")) fail("MMKV must have one infrastructure-only client.");
@@ -85,7 +86,13 @@ if (!existsSync(simulationScreenPath)) fail("canonical Interview Simulation pres
 if ((activeSource.match(/export\s+function\s+AlgorithmsPracticeSessionScreen\b/g) ?? []).length !== 1) fail("Algorithms immediate presentation must have exactly one runner.");
 if ((activeSource.match(/export\s+function\s+AlgorithmsInterviewSimulationScreen\b/g) ?? []).length !== 1) fail("Interview Simulation must have exactly one active runner.");
 
-if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion/.test(kernel)) fail("learning kernel imports family semantics.");
+if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");
+for (const path of walk(join(root, "src/domain/learning"))) {
+  const source = readFileSync(path, "utf8");
+  if (/from\s+["'][^"']*(?:tracks\/|react(?:-native)?|mmkv|storage\/repositories)[^"']*["']/.test(source)) {
+    fail(`learning kernel imports a forbidden owner: ${path}`);
+  }
+}
 if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test(registry)) fail("track registry imports content or concrete items.");
 if (/cloud-certification/.test(algorithms)) fail("Algorithms imports Certification.");
 if (/tracks\/algorithms/.test(certification)) fail("Certification imports Algorithms.");

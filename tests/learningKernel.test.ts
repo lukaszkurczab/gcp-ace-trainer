@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { InvalidAttemptResultError, InvalidTrainingSessionError, REVIEW_REASONS, createAttemptResult, createTrainingAttempt, createTrainingSession } from "../src/domain";
+import { InvalidAttemptResultError, InvalidTrainingSessionError, REVIEW_REASONS, createAttemptResult, createFamilyEnvelope, createTrainingAttempt, createTrainingSession, createTrainingSessionResult, isAbandonedTrainingSession, isActiveTrainingSession, isCompletedTrainingSession } from "../src/domain";
 
 const ref = { trackId: "future-certification", itemId: "item-1", contentVersion: "v1" };
 test("kernel accepts open track ids and enforces canonical session invariants", () => {
@@ -25,4 +25,16 @@ test("attempt, evidence, reasons, and learning evidence stay family neutral", ()
   assert.equal(Object.isFrozen(attempt), true);
   assert.throws(() => createTrainingAttempt({ ...attempt, reviewEvidence: { ...attempt.reviewEvidence, sourceItem: { ...attempt.item, trackId: "other-track" } } }), /same track item/);
   assert.deepEqual(REVIEW_REASONS, ["incorrect", "partial", "hint_used", "wrong_pattern", "wrong_strategy", "complexity_error", "repeated_mistake", "scheduled_retrieval", "weak_taxonomy_area", "manual_mark"]);
+});
+
+test("lifecycle record guards and completed-result coverage are explicit", () => {
+  const active = createTrainingSession({ id: "lifecycle", trackId: ref.trackId, modeId: "practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: {}, flaggedOccurrenceIds: [], activeForegroundMs: 0, contentVersion: "v1", status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
+  const completed = { ...active, status: "completed" as const, completedAt: "2026-01-01T00:01:00.000Z" };
+  const abandoned = { ...active, status: "abandoned" as const };
+  assert.equal(isActiveTrainingSession(active), true);
+  assert.equal(isCompletedTrainingSession(completed), true);
+  assert.equal(isAbandonedTrainingSession(abandoned), true);
+  const result = createTrainingSessionResult({ id: "result-1", sessionId: active.id, trackId: active.trackId, totalOccurrences: 1, answeredOccurrenceIds: ["occurrence-1"], unansweredOccurrenceIds: [], completedAt: completed.completedAt, evidence: createFamilyEnvelope({ familyId: "future-family", details: { total: 1 } }) });
+  assert.equal(Object.isFrozen(result), true);
+  assert.throws(() => createTrainingSessionResult({ ...result, unansweredOccurrenceIds: ["occurrence-1"] }), /distinct/);
 });

@@ -845,46 +845,37 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-00 — Integrate canonical documentation closure into main`
+`WEP3-02 — Application lifecycle ownership cutover`
+
+### Status
+
+`PARTIAL` — a framework-free application lifecycle facade now resolves family runtimes through ports and coordinates the complete command/query surface through repository and mutation-coordinator contracts. Production screens and the legacy Algorithms/Cloud lifecycle owners are not yet replaced, so Stage 2 remains `PARTIAL`.
 
 ### Goal
 
-Integrate the already-pushed Stage 0 closure into `main`, then independently recheck its canonical-document inventory before Stage 1 verification.
+Move lifecycle orchestration into application use cases without moving family validation, selection, scoring, or deterministic outcome construction out of the family runtime.
 
-### Required changes
+### Remaining work before this task can close
 
-- merge or otherwise integrate the Stage 0 closure commit without changing its contract;
-- verify the exact canonical document set and absence of retired references on `main`;
-- retain this audit as immutable evidence and then update Stage 1 from `BLOCKED` using the integrated SHA.
+- wire the lifecycle ports to canonical repository implementations and mutation coordination after their Stage 2 record cutover;
+- replace the persistence-owning Algorithms runtime and controllers with the application facade;
+- replace Cloud practice and Certification exam lifecycle owners, then delete their parallel session/exam records and tests;
+- remove direct repository imports from screens and feature services;
+- prove abandonment, active-session, draft-revision, recovery, and summary invariants against canonical persistence.
 
 ### Out of scope
 
-- application code changes;
-- runtime fixes;
-- new content;
-- UI implementation;
-- route changes;
-- new product features.
+- MMKV implementation details and final journal materialization replacement;
+- UI, renderer, route, or Certification-mode semantics;
+- compatibility readers, translators, adapters, or fallback paths.
 
-### Required verification
+### Required verification on completion
 
-- documentation-reference audit on `main`;
-- Stage 0 closure SHA is an ancestor of `main`;
-- no second execution-order document;
-- exact changed-file inventory;
-- pushed commit SHA.
-
-### Completion report
-
-The report must include:
-
-- starting and ending SHA;
-- evidence matrix and inspected paths;
-- D-04 through D-10 status;
-- checks run;
-- unresolved implementation conflicts;
-- first bounded implementation task;
-- confirmation that no application code changed.
+- typecheck;
+- kernel lifecycle, immutability, one-active-session, abandonment, and extension-family tests;
+- negative kernel import-boundary tests;
+- static QA and architecture checks;
+- repository-wide searches proving removed owners are absent.
 
 ## 12. First Stage 2 task after the Stage 0 unblock
 
