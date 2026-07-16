@@ -67,6 +67,7 @@ export type AlgorithmQuestionFeedback = {
   decisionSignal: string;
   details?: string;
   distractorExplanations?: Readonly<Record<string, string | undefined>>;
+  omittedCorrectOptionExplanations?: Readonly<Record<string, string | undefined>>;
   mentalModelCorrection: string;
   mistakeTypes: readonly string[];
   nextAction: string;
@@ -81,12 +82,13 @@ export type AlgorithmQuestionSubgoal = {
 export type AlgorithmQuestionComplexityDimension = {
   acceptedAliases?: readonly string[];
   acceptedValues: readonly string[];
-  id: "space" | "time";
+  id: string;
   values: readonly string[];
 };
 
 export type AlgorithmQuestionComplexity = {
   dimensions: readonly AlgorithmQuestionComplexityDimension[];
+  maxPoints?: number;
 };
 
 type AlgorithmQuestionBase = {

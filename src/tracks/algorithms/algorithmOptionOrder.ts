@@ -8,7 +8,6 @@ import {
 
 export type AlgorithmQuestionDisplayOption = {
   id: string;
-  isCorrect?: boolean;
   text: string;
 };
 
@@ -16,7 +15,7 @@ export function getShuffledAlgorithmQuestionOptions(
   question: AlgorithmQuestion,
 ): readonly AlgorithmQuestionDisplayOption[] {
   if (isAlgorithmChoiceQuestion(question)) {
-    return shuffleArray(question.options);
+    return shuffleArray(question.options.map((option) => ({ id: option.id, text: option.text })));
   }
 
   if (isAlgorithmOrderingQuestion(question)) {

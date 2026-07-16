@@ -1,5 +1,6 @@
 import type { PublishedAlgorithmsBank, PublishedCertificationBank, PublishedRootManifest, PublishedRootTrack, PublishedTrackManifest } from "../contracts";
 import { ContentValidationError } from "../errors";
+import { validateAlgorithmInteractionItem } from "../../tracks/algorithms/algorithmInteractionHandlers";
 
 function record(value: unknown): Record<string, unknown> { if (!value || typeof value !== "object" || Array.isArray(value)) throw new ContentValidationError("Published content payload must be an object."); return value as Record<string, unknown>; }
 function keys(value: Record<string, unknown>, allowed: readonly string[]): void { if (Object.keys(value).some((key) => !allowed.includes(key))) throw new ContentValidationError("Published content contains an unknown envelope field."); }
@@ -34,6 +35,10 @@ export function validateAlgorithmsBank(value: unknown, manifest: PublishedTrackM
   const bank = record(value); keys(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "groups", "items"]);
   if (bank.formatVersion !== 1 || bank.trackId !== "algorithms" || bank.familyId !== "algorithms" || bank.contentVersion !== manifest.contentVersion) throw new ContentValidationError("Algorithms bank identity is invalid.");
   const items = validateItems(array(bank.items, "items"), manifest.itemCount);
+  for (const item of items) {
+    try { validateAlgorithmInteractionItem(item as PublishedAlgorithmsBank["items"][number]); }
+    catch (error) { throw new ContentValidationError(error instanceof Error ? error.message : "Algorithms interaction contract is invalid."); }
+  }
   const itemIds = new Set(items.map((item) => item.id as string)); const assigned = new Set<string>();
   const groups = array(bank.groups, "groups").map((entry) => { const group = record(entry); keys(group, ["roadmapNodeId", "itemIds"]); const roadmapNodeId = string(group.roadmapNodeId, "roadmapNodeId"); const itemIdsInGroup = array(group.itemIds, "group itemIds").map((id) => string(id, "group itemId")); for (const id of itemIdsInGroup) { if (!itemIds.has(id) || assigned.has(id)) throw new ContentValidationError("Algorithms group membership is invalid."); assigned.add(id); } return { roadmapNodeId, itemIds: itemIdsInGroup }; });
   if (assigned.size !== itemIds.size) throw new ContentValidationError("Algorithms bank omits a grouped item.");

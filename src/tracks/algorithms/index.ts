@@ -3,6 +3,7 @@ export * from "./algorithmsBlueprints";
 export * from "./algorithmContentCatalog";
 export * from "./algorithmContentTypes";
 export * from "./algorithmItems";
+export * from "./algorithmInteractionHandlers";
 export * from "./algorithmOptionOrder";
 export * from "./algorithmProgress";
 export * from "./algorithmQuestionTypes";
