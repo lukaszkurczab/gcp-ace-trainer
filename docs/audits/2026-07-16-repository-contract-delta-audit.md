@@ -126,3 +126,45 @@ This is a bounded candidate only, not an active task while Stage 0 is absent fro
 - Native development/release builds, actual MMKV encryption/backup behavior, Android/iOS permissions at runtime, and a current running app were not available to this audit.
 - Existing Maestro screenshots are evidence of a July 6 iOS build only; they do not prove current branch parity, route reachability, a11y tree, dynamic type, reduced motion, Android, or failure states.
 - No human editorial review records or official Certification profile sources were found, so neither can be inferred from content shape or legacy exam behaviour.
+
+## Stage 2 closure evidence — 2026-07-16
+
+This post-audit addendum preserves the findings above unchanged. It records an independent closure review at `1ad7ecd9728d5e8027808c514ba54e6fdbca6fec` after the bounded Stage 2 persistence work.
+
+### Commands and automated evidence
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Static QA | PASS | `npm run qa:static`: recovery check, TypeScript typecheck, 279 tests, and content-boundary validation all passed. |
+| Repository, recovery, negative and failure-injection coverage | PASS | Included in the 279-test suite; journal recovery, malformed plans, expected revisions, draft freeze, reset failure boundaries, and idempotent finalization replay passed. |
+| UX/UI audit configuration | PASS | `npm run audit:ux-ui:report` reported `patternly-core-flow-v1` as configured. This is configuration evidence, not a current native runtime run. |
+| AsyncStorage / browser-store search | PASS | `rg` over `src` found no `AsyncStorage`, `@react-native-async-storage/async-storage`, `localStorage`, or `sessionStorage` production path. |
+| MMKV import boundary | PASS | The only production `react-native-mmkv` import remains `src/infrastructure/storage/mmkvClient.ts`. |
+| Canonical namespace search | PASS | `src/storage/keys.ts` defines `patternly:canonical:v1:`; no old `patternly:v1:` production namespace was found. |
+
+### Call-path evidence
+
+| Contract path | Confirmed implementation | Closure result |
+| --- | --- | --- |
+| prepare → persist → first item | `application/trainingLifecycle` tests and `sessionDurability` verify the active session before first-item exposure. | Supported by tests. |
+| practice submit → journal → feedback → materialize → verify → advance | `learningMutations/commitMutation.ts`, materializer/verifier, and recovery tests implement the journal sequence. | Supported by tests for the canonical path. |
+| draft save / finalization / startup recovery / abandon / reset | Revisioned-draft, finalization, bootstrap, lifecycle, reset, and failure-injection tests passed. | Supported by tests for the canonical path. |
+| reachable Certification exam lifecycle | `features/exam/examService.ts` directly saves `ACTIVE_SESSION_RUNTIME` and a training session, then directly saves index, answer, and flag changes. | Fails the required single application/persistence owner. |
+| reachable Algorithms runtime lifecycle | `application/algorithms/createAlgorithmsRuntime.ts` injects session, draft, timer, attempt, and review repository functions into `AlgorithmsFamilyRuntime`. | Fails the required family-runtime ownership boundary. |
+
+### Independent ownership check
+
+The passing architecture test suite is insufficient as a closure gate: `tests/architectureBoundaries.test.ts` does not prohibit direct storage imports from production feature screens/services or from family-oriented application factories. Current reachable imports include `features/practice/PracticeSessionScreen.tsx`, `features/practice/practiceService.ts`, `features/exam/examService.ts`, `features/review/reviewQueueService.ts`, and `tracks/cloud-certification/cloudCertificationProgressSelectors.ts`.
+
+Therefore the following claims cannot be made at this commit:
+
+- one application lifecycle/persistence owner;
+- no direct screen or feature-service repository access;
+- no family-owned persistence orchestration;
+- one repository set across every reachable lifecycle.
+
+The one MMKV client, canonical namespace, no-AsyncStorage condition, revisioned draft and journal/recovery implementation have positive evidence. They do not compensate for the reachable parallel owners above.
+
+### Closure decision
+
+**Stage 2: `NEEDS_CORRECTION`.** The required Stage 2 ownership gate fails despite passing automated commands. No Stage 3 task is activated. The first corrective task must remove the identified direct feature/family persistence owners and extend architecture tests so the same violation fails CI; it must not add product capability or a compatibility path.

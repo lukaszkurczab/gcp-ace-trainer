@@ -588,6 +588,20 @@ Delete any superseded:
 - old owners are unreachable;
 - no user-facing capability is reported complete without its UI state.
 
+### Independent closure review — 2026-07-16
+
+**Audited commit:** `1ad7ecd9728d5e8027808c514ba54e6fdbca6fec`
+
+**Decision:** `NEEDS_CORRECTION`
+
+`npm run qa:static` passed (recovery check, typecheck, 279 tests, and content-boundary validation), as did the UX/UI audit configuration check. The canonical journal, revisioned drafts, reset and bootstrap paths have direct test evidence. However, the Stage 2 ownership gate fails in reachable production code:
+
+- `src/features/exam/examService.ts` creates and mutates an exam through direct storage writes, including the parallel active-session runtime record;
+- `src/application/algorithms/createAlgorithmsRuntime.ts` injects session, draft, timer, attempts and reviews repositories into `AlgorithmsFamilyRuntime`;
+- production feature screens/services and a Cloud track selector import storage directly.
+
+The current architecture test does not assert these prohibited paths, so its green result is not closure evidence. Stage 2 is not `VERIFIED`; Stage 3 is not active. The required corrective task is defined in the active-task section below.
+
 ## Stage 3 — Algorithms runtime correction and complete cutover
 
 ### Goal
@@ -827,16 +841,16 @@ Prove the canonical implementation under supported runtime conditions.
 | Canonical documentation            | `NEEDS_CORRECTION`     | Accepted revisions are not yet applied                                    |
 | Document 14                        | `REJECTED`             | It duplicates other canonical owners                                      |
 | Previous recovery plan             | `REJECTED`             | Separate execution sequencing is no longer permitted                      |
-| Repository-to-contract audit        | `BLOCKED`              | Evidence recorded; Stage 0 closure is not in audited `main`              |
-| Shared kernel and mutations        | `PARTIAL`              | Significant implementation exists but requires contract audit             |
-| MMKV and repositories              | `PARTIAL`              | Revision, reset, bootstrap, and ownership require verification            |
+| Repository-to-contract audit        | `DONE`                 | Historical findings preserved; closure addendum records current evidence  |
+| Shared kernel and mutations        | `PARTIAL`              | Canonical paths test green; reachable parallel owners remain              |
+| MMKV and repositories              | `NEEDS_CORRECTION`     | One MMKV import is proven, but direct storage lifecycle owners remain     |
 | Algorithms immediate practice      | `PARTIAL`              | New controller exists but must be audited against final lifecycle         |
 | Algorithms Interview Simulation    | `NEEDS_CORRECTION`     | Known flagging and draft-contract mismatches                              |
 | Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
 | Certification Exam Simulation      | `PARTIAL`              | Existing system requires canonical profile and finalization audit         |
 | Product surfaces                   | `PARTIAL`              | Must be revalidated after runtime correction                              |
 | Active content quality             | `PARTIAL`              | Production activation requires complete review evidence                   |
-| Static QA                          | `PARTIAL`              | Existing checks require alignment with final negative and recovery suites |
+| Static QA                          | `PASS`                 | `npm run qa:static`: recovery, typecheck, 279 tests, content boundary    |
 | UX/UI audit                        | `PARTIAL`              | Existing scripts require updated canonical-state coverage                 |
 
 No earlier stage remains `VERIFIED` solely because an older plan marked it complete.
@@ -845,58 +859,40 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-02 — Application lifecycle ownership cutover`
+`S2-OWNERSHIP-01 — Remove direct production persistence owners`
 
 ### Status
 
-`PARTIAL` — a framework-free application lifecycle facade now resolves family runtimes through ports and coordinates the complete command/query surface through repository and mutation-coordinator contracts. Production screens and the legacy Algorithms/Cloud lifecycle owners are not yet replaced, so Stage 2 remains `PARTIAL`.
+`NEEDS_CORRECTION` — Stage 2 cannot be verified while reachable feature screens/services, the Certification exam service, and the Algorithms factory retain direct persistence ownership.
 
 ### Goal
 
-Move lifecycle orchestration into application use cases without moving family validation, selection, scoring, or deterministic outcome construction out of the family runtime.
+Delete direct production storage access from screens, feature services, and family-oriented factories by routing the existing lifecycle commands through the application boundary. Preserve family validation, selection, scoring, and deterministic outcome construction in the family runtime.
 
 ### Remaining work before this task can close
 
-- wire the lifecycle ports to canonical repository implementations and mutation coordination after their Stage 2 record cutover;
-- replace the persistence-owning Algorithms runtime and controllers with the application facade;
-- replace Cloud practice and Certification exam lifecycle owners, then delete their parallel session/exam records and tests;
-- remove direct repository imports from screens and feature services;
-- prove abandonment, active-session, draft-revision, recovery, and summary invariants against canonical persistence.
+- remove direct `storage`/repository imports from production feature screens and feature services;
+- remove repository/timer/draft/session bindings from `createAlgorithmsRuntime.ts` and its controller path;
+- remove the parallel Certification active-session runtime mutations in `features/exam/examService.ts` without preserving an adapter or dual write;
+- extend architecture checks to reject these imports and parallel lifecycle persistence paths;
+- prove the existing lifecycle, recovery, draft, abandonment, and summary invariants still use the canonical application entry points.
 
 ### Out of scope
 
-- MMKV implementation details and final journal materialization replacement;
-- UI, renderer, route, or Certification-mode semantics;
-- compatibility readers, translators, adapters, or fallback paths.
+- new UI, renderer, route, Certification-mode, scoring, content, or product capabilities;
+- changes to the canonical journal protocol, MMKV implementation, or static content;
+- compatibility readers, translators, adapters, fallbacks, or dual writes.
 
 ### Required verification on completion
 
-- typecheck;
-- kernel lifecycle, immutability, one-active-session, abandonment, and extension-family tests;
-- negative kernel import-boundary tests;
-- static QA and architecture checks;
-- repository-wide searches proving removed owners are absent.
+- `npm run qa:static`;
+- architecture tests that fail on each removed production import boundary;
+- repository-wide searches for direct feature/family repository imports, `AsyncStorage`, old namespaces, and legacy storage APIs;
+- focused lifecycle/recovery tests for prepare, submit, draft save, finalization, abandon, reset, and startup recovery.
 
-## 12. First Stage 2 task after the Stage 0 unblock
+## 12. Stage 3 activation
 
-After `WEP3-00` is integrated and the Stage 1 audit status can be verified, the first bounded Stage 2 cutover is:
-
-```txt
-WEP3-02 — Algorithms simulation persistence-boundary cutover
-```
-
-Its exact scope is limited to removing unsupported Algorithms flagging, moving simulation draft/session/timer/finalization orchestration from `AlgorithmsFamilyRuntime` into application use cases and repositories, and replacing timestamp-only draft persistence with schema/draft revision plus expected-previous-revision rejection. It must preserve the existing fixed-plan reinsert semantics and verified no-results-before-finalization boundary.
-
-It must not implement Certification modes, content activation, product-surface redesign, compatibility/migration readers, or new UI features.
-
-The audit determines which parts of the current implementation are:
-
-- canonical and reusable;
-- structurally useful but semantically incorrect;
-- owned by the wrong layer;
-- obsolete and required to be deleted.
-
-Stage 2 starts only after this audit is accepted.
+Stage 3 is **not active**. It may receive its first bounded task only after a repeat of this independent closure review returns `PASS` for every Stage 2 ownership, persistence, recovery, architecture, and negative gate. Until then, `S2-OWNERSHIP-01` is the only active next task.
 
 ## 13. Required implementation report
 
