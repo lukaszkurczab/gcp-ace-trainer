@@ -6,6 +6,21 @@ Certification content is organized by exam domain, competency area, topic, and s
 
 The canonical modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`. Recommendations are deterministic and explained; learner choice always wins for the current session.
 
+
+## Certification track instances
+
+Certification is one reusable family runtime, not a separate runner per exam. GCP ACE is the initial track instance. Future examples such as Azure AI Fundamentals and AWS Solutions Architect Associate must be added through track metadata, taxonomy, blueprint, `ExamExperienceProfile`, content manifest, and authored content.
+
+Adding a certification track must not require:
+
+- a new session runner or screen;
+- a new persistence repository or storage key family;
+- a new attempt or review model;
+- a global exam duration or navigation default;
+- branching on the concrete track ID in shared application code.
+
+Differences between providers and exams belong in the track instance and its official-source profile. If a proposed learning domain cannot use certification scoring, competency evidence, remediation, feedback, and simulation contracts without exceptions, it is not a certification track and requires another family runtime.
+
 ## Evidence, feedback, and review
 
 Evidence separates volume, learning-stage evidence, and performance signals. The track neither collects confidence nor displays synthetic readiness/retention/mastery percentages.

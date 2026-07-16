@@ -2,7 +2,32 @@
 
 ## Product
 
-Patternly is a local, offline-first focus lab for technical certification and algorithmic decision practice. A track is a content and learning domain; a mode is a session configuration. The product does not provide an online judge, copied exam material, official certification status, user accounts, cloud synchronization, or a content feed.
+Patternly is a local, offline-first focus lab for technical decision practice. A track is a concrete content and learning domain, a track family defines the shared learning semantics for similar tracks, and a mode is a family-specific session configuration. The initial product contains Certification and Algorithms families; they are the first supported families, not a closed list of all future learning domains. The product does not provide an online judge, copied exam material, official certification status, user accounts, cloud synchronization, or a content feed.
+
+
+## Track families and extension boundary
+
+The shared kernel does not encode a fixed list of product tracks or concrete interaction payloads. A track instance supplies content, taxonomy, configuration, and family-specific metadata; its family runtime supplies selection, response validation, scoring, feedback composition, review policy, recommendations, and renderers.
+
+The current structure is:
+
+```txt
+CertificationFamilyRuntime
+├── gcp-ace
+├── future Azure AI Fundamentals track
+└── future AWS Solutions Architect Associate track
+
+AlgorithmsFamilyRuntime
+└── algorithms
+```
+
+Possible future families used to test extensibility are:
+
+- `DatabaseReasoningFamilyRuntime` with a `sql-and-data-reasoning` track;
+- `CodeReasoningFamilyRuntime` with a `debugging-and-code-review` track;
+- `SystemDesignFamilyRuntime` with a `backend-system-design` track.
+
+These are architecture examples and future candidates, not committed release scope. Adding a new track inside an existing family must not require changes to the shared kernel, persistence subsystem, or session shell. Adding a genuinely new family may add a family runtime and interaction handlers, but it must not introduce a parallel session lifecycle, storage path, or track-specific branch in shared screens.
 
 ## Canonical session modes
 

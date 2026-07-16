@@ -2,7 +2,24 @@
 
 ## Product promise
 
-Patternly turns technical mistakes into a concrete next practice action. It is a focused, local learning product for certification candidates and algorithmic problem solvers who need repeated retrieval, diagnosis, and deliberate practice rather than an answer feed.
+Patternly turns technical mistakes into a concrete next practice action. It is a focused, local learning product for technical learners who need repeated retrieval, diagnosis, comparison, and deliberate practice rather than an answer feed. Certification and Algorithms are the initial product families; future domains may reuse an existing family or introduce a new family when their response and evaluation semantics are materially different.
+
+
+## Product family model
+
+A **track** is a concrete learning product such as GCP ACE, Azure AI Fundamentals, Algorithms, SQL and Data Reasoning, or Backend System Design. A **track family** is the reusable learning runtime shared by tracks with the same fundamental interaction, evidence, scoring, and review semantics.
+
+Future candidates illustrate the intended scaling model:
+
+| Candidate track | Intended family | Architectural meaning |
+| --- | --- | --- |
+| Azure AI Fundamentals | `certification` | New certification instance; no new runner, storage path, or shell branch. |
+| AWS Solutions Architect Associate | `certification` | More scenario-heavy certification instance using the same family contracts. |
+| SQL and Data Reasoning | `database_reasoning` | New family for query results, schema/index decisions, and deterministic data reasoning. |
+| Debugging and Code Review | `code_reasoning` | New family for traces, bug localization, fix comparison, and regression diagnosis. |
+| Backend System Design | `system_design` | New family for authored trade-off evaluation, capacity reasoning, and failure-mode diagnosis. |
+
+The table is an extensibility target, not a commitment to ship these tracks. A track belongs to an existing family only when that family can represent its content and evaluation semantics without track-specific exceptions in shared code. Otherwise it receives a new family runtime, not a special case inside Algorithms or Certification.
 
 ## Users and value
 

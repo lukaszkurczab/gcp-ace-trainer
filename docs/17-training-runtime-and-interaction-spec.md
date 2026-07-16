@@ -1,85 +1,1156 @@
 # 17 — Training Runtime and Interaction Specification
 
-## 1. Preconditions and mode configuration
+## Purpose and ownership
 
-Resolve track, canonical mode, content version, and supported payload before setup. Unknown ID, unsupported payload, missing content, missing profile, or content mismatch is an explicit error. The runner never substitutes default topic, item, answer, score, or generic explanation.
+This document defines the canonical runtime behaviour for:
 
-Algorithms configuration is fixed:
+- session preparation;
+- active-session lifecycle;
+- immediate-feedback practice;
+- editable simulation drafts;
+- submission and finalization;
+- timers;
+- feedback disclosure;
+- review mutation;
+- reinsert;
+- resume and abandonment;
+- explicit errors and recovery.
 
-| Mode | Length | Feedback | Timer | Reinsert |
-| --- | ---: | --- | --- | --- |
-| Learn Approach | 10 | after each | elapsed foreground | no |
-| Guided Practice | 20 | after each | elapsed foreground | yes |
-| Recognize Patterns | 20 | after each | elapsed foreground | no |
-| Contrast Practice | 20 | after each | elapsed foreground | no |
-| Weak Area Review / `due_queue` | 10 | after each | elapsed foreground | yes |
-| Weak Area Review / `session_misses` | 10 | after each | elapsed foreground | yes |
-| Independent Practice | 20 | after each | elapsed foreground | no |
-| Interview Simulation | 40 | session end | 45-minute foreground countdown | no |
+It operationalizes the family learning contracts from documents `15` and `16`.
 
-Review selection is source items first, then reviewed compatible mental-category/competency items. If insufficient, set `actualLength` below requested length, show it before start, and never widen taxonomy, duplicate an item, or use an unrelated/default item.
+It does not redefine:
 
-## 2. Session lifecycle and persistence
+- the scientific rationale for a learning mode;
+- content quality;
+- repository implementation;
+- MMKV configuration;
+- visual styling;
+- security and privacy policy.
+
+No screen, implementation prompt, legacy runtime, or mode name may supply behaviour missing from this specification.
+
+## 1. Preconditions
+
+Before session setup is exposed, resolve and validate:
+
+- track ID;
+- track family;
+- canonical mode ID;
+- review source where applicable;
+- requested session length;
+- track configuration;
+- practice or simulation blueprint;
+- active content version;
+- required content payloads;
+- interaction handlers;
+- required certification profile;
+- route parameters.
+
+The following are explicit preparation failures:
+
+- unknown ID;
+- unsupported mode;
+- unsupported review source;
+- unsupported payload;
+- missing content;
+- invalid content;
+- missing interaction handler;
+- invalid blueprint;
+- insufficient fixed-length content;
+- unresolved certification profile;
+- content-version mismatch;
+- profile-version mismatch;
+- repository failure.
+
+The runtime never substitutes:
+
+- a default track;
+- a default topic;
+- a default mental unit;
+- a default competency;
+- a default item;
+- a default answer;
+- a guessed score;
+- a generic explanation;
+- a newer content or profile version.
+
+## 2. Algorithms mode configuration
+
+Algorithms supports exactly these modes:
+
+| Mode                                          | Default length | Supported requested lengths | Feedback                    | Timer                          | Reinsert | Shortening           |
+| --------------------------------------------- | -------------: | --------------------------- | --------------------------- | ------------------------------ | -------- | -------------------- |
+| `Learn Approach`                              |             10 | 10                          | after each durable submit   | elapsed foreground             | no       | allowed              |
+| `Guided Practice`                             |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | yes      | allowed              |
+| `Recognize Patterns`                          |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
+| `Contrast Practice`                           |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
+| `Weak Area Review`, `source = due_queue`      |             10 | 10, 20                      | after each durable submit   | elapsed foreground             | yes      | allowed              |
+| `Weak Area Review`, `source = session_misses` |             10 | 10, 20                      | after each durable submit   | elapsed foreground             | yes      | allowed              |
+| `Independent Practice`                        |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | blueprint-controlled |
+| `Interview Simulation`                        |             40 | fixed 40                    | after verified finalization | 45-minute foreground countdown | no       | prohibited           |
+
+Entry mappings are:
+
+| Entry intent                                  | Runtime configuration                         |
+| --------------------------------------------- | --------------------------------------------- |
+| Approach primer or newly selected mental unit | `Learn Approach`                              |
+| Topic or default practice                     | `Guided Practice`                             |
+| Pattern recognition                           | `Recognize Patterns`                          |
+| Strategy or pattern contrast                  | `Contrast Practice`                           |
+| Due review                                    | `Weak Area Review`, `source = due_queue`      |
+| Completed-session misses                      | `Weak Area Review`, `source = session_misses` |
+| Mixed strategy practice                       | `Independent Practice`                        |
+| Timed validation                              | `Interview Simulation`                        |
+
+`due_queue` and `session_misses` are review sources, not mode IDs.
+
+## 3. Certification mode configuration
+
+Certification supports exactly these modes:
+
+| Mode                  |  Default length | Supported requested lengths | Feedback                    | Timer              | Reinsert | Shortening                |
+| --------------------- | --------------: | --------------------------- | --------------------------- | ------------------ | -------- | ------------------------- |
+| `Diagnostic Baseline` |              40 | fixed 40                    | after each durable submit   | elapsed foreground | no       | prohibited                |
+| `Focus Practice`      |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | allowed within topic      |
+| `Scenario Practice`   |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | allowed within competency |
+| `Weak Area Review`    |              10 | 10, 20                      | after each durable submit   | elapsed foreground | no       | allowed                   |
+| `Mixed Practice`      |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | blueprint-controlled      |
+| `Quick Review`        |              10 | maximum 10                  | after each durable submit   | elapsed foreground | no       | uses eligible due count   |
+| `Exam Simulation`     | profile-defined | profile-defined             | after verified finalization | absolute countdown | no       | prohibited                |
+
+The Certification family learning-system contract defines exact selection semantics.
+
+The runtime must not infer those semantics from mode names.
+
+## 4. Session preparation
+
+Session preparation follows:
 
 ```txt
-prepare → persist one active session → active unanswered → active answered
-→ practice: validate and freeze → journal durable → feedback or transition → materialize → verify → clear journal
+resolve track and family
+→ resolve mode and exact configuration
+→ validate blueprint, content, handlers, and profile
+→ prepare complete deterministic session plan
+→ generate stable plan-slot and occurrence identities
+→ prepare option order for every possible resolved occurrence
+→ persist and verify the one active session
+→ create and verify a simulation draft where required
+→ expose the first resolved item
 ```
 
-Persist before first item. Persist immutable session item order, shuffled option order, mode configuration, content version, and foreground active time. Immediate-feedback practice does not persist an unsubmitted selection. Algorithms `Interview Simulation` persists editable response drafts, occurrence-keyed flags, and current position as canonical active-session recovery state. Flags are session fields (never draft fields), use only immutable plan occurrence IDs, and remain available in the terminal session record. Only one active session exists. A learner can continue it or explicitly abandon it; abandoned sessions are not history and committed attempts remain.
+Only one active session may exist across all tracks and families.
 
-The durable journal contains a deterministic attempt/session/review outcome. No feedback or advance occurs before journal durability. Retry is idempotent. Force-close recovery finishes journaled work. No partial-success copy, old store, or second write path is permitted.
+The first item must not appear before:
 
-## 3. Responses and scoring
+- active-session persistence succeeds;
+- the persisted record is verified;
+- required simulation-draft creation succeeds.
 
-An immediate-feedback practice selection changes only local UI state until submit. Submitted practice responses are immutable attempts. Algorithms simulation selections are persisted editable drafts and do not become attempts until finalization. Multiple-choice practice is correct when selected set equals correct set, partial when it is a non-empty proper subset with no wrong option, otherwise incorrect with zero points. Simulation counts only correct; partial is diagnostic.
+### Fixed-length modes
 
-Ordering content has at least two elements. For canonical order `A → B → C → D`, evaluate adjacent relations `A→B`, `B→C`, `C→D`; maximum points equals item count minus one. All preserved is correct, at least one but not all is partial, and zero is incorrect. Exact-position scoring is not used.
+The following never shorten:
 
-Complexity content declares checked dimensions, values, and accepted values or aliases. Award one point for each checked dimension. Time-only and space-only items are valid. No global closed list of complexity classes exists.
+- Certification `Diagnostic Baseline`;
+- Algorithms `Interview Simulation`;
+- Certification `Exam Simulation`.
 
-## 4. Feedback
+If their exact valid pool cannot be prepared, setup fails explicitly.
 
-Practice shows feedback after each durable submit. `Reason` is concise immediate orientation. `Details` is collapsed, complete, and available after correct, partial, and incorrect results. It connects mechanism/application, corrects the actually selected error, and gives transfer/counterexample when useful. Choice details include authored stable-ID explanation for each selected wrong option. Opening Details has no domain side effect. Runtime never fabricates educational copy.
+The runtime must not:
 
-Session-end modes reveal no per-item feedback before the finalization journal is durable. A post-session review can use the same authored Reason and Details.
+- duplicate content;
+- widen taxonomy;
+- substitute another topic;
+- use inactive content;
+- add generic content;
+- claim the requested length was prepared when it was not.
 
-## 5. Review and reinsert
+### Shortenable modes
 
-Create/increase review for incorrect, partial, supported hint use, wrong pattern, wrong strategy, complexity error, repeated mistake, scheduled retrieval, weak taxonomy area, or manual mark. Store source item plus skill/competency/taxonomy evidence. A family may select exact, reviewed-variant, contrast, or repair item.
+When shortening is permitted:
 
-Persistent review resolves only after two successful review attempts after `dueAt`. An earlier attempt does not increment success; partial/incorrect resets it; same-session correction does not resolve it. Reinsert is enabled only in `Guided Practice` and Algorithms `Weak Area Review` with `source = due_queue` or `source = session_misses`; it is disabled in every other Algorithms mode. It is maximum once for the original failed or partial attempt.
+- `actualLength` equals the prepared valid slot count;
+- requested and actual length are shown before start;
+- the reason for shortening is shown;
+- selection remains within the mode’s declared compatibility boundary.
+
+## 5. Canonical session states
+
+A session uses one of these top-level states:
 
 ```txt
-eligible failed or partial attempt
-  ↓
-reinsert allowance still unused?
-  ├─ no  → no reinsert
-  └─ yes
+preparing
+active
+commit_pending
+finalizing
+completed
+abandoning
+abandoned
+blocked
+```
+
+`active` contains a practice or simulation substate.
+
+### Practice substates
+
+```txt
+active.practice.unanswered
+active.practice.submitting
+commit_pending.practice
+active.practice.feedback
+active.practice.advancing
+```
+
+### Simulation substates
+
+```txt
+active.simulation.editable
+active.simulation.saving
+active.simulation.save_failed
+finalizing.simulation.frozen
+finalizing.simulation.materializing
+finalizing.simulation.recovery_required
+```
+
+A state transition not defined by this document is invalid.
+
+## 6. Immediate-feedback practice lifecycle
+
+### Unanswered state
+
+In `active.practice.unanswered`:
+
+- response controls are editable;
+- the current response is ephemeral UI state;
+- no response payload is persisted;
+- no attempt exists;
+- no score exists;
+- no review mutation exists;
+- no correctness or authored feedback is visible.
+
+### Submit
+
+Submit follows:
+
+```txt
+validate response
+→ confirm completeness
+→ freeze local response
+→ build deterministic attempt, session, evidence, and review outcome
+→ build complete immutable journal write plan
+→ persist durable mutation journal
+```
+
+If response validation or completeness fails:
+
+- no journal is created;
+- the session remains unanswered;
+- the defined validation state is shown.
+
+If journal persistence fails:
+
+- no outcome is logically committed;
+- no feedback is shown;
+- no attempt or review mutation exists;
+- the learner may safely retry;
+- the current local response may remain available.
+
+### Journal durable
+
+After journal durability:
+
+- the submitted response is logically committed;
+- the response is immutable;
+- another submit is rejected;
+- authored practice feedback may be shown;
+- item advance remains disabled;
+- completed-summary navigation remains disabled.
+
+The runtime enters:
+
+```txt
+commit_pending.practice
+```
+
+### Materialization
+
+The immutable journal plan is materialized idempotently.
+
+Materialization creates or updates only the records declared by the operation:
+
+- immutable attempt;
+- session state;
+- review entries;
+- evidence;
+- completed-session result where the submitted item completes the session.
+
+Every intended final record is then verified.
+
+If materialization or verification fails:
+
+- the submitted response remains frozen;
+- feedback already exposed remains valid;
+- the learner cannot answer again;
+- item advance remains blocked;
+- the runtime exposes an explicit commit-recovery state;
+- retry replays the same deterministic journal.
+
+The failure must not be presented as an ordinary unsuccessful answer submission.
+
+### Journal clear and feedback state
+
+After complete verification:
+
+- clear the journal;
+- enter `active.practice.feedback`;
+- enable the applicable `Next` or `Finish` action.
+
+### Advance
+
+When the learner selects `Next`:
+
+```txt
+resolve next session-plan slot
+→ persist and verify current-position transition
+→ clear ephemeral response and feedback UI state
+→ show next item
+```
+
+The next item must not appear before the position update is durable and verified.
+
+If position persistence fails:
+
+- remain on the current feedback state;
+- preserve the committed attempt;
+- show an explicit advance failure;
+- do not skip to another item.
+
+### Finish
+
+When the final item outcome has been verified:
+
+- the completed-session result must already be canonical;
+- `Finish` navigates to summary;
+- summary loads the completed result through application queries;
+- summary is not reconstructed from component state.
+
+## 7. Practice response and scoring contracts
+
+### Multiple choice
+
+A multiple-choice response is:
+
+- `correct` when the selected set equals the complete correct set;
+- `partial` when the selected set is a non-empty proper subset of the correct set and contains no wrong option;
+- `incorrect` when any wrong option is selected.
+
+An incorrect multiple-choice response earns zero points.
+
+Single-choice content has no partial state unless its explicit interaction contract defines multiple required elements.
+
+Unknown option IDs and duplicate selected IDs are rejected.
+
+### Ordering
+
+Ordering content contains at least two elements.
+
+For canonical order:
+
+```txt
+A → B → C → D
+```
+
+score:
+
+```txt
+A→B
+B→C
+C→D
+```
+
+```txt
+maxPoints = itemCount - 1
+```
+
+Result:
+
+- all relations preserved → `correct`;
+- one or more but not all preserved → `partial`;
+- zero preserved → `incorrect`.
+
+Exact-position scoring is not used.
+
+### Complexity
+
+Complexity content declares:
+
+- checked dimensions;
+- available response values;
+- accepted values;
+- accepted normalized aliases;
+- maximum points.
+
+Award one point for every correctly answered checked dimension.
+
+Result:
+
+- all checked dimensions correct → `correct`;
+- at least one but not all correct → `partial`;
+- zero checked dimensions correct → `incorrect`.
+
+Time-only and space-only items are valid.
+
+No global closed list of complexity classes exists.
+
+Accepted values and aliases remain hidden scoring inputs until feedback is permitted.
+
+## 8. Feedback disclosure
+
+Every active instructional item has authored `Reason` and complete `Details`.
+
+### Practice
+
+Practice feedback is available after submit-journal durability.
+
+When available:
+
+- `Reason` is visible immediately;
+- `Details` is collapsed initially;
+- no generic `Feedback` heading is added;
+- wrong selected choice options map to authored explanations by stable option ID;
+- partial responses explain omitted required elements where applicable.
+
+Opening or closing `Details` has no effect on:
+
+- score;
+- attempt;
+- review;
+- evidence;
+- timer;
+- draft;
+- recommendation;
+- navigation;
+- persistence.
+
+### Session-end modes
+
+Algorithms `Interview Simulation` and Certification `Exam Simulation` reveal no item-level:
+
+- correctness;
+- score;
+- `Reason`;
+- `Details`;
+- distractor explanation;
+- review state;
+
+before finalization has been fully materialized and verified.
+
+A durable finalization journal alone is not sufficient to reveal results.
+
+Post-session review uses the same authored feedback contract as practice.
+
+Runtime never fabricates educational copy.
+
+## 9. Review mutation
+
+A committed eligible outcome may create or update review for approved reasons:
+
+- incorrect;
+- partial;
+- actual supported hint use;
+- wrong pattern;
+- wrong strategy;
+- complexity error;
+- repeated mistake;
+- scheduled retrieval;
+- weak taxonomy evidence;
+- manual mark.
+
+Review records preserve:
+
+- source item;
+- exact attempt, transition, or manual-mark provenance;
+- family-owned taxonomy, skill, topic, competency, or mental-unit evidence;
+- reasons;
+- due state;
+- persistent-resolution state.
+
+A family may select:
+
+- exact source item;
+- reviewed variant;
+- compatible contrast item;
+- compatible repair item.
+
+It may not:
+
+- widen taxonomy silently;
+- add unrelated content;
+- fabricate generic review content;
+- discard provenance.
+
+## 10. Persistent review resolution
+
+Persistent review resolves only after two consecutive successful eligible attempts submitted after the applicable `dueAt`.
+
+Rules:
+
+- success before `dueAt` does not increment;
+- first eligible after-due success sets the count to one;
+- second consecutive eligible after-due success resolves the entry;
+- partial resets the count;
+- incorrect resets the count;
+- retry of the same committed attempt cannot increment twice;
+- same-session correction does not resolve persistent review.
+
+Mode eligibility is family-owned.
+
+### Algorithms
+
+Attempts may advance persistent resolution when prepared through:
+
+- `Weak Area Review`, `source = due_queue`;
+- another explicitly documented due-review context.
+
+`session_misses` provides immediate correction. Its attempts count toward resolution only when they independently satisfy the due-time and family eligibility contract.
+
+Ordinary Algorithms practice and simulation do not silently resolve persistent review.
+
+### Certification
+
+Attempts may advance persistent resolution when prepared through:
+
+- `Weak Area Review`;
+- `Quick Review`.
+
+Other Certification practice and simulation modes may create or increase review but do not silently resolve persistent review.
+
+## 11. Reinsert
+
+Reinsert is enabled only in:
+
+- Algorithms `Guided Practice`;
+- Algorithms `Weak Area Review`, `source = due_queue`;
+- Algorithms `Weak Area Review`, `source = session_misses`.
+
+It is disabled in every other Algorithms and Certification mode.
+
+A source attempt is eligible only when:
+
+- its result is `incorrect` or `partial`;
+- its reinsert allowance is unused;
+- the prepared plan contains a valid conditional reinsert slot;
+- the slot occurs after at least three other durable submitted attempts.
+
+### Conditional plan-slot contract
+
+Because the session plan is persisted before the first item appears, reinsert must not mutate the plan opportunistically.
+
+A reinsert-capable prepared session may contain conditional plan slots.
+
+Each conditional slot persists before session start:
+
+- stable slot ID;
+- source occurrence ID;
+- ordinary-content branch;
+- reviewed-variant branch where available;
+- exact-source branch only when no compatible reviewed variant exists;
+- occurrence and option order for every possible branch;
+- deterministic resolution rule.
+
+Every possible branch is:
+
+- content-valid;
+- taxonomy-compatible;
+- version-compatible;
+- included in the persisted session plan;
+- independently resolvable after restart.
+
+A conditional slot resolves as follows:
+
+```txt
+source attempt result
+  ├─ correct
+  │    → ordinary branch
+  │
+  └─ partial or incorrect
        ↓
-can two other submitted items occur before session completion?
-  ├─ no  → skip reinsert
-  └─ yes → schedule reviewed variant, or exact item if no reviewed compatible variant exists
+       reinsert allowance unused?
+         ├─ no
+         │    → ordinary branch
+         │
+         └─ yes
+              ↓
+              at least three other durable submitted attempts
+              occur between source and slot?
+                ├─ no
+                │    → ordinary branch
+                │
+                └─ yes
+                     → reviewed-variant branch
+                     → exact-source branch only when no
+                       reviewed compatible variant exists
 ```
 
-A reinsert may occur only after at least two other items have been successfully submitted since the original attempt. Displaying, preparing, abandoning, or reusing the original item does not count. The reinsert creates a separate attempt and both attempts remain diagnostics; it does not remove the first error or resolve persistent review after same-session correction. It must fit the already selected session plan and never changes requested or actual length. If separation is impossible, skip it as a normal outcome without extending or reordering the session, duplicating unrelated items, widening taxonomy, inserting generic content, or changing persistent review scheduling.
+A conditional slot:
 
-## 6. Timers, interruption, and errors
+- never changes session length;
+- never reorders slots;
+- never introduces content not persisted during preparation;
+- can be claimed by only one source occurrence;
+- produces one resolved occurrence and one attempt.
 
-Practice timers count foreground active time only. Algorithms `Interview Simulation` also counts foreground active time and displays `max(0, 45 minutes - activeForegroundMs)`; it has no deadline, and background or closed-app time does not decrement it. Certification simulation uses the absolute deadline from its owning profile. A content mismatch blocks resume. Preparation, submit, materialization, and completion errors remain explicit; none creates a substitute result.
+The reinserted response creates a separate immutable attempt.
 
-## 7. Algorithms Interview Simulation
+Both attempts remain diagnostic evidence.
 
-The session plan contains exactly 40 items. Navigation is free, answers may be added, changed, or removed until final submission, feedback is session-end only, unanswered items are allowed, and reinsert is disabled. Persist every draft response, the current position, and accumulated foreground time so resume restores both draft and timer state. Saving a draft creates no attempt, review mutation, score, or feedback.
+A correct reinsert does not:
 
-Manual submission or exhaustion of 45 foreground minutes freezes the drafts and starts one idempotent finalization. The finalization journal atomically creates immutable attempts and persistent-review mutations only for answered, submitted outcomes, completes the session, and deletes the persisted draft. Unanswered item IDs are reported separately and create neither attempts nor review entries. Feedback remains unavailable until this journal is durable.
+- remove the original error;
+- resolve persistent review in the same session;
+- alter historical evidence.
 
-## 8. Certification simulation
+At least three **other materialized submitted attempts** must separate the source and reinsert attempts.
 
-Certification `Exam Simulation` uses the owning track's versioned `ExamExperienceProfile`: official source URL/date, guide version when available, duration, question count/range, navigation, answer-change, flagging, navigator, section, and automatic-final-submit policies. It does not use global defaults or infer unspecified official rules.
+The following do not count:
 
-No feedback appears before final submit. Confirm system exit. Manual finish warns but permits unanswered responses; they count incorrect and remain a distinct diagnostic. Timeout freezes answers and starts idempotent final commit. Resume while absolute deadline remains; otherwise auto-finalize. Show raw correct count, percentage, competency breakdown, and missed-by-default review with an all-items option. Partial does not increment correct; no official-looking pass/fail result exists.
+- displayed items;
+- unsubmitted items;
+- failed journal persistence;
+- preparation failures;
+- abandoned items;
+- the source occurrence;
+- the reinsert occurrence.
 
-## 9. Required recovery rule
+If no valid conditional slot is available, reinsert is skipped as a normal outcome.
 
-If an existing model, record, flow, or module cannot be moved into the canonical structure without preserving obsolete semantics, delete it. Do not create fallbacks, translators, compatibility adapters, or parallel paths. Backward compatibility is not required for pre-production storage, content, or runtime models. An explicit runtime failure is a valuable signal that migration work remains; it must not be hidden by substituting defaults or reading the old system.
+Skipping must not:
+
+- extend the session;
+- reorder the plan;
+- duplicate unrelated content;
+- widen taxonomy;
+- insert generic content;
+- change persistent review scheduling;
+- resolve the review entry.
+
+## 12. Simulation draft lifecycle
+
+A simulation uses:
+
+- one canonical active session;
+- one revisioned session-owned draft.
+
+The draft is not a second session or attempt store.
+
+It contains only mutable state permitted by the applicable family configuration or certification profile.
+
+### Editable state
+
+In `active.simulation.editable`:
+
+- responses may be added, changed, or removed where permitted;
+- navigation may change where permitted;
+- correctness and feedback remain hidden;
+- draft responses create no attempts, scores, evidence, or review mutations.
+
+### Draft save
+
+Every save:
+
+```txt
+validate mutation
+→ validate expected previous revision
+→ build complete replacement draft
+→ persist draft
+→ verify new revision
+→ expose saved state
+```
+
+A stale revision fails explicitly.
+
+The UI must not announce `Saved` before durable verification.
+
+If draft persistence fails:
+
+- the last verified durable revision remains authoritative;
+- the current unsaved UI edit remains visibly unsaved;
+- no attempt or score is created;
+- retry uses an explicit expected revision;
+- a newer durable draft must not be overwritten.
+
+### Resume
+
+Resume restores:
+
+- exact session plan;
+- exact resolved plan slots;
+- exact content and profile versions;
+- last verified durable draft;
+- current position;
+- timer state;
+- profile-permitted navigator, section, or flag state.
+
+Resume does not regenerate item or option order.
+
+A missing or incompatible required draft blocks resume.
+
+### Finalization boundary
+
+Finalization freezes one exact verified durable draft revision.
+
+After freeze:
+
+- response mutations are rejected;
+- navigation mutations are rejected;
+- draft-save commands are rejected;
+- the session cannot return to editable state.
+
+Manual finalization waits for an in-flight draft save to resolve.
+
+Timer-triggered finalization freezes the latest verified durable draft revision. A transient edit that was never durably saved is not part of the finalized result and must never have been represented as saved.
+
+## 13. Simulation finalization
+
+Finalization follows:
+
+```txt
+freeze exact durable draft revision
+→ build deterministic attempts, result, evidence, and review mutations
+→ build complete immutable finalization write plan
+→ persist durable finalization journal
+→ materialize all writes idempotently
+→ verify all final records and required deletions
+→ clear journal
+→ expose canonical result and post-session feedback
+```
+
+The journal provides logical atomicity and crash-consistent recovery.
+
+It does not imply a native multi-key MMKV transaction.
+
+The finalization write plan includes:
+
+- one immutable attempt for every answered occurrence;
+- no ordinary attempt for unanswered occurrences;
+- eligible review mutations from answered outcomes;
+- completed-session result;
+- answered and unanswered diagnostics;
+- active-session removal;
+- draft deletion.
+
+If materialization or verification fails:
+
+- the simulation remains frozen;
+- no draft mutation is allowed;
+- summary and instructional feedback remain unavailable;
+- retry or startup recovery replays the same immutable plan;
+- a second finalization outcome cannot be created.
+
+## 14. Timers
+
+### Practice timer
+
+All non-simulation sessions use elapsed foreground time.
+
+The timer:
+
+- increases only while the application and session are in the foreground;
+- uses the canonical checkpointed timer state;
+- does not infer activity from closed-app wall-clock time;
+- resumes from the last verified durable checkpoint.
+
+### Algorithms Interview Simulation timer
+
+Algorithms simulation uses:
+
+```txt
+remainingMs =
+  max(0, 45 minutes - canonicalActiveForegroundMs)
+```
+
+It is a foreground countdown.
+
+Background and closed-app time do not consume it.
+
+It has no wall-clock deadline.
+
+The setup and runner disclose that the timer measures active work and pauses outside the app.
+
+When remaining time reaches zero:
+
+- editing is disabled;
+- the latest verified durable draft revision is frozen;
+- exactly one finalization command begins.
+
+Repeated zero notifications must not create repeated finalization commands.
+
+### Certification Exam Simulation timer
+
+Certification simulation uses the absolute deadline in the exact session-snapshotted `ExamExperienceProfile`.
+
+Background and closed-app time continue to consume the deadline.
+
+Returning before the deadline resumes the editable durable draft.
+
+Returning after the deadline:
+
+- freezes the latest verified durable draft;
+- starts idempotent automatic finalization;
+- does not reopen editable state.
+
+### Timer recovery
+
+The runtime defines and tests:
+
+- foreground entry;
+- foreground exit;
+- periodic checkpoint;
+- manual-finalization checkpoint;
+- expiry checkpoint;
+- force-close recovery;
+- maximum permitted foreground-timer drift.
+
+UI never owns an independent authoritative timer.
+
+## 15. Algorithms Interview Simulation
+
+Algorithms `Interview Simulation` has:
+
+- exactly 40 unique content identities;
+- one versioned simulation blueprint;
+- free navigation;
+- editable responses until finalization;
+- persisted current position;
+- no flagging unless a later approved profile explicitly introduces it;
+- no reinsert;
+- no per-item feedback;
+- 45 minutes of foreground active time.
+
+Preparation fails if exactly 40 valid unique items cannot be selected.
+
+The session does not:
+
+- shorten;
+- duplicate content;
+- widen scope;
+- insert unrelated content;
+- use a generic substitute.
+
+### Answered outcomes
+
+Finalization creates attempts for answered occurrences.
+
+Each attempt preserves:
+
+- response;
+- result kind;
+- points earned;
+- maximum points;
+- diagnostics;
+- content and occurrence identity.
+
+Partial interaction outcomes may contribute partial points to `pointsEarned`, while only `correct` contributes to `correctCount`.
+
+### Unanswered outcomes
+
+Unanswered occurrences:
+
+- earn zero points;
+- remain distinct from incorrect;
+- create no fabricated response;
+- create no ordinary attempt;
+- do not automatically create content-specific review;
+- remain persisted in the completed-session result.
+
+### Result
+
+The completed result includes:
+
+- total item count;
+- answered count;
+- unanswered count;
+- correct count;
+- partial count;
+- incorrect count;
+- points earned;
+- maximum points;
+- family-specific mental-unit or skill breakdown;
+- foreground active time.
+
+No pass/fail, readiness, retention, mastery, or predicted interview outcome is shown.
+
+## 16. Certification non-simulation runtime
+
+All six non-simulation Certification modes:
+
+- use immediate authored feedback;
+- use elapsed foreground time;
+- persist no unsubmitted selection;
+- use no reinsert;
+- fix the selected session plan before the first item;
+- may create or increase review;
+- produce a canonical family-specific summary.
+
+### Diagnostic Baseline
+
+- exactly 40 unique items;
+- no shortening;
+- preparation fails if the blueprint cannot be satisfied;
+- feedback appears after each durable submit;
+- attempts may create review;
+- attempts do not resolve persistent review.
+
+### Focus Practice
+
+- remains within one selected topic;
+- supports configured lengths 10, 20, and 40;
+- may shorten within that topic;
+- does not fill from sibling topics.
+
+### Scenario Practice
+
+- remains within one selected competency area;
+- uses only scenario-valid content;
+- supports configured lengths 10, 20, and 40;
+- may shorten within the selected competency;
+- does not widen into another competency.
+
+### Weak Area Review
+
+- uses eligible error-based review evidence;
+- supports 10 or 20 requested items;
+- may shorten to compatible eligible content;
+- may advance persistent-review resolution.
+
+### Mixed Practice
+
+- follows the versioned mixed-practice blueprint;
+- supports configured lengths 10, 20, and 40;
+- uses unique interleaved content;
+- shortening is allowed only when declared by the blueprint.
+
+### Quick Review
+
+- selects due maintenance retrieval;
+- includes at most 10 items;
+- uses the eligible due count;
+- does not fill from unrelated or not-yet-due content;
+- may advance persistent-review resolution.
+
+## 17. Certification Exam Simulation
+
+Certification `Exam Simulation` uses the selected track instance’s exact versioned `ExamExperienceProfile`.
+
+The session snapshots:
+
+- profile ID and version;
+- official source reference;
+- duration;
+- question count or range;
+- absolute deadline;
+- navigation policy;
+- answer-change policy;
+- flagging policy;
+- navigator policy;
+- section policy;
+- timeout policy.
+
+No global default or inferred official rule exists.
+
+The draft stores only state permitted by that profile.
+
+### Exit
+
+System exit requests confirmation.
+
+The interaction distinguishes:
+
+- continue simulation;
+- leave the active session resumable;
+- deliberately abandon where the product permits it.
+
+Abandonment:
+
+- removes the active session from resumable state;
+- deletes the draft;
+- excludes the session from history;
+- preserves already committed attempts, although normal simulation attempts do not exist before finalization.
+
+### Manual finish
+
+Manual finish:
+
+- warns when responses remain unanswered;
+- shows the unanswered count;
+- permits finalization unless the profile explicitly forbids it;
+- freezes the latest verified durable draft revision.
+
+### Timeout
+
+At the absolute deadline:
+
+- answers freeze;
+- further edits are rejected;
+- one idempotent finalization begins.
+
+### Unanswered scoring
+
+Unanswered occurrences:
+
+- contribute zero to raw correct count;
+- remain in the percentage denominator;
+- remain a distinct diagnostic category;
+- create no fabricated response;
+- create no ordinary item-level attempt;
+- do not automatically create content-specific review.
+
+### Results
+
+Results show:
+
+- raw correct count;
+- percentage;
+- competency breakdown;
+- unanswered count;
+- partial and incorrect diagnostics where applicable.
+
+Partial does not increment raw correct count.
+
+Post-session answer review defaults to:
+
+- answered non-correct items;
+- unanswered items as a separate category.
+
+An all-items view may be available.
+
+No official-looking pass/fail result is shown.
+
+Any internal threshold is clearly labelled Patternly-defined.
+
+## 18. Interruption, resume, and abandonment
+
+### Ordinary interruption
+
+Leaving the application without abandoning preserves the one active session.
+
+Resume requires exact resolution of:
+
+- track;
+- family;
+- mode;
+- content version;
+- configuration version;
+- profile version where applicable;
+- session plan;
+- simulation draft where applicable.
+
+### Content or profile mismatch
+
+A mismatch blocks resume.
+
+The runtime must not:
+
+- map an old item to a current item;
+- use a newer profile;
+- reconstruct an old explanation;
+- resume a partial subset of the session;
+- silently start a replacement session.
+
+Where safe, the user may deliberately abandon the incompatible active session.
+
+### Abandonment
+
+Abandonment is explicit.
+
+It:
+
+- removes resumable active-session state;
+- removes simulation draft state;
+- excludes the session from learner history;
+- preserves already materialized attempts and evidence;
+- does not translate historical records.
+
+## 19. Error states
+
+The runtime distinguishes at least:
+
+- preparation failure;
+- invalid response;
+- submit-journal persistence failure;
+- commit-pending materialization failure;
+- position-advance failure;
+- draft-save failure;
+- stale draft revision;
+- timer recovery failure;
+- finalization-journal persistence failure;
+- finalization materialization failure;
+- finalization verification failure;
+- content-version mismatch;
+- profile-version mismatch;
+- missing active session;
+- missing required draft;
+- repository failure;
+- corrupt canonical state.
+
+Every error state defines:
+
+- failed operation;
+- known durable state;
+- whether retry is safe;
+- permitted recovery action;
+- prohibited fallback behaviour.
+
+The runtime does not:
+
+- catch and continue with empty data;
+- display an apparently successful result;
+- allow a second submit after logical commit;
+- reopen a frozen simulation;
+- discard a draft silently;
+- read an obsolete store;
+- create generic content.
+
+## 20. Interaction and accessibility requirements
+
+The runner exposes:
+
+- visible timer;
+- `x of y` question counter;
+- explicit editable, saving, submitted, frozen, and error states;
+- accessible response controls;
+- family-specific renderers;
+- approved bottom actions;
+- approved feedback disclosure.
+
+Correctness is not shown before the active mode permits it.
+
+Simulation draft controls never expose correct, partial, or incorrect state before finalization.
+
+Response states must not rely on colour alone.
+
+Ordering exposes accessible movement controls.
+
+Complexity controls expose declared available values, not hidden accepted answers.
+
+Missing approved design for a required runtime state blocks implementation.
+
+## 21. Required recovery rule
+
+If an existing model, record, flow, module, route, key, API, or test cannot move into the canonical structure without preserving obsolete semantics, delete it.
+
+Do not create:
+
+- fallbacks;
+- translators;
+- compatibility adapters;
+- dual reads or writes;
+- parallel session runners;
+- second authoritative state;
+- historical-content reconstruction;
+- hidden default branches;
+- generic educational explanations.
+
+Backward compatibility is not required for pre-production storage, content, or runtime models.
+
+An explicit runtime failure is evidence that migration work remains. It must not be hidden by substituting defaults or reading the obsolete system.

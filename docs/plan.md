@@ -1,706 +1,1019 @@
-Patternly — Working Execution Plan v2
+# Patternly — Working Execution Plan v3
 
-Status: active working document
-Repository: lukaszkurczab/gcp-ace-trainer
-Product: Patternly
-Purpose: control Patternly implementation from GPT planning through Codex implementation, GitHub push, GPT review, documentation update, and next-step decision.
+**Status:** active execution-control document
+**Repository:** `lukaszkurczab/gcp-ace-trainer`
+**Product:** Patternly
+**Repository baseline:** `main` at `20469446355f0031df941a273435674037793d18`
+**Baseline date:** 2026-07-15
 
-⸻
+## 1. Purpose
 
-1. Why this plan exists
+This document controls how Patternly work moves from an accepted product contract to repository implementation and verified completion.
 
-Patternly is transitioning from a GCP ACE Trainer codebase into a multi-track technical learning product.
+It defines:
 
-The previous execution plan over-prioritized backend/domain architecture and under-prioritized visual/product correctness. That created a critical risk: technically correct infrastructure was being added while the visible app diverged from the approved design direction and while core user paths were not reliably runnable.
+- implementation sequencing;
+- current repository gates and blockers;
+- the active execution stage;
+- task boundaries;
+- required deletion of obsolete paths;
+- verification evidence;
+- stage-completion decisions;
+- the next safe task.
 
-This plan resets execution order around three non-negotiable gates:
+Documents `00–13` and `15–17` define the canonical product, architecture, learning, content, persistence, security, interaction, and testing contracts.
 
-1. Product/design parity
-2. Runnable user paths
-3. Canonical multi-track architecture
+This Working Execution Plan is the only active document that defines repository-specific implementation order.
 
-No implementation pass is accepted unless it protects all three.
+Do not create a separate architecture recovery plan, parallel execution plan, migration roadmap, or secondary stage-status document.
 
-⸻
+## 2. Authority hierarchy
 
-2. Current product direction
+Conflicts are resolved by contract ownership, not by document age, existing code, or previous task reports.
 
-Patternly is a calm, premium, dark-first technical learning app for:
+### 2.1. Canonical product contracts
 
-- focused practice,
-- pattern recognition,
-- mistake review,
-- technical skill training,
-- track-based learning.
+Documents `00–13` and `15–17` define the target product.
 
-Initial tracks:
+Document `14 — Learning Effectiveness Model` is retired because its content is owned by:
 
-- cloud-certification
-- algorithms
+- `01-product-definition.md`;
+- `07-content-guidelines.md`;
+- `15-certification-track-learning-system.md`;
+- `16-leetcode-like-learning-system.md`;
+- `17-training-runtime-and-interaction-spec.md`.
 
-The app is not:
+Document `14` defines no independent contract and must not remain an authority reference.
 
-- a GCP-branded app,
-- a LeetCode clone,
-- a generic quiz app,
-- a gamified streak/level product,
-- a Google-style Material app,
-- a dashboard-heavy analytics product.
+### 2.2. Approved design references
 
-⸻
+Approved visual references own concrete presentation where the canonical documentation delegates visual decisions.
 
-3. Canonical UI direction
+They may define:
 
-The active visual direction is Dark-first Focus Lab.
+- layout;
+- hierarchy;
+- spacing;
+- control placement;
+- interaction presentation;
+- required visual states.
 
-The approved design direction is represented by the current design screenshots and the Patternly documentation:
+They do not override:
 
-- deep navy / slate background,
-- restrained blue/violet accents,
-- premium technical look,
-- minimal geometric iconography,
-- calm cards,
-- clear hierarchy,
-- low clutter,
-- strong mobile readability,
-- no unnecessary gamification,
-- no Google-like color language,
-- no LeetCode-specific identity.
+- lifecycle;
+- scoring;
+- feedback timing;
+- persistence;
+- timer semantics;
+- review policy;
+- ownership boundaries;
+- accessibility requirements.
 
-Hard UI constraints
+### 2.3. This Working Execution Plan
 
-Do not introduce or preserve:
+This document owns:
 
-- streaks,
-- levels,
-- achievement badges,
-- gamified status rows,
-- avatars as a primary product element unless explicitly designed,
-- random profile/user identity UI in MVP,
-- inconsistent tab labels,
-- inconsistent headers,
-- unrelated icon systems between screens,
-- old “GCP trainer” screen structures,
-- screens that visually contradict the approved references.
+- repository-specific implementation order;
+- stage boundaries;
+- current blockers;
+- required verification;
+- current execution status;
+- active next task.
 
-Current visual blockers observed
+It does not redefine the target product.
 
-The current implementation has or recently had the following issues:
+### 2.4. Current repository
 
-- Home layout does not match approved Patternly references.
-- Practice layout differs from approved reference structure.
-- Progress layout differs significantly from approved reference.
-- Settings layout differs significantly from approved reference.
-- Bottom navigation labels/icons are inconsistent across references and implementation.
-- Some screens still show gamified elements such as streak/level style metrics.
-- Some CTAs imply flows that are not wired or testable.
-- The app shell is not yet a stable implementation of the approved designs.
+The repository is evidence of current implementation state.
 
-These are product blockers, not polish tasks.
+Existing code is not automatically a product requirement.
 
-⸻
+A passing test protecting obsolete behaviour does not make that behaviour canonical.
 
-4. Source-of-truth hierarchy
+### 2.5. Codex prompts and reports
 
-When there is a conflict, use this priority order:
+A Codex prompt may narrow implementation scope but may not weaken a canonical contract.
 
-1. User-approved current design screenshots
-2. Patternly docs: product, architecture, navigation, design system, testing
-3. Current repository reality
-4. Older implementation behavior
-5. Codex assumptions
+A Codex report is evidence to inspect, not proof of completion.
 
-Legacy GCP implementation is current code reality, not canonical product direction.
+Only pushed repository state and independently verified results can close a stage.
 
-⸻
+## 3. Non-negotiable execution rules
+
+### 3.1. Move or delete
+
+When an obsolete model, flow, module, route, key, API, test, or repository path is replaced:
+
+- move valid responsibility to the canonical owner;
+- delete the obsolete path in the same bounded stage;
+- delete obsolete tests and fixtures;
+- prove the old path unreachable.
 
-5. Core working loop
+Do not create:
 
-Every implementation cycle follows this loop:
+- compatibility adapters;
+- old-schema readers;
+- translators;
+- dual reads;
+- dual writes;
+- legacy fallbacks;
+- bridge models;
+- parallel runners;
+- parallel storage systems;
+- permanent migration flags;
+- hidden default branches;
+- generic substitute content.
 
-GPT planning prompt
-↓
-Codex implementation
-↓
-Push to GitHub
-↓
-GPT review of pushed changes
-↓
-Decision:
-├─ ACCEPTED → update working plan → next task
-├─ PARTIAL_ACCEPT → correction prompt
-└─ REJECTED / BLOCKED → stop and re-plan
+### 3.2. One authoritative owner
 
-GitHub pushed state is the review source of truth.
+After a verified stage, one concept has one authoritative owner.
 
-A Codex report without pushed code is not accepted.
+Examples:
 
-⸻
+- lifecycle guards and family-neutral envelopes → shared kernel;
+- workflow coordination → application use cases;
+- Algorithms semantics → Algorithms family runtime;
+- Certification semantics → Certification family runtime;
+- persistence → canonical repositories;
+- MMKV access → one infrastructure boundary;
+- authored educational feedback → static content;
+- rendering → approved shell and family interaction renderer.
 
-6. Review statuses
+Moving a file without moving responsibility does not satisfy this rule.
 
-Use exactly one:
+### 3.3. No hidden partial completion
 
-- ACCEPTED
-- PARTIAL_ACCEPT
-- NEEDS_CORRECTION
-- REJECTED
-- BLOCKED
-- NEEDS_MANUAL_DECISION
+A stage is not complete because:
 
-Important distinction:
+- new files exist;
+- typecheck passes;
+- unit tests pass;
+- the old implementation remains as fallback;
+- a route is disabled;
+- a screen renders fixture data;
+- an error state is missing;
+- content is structurally valid but unreviewed;
+- an approved design is absent;
+- Codex reports the intended result;
+- a capability works only through a parallel legacy owner.
 
-- Technical accepted means code compiles/tests and matches the narrow technical prompt.
-- Product accepted means the result matches Patternly’s visible product direction and user paths work.
+### 3.4. No temporary architecture
 
-A phase can be technically accepted but product-blocked.
+Do not introduce:
 
-⸻
+- temporary domain models;
+- placeholder architecture;
+- future-content flags;
+- parallel “old” and “new” variants;
+- compatibility scaffolding;
+- hidden incomplete features;
+- architecture intended to be replaced later.
 
-7. Current repository state
+A bounded stage may implement only part of the product, but the implemented part must already use its final canonical structure.
 
-Current baseline:
+### 3.5. Explicit failure over substitution
 
-- Expo / React Native / TypeScript app.
-- Product name: Patternly.
-- Repository/package identity still contains gcp-ace-trainer.
-- Cloud Certification is the active track.
-- Algorithms exists as a draft track.
-- Dark-first theme work exists but is not yet fully aligned with approved screen layouts.
-- Shared training domain contracts exist.
-- Track adapter contracts exist.
-- Session engine primitives exist.
-- Storage repositories for canonical training data exist.
-- Cloud write-through to canonical attempts/review exists.
-- Canonical Cloud progress/review selectors exist.
-- Progress tab has begun using canonical progress data.
-- Legacy Cloud flows still exist and must not be broken.
-- UI layout parity is not yet achieved.
-- Core user paths are not yet verified as runnable end-to-end.
+Missing content, profile, draft, storage state, design, configuration, or interaction handler blocks the affected operation explicitly.
 
-⸻
+It must not produce:
 
-8. Current blockers
+- a default topic;
+- another track;
+- a generic item;
+- a guessed answer;
+- an empty successful session;
+- a fabricated explanation;
+- a substitute profile;
+- an ordinary-looking result.
 
-P0-B1 — Approved layout mismatch
+## 4. Execution loop
 
-Severity: Critical
-Status: active blocker
+Every bounded repository task follows:
 
-The implemented app must match the approved Patternly screen references before additional feature expansion.
+```txt
+canonical contract
+→ repository fact audit
+→ exact implementation prompt
+→ bounded implementation
+→ required verification
+→ push to GitHub
+→ independent review of pushed state
+→ gate decision
+→ Working Execution Plan update
+```
 
-Affected screens:
+The pushed commit or pull request is the review source of truth.
 
-- Home
-- Practice
-- Practice session / question
-- Progress
-- Settings
-- bottom navigation
-- screen headers
+Unpushed changes and narrative implementation reports cannot be accepted as completed work.
 
-P0-B2 — Broken or unverified user paths
+## 5. Result classification
 
-Severity: Critical
-Status: active blocker
+Each implementation stage receives one result:
 
-The app must support at least these runnable paths:
+- `VERIFIED`
+- `PARTIAL`
+- `NEEDS_CORRECTION`
+- `BLOCKED`
+- `REJECTED`
 
-Home → Start/Continue Practice → Question screen → Select answer → Check answer → Feedback/Next
-Practice tab → Exam simulation → Exam session starts
-Practice tab → Review weak items → Review session or clear unavailable state
-Progress tab → Review queue CTA → Review path or explicit unavailable state
-Settings → Clear local history → data reset confirmed
+Each applicable gate receives one result:
 
-If a CTA exists, it must either:
+- `PASS`
+- `FAIL`
+- `BLOCKED`
+- `NOT_APPLICABLE`
 
-- navigate to a working flow, or
-- be disabled with clear product copy, or
-- be removed.
+A stage may be `PARTIAL` even when all executed tests pass.
 
-No dead CTAs.
+A stage is `VERIFIED` only when every applicable gate passes.
 
-P0-B3 — Testability gap
+## 6. Mandatory gates
 
-Severity: High
-Status: active blocker
+### G-C — Contract gate
 
-Unit tests are not enough. The product needs route-level smoke checks or a deterministic manual QA checklist before further feature expansion.
+Requires:
 
-Minimum verification:
+- exact alignment with documents `00–13` and `15–17`;
+- no undocumented behaviour;
+- no implementation inferred from a mode name, old screen, or legacy service;
+- all required product contracts closed.
 
-npm run typecheck
-npm test
-npm run validate:questions
-manual / scripted route smoke:
+### G-A — Architecture gate
 
-- app opens
-- Home renders
-- Practice renders
-- Cloud practice starts
-- answer can be selected
-- Check Answer works
-- Progress renders
-- Settings renders
+Requires:
 
-Maestro can be added later, but the route smoke checklist must exist now.
+- correct dependency direction;
+- one canonical owner;
+- application-layer orchestration;
+- no direct UI persistence or scoring;
+- no family-owned repository implementation;
+- no obsolete reachable owner;
+- no global concrete-item union.
 
-P0-B4 — Working plan stale
+### G-P — Persistence and recovery gate
 
-Severity: High
-Status: active blocker
+Requires:
 
-The previous plan claims phases are accepted while the visible app is still product-blocked. This document replaces that plan as the active working source.
+- one MMKV infrastructure owner;
+- one active session;
+- persistence before the first item;
+- revision-safe simulation drafts;
+- deterministic journal operations;
+- idempotent recovery;
+- verified materialization;
+- explicit mismatch and corruption states;
+- canonical reset;
+- no AsyncStorage or parallel storage path.
 
-⸻
+### G-L — Learning and content gate
 
-9. Corrected implementation strategy
+Requires:
 
-The correct order is now:
+- correct family semantics;
+- exact mode behaviour;
+- exact scoring;
+- review provenance;
+- correct persistent-review lifecycle;
+- active-content structural validation;
+- recorded human editorial approval for active instructional batches;
+- no runtime-generated educational explanations.
 
-1. Plan reset and blocker capture
-2. UI/layout parity baseline
-3. Runnable route/path repair
-4. Smoke QA gate
-5. Canonical Review UI migration
-6. Algorithms MVP
-7. Further progress/review diagnostics
-8. Focus Lab polish
-9. CI/release gate
+### G-D — Design and accessibility gate
 
-Do not continue domain/selector expansion until UI parity and runnable paths are restored.
+Requires:
 
-⸻
+- approved visual reference for every required user-facing state;
+- correct session top bar and actions;
+- accessible response semantics;
+- no colour-only state;
+- approved saving, frozen, finalizing, error, and recovery states;
+- screenshot and manual QA evidence.
 
-10. Phase 0 — Plan reset and blocker capture
+### G-S — Security and privacy gate
 
-Goal: replace stale execution plan with this v2 working plan.
+Requires:
 
-Scope:
+- approved local-data boundary;
+- no unapproved telemetry or transmission;
+- production-log redaction;
+- no unverified encryption claim;
+- permission and backup-policy review;
+- accurate reset and deletion communication.
 
-- add/update active working plan,
-- mark visual/layout parity as P0,
-- mark broken/unverified routes as P0,
-- clarify that previous architecture work is technically accepted but product integration remains blocked.
+### G-Q — Quality-assurance gate
 
-Definition of done:
+Requires the applicable subset of:
 
-- active plan reflects current repo and design reality,
-- next Codex task is unambiguous,
-- no app code changes in this phase unless explicitly requested.
+- `npm run qa:static`;
+- architecture checks;
+- required negative suite;
+- application-use-case tests;
+- repository and journal recovery tests;
+- interaction-handler tests;
+- accessibility tests;
+- route smoke;
+- Maestro flows;
+- screenshot comparison;
+- native development-build verification.
 
-Status: active
+## 7. Verified repository baseline
 
-⸻
+The current `main` branch contains substantial recovery work.
 
-11. Phase 1 — UI/layout parity baseline
+Confirmed high-level facts include:
 
-Goal: align implemented screens with approved Patternly visual references before adding more features.
+- MMKV and Nitro modules are installed;
+- static QA scripts exist;
+- UX/UI audit scripts exist;
+- canonical mutation and repository infrastructure exists;
+- Algorithms family-runtime work exists;
+- immediate Algorithms practice has an application controller;
+- Algorithms Interview Simulation has a controller, projections, screens, renderers, and draft persistence;
+- the previous large Algorithms session screen and session model were removed;
+- a shared training-session finalization mutation exists;
+- a training-session draft model and repository exist;
+- the latest recovery branch was merged into `main`.
 
-Scope:
+These facts do not establish compliance with the final accepted contracts.
 
-- Home
-- Practice
-- Practice question/session screen
-- Progress
-- Settings
-- bottom navigation
-- headers
-- CTA hierarchy
+The current implementation was produced against an older documentation set and must be audited before further expansion.
 
-Rules:
+## 8. Known contract deltas
 
-- This is not a redesign.
-- This is implementation alignment to approved designs.
-- Do not invent new product sections.
-- Do not add gamification.
-- Do not expose implementation terms.
-- Do not change domain architecture unless required to wire existing data.
+The repository audit must verify at least these known deltas.
 
-Required corrections:
+### D-01 — Canonical documentation is not yet applied
 
-Home
+Repository documents do not yet contain the complete accepted corrections.
 
-Must align with approved Patternly Home structure:
+No further product implementation should be accepted before documentation closure.
 
-- app header,
-- clear continue learning card,
-- recommended actions,
-- no streak/level footer,
-- no random gamified identity row,
-- CTA must route to a working learning/practice path.
+### D-02 — Document 14 remains referenced
 
-Practice
+Document `14` must be deleted and all authority references removed.
 
-Must align with approved Patternly Practice structure:
+### D-03 — Stale recovery-plan documents remain
 
-- active track section,
-- primary recommended/continue session card,
-- secondary practice modes,
-- no unnecessary “why this session” block unless design requires it,
-- all visible CTAs either working or explicitly unavailable.
+Any previous architecture recovery plan or separate implementation roadmap must be deleted or explicitly retired.
 
-Practice session/question
+This Working Execution Plan is the only active execution-order source.
 
-Must align with approved question screen:
+### D-04 — Algorithms runtime ownership
 
-- consistent top bar,
-- item progress,
-- question card,
-- option cards,
-- bottom check-answer CTA,
-- no disabled button confusion,
-- answer selection must make CTA usable.
+Current code must be checked for family-runtime ownership of:
 
-Progress
+- draft persistence;
+- foreground timer orchestration;
+- finalization orchestration;
+- repository coordination.
 
-Must align with approved Progress structure:
+Those responsibilities belong to application use cases and repositories.
 
-- Focus overview,
-- review queue card,
-- practice activity or canonical replacement if available,
-- performance section,
-- concrete metrics only,
-- no readiness/retention/pass prediction.
+The family runtime owns deterministic Algorithms semantics.
 
-Settings
+### D-05 — Algorithms simulation flagging
 
-Must align with approved Settings structure:
+Current Algorithms runtime and UI contain flagging.
 
-- profile/track card only if product-relevant,
-- active tracks,
-- session length,
-- review priority,
-- app preferences,
-- data/privacy,
-- account section if applicable,
-- no fake user/account data if auth does not exist.
+The approved Algorithms Interview Simulation profile does not include flagging.
 
-Definition of done:
+Flagging must be removed unless a later explicit product decision adds:
 
-- screens visually match reference structure,
-- no gamified artifacts remain,
-- bottom nav is consistent,
-- no dead CTA remains on visible screen,
-- tests still pass.
+- a profile contract;
+- data-model support;
+- approved visual design;
+- runtime semantics;
+- tests.
 
-Suggested commit:
+### D-06 — Draft revision contract
 
-ui: align core screens with Patternly reference layouts
+The current simulation draft must be checked against the approved requirements for:
 
-Status: next
+- schema version;
+- draft version;
+- monotonically increasing revision;
+- expected previous revision;
+- stale-write rejection;
+- complete-record replacement;
+- freeze of one exact durable revision at finalization.
 
-⸻
+### D-07 — Reinsert contract
 
-12. Phase 2 — Runnable route and CTA repair
+The canonical contract requires:
 
-Goal: make the visible product paths actually work.
+- maximum one reinsert;
+- at least three other materialized submitted attempts;
+- reviewed variant where available;
+- exact source only when no reviewed compatible variant exists;
+- no session extension;
+- no session reordering;
+- deterministic conditional plan slots prepared before session start.
 
-Required path contracts:
+A two-item gap or opportunistic post-start plan mutation is incorrect.
 
-Home
+### D-08 — Finalization visibility boundary
 
-Start learning
-→ active Cloud practice setup or practice session
+Practice feedback may appear after durable submit intent.
 
-Recommended cards:
+Simulation result and instructional feedback may appear only after finalization has been fully materialized and verified.
 
-Review IAM policies
-→ review path if canonical review items exist
-→ otherwise disabled/empty state
-Due for review
-→ canonical review path if items exist
-→ otherwise disabled/empty state
-Weak area card
-→ topic/domain detail if implemented
-→ otherwise disabled/empty state
+A durable finalization journal alone is insufficient.
 
-Practice
+### D-09 — Certification family completeness
 
-Start session
-→ starts Cloud practice session
-Exam simulation
-→ starts Cloud exam session
-Review weak items
-→ starts canonical review path or shows unavailable state
+All six non-simulation Certification modes require exact implementation contracts.
 
-Question screen
+Current Cloud practice and review flows must not be assumed to satisfy:
 
-select option
-→ Check Answer enabled
-→ feedback shown
-→ Next item or finish session
+- canonical mode identity;
+- selection;
+- length;
+- feedback timing;
+- review effects;
+- summary;
+- recommendation;
+- persistence ownership.
 
-Progress
+### D-10 — Content activation
 
-Start review
-→ canonical review path if due items exist
+Active instructional content requires:
 
-Settings
+- structural validation;
+- correct scoring;
+- authored feedback;
+- stable-ID distractor coverage;
+- taxonomy validation;
+- required provenance;
+- recorded human editorial approval.
 
-Clear local history
-→ confirmation
-→ clears legacy and canonical local data
+Renderable content is not automatically production-ready.
 
-Definition of done:
+## 9. Execution sequence
 
-- every visible CTA has working route or safe unavailable state,
-- user can complete at least one Cloud practice question flow,
-- user can start exam simulation,
-- no screen leads to blank/broken state.
+## Stage 0 — Canonical documentation closure
 
-Suggested commit:
+### Goal
 
-flow: repair core Cloud practice and review routes
+Make the accepted documentation the only target contract and make this document the only execution-order source.
 
-Status: blocked until Phase 1 complete or done together if tightly coupled.
+### Scope
 
-⸻
+- replace documents `00–13` with accepted versions;
+- delete document `14`;
+- replace documents `15–17` with accepted versions;
+- remove every reference to document `14`;
+- remove references to a future document `18`;
+- delete or explicitly retire the existing architecture recovery plan;
+- delete or retire previous parallel working plans;
+- update documentation indexes and authority declarations;
+- resolve conflicting terminology and contracts.
 
-13. Phase 3 — Smoke QA gate
+### Required consistency checks
 
-Goal: prevent accepting invisible breakages.
+Confirm one definition for:
 
-Add one of:
+- canonical document set;
+- mode names;
+- supported lengths;
+- feedback timing;
+- timer semantics;
+- reinsert eligibility;
+- three-item reinsert gap;
+- draft ownership and revision;
+- finalization visibility;
+- Algorithms flagging;
+- content activation;
+- reset;
+- security and privacy boundary.
 
-- manual QA checklist in repo,
-- route smoke test,
-- Maestro baseline flow,
-- lightweight script if available.
+### Restrictions
 
-Minimum manual QA checklist:
+- no application code changes;
+- no runtime fixes;
+- no opportunistic cleanup outside documentation;
+- no compatibility note preserving rejected documentation.
 
-[ ] App opens on Home
-[ ] Home Start Learning opens Cloud practice path
-[ ] Practice tab opens
-[ ] Practice Start Session opens question screen
-[ ] Selecting an answer enables Check Answer
-[ ] Check Answer shows result/feedback
-[ ] Exam simulation opens exam session
-[ ] Progress tab opens without crash
-[ ] Review queue CTA is working or safely unavailable
-[ ] Settings opens
-[ ] Clear local history confirmation appears
-[ ] Clear local history clears legacy and canonical training data
+### Exit criteria
 
-Definition of done:
+- documents `00–13` and `15–17` are present;
+- document `14` is absent;
+- no document `18` exists or is planned;
+- no active recovery-plan document exists beside this plan;
+- no active reference points to document `14` or `18`;
+- cross-document contracts agree;
+- documentation checks pass;
+- exact commit SHA is recorded.
 
-- QA checklist exists,
-- Codex must report it for every future UI pass,
-- typecheck/test/question validation still pass.
+### Status
 
-Suggested commit:
+`ACTIVE NEXT TASK`
 
-qa: add Patternly route smoke checklist
+## Stage 1 — Repository-to-contract delta audit
 
-⸻
+### Goal
 
-14. Phase 4 — Canonical Review UI migration
+Audit the current `main` branch against the accepted canonical documentation.
 
-Goal: use canonical review selector in the Review/Mistakes UI.
+### Scope
 
-Do not start until:
+Inspect:
 
-- core layouts are aligned,
-- review entry path is clear,
-- route smoke is possible.
+- shared domain and kernel;
+- application use cases;
+- family runtimes;
+- simulation controllers;
+- session and attempt models;
+- draft model and repository;
+- mutation journal;
+- timer state;
+- Algorithms screens;
+- Certification practice and exam;
+- navigation;
+- Home, Practice, Progress, Review, and Settings;
+- content manifests;
+- content review records;
+- QA and architecture checks.
 
-Scope:
+### Required output
 
-- review screen read path,
-- review model adapter,
-- legacy fallback.
+Produce a repository-grounded matrix containing:
 
-Definition of done:
+- canonical requirement;
+- current path;
+- current owner;
+- confirmed current behaviour;
+- mismatch;
+- applicable risk ID;
+- required action:
+  - keep;
+  - move;
+  - rewrite;
+  - delete;
 
-- canonical review items can be displayed,
-- legacy fallback remains,
-- degraded state is shown inline,
-- no navigation breakage.
+- required tests;
+- required design reference;
+- implementation dependency.
 
-⸻
+### Restrictions
 
-15. Phase 5 — Algorithms MVP Pattern Drill
+- no product code changes;
+- no speculative compliance;
+- no reuse decision based only on file names or commit messages;
+- no stage marked complete from earlier plan status.
 
-Goal: make Algorithms a real MVP track without turning it into a quiz clone.
+### Exit criteria
 
-Do not start until:
+- every affected canonical contract is mapped to repository evidence;
+- known deltas D-01–D-10 are resolved or confirmed;
+- current test baseline is recorded;
+- missing design and product decisions are listed;
+- the exact next implementation stage is bounded.
 
-- Cloud core flows are runnable,
-- shared UI shell is stable,
-- canonical session/attempt/review paths are working.
+## Stage 2 — Canonical model, application, and persistence correction
 
-Initial Algorithms scope:
+### Goal
 
-- original pattern drill content,
-- pattern identification,
-- strategy choice,
-- complexity analysis,
-- feedback explaining why the chosen pattern/strategy works,
-- no code editor,
-- no online judge,
-- no LeetCode references.
+Align the shared model and persistence lifecycle with the accepted contracts.
 
-⸻
+### Expected scope
 
-16. Phase 6 — Progress and review diagnostics
+Subject to Stage 1 evidence:
 
-Goal: improve diagnostics only after paths are reliable.
+- family-neutral kernel envelopes;
+- explicit application use cases;
+- discriminated active, completed, and abandoned sessions;
+- canonical `AttemptResult`;
+- one active-session reference;
+- revisioned simulation draft;
+- canonical foreground-timer state;
+- journaled learning-state reset;
+- startup recovery order;
+- deterministic finalization;
+- verified materialization boundary;
+- exact content and profile resume checks.
 
-Allowed metrics:
+### Required deletion
 
-- attempts count,
-- first-attempt accuracy,
-- recent accuracy,
-- due review count,
-- high-priority review count,
-- weak taxonomy nodes,
-- repeated mistake types,
-- coverage.
+Delete any superseded:
 
-Forbidden metrics:
+- family-owned storage orchestration;
+- direct screen repository access;
+- non-revisioned draft path;
+- parallel timer owner;
+- old reset path;
+- obsolete session model;
+- unsupported flag state;
+- obsolete journal operation.
 
-- generic readiness percent,
-- retention percent,
-- exam pass prediction,
-- fake confidence score.
+### Exit criteria
 
-⸻
+- ownership matches documents `02`, `04`, `08`, `11`, and `17`;
+- one canonical persistence path exists;
+- draft conflict and recovery tests pass;
+- old owners are unreachable;
+- no user-facing capability is reported complete without its UI state.
 
-17. Phase 7 — CI and release gate
+## Stage 3 — Algorithms runtime correction and complete cutover
 
-Goal: make regressions visible.
+### Goal
 
-Required commands:
+Bring existing Algorithms implementation into exact compliance with the accepted family and runtime contracts.
 
-npm run typecheck
-npm test
-npm run validate:questions
+### Scope
 
-Future:
+- all seven Algorithms modes;
+- exact entry mappings;
+- immediate-feedback practice;
+- fixed 40-item Interview Simulation;
+- 45-minute foreground countdown;
+- revision-safe drafts;
+- finalization-only attempts and review;
+- unanswered diagnostics;
+- conditional reinsert slots;
+- three-item separation;
+- family recommendations;
+- Algorithms summary and review projections;
+- approved practice and simulation screens.
 
-npm run validate:tracks
+### Required correction
 
-Release checklist should include:
+At minimum:
 
-- app launch,
-- Home,
-- Practice,
-- Cloud practice session,
-- Cloud exam simulation,
-- Progress,
-- Review,
-- Settings reset,
-- Algorithms unavailable or working state depending on implementation stage.
+- move persistence orchestration out of family runtime where present;
+- remove unsupported Algorithms flagging;
+- implement exact draft revision contract;
+- implement conditional reinsert plan slots;
+- enforce three intervening materialized submissions;
+- withhold simulation results until verified finalization;
+- preserve exactly 40 unique simulation items;
+- expose explicit insufficient-content failure.
 
-⸻
+### Required deletion
 
-18. Current phase status
+Delete:
 
-Phase Status Notes
-Shared training contracts Technical accepted Product integration still ongoing
-Track adapters Technical accepted Algorithms still draft
-Session engine Technical accepted Not fully wired into UI
-Storage repositories Technical accepted Clear/reset path must include canonical data
-Cloud bridge/write-through Technical accepted UI still legacy/mixed
-Canonical progress selector Technical accepted Progress UI partially wired
-Progress tab canonical migration Partial technical accepted Product/layout parity still blocked
-Review UI migration Not started Blocked by UI/path baseline
-Algorithms MVP Not started Blocked by Cloud flow baseline
-Focus Lab UI alignment Critical active blocker Must move earlier
-QA/route smoke Critical active blocker Must be added before more feature work
+- unsupported flag controls and state;
+- obsolete Algorithms runtime paths;
+- dynamic post-start plan mutation;
+- duplicate timer owner;
+- duplicate finalization owner;
+- tests protecting rejected behaviour.
 
-⸻
+### Exit criteria
 
-19. Active next task
+- Algorithms lifecycle is testable without React;
+- screens only render state and dispatch commands;
+- all modes use one canonical application flow;
+- all required states have approved designs;
+- old Algorithms owners are absent;
+- all applicable gates pass.
 
-The next task is:
+## Stage 4 — Certification family and GCP track cutover
 
-Phase 1 — UI/layout parity baseline for Home, Practice, Question, Progress, Settings, and bottom navigation.
+### Goal
 
-The task must not add new domain infrastructure.
+Replace Cloud-specific practice and exam ownership with one canonical Certification family runtime and declarative GCP track instance.
 
-The task must not migrate Review UI yet.
+### Scope
 
-The task must fix visible product divergence from approved Patternly screen references.
+Implement exact contracts for:
 
-⸻
+1. `Diagnostic Baseline`
+2. `Focus Practice`
+3. `Scenario Practice`
+4. `Weak Area Review`
+5. `Mixed Practice`
+6. `Quick Review`
+7. `Exam Simulation`
 
-20. Codex rules for next pass
+Include:
 
-Codex must:
+- competency-first remediation;
+- topic-level focus;
+- family-specific evidence;
+- deterministic recommendations;
+- versioned `ExamExperienceProfile`;
+- absolute deadline;
+- profile-controlled navigation;
+- profile-controlled answer changes;
+- profile-controlled flagging;
+- profile-controlled navigator and sections;
+- finalization-only simulation feedback;
+- unanswered diagnostics;
+- Patternly-defined result communication.
 
-- inspect current screens before editing,
-- compare implementation to approved screen references,
-- keep scope narrow,
-- fix layout and CTA correctness,
-- preserve canonical data work,
-- avoid new product concepts,
-- avoid gamification,
-- run checks,
-- report any CTA that cannot be wired yet.
+### Required deletion
 
-Codex must not:
+Delete superseded:
 
-- continue architecture expansion,
-- add Algorithms content,
-- rewrite navigation broadly,
-- add backend/auth/user accounts,
-- add streaks/levels/badges,
-- modify docs unless explicitly requested,
-- hide broken routes.
+- Cloud practice runtime;
+- Cloud-specific write-through;
+- global exam defaults;
+- old exam persistence;
+- `Question` bridge ownership;
+- parallel history and review projections;
+- compatibility fallback.
 
-⸻
+### Exit criteria
 
-21. Next Codex prompt summary
+- GCP is a Certification track instance;
+- adding another Certification track requires no new runner;
+- all seven mode contracts are implemented and tested;
+- the old Cloud runtime is unreachable;
+- no official-looking pass/fail is displayed.
 
-Next Codex task:
+## Stage 5 — Shared session shell and product-surface cutover
 
-Align the core Patternly screens with the approved dark-first Focus Lab reference layouts and repair visible CTAs so each is working, disabled, or removed.
+### Goal
 
-Expected changed areas:
+Complete visible product flows over the canonical runtime.
 
-src/features/home/
-src/features/practice/
-src/features/exam/
-src/features/review/ only if CTA unavailable state requires it
-src/components/
-src/theme/
-tests/
+### Scope
 
-Forbidden:
+- shared session shell;
+- family interaction renderers;
+- Home;
+- Practice;
+- Progress;
+- Review;
+- Settings;
+- bottom navigation;
+- active-session continue and abandon;
+- canonical reset;
+- route and CTA behaviour;
+- explicit unavailable and failure states.
 
-domain model expansion
-Algorithms content
-new backend/auth
-documentation updates
-large unrelated cleanup
+### Rules
 
-⸻
+- no dead CTA;
+- no fake account;
+- no legacy fallback;
+- no default track or topic;
+- no streaks;
+- no levels;
+- no badges;
+- no readiness, retention, or mastery percentages;
+- no route backed by an obsolete owner;
+- no required screen without approved design.
 
-22. Open risks
+### Exit criteria
 
-Risk Severity Status Notes
-Implemented UI diverges from approved design Critical Active Current blocker
-Visible CTAs do not route to working flows Critical Active Current blocker
-Unit tests pass while app is unusable High Active Add smoke QA
-Architecture work continues while product shell is broken High Active Stop architecture expansion
-Gamification leaks into product High Active Remove streak/level/badge patterns
-Algorithms becomes generic quiz High Watch Do not start before Cloud baseline
-Legacy and canonical storage diverge Medium Watch Clear/reset must handle both
-Progress uses fake precision High Watch Use concrete evidence only
-No CI/release gate Medium Later Add after route baseline
+- every visible CTA works or represents a truthful explicit unavailable state;
+- all screens use canonical queries and commands;
+- route smoke passes;
+- required screenshot QA passes;
+- obsolete screens and routes are removed.
 
-⸻
+## Stage 6 — Active-content activation and remediation
 
-23. Completion log
+### Goal
 
-Date Commit / PR Phase Status Notes
-2026-06-29 TBD Shared training contracts Technical accepted UI not affected
-2026-06-29 TBD Track adapters Technical accepted Algorithms draft only
-2026-06-29 TBD Session engine Technical accepted Not fully UI-wired
-2026-06-29 TBD Storage repositories Technical accepted Canonical storage added
-2026-06-29 TBD Cloud bridge/write-through Technical accepted Legacy behavior preserved
-2026-06-29 TBD Canonical progress selectors Technical accepted Read-side added
-2026-06-29 TBD Progress tab canonical migration Partial accept Product/layout parity blocked
-2026-06-29 TBD Plan v2 reset Active UI/path baseline moved to P0
+Ensure every production-active instructional batch satisfies the complete content contract.
+
+### Scope
+
+Algorithms content is reviewed by mental unit and explicit contrast boundary.
+
+Certification content is reviewed by competency area and topic.
+
+Every activated batch includes:
+
+- structural validation;
+- stable identity validation;
+- accepted-answer verification;
+- scoring verification;
+- authored `Reason`;
+- complete authored `Details`;
+- stable-ID wrong-option explanations;
+- taxonomy validation;
+- required provenance;
+- human technical review;
+- human editorial review;
+- review record;
+- active-manifest update;
+- content-version update.
+
+### Runtime relationship
+
+Earlier implementation stages may use:
+
+- bounded reviewed fixtures;
+- bounded approved development banks;
+- already approved active batches.
+
+Unreviewed content cannot be labelled production-ready or added to the production active manifest.
+
+### Exit criteria
+
+- every active item is covered by a matching review record;
+- fixed-length modes satisfy unique-content requirements;
+- no generic feedback exists;
+- no active item relies on runtime-generated explanation;
+- manifest, version, and review records agree.
+
+## Stage 7 — Security, accessibility, QA, and release hardening
+
+### Goal
+
+Prove the canonical implementation under supported runtime conditions.
+
+### Scope
+
+- native MMKV development and release builds;
+- startup and journal recovery;
+- corruption and mismatch states;
+- platform backup policy;
+- log redaction;
+- permission inventory;
+- network inventory;
+- screen-reader QA;
+- dynamic text;
+- reduced motion;
+- contrast;
+- structural response states;
+- Maestro critical flows;
+- screenshot comparison;
+- release checklist;
+- CI gates.
+
+### Exit criteria
+
+- all Critical and High risks are mitigated;
+- required automated suites pass;
+- required manual QA is recorded;
+- screenshots match approved designs;
+- privacy and reset copy match verified behaviour;
+- no unverified area is reported complete.
+
+## 10. Current stage status
+
+| Area                               | Current classification | Reason                                                                    |
+| ---------------------------------- | ---------------------- | ------------------------------------------------------------------------- |
+| Canonical documentation            | `NEEDS_CORRECTION`     | Accepted revisions are not yet applied                                    |
+| Document 14                        | `REJECTED`             | It duplicates other canonical owners                                      |
+| Previous recovery plan             | `REJECTED`             | Separate execution sequencing is no longer permitted                      |
+| Shared kernel and mutations        | `PARTIAL`              | Significant implementation exists but requires contract audit             |
+| MMKV and repositories              | `PARTIAL`              | Revision, reset, bootstrap, and ownership require verification            |
+| Algorithms immediate practice      | `PARTIAL`              | New controller exists but must be audited against final lifecycle         |
+| Algorithms Interview Simulation    | `NEEDS_CORRECTION`     | Known flagging and draft-contract mismatches                              |
+| Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
+| Certification Exam Simulation      | `PARTIAL`              | Existing system requires canonical profile and finalization audit         |
+| Product surfaces                   | `PARTIAL`              | Must be revalidated after runtime correction                              |
+| Active content quality             | `PARTIAL`              | Production activation requires complete review evidence                   |
+| Static QA                          | `PARTIAL`              | Existing checks require alignment with final negative and recovery suites |
+| UX/UI audit                        | `PARTIAL`              | Existing scripts require updated canonical-state coverage                 |
+
+No earlier stage remains `VERIFIED` solely because an older plan marked it complete.
+
+## 11. Active next task
+
+### Task ID
+
+`WEP3-00 — Canonical documentation closure`
+
+### Goal
+
+Apply the accepted documentation set and establish this file as the only execution-order source.
+
+### Required changes
+
+- update documents `00–13`;
+- delete document `14`;
+- update documents `15–17`;
+- remove all references to document `14`;
+- remove all references to document `18`;
+- delete or retire the existing architecture recovery plan;
+- delete or retire previous active working plans;
+- update indexes and authority sections;
+- remove stale claims about:
+  - compatibility;
+  - historical migration;
+  - backend content sources;
+  - Algorithms flags;
+  - two-item reinsert;
+  - simulation feedback after journal durability;
+  - family-owned persistence orchestration;
+  - postponed active-content quality.
+
+### Out of scope
+
+- application code;
+- runtime fixes;
+- new content;
+- UI implementation;
+- route changes;
+- new product features.
+
+### Required verification
+
+- documentation-reference audit;
+- no active reference to document `14`;
+- no active reference to document `18`;
+- no second execution-order document;
+- no conflicting mode lists;
+- no conflicting reinsert gap;
+- no conflicting timer semantics;
+- no conflicting feedback boundary;
+- `npm run qa:static`;
+- exact changed-file inventory;
+- pushed commit SHA.
+
+### Completion report
+
+The report must include:
+
+- starting SHA;
+- ending SHA;
+- exact documents changed;
+- documents deleted or retired;
+- references removed;
+- checks run;
+- unresolved documentation conflicts;
+- confirmation that no application code changed.
+
+## 12. Next task after documentation closure
+
+After `WEP3-00` is independently verified, the next task is:
+
+```txt
+WEP3-01 — Repository-to-contract delta audit
+```
+
+Do not proceed directly to another implementation pass.
+
+The audit determines which parts of the current implementation are:
+
+- canonical and reusable;
+- structurally useful but semantically incorrect;
+- owned by the wrong layer;
+- obsolete and required to be deleted.
+
+Stage 2 starts only after this audit is accepted.
+
+## 13. Required implementation report
+
+Every Codex implementation report contains:
+
+- task ID;
+- starting SHA;
+- ending SHA;
+- branch;
+- files changed;
+- canonical owners modified;
+- obsolete owners deleted;
+- applicable risk IDs;
+- gate results;
+- commands and results;
+- test counts;
+- manual QA performed;
+- screenshots produced;
+- unverified areas;
+- blockers;
+- next safe task.
+
+The report must separate:
+
+- implemented and verified;
+- implemented but unverified;
+- planned but not implemented;
+- blocked.
+
+## 14. Forbidden immediate work
+
+Until Stages 0 and 1 are verified, do not:
+
+- add runtime features;
+- add another Algorithms interaction;
+- add Certification modes by inference;
+- expand Home or Progress metrics;
+- preserve legacy Cloud behaviour;
+- add compatibility code;
+- add backend content loading;
+- add analytics or telemetry;
+- add authentication or account UI;
+- perform broad content generation;
+- mark the current Algorithms simulation complete;
+- patch the obsolete recovery plan;
+- create another execution roadmap.
+
+## 15. Working-plan maintenance
+
+This document is updated only when:
+
+- a stage is independently reviewed;
+- pushed repository evidence exists;
+- applicable gates are evaluated;
+- the active next task changes;
+- a new blocker materially changes sequencing.
+
+Do not update status from:
+
+- Codex intention;
+- local unpushed work;
+- a task prompt;
+- a partial test run;
+- a planned follow-up.
+
+This document remains the single execution-control surface.
+
+It must not become a second product specification, but no separate recovery or implementation-sequencing document may duplicate its responsibility.

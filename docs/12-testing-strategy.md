@@ -1,43 +1,1122 @@
 # 12 — Testing Strategy
 
-## Contract tests
+## Purpose
 
-Test the shared kernel, each family runtime, repositories, content validation, integration flows, and essential accessible UI states. Tests assert target behaviour and explicit failure; they do not preserve old storage or runtime behaviour.
+Patternly testing verifies the canonical product contract, ownership boundaries, deterministic learning behaviour, persistence recovery, active-content validity, accessibility, and explicit failure states.
+
+Tests assert target behaviour from documents `00`–`17`.
+
+They do not preserve:
+
+- obsolete storage behaviour;
+- compatibility readers;
+- legacy runtime paths;
+- old mode taxonomies;
+- historical-record migration;
+- generic fallback content;
+- current repository behaviour merely because it already exists.
+
+A test that protects an obsolete path must be deleted or replaced in the same implementation stage that removes that path.
+
+## Verification layers
+
+The required verification set includes:
+
+1. shared-kernel unit tests;
+2. family-runtime unit and contract tests;
+3. interaction-handler tests;
+4. application-use-case integration tests;
+5. repository and storage tests;
+6. mutation-journal recovery tests;
+7. content and manifest validation;
+8. architecture and import-boundary checks;
+9. accessible component and screen tests;
+10. navigation and route-state tests;
+11. security and privacy checks;
+12. manual and screenshot-based QA.
+
+Passing one layer does not replace another.
+
+In particular:
+
+- snapshots do not replace behavioural assertions;
+- structural content validation does not replace human editorial review;
+- component tests do not replace application-flow tests;
+- a green unit suite does not prove journal recovery;
+- automation does not replace required visual review.
+
+## Test determinism
+
+Tests use controlled:
+
+- clocks;
+- monotonic foreground timers;
+- UUID and occurrence-ID generation;
+- canonical serialization;
+- SHA-256 fingerprints;
+- item selection randomness;
+- option shuffling;
+- repository revisions;
+- app foreground and background transitions.
+
+No test may depend on wall-clock timing, nondeterministic random order, or an installed historical local store.
+
+Fixtures identify their schema, content, family configuration, and profile versions explicitly.
+
+## Shared-kernel tests
+
+Test family-neutral contracts for:
+
+- stable identifiers;
+- content and occurrence references;
+- one active session;
+- immutable attempts;
+- canonical result envelopes;
+- session lifecycle guards;
+- review queue records;
+- mutation commands;
+- journal operation identities;
+- repository interfaces;
+- abandoned-session semantics.
+
+Assert that the shared kernel does not import or interpret:
+
+- concrete Algorithms payloads;
+- concrete Certification payloads;
+- track instances;
+- active content banks;
+- React components;
+- MMKV infrastructure;
+- a global concrete-item union.
+
+## Application-use-case tests
+
+Test complete application operations independently of React:
+
+- prepare session;
+- start session;
+- submit practice response;
+- save simulation draft;
+- advance session;
+- complete ordinary session;
+- finalize simulation;
+- resume active session;
+- abandon active session;
+- recover pending journal;
+- reset learning state;
+- load summary;
+- query dashboard, progress, and review.
+
+Each use case verifies:
+
+- correct family-runtime resolution;
+- exact repository calls;
+- expected-revision behaviour;
+- explicit typed failures;
+- absence of hidden substitutes;
+- correct transition between durable journal, materialization, verification, and UI-available state.
+
+UI-level tests are not substitutes for these use-case tests.
 
 ## Exact scoring tests
 
-- Multiple-choice: exact correct set is correct; non-empty proper correct subset with no wrong option is partial; any wrong option is incorrect with zero points; an exam counts only correct.
-- Ordering: reject fewer than two elements; score every correct adjacent relation; all is correct, one-to-max-minus-one is partial, zero is incorrect; no exact-position scoring remains.
-- Complexity: test declared dimensions, values, aliases, shared presets, time-only, space-only, and rejection of a value outside the item contract; no closed global class list exists.
+### Multiple choice
 
-## Session and review tests
+Test:
 
-Test all canonical Algorithms modes and entry-point mappings. `due_queue` and `session_misses` must be sources of `Weak Area Review`, never modes. Review selection takes source items, then reviewed compatible taxonomy/competency items, otherwise shortens and exposes actual length; it never widens taxonomy, duplicates, or substitutes generic content.
+- exact selected set equals correct set → `correct`;
+- non-empty proper correct subset with no wrong option → `partial`;
+- any selected wrong option → `incorrect`;
+- an incorrect response earns zero points;
+- empty response completeness is handled by the interaction contract;
+- duplicate option IDs are rejected;
+- unknown option IDs are rejected;
+- response order does not change set-based correctness;
+- certification exam correct count increases only for `correct`;
+- partial remains diagnostic and does not increase exam correct count.
 
-Test reinsert only in `Guided Practice` and Algorithms `Weak Area Review` with `source = due_queue` or `source = session_misses`; all other Algorithms modes prohibit it. A failed or partial item is eligible at most once. After two other items are submitted, its reviewed variant—or the exact original only when no reviewed compatible variant exists—may appear once. The second appearance creates a separate attempt and both attempts remain in diagnostics.
+Use table-driven or property-based tests across representative set combinations.
 
-Test that zero intervening submitted items skips reinsert, and that one intervening submitted item also skips it. When skipped, the session is not extended or reordered, unrelated items are not added or duplicated, taxonomy is not widened, generic content is not inserted, and the persistent review entry is neither changed nor resolved. Preparation failures, merely displayed items, abandoned items, and the original item itself do not count toward the two submitted intervening items. Test that hint review evidence is impossible for an interaction without an explicitly supported hint.
+### Ordering
 
-Test each remaining review trigger, two-level evidence, two successful after-due attempts to resolve, pre-due non-increment, same-session non-resolution, and reset after partial/incorrect.
+Test:
 
-Test the fixed Algorithms `Interview Simulation` contract: exactly 40 items; free navigation; response add, overwrite, and removal until final submission; session-end feedback only; no reinsert; and manual or 45-minute foreground-time finalization. Assert `remainingMs = max(0, 45 minutes - activeForegroundMs)`, background and closed-app time do not decrement it, and no deadline or wall-clock expiry is used. Resume must restore persisted drafts, current position, and foreground timer state.
+- content with fewer than two elements is rejected;
+- maximum points equals `itemCount - 1`;
+- every preserved canonical adjacent relation earns one point;
+- all relations preserved → `correct`;
+- one through `maxPoints - 1` preserved → `partial`;
+- zero preserved → `incorrect`;
+- exact-position similarity does not award points without preserved adjacent relations;
+- duplicate or unknown ordering element IDs are rejected;
+- response completeness and scoring use the persisted occurrence-specific element set.
 
-Assert that draft changes create no attempts, review mutations, score, or feedback. Manual and timeout finalization must be idempotent and atomic across immutable attempts, submitted-outcome review mutations, session completion, and draft deletion, including force-close recovery. Unanswered item IDs remain separate summary diagnostics and create neither attempts nor review entries.
+### Complexity
 
-## Persistence tests
+Test:
 
-Test one active session, persistence before first item, item/option order, foreground timer, no unsubmitted selection in immediate-feedback practice, abandon/history behavior, content mismatch block, and durable journal order. Test idempotent retry and force-close journal completion. Assert that old keys, AsyncStorage access, dual reads/writes, translators, and default substitutes are absent or fail explicitly.
+- declared checked dimensions;
+- declared available values;
+- declared accepted values;
+- explicit normalized aliases;
+- optional shared presets;
+- time-only items;
+- space-only items;
+- other explicitly supported dimension sets;
+- one point per correctly answered checked dimension;
+- partial result from a partially correct dimension set;
+- rejection of an undeclared dimension;
+- rejection of a value outside the item contract;
+- rejection of an undeclared alias;
+- absence of a global closed complexity-class list;
+- hidden accepted values are never treated as UI options unless they are also explicitly declared available values.
 
-## Certification tests
+## Family-runtime tests
 
-Test `ExamExperienceProfile` in architecture integration, data validation, flows, certification behavior, and runtime. Validate official source/date/profile fields and profile changes. Test navigation, answer change, flagging, navigator, sections, deadline, resume, auto-finalization, unanswered warning/category, raw score, percentage, competency breakdown, no pre-final feedback, and no official pass/fail.
+Each family runtime is tested independently of UI and concrete repository implementations.
 
-## Content and UI tests
+Test:
 
-Require Reason, Details, and stable-ID explanations for every active wrong instructional option. Details must be available after all result kinds and opening it must have no domain side effect. Structural checks cannot replace human editorial review.
+- configuration validation;
+- content selection;
+- response validation;
+- completeness;
+- scoring;
+- deterministic attempt outcome;
+- review mutation construction;
+- taxonomy or competency evidence;
+- family result aggregation;
+- authored feedback mapping;
+- recommendation calculation;
+- unsupported mode and payload failure.
 
-Test visible shortened-review disclosure, timer variants, ordering controls, content-defined complexity controls, profile-driven exam controls, accessible states, and explicit missing-content/profile/storage errors. Missing design reference blocks implementation rather than becoming a Codex-created interaction.
+A family-runtime test must prove that identical validated input produces the same deterministic outcome.
+
+## Interaction-handler tests
+
+Every active interaction handler has tests for:
+
+- item validation;
+- response validation;
+- completeness;
+- scoring;
+- diagnostics;
+- authored feedback lookup;
+- stable-ID mapping;
+- accessibility view model;
+- renderer state mapping.
+
+Adding an interaction is incomplete unless all these contracts exist.
+
+Tests must fail if an interaction is registered without its complete handler.
+
+## Algorithms mode tests
+
+Test exactly these Algorithms modes:
+
+1. `Learn Approach`
+2. `Guided Practice`
+3. `Recognize Patterns`
+4. `Contrast Practice`
+5. `Weak Area Review`
+6. `Independent Practice`
+7. `Interview Simulation`
+
+Test entry mappings:
+
+- approach primer or new mental unit → `Learn Approach`;
+- topic/default practice → `Guided Practice`;
+- pattern recognition → `Recognize Patterns`;
+- contrast → `Contrast Practice`;
+- due review → `Weak Area Review`, `source = due_queue`;
+- session misses → `Weak Area Review`, `source = session_misses`;
+- mixed practice → `Independent Practice`;
+- timed validation → `Interview Simulation`.
+
+`due_queue` and `session_misses` must never be accepted as mode IDs.
+
+## Review selection tests
+
+For Algorithms `Weak Area Review`, test that selection:
+
+1. takes eligible source items;
+2. then takes only reviewed compatible items under the family policy;
+3. shortens when the compatible pool is insufficient;
+4. exposes requested and actual length;
+5. explains the reduction before session start.
+
+Assert that selection never:
+
+- widens taxonomy silently;
+- adds unrelated content;
+- duplicates a content identity;
+- inserts a generic item;
+- uses a default topic;
+- fabricates an answer;
+- claims the originally requested length after shortening.
+
+Test source-item and compatible-item deduplication by content identity.
+
+## Review lifecycle tests
+
+Test every supported review trigger:
+
+- incorrect;
+- partial;
+- actual supported hint use;
+- wrong pattern;
+- wrong strategy;
+- complexity error;
+- repeated mistake;
+- scheduled retrieval;
+- weak taxonomy area;
+- manual mark.
+
+Test exact provenance:
+
+- attempt;
+- session transition;
+- manual mark.
+
+Test that review cannot be created without valid provenance.
+
+Test persistent review resolution:
+
+- first successful attempt after `dueAt` increments to one;
+- second consecutive successful attempt after `dueAt` resolves;
+- success before `dueAt` does not increment;
+- partial after one success resets the count;
+- incorrect after one success resets the count;
+- same-session correction does not resolve persistent review;
+- repeated retry of the same committed attempt does not increment twice;
+- merging evidence does not invent a successful event;
+- an unresolved reason is not silently removed.
+
+Test that hint evidence is impossible for an interaction without an explicitly supported hint and impossible when the hint was not actually used.
+
+## Reinsert tests
+
+Reinsert is permitted only in:
+
+- `Guided Practice`;
+- `Weak Area Review`, `source = due_queue`;
+- `Weak Area Review`, `source = session_misses`.
+
+Every other Algorithms mode must reject or ignore reinsert configuration as invalid.
+
+For one eligible incorrect or partial source attempt, test:
+
+- maximum one reinsert;
+- reviewed compatible variant is preferred;
+- exact source item is used only when no compatible reviewed variant exists;
+- the reinsert has a new `occurrenceId`;
+- the second submission creates a separate immutable attempt;
+- both attempts remain in diagnostics;
+- the original error remains recorded;
+- same-session correction does not resolve persistent review.
+
+At least three other submitted items must occur between attempts.
+
+Test:
+
+- zero intervening submitted items → skip;
+- one intervening submitted item → skip;
+- two intervening submitted items → skip;
+- three intervening submitted items → eligible;
+- more than three intervening submitted items → eligible if all other rules hold.
+
+The following do not count toward the gap:
+
+- displayed but unsubmitted items;
+- preparation failures;
+- abandoned occurrences;
+- the original source occurrence;
+- the reinsert occurrence itself;
+- non-durable submissions.
+
+When reinsert is skipped, assert that the application does not:
+
+- extend the session;
+- reorder fixed occurrences;
+- add unrelated content;
+- widen taxonomy;
+- introduce duplicates;
+- add generic content;
+- alter or resolve the persistent review entry merely because reinsert was unavailable.
+
+## Practice session lifecycle tests
+
+Test the ordinary practice sequence:
+
+```txt
+prepare
+→ persist and verify active session
+→ show first item
+→ maintain ephemeral selection
+→ submit
+→ persist durable journal
+→ permit feedback
+→ materialize records
+→ verify records
+→ clear journal
+→ permit advance
+```
+
+Assert:
+
+- the first item is not shown before active-session persistence and verification;
+- an unsubmitted practice selection is not persisted;
+- no feedback appears before journal durability;
+- another submit is rejected after the response is frozen;
+- item advance is blocked before materialization verification;
+- summary navigation is blocked before completed-session verification;
+- committed attempts are immutable;
+- retry does not create a duplicate attempt or review mutation.
+
+Test the commit-pending state where feedback is visible but materialization is incomplete.
+
+## Algorithms Interview Simulation tests
+
+Test the fixed profile:
+
+- exactly 40 unique content identities;
+- correct profile identity and version;
+- valid selection blueprint;
+- preparation fails if 40 valid unique items cannot be selected;
+- the simulation never shortens;
+- content is never duplicated;
+- taxonomy is never widened silently;
+- no generic substitute is inserted;
+- free navigation;
+- response add;
+- response overwrite;
+- response removal;
+- current-position persistence;
+- no reinsert;
+- no per-item correctness or authored feedback before finalization.
+
+### Algorithms timer tests
+
+Assert:
+
+```txt
+remainingMs =
+  max(0, 45 minutes - canonicalActiveForegroundMs)
+```
+
+Test:
+
+- foreground time decrements remaining time;
+- background time does not;
+- closed-app time does not;
+- wall-clock changes do not affect remaining time;
+- negative remaining values clamp to zero;
+- zero triggers exactly one finalization command;
+- resumed timer uses the last verified durable checkpoint;
+- the UI is not an independent authoritative timer.
+
+Test checkpoint behaviour:
+
+- periodic checkpoint;
+- foreground-to-background transition;
+- background-to-foreground transition;
+- draft-save checkpoint where required;
+- manual-finalization checkpoint;
+- expiry checkpoint;
+- force-close immediately before checkpoint;
+- force-close immediately after checkpoint;
+- maximum permitted timer drift.
+
+The accepted drift bound must be explicitly configured and asserted.
+
+### Algorithms draft tests
+
+Test revisioned draft operations:
+
+- initial draft creation;
+- response save;
+- response overwrite;
+- response removal;
+- current-position update;
+- timer checkpoint;
+- monotonically increasing revision;
+- expected previous revision;
+- stale-revision rejection;
+- concurrent mutation rejection;
+- failed save preserves the previous durable revision;
+- UI saved state appears only after durable confirmation;
+- every occurrence ID belongs to the session plan;
+- unknown occurrence IDs are rejected;
+- responses are valid for the referenced item.
+
+Draft changes must create no:
+
+- immutable attempt;
+- score;
+- result kind;
+- review mutation;
+- correctness state;
+- `Reason`;
+- `Details`;
+- distractor explanation.
+
+### Algorithms finalization tests
+
+Manual submit and foreground-time exhaustion must invoke the same logical finalization contract.
+
+Test:
+
+- one exact durable draft revision is frozen;
+- later draft mutations are rejected;
+- one immutable attempt is produced for each answered occurrence;
+- no attempt is produced for unanswered occurrences;
+- eligible review mutations arise only from finalized answered outcomes;
+- completed result contains answered and unanswered occurrence IDs;
+- unanswered receives zero points;
+- unanswered does not become incorrect automatically;
+- unanswered does not automatically create content-specific review;
+- draft is deleted only as part of the prepared write plan;
+- active-session designation is removed;
+- completed session is materialized and verified;
+- summary is available only after verification;
+- authored feedback becomes available only after successful finalization.
+
+Do not assert native multi-key atomicity.
+
+Assert logical atomicity through deterministic journal recovery.
+
+Inject a force-close or materialization failure:
+
+- before journal persistence;
+- after journal persistence;
+- after each individual planned write;
+- after draft deletion;
+- after completed-session write;
+- after attempt writes;
+- after review writes;
+- before verification;
+- during verification;
+- after verification but before journal clear.
+
+Every recovery must produce exactly the same:
+
+- attempts;
+- attempt IDs;
+- score;
+- answered set;
+- unanswered set;
+- review mutations;
+- completed session;
+- draft deletion;
+- active-session removal.
+
+Finalization failure must not reopen editable draft state or create a second outcome.
+
+## Certification non-simulation tests
+
+Test all six non-simulation Certification modes:
+
+1. `Diagnostic Baseline`
+2. `Focus Practice`
+3. `Scenario Practice`
+4. `Weak Area Review`
+5. `Mixed Practice`
+6. `Quick Review`
+
+For each mode, test its approved:
+
+- entry intent;
+- item-selection policy;
+- requested length;
+- actual-length behaviour;
+- timer;
+- feedback timing;
+- remediation policy;
+- review policy;
+- completion result;
+- recommendation effect.
+
+Until these contracts are explicitly defined in the Certification learning-system and runtime documents, the corresponding implementation remains blocked rather than inferred from mode names.
+
+Test competency-first and then topic-level remediation where required.
+
+## Certification Exam Simulation tests
+
+Test `ExamExperienceProfile` across:
+
+- schema validation;
+- track-instance registration;
+- application preparation;
+- runtime behaviour;
+- persistence snapshot;
+- resume;
+- finalization;
+- result rendering.
+
+Validate:
+
+- stable profile ID;
+- profile version;
+- official public source URL;
+- checked date;
+- optional guide version;
+- duration;
+- question count or range;
+- navigation policy;
+- answer-change policy;
+- flagging policy;
+- navigator policy;
+- section policy;
+- timeout policy.
+
+Reject:
+
+- missing required profile;
+- unsupported profile version;
+- unresolved official behaviour;
+- a global duration fallback;
+- an inferred navigation rule;
+- a feature enabled because another certification supports it;
+- resume using a newer profile than the session snapshot.
+
+Test profile-permitted behaviour:
+
+- linear navigation;
+- previous/next navigation;
+- free navigation;
+- answer locking;
+- answer changes;
+- flagging;
+- navigator states;
+- single and multiple sections;
+- section submission;
+- return restrictions;
+- manual-finish warning;
+- absolute deadline;
+- resume before deadline;
+- automatic finalization after deadline;
+- no pre-final correctness or instructional feedback.
+
+Results tests include:
+
+- raw correct count;
+- percentage;
+- competency breakdown;
+- unanswered as a separate diagnostic category;
+- partial not increasing correct count;
+- missed-by-default review;
+- all-items review;
+- no official-looking pass/fail;
+- clearly labelled Patternly-defined threshold where enabled.
+
+## Session persistence tests
+
+Test:
+
+- one active session globally;
+- persistence before first item;
+- active-session reference consistency;
+- immutable item order;
+- immutable occurrence IDs;
+- occurrence-specific option order;
+- exact configuration snapshot;
+- exact content version;
+- exact profile version where applicable;
+- ordinary foreground timer state;
+- simulation draft linkage;
+- resume;
+- deliberate abandonment;
+- committed attempts preserved after abandonment;
+- abandoned session excluded from learner history;
+- active draft deleted on simulation abandonment;
+- content mismatch blocks resume;
+- profile mismatch blocks resume;
+- no historical content reconstruction.
+
+Test that normal selection contains no duplicate content identity except an explicitly permitted exact-item reinsert.
+
+## Application bootstrap tests
+
+Test startup order:
+
+```txt
+initialize MMKV
+→ open repositories
+→ validate storage metadata
+→ recover pending journal
+→ validate bundled manifests and active banks
+→ resolve active session and draft
+→ resolve content and profile versions
+→ enable navigation or expose a blocking state
+```
+
+Assert:
+
+- normal navigation is unavailable during unresolved recovery;
+- pending journal recovery occurs before active-session rendering;
+- a global storage failure produces a root error;
+- one invalid track bank does not silently become another track;
+- missing active session record is explicit;
+- missing required draft is explicit;
+- incompatible active session is not resumed partially;
+- permitted abandonment preserves committed attempts;
+- no old store is read.
+
+## Mutation-journal tests
+
+For every journal operation, test its exact complete write plan.
+
+Operations include at least:
+
+- practice submission;
+- ordinary session completion;
+- session abandonment;
+- simulation finalization;
+- review-entry update;
+- review-entry removal;
+- learning-state reset.
+
+Test:
+
+- one pending journal maximum;
+- second journaled command is rejected while one is pending;
+- canonical serializer version;
+- deterministic command fingerprint;
+- deterministic plan fingerprint;
+- object-key normalization;
+- array-order preservation;
+- unsupported serialization value rejection;
+- duplicate target-write rejection;
+- cross-session write rejection;
+- cross-track write rejection;
+- missing required-write rejection;
+- unexpected-write rejection;
+- stale expected-revision rejection;
+- mutable-state dependency rejection;
+- operation-specific write-set validation.
+
+Materializer tests distinguish:
+
+- write absent and pending;
+- write already applied with expected fingerprint;
+- conflicting unexpected record.
+
+Verifier tests read every intended final state and required deletion.
+
+The journal clears only after complete verification.
+
+## Draft-repository tests
+
+For every simulation draft family, test:
+
+- session ownership;
+- schema and family validation;
+- exact track and profile compatibility;
+- complete-record replacement;
+- expected revision;
+- stale revision;
+- unknown occurrence;
+- invalid response payload;
+- invalid flag or section state;
+- unsupported feature state;
+- persistence failure;
+- reload after restart;
+- deletion on verified completion or abandonment.
+
+Certification draft tests must reject fields forbidden by the active `ExamExperienceProfile`.
+
+Algorithms draft tests must reject flags unless an approved Algorithms profile explicitly enables them.
+
+## Reset tests
+
+Test learning-state reset as a journaled operation.
+
+Assert deletion of:
+
+- active-session state;
+- simulation drafts;
+- completed sessions;
+- attempts;
+- review queue;
+- progress;
+- evidence;
+- canonical developer learning fixtures.
+
+Assert preservation of:
+
+- bundled static content;
+- application binaries;
+- settings excluded by the approved reset contract.
+
+Inject failure after each deletion step and verify idempotent recovery.
+
+Do not report reset success before every required deletion is verified.
+
+## Content validation tests
+
+Require for every active instructional item:
+
+- unique stable `itemId`;
+- valid content version;
+- valid interaction type;
+- valid taxonomy references;
+- prompt and material constraints;
+- accepted-answer contract;
+- scoring consistency;
+- required `Reason`;
+- complete `Details`;
+- stable option or interaction-element IDs;
+- authored explanation for every active wrong choice option;
+- valid selected-distractor mapping;
+- valid ordering contract;
+- valid complexity contract;
+- required source metadata;
+- manifest membership.
+
+Reject:
+
+- unknown option IDs in feedback;
+- answer references to absent options;
+- duplicated semantic IDs;
+- missing Details;
+- generic fallback explanations;
+- runtime-generated educational copy;
+- undeclared accepted aliases;
+- accepted values exposed as available UI values by mistake;
+- unsupported payloads;
+- duplicate content identities in fixed-length sessions;
+- insufficient active pool for a declared fixed-length mode;
+- manifest/content-version mismatch.
+
+## Human editorial-review gate
+
+Structural validation cannot approve educational quality.
+
+CI or release verification must require a valid review record for each activated batch containing:
+
+- batch ID;
+- family and track;
+- item IDs;
+- target content version;
+- reviewer identity;
+- review date;
+- validation result;
+- final approval.
+
+Automated tests verify the presence, shape, item coverage, and content-version match of that record.
+
+They do not claim that the machine validated:
+
+- teaching quality;
+- factual nuance;
+- distractor plausibility;
+- transfer value;
+- legal originality.
+
+A batch without recorded human approval cannot enter the active manifest.
+
+## Feedback tests
+
+Test feedback availability:
+
+- practice: after durable submit journal;
+- session-end simulation: only after verified finalization.
+
+Before that point, assert absence of:
+
+- correctness;
+- `Reason`;
+- `Details`;
+- distractor explanations;
+- accepted answers.
+
+After availability, test:
+
+- `Reason` visible;
+- no generic `Feedback` heading;
+- `Details` collapsed initially;
+- `Details` available after correct, partial, and incorrect outcomes;
+- opening and closing Details has no domain, timer, persistence, review, recommendation, or navigation effect;
+- wrong selected option maps to its exact stable-ID authored explanation;
+- multiple selected wrong options compose only their applicable explanations;
+- partial multiple-choice feedback covers omitted correct elements;
+- runtime does not fabricate educational copy.
+
+## UI and accessibility tests
+
+Test the approved session top bar:
+
+- timer on the left;
+- `x of y` counter on the right;
+- no `Item` label;
+- no Patternly logo in the session top bar;
+- no dedicated close button in the approved Algorithms session layout.
+
+Practice response states cover:
+
+- unselected;
+- selected;
+- submitting;
+- selected correct;
+- selected incorrect;
+- correct not selected;
+- selected partial;
+- correct omitted from partial;
+- disabled.
+
+Simulation response states cover:
+
+- unanswered;
+- answered draft;
+- saving;
+- saved;
+- save failure;
+- frozen;
+- finalizing.
+
+No simulation control displays correctness before finalization.
+
+Test that response correctness does not rely on colour alone. Accessible semantics and a non-colour structural distinction must identify the state.
+
+Test:
+
+- logical focus order;
+- accessible roles, names, states, and descriptions;
+- dynamic text;
+- supported contrast;
+- touch targets;
+- reduced motion;
+- keyboard or switch controls where applicable;
+- screen-reader announcements;
+- ordering move controls;
+- timer type and pause semantics;
+- explicit error-state actions.
+
+## Complexity UI tests
+
+Assert that UI renders:
+
+- declared dimensions;
+- declared available answer values;
+- declared labels and controls.
+
+Assert that UI does not expose:
+
+- hidden accepted values;
+- hidden aliases;
+- undeclared dimensions;
+- an assumed time-and-space pair;
+- a global complexity list.
+
+## Simulation navigator tests
+
+Algorithms navigator tests include:
+
+- exactly 40 occurrences;
+- current;
+- answered and durably saved;
+- unanswered;
+- frozen;
+- no correctness before finalization;
+- no flags unless profile-enabled.
+
+Certification navigator tests render only profile-permitted states and controls.
+
+A feature supported by one profile must not appear for another profile automatically.
+
+## Navigation tests
+
+Test explicit route parameters for:
+
+- track;
+- mode;
+- review source;
+- topic or competency;
+- session;
+- summary;
+- post-session review.
+
+Unknown or missing required IDs produce explicit unavailable states.
+
+Navigation must never silently select:
+
+- another track;
+- a default topic;
+- a default item;
+- a default mode;
+- the newest profile;
+- another active session.
+
+## Error-state tests
+
+Test explicit states for:
+
+- MMKV initialization failure;
+- unsupported storage schema;
+- pending-journal recovery failure;
+- missing content;
+- unsupported payload;
+- unknown ID;
+- content-version mismatch;
+- unresolved profile;
+- insufficient fixed-length content;
+- stale draft revision;
+- draft-save failure;
+- timer-recovery failure;
+- practice-submit materialization failure;
+- finalization failure;
+- reset failure;
+- corrupt canonical record.
+
+For each state, assert:
+
+- precise failure category;
+- known durable state;
+- whether retry is safe;
+- only approved recovery actions;
+- no default or substitute result;
+- no hidden data loss;
+- no ordinary success presentation.
+
+## Architecture tests
+
+Architecture checks block merge when:
+
+- shared kernel imports a concrete family;
+- shared kernel imports a track or renderer;
+- a family imports another family;
+- a screen imports MMKV;
+- a screen imports a repository implementation;
+- a family runtime imports MMKV;
+- a repository interprets concrete item semantics;
+- static content imports application orchestration;
+- a global concrete-item union returns;
+- a full-screen `trackId` branch selects parallel runners;
+- AsyncStorage is imported;
+- an obsolete storage key or API remains reachable.
+
+Architecture tests use explicit dependency rules, not only search conventions.
+
+## Security and privacy checks
+
+Pre-release verification includes:
+
+- one MMKV infrastructure owner;
+- absence of AsyncStorage and old storage access;
+- absence of hard-coded encryption keys or secrets;
+- production-log redaction;
+- no response, draft, attempt, journal-plan, or MMKV-value logging;
+- network dependency inventory;
+- device-permission inventory;
+- telemetry and analytics inventory;
+- platform backup configuration review;
+- absence of unverified encryption claims;
+- certification provenance validation;
+- bundled-content secret scanning.
+
+Where behaviour cannot be automated, record manual evidence.
+
+Local integrity fingerprints must not be presented as tamper-proof credentials or official-result authentication.
 
 ## Required negative suite
 
-The suite must fail if confidence fields or UI return; synthetic readiness/retention/mastery percentage returns; an old mode becomes active; a fallback/default/translator/parallel path appears; historical migration appears; or an old model remains reachable.
+The suite must fail if any of the following returns:
+
+- confidence fields or confidence UI;
+- synthetic readiness percentage;
+- synthetic retention percentage;
+- synthetic mastery percentage;
+- an obsolete or second mode taxonomy;
+- `due_queue` or `session_misses` as a mode;
+- fallback topic, item, answer, score, result, or explanation;
+- generic educational fallback copy;
+- old-schema reader;
+- historical migration or translator;
+- dual storage read or write;
+- Cloud write-through;
+- parallel runtime;
+- old authoritative model;
+- AsyncStorage access;
+- direct MMKV access outside infrastructure;
+- global concrete-item union;
+- screen-owned scoring, review, or persistence;
+- unreviewed active instructional content;
+- fixed-length session shortening;
+- duplicate content used to fill a session;
+- feedback before the mode permits it;
+- correctness disclosure in a simulation draft;
+- accepted complexity answers exposed before feedback;
+- official-looking pass/fail;
+- an unverified encryption claim;
+- hidden analytics or telemetry outside the approved contract.
+
+## Manual and screenshot QA
+
+Critical flows require manual and screenshot-based verification on supported mobile platforms.
+
+Cover at least:
+
+- ordinary practice before and after submit;
+- correct, partial, and incorrect response states;
+- Reason and collapsed Details;
+- reinsert and skipped reinsert;
+- shortened review disclosure;
+- Algorithms simulation draft navigation;
+- timer pause outside foreground;
+- draft-save failure;
+- timer exhaustion;
+- frozen and finalizing states;
+- finalization failure and recovery;
+- unanswered summary;
+- certification profile-driven controls;
+- content mismatch;
+- storage failure;
+- dynamic text;
+- screen reader;
+- reduced motion.
+
+Missing approved visual design blocks the corresponding implementation and QA case.
+
+It is not replaced by a Codex-created generic interaction.
+
+## CI gates
+
+Pull requests and the main branch run the applicable canonical verification set:
+
+- typecheck;
+- lint where configured;
+- unit tests;
+- application integration tests;
+- repository and recovery tests;
+- content validation;
+- human-review-record validation;
+- architecture checks;
+- required negative suite;
+- accessible UI tests.
+
+A capability cannot be marked complete when a required test category is absent, skipped without justification, or replaced only by snapshots.
+
+## Completion evidence
+
+A completed implementation stage reports:
+
+- commands run;
+- test counts and results;
+- skipped or unavailable suites;
+- architecture-check result;
+- content-validation result;
+- human editorial-review evidence;
+- manual QA evidence;
+- screenshot evidence;
+- platform and build used;
+- unverified areas;
+- remaining risks.
+
+The report distinguishes:
+
+- implemented and verified;
+- implemented but unverified;
+- planned but not implemented;
+- blocked by missing contract or design.
+
+It must not describe planned work as complete.

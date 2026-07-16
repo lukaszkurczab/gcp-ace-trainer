@@ -3,6 +3,17 @@
 ## Core contracts
 
 ```ts
+type TrackFamilyId = string;
+type TrackId = string;
+
+type TrackDescriptor = {
+  id: TrackId;
+  familyId: TrackFamilyId;
+  contentVersion: string;
+  taxonomyVersion: string;
+  enabledModeIds: readonly string[];
+};
+
 type AlgorithmsMode =
   | 'Learn Approach' | 'Guided Practice' | 'Recognize Patterns'
   | 'Contrast Practice' | 'Weak Area Review' | 'Independent Practice'
@@ -14,34 +25,14 @@ type ResultKind = 'correct' | 'partial' | 'incorrect';
 type TrainingSession = {
   id: string;
   trackId: string;
-  modeId: string;
-  configurationSnapshot: Readonly<Record<string, string | number | boolean | readonly string[]>>;
+  mode: string;
   requestedLength: number;
   actualLength: number;
-  currentItemIndex: number;
-  itemOrder: readonly {
-    occurrenceId: string;
-    item: ContentItemRef;
-  }[];
-  optionOrderByOccurrence: Readonly<Record<string, readonly string[]>>;
-  flaggedOccurrenceIds: readonly string[];
+  itemOrder: readonly ContentItemRef[];
+  optionOrderByItem: Readonly<Record<string, readonly string[]>>;
   activeForegroundMs: number;
   contentVersion: string;
   status: 'active' | 'completed' | 'abandoned';
-};
-
-type TrainingAttempt<Response> = {
-  id: string;
-  sessionId: string;
-  trackId: string;
-  modeId: string;
-  occurrenceId: string;
-  item: ContentItemRef;
-  response: Response;
-  result: AttemptResult;
-  reviewEvidence: ReviewEvidence;
-  answeredAt: string;
-  committedAt: string;
 };
 
 type ReviewEvidence = {
@@ -61,43 +52,23 @@ type ReviewQueueEntry = ReviewEvidence & {
   persistent: boolean;
 };
 
-type ReinsertPolicy = {
-  enabled: boolean;
-  maxReinserts: 1;
-  minimumSubmittedItemsBetweenAttempts: 2;
-  onInsufficientRemainingItems: 'skip';
-};
-
 type EvidenceModel = {
   evidenceVolume: unknown;
   learningStageEvidence: unknown;
   performanceSignals: unknown;
 };
-
-type AlgorithmsInterviewSimulationProfile = {
-  itemCount: 40;
-  durationForegroundMinutes: 45;
-  navigationPolicy: 'free_navigation';
-  answerChangePolicy: 'editable_until_final_submit';
-  completionPolicy: 'manual_or_foreground_timeout';
-  feedbackPolicy: 'session_end';
-  unansweredPolicy: 'reported_separately';
-  reinsertPolicy: 'disabled';
-  attemptPolicy: 'finalization_only';
-  persistentReviewPolicy: 'submitted_outcomes_only';
-};
-
-type AlgorithmsInterviewSimulationDraft = {
-  sessionId: string;
-  trackId: string;
-  responsesByOccurrenceId: Readonly<Record<string, AlgorithmResponse>>;
-  updatedAt: string;
-};
 ```
 
-Each session-plan occurrence has its own immutable `occurrenceId`. Exact duplicate content may therefore appear more than once without collapsing option order, flag state, response state, or attempts by `itemId`. `flaggedOccurrenceIds` is an immutable, occurrence-keyed session field: it may contain only unique entries in `itemOrder`, is never stored in a draft, and is retained on completed and abandoned session records. `TrainingAttempt.occurrenceId` must identify the exact matching session-plan occurrence, while review remains content-level evidence tied to an exact source attempt or transition.
 
-`TrainingAttempt` is immutable and stores deterministic response, result, score, review evidence, and committed time. It has no confidence field. One active session exists. An unsubmitted practice selection is UI state and is never persisted. Algorithms `Interview Simulation` is the exception by contract: its editable responses are persisted by occurrence in `TrainingSessionDraft`, while current position and foreground timer state remain canonical on the owning `TrainingSession`. Its foreground countdown is `max(0, 45 minutes - activeForegroundMs)` and never uses a wall-clock deadline.
+## Track registry and family extensibility
+
+`TrackFamilyId` and `TrackId` are opaque identifiers at the shared-kernel boundary. The kernel must not use a closed union of all product families or tracks and must not branch on concrete IDs. The application composition root registers a `TrackDescriptor` with exactly one family runtime. Family-specific configuration is registered and typed inside that family; the kernel neither stores nor interprets a generic `familyConfig` payload.
+
+Current registrations are Certification and Algorithms. Future examples include Azure AI Fundamentals and AWS Solutions Architect Associate as Certification track instances, plus possible `database_reasoning`, `code_reasoning`, and `system_design` families. These examples do not add shared domain fields for SQL, code traces, or architecture evaluation. Concrete payload and response contracts remain owned by their family runtime.
+
+A new track inside an existing family does not add a new session, attempt, review, or repository model. A new family may define new payload, response, score-detail, and evidence-detail types, but they remain inside deterministic family outcomes carried by canonical envelopes.
+
+`TrainingAttempt` is immutable and stores deterministic response, result, score, review evidence, and committed time. It has no confidence field. One active session exists. Current selection is UI state and is never persisted.
 
 ## Scoring models
 
@@ -109,35 +80,20 @@ Complexity content declares its checked dimensions, available values, accepted v
 
 ## Review and reinsert
 
-Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert is enabled only for `Guided Practice` and Algorithms `Weak Area Review` with `source = due_queue` or `source = session_misses`; it is disabled in every other Algorithms mode. It is maximum once for the original failed or partial attempt and requires at least two other submitted items between attempts. It prefers a reviewed variant of the same mechanism and may use the exact original item only when no reviewed compatible variant exists. The reinsert creates a separate attempt, preserves both attempts in diagnostics, and never removes the first error.
-
-If the already selected session plan cannot provide two other submitted items before completion, skip the reinsert as a normal outcome. Do not extend or reorder the session, duplicate unrelated items, widen taxonomy, or insert generic content. Skipping does not change persistent review scheduling or resolve the review entry.
+Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert is enabled only for `Guided Practice` and Algorithms `Weak Area Review`, is maximum once, has at least three other submitted items between attempts, prefers a reviewed variant of the same mechanism, and preserves both diagnostic attempts.
 
 ## Durable storage model
 
 ```ts
 type MutationJournal = {
-  journalId: `journal:${string}`;
-  operation:
-    | 'submit_training_outcome'
-    | 'complete_training_session'
-    | 'abandon_training_session'
-    | 'finalize_training_session'
-    | 'set_review_entry'
-    | 'remove_review_entry';
-  status: 'prepared';
-  createdAt: string;
-  sessionId: string;
-  trackId: string;
-  commandFingerprint: string;
-  planFingerprint: string;
-  writes: readonly JournalWrite[];
+  id: string;
+  operation: 'submit' | 'complete_exam';
+  deterministicOutcome: unknown;
+  state: 'durable' | 'materialized';
 };
 ```
 
-The command fingerprint is a canonical SHA-256 identity and the plan fingerprint detects changes to the exact prepared write plan. Each operation admits only its complete, scoped write set; unknown, duplicate, cross-session, or incomplete writes are rejected before persistence. A practice submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
-
-`finalize_training_session` is the shared batch-finalization operation. For Algorithms `Interview Simulation`, it atomically creates immutable attempts and at most one deterministic content-level review mutation per reviewed content identity, completes the session, and deletes its persisted draft. Each review mutation names the exact source attempt or transition attempt. Unanswered occurrences create neither an attempt nor a review entry and remain separate summary diagnostics. No attempt, review mutation, score, or feedback exists before this finalization.
+Submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
 
 ## Exam profile
 
