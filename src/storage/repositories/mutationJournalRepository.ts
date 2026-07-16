@@ -36,7 +36,7 @@ export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: 
 
 const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry"];
 const SHA_256 = /^[a-f0-9]{64}$/;
-const PLAN_FINGERPRINT = /^[a-f0-9]{32}$/;
+const PLAN_FINGERPRINT = /^[a-f0-9]{64}$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function hasExactKeys(value: Record<string, unknown>, required: readonly string[]): boolean { const keys = Object.keys(value); return keys.length === required.length && required.every((key) => keys.includes(key)); }
@@ -181,15 +181,8 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
 
 export function createMutationPlanFingerprint(plan: MutationJournalPlan): string {
   const serialized = canonicalSerialize(JSON.parse(JSON.stringify(plan)));
-  const seeds = [0x811c9dc5, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35];
-  return seeds.map((seed) => {
-    let hash = seed;
-    for (let index = 0; index < serialized.length; index += 1) {
-      hash ^= serialized.charCodeAt(index);
-      hash = Math.imul(hash, 0x01000193);
-    }
-    return (hash >>> 0).toString(16).padStart(8, "0");
-  }).join("");
+  const { createHash } = require("node:crypto") as typeof import("node:crypto");
+  return createHash("sha256").update(serialized, "utf8").digest("hex");
 }
 
 function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
