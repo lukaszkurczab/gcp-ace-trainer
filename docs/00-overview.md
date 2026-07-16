@@ -80,4 +80,4 @@ Each certification track instance owns a versioned `ExamExperienceProfile` sourc
 
 ## Documentation authority
 
-Documents `00`–`17` are the canonical product and architecture contract. They distinguish target behaviour from current repository facts. The recovery plan is generated separately from this contract.
+Documents `00`–`13` and `15`–`17` are the canonical product and architecture contract. They distinguish target behaviour from current repository facts. `docs/plan.md` is the sole repository execution-order source; it does not redefine this contract.
