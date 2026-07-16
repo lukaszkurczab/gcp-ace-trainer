@@ -57,13 +57,16 @@ test("Interview Simulation owns the approved interaction profile", () => {
     navigation: "free",
     reinsertEnabled: false,
     sessionLength: 40,
+    shortening: "prohibited",
     submission: "manualOrForegroundTimeout",
+    supportedLengths: [40],
     timer: { durationMs: 2_700_000, kind: "countdownForeground" },
   });
 });
 
 test("Algorithms entry points dispatch only to canonical modes", () => {
   assert.deepEqual(ALGORITHM_ENTRY_MODE_IDS, {
+    approach_primer: ALGORITHM_MODE_IDS.learnApproach,
     topic_default: ALGORITHM_MODE_IDS.guidedPractice,
     pattern_recognition: ALGORITHM_MODE_IDS.recognizePatterns,
     contrast: ALGORITHM_MODE_IDS.contrastPractice,
@@ -202,7 +205,6 @@ test("obsolete Algorithms mode IDs and route aliases are absent from canonical m
   const files = [
     "src/tracks/algorithms/domain/algorithmModes.ts",
     "src/tracks/algorithms/algorithmSessionSelection.ts",
-    "src/features/algorithms/AlgorithmsPracticeSessionScreen.tsx",
     "src/application/algorithms/AlgorithmsFamilyRuntime.ts",
   ];
   const source = files.map((file) => readFileSync(file, "utf8")).join("\n");

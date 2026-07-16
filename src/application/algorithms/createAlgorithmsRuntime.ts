@@ -1,6 +1,6 @@
 import { AlgorithmsFamilyRuntime } from "./AlgorithmsFamilyRuntime";
+import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
 
-/** The prior persistence-owning Algorithms composition root was removed. */
 export function createAlgorithmsFamilyRuntime(): AlgorithmsFamilyRuntime {
-  throw new Error("Algorithms runtime is unavailable until the canonical family runtime is installed.");
+  return new AlgorithmsFamilyRuntime(getAlgorithmContentCatalog());
 }

@@ -30,6 +30,7 @@ test("Algorithms runtime composition has no persistence binding", () => {
   const runtime = read("src/application/algorithms/AlgorithmsFamilyRuntime.ts");
   const composition = read("src/application/algorithms/createAlgorithmsRuntime.ts");
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
+  assert.doesNotMatch(runtime, /\b(commit|save|getActive|recover|materialize|verify)[A-Z]/);
   assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
 });
 

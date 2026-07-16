@@ -22,6 +22,8 @@ export type AlgorithmModeProfile = Readonly<{
   navigation: "sequential" | "free";
   reinsertEnabled: boolean;
   sessionLength: 10 | 20 | 40;
+  supportedLengths: readonly (10 | 20 | 40)[];
+  shortening: "allowed" | "blueprintControlled" | "prohibited";
   submission: "perItem" | "manualOrForegroundTimeout";
   timer: AlgorithmTimerProfile;
 }>;
@@ -43,6 +45,8 @@ const interviewCountdown = Object.freeze({
 function practiceProfile(
   sessionLength: 10 | 20,
   reinsertEnabled: boolean,
+  supportedLengths: readonly (10 | 20 | 40)[],
+  shortening: "allowed" | "blueprintControlled" = "allowed",
 ): AlgorithmModeProfile {
   return Object.freeze({
     answerChanges: "beforeSubmit",
@@ -50,18 +54,20 @@ function practiceProfile(
     navigation: "sequential",
     reinsertEnabled,
     sessionLength,
+    supportedLengths: Object.freeze([...supportedLengths]),
+    shortening,
     submission: "perItem",
     timer: elapsedForeground,
   });
 }
 
 export const ALGORITHM_MODES = Object.freeze([
-  Object.freeze({ id: ALGORITHM_MODE_IDS.learnApproach, title: "Learn Approach", order: 1, itemTypes: ["approach_naming", "code_reading"] as const, profile: practiceProfile(10, false) }),
-  Object.freeze({ id: ALGORITHM_MODE_IDS.guidedPractice, title: "Guided Practice", order: 2, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(20, true) }),
-  Object.freeze({ id: ALGORITHM_MODE_IDS.recognizePatterns, title: "Recognize Patterns", order: 3, itemTypes: ["single_choice", "approach_naming", "strategy_choice"] as const, profile: practiceProfile(20, false) }),
-  Object.freeze({ id: ALGORITHM_MODE_IDS.contrastPractice, title: "Contrast Practice", order: 4, itemTypes: ["solution_comparison", "constraint_change", "counterexample_reasoning"] as const, profile: practiceProfile(20, false) }),
-  Object.freeze({ id: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", order: 5, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(10, true) }),
-  Object.freeze({ id: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice", order: 6, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(20, false) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.learnApproach, title: "Learn Approach", order: 1, itemTypes: ["approach_naming", "code_reading"] as const, profile: practiceProfile(10, false, [10]) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.guidedPractice, title: "Guided Practice", order: 2, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(20, true, [10, 20, 40]) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.recognizePatterns, title: "Recognize Patterns", order: 3, itemTypes: ["single_choice", "approach_naming", "strategy_choice"] as const, profile: practiceProfile(20, false, [10, 20, 40]) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.contrastPractice, title: "Contrast Practice", order: 4, itemTypes: ["solution_comparison", "constraint_change", "counterexample_reasoning"] as const, profile: practiceProfile(20, false, [10, 20, 40]) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", order: 5, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(10, true, [10, 20]) }),
+  Object.freeze({ id: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice", order: 6, itemTypes: ALGORITHM_QUESTION_TYPES, profile: practiceProfile(20, false, [10, 20, 40], "blueprintControlled") }),
   Object.freeze({
     id: ALGORITHM_MODE_IDS.interviewSimulation,
     title: "Interview Simulation",
@@ -73,6 +79,8 @@ export const ALGORITHM_MODES = Object.freeze([
       navigation: "free",
       reinsertEnabled: false,
       sessionLength: 40,
+      supportedLengths: Object.freeze([40] as const),
+      shortening: "prohibited",
       submission: "manualOrForegroundTimeout",
       timer: interviewCountdown,
     }),

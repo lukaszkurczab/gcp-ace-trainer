@@ -1,4 +1,5 @@
 export * from "./algorithmApproaches";
+export * from "./algorithmsBlueprints";
 export * from "./algorithmContentCatalog";
 export * from "./algorithmContentTypes";
 export * from "./algorithmItems";

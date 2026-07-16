@@ -76,10 +76,10 @@ test("review selects source items first, fills only compatible reviewed content,
     requestedLength: 5,
     source: { itemRefs: [ref("source")], kind: "session_misses" },
   });
-  assert.deepEqual(result.items.map((item) => item.id), ["source", "skill-peer"]);
-  assert.equal(result.actualLength, 2);
+  assert.deepEqual(result.items.map((item) => item.id), ["source", "skill-peer", "category-peer"]);
+  assert.equal(result.actualLength, 3);
   assert.equal(result.requestedLength, 5);
-  assert.equal(result.items.some((item) => item.id === "category-peer"), false);
+  assert.equal(result.items.some((item) => item.id === "category-peer"), true);
   assert.equal(result.items.some((item) => item.id === "unrelated"), false);
 });
 
@@ -119,9 +119,11 @@ test("Algorithms selection adapter excludes other-track review history before st
     now: "2026-07-15T10:00:00.000Z",
     reviewQueueItems: [cloudReview, algorithmReview],
     reviewSource: "due_queue",
-    sessionLength: 1,
+    sessionLength: 10,
   });
-  assert.deepEqual(selected.map((entry) => entry.id), [item.id]);
+  assert.equal(selected.length, 10);
+  assert.equal(selected[0]?.id, item.id);
+  assert.equal(selected.some((entry) => entry.id === "cloud-item"), false);
 });
 
 test("review rejects missing, stale-version, and cross-track source refs", () => {
@@ -154,7 +156,8 @@ const reinsertEntries = (() => {
   const variant = question("variant", "shared-mechanism");
   const otherOne = question("other-one", "other-one-skill");
   const otherTwo = question("other-two", "other-two-skill");
-  const group = { id: "arrays_and_strings", roadmapNodeId: "arrays_and_strings", questions: [source, variant, otherOne, otherTwo] } as const satisfies AlgorithmContentGroup;
+  const otherThree = question("other-three", "other-three-skill");
+  const group = { id: "arrays_and_strings", roadmapNodeId: "arrays_and_strings", questions: [source, variant, otherOne, otherTwo, otherThree] } as const satisfies AlgorithmContentGroup;
   return group.questions.map((entryQuestion) => ({ group, question: entryQuestion }));
 })();
 
@@ -162,6 +165,7 @@ const variantPlan = [
   occurrence("source-occurrence", "source"),
   occurrence("middle-one", "other-one"),
   occurrence("middle-two", "other-two"),
+  occurrence("middle-three", "other-three"),
   occurrence("exact-occurrence", "source"),
   occurrence("variant-occurrence", "variant"),
 ] as const;
@@ -175,19 +179,20 @@ function decide(overrides: Partial<Parameters<typeof decideAlgorithmReinsert>[0]
     reviewedItemRefs: [ref("variant")],
     sourceOccurrenceId: "source-occurrence",
     sourceResult: "incorrect",
-    submittedOccurrenceIds: new Set(["source-occurrence", "middle-one", "middle-two"]),
+    submittedOccurrenceIds: new Set(["source-occurrence", "middle-one", "middle-two", "middle-three"]),
     ...overrides,
   });
 }
 
-test("reinsert requires zero, one, then two intervening submitted occurrences", () => {
+test("reinsert requires zero, one, and two; three intervening submitted occurrences are eligible", () => {
   assert.deepEqual(decide({ submittedOccurrenceIds: new Set(["source-occurrence"]) }), {
     kind: "no_reinsert", persistentReviewEffect: "unchanged", reason: "insufficient_intervening_submissions", sourceOccurrenceId: "source-occurrence",
   });
   assert.equal(decide({ submittedOccurrenceIds: new Set(["source-occurrence", "middle-one"]) }).kind, "no_reinsert");
-  const two = decide();
-  assert.equal(two.kind, "scheduled");
-  if (two.kind === "scheduled") assert.equal(two.targetOccurrence.occurrenceId, "variant-occurrence");
+  assert.equal(decide({ submittedOccurrenceIds: new Set(["source-occurrence", "middle-one", "middle-two"]) }).kind, "no_reinsert");
+  const three = decide();
+  assert.equal(three.kind, "scheduled");
+  if (three.kind === "scheduled") assert.equal(three.targetOccurrence.occurrenceId, "variant-occurrence");
 });
 
 test("reinsert accepts incorrect or partial sources but not a correct source", () => {
@@ -215,11 +220,12 @@ test("reinsert preference applies only among occurrences that satisfy the spacin
     occurrence("early-variant", "variant"),
     occurrence("middle-one", "other-one"),
     occurrence("middle-two", "other-two"),
+    occurrence("middle-three", "other-three"),
     occurrence("late-exact", "source"),
   ] as const;
   const decision = decide({
     plan,
-    submittedOccurrenceIds: new Set(["source-occurrence", "middle-one", "middle-two"]),
+    submittedOccurrenceIds: new Set(["source-occurrence", "middle-one", "middle-two", "middle-three"]),
   });
   assert.equal(decision.kind, "scheduled");
   if (decision.kind === "scheduled") assert.equal(decision.targetOccurrence.occurrenceId, "late-exact");

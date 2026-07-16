@@ -75,6 +75,20 @@ export function selectAlgorithmReviewItems(input: {
     }
   }
 
+  if (selectedEntries.length < requestedLength && selectedEntries.length > 0) {
+    const sourceRoadmapNodeIds = new Set(selectedEntries.map((entry) => entry.group.roadmapNodeId));
+    const sourceSkillAtomIds = new Set(selectedEntries.map((entry) => entry.question.primarySkillAtomId));
+    for (const entry of input.entries) {
+      if (selectedItemIds.has(entry.question.id)) continue;
+      // The catalog has no implicit family-wide relation: same mental unit or
+      // same mechanism is the entire approved repair/contrast boundary.
+      if (!sourceRoadmapNodeIds.has(entry.group.roadmapNodeId) && !sourceSkillAtomIds.has(entry.question.primarySkillAtomId)) continue;
+      selectedEntries.push(entry);
+      selectedItemIds.add(entry.question.id);
+      if (selectedEntries.length === requestedLength) break;
+    }
+  }
+
   const items = Object.freeze(selectedEntries.map((entry) => entry.question));
   return Object.freeze({ actualLength: items.length, items, requestedLength });
 }
@@ -149,7 +163,7 @@ export function decideAlgorithmReinsert(input: {
     const targetIndex = input.plan.findIndex((occurrence) => occurrence.occurrenceId === candidate.occurrence.occurrenceId);
     const interveningSubmittedCount = input.plan.slice(sourceIndex + 1, targetIndex)
       .filter((occurrence) => input.submittedOccurrenceIds.has(occurrence.occurrenceId)).length;
-    return interveningSubmittedCount >= 2;
+    return interveningSubmittedCount >= 3;
   };
   const targetOccurrence = (reviewedVariants.find(isSeparatedByTwoSubmissions) ??
     exactCandidates.find(isSeparatedByTwoSubmissions))?.occurrence;
