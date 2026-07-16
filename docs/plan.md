@@ -653,6 +653,26 @@ Delete:
 - old Algorithms owners are absent;
 - all applicable gates pass.
 
+### Prompt 12 design-gate inventory — 2026-07-16
+
+**Audited commit:** `a0b46c2095e530aa0d926cc09454f71204ea2209`
+
+**Decision:** `BLOCKED` — **G-D is BLOCKED**. No Algorithms UI cutover was implemented.
+
+The only Algorithms-specific reference, `docs/designs/algorithm_drill_unified`, is not an approved implementation reference for the canonical session shell: it renders a Patternly wordmark/logo and a non-canonical top bar. The historical core-flow screenshots in `docs/audits/ux-ui/patternly-core-flow-v1` capture only a legacy happy-path practice flow. Their own report records missing loading, error, storage-degraded, accessibility, dynamic-text, and simulation coverage. Neither source specifies the required canonical simulation navigator or recovery states.
+
+| Required surface | States without an approved visual and interaction reference |
+| --- | --- |
+| Algorithms Practice | preparation/loading; submitting; commit pending; feedback with immediately visible authored Reason and collapsed Details; advance failure; finish; content error; storage error. The historical unanswered/selected screenshots are not reusable as canonical references because their top bar has a wordmark and dedicated close control. |
+| Algorithms Interview Simulation | draft loading; editable unanswered and answered; saving; saved; save failure; 40-occurrence free navigator; resume; timer exhausted; frozen; finalizing; finalization recovery/retry; finalized result; insufficient-40-item content. No approved Simulation reference exists. |
+| Cross-cutting accessibility and responsive evidence | structural non-colour correct/incorrect response treatment; accessible saving/frozen/error announcements; reduced motion; dynamic text; route smoke and screenshot states. The available audit explicitly marks these as untested or uncaptured. |
+
+The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` specifies the required behaviour and copy, but it is not a substitute for the required state-by-state approved visual and interaction reference. Creating a generic modal, status card, error screen, navigator, or interim layout would violate the design gate.
+
+**Stage 3 gate status:** `BLOCKED`. G-C, G-A, G-P, G-L, and G-Q are not sufficient to close Stage 3 while G-D is blocked. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
+
+**ACTIVE NEXT TASK:** `S3-ALGORITHMS-UI-DESIGN-01` — approve canonical visual and interaction references for every state listed above, including the compliant Algorithms top bar, practice durable-feedback boundary, and all Interview Simulation draft/freeze/recovery/result states. This task is design evidence only; it must not add substitute product behaviour.
+
 ## Stage 4 — Certification family and GCP track cutover
 
 ### Goal
@@ -840,8 +860,8 @@ Prove the canonical implementation under supported runtime conditions.
 | Repository-to-contract audit        | `DONE`                 | Historical findings preserved; closure addendum records current evidence  |
 | Shared kernel and mutations        | `VERIFIED`             | One journal/coordinator and recovery paths pass architecture and recovery checks |
 | MMKV and repositories              | `VERIFIED`             | One infrastructure MMKV owner; no reachable parallel repository/store path |
-| Algorithms immediate practice      | `NEEDS_CORRECTION`     | Runtime route is explicitly unavailable pending Stage 3 implementation    |
-| Algorithms Interview Simulation    | `NEEDS_CORRECTION`     | Runtime route is explicitly unavailable pending Stage 3 implementation    |
+| Algorithms immediate practice      | `BLOCKED`              | G-D lacks approved canonical designs for loading, durable-feedback, and error states |
+| Algorithms Interview Simulation    | `BLOCKED`              | G-D lacks approved canonical designs for the full draft, navigator, timer, freeze, recovery, and result lifecycle |
 | Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
 | Certification Exam Simulation      | `NEEDS_CORRECTION`     | Parallel exam runtime was removed; canonical profile/runtime is required  |
 | Product surfaces                   | `PARTIAL`              | Runtime routes remain explicitly unavailable pending Stage 3 work         |
@@ -859,34 +879,33 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Status
 
-`PLANNED` — Stage 2 is verified. This is the first bounded Stage 3 task; it must not reintroduce persistence ownership into the Algorithms family runtime.
+`BLOCKED` — G-D requires approved canonical visual and interaction evidence before any Algorithms UI cutover. Do not add substitute UI states.
 
 ### Goal
 
-Implement the seven canonical Algorithms mode contracts, versioned blueprints and deterministic selection/recommendation semantics through a pure family runtime.
+Provide approved visual and interaction references for the canonical Algorithms UI states enumerated in the Prompt 12 design-gate inventory.
 
 ### Remaining work before this task can close
 
-- add versioned Algorithms practice, recommendation and Interview Simulation contracts;
-- implement deterministic seven-mode selection, strict shortening/fixed-pool failures and source-scoped Weak Area Review;
-- add explained deterministic recommendations without readiness, retention, mastery or confidence;
-- keep the family runtime free of repositories, MMKV, React and lifecycle persistence.
+- provide a compliant Algorithms top bar (timer left; `x of y` right; no wordmark/logo or dedicated close control);
+- provide exact practice loading, submitting, commit-pending, feedback, advance-failure, finish, content-error, and storage-error states;
+- provide all Interview Simulation draft, save, navigator, timer exhaustion, frozen, finalization recovery, finalized-result, and insufficient-content states;
+- provide accessibility, reduced-motion, and dynamic-text treatments for those states.
 
 ### Out of scope
 
-- persistence orchestration, MMKV/repository changes, React renderers and direct screen storage access;
-- Certification implementation, content changes, generated questions and static-bank changes;
-- compatibility readers, translators, adapters, fallbacks or dual writes.
+- React implementation, persistence changes, new routes, content changes, generated questions, or static-bank changes;
+- generic modals, placeholder states, fallback navigators, compatibility paths, or substitute error layouts.
 
 ### Required verification on completion
 
-- mode, mapping, selection, fixed/shortenable-length and deterministic-recommendation tests;
-- a test proving identical inputs yield identical outcomes;
-- runtime import-boundary checks and `npm run qa:static`.
+- state-by-state reference inventory proving coverage;
+- explicit design approval for every required Practice and Interview Simulation state;
+- no conflicting top-bar, flagging, correctness, timer, or recovery treatment.
 
 ## 12. Stage 3 activation
 
-Stage 3 is active only for `S3-ALGORITHMS-01`. UI and Certification remain unavailable and are not marked ready.
+Stage 3 is blocked at `S3-ALGORITHMS-UI-DESIGN-01`. UI and Certification remain unavailable and are not marked ready.
 
 ## 13. Required implementation report
 
