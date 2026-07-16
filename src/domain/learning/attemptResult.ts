@@ -1,4 +1,5 @@
 import { InvalidAttemptResultError } from "./errors";
+import { createFamilyEnvelope, type FamilyEnvelope } from "./familyEnvelope";
 
 export type AttemptResultKind = "correct" | "partial" | "incorrect";
 
@@ -13,6 +14,7 @@ export type AttemptResult = Readonly<{
   earnedPoints: number;
   maxPoints: number;
   components?: readonly AttemptResultComponent[];
+  details?: FamilyEnvelope;
 }>;
 
 export function createAttemptResult(input: AttemptResult): AttemptResult {
@@ -44,5 +46,6 @@ export function createAttemptResult(input: AttemptResult): AttemptResult {
   return Object.freeze({
     ...input,
     components: input.components ? Object.freeze(input.components.map((component) => Object.freeze({ ...component }))) : undefined,
+    ...(input.details ? { details: createFamilyEnvelope(input.details) } : {}),
   });
 }

@@ -845,46 +845,39 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-00 — Integrate canonical documentation closure into main`
+`WEP3-01 — Family-neutral kernel and domain-record cutover`
+
+### Status
+
+`PARTIAL` — the first bounded Stage 2 cutover has established neutral kernel envelopes, immutable attempt construction, result/evidence/review/journal/repository contracts, and import-boundary coverage. The active session owner, complete lifecycle replacement, and canonical persistence materialization are not yet cut over; Stage 2 therefore remains `PARTIAL`.
 
 ### Goal
 
-Integrate the already-pushed Stage 0 closure into `main`, then independently recheck its canonical-document inventory before Stage 1 verification.
+Replace shared ownership with a family-neutral learning kernel and canonical domain records, without adding application orchestration, MMKV implementation, or UI work.
 
-### Required changes
+### Remaining work before this task can close
 
-- merge or otherwise integrate the Stage 0 closure commit without changing its contract;
-- verify the exact canonical document set and absence of retired references on `main`;
-- retain this audit as immutable evidence and then update Stage 1 from `BLOCKED` using the integrated SHA.
+- replace the remaining mixed `TrainingSession` record with active, completed, and abandoned canonical records throughout persistence and application ownership;
+- remove the remaining generic session configuration and flag state from the kernel;
+- make family response and evidence envelopes the sole durable attempt/review path;
+- move journal record implementation and lifecycle materialization to the canonical repository boundary;
+- remove the parallel Certification exam/session owner and any obsolete tests only when the canonical replacement is wired;
+- prove abandonment and the one-active-session invariant against the replacement persistence contract.
 
 ### Out of scope
 
-- application code changes;
-- runtime fixes;
-- new content;
-- UI implementation;
-- route changes;
-- new product features.
+- full application orchestration;
+- MMKV implementation changes;
+- UI, renderer, route, or Certification-mode implementation;
+- compatibility readers, translators, adapters, or fallback paths.
 
-### Required verification
+### Required verification on completion
 
-- documentation-reference audit on `main`;
-- Stage 0 closure SHA is an ancestor of `main`;
-- no second execution-order document;
-- exact changed-file inventory;
-- pushed commit SHA.
-
-### Completion report
-
-The report must include:
-
-- starting and ending SHA;
-- evidence matrix and inspected paths;
-- D-04 through D-10 status;
-- checks run;
-- unresolved implementation conflicts;
-- first bounded implementation task;
-- confirmation that no application code changed.
+- typecheck;
+- kernel lifecycle, immutability, one-active-session, abandonment, and extension-family tests;
+- negative kernel import-boundary tests;
+- static QA and architecture checks;
+- repository-wide searches proving removed owners are absent.
 
 ## 12. First Stage 2 task after the Stage 0 unblock
 

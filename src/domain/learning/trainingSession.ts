@@ -28,6 +28,14 @@ export type TrainingSession = Readonly<{
   completedAt?: string;
 }>;
 
+export type ActiveTrainingSession = TrainingSession & Readonly<{ status: "active"; completedAt?: never }>;
+export type CompletedTrainingSession = TrainingSession & Readonly<{ status: "completed"; completedAt: string }>;
+export type AbandonedTrainingSession = TrainingSession & Readonly<{ status: "abandoned" }>;
+
+export function isActiveTrainingSession(session: TrainingSession): session is ActiveTrainingSession { return session.status === "active"; }
+export function isCompletedTrainingSession(session: TrainingSession): session is CompletedTrainingSession { return session.status === "completed"; }
+export function isAbandonedTrainingSession(session: TrainingSession): session is AbandonedTrainingSession { return session.status === "abandoned"; }
+
 export function createTrainingSession(session: TrainingSession): TrainingSession {
   if (session.status !== "active" && session.status !== "completed" && session.status !== "abandoned") {
     throw new InvalidTrainingSessionError("Training session status is unsupported.");
