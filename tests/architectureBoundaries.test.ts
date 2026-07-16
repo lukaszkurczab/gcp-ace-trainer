@@ -32,6 +32,11 @@ test("application mutations depend on repositories rather than raw storage inter
   assert.doesNotMatch(mutations, /infrastructure\/storage\/mmkvClient|storage\/(?:keys|storageCodec)/);
 });
 
+test("canonical lifecycle use cases have no React, storage implementation, or family-scoring dependency", () => {
+  const lifecycle = files("src/application/trainingLifecycle").map((path) => readFileSync(path, "utf8")).join("\n");
+  assert.doesNotMatch(lifecycle, /react|react-native|storage\/repositories|learningMutations|scoreAlgorithmQuestion|scoreCertificationQuestion|AlgorithmQuestion|CertificationQuestion/);
+});
+
 test("the public storage barrel does not expose raw keys or codec", () => {
   const barrel = readFileSync("src/storage/index.ts", "utf8");
   assert.doesNotMatch(barrel, /export \* from "\.\/(?:keys|storageCodec)"/);

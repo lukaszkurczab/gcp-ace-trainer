@@ -845,30 +845,28 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`WEP3-01 — Family-neutral kernel and domain-record cutover`
+`WEP3-02 — Application lifecycle ownership cutover`
 
 ### Status
 
-`PARTIAL` — the first bounded Stage 2 cutover has established neutral kernel envelopes, immutable attempt construction, result/evidence/review/journal/repository contracts, and import-boundary coverage. The active session owner, complete lifecycle replacement, and canonical persistence materialization are not yet cut over; Stage 2 therefore remains `PARTIAL`.
+`PARTIAL` — a framework-free application lifecycle facade now resolves family runtimes through ports and coordinates the complete command/query surface through repository and mutation-coordinator contracts. Production screens and the legacy Algorithms/Cloud lifecycle owners are not yet replaced, so Stage 2 remains `PARTIAL`.
 
 ### Goal
 
-Replace shared ownership with a family-neutral learning kernel and canonical domain records, without adding application orchestration, MMKV implementation, or UI work.
+Move lifecycle orchestration into application use cases without moving family validation, selection, scoring, or deterministic outcome construction out of the family runtime.
 
 ### Remaining work before this task can close
 
-- replace the remaining mixed `TrainingSession` record with active, completed, and abandoned canonical records throughout persistence and application ownership;
-- remove the remaining generic session configuration and flag state from the kernel;
-- make family response and evidence envelopes the sole durable attempt/review path;
-- move journal record implementation and lifecycle materialization to the canonical repository boundary;
-- remove the parallel Certification exam/session owner and any obsolete tests only when the canonical replacement is wired;
-- prove abandonment and the one-active-session invariant against the replacement persistence contract.
+- wire the lifecycle ports to canonical repository implementations and mutation coordination after their Stage 2 record cutover;
+- replace the persistence-owning Algorithms runtime and controllers with the application facade;
+- replace Cloud practice and Certification exam lifecycle owners, then delete their parallel session/exam records and tests;
+- remove direct repository imports from screens and feature services;
+- prove abandonment, active-session, draft-revision, recovery, and summary invariants against canonical persistence.
 
 ### Out of scope
 
-- full application orchestration;
-- MMKV implementation changes;
-- UI, renderer, route, or Certification-mode implementation;
+- MMKV implementation details and final journal materialization replacement;
+- UI, renderer, route, or Certification-mode semantics;
 - compatibility readers, translators, adapters, or fallback paths.
 
 ### Required verification on completion
