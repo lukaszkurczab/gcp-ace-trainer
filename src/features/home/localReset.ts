@@ -1,36 +1,10 @@
-import {
-  clearActiveSessionRuntime,
-  clearForegroundTimers,
-  clearMutationJournal,
-  clearReviewQueueItems,
-  clearTrainingAttempts,
-  clearTrainingSessions,
-  clearTrainingSessionDrafts,
-} from "../../storage";
+import { commitLearningStateReset } from "../../application/learningMutations";
 
 export const CLEAR_LOCAL_HISTORY_DETAIL =
   "Clears local practice, exams, review queue, progress, active sessions, and saved draft responses.";
 
 export const CLEAR_LOCAL_HISTORY_CONFIRMATION =
   "This deletes local practice, exams, review queue, progress, review marks, active sessions, and saved draft responses.";
-
-export const CLEAR_LOCAL_HISTORY_OPERATION_NAMES = [
-  "clearMutationJournal",
-  "clearActiveSessionRuntime",
-  "clearForegroundTimers",
-  "clearTrainingSessionDrafts",
-  "clearTrainingSessions",
-  "clearTrainingAttempts",
-  "clearReviewQueueItems",
-] as const;
-
-export type ClearLocalHistoryOperationName =
-  (typeof CLEAR_LOCAL_HISTORY_OPERATION_NAMES)[number];
-
-export type ClearLocalHistoryOperations = Record<
-  ClearLocalHistoryOperationName,
-  () => Promise<unknown>
->;
 
 export type ClearLocalHistoryResult =
   | { ok: true }
@@ -39,29 +13,13 @@ export type ClearLocalHistoryResult =
 export const CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE =
   "Your local data could not be fully cleared. Some data may remain. Try again.";
 
-const defaultClearOperations: ClearLocalHistoryOperations = {
-  clearActiveSessionRuntime,
-  clearForegroundTimers,
-  clearMutationJournal,
-  clearReviewQueueItems,
-  clearTrainingAttempts,
-  clearTrainingSessions,
-  clearTrainingSessionDrafts,
-};
-
-export async function clearPatternlyLocalHistory(
-  operations: ClearLocalHistoryOperations = defaultClearOperations,
-): Promise<void> {
-  for (const operationName of CLEAR_LOCAL_HISTORY_OPERATION_NAMES) {
-    await operations[operationName]();
-  }
+export async function clearPatternlyLocalHistory(): Promise<void> {
+  await commitLearningStateReset(new Date().toISOString());
 }
 
-export async function tryClearPatternlyLocalHistory(
-  operations: ClearLocalHistoryOperations = defaultClearOperations,
-): Promise<ClearLocalHistoryResult> {
+export async function tryClearPatternlyLocalHistory(): Promise<ClearLocalHistoryResult> {
   try {
-    await clearPatternlyLocalHistory(operations);
+    await clearPatternlyLocalHistory();
     return { ok: true };
   } catch {
     return { ok: false, message: CLEAR_LOCAL_HISTORY_FAILURE_MESSAGE };

@@ -1,4 +1,5 @@
 import {
+  captureMutationExpectedRevisions,
   createMutationPlanFingerprint,
   type JournalWrite,
   type MutationJournalPlan,
@@ -17,7 +18,8 @@ export async function buildMutationJournal(input: { operation: MutationOperation
     createdAt: input.createdAt,
     sessionId: input.sessionId,
     trackId: input.trackId,
-    commandFingerprint,
+    commandIdentity: { version: 1, fingerprint: commandFingerprint },
+    expectedRevisions: captureMutationExpectedRevisions(input.writes),
     writes: input.writes,
   };
   return {

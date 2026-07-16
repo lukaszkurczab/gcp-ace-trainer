@@ -1,6 +1,6 @@
 import { createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../src/domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
-import { createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../src/storage/repositories/mutationJournalRepository";
+import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../src/storage/repositories/mutationJournalRepository";
 import type { CertificationExamViewModel } from "../src/tracks/cloud-certification";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
@@ -94,7 +94,8 @@ export function journal(writes: MutationJournalRecord["writes"], operation: Muta
     createdAt: timestamp,
     sessionId,
     trackId,
-    commandFingerprint,
+    commandIdentity: { version: 1, fingerprint: commandFingerprint },
+    expectedRevisions: captureMutationExpectedRevisions(writes),
     writes,
   };
   return {

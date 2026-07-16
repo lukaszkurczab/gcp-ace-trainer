@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { canonicalSerialize } from "../src/infrastructure/identity/canonicalSerialization";
+import { CANONICAL_SERIALIZER_VERSION, canonicalFingerprintPayload, canonicalSerialize } from "../src/infrastructure/identity/canonicalSerialization";
 import { createAttemptId, createIdentityFingerprint } from "../src/application/learningMutations/identity";
 test("canonical serialization sorts object keys without changing array order", () => { assert.equal(canonicalSerialize({ b: 1, a: ["x", "y"] }), canonicalSerialize({ a: ["x", "y"], b: 1 })); assert.notEqual(canonicalSerialize(["x", "y"]), canonicalSerialize(["y", "x"])); assert.throws(() => canonicalSerialize(undefined)); assert.throws(() => canonicalSerialize(Number.NaN)); });
+test("fingerprint payload carries the canonical serializer version", () => { assert.match(canonicalFingerprintPayload({ value: 1 }), new RegExp(`"serializerVersion":"${CANONICAL_SERIALIZER_VERSION}"`)); });
 test("SHA-256 identities are stable, opaque, and response-sensitive", async () => { const first = await createIdentityFingerprint({ selectedOptionIds: ["a", "b"] }); assert.equal(first, await createIdentityFingerprint({ selectedOptionIds: ["a", "b"] })); assert.notEqual(first, await createIdentityFingerprint({ selectedOptionIds: ["b", "a"] })); const attempt = await createAttemptId("s", "i", { selectedOptionIds: ["a"] }); assert.match(attempt, /^attempt:s:i:[0-9a-f]{64}$/); assert.equal(attempt, await createAttemptId("s", "i", { selectedOptionIds: ["a"] })); });

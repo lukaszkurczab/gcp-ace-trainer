@@ -1,8 +1,8 @@
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind, isRegisteredTrackId } from "../../domain";
-import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
-import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
+import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { JournalWriteError } from "../errors";
 import { isReviewQueueEntry, isTrainingAttempt, isTrainingSession, isTrainingSessionDraft } from "./trainingModelGuards";
 import { getReviewQueueItems } from "./reviewQueueRepository";
@@ -24,13 +24,16 @@ export type JournalWrite =
   | { kind: "clear_learning_state" };
 
 export type MutationOperation = "start_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
+export type MutationCommandIdentity = Readonly<{ version: 1; fingerprint: string }>;
+export type MutationExpectedRevision = Readonly<{ target: string; revision: number | null }>;
 export type MutationJournalPlan = Readonly<{
   operation: MutationOperation;
   status: "prepared";
   createdAt: string;
   sessionId: string;
   trackId: string;
-  commandFingerprint: string;
+  commandIdentity: MutationCommandIdentity;
+  expectedRevisions: readonly MutationExpectedRevision[];
   writes: readonly JournalWrite[];
 }>;
 export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: string; planFingerprint: string }>;
@@ -38,11 +41,16 @@ export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: 
 const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"];
 const SHA_256 = /^[a-f0-9]{64}$/;
 const PLAN_FINGERPRINT = /^[a-f0-9]{64}$/;
+const RESET_STATIC_TARGETS = ["active_session", "active_session_draft", "active_foreground_timer", "active_session_runtime", "session_index", "attempt_index", "review_index"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function hasExactKeys(value: Record<string, unknown>, required: readonly string[]): boolean { const keys = Object.keys(value); return keys.length === required.length && required.every((key) => keys.includes(key)); }
 function isNonEmptyString(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
 function isTimestamp(value: unknown): value is string { return isNonEmptyString(value) && !Number.isNaN(Date.parse(value)); }
+function isExpectedRevision(value: unknown): value is MutationExpectedRevision {
+  return isRecord(value) && hasExactKeys(value, ["target", "revision"]) && isNonEmptyString(value.target) &&
+    (value.revision === null || (Number.isSafeInteger(value.revision) && Number(value.revision) >= 1));
+}
 function isJournalWrite(value: unknown): value is JournalWrite {
   if (!isRecord(value) || !isNonEmptyString(value.kind)) return false;
   switch (value.kind) {
@@ -79,6 +87,74 @@ function writeTarget(write: JournalWrite): string {
     case "clear_active_session": return "active_session";
     case "clear_learning_state": return "learning_state";
   }
+}
+
+function writePreconditionTargets(write: JournalWrite): string[] {
+  switch (write.kind) {
+    case "put_session": return [`session:${write.record.id}`, "session_index", "active_session"];
+    case "put_attempt": return [`attempt:${write.record.id}`, "attempt_index"];
+    case "put_review_entry":
+    case "put_review_entry_for_attempt":
+    case "update_review_entry":
+    case "delete_review_entry":
+    case "delete_review_entry_for_attempt": return [`review:${write.record.id}`, "review_index"];
+    case "clear_active_session": return ["active_session", "active_foreground_timer"];
+    case "clear_active_session_draft":
+    case "put_active_session_draft":
+    case "delete_active_session_draft": return ["active_session_draft"];
+    case "clear_active_exam": return ["active_session_runtime"];
+    case "clear_learning_state": return [...RESET_STATIC_TARGETS];
+  }
+}
+
+function targetStorageKey(target: string): string {
+  if (target === "active_session") return STORAGE_KEYS.ACTIVE_TRAINING_SESSION;
+  if (target === "active_session_draft") return STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT;
+  if (target === "active_foreground_timer") return STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER;
+  if (target === "active_session_runtime") return STORAGE_KEYS.ACTIVE_SESSION_RUNTIME;
+  if (target === "session_index") return STORAGE_KEYS.TRAINING_SESSION_INDEX;
+  if (target === "attempt_index") return STORAGE_KEYS.TRAINING_ATTEMPT_INDEX;
+  if (target === "review_index") return STORAGE_KEYS.REVIEW_INDEX;
+  if (target.startsWith("session:")) return STORAGE_KEYS.trainingSession(target.slice("session:".length));
+  if (target.startsWith("attempt:")) return STORAGE_KEYS.trainingAttempt(target.slice("attempt:".length));
+  if (target.startsWith("review:")) return STORAGE_KEYS.reviewEntry(target.slice("review:".length));
+  throw new Error(`Unknown mutation precondition target ${target}.`);
+}
+
+function isKnownPreconditionTarget(target: string): boolean {
+  try { targetStorageKey(target); return true; } catch { return false; }
+}
+
+function revisionForTarget(target: string): number | null {
+  return readCanonicalEnvelope(targetStorageKey(target), (_value): _value is unknown => true)?.revision ?? null;
+}
+
+function resetRecordTargets(): string[] {
+  const ids = (key: string) => readCanonicalJson(key, (value): value is string[] => Array.isArray(value) && value.every((id) => typeof id === "string")) ?? [];
+  return [
+    ...ids(STORAGE_KEYS.TRAINING_SESSION_INDEX).map((id) => `session:${id}`),
+    ...ids(STORAGE_KEYS.TRAINING_ATTEMPT_INDEX).map((id) => `attempt:${id}`),
+    ...ids(STORAGE_KEYS.REVIEW_INDEX).map((id) => `review:${id}`),
+  ];
+}
+
+/** Captures every mutable canonical record that the immutable plan can touch. */
+export function captureMutationExpectedRevisions(writes: readonly JournalWrite[]): readonly MutationExpectedRevision[] {
+  const targets = writes.some((write) => write.kind === "clear_learning_state")
+    ? [...RESET_STATIC_TARGETS, ...resetRecordTargets()]
+    : writes.flatMap(writePreconditionTargets);
+  const uniqueTargets = [...new Set(targets)].sort();
+  return uniqueTargets.map((target) => ({ target, revision: revisionForTarget(target) }));
+}
+
+function hasExpectedRevisionPlan(record: MutationJournalPlan): boolean {
+  const targets = record.expectedRevisions.map((condition) => condition.target);
+  if (new Set(targets).size !== targets.length || !record.expectedRevisions.every((condition) => isKnownPreconditionTarget(condition.target))) return false;
+  if (record.operation === "reset_learning_state") {
+    return RESET_STATIC_TARGETS.every((target) => targets.includes(target));
+  }
+  const expectedTargets = [...new Set(record.writes.flatMap(writePreconditionTargets))];
+  return targets.length === expectedTargets.length && expectedTargets.every((target) => targets.includes(target));
 }
 
 function hasValidOperationPlan(record: MutationJournalPlan): boolean {
@@ -186,7 +262,7 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
 }
 
 export function createMutationPlanFingerprint(plan: MutationJournalPlan): string {
-  const serialized = canonicalSerialize(JSON.parse(JSON.stringify(plan)));
+  const serialized = canonicalFingerprintPayload(JSON.parse(JSON.stringify(plan)));
   const { createHash } = require("node:crypto") as typeof import("node:crypto");
   return createHash("sha256").update(serialized, "utf8").digest("hex");
 }
@@ -197,13 +273,13 @@ function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
 }
 
 export function hasValidMutationJournalIntegrity(value: unknown): value is MutationJournalRecord {
-  if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "commandFingerprint", "planFingerprint", "writes"])) return false;
-  if (!isNonEmptyString(value.commandFingerprint) || !SHA_256.test(value.commandFingerprint) || value.journalId !== `journal:${value.commandFingerprint}` ||
+  if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
+  if (!isRecord(value.commandIdentity) || !hasExactKeys(value.commandIdentity, ["version", "fingerprint"]) || value.commandIdentity.version !== 1 || !isNonEmptyString(value.commandIdentity.fingerprint) || !SHA_256.test(value.commandIdentity.fingerprint) || value.journalId !== `journal:${value.commandIdentity.fingerprint}` ||
     !isNonEmptyString(value.planFingerprint) || !PLAN_FINGERPRINT.test(value.planFingerprint) || !(OPERATIONS as readonly unknown[]).includes(value.operation) ||
     value.status !== "prepared" || !isTimestamp(value.createdAt) || !isNonEmptyString(value.sessionId) || !isNonEmptyString(value.trackId) ||
-    !isRegisteredTrackId(value.trackId) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
+    !isRegisteredTrackId(value.trackId) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
   const record = value as MutationJournalRecord;
-  return hasConsistentScope(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
+  return hasConsistentScope(record) && hasExpectedRevisionPlan(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
 }
 
 export function isMutationJournalRecord(value: unknown): value is MutationJournalRecord {
@@ -230,7 +306,10 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
       if (reviewUpdates.some((write) => { const existing = existingReviews.find((entry) => entry.id === write.record.id); return !existing || !hasSameReviewIdentity(existing, write.record); })) throw new Error("A journaled review update must preserve an existing durable review identity.");
     }
     const current = await getActiveMutationJournal();
-    if (current && current.commandFingerprint !== record.commandFingerprint) throw new Error("A different mutation is already pending.");
+    if (current && current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new Error("A different mutation is already pending.");
+    if (!current && record.expectedRevisions.some((condition) => revisionForTarget(condition.target) !== condition.revision)) {
+      throw new Error("Mutation journal expected revisions are stale.");
+    }
     if (record.operation === "start_training_session") {
       const activeSession = await getActiveTrainingSession();
       if (activeSession && activeSession.id !== record.sessionId) {
@@ -255,7 +334,7 @@ export async function clearMutationJournal(expectedCommandFingerprint?: string):
   await inJournalCriticalSection(async () => {
     const current = await getActiveMutationJournal();
     if (!current) return;
-    if (expectedCommandFingerprint && current.commandFingerprint !== expectedCommandFingerprint) {
+    if (expectedCommandFingerprint && current.commandIdentity.fingerprint !== expectedCommandFingerprint) {
       throw new JournalWriteError(new Error("Mutation journal ownership changed before clear."), "Mutation journal ownership changed before clear.");
     }
     removeCanonicalValue(STORAGE_KEYS.ACTIVE_JOURNAL);

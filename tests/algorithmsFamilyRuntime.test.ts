@@ -363,7 +363,7 @@ test("manual and timeout finalization share one in-flight journaled command and 
   assert.deepEqual(await getActiveTrainingSessionDraft(), durableDraft);
   assert.equal(runtime.getState().session.activeForegroundMs, 0);
   await assert.rejects(runtime.moveSimulationToIndex(1), /pending recovery/);
-  assert.equal((await getActiveMutationJournal())?.commandFingerprint, pending?.commandFingerprint);
+  assert.equal((await getActiveMutationJournal())?.commandIdentity.fingerprint, pending?.commandIdentity.fingerprint);
   storage.setFailurePlan(null);
   const completed = await runtime.finalizeSimulation();
   assert.equal(completed.session.status, "completed");
