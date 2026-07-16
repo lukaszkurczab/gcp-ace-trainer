@@ -7,6 +7,11 @@ import {
   clearActiveForegroundTimer,
   clearActiveTrainingSessionDraft,
   clearActiveSessionRuntime,
+  clearForegroundTimers,
+  clearReviewQueueItems,
+  clearTrainingAttempts,
+  clearTrainingSessionDrafts,
+  clearTrainingSessions,
   getActiveTrainingSessionDraft,
   getActiveSessionRuntime,
   getReviewQueueItems,
@@ -59,6 +64,14 @@ export async function materializeMutation(record: MutationJournalRecord): Promis
           if (activeRuntime?.session.id === write.sessionId) await clearActiveSessionRuntime();
           break;
         }
+        case "clear_learning_state":
+          await clearActiveSessionRuntime();
+          await clearForegroundTimers();
+          await clearTrainingSessionDrafts();
+          await clearTrainingSessions();
+          await clearTrainingAttempts();
+          await clearReviewQueueItems();
+          break;
         default: unsupportedWrite(write);
       }
     }

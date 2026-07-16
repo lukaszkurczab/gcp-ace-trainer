@@ -20,9 +20,10 @@ export type JournalWrite =
   | { kind: "clear_active_session_draft"; sessionId: string }
   | { kind: "put_active_session_draft"; record: TrainingSessionDraft }
   | { kind: "delete_active_session_draft"; record: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }
-  | { kind: "clear_active_exam"; sessionId: string };
+  | { kind: "clear_active_exam"; sessionId: string }
+  | { kind: "clear_learning_state" };
 
-export type MutationOperation = "start_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry";
+export type MutationOperation = "start_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
 export type MutationJournalPlan = Readonly<{
   operation: MutationOperation;
   status: "prepared";
@@ -34,7 +35,7 @@ export type MutationJournalPlan = Readonly<{
 }>;
 export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: string; planFingerprint: string }>;
 
-const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry"];
+const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"];
 const SHA_256 = /^[a-f0-9]{64}$/;
 const PLAN_FINGERPRINT = /^[a-f0-9]{64}$/;
 
@@ -55,6 +56,7 @@ function isJournalWrite(value: unknown): value is JournalWrite {
     case "clear_active_session":
     case "clear_active_session_draft":
     case "clear_active_exam": return hasExactKeys(value, ["kind", "sessionId"]) && isNonEmptyString(value.sessionId);
+    case "clear_learning_state": return hasExactKeys(value, ["kind"]);
     case "put_active_session_draft": return hasExactKeys(value, ["kind", "record"]) && isTrainingSessionDraft(value.record);
     case "delete_active_session_draft": return hasExactKeys(value, ["kind", "record", "submittedOccurrenceIds"]) && isTrainingSessionDraft(value.record) && Array.isArray(value.submittedOccurrenceIds) && value.submittedOccurrenceIds.every(isNonEmptyString) && new Set(value.submittedOccurrenceIds).size === value.submittedOccurrenceIds.length;
     default: return false;
@@ -75,6 +77,7 @@ function writeTarget(write: JournalWrite): string {
     case "delete_active_session_draft": return "active_session_draft";
     case "clear_active_session_draft": return "active_session_draft";
     case "clear_active_session": return "active_session";
+    case "clear_learning_state": return "learning_state";
   }
 }
 
@@ -158,6 +161,8 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
       return only("put_review_entry", "update_review_entry") && count("put_review_entry") + count("update_review_entry") === 1;
     case "remove_review_entry":
       return only("delete_review_entry") && count("delete_review_entry") === 1;
+    case "reset_learning_state":
+      return only("clear_learning_state") && count("clear_learning_state") === 1;
   }
 }
 
@@ -175,6 +180,7 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
     if (write.kind === "delete_review_entry_for_attempt") return write.record.trackId === record.trackId;
     if (write.kind === "clear_active_session" || write.kind === "clear_active_session_draft" || write.kind === "clear_active_exam") return write.sessionId === record.sessionId;
     if (write.kind === "put_active_session_draft" || write.kind === "delete_active_session_draft") return write.record.sessionId === record.sessionId && write.record.trackId === record.trackId;
+    if (write.kind === "clear_learning_state") return record.sessionId === "learning-state-reset";
     return true;
   });
 }
