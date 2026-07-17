@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "lukaszkurczab/patternly-content",
-  "commit": "b0f5b8b1ba288a8e0e1a0eed0bb55828ec9baf82",
+  "commit": "672ac0811c78a1afd8c539f55609ec839fbc5a67",
   "applicationContractSnapshot": {
     "bankContract": "PublishedAlgorithmsBank",
     "artifactSchema": "published-bank-v1"
