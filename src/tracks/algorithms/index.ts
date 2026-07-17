@@ -16,4 +16,3 @@ export * from "./algorithmScoring";
 export * from "./algorithmSessionSelection";
 export * from "./algorithmTaxonomy";
 export * from "./domain";
-export type { AlgorithmContentGroup } from "./algorithmContentCatalog";

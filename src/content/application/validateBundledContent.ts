@@ -1,5 +1,4 @@
 import { ALGORITHM_MODES } from "../../tracks/algorithms/domain/algorithmModes";
-import { ALGORITHM_ROADMAP } from "../../tracks/algorithms/algorithmRoadmap";
 import { CERTIFICATION_MODES } from "../../tracks/cloud-certification/domain/certificationModes";
 import { getContentFamilyHandler } from "../../tracks/contentFamilyHandlers";
 import { getTracks, type TrackRegistration } from "../../domain/tracks";
@@ -83,7 +82,7 @@ export async function validateBundledContent(
       unavailableTracks.push(unavailable(track, "missing_artifact", `No pinned artifact is bundled for ${track.id}.`));
       continue;
     }
-    const outcome = await validateTrackArtifact(track, reference);
+    const outcome = await validateTrackArtifact(track, reference, typedRelease.manifest.sourceRepositoryCommit);
     if (outcome.kind === "unavailable") unavailableTracks.push(outcome);
     else validated.push(outcome);
   }
@@ -115,11 +114,15 @@ function validateReleaseEnvelope(value: unknown): string | null {
 async function validateTrackArtifact(
   track: TrackRegistration,
   reference: BundledTrackArtifactReference,
+  releaseSourceCommit: string,
 ): Promise<UnavailableBundledTrack | Readonly<{ kind: "available"; availability: AvailableBundledTrack; payload: unknown; reference: BundledTrackArtifactReference }>> {
   const invalid = validateReference(track, reference);
   if (invalid) return unavailable(track, "invalid_envelope", invalid);
   if (reference.trackId !== track.id || reference.familyId !== track.familyId) {
     return unavailable(track, "invalid_taxonomy_reference", "Artifact track/family identity does not match the canonical registry.");
+  }
+  if (reference.sourceRepositoryCommit !== releaseSourceCommit) {
+    return unavailable(track, "invalid_envelope", "Artifact source commit does not match the bundled release manifest.");
   }
   const supportedModes = modesFor(track.familyId);
   if (!supportedModes || reference.declaredModes.some((mode) => !supportedModes.has(mode))) {
@@ -141,16 +144,21 @@ async function validateTrackArtifact(
   if (!itemIds || !hasExactCoverage(reference.approvalCoverage.itemIds, itemIds) || !nonEmpty(reference.approvalCoverage.identity)) {
     return unavailable(track, "missing_approval_coverage", "Artifact lacks approval coverage for every item identity.");
   }
-  if (track.id === "algorithms" && reference.declaredModes.includes("algorithms-interview-simulation") && itemIds.length < 40) {
-    return unavailable(track, "insufficient_fixed_pool", "Interview Simulation requires an immutable fixed pool of 40 items.");
-  }
   try {
     const handler = getContentFamilyHandler(track.familyId);
     handler.validate(artifact.bank, { formatVersion: 1, trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, itemCount: itemIds.length, bankPath: "bundled:immutable", sha256: reference.checksumSha256 });
-    validateTaxonomyReferences(track, artifact.bank);
+    if (track.familyId === "algorithms") {
+      if (!isRecord(artifact.bank) || artifact.bank.approvalActivationIdentity !== reference.approvalCoverage.identity) {
+        return unavailable(track, "missing_approval_coverage", "Algorithms artifact approval activation identity does not match pinned approval coverage.");
+      }
+      const blueprintModes = Array.isArray(artifact.bank.practiceBlueprints) ? new Set(artifact.bank.practiceBlueprints.filter(isRecord).map((blueprint) => blueprint.modeId).filter(nonEmpty)) : new Set<string>();
+      if (reference.declaredModes.some((mode) => !blueprintModes.has(mode))) {
+        return unavailable(track, "declared_mode_unsupported", "Algorithms artifact declares a mode without a validated practice blueprint.");
+      }
+    }
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Artifact payload is invalid.";
-    return unavailable(track, /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
+    return unavailable(track, /approval/i.test(detail) ? "missing_approval_coverage" : /simulation.*(40|pool|profile)|pool.*40/i.test(detail) ? "insufficient_fixed_pool" : /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
   }
   return Object.freeze({
     kind: "available",
@@ -192,15 +200,6 @@ function getItemIds(bank: unknown): readonly string[] | null {
   if (!isRecord(bank) || !Array.isArray(bank.items) || !bank.items.every((item) => isRecord(item) && nonEmpty(item.id))) return null;
   const ids = bank.items.map((item) => (item as Record<string, unknown>).id as string);
   return new Set(ids).size === ids.length ? ids : null;
-}
-
-function validateTaxonomyReferences(track: TrackRegistration, bank: unknown): void {
-  if (track.id !== "algorithms") return;
-  if (!isRecord(bank) || !Array.isArray(bank.groups)) throw new Error("Algorithms artifact omits canonical taxonomy groups.");
-  const canonicalNodeIds = new Set(ALGORITHM_ROADMAP.nodes.map((node) => node.id));
-  if (bank.groups.some((group) => !isRecord(group) || !nonEmpty(group.roadmapNodeId) || !canonicalNodeIds.has(group.roadmapNodeId))) {
-    throw new Error("Algorithms artifact references an unknown taxonomy node.");
-  }
 }
 
 function modesFor(familyId: string): ReadonlySet<string> | null {

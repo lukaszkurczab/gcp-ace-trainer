@@ -1,110 +1,14 @@
 import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
-import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
-import {
-  ALGORITHM_ROADMAP,
-  type AlgorithmRoadmapNode,
-  type AlgorithmRoadmapNodeId,
-} from "./algorithmRoadmap";
+import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNode, type AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
 
-export type AlgorithmQuestionEntry = {
-  group: AlgorithmContentGroup;
-  question: AlgorithmQuestion;
-};
-
-export function getAlgorithmItems(): readonly AlgorithmQuestion[] {
-  return getAlgorithmContentCatalog().getItems();
-}
-
-export function getAlgorithmItemById(itemId: string): AlgorithmQuestion | undefined {
-  return getAlgorithmItems().find((question) => question.id === itemId);
-}
-
-export function getAlgorithmQuestionEntries(
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): readonly AlgorithmQuestionEntry[] {
-  return groups.flatMap((group) =>
-    group.questions.map((question) => ({ group, question })),
-  );
-}
-
-export function getAlgorithmContentGroupForItem(
-  itemId: string,
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): AlgorithmContentGroup | undefined {
-  return groups.find((group) =>
-    group.questions.some((question) => question.id === itemId),
-  );
-}
-
-export function getAlgorithmItemsForRoadmapNode(
-  nodeId: AlgorithmRoadmapNodeId,
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): readonly AlgorithmQuestion[] {
-  return groups.find((group) => group.roadmapNodeId === nodeId)?.questions ?? [];
-}
-
-export function getRoadmapNodesWithActiveItems(
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): readonly AlgorithmRoadmapNode[] {
-  const nodeIdsWithItems = new Set(
-    groups
-      .filter((group) => group.questions.length > 0)
-      .map((group) => group.roadmapNodeId),
-  );
-
-  return ALGORITHM_ROADMAP.nodes.filter((node) => nodeIdsWithItems.has(node.id));
-}
-
-export function isAlgorithmRoadmapNodeSelectable(
-  node: AlgorithmRoadmapNode,
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): boolean {
-  return getAlgorithmItemsForRoadmapNode(node.id, groups).length >=
-    node.minimumActiveItemCount;
-}
-
-export function isAlgorithmItemSelectable(
-  question: AlgorithmQuestion,
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): boolean {
-  const group = getAlgorithmContentGroupForItem(question.id, groups);
-
-  if (!group) {
-    return false;
-  }
-
-  const node = ALGORITHM_ROADMAP.nodes.find(
-    (candidate) => candidate.id === group.roadmapNodeId,
-  );
-
-  return node ? isAlgorithmRoadmapNodeSelectable(node, groups) : false;
-}
-
-export function getSelectableAlgorithmItems(
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): readonly AlgorithmQuestion[] {
-  return groups.flatMap((group) => {
-    const node = ALGORITHM_ROADMAP.nodes.find(
-      (candidate) => candidate.id === group.roadmapNodeId,
-    );
-
-    return node && isAlgorithmRoadmapNodeSelectable(node, groups)
-      ? group.questions
-      : [];
-  });
-}
-
-export function getFirstUsableAlgorithmRoadmapNode(
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
-): AlgorithmRoadmapNode {
-  const node = ALGORITHM_ROADMAP.nodes.find((candidate) =>
-    isAlgorithmRoadmapNodeSelectable(candidate, groups),
-  );
-
-  if (!node) {
-    throw new Error("No selectable Algorithms roadmap node has questions.");
-  }
-
-  return node;
-}
+export type AlgorithmQuestionEntry = Readonly<{ question: AlgorithmQuestion; roadmapNodeId: string }>;
+export function getAlgorithmItems(): readonly AlgorithmQuestion[] { return getAlgorithmContentCatalog().getItems(); }
+export function getAlgorithmItemById(itemId: string): AlgorithmQuestion | undefined { return getAlgorithmItems().find((item) => item.id === itemId); }
+export function getAlgorithmQuestionEntries(items: readonly AlgorithmQuestion[] = getAlgorithmItems()): readonly AlgorithmQuestionEntry[] { return items.map((question) => Object.freeze({ question, roadmapNodeId: question.taxonomy.roadmapNodeId })); }
+export function getAlgorithmItemsForRoadmapNode(nodeId: AlgorithmRoadmapNodeId, items: readonly AlgorithmQuestion[] = getAlgorithmItems()): readonly AlgorithmQuestion[] { return items.filter((item) => item.taxonomy.roadmapNodeId === nodeId); }
+export function getRoadmapNodesWithActiveItems(items: readonly AlgorithmQuestion[] = getAlgorithmItems()): readonly AlgorithmRoadmapNode[] { const ids = new Set(items.map((item) => item.taxonomy.roadmapNodeId)); return ALGORITHM_ROADMAP.nodes.filter((node) => ids.has(node.id)); }
+export function isAlgorithmRoadmapNodeSelectable(node: AlgorithmRoadmapNode, items: readonly AlgorithmQuestion[] = getAlgorithmItems()): boolean { return getAlgorithmItemsForRoadmapNode(node.id, items).length >= node.minimumActiveItemCount; }
+export function isAlgorithmItemSelectable(item: AlgorithmQuestion, items: readonly AlgorithmQuestion[] = getAlgorithmItems()): boolean { const node = ALGORITHM_ROADMAP.nodes.find((candidate) => candidate.id === item.taxonomy.roadmapNodeId); return !!node && isAlgorithmRoadmapNodeSelectable(node, items); }
+export function getSelectableAlgorithmItems(items: readonly AlgorithmQuestion[] = getAlgorithmItems()): readonly AlgorithmQuestion[] { return items.filter((item) => isAlgorithmItemSelectable(item, items)); }
+export function getFirstUsableAlgorithmRoadmapNode(items: readonly AlgorithmQuestion[] = getAlgorithmItems()): AlgorithmRoadmapNode { const node = ALGORITHM_ROADMAP.nodes.find((candidate) => isAlgorithmRoadmapNodeSelectable(candidate, items)); if (!node) throw new Error("No selectable Algorithms roadmap node has items."); return node; }

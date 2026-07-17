@@ -1,12 +1,6 @@
 import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../../domain";
 import { AlgorithmContentCatalog } from "../../tracks/algorithms/algorithmContentCatalog";
-import {
-  ALGORITHMS_PRACTICE_BLUEPRINT,
-  ALGORITHMS_RECOMMENDATION_POLICY,
-  assertAlgorithmsPracticeBlueprint,
-  type AlgorithmsPracticeBlueprint,
-  type AlgorithmsRecommendationPolicy,
-} from "../../tracks/algorithms/algorithmsBlueprints";
+import { ALGORITHMS_RECOMMENDATION_POLICY, type AlgorithmsRecommendationPolicy } from "../../tracks/algorithms/algorithmsBlueprints";
 import {
   selectAlgorithmSessionPlan,
   type AlgorithmReviewSource,
@@ -58,10 +52,8 @@ export class AlgorithmsFamilyRuntime {
 
   constructor(
     private readonly catalog: AlgorithmContentCatalog,
-    private readonly blueprint: AlgorithmsPracticeBlueprint = ALGORITHMS_PRACTICE_BLUEPRINT,
     private readonly recommendationPolicy: AlgorithmsRecommendationPolicy = ALGORITHMS_RECOMMENDATION_POLICY,
   ) {
-    assertAlgorithmsPracticeBlueprint(blueprint);
     if (recommendationPolicy.policyId !== "algorithms-recommendations" || recommendationPolicy.policyVersion !== "1") {
       throw new Error("Algorithms recommendation policy identity is unsupported.");
     }
@@ -80,7 +72,6 @@ export class AlgorithmsFamilyRuntime {
       contentCatalog: this.catalog,
       mode: input.modeId,
       now: input.now,
-      practiceBlueprint: this.blueprint,
       reviewItemRefs: input.request.reviewItemRefs,
       reviewQueueItems: input.reviews,
       reviewSource: input.source,
@@ -97,7 +88,8 @@ export class AlgorithmsFamilyRuntime {
     session: TrainingSession;
   }>): TrainingSession {
     return prepareAlgorithmsConditionalReinsertPlan({
-      entries: getAlgorithmQuestionEntries(this.catalog.getGroups()),
+      entries: getAlgorithmQuestionEntries(this.catalog.getItems()),
+      compatibilitySets: this.catalog.bank.compatibilitySets,
       mode: input.session.modeId as AlgorithmModeId,
       optionOrderByItemId: input.optionOrderByItemId,
       reviewedItemRefs: input.reviewedItemRefs,

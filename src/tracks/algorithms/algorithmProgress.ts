@@ -9,8 +9,7 @@ import {
   type AlgorithmQuestionEntry,
 } from "./algorithmItems";
 import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
-import type { AlgorithmContentGroup } from "./algorithmContentCatalog";
-import type { AlgorithmQuestion, AlgorithmQuestionType } from "./algorithmQuestionTypes";
+import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
   type AlgorithmRoadmapNode,
@@ -78,18 +77,18 @@ export type AlgorithmWeakAreaRecommendation = {
 
 export function buildAlgorithmProgressFacts(
   attempts: readonly TrainingAttempt[],
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
+  items: readonly AlgorithmQuestion[] = getAlgorithmContentCatalog().getItems(),
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   reviewQueueItems: readonly ReviewQueueEntry[] = [],
   now = new Date().toISOString(),
 ): AlgorithmProgressFacts {
-  const entries = getKnownRoadmapEntries(groups, roadmapNodes);
+  const entries = getKnownRoadmapEntries(items, roadmapNodes);
   const questionIds = new Set(entries.map((entry) => entry.question.id));
   const algorithmAttempts = attempts.filter((attempt) =>
     attempt.trackId === "algorithms" && questionIds.has(attempt.item.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
-  const nodeProgress = getRoadmapNodesWithActiveItems(groups)
+  const nodeProgress = getRoadmapNodesWithActiveItems(items)
     .filter((node) => roadmapNodes.some((candidate) => candidate.id === node.id))
     .map((node) => buildNodeProgress(
       node,
@@ -116,11 +115,11 @@ export function buildAlgorithmProgressFacts(
 
 export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
-  groups: readonly AlgorithmContentGroup[] = getAlgorithmContentCatalog().getGroups(),
+  items: readonly AlgorithmQuestion[] = getAlgorithmContentCatalog().getItems(),
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
-  const entries = getKnownRoadmapEntries(groups, roadmapNodes);
+  const entries = getKnownRoadmapEntries(items, roadmapNodes);
   const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) => attempt.trackId === "algorithms"),
@@ -144,7 +143,7 @@ export function buildAlgorithmWeakAreaRecommendation(
   return {
     candidateItemIds: getWeakAreaCandidateItemIds(
       entries,
-      selectedStats?.missedItemTypes ?? new Set(),
+      selectedStats?.missedInteractionTypes ?? new Set(),
       selectedNodeId,
       selectedMistakeTypes,
     ),
@@ -155,12 +154,12 @@ export function buildAlgorithmWeakAreaRecommendation(
 }
 
 function getKnownRoadmapEntries(
-  groups: readonly AlgorithmContentGroup[],
+  items: readonly AlgorithmQuestion[],
   roadmapNodes: readonly AlgorithmRoadmapNode[],
 ): readonly AlgorithmQuestionEntry[] {
   const knownNodeIds = new Set(roadmapNodes.map((node) => node.id));
-  return getAlgorithmQuestionEntries(groups).filter((entry) =>
-    knownNodeIds.has(entry.group.roadmapNodeId),
+  return getAlgorithmQuestionEntries(items).filter((entry) =>
+    knownNodeIds.has(entry.roadmapNodeId),
   );
 }
 
@@ -173,7 +172,7 @@ function buildNodeProgress(
   now: string,
 ): AlgorithmRoadmapNodeProgress {
   const questions = entries
-    .filter((entry) => entry.group.roadmapNodeId === node.id)
+    .filter((entry) => entry.roadmapNodeId === node.id)
     .map((entry) => entry.question);
   const latestNodeAttempts = questions.flatMap((question) => {
     const attempt = latestAttemptByItemId.get(question.id);
@@ -190,7 +189,7 @@ function buildNodeProgress(
     itemCount,
     Math.min(70, Math.max(35, Math.ceil(itemCount * 0.6))),
   );
-  const coreSkillAtomIds = [...new Set(questions.map((question) => question.primarySkillAtomId))];
+  const coreSkillAtomIds = [...new Set(questions.map((question) => question.taxonomy.primarySkillAtomId))];
   const coveredCoreSkillAtomCount = coreSkillAtomIds.filter((skillId) =>
     isCoreSkillCovered(skillId, questions, latestAttemptByItemId),
   ).length;
@@ -278,7 +277,7 @@ function getRetainedSkills(
     if (review.consecutiveAfterDueSuccesses < 2) continue;
     const question = questionsById.get(review.sourceItem.itemId);
     if (!question) continue;
-    retained.add(question.primarySkillAtomId);
+    retained.add(question.taxonomy.primarySkillAtomId);
   }
 
   return retained;
@@ -290,7 +289,7 @@ function isCoreSkillCovered(
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
 ): boolean {
   const linkedQuestions = questions.filter((question) =>
-    question.primarySkillAtomId === skillId,
+    question.taxonomy.primarySkillAtomId === skillId,
   );
   const attempts = linkedQuestions.flatMap((question) => {
     const attempt = latestAttemptByItemId.get(question.id);
@@ -391,7 +390,7 @@ function countLatestStatuses(
 
 type WeakAreaNodeStats = {
   incorrectCount: number;
-  missedItemTypes: Set<AlgorithmQuestionType>;
+  missedInteractionTypes: Set<AlgorithmQuestion["interaction"]["type"]>;
   mistakeTypeCounts: Map<string, number>;
   nodeId: AlgorithmRoadmapNodeId;
   partialCount: number;
@@ -411,10 +410,10 @@ function buildWeakAreaStats(
 
     if (!entry || !status || status === "correct") continue;
 
-    const nodeId = entry.group.roadmapNodeId;
+    const nodeId = entry.roadmapNodeId as AlgorithmRoadmapNodeId;
     const stats = statsByNodeId.get(nodeId) ?? {
       incorrectCount: 0,
-      missedItemTypes: new Set<AlgorithmQuestionType>(),
+      missedInteractionTypes: new Set<AlgorithmQuestion["interaction"]["type"]>(),
       mistakeTypeCounts: new Map<string, number>(),
       nodeId,
       partialCount: 0,
@@ -422,7 +421,7 @@ function buildWeakAreaStats(
     };
     const baseScore = status === "incorrect" ? 3 : 1;
     stats.weakScore += baseScore;
-    stats.missedItemTypes.add(entry.question.type);
+    stats.missedInteractionTypes.add(entry.question.interaction.type);
     status === "incorrect" ? stats.incorrectCount += 1 : stats.partialCount += 1;
 
     for (const mistakeType of getMistakeTypeIds(attempt.reviewEvidence.taxonomyOrSkillRefs)) {
@@ -460,13 +459,13 @@ function getDefaultRoadmapNodeId(
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmRoadmapNodeId {
   if (preferredRoadmapNodeId && entries.some(
-    (entry) => entry.group.roadmapNodeId === preferredRoadmapNodeId,
+    (entry) => entry.roadmapNodeId === preferredRoadmapNodeId,
   )) {
     return preferredRoadmapNodeId;
   }
 
   const firstNode = roadmapNodes.find((node) =>
-    entries.some((entry) => entry.group.roadmapNodeId === node.id),
+    entries.some((entry) => entry.roadmapNodeId === node.id),
   );
 
   if (!firstNode) {
@@ -478,22 +477,19 @@ function getDefaultRoadmapNodeId(
 
 function getWeakAreaCandidateItemIds(
   entries: readonly AlgorithmQuestionEntry[],
-  missedItemTypes: ReadonlySet<AlgorithmQuestionType>,
+  missedInteractionTypes: ReadonlySet<AlgorithmQuestion["interaction"]["type"]>,
   roadmapNodeId: AlgorithmRoadmapNodeId,
   selectedMistakeTypes: readonly string[],
 ): readonly string[] {
   const mistakeTypes = new Set(selectedMistakeTypes);
 
   return entries
-    .filter((entry) => entry.group.roadmapNodeId === roadmapNodeId)
+    .filter((entry) => entry.roadmapNodeId === roadmapNodeId)
     .map((entry, index) => ({
       entry,
       index,
       score:
-        (missedItemTypes.has(entry.question.type) ? 2 : 0) +
-        (entry.question.feedbackModel.mistakeTypes.some((mistakeType) =>
-          mistakeTypes.has(mistakeType),
-        ) ? 1 : 0),
+        (missedInteractionTypes.has(entry.question.interaction.type) ? 2 : 0),
     }))
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .map(({ entry }) => entry.question.id);

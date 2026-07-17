@@ -1,43 +1,24 @@
 import { MissingContentItemError, type ContentItemRef } from "../../domain/learning";
 import { ALGORITHMS_TRACK_ID } from "../../domain/tracks";
-import { getAlgorithmMode } from "./domain";
+import type { PublishedAlgorithmsBank } from "../../content/contracts";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
 
-export type AlgorithmContentGroup = {
-  id: AlgorithmRoadmapNodeId;
-  questions: readonly AlgorithmQuestion[];
-  roadmapNodeId: AlgorithmRoadmapNodeId;
-};
-
+/** Direct index of one validated published bank. Groups are not a runtime representation. */
 export class AlgorithmContentCatalog {
-  private readonly questions: readonly AlgorithmQuestion[];
-  private readonly questionsById: ReadonlyMap<string, AlgorithmQuestion>;
-  private readonly groupsByItemId: ReadonlyMap<string, AlgorithmContentGroup>;
-  private readonly groupsByRoadmapNodeId: ReadonlyMap<AlgorithmRoadmapNodeId, AlgorithmContentGroup>;
-
-  constructor(private readonly groups: readonly AlgorithmContentGroup[]) {
-    this.questions = groups.flatMap((group) => group.questions);
-    this.questionsById = new Map(this.questions.map((question) => [question.id, question]));
-    this.groupsByItemId = new Map(groups.flatMap((group) => group.questions.map((question) => [question.id, group])));
-    this.groupsByRoadmapNodeId = new Map(groups.map((group) => [group.roadmapNodeId, group]));
+  private readonly itemsById: ReadonlyMap<string, AlgorithmQuestion>;
+  private readonly itemsByRoadmapNodeId: ReadonlyMap<string, readonly AlgorithmQuestion[]>;
+  constructor(readonly bank: PublishedAlgorithmsBank) {
+    this.itemsById = new Map(bank.items.map((item) => [item.id, item]));
+    this.itemsByRoadmapNodeId = new Map([...new Set(bank.items.map((item) => item.taxonomy.roadmapNodeId))].map((nodeId) => [nodeId, bank.items.filter((item) => item.taxonomy.roadmapNodeId === nodeId)]));
   }
-
-  getContentVersion(): string { return this.questions[0]?.contentVersion ?? ""; }
-  getGroups(): readonly AlgorithmContentGroup[] { return this.groups; }
-  getItems(): readonly AlgorithmQuestion[] { return this.questions; }
-  getGroupForItemId(itemId: string): AlgorithmContentGroup | undefined { return this.groupsByItemId.get(itemId); }
-  getItemsForRoadmapNode(nodeId: AlgorithmRoadmapNodeId): readonly AlgorithmQuestion[] { return this.groupsByRoadmapNodeId.get(nodeId)?.questions ?? []; }
-  getItemsForMode(modeId: string): readonly AlgorithmQuestion[] {
-    const mode = getAlgorithmMode(modeId);
-    return this.questions.filter((question) => mode.itemTypes.includes(question.type));
-  }
-  getItemById(itemId: string): AlgorithmQuestion {
-    const item = this.questionsById.get(itemId);
-    if (!item) throw new MissingContentItemError(ALGORITHMS_TRACK_ID, itemId);
-    return item;
-  }
-  toContentItemRef(item: AlgorithmQuestion): ContentItemRef {
-    return { contentVersion: item.contentVersion, itemId: item.id, trackId: ALGORITHMS_TRACK_ID };
-  }
+  getContentVersion(): string { return this.bank.contentVersion; }
+  getItems(): readonly AlgorithmQuestion[] { return this.bank.items; }
+  getItemsForRoadmapNode(nodeId: AlgorithmRoadmapNodeId): readonly AlgorithmQuestion[] { return this.itemsByRoadmapNodeId.get(nodeId) ?? []; }
+  getItemsForMode(modeId: string): readonly AlgorithmQuestion[] { const blueprint = this.bank.practiceBlueprints.find((entry) => entry.modeId === modeId); return blueprint ? blueprint.resolvedItemIds.map((id) => this.getItemById(id)) : []; }
+  getItemById(itemId: string): AlgorithmQuestion { const item = this.itemsById.get(itemId); if (!item) throw new MissingContentItemError(ALGORITHMS_TRACK_ID, itemId); return item; }
+  getCompatibilitySet(id: string) { return this.bank.compatibilitySets.find((entry) => entry.id === id); }
+  getSimulationPool(poolId: string) { return this.bank.simulationPools.find((entry) => entry.poolId === poolId); }
+  getSimulationProfile(profileId: string) { return this.bank.simulationProfiles.find((entry) => entry.profileId === profileId); }
+  toContentItemRef(item: AlgorithmQuestion): ContentItemRef { return { contentVersion: this.bank.contentVersion, itemId: item.id, trackId: ALGORITHMS_TRACK_ID }; }
 }

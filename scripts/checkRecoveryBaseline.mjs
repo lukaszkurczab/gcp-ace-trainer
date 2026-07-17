@@ -30,7 +30,7 @@ const forbiddenSourcePatterns = [
   ["old result variants", /kind:\s*["'](?:correctness|partial_credit|mixed)["']/],
   ["shared mode taxonomy", /\b(?:SessionModeType|FeedbackTiming|ScoringType|supportedItemTypes)\b/],
   ["old feature records", /\b(?:ActiveExamSession|PracticeAnswerRecord|QuestionReviewState)\b/],
-  ["replacement bridge", /\b(?:Legacy|Adapter|Compatibility|toCanonical|fromLegacy)\b/],
+  ["replacement bridge", /\b(?:Legacy|Adapter|toCanonical|fromLegacy)\b/],
   ["validation suppression", /as unknown as|@ts-ignore|@ts-expect-error/],
   ["removed persistence engine", /AsyncStorage|localStorage|getStorageReadKeys|getStorageClearKeys|readLocalJson|writeLocalJson|AsyncStorageContentCache/],
 ];

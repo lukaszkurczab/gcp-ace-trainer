@@ -15,14 +15,14 @@ export function getShuffledAlgorithmQuestionOptions(
   question: AlgorithmQuestion,
 ): readonly AlgorithmQuestionDisplayOption[] {
   if (isAlgorithmChoiceQuestion(question)) {
-    return shuffleArray(question.options.map((option) => ({ id: option.id, text: option.text })));
+    return shuffleArray(question.interaction.options.map((option) => ({ id: option.id, text: option.text })));
   }
 
   if (isAlgorithmOrderingQuestion(question)) {
     return shuffleArray(
-      question.subgoals.map((subgoal) => ({
-        id: subgoal.id,
-        text: subgoal.text,
+      question.interaction.elements.map((element) => ({
+        id: element.id,
+        text: element.text,
       })),
     );
   }

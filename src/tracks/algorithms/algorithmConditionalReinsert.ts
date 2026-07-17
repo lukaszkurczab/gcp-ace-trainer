@@ -8,6 +8,7 @@ import {
   type TrainingSessionItemOccurrence,
 } from "../../domain";
 import type { AlgorithmQuestionEntry } from "./algorithmItems";
+import type { PublishedAlgorithmsCompatibilitySet } from "../../content/contracts";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId } from "./domain/algorithmModes";
 import type { AlgorithmReviewSource } from "./algorithmReviewSelection";
 
@@ -21,6 +22,7 @@ export type AlgorithmsConditionalReinsertPlanInput = Readonly<{
   session: TrainingSession;
   /** Prepared deterministic option orders for catalog items used only in alternate branches. */
   optionOrderByItemId: Readonly<Record<string, readonly string[]>>;
+  compatibilitySets: readonly PublishedAlgorithmsCompatibilitySet[];
 }>;
 
 export type AlgorithmsConditionalReinsertResolution = Readonly<{
@@ -67,17 +69,21 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
     const sourceOccurrence = input.session.itemOrder[sourceIndex]!;
     const ordinaryOccurrence = input.session.itemOrder[sourceIndex + 4]!;
     const sourceEntry = getValidatedEntry(sourceOccurrence, entryByItemId, "source");
+    const compatibleIds = new Set(sourceEntry.question.compatibilityMemberships.flatMap((membership) => {
+      const relation = input.compatibilitySets.find((entry) => entry.id === membership);
+      if (!relation || relation.relation !== "reviewed_variant") return [];
+      return relation.direction === "directed" ? relation.targetItemIds : [...relation.sourceItemIds, ...relation.targetItemIds];
+    }));
     const reviewedVariant = [...input.entries]
       .sort(compareEntries)
-      .find((candidate) => candidate.question.id !== sourceEntry.question.id &&
-        candidate.question.primarySkillAtomId === sourceEntry.question.primarySkillAtomId &&
-        reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate))) &&
+      .find((candidate) => candidate.question.id !== sourceEntry.question.id && compatibleIds.has(candidate.question.id) &&
+        reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate, input.session.contentVersion))) &&
         !planItemIds.has(candidate.question.id) && !reservedReviewedVariantIds.has(candidate.question.id));
     const slotId = `${input.session.id}:conditional:${sourceIndex + 4}`;
     const ordinaryBranch = branch(ordinaryOccurrence, input.session.optionOrderByOccurrence[ordinaryOccurrence.occurrenceId] ?? []);
     const alternativeOccurrenceId = reviewedVariant ? `${slotId}:reviewed` : `${slotId}:exact`;
     const alternativeBranch = reviewedVariant
-      ? branch({ occurrenceId: alternativeOccurrenceId, item: toContentItemRef(reviewedVariant) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
+      ? branch({ occurrenceId: alternativeOccurrenceId, item: toContentItemRef(reviewedVariant, input.session.contentVersion) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
       : branch({ occurrenceId: alternativeOccurrenceId, item: sourceOccurrence.item }, input.session.optionOrderByOccurrence[sourceOccurrence.occurrenceId] ?? []);
     if (reviewedVariant) reservedReviewedVariantIds.add(reviewedVariant.question.id);
     slots.push(Object.freeze({
@@ -191,7 +197,7 @@ function getValidatedEntry(
   if (occurrence.item.trackId !== "algorithms") throw new Error(`Algorithms reinsert ${role} occurrence ${occurrence.occurrenceId} belongs to track ${occurrence.item.trackId}.`);
   const entry = entryByItemId.get(occurrence.item.itemId);
   if (!entry) throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} is unavailable in the active catalog.`);
-  if (entry.question.contentVersion !== occurrence.item.contentVersion) throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} has stale content version ${occurrence.item.contentVersion}.`);
+  if (occurrence.item.contentVersion === "") throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} has no content version.`);
   return entry;
 }
 
@@ -206,8 +212,8 @@ function branch(occurrence: TrainingSessionItemOccurrence, optionOrder: readonly
   return Object.freeze({ occurrence: freezeOccurrence(occurrence), optionOrder: Object.freeze([...optionOrder]) });
 }
 
-function toContentItemRef(entry: AlgorithmQuestionEntry): ContentItemRef {
-  return Object.freeze({ contentVersion: entry.question.contentVersion, itemId: entry.question.id, trackId: "algorithms" });
+function toContentItemRef(entry: AlgorithmQuestionEntry, contentVersion: string): ContentItemRef {
+  return Object.freeze({ contentVersion, itemId: entry.question.id, trackId: "algorithms" });
 }
 
 function contentItemRefKey(ref: ContentItemRef): string {
@@ -215,7 +221,7 @@ function contentItemRefKey(ref: ContentItemRef): string {
 }
 
 function compareEntries(left: AlgorithmQuestionEntry, right: AlgorithmQuestionEntry): number {
-  return left.group.roadmapNodeId.localeCompare(right.group.roadmapNodeId) || left.question.id.localeCompare(right.question.id);
+  return left.roadmapNodeId.localeCompare(right.roadmapNodeId) || left.question.id.localeCompare(right.question.id);
 }
 
 function freezeOccurrence(occurrence: TrainingSessionItemOccurrence): TrainingSessionItemOccurrence {

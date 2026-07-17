@@ -1,95 +1,53 @@
 import { createAttemptResult, type AttemptResult } from "../../domain/learning";
-import {
-  isAlgorithmChoiceQuestion,
-  isAlgorithmComplexityQuestion,
-  isAlgorithmOrderingQuestion,
-  type AlgorithmQuestion,
-} from "./algorithmQuestionTypes";
+import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion, type AlgorithmQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmResponse } from "./domain";
 
 export type AlgorithmScoringStatus = "correct" | "partial" | "incorrect";
-
 export type AlgorithmQuestionScore = Readonly<{
-  diagnostics: Readonly<{
-    brokenOrderingRelations: readonly string[];
-    incorrectComplexityDimensionIds: readonly string[];
-    omittedCorrectOptionIds: readonly string[];
-    selectedWrongOptionIds: readonly string[];
-  }>;
-  mistakeTypes: AlgorithmQuestion["feedbackModel"]["mistakeTypes"];
+  diagnostics: Readonly<{ brokenOrderingRelations: readonly string[]; incorrectComplexityDimensionIds: readonly string[]; omittedCorrectOptionIds: readonly string[]; selectedWrongOptionIds: readonly string[] }>;
+  mistakeTypes: readonly string[];
   result: AttemptResult;
   status: AlgorithmScoringStatus;
 }>;
+const emptyDiagnostics = () => Object.freeze({ brokenOrderingRelations: Object.freeze([]), incorrectComplexityDimensionIds: Object.freeze([]), omittedCorrectOptionIds: Object.freeze([]), selectedWrongOptionIds: Object.freeze([]) });
 
 export function scoreAlgorithmQuestion(question: AlgorithmQuestion, response: AlgorithmResponse): AlgorithmQuestionScore {
   const { diagnostics, points } = scorePoints(question, response);
-  const status: AlgorithmScoringStatus = points.earnedPoints === points.maxPoints
-    ? "correct"
-    : points.earnedPoints > 0 ? "partial" : "incorrect";
-  return {
-    diagnostics,
-    mistakeTypes: status === "correct" ? [] : question.feedbackModel.mistakeTypes,
-    result: createAttemptResult({ kind: status, ...points }),
-    status,
-  };
+  const status: AlgorithmScoringStatus = points.earnedPoints === points.maxPoints ? "correct" : points.earnedPoints > 0 ? "partial" : "incorrect";
+  return Object.freeze({ diagnostics, mistakeTypes: Object.freeze([]), result: createAttemptResult({ kind: status, ...points }), status });
 }
+export function getAlgorithmAttemptStatus(result: AttemptResult | undefined): AlgorithmScoringStatus | undefined { return result?.kind; }
 
-export function getAlgorithmAttemptStatus(result: AttemptResult | undefined): AlgorithmScoringStatus | undefined {
-  return result?.kind;
-}
-
-function scorePoints(question: AlgorithmQuestion, response: AlgorithmResponse): Readonly<{
-  diagnostics: AlgorithmQuestionScore["diagnostics"];
-  points: { earnedPoints: number; maxPoints: number };
-}> {
-  const emptyDiagnostics = (): AlgorithmQuestionScore["diagnostics"] => Object.freeze({
-    brokenOrderingRelations: Object.freeze([]),
-    incorrectComplexityDimensionIds: Object.freeze([]),
-    omittedCorrectOptionIds: Object.freeze([]),
-    selectedWrongOptionIds: Object.freeze([]),
-  });
+function scorePoints(question: AlgorithmQuestion, response: AlgorithmResponse): Readonly<{ diagnostics: AlgorithmQuestionScore["diagnostics"]; points: { earnedPoints: number; maxPoints: number } }> {
   if (isAlgorithmChoiceQuestion(question)) {
     if (response.kind !== "choice") throw new Error(`Algorithms response kind mismatch for ${question.id}: expected choice.`);
-    const correctIds = new Set(question.options.filter((option) => option.isCorrect).map((option) => option.id));
-    const availableIds = new Set(question.options.map((option) => option.id));
-    if (new Set(response.selectedOptionIds).size !== response.selectedOptionIds.length || response.selectedOptionIds.some((id) => !availableIds.has(id))) {
-      throw new Error(`Algorithms choice response is invalid for ${question.id}.`);
-    }
-    const selectedIds = new Set(response.selectedOptionIds);
-    const omittedCorrectOptionIds = [...correctIds].filter((id) => !selectedIds.has(id));
-    const selectedWrongOptionIds = [...selectedIds].filter((id) => !correctIds.has(id));
-    const selectedCorrectCount = selectedIds.size - selectedWrongOptionIds.length;
-    const selectedIncorrectCount = selectedWrongOptionIds.length;
-    const exact = selectedCorrectCount === correctIds.size && selectedIncorrectCount === 0;
-    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), omittedCorrectOptionIds: Object.freeze(omittedCorrectOptionIds), selectedWrongOptionIds: Object.freeze(selectedWrongOptionIds) }), points: { earnedPoints: exact ? correctIds.size : selectedIncorrectCount === 0 ? selectedCorrectCount : 0, maxPoints: correctIds.size } });
+    const { acceptedOptionIds, options, selectionMode } = question.interaction;
+    if (new Set(response.selectedOptionIds).size !== response.selectedOptionIds.length || response.selectedOptionIds.some((id) => !options.some((option) => option.id === id))) throw new Error(`Algorithms choice response is invalid for ${question.id}.`);
+    const accepted = new Set(acceptedOptionIds); const selected = new Set(response.selectedOptionIds); const wrong = [...selected].filter((id) => !accepted.has(id)); const omitted = [...accepted].filter((id) => !selected.has(id));
+    const exact = wrong.length === 0 && omitted.length === 0;
+    const partial = selectionMode === "multiple" && wrong.length === 0 && selected.size > 0 && selected.size < accepted.size;
+    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), omittedCorrectOptionIds: Object.freeze(omitted), selectedWrongOptionIds: Object.freeze(wrong) }), points: { earnedPoints: exact ? accepted.size : partial ? selected.size : 0, maxPoints: accepted.size } });
   }
   if (isAlgorithmOrderingQuestion(question)) {
     if (response.kind !== "ordering") throw new Error(`Algorithms response kind mismatch for ${question.id}: expected ordering.`);
-    if (response.orderedSubgoalIds.length !== question.correctOrder.length || new Set(response.orderedSubgoalIds).size !== question.correctOrder.length || response.orderedSubgoalIds.some((id) => !question.correctOrder.includes(id))) {
-      throw new Error(`Algorithms ordering response is invalid for ${question.id}.`);
-    }
-    const correctRelations = new Set(question.correctOrder.slice(0, -1).map((id, index) => `${id}->${question.correctOrder[index + 1]}`));
-    const earnedPoints = response.orderedSubgoalIds.slice(0, -1).filter((id, index) => correctRelations.has(`${id}->${response.orderedSubgoalIds[index + 1]}`)).length;
-    const brokenOrderingRelations = [...correctRelations].filter((relation) => !response.orderedSubgoalIds.slice(0, -1).some((id, index) => relation === `${id}->${response.orderedSubgoalIds[index + 1]}`));
-    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), brokenOrderingRelations: Object.freeze(brokenOrderingRelations) }), points: { earnedPoints, maxPoints: question.correctOrder.length - 1 } });
+    const order = question.interaction.canonicalOrder;
+    if (response.orderedSubgoalIds.length !== order.length || new Set(response.orderedSubgoalIds).size !== order.length || response.orderedSubgoalIds.some((id) => !order.includes(id))) throw new Error(`Algorithms ordering response is invalid for ${question.id}.`);
+    const relations = new Set(order.slice(0, -1).map((id, index) => `${id}->${order[index + 1]}`)); const actual = response.orderedSubgoalIds.slice(0, -1).map((id, index) => `${id}->${response.orderedSubgoalIds[index + 1]}`); const earnedPoints = actual.filter((relation) => relations.has(relation)).length;
+    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), brokenOrderingRelations: Object.freeze([...relations].filter((relation) => !actual.includes(relation))) }), points: { earnedPoints, maxPoints: question.scoringContract.maxPoints } });
   }
   if (isAlgorithmComplexityQuestion(question)) {
     if (response.kind !== "complexity") throw new Error(`Algorithms response kind mismatch for ${question.id}: expected complexity.`);
-    const dimensionIds = new Set(question.correctComplexity.dimensions.map((dimension) => dimension.id));
-    if (Object.keys(response.selectedValuesByDimension).some((dimensionId) => !dimensionIds.has(dimensionId))) {
-      throw new Error(`Algorithms complexity response is invalid for ${question.id}: unknown dimension.`);
-    }
-    const incorrectComplexityDimensionIds: string[] = [];
-    const earnedPoints = question.correctComplexity.dimensions.filter((dimension) => {
-        const selected = response.selectedValuesByDimension[dimension.id];
-        if (selected === undefined || ![...dimension.values, ...(dimension.acceptedAliases ?? [])].includes(selected)) {
-          throw new Error(`Algorithms complexity response is invalid for ${question.id}:${dimension.id}.`);
-        }
-        const correct = [...dimension.acceptedValues, ...(dimension.acceptedAliases ?? [])].includes(selected);
-        if (!correct) incorrectComplexityDimensionIds.push(dimension.id);
-        return correct;
-      }).length;
-    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), incorrectComplexityDimensionIds: Object.freeze(incorrectComplexityDimensionIds) }), points: { earnedPoints, maxPoints: question.correctComplexity.maxPoints ?? question.correctComplexity.dimensions.length } });
+    const interaction = question.interaction; const dimensions = new Set(interaction.checkedDimensions);
+    if (Object.keys(response.selectedValuesByDimension).some((id) => !dimensions.has(id))) throw new Error(`Algorithms complexity response is invalid for ${question.id}: unknown dimension.`);
+    const incorrect: string[] = []; const earnedPoints = interaction.checkedDimensions.filter((dimension) => {
+      const selected = response.selectedValuesByDimension[dimension];
+      if (!selected) throw new Error(`Algorithms complexity response is invalid for ${question.id}:${dimension}.`);
+      const legal = interaction.availableValuesByDimension[dimension] ?? [];
+      const normalized = interaction.normalizedAliasesByDimension[dimension]?.[selected] ?? selected;
+      if (!legal.includes(normalized)) throw new Error(`Algorithms complexity response is invalid for ${question.id}:${dimension}.`);
+      const correct = interaction.acceptedValuesByDimension[dimension]?.includes(normalized) ?? false; if (!correct) incorrect.push(dimension); return correct;
+    }).length;
+    return Object.freeze({ diagnostics: Object.freeze({ ...emptyDiagnostics(), incorrectComplexityDimensionIds: Object.freeze(incorrect) }), points: { earnedPoints, maxPoints: question.scoringContract.maxPoints } });
   }
-  throw new Error(`Unsupported Algorithms question interaction: ${JSON.stringify(question)}`);
+  throw new Error("Unsupported Algorithms interaction.");
 }

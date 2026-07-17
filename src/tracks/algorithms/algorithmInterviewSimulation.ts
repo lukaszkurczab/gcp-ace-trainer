@@ -14,19 +14,12 @@ import {
 import type { AlgorithmContentCatalog } from "./algorithmContentCatalog";
 import { deriveAlgorithmReviewReasons, submitAlgorithmInteraction, validateAlgorithmInteractionItem } from "./algorithmInteractionHandlers";
 import { getAlgorithmQuestionEntries } from "./algorithmItems";
-import {
-  ALGORITHMS_PRACTICE_BLUEPRINT,
-  assertAlgorithmsPracticeBlueprint,
-  type AlgorithmsInterviewSimulationProfile,
-  type AlgorithmsPracticeBlueprint,
-} from "./algorithmsBlueprints";
 import { ALGORITHM_MODE_IDS } from "./domain/algorithmModes";
 import type { AlgorithmResponse } from "./domain/algorithmResponse";
 import { selectAlgorithmSessionPlan } from "./algorithmSessionSelection";
 import { isAlgorithmChoiceQuestion, isAlgorithmOrderingQuestion, type AlgorithmQuestion } from "./algorithmQuestionTypes";
 import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "./algorithmReview";
-
-export const ALGORITHMS_INTERVIEW_SIMULATION_DURATION_MS = 2_700_000;
+import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 
 export type AlgorithmsInterviewSimulationPreparation = Readonly<{
   draft: TrainingSessionDraft;
@@ -71,34 +64,33 @@ export class AlgorithmsInterviewSimulationFinalizationGate {
 }
 
 /** Builds the exact, fixed simulation record before application lifecycle persists it. */
-export function prepareAlgorithmsInterviewSimulation(input: Readonly<{
+export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
   catalog: AlgorithmContentCatalog;
   contentVersion: string;
-  profile: AlgorithmsInterviewSimulationProfile;
+  taxonomyVersion: string;
+  profileId: string;
   sessionId: string;
   startedAt: string;
-  blueprint?: AlgorithmsPracticeBlueprint;
-}>): AlgorithmsInterviewSimulationPreparation {
-  const blueprint = input.blueprint ?? ALGORITHMS_PRACTICE_BLUEPRINT;
-  assertAlgorithmsPracticeBlueprint(blueprint);
-  if (input.profile.requiredLength !== 40 || input.profile.foregroundDurationMs !== ALGORITHMS_INTERVIEW_SIMULATION_DURATION_MS) {
+}>): Promise<AlgorithmsInterviewSimulationPreparation> {
+  const profile = input.catalog.getSimulationProfile(input.profileId);
+  const blueprint = input.catalog.bank.practiceBlueprints.find((entry) => entry.modeId === ALGORITHM_MODE_IDS.interviewSimulation);
+  if (!profile || !blueprint || profile.totalOccurrences !== 40 || profile.foregroundDurationMs !== 2_700_000 || !input.taxonomyVersion.trim()) {
     throw new Error("Algorithms Interview Simulation profile is unsupported.");
   }
   const selection = selectAlgorithmSessionPlan({
     contentCatalog: input.catalog,
     mode: ALGORITHM_MODE_IDS.interviewSimulation,
-    practiceBlueprint: blueprint,
-    scope: { simulationProfile: input.profile },
+    scope: { simulationProfileId: input.profileId },
     sessionLength: 40,
   });
   if (selection.actualLength !== 40 || new Set(selection.items.map((item) => item.id)).size !== 40) {
     throw new Error("Algorithms Interview Simulation requires exactly 40 unique valid content identities.");
   }
-  if (selection.items.some((item) => item.contentVersion !== input.contentVersion)) {
+  if (input.catalog.getContentVersion() !== input.contentVersion) {
     throw new Error("Algorithms Interview Simulation content version does not match the resolved session version.");
   }
   selection.items.forEach(validateAlgorithmInteractionItem);
-  const session = createTrainingSession({
+  const sessionInput = {
     id: input.sessionId,
     trackId: "algorithms",
     modeId: ALGORITHM_MODE_IDS.interviewSimulation,
@@ -106,32 +98,34 @@ export function prepareAlgorithmsInterviewSimulation(input: Readonly<{
       answerChanges: "untilFinalSubmission",
       feedbackMode: "atSessionEnd",
       kind: "algorithmsInterviewSimulation",
-      simulationBlueprintId: "algorithms-practice",
+      simulationBlueprintId: blueprint.blueprintId,
       simulationBlueprintVersion: blueprint.blueprintVersion,
-      simulationProfileId: input.profile.profileId,
-      simulationProfileVersion: input.profile.profileVersion,
+      simulationProfileId: profile.profileId,
+      simulationProfileVersion: profile.profileVersion,
       submission: "manualOrForegroundTimeout",
       timer: "countdownForeground",
-      timerDurationMs: ALGORITHMS_INTERVIEW_SIMULATION_DURATION_MS,
+      timerDurationMs: profile.foregroundDurationMs,
     },
     requestedLength: 40,
     actualLength: 40,
     currentItemIndex: 0,
-    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: item.contentVersion, itemId: item.id, trackId: "algorithms" } })),
+    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: input.contentVersion, itemId: item.id, trackId: "algorithms" } })),
     optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => [`${input.sessionId}:occurrence:${index}`, optionOrder(item)])),
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
     contentVersion: input.contentVersion,
+    taxonomyVersion: input.taxonomyVersion,
     status: "active",
     startedAt: input.startedAt,
-  });
+  } as const;
+  const session = createTrainingSession({ ...sessionInput, planFingerprint: await createContentSessionPlanFingerprint(sessionInput) });
   const draft = createTrainingSessionDraft({ sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: input.startedAt });
   return Object.freeze({ draft, session });
 }
 
 export function getAlgorithmsInterviewSimulationRemainingMs(session: TrainingSession): number {
   assertAlgorithmsInterviewSimulationSession(session);
-  return Math.max(0, ALGORITHMS_INTERVIEW_SIMULATION_DURATION_MS - session.activeForegroundMs);
+  return Math.max(0, Number(session.configurationSnapshot.timerDurationMs) - session.activeForegroundMs);
 }
 
 /** Replaces one editable response or removes it when response is null; no scoring or feedback is exposed. */
@@ -148,7 +142,7 @@ export function mutateAlgorithmsInterviewSimulationDraft(input: Readonly<{
   const occurrence = input.session.itemOrder.find((item) => item.occurrenceId === input.occurrenceId);
   if (!occurrence) throw new Error(`Algorithms Interview Simulation occurrence ${input.occurrenceId} is unknown.`);
   const question = input.entries.find((entry) => entry.question.id === occurrence.item.itemId)?.question;
-  if (!question || question.contentVersion !== occurrence.item.contentVersion) throw new Error("Algorithms Interview Simulation content is unavailable for this occurrence.");
+  if (!question) throw new Error("Algorithms Interview Simulation content is unavailable for this occurrence.");
   const responses = { ...input.draft.responsesByOccurrenceId } as Record<string, AlgorithmResponse>;
   if (input.response === null) delete responses[input.occurrenceId];
   else responses[input.occurrenceId] = input.response;
@@ -177,7 +171,7 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
   let maxPoints = 0;
   for (const occurrence of input.session.itemOrder) {
     const question = entryById.get(occurrence.item.itemId);
-    if (!question || question.contentVersion !== occurrence.item.contentVersion) throw new Error(`Algorithms Interview Simulation content ${occurrence.item.itemId} is unavailable.`);
+    if (!question) throw new Error(`Algorithms Interview Simulation content ${occurrence.item.itemId} is unavailable.`);
     validateAlgorithmInteractionItem(question);
     maxPoints += maximumPointsFor(question);
     const response = input.frozenDraft.responsesByOccurrenceId[occurrence.occurrenceId] as AlgorithmResponse | undefined;
@@ -199,7 +193,7 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
       item: occurrence.item,
       response,
       result: { kind: submitted.score.status, earnedPoints: submitted.score.result.earnedPoints, maxPoints: submitted.score.result.maxPoints },
-      reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: question.taxonomyRefs?.map(({ axisId, nodeId, role }) => ({ axisId, nodeId, role })) ?? [] },
+      reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "roadmap_node", nodeId: question.taxonomy.roadmapNodeId, role: "primary" }, { axisId: "mental_unit", nodeId: question.taxonomy.primaryMentalUnitId, role: "primary" }, { axisId: "skill_atom", nodeId: question.taxonomy.primarySkillAtomId, role: "primary" }] },
       answeredAt: input.completedAt,
       committedAt: input.completedAt,
     });
@@ -230,21 +224,21 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
 }
 
 function assertAlgorithmsInterviewSimulationSession(session: TrainingSession): void {
-  if (session.trackId !== "algorithms" || session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "countdownForeground" || session.configurationSnapshot.timerDurationMs !== ALGORITHMS_INTERVIEW_SIMULATION_DURATION_MS || session.conditionalReinsertSlots?.length) {
+  if (session.trackId !== "algorithms" || session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || !session.taxonomyVersion || !session.planFingerprint || session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "countdownForeground" || session.configurationSnapshot.timerDurationMs !== 2_700_000 || session.conditionalReinsertSlots?.length) {
     throw new Error("Training session is not a canonical Algorithms Interview Simulation.");
   }
 }
 
 function optionOrder(question: AlgorithmQuestion): readonly string[] {
-  if (isAlgorithmChoiceQuestion(question)) return question.options.map((option) => option.id);
-  if (isAlgorithmOrderingQuestion(question)) return question.subgoals.map((subgoal) => subgoal.id);
+  if (isAlgorithmChoiceQuestion(question)) return question.interaction.options.map((option) => option.id);
+  if (isAlgorithmOrderingQuestion(question)) return question.interaction.elements.map((element) => element.id);
   return [];
 }
 
 function maximumPointsFor(question: AlgorithmQuestion): number {
-  if (isAlgorithmChoiceQuestion(question)) return question.options.filter((option) => option.isCorrect).length;
-  if (isAlgorithmOrderingQuestion(question)) return question.correctOrder.length - 1;
-  return question.correctComplexity.maxPoints ?? question.correctComplexity.dimensions.length;
+  if (isAlgorithmChoiceQuestion(question)) return question.interaction.acceptedOptionIds.length;
+  if (isAlgorithmOrderingQuestion(question)) return question.scoringContract.maxPoints;
+  return question.scoringContract.maxPoints;
 }
 
 function sameContent(left: { contentVersion: string; itemId: string; trackId: string }, right: { contentVersion: string; itemId: string; trackId: string }): boolean {
