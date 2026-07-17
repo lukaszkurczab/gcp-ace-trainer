@@ -17,6 +17,7 @@
     "inventory:algorithms": "node --import tsx scripts/inventoryAlgorithmsSchema.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
+    "test:algorithms-cross-repo": "node --import tsx --test tests/algorithmsCrossRepoContract.test.ts",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs"
   },
   "dependencies": {

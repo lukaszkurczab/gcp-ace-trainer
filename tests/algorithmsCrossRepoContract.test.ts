@@ -19,7 +19,12 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
   try {
     assert.deepEqual(built.artifact.declaredModes, harness.CROSS_REPOSITORY_ALGORITHMS_MODES);
     assert.match(built.artifact.checksumSha256, /^[a-f0-9]{64}$/);
-    assert.equal(built.artifact.sourceRepositoryCommit, "a".repeat(40));
+    assert.equal(built.artifact.sourceRepositoryCommit, built.integration.finalReleaseCommit);
+    assert.equal(built.release.manifest.sourceRepositoryCommit, built.integration.finalReleaseCommit);
+    assert.equal(built.evidence.evidence[0]!.validatedAtSourceCommit, built.integration.technicalInputCommit);
+    assert.equal(built.evidence.evidence[0]!.technicalInputFingerprint, built.inspection.source.technicalInputFingerprint);
+    assert.notEqual(built.integration.technicalInputCommit, built.integration.technicalEvidenceCommit);
+    assert.notEqual(built.integration.technicalEvidenceCommit, built.integration.approvalsActivationCommit);
     assert.deepEqual(Object.keys(JSON.parse(built.artifact.artifactBytes).bank).sort(), ["approvalActivationIdentity", "compatibilitySets", "contentVersion", "contrastSets", "familyId", "formatVersion", "interleavedScopes", "items", "practiceBlueprints", "recognitionSets", "simulationPools", "simulationProfiles", "trackId"].sort());
     assert.doesNotMatch(built.artifact.artifactBytes, /relationMetadata|authoringProvenance|sourceOverrides|technicalValidationEvidence|resolvedModeDeclarations/);
 
@@ -53,10 +58,14 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
 
     const simulation = await prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: "cross-repo-fixture-v1", taxonomyVersion: "algorithms-taxonomy-v2", profileId: "cross-simulation-profile", sessionId: "cross-repo-simulation", startedAt: "2026-07-17T00:00:00.000Z" });
     assert.equal(simulation.session.actualLength, 40); assert.equal(new Set(simulation.session.itemOrder.map((entry) => entry.item.itemId)).size, 40); assert.match(simulation.session.planFingerprint ?? "", /^[a-f0-9]{64}$/);
+    const profile = catalog.getSimulationProfile("cross-simulation-profile")!; assert.equal(profile.distributions.length, 2);
+    for (const distribution of profile.distributions) for (const bucket of distribution.buckets) { const actual = simulation.session.itemOrder.filter(({ item }) => distribution.dimension === "primaryMentalUnitId" ? item.taxonomy.primaryMentalUnitId === bucket.valueId : item.interaction.type === bucket.valueId).length; assert.ok(actual >= bucket.minimum && actual <= bucket.maximum); assert.equal(actual, bucket.target); }
+    console.info(`APPLICATION_COMMIT=${built.integration.applicationCommit}`); console.info(`CONTENT_COMMIT=${built.integration.contentCommit}`); console.info(`FIXTURE_SOURCE_COMMIT=${built.integration.fixtureSourceCommit}`);
   } finally { await built.cleanup(); }
 });
 
 test("production source cannot import the cross-repository harness or its generated test artifacts", () => {
   const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path)).map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtime, /integration\/contracts|algorithms-content\/harness|cross-repo-fixture|tests\/fixtures/);
+  const harness = readFileSync("integration/contracts/algorithms-content/harness.mjs", "utf8"); assert.doesNotMatch(harness, /a"\.repeat\(40\)|sourceRepositoryCommit\s*:/);
 });

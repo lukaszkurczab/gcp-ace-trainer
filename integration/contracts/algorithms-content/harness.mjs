@@ -1,13 +1,37 @@
+import { execFile } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { tmpdir } from "node:os";
+import { promisify } from "node:util";
 
-const CONTENT_ROOT = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(process.cwd(), "../patternly-content");
-const PRODUCER_COMMIT = "a".repeat(40);
+const exec = promisify(execFile);
+const APP_ROOT = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
+const CONTENT_ROOT = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(APP_ROOT, "../patternly-content");
+const LOCK_PATH = join(APP_ROOT, "integration/contracts/algorithms-content/content.lock.json");
 const MODES = ["algorithms-learn-approach", "algorithms-guided-practice", "algorithms-recognize-patterns", "algorithms-contrast-practice", "algorithms-weak-area-review", "algorithms-independent-practice", "algorithms-interview-simulation"];
-const producer = await import(pathToFileURL(join(CONTENT_ROOT, "scripts/publishing/pipeline.mjs")).href);
-const producerFixtures = await import(pathToFileURL(join(CONTENT_ROOT, "tests/fixtures/manualPublishingFixture.mjs")).href);
+
+export class CrossRepositoryContractError extends Error { constructor(code, message) { super(`${code}: ${message}`); this.code = code; } }
+const sha = (value) => typeof value === "string" && /^[a-f0-9]{40}$/.test(value);
+async function git(root, ...args) { return exec("git", args, { cwd: root }); }
+async function gitHead(root, unavailableCode) { try { return (await git(root, "rev-parse", "HEAD")).stdout.trim(); } catch { throw new CrossRepositoryContractError(unavailableCode, `Git checkout is unavailable: ${root}`); } }
+async function assertClean(root, label) { try { const status = (await git(root, "status", "--porcelain", "--untracked-files=all")).stdout.trim(); if (status) throw new CrossRepositoryContractError("DIRTY_INTEGRATION_INPUT", `${label} checkout is dirty: ${status}`); } catch (error) { if (error instanceof CrossRepositoryContractError) throw error; throw new CrossRepositoryContractError("CONTENT_CHECKOUT_UNAVAILABLE", `${label} checkout is unavailable: ${root}`); } }
+async function readLock() { try { const lock = JSON.parse(await readFile(LOCK_PATH, "utf8")); if (lock?.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !sha(lock.commit) || lock.applicationContractSnapshot?.bankContract !== "PublishedAlgorithmsBank" || lock.applicationContractSnapshot?.artifactSchema !== "published-bank-v1") throw new Error("invalid"); return lock; } catch { throw new CrossRepositoryContractError("MISSING_CONTENT_LOCK", `Missing or invalid immutable content lock: ${LOCK_PATH}`); } }
+function equalSnapshot(left, right) { return JSON.stringify(left) === JSON.stringify(right); }
+export async function verifyCrossRepositoryInputs({ appRoot = APP_ROOT, contentRoot = CONTENT_ROOT } = {}) {
+  const lock = await readLock(); const applicationCommit = await gitHead(appRoot, "CONTENT_CHECKOUT_UNAVAILABLE"); await assertClean(appRoot, "Application"); await assertClean(contentRoot, "Content"); const contentCommit = await gitHead(contentRoot, "CONTENT_CHECKOUT_UNAVAILABLE");
+  if (contentCommit !== lock.commit) throw new CrossRepositoryContractError("INPUT_SHA_MISMATCH", `expectedContentCommit=${lock.commit}\nactualContentCommit=${contentCommit}`);
+  const [producer, producerFixtures, producerSnapshot, appDescriptor] = await Promise.all([
+    import(pathToFileURL(join(contentRoot, "scripts/publishing/pipeline.mjs")).href),
+    import(pathToFileURL(join(contentRoot, "tests/fixtures/manualPublishingFixture.mjs")).href),
+    import(pathToFileURL(join(contentRoot, "tests/fixtures/applicationContractSnapshot.mjs")).href),
+    import(pathToFileURL(join(appRoot, "integration/contracts/algorithms-content/applicationContractDescriptor.ts")).href),
+  ]);
+  const app = appDescriptor.APPLICATION_ALGORITHMS_CONTRACT_DESCRIPTOR;
+  const producerContract = { artifactSchema: lock.applicationContractSnapshot.artifactSchema, bankContract: lock.applicationContractSnapshot.bankContract, bankRequiredKeys: [...producerSnapshot.APPLICATION_ALGORITHMS_BANK_KEYS].sort(), canonicalModeIds: [...producerSnapshot.APPLICATION_ALGORITHM_MODE_IDS].sort(), itemOptionalKeys: [...producerSnapshot.APPLICATION_ALGORITHMS_ITEM_OPTIONAL_KEYS].sort(), itemRequiredKeys: [...producerSnapshot.APPLICATION_ALGORITHMS_ITEM_KEYS].sort() };
+  if (!equalSnapshot(app, producerContract)) throw new CrossRepositoryContractError("CONTRACT_SNAPSHOT_MISMATCH", "Producer snapshot differs from the current application contract descriptor.");
+  return { applicationCommit, contentCommit, lock, producer, producerFixtures, producerImplementationCommit: lock.commit };
+}
 
 async function writeJson(root, relativePath, value) {
   const path = join(root, relativePath);
@@ -60,7 +84,7 @@ function structures(ids) {
       { id: "cross-compatible-contrast", version: "v1", relation: "compatible_contrast", direction: "directed", sourceItemIds: [ids[0]], targetItemIds: [ids[20]], relationMetadata: { contrastSetId: "cross-contrast" } },
     ],
     simulationPools: [{ poolId: "cross-simulation-pool", poolVersion: "v1", itemIds: all }],
-    simulationProfiles: [{ profileId: "cross-simulation-profile", profileVersion: "v1", profileKind: "internal_learning_profile", totalOccurrences: 40, foregroundDurationMs: 2700000, poolId: "cross-simulation-pool", distributions: [], selectionPolicy: { uniqueItems: true, replacement: false, deterministic: true, algorithmVersion: "sha256-ranked-constraints-v1" }, provenance: { authority: "patternly_product", approvedBy: "cross-repo-test", approvedAt: "2026-07-17T00:00:00.000Z", rationale: "Test-only contract fixture." } }],
+    simulationProfiles: [{ profileId: "cross-simulation-profile", profileVersion: "v1", profileKind: "internal_learning_profile", totalOccurrences: 40, foregroundDurationMs: 2700000, poolId: "cross-simulation-pool", distributions: [{ dimension: "primaryMentalUnitId", buckets: [{ valueId: "recognize_binary_search_signal", minimum: 20, target: 20, maximum: 20 }, { valueId: "reason_about_indexed_scans", minimum: 20, target: 20, maximum: 20 }] }, { dimension: "interactionType", buckets: [{ valueId: "choice", minimum: 38, target: 38, maximum: 38 }, { valueId: "ordering", minimum: 1, target: 1, maximum: 1 }, { valueId: "complexity", minimum: 1, target: 1, maximum: 1 }] }], selectionPolicy: { uniqueItems: true, replacement: false, deterministic: true, algorithmVersion: "sha256-ranked-constraints-v1" }, provenance: { authority: "patternly_product", approvedBy: "cross-repo-test", approvedAt: "2026-07-17T00:00:00.000Z", rationale: "Test-only contract fixture." } }],
   };
 }
 
@@ -72,7 +96,7 @@ async function writeApprovalsAndActivation(root, inspected) {
   const approvalsByBatch = new Map();
   for (const evidence of inspected.source.technicalEvidence) {
     const approvalId = `cross-approval-${evidence.batchId}`; approvalsByBatch.set(evidence.batchId, approvalId);
-    await writeJson(root, `manual/approvals/algorithms/${evidence.batchId}.json`, { approvalSchemaVersion: 1, approvalId, reviewKind: "editorial", batchId: evidence.batchId, familyId: "algorithms", trackId: "algorithms", primaryTaxonomyReference: "cross-repo", includedItems: Object.entries(evidence.itemFingerprints).sort(([a], [b]) => a.localeCompare(b)).map(([itemId, itemFingerprint]) => ({ itemId, itemFingerprint })), reviewer: "cross-repo-test", reviewDate: "2026-07-17", technicalValidationEvidenceId: evidence.evidenceId, factualAndEditorialDefectsFound: [], requiredCorrections: [], finalDisposition: "approved" });
+    await writeJson(root, `manual/approvals/algorithms/${evidence.batchId}.json`, { approvalSchemaVersion: 1, approvalId, reviewKind: "editorial", batchId: evidence.batchId, familyId: "algorithms", trackId: "algorithms", primaryTaxonomyReference: "cross-repo", includedItems: Object.entries(evidence.itemFingerprints).sort(([a], [b]) => a === b ? 0 : a < b ? -1 : 1).map(([itemId, itemFingerprint]) => ({ itemId, itemFingerprint })), reviewer: "cross-repo-test", reviewDate: "2026-07-17", technicalValidationEvidenceId: evidence.evidenceId, factualAndEditorialDefectsFound: [], requiredCorrections: [], finalDisposition: "approved" });
   }
   const itemCoverage = inspected.source.items.map((entry) => {
     const owner = inspected.source.batches.find((candidate) => candidate.items.some((item) => item.id === entry.id));
@@ -81,7 +105,9 @@ async function writeApprovalsAndActivation(root, inspected) {
   await writeJson(root, "manual/activations/algorithms/cross-activation.json", { activationSchemaVersion: 1, activationId: "cross-activation", trackId: "algorithms", familyId: "algorithms", contentVersion: inspected.source.contentVersion, taxonomyVersion: inspected.source.taxonomyVersion, itemCoverage });
 }
 
+async function commitFixture(root, message) { await git(root, "add", "-A"); await git(root, "commit", "-m", message); return (await git(root, "rev-parse", "HEAD")).stdout.trim(); }
 export async function buildCrossRepositoryAlgorithmsRelease() {
+  const verifiedInputs = await verifyCrossRepositoryInputs(); const { producer, producerFixtures } = verifiedInputs;
   const root = await mkdtemp(join(tmpdir(), "algorithms-cross-repo-"));
   await producerFixtures.fixtureRoot(root, { approvals: false });
   try {
@@ -90,12 +116,12 @@ export async function buildCrossRepositoryAlgorithmsRelease() {
     const ids = Array.from({ length: 40 }, (_, index) => `cross-repo-item-${index + 1}`); const modeStructures = structures(ids);
     await writeJson(root, "manual/source/algorithms/binary-search.json", batch("cross-binary-search", Array.from({ length: 20 }, (_, index) => index + 1), { roadmapNodeId: "binary_search", primaryMentalUnitId: "recognize_binary_search_signal", patternFamilyId: "binary_search" }, modeStructures));
     await writeJson(root, "manual/source/algorithms/arrays.json", batch("cross-arrays", Array.from({ length: 20 }, (_, index) => index + 21), { roadmapNodeId: "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings" }, { practiceBlueprints: [], recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [], simulationPools: [], simulationProfiles: [] }));
-    const inspection = await producer.inspectTrack({ root, trackId: "algorithms", sourceRepositoryCommit: PRODUCER_COMMIT });
-    const evidence = await producer.emitTechnicalEvidence({ root, trackId: "algorithms", sourceRepositoryCommit: PRODUCER_COMMIT });
-    const approvedInspection = await producer.inspectTrack({ root, trackId: "algorithms", sourceRepositoryCommit: PRODUCER_COMMIT }); await writeApprovalsAndActivation(root, approvedInspection);
-    const validated = await producer.validateTrack({ root, trackId: "algorithms", sourceRepositoryCommit: PRODUCER_COMMIT });
-    const built = await producer.buildTrack({ root, trackId: "algorithms", outputRoot: join(root, "out"), sourceRepositoryCommit: PRODUCER_COMMIT }); const verified = await producer.verifyArtifact(built.path);
-    return { root, inspection, evidence, validated, artifact: verified, release: { manifest: { envelopeVersion: 1, releaseId: "cross-repo-fixture-release", sourceRepositoryCommit: PRODUCER_COMMIT }, artifacts: [verified] }, cleanup: () => rm(root, { recursive: true, force: true }) };
+    await git(root, "init"); await git(root, "config", "user.email", "cross-repo@example.test"); await git(root, "config", "user.name", "Cross Repository Fixture");
+    const technicalInputCommit = await commitFixture(root, "technical inputs"); const inspection = await producer.inspectTrack({ root, trackId: "algorithms" }); const evidence = await producer.emitTechnicalEvidence({ root, trackId: "algorithms" }); const technicalEvidenceCommit = await commitFixture(root, "technical evidence");
+    const approvedInspection = await producer.inspectTrack({ root, trackId: "algorithms" }); await writeApprovalsAndActivation(root, approvedInspection); const approvalsActivationCommit = await commitFixture(root, "approvals and activation");
+    const validated = await producer.validateTrack({ root, trackId: "algorithms" }); const built = await producer.buildTrack({ root, trackId: "algorithms", outputRoot: join(root, "out") }); const verified = await producer.verifyArtifact(built.path); const finalReleaseCommit = await gitHead(root, "CROSS_REPO_ROUND_TRIP_FAILED");
+    if (verified.sourceRepositoryCommit !== finalReleaseCommit) throw new CrossRepositoryContractError("CROSS_REPO_ROUND_TRIP_FAILED", "Artifact does not bind the final clean fixture commit.");
+    return { root, inspection, evidence, validated, artifact: verified, release: { manifest: { envelopeVersion: 1, releaseId: "cross-repo-fixture-release", sourceRepositoryCommit: finalReleaseCommit }, artifacts: [verified] }, integration: { ...verifiedInputs, technicalInputCommit, technicalEvidenceCommit, approvalsActivationCommit, finalReleaseCommit, fixtureSourceCommit: finalReleaseCommit }, cleanup: () => rm(root, { recursive: true, force: true }) };
   } catch (error) { await rm(root, { recursive: true, force: true }); throw error; }
 }
 

@@ -22,3 +22,27 @@ jobs:
       - run: npm ci
       - name: Run recovery baseline (includes qa:static)
         run: npm run baseline:report
+
+  algorithms-cross-repository-contract:
+    name: Algorithms cross-repository contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: content-lock
+        name: Read immutable content lock
+        run: |
+          node -e 'const lock = require("./integration/contracts/algorithms-content/content.lock.json"); if (!/^[a-f0-9]{40}$/.test(lock.commit)) process.exit(1); console.log(`commit=${lock.commit}`) >> process.env.GITHUB_OUTPUT'
+      - uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: ${{ steps.content-lock.outputs.commit }}
+          path: patternly-content
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Run pinned cross-repository round-trip
+        env:
+          PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
+        run: npm run test:algorithms-cross-repo
