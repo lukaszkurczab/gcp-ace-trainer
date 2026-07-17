@@ -10,6 +10,7 @@ import {
 } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import type { BundledContentRelease, PublishedAlgorithmsBank } from "../src/content/contracts";
+import { validateAlgorithmsBank } from "../src/content/validation";
 import { createTrainingSession } from "../src/domain";
 import { contentHasher } from "../src/infrastructure/identity/contentHasher";
 import { prepareAlgorithmsInterviewSimulation } from "../src/tracks/algorithms";
@@ -17,13 +18,13 @@ import { prepareAlgorithmsInterviewSimulation } from "../src/tracks/algorithms";
 const commit = "1".repeat(40);
 const itemIds = Array.from({ length: 40 }, (_, index) => `contract-item-${index + 1}`);
 
-function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; approval?: string; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
+function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; taxonomy?: Readonly<Record<string, unknown>>; approval?: string; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
   const count = input.itemCount ?? 40;
   const items = Array.from({ length: count }, (_, index) => ({
     id: input.duplicateId && index === 1 ? "contract-item-1" : `contract-item-${index + 1}`,
     prompt: `Mechanical contract assertion ${index + 1}`,
     feedback: { reason: "Declared evidence supports the answer.", details: "This payload exists only to exercise the consumer contract.", wrongOptionExplanationsByOptionId: { wrong: "It contradicts the declared evidence." } },
-    taxonomy: { roadmapNodeId: input.taxonomyId ?? "arrays_and_strings", primaryMentalUnitId: "arrays_and_strings", patternFamilyId: "arrays_and_strings", primarySkillAtomId: "track_index_boundary", secondarySkillAtomIds: [], learningStage: "foundations" },
+    taxonomy: { roadmapNodeId: input.taxonomyId ?? "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings", primarySkillAtomId: "track_index_boundary", secondarySkillAtomIds: [], learningStage: "foundations", ...input.taxonomy },
     provenance: { author: "contract-test", createdAt: "2026-07-17T00:00:00.000Z", contentBatchId: "contract-test", authoringMethod: "independently_authored" as const, externalSources: [] },
     compatibilityMemberships: [],
     itemFingerprint: `${index + 1}`.padStart(64, "0"),
@@ -40,6 +41,26 @@ function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "un
     simulationProfiles: [{ profileId: "interview-profile", profileVersion: "1", profileKind: "internal_learning_profile", totalOccurrences: 40, foregroundDurationMs: 2_700_000, poolId: "interview-pool", distributions: [], selectionPolicy: { uniqueItems: true, replacement: false, deterministic: true, algorithmVersion: "sha256-ranked-constraints-v1" } }],
   };
 }
+
+const taxonomyManifest = { formatVersion: 1 as const, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", itemCount: 40, bankPath: "algorithms.json", sha256: "0".repeat(64) };
+
+test("validates explicit Algorithms hierarchy links and rejects every broken child relation", () => {
+  assert.doesNotThrow(() => validateAlgorithmsBank(bank(), taxonomyManifest));
+  const cases: readonly [string, Readonly<Record<string, unknown>>, string][] = [
+    ["mental node", { primaryMentalUnitId: "recognize_binary_search_signal" }, "mental_unit_outside_roadmap_node"],
+    ["family", { patternFamilyId: "binary_search", primarySkillAtomId: "identify_monotonic_predicate", learningStage: "foundations" }, "pattern_family_outside_mental_unit"],
+    ["variant", { patternVariantId: "fixed_size_window" }, "variant_outside_pattern_family"],
+    ["archetype", { problemArchetypeId: "find_index_in_sorted_input" }, "archetype_outside_mental_unit"],
+    ["primary skill", { primarySkillAtomId: "identify_monotonic_predicate" }, "primary_skill_outside_mental_unit"],
+    ["secondary skill", { secondarySkillAtomIds: ["identify_monotonic_predicate"] }, "secondary_skill_outside_mental_unit"],
+  ];
+  for (const [label, taxonomy, code] of cases) assert.throws(() => validateAlgorithmsBank(bank({ taxonomy }), taxonomyManifest), new RegExp(code), label);
+  const contrast = bank();
+  const legalContrast = { ...contrast, contrastSets: [{ setId: "binary-vs-scan", setVersion: "1", primaryMentalUnitId: "contrast_binary_search_vs_linear_scan", contrastedMentalUnitIds: ["reason_about_indexed_scans"], falseHeuristicId: "fixture", transferBoundary: "fixture", itemIds: contrast.items.map((item) => item.id) }] };
+  assert.doesNotThrow(() => validateAlgorithmsBank(legalContrast, taxonomyManifest));
+  const illegalContrast = { ...legalContrast, contrastSets: [{ ...legalContrast.contrastSets[0]!, primaryMentalUnitId: "reason_about_indexed_scans" }] };
+  assert.throws(() => validateAlgorithmsBank(illegalContrast, taxonomyManifest), /illegal_contrast_mapping/);
+});
 
 async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?: readonly string[]; checksum?: string; schemaVersion?: string; contentVersion?: string; taxonomyVersion?: string; approvalItemIds?: readonly string[] }> = {}): Promise<BundledContentRelease> {
   const payload = input.artifactBank ?? bank();

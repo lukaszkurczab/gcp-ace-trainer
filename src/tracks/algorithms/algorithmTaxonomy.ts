@@ -651,6 +651,14 @@ const binarySearchSkillAtoms = [
   }),
   makeBinarySearchSkillAtom({
     description:
+      "Identify the comparison and interval invariant that prove one half of the active search space can be discarded.",
+    id: "identify_legal_half_discard_rule",
+    label: "Identify legal half-discard rule",
+    mistakeTypes: ["invariant_missing", "invariant_broken", "cannot_explain_why"],
+    patternVariantIds: ["classic_index_search", "lower_upper_bound"],
+  }),
+  makeBinarySearchSkillAtom({
+    description:
       "Use an ascending mid comparison to prove which side cannot contain a stored target.",
     id: "classic_binary_search_discard_rule",
     label: "Apply classic discard rule",

@@ -7,13 +7,16 @@ import type { AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
 /** Direct index of one validated published bank. Groups are not a runtime representation. */
 export class AlgorithmContentCatalog {
   private readonly itemsById: ReadonlyMap<string, AlgorithmQuestion>;
+  private readonly itemsByMentalUnitId: ReadonlyMap<string, readonly AlgorithmQuestion[]>;
   private readonly itemsByRoadmapNodeId: ReadonlyMap<string, readonly AlgorithmQuestion[]>;
   constructor(readonly bank: PublishedAlgorithmsBank) {
     this.itemsById = new Map(bank.items.map((item) => [item.id, item]));
+    this.itemsByMentalUnitId = new Map([...new Set(bank.items.map((item) => item.taxonomy.primaryMentalUnitId))].map((mentalUnitId) => [mentalUnitId, bank.items.filter((item) => item.taxonomy.primaryMentalUnitId === mentalUnitId)]));
     this.itemsByRoadmapNodeId = new Map([...new Set(bank.items.map((item) => item.taxonomy.roadmapNodeId))].map((nodeId) => [nodeId, bank.items.filter((item) => item.taxonomy.roadmapNodeId === nodeId)]));
   }
   getContentVersion(): string { return this.bank.contentVersion; }
   getItems(): readonly AlgorithmQuestion[] { return this.bank.items; }
+  getItemsForMentalUnit(mentalUnitId: string): readonly AlgorithmQuestion[] { return this.itemsByMentalUnitId.get(mentalUnitId) ?? []; }
   getItemsForRoadmapNode(nodeId: AlgorithmRoadmapNodeId): readonly AlgorithmQuestion[] { return this.itemsByRoadmapNodeId.get(nodeId) ?? []; }
   getItemsForMode(modeId: string): readonly AlgorithmQuestion[] { const blueprint = this.bank.practiceBlueprints.find((entry) => entry.modeId === modeId); return blueprint ? blueprint.resolvedItemIds.map((id) => this.getItemById(id)) : []; }
   getItemById(itemId: string): AlgorithmQuestion { const item = this.itemsById.get(itemId); if (!item) throw new MissingContentItemError(ALGORITHMS_TRACK_ID, itemId); return item; }
