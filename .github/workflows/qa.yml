@@ -27,12 +27,30 @@ jobs:
     name: Algorithms cross-repository contract
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout application
+        uses: actions/checkout@v4
+        with:
+          path: app
       - id: content-lock
         name: Read immutable content lock
+        working-directory: app
+        shell: bash
         run: |
-          node -e 'const lock = require("./integration/contracts/algorithms-content/content.lock.json"); if (!/^[a-f0-9]{40}$/.test(lock.commit)) process.exit(1); console.log(`commit=${lock.commit}`) >> process.env.GITHUB_OUTPUT'
-      - uses: actions/checkout@v4
+          node -e '
+            const lock = require("./integration/contracts/algorithms-content/content.lock.json");
+
+            if (
+              lock.schemaVersion !== 1 ||
+              lock.repository !== "lukaszkurczab/patternly-content" ||
+              !/^[a-f0-9]{40}$/.test(lock.commit)
+            ) {
+              process.exit(1);
+            }
+
+            process.stdout.write(`commit=${lock.commit}\n`);
+          ' >> "$GITHUB_OUTPUT"
+      - name: Checkout locked content producer
+        uses: actions/checkout@v4
         with:
           repository: lukaszkurczab/patternly-content
           ref: ${{ steps.content-lock.outputs.commit }}
@@ -41,8 +59,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+          cache-dependency-path: app/package-lock.json
+      - name: Install application dependencies
+        working-directory: app
+        run: npm ci
       - name: Run pinned cross-repository round-trip
+        working-directory: app
         env:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
         run: npm run test:algorithms-cross-repo
