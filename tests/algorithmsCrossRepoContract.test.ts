@@ -18,6 +18,8 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
   const built = await harness.buildCrossRepositoryAlgorithmsRelease();
   try {
     assert.deepEqual(built.artifact.declaredModes, harness.CROSS_REPOSITORY_ALGORITHMS_MODES);
+    assert.equal(built.integration.taxonomyVersion, "algorithms-taxonomy-v2");
+    assert.equal(built.integration.taxonomyFingerprint, "ec4a6874714e907299366412613dd1725a777964855be44d59769824bcccc046");
     assert.match(built.artifact.checksumSha256, /^[a-f0-9]{64}$/);
     assert.equal(built.artifact.sourceRepositoryCommit, built.integration.finalReleaseCommit);
     assert.equal(built.release.manifest.sourceRepositoryCommit, built.integration.finalReleaseCommit);

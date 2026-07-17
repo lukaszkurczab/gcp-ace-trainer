@@ -1,42 +1,17 @@
 export const ALGORITHM_CONTENT_VERSION = "algorithms-core";
 
-export const ALGORITHM_LEARNING_STAGES = [
-  "foundations",
-  "pattern_mechanics",
-  "guided_application",
-  "strategy_selection",
-  "contrast_practice",
-  "independent_attempt",
-  "mixed_interview_practice",
-] as const;
+import { algorithmTaxonomyStructure } from "./generated/algorithmTaxonomyStructure.generated";
+
+export const ALGORITHM_LEARNING_STAGES = algorithmTaxonomyStructure.learningStages;
 
 export type AlgorithmLearningStage = (typeof ALGORITHM_LEARNING_STAGES)[number];
 
-export const ALGORITHM_PATTERN_FAMILY_IDS = [
-  "complexity_and_constraints",
-  "arrays_and_strings",
-  "hash_map_and_set",
-  "two_pointers",
-  "sliding_window",
-  "prefix_sums",
-  "sorting_based",
-  "stack",
-  "monotonic_stack",
-  "binary_search",
-  "linked_list",
-  "recursion_basics",
-  "tree_traversal",
-  "heap_priority_queue",
-  "intervals",
-  "backtracking",
-  "graph_traversal",
-  "greedy_intro",
-  "dynamic_programming_intro",
-  "bit_manipulation",
-  "math_and_geometry",
-] as const;
+export const ALGORITHM_PATTERN_FAMILY_IDS = algorithmTaxonomyStructure.patternFamilies.map(
+  (family) => family.id,
+);
 
-export type AlgorithmPatternFamilyId = (typeof ALGORITHM_PATTERN_FAMILY_IDS)[number];
+export type AlgorithmPatternFamilyId =
+  (typeof algorithmTaxonomyStructure.patternFamilies)[number]["id"];
 
 export const ALGORITHM_MISTAKE_TYPES = [
   "wrong_approach",

@@ -42,7 +42,9 @@ jobs:
             if (
               lock.schemaVersion !== 1 ||
               lock.repository !== "lukaszkurczab/patternly-content" ||
-              !/^[a-f0-9]{40}$/.test(lock.commit)
+              !/^[a-f0-9]{40}$/.test(lock.commit) ||
+              lock.taxonomyVersion !== "algorithms-taxonomy-v2" ||
+              !/^[a-f0-9]{64}$/.test(lock.taxonomyFingerprint)
             ) {
               process.exit(1);
             }

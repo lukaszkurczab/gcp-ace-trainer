@@ -1,7 +1,9 @@
 {
   "schemaVersion": 1,
   "repository": "lukaszkurczab/patternly-content",
-  "commit": "49ce8be1577dd8df0642ffd5d783ced245e252a2",
+  "commit": "bb5d6d26b9004a75f0aaf2cfe908e91c5fb40d69",
+  "taxonomyVersion": "algorithms-taxonomy-v2",
+  "taxonomyFingerprint": "ec4a6874714e907299366412613dd1725a777964855be44d59769824bcccc046",
   "applicationContractSnapshot": {
     "bankContract": "PublishedAlgorithmsBank",
     "artifactSchema": "published-bank-v1"

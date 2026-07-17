@@ -661,6 +661,16 @@ Delete:
 
 **Content consumer status:** `S3-CONTENT-CONSUMER-01` is `VERIFIED` at the contract boundary. `validateBundledContent()` now consumes exact, immutable build-time artifact bytes through a versioned release and track envelope, verifies checksum, schema, versions, approval coverage, taxonomy/reference validity, declared modes, and the fixed 40-item Algorithms pool. Availability is projected per track: a missing Certification artifact cannot block a valid Algorithms artifact. The committed release intentionally has no real Algorithms artifact, so Algorithms remains explicitly unavailable; no empty session, synthetic occurrence, substitute content, fallback runner, or network source is permitted.
 
+Canonical Algorithms taxonomy authoring: in progress
+
+Taxonomy SOT migration: in progress
+
+Manual Checkpoint A: active
+
+Real Algorithms content: not present
+
+Algorithms production availability: blocked
+
 `docs/designs/algorithms_stage3_ui/DESIGN.md` is now the approved implementation reference. It defines the compliant shared shell plus P-01…P-15 and S-01…S-29, including preparation, durability, error, recovery, exit, finalization, and result states. The older `docs/designs/algorithm_drill_unified` and historical core-flow screenshots remain non-canonical historical material: their wordmark/logo and close control must not be copied.
 
 | Required surface | Approved visual and interaction reference | Remaining G-D evidence |

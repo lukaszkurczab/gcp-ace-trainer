@@ -49,14 +49,14 @@ test("validates explicit Algorithms hierarchy links and rejects every broken chi
   const cases: readonly [string, Readonly<Record<string, unknown>>, string][] = [
     ["mental node", { primaryMentalUnitId: "recognize_binary_search_signal" }, "mental_unit_outside_roadmap_node"],
     ["family", { patternFamilyId: "binary_search", primarySkillAtomId: "identify_monotonic_predicate", learningStage: "foundations" }, "pattern_family_outside_mental_unit"],
-    ["variant", { patternVariantId: "fixed_size_window" }, "variant_outside_pattern_family"],
-    ["archetype", { problemArchetypeId: "find_index_in_sorted_input" }, "archetype_outside_mental_unit"],
+    ["variant", { patternVariantId: "fixed_size_window" }, "variant_outside_mental_unit_or_pattern_family"],
+    ["archetype", { problemArchetypeId: "find_index_in_sorted_input" }, "archetype_outside_mental_unit_or_pattern_family"],
     ["primary skill", { primarySkillAtomId: "identify_monotonic_predicate" }, "primary_skill_outside_mental_unit"],
     ["secondary skill", { secondarySkillAtomIds: ["identify_monotonic_predicate"] }, "secondary_skill_outside_mental_unit"],
   ];
   for (const [label, taxonomy, code] of cases) assert.throws(() => validateAlgorithmsBank(bank({ taxonomy }), taxonomyManifest), new RegExp(code), label);
   const contrast = bank();
-  const legalContrast = { ...contrast, contrastSets: [{ setId: "binary-vs-scan", setVersion: "1", primaryMentalUnitId: "contrast_binary_search_vs_linear_scan", contrastedMentalUnitIds: ["reason_about_indexed_scans"], falseHeuristicId: "fixture", transferBoundary: "fixture", itemIds: contrast.items.map((item) => item.id) }] };
+  const legalContrast = { ...contrast, contrastSets: [{ setId: "binary-vs-scan", setVersion: "1", primaryMentalUnitId: "legal_half_discard_rule", contrastedMentalUnitIds: ["reason_about_indexed_scans"], falseHeuristicId: "sorted_input_always_requires_binary_search", transferBoundary: "fixture", itemIds: contrast.items.map((item) => item.id) }] };
   assert.doesNotThrow(() => validateAlgorithmsBank(legalContrast, taxonomyManifest));
   const illegalContrast = { ...legalContrast, contrastSets: [{ ...legalContrast.contrastSets[0]!, primaryMentalUnitId: "reason_about_indexed_scans" }] };
   assert.throws(() => validateAlgorithmsBank(illegalContrast, taxonomyManifest), /illegal_contrast_mapping/);
