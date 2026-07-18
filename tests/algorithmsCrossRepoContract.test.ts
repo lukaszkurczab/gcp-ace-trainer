@@ -42,7 +42,7 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-contrast-practice", sessionLength: 20, scope: { contrastSetId: "cross-contrast" } }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-weak-area-review", sessionLength: 10, reviewSource: "session_misses", reviewItemRefs: catalog.getItems().slice(0, 10).map((item) => catalog.toContentItemRef(item)) }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-independent-practice", sessionLength: 20, scope: { interleavedScopeId: "cross-interleaved" } }),
-      selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-interview-simulation", sessionLength: 40, scope: { simulationProfileId: "cross-simulation-profile" } }),
+      selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-interview-simulation", sessionLength: 40, scope: { simulationProfileId: "algorithms-interview-simulation-v1" } }),
     ];
     assert.deepEqual(selected.map((entry) => entry.actualLength), [10, 20, 20, 20, 10, 20, 40]);
     for (const entry of selected) assert.equal(new Set(entry.items.map((item) => item.id)).size, entry.actualLength);
@@ -58,9 +58,9 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
     assert.deepEqual(new Set(byRoadmapNode.items.map((item) => item.taxonomy.primaryMentalUnitId)), new Set(["recognize_binary_search_signal", "boundaries_and_loop_invariants"]));
     assert.deepEqual(new Set(catalog.getItems().map((item) => item.interaction.type)), new Set(["choice", "ordering", "complexity"]));
 
-    const simulation = await prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: "cross-repo-fixture-v1", taxonomyVersion: "algorithms-taxonomy-v2", profileId: "cross-simulation-profile", sessionId: "cross-repo-simulation", startedAt: "2026-07-17T00:00:00.000Z" });
+    const simulation = await prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: "cross-repo-fixture-v1", taxonomyVersion: "algorithms-taxonomy-v2", profileId: "algorithms-interview-simulation-v1", sessionId: "cross-repo-simulation", startedAt: "2026-07-17T00:00:00.000Z" });
     assert.equal(simulation.session.actualLength, 40); assert.equal(new Set(simulation.session.itemOrder.map((entry) => entry.item.itemId)).size, 40); assert.match(simulation.session.planFingerprint ?? "", /^[a-f0-9]{64}$/);
-    const profile = catalog.getSimulationProfile("cross-simulation-profile")!; assert.equal(profile.distributions.length, 2);
+    const profile = catalog.getSimulationProfile("algorithms-interview-simulation-v1")!; assert.equal(profile.distributions.length, 2);
     for (const distribution of profile.distributions) for (const bucket of distribution.buckets) { const actual = simulation.session.itemOrder.map(({ item }) => catalog.getItemById(item.itemId)).filter((item) => distribution.dimension === "primaryMentalUnitId" ? item.taxonomy.primaryMentalUnitId === bucket.valueId : item.interaction.type === bucket.valueId).length; assert.ok(actual >= bucket.minimum && actual <= bucket.maximum); assert.equal(actual, bucket.target); }
     console.info(`APPLICATION_COMMIT=${built.integration.applicationCommit}`); console.info(`CONTENT_COMMIT=${built.integration.contentCommit}`); console.info(`FIXTURE_SOURCE_COMMIT=${built.integration.fixtureSourceCommit}`);
   } finally { await built.cleanup(); }
