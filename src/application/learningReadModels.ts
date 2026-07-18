@@ -2,6 +2,7 @@ import type { TrackId } from "../domain";
 import {
   getActiveTrackId,
   getActiveTrainingSession,
+  getActiveTrainingSessionDraft,
   getReviewQueueItems,
   getTrainingAttempts,
   saveActiveTrackId,
@@ -23,6 +24,7 @@ export async function loadPracticeHistory() { return getPracticeHistory(); }
 export async function loadTrainingAttempts() { return getTrainingAttempts(); }
 export async function loadReviewQueueItems() { return getReviewQueueItems(); }
 export async function loadActiveTrainingSession() { return getActiveTrainingSession(); }
+export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(); }
 
 export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
   const [attempts, reviews] = await Promise.all([getTrainingAttempts(), getReviewQueueItems()]);

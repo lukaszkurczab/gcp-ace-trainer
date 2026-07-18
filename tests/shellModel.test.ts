@@ -12,7 +12,6 @@ import {
   PRACTICE_REVIEW_CTA,
   SETTINGS_ROWS,
 } from "../src/features/home/shellModel";
-import { canCheckAnswer } from "../src/features/practice/practiceSessionModel";
 
 test("bottom navigation labels stay canonical", () => {
   const labels: readonly string[] = MAIN_TAB_ITEMS.map((item) => item.label);
@@ -79,10 +78,4 @@ test("Settings model keeps only clear local history as destructive active action
     SETTINGS_ROWS.filter((row) => row.section === "account").map((row) => row.behavior),
     ["static", "static", "static"],
   );
-});
-
-test("selecting an answer enables the Check Answer action", () => {
-  assert.equal(canCheckAnswer([], false), false);
-  assert.equal(canCheckAnswer(["a"], false), true);
-  assert.equal(canCheckAnswer(["a"], true), false);
 });

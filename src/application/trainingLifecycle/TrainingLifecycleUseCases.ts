@@ -1,6 +1,8 @@
 import {
   abandonTrainingSession,
   advanceTrainingSession,
+  moveTrainingSessionToIndex,
+  createTrainingSession,
   type TrackId,
   type TrainingSession,
   type TrainingSessionDraft,
@@ -9,6 +11,7 @@ import {
   TrainingApplicationFailure,
   type ApplicationFailureCode,
   type PreparedSession,
+  type PracticeFinalization,
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
 } from "./contracts";
@@ -58,10 +61,52 @@ export class TrainingLifecycleUseCases {
     return verified;
   }
 
+  /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
+  async moveSimulationSessionTo(index: number): Promise<TrainingSession> {
+    const session = await this.requireActive();
+    if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
+      throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
+    }
+    const next = this.runSync("invalid_response", () => moveTrainingSessionToIndex(session, index));
+    await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+    const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+    if (!verified || verified.id !== next.id || verified.currentItemIndex !== next.currentItemIndex) {
+      throw new TrainingApplicationFailure("verification_failure", "The simulation navigator position was not durably verified.");
+    }
+    return verified;
+  }
+
+  async checkpointSimulationForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
+    const session = await this.requireActive();
+    if (session.configurationSnapshot.timer !== "countdownForeground" || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
+      throw new TrainingApplicationFailure("invalid_response", "Simulation foreground timer checkpoint is invalid.");
+    }
+    const next = createTrainingSession({ ...session, activeForegroundMs });
+    await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+    const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+    if (!verified || verified.id !== next.id || verified.activeForegroundMs !== activeForegroundMs) {
+      throw new TrainingApplicationFailure("verification_failure", "Simulation foreground time was not durably verified.");
+    }
+    return verified;
+  }
+
   async completeOrdinarySession(session: TrainingSession): Promise<void> {
     if (session.status !== "completed") throw new TrainingApplicationFailure("persistence_failure", "Only a completed session can be materialized as ordinary completion.");
     await this.run("persistence_failure", () => this.ports.mutations.complete(session));
     await this.requireVerifiedSummary(session.id);
+  }
+
+  async completeActivePracticeSession(): Promise<PracticeFinalization> {
+    const session = await this.requireActive();
+    if (session.configurationSnapshot.submission !== "perItem" || session.currentItemIndex !== session.actualLength - 1) {
+      throw new TrainingApplicationFailure("invalid_response", "Only a durably submitted final practice occurrence can complete this session.");
+    }
+    const attempts = await this.run("persistence_failure", () => this.ports.repositories.getAttempts());
+    const runtime = this.resolveRuntime(session.trackId);
+    const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts, now: this.ports.clock.now() }));
+    await this.run("persistence_failure", () => this.ports.mutations.completeWithResult(finalized));
+    await this.requireVerifiedSummary(session.id);
+    return finalized;
   }
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {

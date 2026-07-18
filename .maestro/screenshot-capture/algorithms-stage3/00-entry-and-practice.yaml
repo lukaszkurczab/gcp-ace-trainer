@@ -1,0 +1,22 @@
+appId: com.lkurczab.gcpacetrainer
+name: Algorithms Stage 3 entry and Practice capture
+tags:
+  - screenshot
+  - uiux-evidence
+  - algorithms-stage3
+---
+# Real local development build; no production debug route or seeded content.
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 20000
+- tapOn:
+    text: "Continue"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Choose track"
+- takeScreenshot: "algorithms-stage3__entry__010__track-required__dark__ios-regular"
+- tapOn: "Choose track"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "algorithms-stage3__entry__020__track-selection__dark__ios-regular"

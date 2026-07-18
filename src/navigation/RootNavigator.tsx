@@ -2,7 +2,6 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { ROUTES } from "../constants/routes";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
-import { CanonicalRuntimeUnavailableScreen } from "../features/runtime/CanonicalRuntimeUnavailableScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
 import { ExamScreen } from "../features/exam/ExamScreen";
 import { HomeScreen } from "../features/home/HomeScreen";
@@ -12,6 +11,11 @@ import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
 import { ResultScreen } from "../features/exam/ResultScreen";
+import {
+  AlgorithmsInterviewSimulationReviewScreen,
+  AlgorithmsInterviewSimulationSummaryScreen,
+} from "../features/simulation/AlgorithmsInterviewSimulationResultScreen";
+import { AlgorithmsInterviewSimulationScreen } from "../features/simulation/AlgorithmsInterviewSimulationScreen";
 import { TopicRoadmapScreen } from "../features/practice/TopicRoadmapScreen";
 import { colors } from "../theme";
 import type { RootStackParamList } from "./types";
@@ -82,17 +86,17 @@ export function RootNavigator() {
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}
-        component={CanonicalRuntimeUnavailableScreen}
+        component={AlgorithmsInterviewSimulationScreen}
         options={{ headerShown: false, title: "Interview Simulation" }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY}
-        component={CanonicalRuntimeUnavailableScreen}
+        component={AlgorithmsInterviewSimulationSummaryScreen}
         options={{ headerShown: false, title: "Simulation complete" }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW}
-        component={CanonicalRuntimeUnavailableScreen}
+        component={AlgorithmsInterviewSimulationReviewScreen}
         options={{ headerShown: false, title: "Simulation review" }}
       />
       <Stack.Screen

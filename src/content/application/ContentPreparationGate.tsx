@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Text, View } from "react-native";
 import { EmptyState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
+import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
+import { getAlgorithmsSimulationTimerFacade } from "../../application/algorithms";
 import { validateBundledContent } from "./validateBundledContent";
 
 export type ContentPreparationState =
@@ -13,7 +15,18 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
   useEffect(() => {
     let live = true;
-    void bootstrapApplication(validateBundledContent, async () => undefined).then((result) => {
+    let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
+    void bootstrapApplication(
+      validateBundledContent,
+      async () => {
+        if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
+        const session = await lifecycle.resumeActiveSession();
+        if (session.trackId === "algorithms" && session.configurationSnapshot.timer === "countdownForeground") {
+          await getAlgorithmsSimulationTimerFacade().restoreForResume(session);
+        }
+      },
+      async () => { lifecycle = composeTrainingLifecycleUseCases(); },
+    ).then((result) => {
       if (!live) return;
       setState(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
     });

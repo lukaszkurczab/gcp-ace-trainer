@@ -18,11 +18,13 @@ export type ApplicationBootstrapState =
 export async function bootstrapApplication(
   validateBundledContent: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void>,
+  prepareLifecycle: () => Promise<void> = async () => undefined,
 ): Promise<ApplicationBootstrapState> {
   try {
     await openCanonicalRepositories();
     await recoverPendingMutation();
     await validateBundledContent();
+    await prepareLifecycle();
     const activeSession = await getActiveTrainingSession();
     const sessions = (await getTrainingSessions()).value;
     const activeRecords = sessions.filter((session) => session.status === "active");

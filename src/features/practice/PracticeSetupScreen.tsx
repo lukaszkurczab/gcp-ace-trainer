@@ -9,6 +9,7 @@ import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, typ
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
+import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
 import { colors, radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";
@@ -96,6 +97,11 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         ? ALGORITHM_MODE_IDS.guidedPractice
         : "default"
     );
+    if (activeTrack.id === ALGORITHMS_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
+      const entry = getAlgorithmsInterviewSimulationEntry();
+      navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({

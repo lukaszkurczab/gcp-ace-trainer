@@ -2,6 +2,7 @@ export * from "./commitTrainingOutcome";
 export * from "./commitSessionLifecycle";
 export * from "./commitTrainingSessionFinalization";
 export * from "./commitTrainingSessionStart";
+export * from "./commitTrainingSessionAdvance";
 export * from "./commitReviewEntryChange";
 export * from "./commitLearningStateReset";
 export * from "./recoverPendingMutation";

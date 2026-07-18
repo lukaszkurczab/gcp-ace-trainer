@@ -1,0 +1,98 @@
+import { createAlgorithmsFamilyRuntime } from "../algorithms";
+import {
+  commitLearningStateReset,
+  commitSessionAbandonment,
+  commitSessionCompletion,
+  commitTrainingOutcome,
+  commitTrainingSessionFinalization,
+  commitTrainingSessionAdvance,
+  commitTrainingSessionStart,
+  recoverPendingMutation,
+} from "../learningMutations";
+import {
+  installTrainingLifecycleUseCases,
+  TrainingLifecycleUseCases,
+  type SimulationFinalization,
+  type TrainingLifecyclePorts,
+} from "../trainingLifecycle";
+import { bundledContentAvailabilityPort } from "../../content/application";
+import { getTrackRegistration, type ReviewQueueEntry, type TrainingSession } from "../../domain";
+import {
+  getActiveTrainingSession,
+  getActiveTrainingSessionDraft,
+  getReviewQueueItems,
+  getTrainingAttempts,
+  getTrainingSessionResult,
+  getTrainingSessions,
+  saveTrainingSessionDraft,
+} from "../../storage/repositories";
+
+/**
+ * The only production composition of family semantics, canonical persistence,
+ * content identity and wall clock. Presentation imports the lifecycle facade,
+ * never these dependencies.
+ */
+export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
+  const ports: TrainingLifecyclePorts = {
+    clock: { now: () => new Date().toISOString() },
+    tracks: { getTrackRegistration },
+    runtimes: {
+      resolve(familyId) {
+        if (familyId !== "algorithms") throw new Error(`No family runtime is installed for ${familyId}.`);
+        return createAlgorithmsFamilyRuntime();
+      },
+    },
+    content: bundledContentAvailabilityPort,
+    repositories: {
+      async getActiveSession() { return getActiveTrainingSession(); },
+      async getSession(sessionId) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; },
+      async getHistory() { return (await getTrainingSessions()).value; },
+      async getAttempts() { return (await getTrainingAttempts()).value; },
+      async getReviews() { return (await getReviewQueueItems()).value; },
+      async getDraft(sessionId) {
+        const draft = await getActiveTrainingSessionDraft();
+        return draft?.sessionId === sessionId ? draft : null;
+      },
+      async getResult(sessionId) { return getTrainingSessionResult(sessionId); },
+      async saveDraft(input) { await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision); },
+    },
+    mutations: {
+      async start(input) { await commitTrainingSessionStart({ session: input.session, draft: input.draft, createdAt: input.session.startedAt }); },
+      async submitPractice(input) {
+        const reviews = input.reviewMutations.filter((mutation) => mutation.kind === "upsert").map((mutation) => mutation.entry);
+        const resolvedReviews = input.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry);
+        await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, createdAt: input.attempt.committedAt });
+      },
+      async advance(session) { await commitTrainingSessionAdvance(session, new Date().toISOString()); },
+      async complete(session) { await commitSessionCompletion(session, session.completedAt ?? new Date().toISOString()); },
+      async completeWithResult(input) { await commitSessionCompletion(input.session, input.session.completedAt ?? new Date().toISOString(), input.result); },
+      async finalize(input) { await commitFinalization(input); },
+      async abandon(session) { await commitSessionAbandonment(session, session.completedAt ?? new Date().toISOString()); },
+      async recover() { await recoverPendingMutation(); },
+      async reset() { await commitLearningStateReset(new Date().toISOString()); },
+    },
+  };
+  const lifecycle = new TrainingLifecycleUseCases(ports);
+  installTrainingLifecycleUseCases(lifecycle);
+  return lifecycle;
+}
+
+async function commitFinalization(input: SimulationFinalization): Promise<void> {
+  const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));
+  await commitTrainingSessionFinalization({
+    session: input.session,
+    attempts: input.attempts,
+    reviewMutations: input.reviewMutations.map((mutation) => ({
+      action: mutation.kind === "remove" ? "delete" as const : existingById.has(mutation.entry.id) ? "update" as const : "put" as const,
+      record: mutation.entry,
+      transitionAttemptId: mutation.transitionAttemptId ?? mutation.entry.sourceAttemptId,
+    })),
+    result: input.result,
+    cleanup: { kind: "training_session_draft", draft: input.frozenDraft, submittedOccurrenceIds: input.attempts.map((attempt) => attempt.occurrenceId) },
+    createdAt: input.session.completedAt ?? new Date().toISOString(),
+  });
+}
+
+export async function resumePersistedTrainingSession(): Promise<TrainingSession> {
+  return composeTrainingLifecycleUseCases().resumeActiveSession();
+}

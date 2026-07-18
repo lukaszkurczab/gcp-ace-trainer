@@ -59,12 +59,18 @@ export type SimulationFinalization = Readonly<{
   frozenDraft: TrainingSessionDraft;
 }>;
 
+export type PracticeFinalization = Readonly<{
+  session: TrainingSession;
+  result: TrainingSessionResult;
+}>;
+
 /** Family-owned deterministic semantics. It cannot read or write repositories. */
 export interface TrainingFamilyRuntime {
   readonly familyId: TrackFamilyId;
   prepare(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession>;
   validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void>;
   submitPractice(input: Readonly<{ session: TrainingSession; response: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PracticeSubmission>;
+  finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>): Promise<PracticeFinalization>;
   finalizeSimulation(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<SimulationFinalization>;
   validateDraftCommand(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void>;
   queryDashboard(input: Readonly<{ trackId: TrackId; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
@@ -98,6 +104,7 @@ export interface TrainingMutationCoordinatorPort {
   submitPractice(input: PracticeSubmission): Promise<void>;
   advance(session: TrainingSession): Promise<void>;
   complete(session: TrainingSession): Promise<void>;
+  completeWithResult(input: PracticeFinalization): Promise<void>;
   finalize(input: SimulationFinalization): Promise<void>;
   abandon(session: TrainingSession): Promise<void>;
   recover(): Promise<void>;

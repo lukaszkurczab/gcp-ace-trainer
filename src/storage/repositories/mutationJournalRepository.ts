@@ -1,6 +1,7 @@
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession, TrainingSessionDraft, TrainingSessionResult } from "../../domain";
 import { getTrainingSessionFinalizationCleanupKind, isRegisteredTrackId } from "../../domain";
 import { canonicalFingerprintPayload, canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
+import { sha256Utf8 } from "../../infrastructure/identity/sha256";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
 import { JournalWriteError } from "../errors";
@@ -23,7 +24,7 @@ export type JournalWrite =
   | { kind: "delete_active_session_draft"; record: TrainingSessionDraft; submittedOccurrenceIds: readonly string[] }
   | { kind: "clear_learning_state" };
 
-export type MutationOperation = "start_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
+export type MutationOperation = "start_training_session" | "advance_training_session" | "submit_training_outcome" | "complete_training_session" | "abandon_training_session" | "finalize_training_session" | "set_review_entry" | "remove_review_entry" | "reset_learning_state";
 export type MutationCommandIdentity = Readonly<{ version: 1; fingerprint: string }>;
 export type MutationExpectedRevision = Readonly<{ target: string; revision: number | null }>;
 export type MutationJournalPlan = Readonly<{
@@ -38,7 +39,7 @@ export type MutationJournalPlan = Readonly<{
 }>;
 export type MutationJournalRecord = MutationJournalPlan & Readonly<{ journalId: string; planFingerprint: string }>;
 
-const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"];
+const OPERATIONS: readonly MutationOperation[] = ["start_training_session", "advance_training_session", "submit_training_outcome", "complete_training_session", "abandon_training_session", "finalize_training_session", "set_review_entry", "remove_review_entry", "reset_learning_state"];
 const SHA_256 = /^[a-f0-9]{64}$/;
 const PLAN_FINGERPRINT = /^[a-f0-9]{64}$/;
 const RESET_STATIC_TARGETS = ["active_session", "active_session_draft", "active_foreground_timer", "session_index", "attempt_index", "review_index"] as const;
@@ -213,10 +214,12 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
       const draftMatches = !draftExpected || Boolean(draftPut && draftPut.record.sessionId === sessionWrite?.record.id && draftPut.record.trackId === sessionWrite.record.trackId && Object.keys(draftPut.record.responsesByOccurrenceId).length === 0);
       return only("put_session", "put_active_session_draft") && count("put_session") === 1 && sessionWrite?.record.status === "active" && count("put_active_session_draft") === (draftExpected ? 1 : 0) && draftMatches;
     }
+    case "advance_training_session":
+      return only("put_session") && count("put_session") === 1 && sessionWrite?.record.status === "active";
     case "submit_training_outcome":
       return only("put_attempt", "put_review_entry", "update_review_entry", "delete_review_entry", "put_session") && count("put_attempt") === 1 && count("put_review_entry") + count("update_review_entry") + count("delete_review_entry") <= 1 && count("put_session") === 1 && sessionWrite?.record.status === "active" && immediateAttemptMatchesCurrentOccurrence && hasUniqueOutcomeSemantics && deletedReviewsMatchPlannedItems && attemptsMatchSessionPlan && reviewsMatchAttempts && deletedReviewsMatchAttempts;
     case "complete_training_session":
-      return only("put_session", "clear_active_session") && count("put_session") === 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed";
+      return only("put_session_result", "put_session", "clear_active_session") && count("put_session") === 1 && count("put_session_result") <= 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed" && (!resultWrite || (resultWrite.record.sessionId === sessionWrite.record.id && resultWrite.record.trackId === sessionWrite.record.trackId));
     case "abandon_training_session": {
       const draftExpected = Boolean(sessionWrite && getTrainingSessionFinalizationCleanupKind(sessionWrite.record) === "session_draft");
       return only("put_session", "clear_active_session", "clear_active_session_draft") &&
@@ -264,8 +267,7 @@ function hasConsistentScope(record: MutationJournalPlan): boolean {
 
 export function createMutationPlanFingerprint(plan: MutationJournalPlan): string {
   const serialized = canonicalFingerprintPayload(JSON.parse(JSON.stringify(plan)));
-  const { createHash } = require("node:crypto") as typeof import("node:crypto");
-  return createHash("sha256").update(serialized, "utf8").digest("hex");
+  return sha256Utf8(serialized);
 }
 
 function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {

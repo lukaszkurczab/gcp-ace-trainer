@@ -72,8 +72,8 @@ for (const path of sourcePaths.filter((path) => /src\/features\/(?:algorithms|pr
   if (journalInternals.test(readFileSync(path, "utf8"))) fail(`feature imports journal internals: ${path}`);
 }
 
-// Before a canonical Algorithms runtime is installed, product routes must expose
-// an explicit blocking state rather than retain a feature-owned session runner.
+// Canonical Algorithms routes render application projections only; feature code
+// must not retain the historical runner or a blocking placeholder.
 for (const path of [
   "src/features/algorithms/AlgorithmsSessionScreen.tsx",
   "src/features/algorithms/algorithmsSessionModel.ts",
@@ -87,9 +87,10 @@ for (const path of algorithmsPresentationPaths) {
 }
 const practiceSessionPath = join(root, "src/features/practice/PracticeSessionScreen.tsx");
 const practiceSessionSource = readFileSync(practiceSessionPath, "utf8");
-if (!/Practice runtime unavailable/.test(practiceSessionSource)) fail("Practice route must expose its explicit unavailable state until the canonical lifecycle is installed.");
+if (!/from\s+["'][^"']*application\/algorithms["']/.test(practiceSessionSource)) fail("Practice route must use the canonical Algorithms application facade.");
 const rootNavigator = readFileSync(join(root, "src/navigation/RootNavigator.tsx"), "utf8");
-if (!/CanonicalRuntimeUnavailableScreen/.test(rootNavigator)) fail("Algorithms routes must expose the explicit canonical-runtime blocking state.");
+if (/CanonicalRuntimeUnavailableScreen/.test(rootNavigator)) fail("Algorithms routes retain the obsolete canonical-runtime blocking screen.");
+if (!/AlgorithmsInterviewSimulationScreen/.test(rootNavigator)) fail("Algorithms Simulation route must use its canonical runner.");
 if (/createAlgorithms(?:ImmediatePractice|InterviewSimulation)Controller|createAlgorithmsFamilyRuntime/.test(rootNavigator)) fail("Algorithms route retains a persistence-owning runner.");
 
 if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");

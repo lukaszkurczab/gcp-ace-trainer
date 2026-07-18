@@ -1,0 +1,19 @@
+appId: com.lkurczab.gcpacetrainer
+name: Algorithms Interview Simulation real-session capture
+tags:
+  - screenshot
+  - uiux-evidence
+  - algorithms-stage3
+---
+# Continues from the persisted Algorithms Practice Hub selected by the prior flow.
+- swipe:
+    direction: UP
+- swipe:
+    direction: UP
+- swipe:
+    direction: UP
+- tapOn:
+    point: "50%,54%"
+- waitForAnimationToEnd:
+    timeout: 20000
+- takeScreenshot: "algorithms-stage3__simulation__020__editable-unanswered__dark__ios-regular"

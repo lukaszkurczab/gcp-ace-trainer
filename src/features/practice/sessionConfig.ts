@@ -6,6 +6,7 @@ import {
   isAlgorithmModeId,
   type AlgorithmModeId,
 } from "../../tracks/algorithms";
+import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
 import type { CertificationDomain } from "../../tracks/cloud-certification";
 
 export type PracticeSessionSource =
@@ -30,6 +31,7 @@ export type PracticeFeedbackMode = "afterEachAnswer" | "atSessionEnd";
 export type PracticeReviewSource = "due_queue" | "session_misses";
 
 export type PracticeSessionRouteParams = {
+  algorithmScope?: AlgorithmSelectionScope;
   feedbackMode: PracticeFeedbackMode;
   mode: PracticeSessionMode;
   reviewBehaviorEnabled: boolean;
@@ -96,6 +98,7 @@ export function buildPracticeSessionConfig(
 
     return {
       feedbackMode: profile.feedbackMode,
+      algorithmScope: input.algorithmScope,
       mode,
       reviewBehaviorEnabled: profile.reinsertEnabled,
       reviewItemRefs: input.reviewItemRefs,
@@ -114,6 +117,7 @@ export function buildPracticeSessionConfig(
 
   return {
     feedbackMode: input.feedbackMode ?? DEFAULT_FEEDBACK_MODE,
+    algorithmScope: input.algorithmScope,
     mode,
     reviewBehaviorEnabled: input.reviewBehaviorEnabled ?? false,
     reviewItemRefs: input.reviewItemRefs,

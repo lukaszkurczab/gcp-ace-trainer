@@ -669,15 +669,15 @@ Algorithms production availability: available at the canonical preparation bound
 
 | Required surface | Approved visual and interaction reference | Remaining G-D evidence |
 | --- | --- |
-| Algorithms Practice | P-01…P-15 in the approved packet, including preparation, submit, pending/recovery, feedback, advance, exit, and abandonment. | Implement projections and the single runner; remove old routes/owners; component, architecture, accessibility, and screenshot checks. |
-| Algorithms Interview Simulation | S-01…S-29 in the approved packet, including 40-position navigation, draft durability, freeze/finalization, recovery, mismatch, and verified result. | Implement projections and the single runner; remove old routes/owners; component, architecture, accessibility, and screenshot checks. |
+| Algorithms Practice | P-01…P-15 in the approved packet, including preparation, submit, pending/recovery, feedback, advance, exit, and abandonment. | One canonical runner and exit/abandon controls are implemented. Real failure/recovery screenshot evidence remains incomplete. |
+| Algorithms Interview Simulation | S-01…S-29 in the approved packet, including 40-position navigation, draft durability, freeze/finalization, recovery, mismatch, and verified result. | One canonical runner, persisted draft path, timer facade, and real fixed-40 start are implemented. Real failure/recovery screenshot evidence remains incomplete. |
 | Cross-cutting accessibility and responsive evidence | The approved packet specifies non-colour state treatment, action semantics, shell geometry, and required notices. | Capture and compare implementation screenshots; run route, reduced-motion/dynamic-text, and accessibility checks. |
 
 The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` remains binding with the approved packet. The implementation must not add a generic modal, status card, error screen, navigator, or interim layout outside those references.
 
-**Stage 3 gate status:** `NEEDS_CORRECTION`. G-D has approved design evidence but cannot become `VERIFIED` until the implementation and evidence named above pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
+**Stage 3 gate status:** `NEEDS_CORRECTION`. `S3-ALGORITHMS-UI-01` implemented the canonical route cutover and stored its partial Maestro evidence in `artifacts/maestro-screen-capture/algorithms-stage3/2026-07-19-0015/`. G-D cannot become `VERIFIED` until the remaining real failure/recovery visual states, accessibility checks, and comparison pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
 
-**ACTIVE NEXT TASK:** `S3-ALGORITHMS-UI-01` — implement the approved Algorithms UI and capture its visual QA evidence. Do not mark Stage 3 or G-D `VERIFIED` until the UI, route cutover, accessibility, and visual checks pass.
+**ACTIVE NEXT TASK:** `S3-ALGORITHMS-VISUAL-QA-01` — add a sanctioned non-production visual-state harness or deterministic fault port, capture the remaining approved P-01…P-15 and S-01…S-29 states, then complete accessibility and visual comparison. Do not mark Stage 3 or G-D `VERIFIED` until those checks pass.
 
 ## Stage 4 — Certification family and GCP track cutover
 
@@ -883,25 +883,25 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`S3-ALGORITHMS-UI-01 — Algorithms UI implementation and visual QA`
+`S3-ALGORITHMS-VISUAL-QA-01 — Algorithms failure/recovery visual QA`
 
 ### Status
 
-`ACTIVE` — `S3-ALGORITHMS-CONTENT-01` is verified; UI implementation and visual QA remain required before Stage 3 can be verified.
+`ACTIVE` — `S3-ALGORITHMS-CONTENT-01` is verified and the canonical UI route cutover is implemented. Real failure/recovery visual QA remains required before Stage 3 can be verified.
 
 ### Goal
 
-Implement the approved Algorithms practice and Interview Simulation surfaces against the verified canonical preparation boundary, then capture the required visual QA.
+Capture the remaining approved Algorithms Practice and Interview Simulation failure/recovery states against the verified canonical preparation boundary without adding production fallbacks or debug content.
 
 ### Required evidence
 
-- approved UI routes consume the canonical Algorithms preparation boundary for every mode;
-- accessibility and visual evidence covers the approved practice and Interview Simulation states;
+- approved UI routes continue to consume the canonical Algorithms preparation boundary for every mode;
+- accessibility and visual evidence covers the remaining approved practice and Interview Simulation states;
 - no Stage 3 completion claim or G-D verification before UI and visual evidence both exist.
 
 ## 12. Stage 3 activation
 
-Stage 3 remains `NEEDS_CORRECTION` until `S3-ALGORITHMS-UI-01` completes its UI and visual QA. Algorithms content preparation is available; Certification remains explicitly unavailable and is not marked ready.
+Stage 3 remains `NEEDS_CORRECTION` until `S3-ALGORITHMS-VISUAL-QA-01` completes its remaining visual QA. Algorithms content preparation is available; Certification remains explicitly unavailable and is not marked ready.
 
 ## 13. Required implementation report
 

@@ -42,11 +42,11 @@ test("old active exam persistence owner and feature services are deleted", () =>
   assert.doesNotMatch(source, /ACTIVE_SESSION_RUNTIME|clear_active_exam|saveActiveSessionRuntime|getActiveSessionRuntime/);
 });
 
-test("presentation routes use application ports or explicit blocking states", () => {
+test("presentation routes use application ports without persistence internals", () => {
   const features = files("src/features").map(read).join("\n");
   assert.doesNotMatch(features, /mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal/);
-  assert.match(read("src/features/practice/PracticeSessionScreen.tsx"), /Practice runtime unavailable/);
-  assert.match(read("src/features/runtime/CanonicalRuntimeUnavailableScreen.tsx"), /canonical application lifecycle/);
+  assert.match(read("src/features/practice/PracticeSessionScreen.tsx"), /application\/algorithms/);
+  assert.match(read("src/features/simulation\/AlgorithmsInterviewSimulationScreen.tsx"), /application\/algorithms/);
 });
 
 test("startup recovery uses canonical bootstrap recovery", () => assert.match(read("src/content/application/ContentPreparationGate.tsx"), /bootstrapApplication/));

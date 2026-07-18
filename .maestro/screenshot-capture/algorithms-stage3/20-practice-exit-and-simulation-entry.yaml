@@ -1,0 +1,20 @@
+appId: com.lkurczab.gcpacetrainer
+name: Algorithms Practice exit and Simulation entry capture
+tags:
+  - screenshot
+  - uiux-evidence
+  - algorithms-stage3
+---
+# Starts with the real active Practice session created by 10-algorithms-practice.yaml.
+- tapOn: "Leave session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "algorithms-stage3__practice__040__exit-confirmation__dark__ios-regular"
+- tapOn: "Abandon session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "algorithms-stage3__practice__050__abandon-confirmation__dark__ios-regular"
+- tapOn: "Abandon session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "algorithms-stage3__simulation__010__practice-hub-entry__dark__ios-regular"

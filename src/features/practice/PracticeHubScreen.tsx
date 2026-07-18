@@ -26,6 +26,7 @@ import {
   loadPracticeHistory as getPracticeHistory,
   loadTrainingAttempts as getTrainingAttempts,
 } from "../../application/learningReadModels";
+import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
 import { colors, spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
@@ -134,6 +135,11 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         ? ALGORITHM_MODE_IDS.guidedPractice
         : "default"
     );
+    if (activeTrack.id === "algorithms" && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
+      const entry = getAlgorithmsInterviewSimulationEntry();
+      navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({

@@ -2,6 +2,7 @@ import type { TrackId } from "./trackIdentity";
 
 export const JOURNAL_OPERATIONS = [
   "start_training_session",
+  "advance_training_session",
   "submit_training_outcome",
   "complete_training_session",
   "abandon_training_session",
