@@ -75,7 +75,12 @@ export type PublishedAlgorithmsPracticeBlueprint = Readonly<{
 }>;
 export type PublishedAlgorithmsRecognitionSet = Readonly<{ setId: string; setVersion: string; taxonomyScope: Readonly<Record<string, readonly string[]>>; legalLearningStages: readonly string[]; itemIds: readonly string[]; falseHeuristicIds?: readonly string[] }>;
 export type PublishedAlgorithmsContrastSet = Readonly<{ setId: string; setVersion: string; primaryMentalUnitId: string; contrastedMentalUnitIds: readonly string[]; falseHeuristicId: string; transferBoundary: string; itemIds: readonly string[] }>;
-export type PublishedAlgorithmsInterleavedScope = Readonly<{ scopeId: string; scopeVersion: string; mentalUnitIds: readonly string[]; itemIds: readonly string[]; legalLearningStages: readonly string[]; minimumDiversity?: number }>;
+export type PublishedAlgorithmsInterleavedScopeMinimumDiversity =
+  | number
+  | Readonly<{ primaryMentalUnitCount: number; interactionTypeCount: number; problemArchetypeCount: number }>
+  | Readonly<{ mentalUnitCount: number; interactionTypes: readonly string[] }>
+  | Readonly<{ mentalUnits: number; interactionTypes: number; problemArchetypes: number }>;
+export type PublishedAlgorithmsInterleavedScope = Readonly<{ scopeId: string; scopeVersion: string; mentalUnitIds: readonly string[]; itemIds: readonly string[]; legalLearningStages: readonly string[]; minimumDiversity?: PublishedAlgorithmsInterleavedScopeMinimumDiversity }>;
 export type PublishedAlgorithmsCompatibilitySet = Readonly<{ id: string; version: string; relation: "same_mechanism" | "reviewed_variant" | "compatible_contrast" | "repair"; direction: "symmetric" | "directed"; sourceItemIds: readonly string[]; targetItemIds: readonly string[] }>;
 export type PublishedAlgorithmsSimulationPool = Readonly<{ poolId: string; poolVersion: string; itemIds: readonly string[] }>;
 export type PublishedAlgorithmsSimulationProfile = Readonly<{ profileId: string; profileVersion: string; profileKind: "internal_learning_profile"; totalOccurrences: 40; foregroundDurationMs: 2_700_000; poolId: string; distributions: readonly Readonly<{ dimension: string; buckets: readonly Readonly<{ valueId: string; minimum: number; target: number; maximum: number }>[] }>[]; selectionPolicy: Readonly<{ uniqueItems: true; replacement: false; deterministic: true; algorithmVersion: "sha256-ranked-constraints-v1" }> }>;
