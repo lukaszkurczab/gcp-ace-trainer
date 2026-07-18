@@ -659,17 +659,11 @@ Delete:
 
 **Decision:** `NEEDS_CORRECTION` — the product owner has approved the complete reference packet in `docs/designs/algorithms_stage3_ui/DESIGN.md` and its four companion graphics. **G-D is not yet VERIFIED**: the canonical UI, route cutover, automated checks, and visual QA have not yet been completed.
 
-**Content consumer status:** `S3-CONTENT-CONSUMER-01` is `VERIFIED` at the contract boundary. `validateBundledContent()` now consumes exact, immutable build-time artifact bytes through a versioned release and track envelope, verifies checksum, schema, versions, approval coverage, taxonomy/reference validity, declared modes, and the fixed 40-item Algorithms pool. Availability is projected per track: a missing Certification artifact cannot block a valid Algorithms artifact. The committed release intentionally has no real Algorithms artifact, so Algorithms remains explicitly unavailable; no empty session, synthetic occurrence, substitute content, fallback runner, or network source is permitted.
+**Content consumer status:** `S3-CONTENT-CONSUMER-01` is `VERIFIED` at the contract boundary. `validateBundledContent()` consumes exact, immutable build-time artifact bytes through a versioned release and track envelope, verifies checksum, schema, versions, approval coverage, taxonomy/reference validity, declared modes, interaction coverage, and the fixed 40-item Algorithms pool. Availability is projected per track: a missing Certification artifact cannot block a valid Algorithms artifact.
 
-Canonical Algorithms taxonomy authoring: in progress
+`S3-ALGORITHMS-CONTENT-01: VERIFIED` — the approved immutable `algorithms-core-0002` artifact is pinned with source commit `b424faa6d8c7209acb51ac23af812d08c31842dc`, taxonomy `algorithms-taxonomy-v2`, and checksum `fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c`. All declared Algorithms modes prepare against the canonical bank; Interview Simulation prepares exactly 40 unique occurrences without shortening or substitution. Certification remains explicitly unavailable because no Certification artifact is bundled.
 
-Taxonomy SOT migration: in progress
-
-Manual Checkpoint A: active
-
-Real Algorithms content: not present
-
-Algorithms production availability: blocked
+Algorithms production availability: available at the canonical preparation boundary
 
 `docs/designs/algorithms_stage3_ui/DESIGN.md` is now the approved implementation reference. It defines the compliant shared shell plus P-01…P-15 and S-01…S-29, including preparation, durability, error, recovery, exit, finalization, and result states. The older `docs/designs/algorithm_drill_unified` and historical core-flow screenshots remain non-canonical historical material: their wordmark/logo and close control must not be copied.
 
@@ -683,7 +677,7 @@ The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` re
 
 **Stage 3 gate status:** `NEEDS_CORRECTION`. G-D has approved design evidence but cannot become `VERIFIED` until the implementation and evidence named above pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
 
-**ACTIVE NEXT TASK:** `CONTENT-ARCH-AUDIT-01` — audit the manually prepared artifact publishing path, approval-coverage identity, and the lifecycle composition that supplies the verified content-availability port. Do not mark Stage 3 or G-D `VERIFIED`; real Algorithms content remains blocked until the manually prepared artifact is pinned.
+**ACTIVE NEXT TASK:** `S3-ALGORITHMS-UI-01` — implement the approved Algorithms UI and capture its visual QA evidence. Do not mark Stage 3 or G-D `VERIFIED` until the UI, route cutover, accessibility, and visual checks pass.
 
 ## Stage 4 — Certification family and GCP track cutover
 
@@ -872,9 +866,10 @@ Prove the canonical implementation under supported runtime conditions.
 | Repository-to-contract audit        | `DONE`                 | Historical findings preserved; closure addendum records current evidence  |
 | Shared kernel and mutations        | `VERIFIED`             | One journal/coordinator and recovery paths pass architecture and recovery checks |
 | MMKV and repositories              | `VERIFIED`             | One infrastructure MMKV owner; no reachable parallel repository/store path |
-| S3-CONTENT-CONSUMER-01             | `VERIFIED`             | Track-scoped byte consumer, immutable envelope, checksums, approval coverage, taxonomy, interaction, fixed-pool, lifecycle port, and boundary tests pass; it ships no real content |
-| Algorithms immediate practice      | `BLOCKED`              | No manually prepared and approved Algorithms artifact is pinned, so preparation remains explicitly unavailable |
-| Algorithms Interview Simulation    | `BLOCKED`              | No manually prepared and approved Algorithms artifact can prove the required fixed 40-occurrence session |
+| S3-CONTENT-CONSUMER-01             | `VERIFIED`             | Track-scoped byte consumer, immutable envelope, checksums, approval coverage, taxonomy, interaction, fixed-pool, lifecycle port, and boundary tests pass |
+| S3-ALGORITHMS-CONTENT-01           | `VERIFIED`             | Approved `algorithms-core-0002` is pinned and validates; all declared modes prepare from the canonical artifact |
+| Algorithms immediate practice      | `AVAILABLE`            | Canonical artifact preparation is available; approved UI work remains in Stage 3 |
+| Algorithms Interview Simulation    | `AVAILABLE`            | Canonical fixed-40 preparation yields exactly 40 unique occurrences without shortening |
 | Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
 | Certification Exam Simulation      | `NEEDS_CORRECTION`     | Parallel exam runtime was removed; canonical profile/runtime is required  |
 | Product surfaces                   | `PARTIAL`              | Runtime routes remain explicitly unavailable pending Stage 3 work         |
@@ -888,25 +883,25 @@ No earlier stage remains `VERIFIED` solely because an older plan marked it compl
 
 ### Task ID
 
-`CONTENT-ARCH-AUDIT-01 — Manually prepared artifact and lifecycle composition audit`
+`S3-ALGORITHMS-UI-01 — Algorithms UI implementation and visual QA`
 
 ### Status
 
-`ACTIVE` — `S3-CONTENT-CONSUMER-01` is verified, but the release has no manually prepared Algorithms artifact and no UI readiness claim follows from the consumer contract.
+`ACTIVE` — `S3-ALGORITHMS-CONTENT-01` is verified; UI implementation and visual QA remain required before Stage 3 can be verified.
 
 ### Goal
 
-Audit and approve the real artifact publishing path, approval-coverage identity, and the composition that connects `bundledContentAvailabilityPort` to the canonical lifecycle.
+Implement the approved Algorithms practice and Interview Simulation surfaces against the verified canonical preparation boundary, then capture the required visual QA.
 
 ### Required evidence
 
-- a manually prepared Algorithms artifact with exact source commit, schema/content/taxonomy versions, checksum, approval coverage, declared modes, and fixed 40-item proof;
-- lifecycle composition passes the track-scoped availability port to every prepare/start/resume path;
-- no real-content claim, Stage 3 completion claim, or G-D verification before the artifact and UI evidence both exist.
+- approved UI routes consume the canonical Algorithms preparation boundary for every mode;
+- accessibility and visual evidence covers the approved practice and Interview Simulation states;
+- no Stage 3 completion claim or G-D verification before UI and visual evidence both exist.
 
 ## 12. Stage 3 activation
 
-Stage 3 remains blocked on the manually prepared Algorithms artifact and its audited lifecycle/UI activation. UI and Certification remain unavailable and are not marked ready.
+Stage 3 remains `NEEDS_CORRECTION` until `S3-ALGORITHMS-UI-01` completes its UI and visual QA. Algorithms content preparation is available; Certification remains explicitly unavailable and is not marked ready.
 
 ## 13. Required implementation report
 
