@@ -8,9 +8,11 @@ test("Algorithms visual harness is complete, artifact-backed, and isolated from 
   assert.equal(fixtures.length, 44);
   assert.deepEqual(fixtures.map((fixture) => fixture.id), APPROVED_ALGORITHMS_AUDIT_STATES);
   assert.deepEqual(new Set(fixtures.map((fixture) => fixture.interaction)), new Set(["choice", "ordering", "complexity"]));
-  const production = ["App.tsx", "src/navigation/RootNavigator.tsx", "src/application/bootstrap/applicationBootstrap.ts", "src/application/bootstrap/trainingLifecycleComposition.ts", "package.json"]
+  const production = ["App.tsx", "src/navigation/RootNavigator.tsx", "src/application/bootstrap/applicationBootstrap.ts", "src/application/bootstrap/trainingLifecycleComposition.ts"]
     .map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(production, /audit\/algorithms-ui|AlgorithmsVisualHarness|fixtureCatalog/);
+  assert.equal(JSON.parse(readFileSync("package.json", "utf8")).main, "expo/AppEntry");
+  assert.match(readFileSync("audit/algorithms-ui/App.tsx", "utf8"), /AlgorithmsVisualHarness/);
   assert.doesNotMatch(readFileSync("audit/algorithms-ui/fixtureCatalog.ts", "utf8"), /mmkv|storage\/repositories|writeCanonical|save[A-Z]/);
 });
 

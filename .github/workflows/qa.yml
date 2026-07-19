@@ -15,12 +15,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: content-lock
+        name: Read immutable content lock
+        shell: bash
+        run: |
+          node -e '
+            const lock = require("./integration/contracts/algorithms-content/content.lock.json");
+            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.commit)) process.exit(1);
+            process.stdout.write(`commit=${lock.commit}\n`);
+          ' >> "$GITHUB_OUTPUT"
+      - name: Checkout locked content producer
+        uses: actions/checkout@v4
+        with:
+          repository: lukaszkurczab/patternly-content
+          ref: ${{ steps.content-lock.outputs.commit }}
+          path: patternly-content
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - name: Run recovery baseline (includes qa:static)
+        env:
+          PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
         run: npm run baseline:report
 
   algorithms-cross-repository-contract:
