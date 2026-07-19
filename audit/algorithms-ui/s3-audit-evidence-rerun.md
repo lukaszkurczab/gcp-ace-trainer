@@ -8,8 +8,7 @@ This rerun repaired and exercised the isolated audit host. It produced native
 iOS screenshots for P-01 through P-12 from the real Algorithms surfaces and
 the pinned bundled artifact. It did not produce the remaining states, Android,
 screen-reader, large-type, reduced-motion, or approved-packet comparison
-evidence. The current pushed QA workflow is still red; its checkout defect is
-fixed locally but has not been pushed or independently rerun.
+evidence. The CI checkout repair was pushed and GitHub Actions passed.
 
 ## Environment
 
@@ -61,10 +60,11 @@ pager is intentional and is not a production UI difference.
 GitHub Actions run [29687960595](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/29687960595)
 failed in `qa-static` because the content checkout was nested inside the
 application checkout, making the cross-repository integrity check correctly
-see a dirty application tree. The local workflow repair now checks out the
-application at `app` and the locked content producer at sibling
-`patternly-content`, matching the already-correct cross-repository job. The
-workflow-shape test passes, but a pushed green run is still required.
+see a dirty application tree. The repair checks out the application at `app`
+and the locked content producer at sibling `patternly-content`, matching the
+already-correct cross-repository job. The follow-up run
+[29689913577](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/29689913577)
+passed both the Recovery QA gate and the Algorithms cross-repository contract.
 
 ## Local verification
 

@@ -1199,15 +1199,13 @@ evidence yet.
 | G-P | `PASS` | Local recovery, foreground-timer, finalization, revisioned-draft, and duplicate-submit suites pass. |
 | G-L | `PASS` | Pinned artifact, seven declared modes, fixed 40 unique simulation, unanswered semantics, and delayed simulation feedback pass local contracts. |
 | G-D | `PARTIAL` | The isolated host now renders and captures iOS P-01…P-12 from real surfaces and pinned-artifact projections. P-13…P-15, S-01…S-29, Android, assistive technology, settings, and packet comparison remain unverified. |
-| G-Q | `FAIL` | Pushed GitHub Actions run 29687960595 failed because the content checkout dirtied the application tree. The sibling-checkout repair is locally tested but not pushed or green in GitHub Actions. |
+| G-Q | `PASS` | GitHub Actions run 29689913577 passed both the Recovery QA gate and the pinned Algorithms cross-repository contract after the sibling-checkout repair. |
 
 The audit host now has its own Expo registration and Metro root. It renders the
 real Practice and Simulation surfaces from pinned-artifact projections without
-a production import edge or MMKV write path. The CI repair makes both QA jobs
-use clean sibling application/content checkouts. Its focused static checks,
-fixture test, TypeScript check, and diff check pass locally. A clean-worktree
-cross-repository execution, pushed green CI, and the missing native evidence
-are still required.
+a production import edge or MMKV write path. Both QA jobs use clean sibling
+application/content checkouts, and GitHub Actions run 29689913577 is green. A
+complete native evidence packet is still required.
 
 ```txt
 Stage 3 — NEEDS_CORRECTION
@@ -1217,14 +1215,13 @@ ACTIVE NEXT TASK — S3-CLOSURE-EVIDENCE-02
 
 ## S3-CLOSURE-EVIDENCE-02
 
-Goal: commit and push the verified audit-host/CI repair; then obtain the one
-remaining complete Stage 3 evidence packet from clean iOS and Android targets.
+Goal: obtain the one remaining complete Stage 3 evidence packet from clean iOS
+and Android targets.
 
 Scope: split Maestro capture into bounded P/S flows; capture all remaining
 states and real bundled happy path; provision Android for required critical
 states; verify VoiceOver/TalkBack labels, standard and large text, reduced
-motion, focus/touch/order controls, and approved-packet screenshot comparison;
-confirm the pushed GitHub Actions run is green.
+motion, focus/touch/order controls, and approved-packet screenshot comparison.
 
 Non-goals: lifecycle semantics, persistence, scoring, content, and Stage 4.
 
@@ -1233,7 +1230,6 @@ the native host has no production import edge or MMKV mutation; Android
 critical-state evidence exists; and the pushed CI run is green. Only then may
 all six gates and Stage 3 be marked `VERIFIED`; Stage 4 stays blocked otherwise.
 
-Verification: from a clean application checkout run `npm run qa:static`,
-`npm run test:algorithms-cross-repo`, and `npm run audit:algorithms-ui:fixtures`;
-then run native iOS/Android capture and screen-reader checks, and inspect the
-GitHub Actions run for the pushed SHA.
+Verification: run native iOS/Android capture and screen-reader checks against
+the committed audit host, and attach the approved-packet comparison and exact
+device metadata to the evidence report.
