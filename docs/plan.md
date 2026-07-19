@@ -1185,13 +1185,49 @@ Niezależne zamknięcie G-L content gate.
 - final release checklist;
 - brak `mostly complete`.
 
-# 13. Najbliższa decyzja
+# 13. Independent Stage 3 closure audit — 2026-07-19
+
+Audited pushed SHA: `f82a63c75ccaed437933827ea7e9d5efa706fc7c`. Local
+repair SHA: `94cc066747694db10649665c5c01f32db6e0f490` is not pushed and
+therefore is not closure evidence.
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| G-C | `PASS` | Typed durable-operation projections and their presentation mapping pass the static architecture and recovery suites. |
+| G-A | `PASS` | Static architecture checks confirm one composition binding and no feature/track repository imports. |
+| G-P | `PASS` | Local recovery, foreground-timer, finalization, revisioned-draft, and duplicate-submit suites pass. |
+| G-L | `PASS` | Pinned artifact, seven declared modes, fixed 40 unique simulation, unanswered semantics, and delayed simulation feedback pass local contracts. |
+| G-D | `FAIL` | P4 captured the production Practice hub rather than P/S states. The pushed harness was a catalogue without a renderable audit entrypoint. |
+| G-Q | `FAIL` | GitHub Actions run 29686961254 failed because the `qa-static` job did not provide `PATTERNLY_CONTENT_ROOT` or a checked-out locked content producer. |
+
+The local repair adds an isolated Expo audit entrypoint that renders the real
+Practice and Simulation surfaces from pinned-artifact projections, and makes
+the static CI job checkout and bind the locked content producer. It passes
+`npm run qa:static`, `npm run test:algorithms-cross-repo`, and
+`npm run audit:algorithms-ui:fixtures` locally. Native evidence and a pushed
+green workflow are still required.
 
 ```txt
-P1 — VERIFIED
-P2 — VERIFIED
 Stage 3 — NEEDS_CORRECTION
-ACTIVE NEXT TASK — P3 S3-VISUAL-HARNESS-01
+Stage 4 — BLOCKED
+ACTIVE NEXT TASK — S3-AUDIT-EVIDENCE-RERUN-01
 ```
 
-P1 przywrócił canonical timer ownership, a P2 ustanowił phase-aware recovery i application-owned durable operation projections. Stage 3 nadal wymaga P3 visual harness; nie uruchamiaj historycznego `S3-ALGORITHMS-VISUAL-QA-01` zamiast tego zadania.
+## S3-AUDIT-EVIDENCE-RERUN-01
+
+Goal: push the audited repair, verify the green GitHub Actions run, and rerun
+P4 against the isolated audit entrypoint on iOS and Android.
+
+Scope: 44 P/S captures, real bundled happy path, required Android critical
+states, VoiceOver/TalkBack labels, standard and large text, reduced motion,
+focus/touch/order controls, and approved-packet screenshot comparison.
+
+Non-goals: lifecycle semantics, persistence, scoring, content, and Stage 4.
+
+Acceptance: every P-01…P-15 and S-01…S-29 has a real screenshot and metadata;
+the native host has no production import edge or MMKV mutation; Android
+critical-state evidence exists; and the pushed CI run is green.
+
+Verification: `npm run qa:static`, `npm run test:algorithms-cross-repo`,
+`npm run audit:algorithms-ui:fixtures`, native iOS/Android Maestro capture,
+screen-reader checks, and `gh run view` for the pushed SHA.
