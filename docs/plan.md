@@ -1187,9 +1187,10 @@ Niezależne zamknięcie G-L content gate.
 
 # 13. Independent Stage 3 closure audit — 2026-07-19
 
-Audited pushed SHA: `f82a63c75ccaed437933827ea7e9d5efa706fc7c`. Local
-repair SHA: `94cc066747694db10649665c5c01f32db6e0f490` is not pushed and
-therefore is not closure evidence.
+Audited pushed SHA: `a10678a`. The current worktree contains an uncommitted
+audit-host repair, a CI checkout repair, and the rerun evidence recorded in
+`audit/algorithms-ui/s3-audit-evidence-rerun.md`; none of it is pushed closure
+evidence yet.
 
 | Gate | Status | Evidence |
 | --- | --- | --- |
@@ -1197,37 +1198,42 @@ therefore is not closure evidence.
 | G-A | `PASS` | Static architecture checks confirm one composition binding and no feature/track repository imports. |
 | G-P | `PASS` | Local recovery, foreground-timer, finalization, revisioned-draft, and duplicate-submit suites pass. |
 | G-L | `PASS` | Pinned artifact, seven declared modes, fixed 40 unique simulation, unanswered semantics, and delayed simulation feedback pass local contracts. |
-| G-D | `FAIL` | P4 captured the production Practice hub rather than P/S states. The pushed harness was a catalogue without a renderable audit entrypoint. |
-| G-Q | `FAIL` | GitHub Actions run 29686961254 failed because the `qa-static` job did not provide `PATTERNLY_CONTENT_ROOT` or a checked-out locked content producer. |
+| G-D | `PARTIAL` | The isolated host now renders and captures iOS P-01…P-12 from real surfaces and pinned-artifact projections. P-13…P-15, S-01…S-29, Android, assistive technology, settings, and packet comparison remain unverified. |
+| G-Q | `FAIL` | Pushed GitHub Actions run 29687960595 failed because the content checkout dirtied the application tree. The sibling-checkout repair is locally tested but not pushed or green in GitHub Actions. |
 
-The local repair adds an isolated Expo audit entrypoint that renders the real
-Practice and Simulation surfaces from pinned-artifact projections, and makes
-the static CI job checkout and bind the locked content producer. It passes
-`npm run qa:static`, `npm run test:algorithms-cross-repo`, and
-`npm run audit:algorithms-ui:fixtures` locally. Native evidence and a pushed
-green workflow are still required.
+The audit host now has its own Expo registration and Metro root. It renders the
+real Practice and Simulation surfaces from pinned-artifact projections without
+a production import edge or MMKV write path. The CI repair makes both QA jobs
+use clean sibling application/content checkouts. Its focused static checks,
+fixture test, TypeScript check, and diff check pass locally. A clean-worktree
+cross-repository execution, pushed green CI, and the missing native evidence
+are still required.
 
 ```txt
 Stage 3 — NEEDS_CORRECTION
 Stage 4 — BLOCKED
-ACTIVE NEXT TASK — S3-AUDIT-EVIDENCE-RERUN-01
+ACTIVE NEXT TASK — S3-CLOSURE-EVIDENCE-02
 ```
 
-## S3-AUDIT-EVIDENCE-RERUN-01
+## S3-CLOSURE-EVIDENCE-02
 
-Goal: push the audited repair, verify the green GitHub Actions run, and rerun
-P4 against the isolated audit entrypoint on iOS and Android.
+Goal: commit and push the verified audit-host/CI repair; then obtain the one
+remaining complete Stage 3 evidence packet from clean iOS and Android targets.
 
-Scope: 44 P/S captures, real bundled happy path, required Android critical
-states, VoiceOver/TalkBack labels, standard and large text, reduced motion,
-focus/touch/order controls, and approved-packet screenshot comparison.
+Scope: split Maestro capture into bounded P/S flows; capture all remaining
+states and real bundled happy path; provision Android for required critical
+states; verify VoiceOver/TalkBack labels, standard and large text, reduced
+motion, focus/touch/order controls, and approved-packet screenshot comparison;
+confirm the pushed GitHub Actions run is green.
 
 Non-goals: lifecycle semantics, persistence, scoring, content, and Stage 4.
 
 Acceptance: every P-01…P-15 and S-01…S-29 has a real screenshot and metadata;
 the native host has no production import edge or MMKV mutation; Android
-critical-state evidence exists; and the pushed CI run is green.
+critical-state evidence exists; and the pushed CI run is green. Only then may
+all six gates and Stage 3 be marked `VERIFIED`; Stage 4 stays blocked otherwise.
 
-Verification: `npm run qa:static`, `npm run test:algorithms-cross-repo`,
-`npm run audit:algorithms-ui:fixtures`, native iOS/Android Maestro capture,
-screen-reader checks, and `gh run view` for the pushed SHA.
+Verification: from a clean application checkout run `npm run qa:static`,
+`npm run test:algorithms-cross-repo`, and `npm run audit:algorithms-ui:fixtures`;
+then run native iOS/Android capture and screen-reader checks, and inspect the
+GitHub Actions run for the pushed SHA.

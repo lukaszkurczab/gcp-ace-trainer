@@ -5,6 +5,13 @@ import test from "node:test";
 const workflow = readFileSync(".github/workflows/qa.yml", "utf8");
 
 test("Algorithms cross-repository workflow uses clean sibling checkouts and a locked SHA", () => {
+  const recoveryQa = workflow.match(/qa-static:[\s\S]*?(?=\n  algorithms-cross-repository-contract:)/)?.[0];
+  assert.ok(recoveryQa, "qa-static workflow must exist");
+  assert.match(recoveryQa, /name: Checkout application[\s\S]*?uses: actions\/checkout@v4[\s\S]*?path: app/);
+  assert.match(recoveryQa, /id: content-lock[\s\S]*?working-directory: app/);
+  assert.match(recoveryQa, /cache-dependency-path: app\/package-lock\.json/);
+  assert.match(recoveryQa, /name: Install application dependencies[\s\S]*?working-directory: app/);
+  assert.match(recoveryQa, /name: Run recovery baseline \(includes qa:static\)[\s\S]*?working-directory: app[\s\S]*?PATTERNLY_CONTENT_ROOT: \$\{\{ github\.workspace \}\}\/patternly-content/);
   assert.match(workflow, /name: Checkout application[\s\S]*?uses: actions\/checkout@v4[\s\S]*?path: app/);
   assert.match(workflow, /id: content-lock[\s\S]*?working-directory: app[\s\S]*?shell: bash/);
   assert.match(workflow, /process\.stdout\.write\(`commit=\$\{lock\.commit\}\\n`\);[\s\S]*?' >> "\$GITHUB_OUTPUT"/);

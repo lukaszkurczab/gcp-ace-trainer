@@ -13,6 +13,8 @@ test("Algorithms visual harness is complete, artifact-backed, and isolated from 
   assert.doesNotMatch(production, /audit\/algorithms-ui|AlgorithmsVisualHarness|fixtureCatalog/);
   assert.equal(JSON.parse(readFileSync("package.json", "utf8")).main, "expo/AppEntry");
   assert.match(readFileSync("audit/algorithms-ui/App.tsx", "utf8"), /AlgorithmsVisualHarness/);
+  assert.match(readFileSync("audit/algorithms-ui/index.ts", "utf8"), /registerRootComponent/);
+  assert.match(readFileSync("audit/algorithms-ui/metro.config.js", "utf8"), /projectRoot/);
   assert.doesNotMatch(readFileSync("audit/algorithms-ui/fixtureCatalog.ts", "utf8"), /mmkv|storage\/repositories|writeCanonical|save[A-Z]/);
 });
 

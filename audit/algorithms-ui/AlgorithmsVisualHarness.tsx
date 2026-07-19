@@ -18,10 +18,16 @@ const noop = () => undefined;
 export function AlgorithmsVisualHarness() {
   const fixtures = useMemo(buildAlgorithmsVisualFixtures, []);
   const [stateId, setStateId] = useState<(typeof APPROVED_ALGORITHMS_AUDIT_STATES)[number]>("P-01");
+  const stateIndex = APPROVED_ALGORITHMS_AUDIT_STATES.indexOf(stateId);
   const fixture = fixtures.find((entry) => entry.id === stateId)!;
   return (
     <View style={styles.root} testID="algorithms-audit-host">
-      <ScrollView horizontal contentContainerStyle={styles.selector} accessibilityLabel="Algorithms visual audit state selector">
+      <View style={styles.pager}>
+        <Pressable accessibilityLabel="Previous audit state" accessibilityRole="button" disabled={stateIndex === 0} onPress={() => setStateId(APPROVED_ALGORITHMS_AUDIT_STATES[stateIndex - 1]!)} style={stateIndex === 0 ? styles.disabledPagerButton : styles.pagerButton} testID="algorithms-audit-previous"><Text style={styles.optionText}>Previous</Text></Pressable>
+        <Text accessibilityLiveRegion="polite" style={styles.stateLabel} testID={`algorithms-audit-current-${stateId}`}>{stateId}</Text>
+        <Pressable accessibilityLabel="Next audit state" accessibilityRole="button" disabled={stateIndex === fixtures.length - 1} onPress={() => setStateId(APPROVED_ALGORITHMS_AUDIT_STATES[stateIndex + 1]!)} style={stateIndex === fixtures.length - 1 ? styles.disabledPagerButton : styles.pagerButton} testID="algorithms-audit-next"><Text style={styles.optionText}>Next</Text></Pressable>
+      </View>
+      <ScrollView horizontal style={styles.selectorScroll} contentContainerStyle={styles.selector} accessibilityLabel="Algorithms visual audit state selector">
         {fixtures.map((entry) => <Pressable key={entry.id} accessibilityRole="button" accessibilityState={{ selected: entry.id === stateId }} onPress={() => setStateId(entry.id)} style={entry.id === stateId ? styles.selected : styles.option}><Text style={styles.optionText}>{entry.id}</Text></Pressable>)}
       </ScrollView>
       {fixture.surface === "practice" ? <PracticeSessionSurface {...practiceProjection(fixture)} /> : <SimulationSessionSurface projection={simulationProjection(fixture)} />}
@@ -71,4 +77,4 @@ function simulationQuestion(item: ReturnType<typeof getAlgorithmsAuditItem>): No
 }
 
 function notice(operation: string) { return operation.includes("failed") || operation.includes("pending") ? { tone: "error" as const, message: "The canonical operation requires its explicit safe recovery path." } : undefined; }
-const styles = StyleSheet.create({ root: { flex: 1, backgroundColor: colors.dark.background }, selector: { gap: spacing.xs, padding: spacing.sm }, option: { borderColor: colors.dark.border, borderWidth: 1, padding: spacing.sm }, selected: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 1, padding: spacing.sm }, optionText: { ...typography.caption, color: colors.dark.textPrimary } });
+const styles = StyleSheet.create({ root: { flex: 1, backgroundColor: colors.dark.background, paddingTop: 54 }, pager: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", paddingHorizontal: spacing.sm, paddingTop: spacing.sm }, pagerButton: { borderColor: colors.dark.border, borderWidth: 1, minWidth: 84, padding: spacing.sm }, disabledPagerButton: { borderColor: colors.dark.border, borderWidth: 1, minWidth: 84, opacity: 0.45, padding: spacing.sm }, stateLabel: { ...typography.caption, color: colors.dark.textPrimary }, selectorScroll: { flexGrow: 0, flexShrink: 0, maxHeight: 52 }, selector: { alignItems: "center", gap: spacing.xs, padding: spacing.sm }, option: { borderColor: colors.dark.border, borderWidth: 1, padding: spacing.sm }, selected: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 1, padding: spacing.sm }, optionText: { ...typography.caption, color: colors.dark.textPrimary } });

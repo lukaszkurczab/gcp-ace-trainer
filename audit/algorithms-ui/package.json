@@ -1,5 +1,5 @@
 {
   "private": true,
-  "main": "./App.tsx",
+  "main": "./index.ts",
   "name": "patternly-algorithms-audit-host"
 }

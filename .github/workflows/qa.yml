@@ -14,9 +14,13 @@ jobs:
     name: Recovery QA gate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout application
+        uses: actions/checkout@v4
+        with:
+          path: app
       - id: content-lock
         name: Read immutable content lock
+        working-directory: app
         shell: bash
         run: |
           node -e '
@@ -34,8 +38,12 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+          cache-dependency-path: app/package-lock.json
+      - name: Install application dependencies
+        working-directory: app
+        run: npm ci
       - name: Run recovery baseline (includes qa:static)
+        working-directory: app
         env:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
         run: npm run baseline:report
