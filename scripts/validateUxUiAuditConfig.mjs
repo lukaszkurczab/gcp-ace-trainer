@@ -20,6 +20,7 @@ requireNonEmptyArray("checklists", config.checklists);
 requireNonEmptyArray("forbiddenTerms.terms", config.forbiddenTerms?.terms);
 requireNonEmptyArray("flows", config.flows);
 requireNonEmptyArray("screens", config.screens);
+requireString("coveragePacket", config.coveragePacket);
 
 if (config.outputDir !== `docs/audits/ux-ui/${config.auditId}`) {
   errors.push(
@@ -36,6 +37,7 @@ if (config.helpersDir) {
 for (const checklistPath of config.checklists ?? []) {
   assertFile(checklistPath, "checklist");
 }
+assertFile(config.coveragePacket, "coveragePacket");
 
 const flowIds = new Set();
 for (const flow of config.flows ?? []) {
@@ -56,6 +58,8 @@ for (const screen of config.screens ?? []) {
         `screens[${screen.id}].states[${state.id}] references unknown flow ${state.capturedBy}`,
       );
     }
+    if (!state.capturedBy && !state.manualCapture) errors.push(`screens[${screen.id}].states[${state.id}] needs capturedBy or manualCapture`);
+    if (state.manualCapture) assertFile(state.manualCapture, `screens[${screen.id}].states[${state.id}].manualCapture`);
   }
 
   const stateIds = new Set((screen.states ?? []).map((state) => state.id));
@@ -68,6 +72,14 @@ for (const screen of config.screens ?? []) {
       }
     }
   }
+}
+
+const expectedStateIds = [...Array.from({ length: 15 }, (_, index) => `P-${String(index + 1).padStart(2, "0")}`), ...Array.from({ length: 29 }, (_, index) => `S-${String(index + 1).padStart(2, "0")}`)];
+const configuredStateIds = config.screens.flatMap((screen) => screen.states.map((state) => state.id));
+if (configuredStateIds.length !== expectedStateIds.length || new Set(configuredStateIds).size !== expectedStateIds.length || expectedStateIds.some((id) => !configuredStateIds.includes(id))) errors.push("coverage packet must enumerate exactly P-01…P-15 and S-01…S-29");
+for (const flow of config.flows ?? []) {
+  const source = readFileSync(path.join(root, flow.path), "utf8");
+  for (const term of config.forbiddenTerms?.terms ?? []) if (source.includes(term)) errors.push(`active flow ${flow.id} contains retired selector ${term}`);
 }
 
 mkdirSync(path.join(root, config.outputDir), { recursive: true });
