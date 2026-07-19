@@ -1,972 +1,1202 @@
-# Patternly — Working Execution Plan v3
+---
+title: Patternly — zweryfikowany stan repozytoriów i skorygowany plan wykonania
+status: PROPOSED_EXECUTION_PLAN_UPDATE
+audit_date: 2026-07-19
+application_repository: lukaszkurczab/gcp-ace-trainer
+application_branch: main
+application_audited_sha: 82b0c92805814264ea45fb6403fd3e31046b1d0a
+content_repository: lukaszkurczab/patternly-content
+content_branch: master
+content_audited_sha: b424faa6d8c7209acb51ac23af812d08c31842dc
+---
 
-**Status:** active execution-control document
-**Repository:** `lukaszkurczab/gcp-ace-trainer`
-**Product:** Patternly
-**Repository baseline:** audited `main` at `ac412949a3d53c0712aebfb04476445b833bc41a`
-**Baseline date:** 2026-07-16
+# 1. Decyzja wykonawcza
 
-## 1. Purpose
+Dotychczasowy plan jest częściowo nieaktualny. Repozytoria poszły dalej niż przewidywała poprzednia sekwencja:
 
-This document controls how Patternly work moves from an accepted product contract to repository implementation and verified completion.
+- istnieje i jest przypięty rzeczywisty artifact Algorithms `algorithms-core-0002`;
+- istnieje kompletna infrastruktura publikacyjna w `patternly-content`;
+- canonical Algorithms Practice i Interview Simulation zostały podłączone do routingu;
+- dodano shared Algorithms session shell, facades, timer coordinator, testy i część screenshot evidence.
 
-It defines:
+Nie oznacza to jednak, że Stage 3 można zamknąć przez samo uzupełnienie screenshotów.
 
-- implementation sequencing;
-- current repository gates and blockers;
-- the active execution stage;
-- task boundaries;
-- required deletion of obsolete paths;
-- verification evidence;
-- stage-completion decisions;
-- the next safe task.
+Aktualny `main` ma trzy blokujące problemy kontraktowe:
 
-Documents `00–13` and `15–17` define the canonical product, architecture, learning, content, persistence, security, interaction, and testing contracts.
+1. **timer Interview Simulation nie jest podłączony do lifecycle aplikacji i nie uruchamia automatycznej finalizacji przy wyczerpaniu czasu;**
+2. **Practice nie rozróżnia błędu przed trwałym journalem od błędu po logicznym commitcie, przez co może ponownie otworzyć odpowiedź po trwałym zapisaniu komendy;**
+3. **Algorithms timer facade ponownie uzyskał bezpośredni dostęp do konkretnych repository implementations poza composition root.**
 
-This Working Execution Plan is the only active document that defines repository-specific implementation order.
+Dlatego aktywnym następnym zadaniem nie powinno być samo `S3-ALGORITHMS-VISUAL-QA-01`. Najpierw trzeba zamknąć regresję runtime i ownership, następnie wprowadzić typed operation projections, dopiero później wykonać pełne visual QA.
 
-Do not create a separate architecture recovery plan, parallel execution plan, migration roadmap, or secondary stage-status document.
+# 2. Zakres i ograniczenia audytu
 
-## 2. Authority hierarchy
-
-Conflicts are resolved by contract ownership, not by document age, existing code, or previous task reports.
-
-### 2.1. Canonical product contracts
-
-Documents `00–13` and `15–17` define the target product.
-
-No separate learning-effectiveness document is an authority. Its responsibilities are owned by `01-product-definition.md`, `07-content-guidelines.md`, `15-certification-track-learning-system.md`, `16-leetcode-like-learning-system.md`, and `17-training-runtime-and-interaction-spec.md`.
-
-### 2.2. Approved design references
-
-Approved visual references own concrete presentation where the canonical documentation delegates visual decisions.
-
-They may define:
-
-- layout;
-- hierarchy;
-- spacing;
-- control placement;
-- interaction presentation;
-- required visual states.
-
-They do not override:
-
-- lifecycle;
-- scoring;
-- feedback timing;
-- persistence;
-- timer semantics;
-- review policy;
-- ownership boundaries;
-- accessibility requirements.
-
-### 2.3. This Working Execution Plan
-
-This document owns:
-
-- repository-specific implementation order;
-- stage boundaries;
-- current blockers;
-- required verification;
-- current execution status;
-- active next task.
-
-It does not redefine the target product.
-
-### 2.4. Current repository
-
-The repository is evidence of current implementation state.
-
-Existing code is not automatically a product requirement.
-
-A passing test protecting obsolete behaviour does not make that behaviour canonical.
-
-### 2.5. Codex prompts and reports
-
-A Codex prompt may narrow implementation scope but may not weaken a canonical contract.
-
-A Codex report is evidence to inspect, not proof of completion.
-
-Only pushed repository state and independently verified results can close a stage.
-
-## 3. Non-negotiable execution rules
-
-### 3.1. Move or delete
-
-When an obsolete model, flow, module, route, key, API, test, or repository path is replaced:
-
-- move valid responsibility to the canonical owner;
-- delete the obsolete path in the same bounded stage;
-- delete obsolete tests and fixtures;
-- prove the old path unreachable.
-
-Do not create:
-
-- compatibility adapters;
-- old-schema readers;
-- translators;
-- dual reads;
-- dual writes;
-- legacy fallbacks;
-- bridge models;
-- parallel runners;
-- parallel storage systems;
-- permanent migration flags;
-- hidden default branches;
-- generic substitute content.
-
-### 3.2. One authoritative owner
-
-After a verified stage, one concept has one authoritative owner.
-
-Examples:
-
-- lifecycle guards and family-neutral envelopes → shared kernel;
-- workflow coordination → application use cases;
-- Algorithms semantics → Algorithms family runtime;
-- Certification semantics → Certification family runtime;
-- persistence → canonical repositories;
-- MMKV access → one infrastructure boundary;
-- authored educational feedback → static content;
-- rendering → approved shell and family interaction renderer.
-
-Moving a file without moving responsibility does not satisfy this rule.
-
-### 3.3. No hidden partial completion
-
-A stage is not complete because:
-
-- new files exist;
-- typecheck passes;
-- unit tests pass;
-- the old implementation remains as fallback;
-- a route is disabled;
-- a screen renders fixture data;
-- an error state is missing;
-- content is structurally valid but unreviewed;
-- an approved design is absent;
-- Codex reports the intended result;
-- a capability works only through a parallel legacy owner.
-
-### 3.4. No temporary architecture
-
-Do not introduce:
-
-- temporary domain models;
-- placeholder architecture;
-- future-content flags;
-- parallel “old” and “new” variants;
-- compatibility scaffolding;
-- hidden incomplete features;
-- architecture intended to be replaced later.
-
-A bounded stage may implement only part of the product, but the implemented part must already use its final canonical structure.
-
-### 3.5. Explicit failure over substitution
-
-Missing content, profile, draft, storage state, design, configuration, or interaction handler blocks the affected operation explicitly.
-
-It must not produce:
-
-- a default topic;
-- another track;
-- a generic item;
-- a guessed answer;
-- an empty successful session;
-- a fabricated explanation;
-- a substitute profile;
-- an ordinary-looking result.
-
-## 4. Execution loop
-
-Every bounded repository task follows:
+Audyt obejmował aktualne zdalne branche:
 
 ```txt
-canonical contract
-→ repository fact audit
-→ exact implementation prompt
-→ bounded implementation
-→ required verification
-→ push to GitHub
-→ independent review of pushed state
-→ gate decision
-→ Working Execution Plan update
+gcp-ace-trainer/main
+82b0c92805814264ea45fb6403fd3e31046b1d0a
+
+patternly-content/master
+b424faa6d8c7209acb51ac23af812d08c31842dc
 ```
 
-The pushed commit or pull request is the review source of truth.
-
-Unpushed changes and narrative implementation reports cannot be accepted as completed work.
-
-## 5. Result classification
-
-Each implementation stage receives one result:
-
-- `VERIFIED`
-- `PARTIAL`
-- `NEEDS_CORRECTION`
-- `BLOCKED`
-- `REJECTED`
-
-Each applicable gate receives one result:
-
-- `PASS`
-- `FAIL`
-- `BLOCKED`
-- `NOT_APPLICABLE`
-
-A stage may be `PARTIAL` even when all executed tests pass.
-
-A stage is `VERIFIED` only when every applicable gate passes.
-
-## 6. Mandatory gates
-
-### G-C — Contract gate
-
-Requires:
-
-- exact alignment with documents `00–13` and `15–17`;
-- no undocumented behaviour;
-- no implementation inferred from a mode name, old screen, or legacy service;
-- all required product contracts closed.
-
-### G-A — Architecture gate
-
-Requires:
-
-- correct dependency direction;
-- one canonical owner;
-- application-layer orchestration;
-- no direct UI persistence or scoring;
-- no family-owned repository implementation;
-- no obsolete reachable owner;
-- no global concrete-item union.
-
-### G-P — Persistence and recovery gate
-
-Requires:
-
-- one MMKV infrastructure owner;
-- one active session;
-- persistence before the first item;
-- revision-safe simulation drafts;
-- deterministic journal operations;
-- idempotent recovery;
-- verified materialization;
-- explicit mismatch and corruption states;
-- canonical reset;
-- no AsyncStorage or parallel storage path.
-
-### G-L — Learning and content gate
-
-Requires:
-
-- correct family semantics;
-- exact mode behaviour;
-- exact scoring;
-- review provenance;
-- correct persistent-review lifecycle;
-- active-content structural validation;
-- recorded human editorial approval for active instructional batches;
-- no runtime-generated educational explanations.
-
-### G-D — Design and accessibility gate
-
-Requires:
-
-- approved visual reference for every required user-facing state;
-- correct session top bar and actions;
-- accessible response semantics;
-- no colour-only state;
-- approved saving, frozen, finalizing, error, and recovery states;
-- screenshot and manual QA evidence.
-
-### G-S — Security and privacy gate
-
-Requires:
-
-- approved local-data boundary;
-- no unapproved telemetry or transmission;
-- production-log redaction;
-- no unverified encryption claim;
-- permission and backup-policy review;
-- accurate reset and deletion communication.
-
-### G-Q — Quality-assurance gate
-
-Requires the applicable subset of:
-
-- `npm run qa:static`;
-- architecture checks;
-- required negative suite;
-- application-use-case tests;
-- repository and journal recovery tests;
-- interaction-handler tests;
-- accessibility tests;
-- route smoke;
-- Maestro flows;
-- screenshot comparison;
-- native development-build verification.
-
-## 7. Verified repository baseline
-
-The current `main` branch contains substantial recovery work.
-
-Confirmed high-level facts include:
-
-- MMKV and Nitro modules are installed;
-- static QA scripts exist;
-- UX/UI audit scripts exist;
-- canonical mutation and repository infrastructure exists;
-- Algorithms family-runtime work exists;
-- immediate Algorithms practice has an application controller;
-- Algorithms Interview Simulation has a controller, projections, screens, renderers, and draft persistence;
-- the previous large Algorithms session screen and session model were removed;
-- a shared training-session finalization mutation exists;
-- a training-session draft model and repository exist;
-- the latest recovery branch was merged into `main`.
-
-These facts do not establish compliance with the final accepted contracts.
-
-The current implementation was produced against an older documentation set and must be audited before further expansion.
-
-## 8. Known contract deltas
-
-The repository audit must verify at least these known deltas.
-
-### D-04 — Algorithms runtime ownership
-
-Current code must be checked for family-runtime ownership of:
-
-- draft persistence;
-- foreground timer orchestration;
-- finalization orchestration;
-- repository coordination.
-
-Those responsibilities belong to application use cases and repositories.
-
-The family runtime owns deterministic Algorithms semantics.
-
-### D-05 — Algorithms simulation flagging
-
-Current Algorithms runtime and UI contain flagging.
-
-The approved Algorithms Interview Simulation profile does not include flagging.
-
-Flagging must be removed unless a later explicit product decision adds:
-
-- a profile contract;
-- data-model support;
-- approved visual design;
-- runtime semantics;
-- tests.
-
-### D-06 — Draft revision contract
-
-The current simulation draft must be checked against the approved requirements for:
-
-- schema version;
-- draft version;
-- monotonically increasing revision;
-- expected previous revision;
-- stale-write rejection;
-- complete-record replacement;
-- freeze of one exact durable revision at finalization.
-
-### D-07 — Reinsert contract
-
-The canonical contract requires:
-
-- maximum one reinsert;
-- at least three other materialized submitted attempts;
-- reviewed variant where available;
-- exact source only when no reviewed compatible variant exists;
-- no session extension;
-- no session reordering;
-- deterministic conditional plan slots prepared before session start.
-
-A two-item gap or opportunistic post-start plan mutation is incorrect.
-
-### D-08 — Finalization visibility boundary
-
-Practice feedback may appear after durable submit intent.
-
-Simulation result and instructional feedback may appear only after finalization has been fully materialized and verified.
-
-A durable finalization journal alone is insufficient.
-
-### D-09 — Certification family completeness
-
-All six non-simulation Certification modes require exact implementation contracts.
-
-Current Cloud practice and review flows must not be assumed to satisfy:
-
-- canonical mode identity;
-- selection;
-- length;
-- feedback timing;
-- review effects;
-- summary;
-- recommendation;
-- persistence ownership.
-
-### D-10 — Content activation
-
-Active instructional content requires:
-
-- structural validation;
-- correct scoring;
-- authored feedback;
-- stable-ID distractor coverage;
-- taxonomy validation;
-- required provenance;
-- recorded human editorial approval.
-
-Renderable content is not automatically production-ready.
-
-### Stage 1 audit evidence — 2026-07-16
-
-Immutable repository evidence is recorded in [2026-07-16-repository-contract-delta-audit.md](audits/2026-07-16-repository-contract-delta-audit.md), audited at `ac412949a3d53c0712aebfb04476445b833bc41a`.
-
-The audit confirms D-04, D-05, D-06, D-09, and D-10 as mismatches; D-07 has sufficient deterministic-selection evidence but must survive ownership cutover; D-08 has verified Algorithms finalization visibility evidence but Certification lifecycle writes remain outside the canonical boundary.
-
-Missing product/design decisions are: the approved content-network boundary; a versioned official-source Certification `ExamExperienceProfile`; a recorded human editorial/technical content-approval contract; approved designs for draft conflict/recovery and the full Certification mode set; and verified backup, encryption, logging-redaction, and permission policy.
-
-The audited `main` does not contain the pushed Stage 0 closure commit. Stage 1 is therefore `BLOCKED` from verification and Stage 2 cannot become active on this branch until Stage 0 is integrated into `main`.
-
-## 9. Execution sequence
-
-## Stage 0 — Canonical documentation closure
-
-### Goal
-
-Make the accepted documentation the only target contract and make this document the only execution-order source.
-
-### Closure evidence
-
-- documents `00–13` and `15–17` are present as the canonical set;
-- the excluded document slots have no files or authority references;
-- `docs/plan.md` is the only repository execution-order source;
-- stale indexes, ADR references, and the obsolete parallel execution plan were removed or corrected;
-- the baseline above was audited with the documentation and static QA checks required by this plan.
-
-### Required consistency checks
-
-Confirm one definition for:
-
-- canonical document set;
-- mode names;
-- supported lengths;
-- feedback timing;
-- timer semantics;
-- reinsert eligibility;
-- three-item reinsert gap;
-- draft ownership and revision;
-- finalization visibility;
-- Algorithms flagging;
-- content activation;
-- reset;
-- security and privacy boundary.
-
-### Restrictions
-
-- no application code changes;
-- no runtime fixes;
-- no opportunistic cleanup outside documentation;
-- no compatibility note preserving rejected documentation.
-
-### Status
-
-`VERIFIED`
-
-## Stage 1 — Repository-to-contract delta audit
-
-### Goal
-
-Audit the current `main` branch against the accepted canonical documentation.
-
-### Scope
-
-Inspect:
-
-- shared domain and kernel;
-- application use cases;
-- family runtimes;
-- simulation controllers;
-- session and attempt models;
-- draft model and repository;
-- mutation journal;
-- timer state;
-- Algorithms screens;
-- Certification practice and exam;
-- navigation;
-- Home, Practice, Progress, Review, and Settings;
-- content manifests;
-- content review records;
-- QA and architecture checks.
-
-### Required output
-
-Produce a repository-grounded matrix containing:
-
-- canonical requirement;
-- current path;
-- current owner;
-- confirmed current behaviour;
-- mismatch;
-- applicable risk ID;
-- required action:
-  - keep;
-  - move;
-  - rewrite;
-  - delete;
-
-- required tests;
-- required design reference;
-- implementation dependency.
-
-### Restrictions
-
-- no product code changes;
-- no speculative compliance;
-- no reuse decision based only on file names or commit messages;
-- no stage marked complete from earlier plan status.
-
-### Exit criteria
-
-- every affected canonical contract is mapped to repository evidence;
-- known deltas D-01–D-10 are resolved or confirmed;
-- current test baseline is recorded;
-- missing design and product decisions are listed;
-- the exact next implementation stage is bounded.
-
-### Audit status
-
-`BLOCKED` — the repository-to-contract matrix and verification baseline are complete, but the audited `main` still has Stage 0 active and D-01–D-03 open. The audit does not treat a closure commit on a non-ancestor branch as current-main evidence.
-
-## Stage 2 — Canonical model, application, and persistence correction
-
-### Goal
-
-Align the shared model and persistence lifecycle with the accepted contracts.
-
-### Expected scope
-
-Subject to Stage 1 evidence:
-
-- family-neutral kernel envelopes;
-- explicit application use cases;
-- discriminated active, completed, and abandoned sessions;
-- canonical `AttemptResult`;
-- one active-session reference;
-- revisioned simulation draft;
-- canonical foreground-timer state;
-- journaled learning-state reset;
-- startup recovery order;
-- deterministic finalization;
-- verified materialization boundary;
-- exact content and profile resume checks.
-
-### Required deletion
-
-Delete any superseded:
-
-- family-owned storage orchestration;
-- direct screen repository access;
-- non-revisioned draft path;
-- parallel timer owner;
-- old reset path;
-- obsolete session model;
-- unsupported flag state;
-- obsolete journal operation.
-
-### Exit criteria
-
-- ownership matches documents `02`, `04`, `08`, `11`, and `17`;
-- one canonical persistence path exists;
-- draft conflict and recovery tests pass;
-- old owners are unreachable;
-- no user-facing capability is reported complete without its UI state.
-
-### Independent closure review — 2026-07-16
-
-**Audited commit:** `1ad7ecd9728d5e8027808c514ba54e6fdbca6fec`
-
-**Decision:** `VERIFIED` (ownership closure updated 2026-07-16)
-
-`npm run qa:static` passed (recovery inventory, typecheck, 224 tests, and content-boundary validation), as did the UX/UI audit configuration check. The ownership corrective task removed direct feature/track storage imports, the parallel Certification active-exam record and service, and repository bindings from `createAlgorithmsRuntime`. Architecture tests now fail on those conditions.
-
-Algorithms and Certification runtime routes remain explicitly unavailable. This is an intentional blocking state while their Stage 3 contracts are implemented; it is not a readiness claim. Stage 3 may now begin with its first bounded Algorithms mode/selection task.
-
-## Stage 3 — Algorithms runtime correction and complete cutover
-
-### Goal
-
-Bring existing Algorithms implementation into exact compliance with the accepted family and runtime contracts.
-
-### Scope
-
-- all seven Algorithms modes;
-- exact entry mappings;
-- immediate-feedback practice;
+Sprawdzono między innymi:
+
+- najnowsze commity i różnice względem poprzednich punktów kontrolnych;
+- `docs/plan.md`;
+- application lifecycle i composition root;
+- Algorithms family runtime i UI facades;
+- Practice i Interview Simulation screens;
+- foreground timer;
+- mutation journal call path;
+- architecture guard;
+- aktualny UX/UI audit config;
+- pinned content lock i generated bundled artifact;
+- content track config, activation, przykładowe source batches i approval records;
+- GitHub workflow definitions.
+
+Ograniczenie audytu:
+
+- w tej sesji nie wykonano lokalnie `npm ci`, `npm run qa:static`, Maestro ani natywnych buildów;
+- z GitHub nie uzyskano statusów check-runs dla bieżących HEAD-ów;
+- zielone wyniki zapisane w commit reports i `docs/plan.md` są dowodem repozytoryjnym, ale nie zostały tutaj niezależnie ponownie uruchomione.
+
+W konsekwencji poniżej rozróżniono:
+
+- **potwierdzony stan kodu**;
+- **raportowany wynik testu**;
+- **brak niezależnego dowodu wykonania**.
+
+# 3. Potwierdzony stan repozytoriów
+
+## 3.1. Dokumentacja i poprzednie etapy
+
+| Obszar | Stan po audycie | Uzasadnienie |
+|---|---|---|
+| Stage 0 — canonical documentation | `VERIFIED`, ale tabela statusów w `docs/plan.md` jest stara | Plan nadal pokazuje `NEEDS_CORRECTION`, mimo że sekcja Stage 0 jest `VERIFIED`. |
+| Stage 1 — repository delta audit | `DONE` | Audit istnieje i kolejne zadania były wykonywane na jego podstawie. |
+| Stage 2 — kernel/persistence | historycznie `VERIFIED`, aktualnie ma regresję G-A | Jeden MMKV owner i journal pozostają, ale timer facade importuje konkretne repositories. |
+| Baseline w `docs/plan.md` | `STALE` | Nagłówek nadal wskazuje `ac412949…`, a aktualny `main` to `82b0c928…`. |
+| Sekcja „Forbidden immediate work until Stages 0 and 1…” | `STALE` | Oba etapy są zamknięte; zapis nie może nadal sterować aktywną kolejnością. |
+
+## 3.2. Algorithms content
+
+Potwierdzono:
+
+- track-scoped bundled-content consumer;
+- pinned producer commit `b424faa6…`;
+- `contentVersion = algorithms-core-0002`;
+- `taxonomyVersion = algorithms-taxonomy-v2`;
+- immutable generated artifact w aplikacji;
+- approval coverage i activation manifest;
+- deklaracje wszystkich Algorithms modes;
 - fixed 40-item Interview Simulation;
-- 45-minute foreground countdown;
-- revision-safe drafts;
-- finalization-only attempts and review;
-- unanswered diagnostics;
-- conditional reinsert slots;
-- three-item separation;
-- family recommendations;
-- Algorithms summary and review projections;
-- approved practice and simulation screens.
+- 45-minutowy foreground countdown w track configuration;
+- application lock do dokładnego producer SHA.
 
-### Required correction
+Klasyfikacja:
 
-At minimum:
+```txt
+Algorithms artifact preparation: VERIFIED
+Algorithms technical availability: AVAILABLE
+Algorithms production editorial readiness: PARTIAL / REQUIRES MANUAL AUDIT
+```
 
-- move persistence orchestration out of family runtime where present;
-- remove unsupported Algorithms flagging;
-- implement exact draft revision contract;
-- implement conditional reinsert plan slots;
-- enforce three intervening materialized submissions;
-- withhold simulation results until verified finalization;
-- preserve exactly 40 unique simulation items;
-- expose explicit insufficient-content failure.
+Powód ostatniego rozróżnienia: przykładowe approval records używają pola:
 
-### Required deletion
+```txt
+reviewer = product-owner-authorized-codex-review
+```
 
-Delete:
+To nie jest samo w sobie dowód ludzkiego editorial sign-off wymaganego przez canonical content contract. Stage 6 musi jawnie rozstrzygnąć, czy istnieje rzeczywista ręczna recenzja, kto ją wykonał i które exact fingerprints obejmuje.
 
-- unsupported flag controls and state;
-- obsolete Algorithms runtime paths;
-- dynamic post-start plan mutation;
-- duplicate timer owner;
-- duplicate finalization owner;
-- tests protecting rejected behaviour.
+Codex nie może na późniejszym etapie „naprawić” tego przez samodzielne zatwierdzanie pytań.
 
-### Exit criteria
+## 3.3. Algorithms runtime i UI
 
-- Algorithms lifecycle is testable without React;
-- screens only render state and dispatch commands;
-- all modes use one canonical application flow;
-- all required states have approved designs;
-- old Algorithms owners are absent;
-- all applicable gates pass.
+Potwierdzono:
 
-### Prompt 12 design-gate inventory — 2026-07-16
+- jeden aktualny Practice runner;
+- jeden aktualny Interview Simulation runner;
+- usunięty stary blocking screen;
+- canonical routes w `RootNavigator`;
+- shared `SessionShell`;
+- Practice choice/ordering/complexity controls;
+- simulation navigator i draft save;
+- manual finish, leave, abandon i część finalization UI;
+- partial Maestro evidence z realnego artifactu;
+- approved design packet P-01…P-15 i S-01…S-29.
 
-**Audited commit:** `163b310de1350b6aa1c26cb5a4c27bd8ae85039c`
+Klasyfikacja:
 
-**Decision:** `NEEDS_CORRECTION` — the product owner has approved the complete reference packet in `docs/designs/algorithms_stage3_ui/DESIGN.md` and its four companion graphics. **G-D is not yet VERIFIED**: the canonical UI, route cutover, automated checks, and visual QA have not yet been completed.
+```txt
+Algorithms route cutover: IMPLEMENTED
+Algorithms runtime completeness: NEEDS_CORRECTION
+Algorithms G-D: NEEDS_CORRECTION
+Stage 3: NEEDS_CORRECTION
+```
 
-**Content consumer status:** `S3-CONTENT-CONSUMER-01` is `VERIFIED` at the contract boundary. `validateBundledContent()` consumes exact, immutable build-time artifact bytes through a versioned release and track envelope, verifies checksum, schema, versions, approval coverage, taxonomy/reference validity, declared modes, interaction coverage, and the fixed 40-item Algorithms pool. Availability is projected per track: a missing Certification artifact cannot block a valid Algorithms artifact.
+# 4. Najważniejsze odchylenia wykryte w aktualnym kodzie
 
-`S3-ALGORITHMS-CONTENT-01: VERIFIED` — the approved immutable `algorithms-core-0002` artifact is pinned with source commit `b424faa6d8c7209acb51ac23af812d08c31842dc`, taxonomy `algorithms-taxonomy-v2`, and checksum `fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c`. All declared Algorithms modes prepare against the canonical bank; Interview Simulation prepares exactly 40 unique occurrences without shortening or substitution. Certification remains explicitly unavailable because no Certification artifact is bundled.
+## F-01 — foreground timer nie działa jako kompletny runtime
 
-Algorithms production availability: available at the canonical preparation boundary
+**Severity:** Critical  
+**Gate:** G-P, G-L, G-D, G-Q
 
-`docs/designs/algorithms_stage3_ui/DESIGN.md` is now the approved implementation reference. It defines the compliant shared shell plus P-01…P-15 and S-01…S-29, including preparation, durability, error, recovery, exit, finalization, and result states. The older `docs/designs/algorithm_drill_unified` and historical core-flow screenshots remain non-canonical historical material: their wordmark/logo and close control must not be copied.
+`AlgorithmsSimulationTimerFacade` ma poprawne primitives:
 
-| Required surface | Approved visual and interaction reference | Remaining G-D evidence |
-| --- | --- |
-| Algorithms Practice | P-01…P-15 in the approved packet, including preparation, submit, pending/recovery, feedback, advance, exit, and abandonment. | One canonical runner and exit/abandon controls are implemented. Real failure/recovery screenshot evidence remains incomplete. |
-| Algorithms Interview Simulation | S-01…S-29 in the approved packet, including 40-position navigation, draft durability, freeze/finalization, recovery, mismatch, and verified result. | One canonical runner, persisted draft path, timer facade, and real fixed-40 start are implemented. Real failure/recovery screenshot evidence remains incomplete. |
-| Cross-cutting accessibility and responsive evidence | The approved packet specifies non-colour state treatment, action semantics, shell geometry, and required notices. | Capture and compare implementation screenshots; run route, reduced-motion/dynamic-text, and accessibility checks. |
+- initialize;
+- restore;
+- enter foreground;
+- leave foreground;
+- periodic checkpoint;
+- projection;
+- checkpoint przed draft save i finalization.
 
-The canonical documentation in `docs/05`, `docs/06`, `docs/11`, and `docs/17` remains binding with the approved packet. The implementation must not add a generic modal, status card, error screen, navigator, or interim layout outside those references.
+Natomiast `AlgorithmsInterviewSimulationScreen`:
 
-**Stage 3 gate status:** `NEEDS_CORRECTION`. `S3-ALGORITHMS-UI-01` implemented the canonical route cutover and stored its partial Maestro evidence in `artifacts/maestro-screen-capture/algorithms-stage3/2026-07-19-0015/`. G-D cannot become `VERIFIED` until the remaining real failure/recovery visual states, accessibility checks, and comparison pass. Stage 3 must not be marked `VERIFIED` and no UI or Algorithms readiness claim is permitted.
+- nie wywołuje `enterAlgorithmsSimulationForeground`;
+- nie wywołuje `leaveAlgorithmsSimulationForeground`;
+- nie reaguje na React Native `AppState`;
+- nie odświeża projection timera podczas aktywnej pracy;
+- nie wywołuje expiry checkpoint;
+- nie ma ścieżki `remainingMs === 0 → exactly one automatic finalization`.
 
-**ACTIVE NEXT TASK:** `S3-ALGORITHMS-VISUAL-QA-01` — add a sanctioned non-production visual-state harness or deterministic fault port, capture the remaining approved P-01…P-15 and S-01…S-29 states, then complete accessibility and visual comparison. Do not mark Stage 3 or G-D `VERIFIED` until those checks pass.
+Skutek:
 
-## Stage 4 — Certification family and GCP track cutover
+- wyświetlony countdown aktualizuje się tylko przy ponownym pobraniu projection, np. po save/navigation;
+- active foreground segment może nie zostać uruchomiony;
+- timer może pozostać statyczny;
+- automatic timeout contract nie jest wykonany;
+- screenshot expiry/frozen nie powinien być uznany za dowód runtime.
 
-### Goal
+## F-02 — regresja ownership: timer facade importuje concrete repositories
 
-Replace Cloud-specific practice and exam ownership with one canonical Certification family runtime and declarative GCP track instance.
+**Severity:** High  
+**Gate:** G-A, G-P
 
-### Scope
+`src/application/algorithms/AlgorithmsSimulationTimerFacade.ts` importuje bezpośrednio:
 
-Implement exact contracts for:
+```txt
+getActiveForegroundTimer
+saveActiveForegroundTimer
+```
 
-1. `Diagnostic Baseline`
-2. `Focus Practice`
-3. `Scenario Practice`
-4. `Weak Area Review`
-5. `Mixed Practice`
-6. `Quick Review`
-7. `Exam Simulation`
+z `src/storage/repositories`.
 
-Include:
+To omija composition root. Repozytoria powinny być wstrzyknięte jako porty w:
 
+```txt
+src/application/bootstrap/trainingLifecycleComposition.ts
+```
+
+Obecny `checkRecoveryBaseline.mjs` nie wykrywa tego naruszenia, ponieważ sprawdza głównie feature presentation i MMKV import boundary, a nie bezpośrednie repository bindings w family-specific application facade.
+
+## F-03 — Practice może ponownie otworzyć odpowiedź po trwałym journalu
+
+**Severity:** Critical  
+**Gate:** G-P, G-D, G-Q
+
+Rzeczywisty commit path:
+
+```txt
+persist journal
+→ materialize
+→ verify
+→ clear journal
+```
+
+jest wykonywany wewnątrz jednego `commitMutation()`.
+
+`submitPracticeResponse()` zwraca tylko sukces albo ogólny `persistence_failure`.
+
+`PracticeSessionScreen.submit()` dla każdego błędu:
+
+- wraca do `unanswered`;
+- zachowuje edytowalny local response;
+- pokazuje, że odpowiedź nie została zapisana.
+
+To jest poprawne wyłącznie wtedy, gdy journal **nie stał się trwały**.
+
+Jeżeli błąd nastąpił po durable journal:
+
+- odpowiedź jest logicznie committed;
+- nie wolno jej edytować;
+- nie wolno jej wysyłać ponownie;
+- UI powinno wejść w `commit_pending.practice` lub recovery-required;
+- feedback może pozostać dostępny, jeśli deterministic outcome jest już logicznie committed.
+
+Obecny interfejs use case nie pozwala UI rozróżnić tych faz.
+
+## F-04 — error states są klasyfikowane przez analizę tekstu
+
+**Severity:** High  
+**Gate:** G-C, G-D, G-Q
+
+Simulation route klasyfikuje błędy na podstawie substringów:
+
+```txt
+"draft"
+"version"
+"fingerprint"
+"40"
+"pool"
+"content"
+```
+
+Finalization failures są spłaszczone do jednego stringa.
+
+To nie zapewnia kanonicznych, odrębnych stanów:
+
+- stale draft revision;
+- draft save failure;
+- timer recovery failure;
+- finalization journal failure;
+- finalization materialization failure;
+- finalization verification failure;
+- missing draft;
+- content-version mismatch;
+- corrupt canonical state.
+
+UI powinno renderować typed application projection, a nie dedukować stan z treści komunikatu.
+
+## F-05 — UI lokalnie składa operation state zamiast renderować pełną application projection
+
+**Severity:** High  
+**Gate:** G-A, G-D
+
+Practice i Simulation screens utrzymują lokalne:
+
+- `phase`;
+- `operation`;
+- `failure`;
+- `finalizationFailure`;
+- `overlay`;
+- logikę przejść pomiędzy nimi.
+
+Ephemeral response selection może pozostać w UI. Natomiast trwałe fazy operacji, commit/recovery, freeze i finalization powinny pochodzić z application boundary.
+
+Obecna konstrukcja utrudnia:
+
+- crash recovery;
+- poprawne odtworzenie stanu po restarcie;
+- niezależne testowanie bez React;
+- wierne renderowanie P-01…P-15 i S-01…S-29.
+
+## F-06 — projection ponownie wykonuje scoring Practice
+
+**Severity:** High  
+**Gate:** G-A, G-L
+
+`getAlgorithmsPracticeProjection()`:
+
+- ładuje attempt;
+- ponownie wywołuje `scoreAlgorithmQuestion`;
+- ponownie komponuje authored feedback.
+
+To tworzy drugi semantyczny path obok family runtime i nie potrafi wyświetlić feedbacku z durable journal przed pełną materializacją attemptu.
+
+Projection powinno konsumować deterministic committed outcome albo family-owned feedback projection. Nie powinno ponownie podejmować decyzji scoringowej.
+
+## F-07 — timer presentation i accessibility label są niespójne
+
+**Severity:** Medium  
+**Gate:** G-D
+
+`SessionShell` zawsze buduje accessibility label:
+
+```txt
+Active time remaining ${timerLabel}
+```
+
+Practice przekazuje już pełny tekst:
+
+```txt
+Active time 00:00
+```
+
+co może dać semantykę w rodzaju:
+
+```txt
+Active time remaining Active time 00:00
+```
+
+Simulation przekazuje tylko `MM:SS`, mimo że visual contract oczekuje jawnego `Active time remaining`.
+
+Potrzebny jest typowany model:
+
+```ts
+{
+  visualText: string;
+  accessibilityLabel: string;
+  kind: "elapsed_foreground" | "remaining_foreground" | "absolute_deadline";
+}
+```
+
+## F-08 — IDs i czas powstają poza kontrolowanymi portami
+
+**Severity:** Medium  
+**Gate:** G-Q
+
+`algorithmsSessionFacade` używa:
+
+- `Date.now()` do session ID;
+- globalnego mutable sequence;
+- `new Date().toISOString()` podczas draft mutation.
+
+Testing contract wymaga kontrolowanych clocks i ID generation. Te zależności powinny wejść przez application composition.
+
+## F-09 — aktywny UX/UI audit config jest historyczny i sprzeczny z aktualnym designem
+
+**Severity:** High  
+**Gate:** G-D, G-Q
+
+`npm run audit:ux-ui:report` uruchamia wyłącznie walidator struktury konfiguracji.
+
+Aktywna konfiguracja nadal oczekuje między innymi:
+
+- `Close practice session`;
+- `ITEM 1 OF 10`;
+- Cloud Certification jako primary task;
+- `Correct answer|Needs review`;
+- nagłówka `Explanation`.
+
+Te elementy są sprzeczne z approved Algorithms packet.
+
+Wniosek:
+
+```txt
+audit:ux-ui:report PASS
+```
+
+oznacza obecnie tylko:
+
+```txt
+stara konfiguracja ma poprawny JSON i wskazuje istniejące pliki
+```
+
+Nie oznacza zgodności UI z canonical design.
+
+## F-10 — plan repozytorium raportuje nieaktualny stan
+
+**Severity:** Medium  
+**Gate:** execution control
+
+Do poprawy:
+
+- baseline SHA;
+- Stage 0 status;
+- Algorithms UI status;
+- Product surfaces status;
+- aktywny next task;
+- static QA count;
+- historyczna sekcja „until Stages 0 and 1 are verified”.
+
+## F-11 — brak niezależnego bieżącego CI evidence
+
+**Severity:** Medium  
+**Gate:** G-Q
+
+Workflow `qa.yml` istnieje i zawiera:
+
+- recovery QA;
+- cross-repository Algorithms contract.
+
+Nie uzyskano jednak statusów check-runs dla aktualnego app HEAD podczas tego audytu.
+
+Plan nie może uznać najnowszego `main` za niezależnie zweryfikowany wyłącznie na podstawie narracji commita.
+
+# 5. Skorygowana macierz etapów
+
+| Etap / capability | Poprawna klasyfikacja teraz | Następna decyzja |
+|---|---|---|
+| Stage 0 — canonical docs | `VERIFIED` | Tylko popraw status i baseline planu. |
+| Stage 1 — delta audit | `DONE` | Zachowaj jako historyczne evidence. |
+| Stage 2 — kernel/persistence | `VERIFIED_WITH_REGRESSION` | Napraw F-02 przed zamknięciem Stage 3. |
+| Algorithms content consumer | `VERIFIED` | Bez zmian kontraktu. |
+| Algorithms artifact `core-0002` | `TECHNICALLY_AVAILABLE` | Nie myl z finalnym human editorial gate. |
+| Algorithms mode selection/scoring | `PARTIAL / IMPLEMENTED` | Zweryfikuj po typed operation cutover. |
+| Algorithms timer/runtime | `NEEDS_CORRECTION` | F-01 jest blockerem. |
+| Algorithms Practice durability | `NEEDS_CORRECTION` | F-03 jest blockerem. |
+| Algorithms UI route cutover | `IMPLEMENTED` | Nie usuwać; poprawić state ownership. |
+| Algorithms visual QA | `PARTIAL` | Najpierw runtime, później harness i capture. |
+| G-D Stage 3 | `NEEDS_CORRECTION` | Nie zamykać screenshotami obecnego błędnego runtime. |
+| Stage 3 | `NEEDS_CORRECTION` | Aktywny pakiet korekcyjny poniżej. |
+| Stage 4 Certification | `BLOCKED` | Nie rozpoczynać implementacji przed Stage 3 closure. |
+| Stage 5 product surfaces | `NOT_ACTIVE / CURRENTLY_PARTIAL` | Re-audit po Stage 4. |
+| Stage 6 production content | `PARTIAL` | Wymaga rzeczywistego human editorial audit. |
+| Stage 7 release | `NOT_STARTED` | Po Stage 6. |
+
+# 6. Zasady obowiązujące od tego momentu
+
+## 6.1. Git
+
+Dla aplikacji:
+
+```txt
+repo: lukaszkurczab/gcp-ace-trainer
+branch: main
+```
+
+Dla contentu:
+
+```txt
+repo: lukaszkurczab/patternly-content
+branch: master
+```
+
+Każdy task:
+
+```bash
+git checkout <main-or-master>
+git pull --ff-only origin <main-or-master>
+git status --short
+```
+
+- praca bezpośrednio na głównym branchu;
+- bez task branchy;
+- bez pull requestów;
+- bez force push;
+- bez rebase zdalnej historii;
+- non-fast-forward albo niezwiązany dirty tree = `BLOCKED`.
+
+## 6.2. Content boundary
+
+Codex może:
+
+- tworzyć folders, schemas, validators, builders, reports i CI;
+- czytać pytania w celu walidacji struktury;
+- raportować brakujące lub błędne pola;
+- budować artifact z ręcznie dostarczonego source;
+- przypinać exact artifact i checksum.
+
+Codex nie może:
+
+- pisać pytań;
+- przepisywać promptów;
+- poprawiać odpowiedzi;
+- tworzyć Reason lub Details;
+- tworzyć distractor explanations;
+- zmieniać taxonomy intent pytania;
+- deklarować human approval;
+- automatycznie aktywować poprawnego subsetu;
+- uzupełniać brakującej liczby pytań;
+- duplikować contentu do fixed pool.
+
+Brak pytań lub niedostateczny pool ma pozostać jawnym błędem.
+
+## 6.3. Visual harness boundary
+
+Dopuszczalny harness:
+
+- jest test-only lub ma oddzielny audit entrypoint;
+- nie jest importowany przez production `App.tsx` ani production navigator;
+- używa realnego bundled contentu lub neutralnych projection fixtures bez tworzenia nowej treści edukacyjnej;
+- nie zapisuje canonical user state;
+- nie jest fallbackiem runtime;
+- nie daje użytkownikowi produkcyjnemu dostępu do wymuszanych błędów.
+
+# 7. Nowa kolejność wykonania
+
+```txt
+P0  WEP4-PLAN-REALIGN-01
+P1  S3-RUNTIME-INTEGRITY-01
+P2  S3-DURABILITY-PROJECTIONS-01
+P3  S3-VISUAL-HARNESS-01
+P4  S3-VISUAL-QA-02
+P5  S3-CLOSURE-01
+
+P6  S4-CERT-DELTA-AUDIT-01
+P7  S4-CERT-CONTENT-CONTRACT-01
+—   MANUAL CHECKPOINT C1: Certification questions and human approvals
+P8  S4-CERT-RUNTIME-01
+—   MANUAL CHECKPOINT C2: official-source ExamExperienceProfile
+P9  S4-EXAM-RUNTIME-01
+—   MANUAL CHECKPOINT C3: approved Certification UI references
+P10 S4-CERT-UI-CUTOVER-01
+P11 S4-CLOSURE-01
+
+P12 S5-PRODUCT-DELTA-AUDIT-01
+P13 S5-SHARED-SHELL-AND-SURFACES-01
+P14 S5-CLOSURE-01
+
+P15 S6-CONTENT-GOVERNANCE-AUDIT-01
+—   MANUAL CHECKPOINT C4: human editorial corrections and sign-off
+P16 S6-PRODUCTION-ACTIVATION-01
+P17 S6-CLOSURE-01
+
+P18 S7-SECURITY-PRIVACY-01
+P19 S7-ACCESSIBILITY-NATIVE-QA-01
+P20 S7-RELEASE-CLOSURE-01
+```
+
+Nie przygotowuj szczegółowej implementacji Stage 4 na podstawie obecnych nazw plików. P6 ma najpierw wykonać nowy audit po zamknięciu Stage 3.
+
+# 8. Prompt-ready task specifications — najbliższe zadania
+
+## P0 — WEP4-PLAN-REALIGN-01
+
+```text
+Pracuj bezpośrednio na main repozytorium lukaszkurczab/gcp-ace-trainer.
+
+Oczekiwany minimalny punkt wejścia:
+82b0c92805814264ea45fb6403fd3e31046b1d0a
+
+To jest task docs-only. Nie zmieniaj src/**, tests/**, package.json, workflows ani content artifactu.
+
+Cel:
+zsynchronizować docs/plan.md z rzeczywistym stanem obu repozytoriów i zastąpić błędny active-next-task.
+
+Wykonaj:
+
+1. Zapisz rzeczywisty wejściowy SHA main.
+2. Zaktualizuj repository baseline w docs/plan.md.
+3. Dodaj locked content producer:
+   - repo: lukaszkurczab/patternly-content
+   - branch: master
+   - commit: b424faa6d8c7209acb51ac23af812d08c31842dc
+   - contentVersion: algorithms-core-0002
+   - taxonomyVersion: algorithms-taxonomy-v2.
+4. Popraw tabelę statusów:
+   - canonical documentation = VERIFIED;
+   - Stage 1 audit = DONE;
+   - Stage 2 = VERIFIED_WITH_REGRESSION;
+   - Algorithms content consumer = VERIFIED;
+   - Algorithms artifact = TECHNICALLY_AVAILABLE;
+   - Algorithms timer/runtime = NEEDS_CORRECTION;
+   - Algorithms Practice durability = NEEDS_CORRECTION;
+   - Algorithms UI route cutover = IMPLEMENTED;
+   - G-D = NEEDS_CORRECTION;
+   - Stage 3 = NEEDS_CORRECTION;
+   - Stage 4 = BLOCKED.
+5. Zapisz jako potwierdzone blockery:
+   - foreground timer nie jest podłączony do focus/AppState i expiry finalization;
+   - AlgorithmsSimulationTimerFacade importuje concrete repositories;
+   - Practice nie rozróżnia pre-journal failure od committed recovery;
+   - Simulation klasyfikuje błędy przez message substrings;
+   - aktywny UX/UI audit config jest historyczny.
+6. Ustaw ACTIVE NEXT TASK:
+   S3-RUNTIME-INTEGRITY-01.
+7. Usuń lub przenieś do sekcji historycznej zapis „Until Stages 0 and 1 are verified”.
+8. Nie deklaruj aktualnego qa:static ani CI jako niezależnie zweryfikowanego bez nowego wykonania.
+9. Zachowaj historyczne audit evidence bez przepisywania jego wniosków.
+
+Commit:
+docs(plan): realign execution plan to current runtime state
+
+Push bezpośrednio do origin/main.
+```
+
+## P1 — S3-RUNTIME-INTEGRITY-01
+
+```text
+Pracuj bezpośrednio na main repozytorium lukaszkurczab/gcp-ace-trainer po P0.
+
+Źródła:
+docs/02, docs/04, docs/08, docs/11, docs/12, docs/17,
+docs/designs/algorithms_stage3_ui/DESIGN.md,
+aktualny docs/plan.md.
+
+Cel:
+naprawić Algorithms Interview Simulation timer runtime i regresję ownership przed dalszym visual QA.
+
+Wymagania:
+
+1. Usuń bezpośrednie importy concrete timer repositories z:
+   src/application/algorithms/AlgorithmsSimulationTimerFacade.ts.
+2. Zdefiniuj family-neutral lub application-owned timer repository port.
+3. Podłącz concrete get/save timer wyłącznie w application composition root.
+4. Composition root instaluje jeden Algorithms timer coordinator z wstrzykniętymi:
+   - timer repository port;
+   - lifecycle use cases;
+   - monotonic clock;
+   - wall clock;
+   - scheduler;
+   - idempotent expiry callback.
+5. Screen może wysyłać sygnały focus/AppState, ale nie może:
+   - inkrementować czasu;
+   - zapisywać checkpointów;
+   - samodzielnie wykrywać trwałego expiry;
+   - posiadać authoritative timer state.
+6. Podłącz:
+   - foreground enter;
+   - foreground leave;
+   - active/inactive/background AppState;
+   - periodic projection refresh;
+   - force-close resume z ostatniego verified checkpoint.
+7. Wyczerpanie czasu:
+   - clamp do zero;
+   - exactly one expiry transition;
+   - checkpointForExpiry;
+   - freeze latest verified durable draft revision;
+   - manual i expiry używają tej samej finalization operation;
+   - repeated zero notifications nie tworzą drugiej finalizacji.
+8. Background i closed-app time nie zmniejszają Algorithms timer.
+9. Timer recovery failure ma typed application failure i blokuje bez UI reconstruction.
+10. Przenieś Date.now(), new Date() i session sequence z algorithmsSessionFacade do wstrzykiwanych clock/ID ports.
+11. Dodaj architecture checks blokujące:
+   - concrete repository imports w family/application runtime poza composition root;
+   - direct timer persistence z presentation;
+   - UI-owned countdown source.
+12. Nie zmieniaj pytań ani artifactu.
+
+Testy:
+
+- foreground enter/leave;
+- AppState transitions;
+- periodic checkpoint;
+- force-close before/after checkpoint;
+- no background decrement;
+- live projection refresh;
+- exactly one expiry command;
+- manual/expiry identical final outcome;
+- timer recovery failure;
+- direct-repository negative architecture test;
+- deterministic clocks i IDs.
+
+Uruchom:
+npm run qa:static
+npm run test:algorithms-cross-repo
+npm run audit:ux-ui:report
+
+Ostatni command nie jest G-D evidence; ma jedynie nadal przechodzić do czasu wymiany configu w P3.
+
+Stage 3 pozostaje NEEDS_CORRECTION.
+
+Commit:
+refactor(algorithms-runtime): restore canonical timer ownership and expiry
+```
+
+## P2 — S3-DURABILITY-PROJECTIONS-01
+
+```text
+Pracuj bezpośrednio na main po P1.
+
+Cel:
+przenieść durable operation state z React screens do typed application projections i poprawnie rozróżnić journal, materialization, verification oraz recovery.
+
+Practice:
+
+1. Rozróżnij co najmniej:
+   - unanswered;
+   - submitting_before_journal;
+   - submit_journal_failed;
+   - commit_pending;
+   - commit_materialization_failed;
+   - commit_verification_failed;
+   - feedback;
+   - advancing;
+   - advance_failed;
+   - completed.
+2. Po durable journal:
+   - odpowiedź jest immutable;
+   - ponowny submit jest niemożliwy;
+   - recovery replayuje ten sam plan;
+   - UI nie może wrócić do unanswered.
+3. Błąd przed durable journal:
+   - nie tworzy committed outcome;
+   - local response może pozostać edytowalny;
+   - safe re-submit jest dozwolony.
+4. Nie spłaszczaj wszystkich etapów do persistence_failure.
+5. Projection ma udostępniać deterministic feedback z committed outcome albo family-owned feedback composition.
+6. Usuń ponowne scoring decision z getAlgorithmsPracticeProjection.
+
+Simulation:
+
+7. Rozróżnij typed states:
+   - editable;
+   - saving;
+   - save_failed;
+   - stale_revision;
+   - frozen;
+   - finalization_journal_pending;
+   - finalization_journal_failed;
+   - materializing;
+   - materialization_failed;
+   - verifying;
+   - verification_failed;
+   - recovery_required;
+   - timer_recovery_failed;
+   - missing_draft;
+   - version_mismatch;
+   - corrupt_state;
+   - completed.
+8. Usuń substring-based unavailableState().
+9. UI nie może dedukować fazy po message prefix.
+10. React może zachować tylko ephemeral local selection i presentation-only disclosure state.
+11. Resume po restarcie odtwarza operation state z journal/session/draft, nie z lokalnego hook state.
+12. Error projection zawiera:
+    - operation;
+    - durable state fact;
+    - retry safety;
+    - allowed action;
+    - prohibited fallback fact.
+13. Nie zmieniaj pytań ani content version.
+
+Testy z failure injection:
+
+- journal persistence failure;
+- failure po journal durability;
+- failure po każdym materialized write;
+- verification failure;
+- restart recovery;
+- duplicate submit blocked;
+- identical attempt/review IDs po retry;
+- stale draft rejection;
+- finalization never reopens editing;
+- no result before verified finalization;
+- UI mapping wszystkich typed states.
+
+Zaktualizuj architecture checks tak, aby presentation nie tworzyło durable operation state.
+
+Commit:
+refactor(training-state): expose typed durable operation projections
+```
+
+## P3 — S3-VISUAL-HARNESS-01
+
+```text
+Pracuj bezpośrednio na main po P2.
+
+Cel:
+utworzyć sankcjonowany, całkowicie nieprodukcyjny harness do renderowania wszystkich approved Algorithms UI states i zastąpić historyczny UX/UI audit config.
+
+Harness:
+
+1. Nie może być importowany przez:
+   - App.tsx;
+   - production RootNavigator;
+   - production composition root;
+   - release entrypoint.
+2. Użyj oddzielnego audit/test entrypointu albo test hosta.
+3. Użyj:
+   - realnego bundled Algorithms artifactu dla promptów i interaction shapes;
+   - immutable application projection fixtures dla operation phases.
+4. Nie twórz nowych pytań, fallback contentu ani substitute session.
+5. Harness nie zapisuje canonical MMKV user state.
+6. Harness nie może być dostępny w release buildzie.
+7. Dodaj statyczny test production import graph potwierdzający izolację.
+
+Pokryj:
+
+- P-01…P-15;
+- S-01…S-29;
+- choice, ordering i complexity;
+- partial response;
+- long Details;
+- all error/recovery variants;
+- 40-position navigator;
+- dynamic type fixtures;
+- reduced-motion fixtures.
+
+UX/UI config:
+
+8. Zastąp aktywny historyczny config canonical Algorithms Stage 3 configiem.
+9. Usuń aktywne oczekiwania:
+   - Close practice session;
+   - ITEM 1 OF 10;
+   - Correct answer / Needs review;
+   - Explanation heading;
+   - Cloud Certification jako primary Algorithms flow.
+10. Walidator configu ma odrzucać te historyczne selectors w aktywnym Stage 3 audit.
+11. Każdy required state wskazuje konkretny flow lub jawny manual capture requirement.
+12. audit:ux-ui:report ma walidować coverage packetu, nie tylko istnienie JSON-a.
+
+Nie oznaczaj G-D jako VERIFIED.
+
+Commit:
+test(algorithms-ui): add isolated visual-state harness and canonical audit config
+```
+
+## P4 — S3-VISUAL-QA-02
+
+```text
+Pracuj bezpośrednio na main po P3.
+
+Cel:
+wykonać pełny visual, accessibility i mobile-interaction audit wdrożonego Stage 3.
+
+Wykonaj:
+
+1. Natywny development build z MMKV/Nitro.
+2. iOS regular phone:
+   - wszystkie P-01…P-15;
+   - wszystkie S-01…S-29;
+   - real happy path przez bundled artifact;
+   - harness/fault path dla niedeterministycznych failures.
+3. Android:
+   - co najmniej wszystkie krytyczne runtime states;
+   - Practice unanswered/submitting/commit recovery/feedback;
+   - Simulation save failure/expiry/frozen/finalization recovery/result;
+   - exit/abandon.
+4. Screen reader:
+   - timer kind;
+   - current position;
+   - selected/correct/incorrect/omitted;
+   - saved versus unsaved;
+   - current/answered/unanswered/frozen navigator.
+5. Dynamic text:
+   - minimum standard;
+   - duży systemowy text size;
+   - brak clipping i zasłaniania action bar.
+6. Reduced motion.
+7. Focus order, touch targets i ordering controls.
+8. Screenshot comparison z approved packetem.
+9. Zapisz:
+   - environment;
+   - build SHA;
+   - device/platform;
+   - flow;
+   - screenshot path;
+   - result;
+   - intentional differences.
+10. Napraw tylko realne UI defects zgodnie z approved design.
+11. Nie zmieniaj runtime semantics bez osobnego blocker reportu.
+12. Nie zmieniaj pytań.
+
+Uruchom:
+npm run qa:static
+npm run test:algorithms-cross-repo
+npm run audit:ux-ui
+oraz canonical Android audit, jeżeli środowisko jest dostępne.
+
+G-D nadal pozostaje NEEDS_CORRECTION do niezależnego P5.
+
+Commit:
+test(algorithms-ui): complete stage 3 visual and accessibility evidence
+```
+
+## P5 — S3-CLOSURE-01
+
+```text
+Pracuj bezpośrednio na main po P4.
+
+To jest niezależny closure audit. Nie dodawaj nowych features.
+
+Zweryfikuj aktualny pushed main przeciwko docs/00–13, docs/15–17 i approved Algorithms design.
+
+Sprawdź:
+
+- one active session;
+- one lifecycle owner;
+- one timer owner;
+- one repository binding location;
+- no UI-owned timer;
+- no direct repository imports poza composition;
+- exact seven Algorithms modes;
+- exact entry mappings;
+- conditional reinsert z trzema materialized attempts;
+- fixed 40 unique simulation;
+- active foreground countdown;
+- automatic expiry exactly once;
+- revisioned drafts;
+- no flags;
+- no pre-final feedback;
+- unanswered semantics;
+- journal/materialization/verification recovery;
+- no duplicate submit;
+- all P/S visual states;
+- accessibility;
+- no old runner/routes;
+- content lock i cross-repo artifact;
+- current QA workflows.
+
+Uruchom pełny applicable suite oraz sprawdź pushed GitHub Actions.
+
+Zaktualizuj docs/plan.md:
+
+- G-C, G-A, G-P, G-L, G-D, G-Q;
+- Stage 3 = VERIFIED tylko przy wszystkich PASS;
+- w innym przypadku dokładnie jeden bounded next task;
+- Stage 4 aktywuj wyłącznie przy Stage 3 VERIFIED.
+
+Commit:
+docs(plan): independently verify algorithms stage 3
+```
+
+# 9. Stage 4 — plan po zamknięciu Stage 3
+
+## P6 — S4-CERT-DELTA-AUDIT-01
+
+Audit-only. Ma ponownie sprawdzić aktualny kod, ponieważ historyczne Cloud screens, exam routes i track registration nadal istnieją, ale część dawnych runtime owners została usunięta.
+
+Wymagany output:
+
+- exact current path;
+- current owner;
+- legacy semantics;
+- canonical Certification requirement;
+- keep/move/rewrite/delete;
+- content dependency;
+- official profile dependency;
+- design dependency;
+- tests;
+- blocker.
+
+Obowiązkowo:
+
+- sześć non-simulation modes;
+- Exam Simulation;
+- track registration `cloud-certification` versus final GCP instance identity;
+- current ExamScreen/Result/Review routes;
+- global defaults;
+- content availability;
+- official-source profile gaps;
+- required Certification design states.
+
+Bez zmian kodu produktu.
+
+## P7 — S4-CERT-CONTENT-CONTRACT-01
+
+Wykonaj tylko po audycie.
+
+Może zmienić:
+
+- `patternly-content/master`: folders, schemas, validators, builder, approval schema, artifact contract;
+- `gcp-ace-trainer/main`: track-scoped consumer support.
+
+Nie może:
+
+- utworzyć ani zmienić pytań;
+- zatwierdzić pytań;
+- wypełnić banku;
+- opublikować subsetu;
+- użyć Algorithms contentu jako Certification fallback.
+
+Brak Certification source ma pozostawić:
+
+```txt
+Certification unavailable
+```
+
+bez blokowania Algorithms.
+
+## MANUAL CHECKPOINT C1
+
+Użytkownik ręcznie:
+
+- tworzy Certification questions;
+- wkleja je do canonical source;
+- poprawia accepted answers;
+- tworzy Reason, Details i distractor explanations;
+- zapisuje provenance;
+- wykonuje human technical/editorial review;
+- tworzy exact approval records.
+
+Validator może nie przejść. To jest prawidłowy sygnał braku contentu.
+
+## P8 — S4-CERT-RUNTIME-01
+
+Dopiero z ustalonym kontraktem i test fixtures albo zatwierdzonym artifactem:
+
+- jeden reusable CertificationFamilyRuntime;
+- Diagnostic Baseline;
+- Focus Practice;
+- Scenario Practice;
+- Weak Area Review;
+- Mixed Practice;
+- Quick Review;
 - competency-first remediation;
-- topic-level focus;
-- family-specific evidence;
 - deterministic recommendations;
-- versioned `ExamExperienceProfile`;
+- no reinsert;
+- no trackId branch w shared code.
+
+## MANUAL CHECKPOINT C2 — ExamExperienceProfile
+
+Przed Exam Simulation użytkownik dostarcza wersjonowany profil oparty wyłącznie na oficjalnym publicznym źródle:
+
+- profile ID/version;
+- source URL;
+- checked date;
+- guide version;
+- duration;
+- question count/range;
+- navigation;
+- answer changes;
+- flagging;
+- navigator;
+- sections;
+- section return;
+- timeout.
+
+Niejasna reguła blokuje faithful simulation. Codex nie zgaduje.
+
+## P9 — S4-EXAM-RUNTIME-01
+
+Implementacja profile-driven simulation:
+
 - absolute deadline;
-- profile-controlled navigation;
-- profile-controlled answer changes;
-- profile-controlled flagging;
-- profile-controlled navigator and sections;
-- finalization-only simulation feedback;
+- profile-controlled state;
+- revisioned draft;
+- resume/timeout;
+- finalization-only feedback;
 - unanswered diagnostics;
-- Patternly-defined result communication.
+- no official pass/fail.
 
-### Required deletion
+## MANUAL CHECKPOINT C3 — approved Certification UI
 
-Delete superseded:
+Przed UI cutover musi powstać i zostać ręcznie zatwierdzony packet dla:
 
-- Cloud practice runtime;
-- Cloud-specific write-through;
-- global exam defaults;
-- old exam persistence;
-- `Question` bridge ownership;
-- parallel history and review projections;
-- compatibility fallback.
+- sześciu practice modes;
+- setup/shortening/fixed failure;
+- exam navigation;
+- save/recovery;
+- flags/sections tylko gdy profile pozwala;
+- deadline;
+- unanswered warning;
+- finalization;
+- results/review;
+- profile unavailable.
 
-### Exit criteria
+## P10 — S4-CERT-UI-CUTOVER-01
 
-- GCP is a Certification track instance;
-- adding another Certification track requires no new runner;
-- all seven mode contracts are implemented and tested;
-- the old Cloud runtime is unreachable;
-- no official-looking pass/fail is displayed.
+- canonical screens;
+- profile-controlled controls;
+- delete old Cloud runtime/screens/routes;
+- no global exam defaults;
+- no `trackId === ...` w shared shell;
+- no fallback.
 
-## Stage 5 — Shared session shell and product-surface cutover
+## P11 — S4-CLOSURE-01
 
-### Goal
+Niezależne zamknięcie Stage 4.
 
-Complete visible product flows over the canonical runtime.
+# 10. Stage 5
 
-### Scope
+## P12 — S5-PRODUCT-DELTA-AUDIT-01
 
-- shared session shell;
-- family interaction renderers;
+Ponowny audit:
+
 - Home;
 - Practice;
 - Progress;
 - Review;
 - Settings;
-- bottom navigation;
-- active-session continue and abandon;
-- canonical reset;
-- route and CTA behaviour;
-- explicit unavailable and failure states.
+- bottom tabs;
+- active session continue/abandon;
+- reset;
+- explicit unavailable states;
+- remaining Algorithms-specific shell placement;
+- stale track metadata;
+- dead CTAs;
+- fixture-backed paths.
 
-### Rules
+## P13 — S5-SHARED-SHELL-AND-SURFACES-01
 
-- no dead CTA;
-- no fake account;
-- no legacy fallback;
-- no default track or topic;
-- no streaks;
-- no levels;
-- no badges;
-- no readiness, retention, or mastery percentages;
-- no route backed by an obsolete owner;
-- no required screen without approved design.
+- przenieś finalny shell z Algorithms-specific path do shared family-neutral presentation;
+- zachowaj family renderers;
+- canonical Home recommendations;
+- actionable Progress;
+- review provenance;
+- Settings privacy/reset;
+- usuń fake account/gamification/banned metrics;
+- wszystkie CTAs działają albo są jawnie unavailable.
 
-### Exit criteria
+## P14 — S5-CLOSURE-01
 
-- every visible CTA works or represents a truthful explicit unavailable state;
-- all screens use canonical queries and commands;
-- route smoke passes;
-- required screenshot QA passes;
-- obsolete screens and routes are removed.
+Route smoke, Maestro, screenshots i independent gate decision.
 
-## Stage 6 — Active-content activation and remediation
+# 11. Stage 6 — produkcyjna jakość contentu
 
-### Goal
+## P15 — S6-CONTENT-GOVERNANCE-AUDIT-01
 
-Ensure every production-active instructional batch satisfies the complete content contract.
+Read-only dla treści pytań.
 
-### Scope
+Sprawdź obie rodziny:
 
-Algorithms content is reviewed by mental unit and explicit contrast boundary.
+- every active item fingerprint;
+- source batch;
+- technical evidence;
+- actual human reviewer;
+- review date;
+- defects/corrections;
+- final disposition;
+- activation coverage;
+- manifest/version;
+- fixed pools.
 
-Certification content is reviewed by competency area and topic.
+Obowiązkowo rozstrzygnij records z reviewerem:
 
-Every activated batch includes:
+```txt
+product-owner-authorized-codex-review
+```
 
-- structural validation;
-- stable identity validation;
-- accepted-answer verification;
-- scoring verification;
-- authored `Reason`;
-- complete authored `Details`;
-- stable-ID wrong-option explanations;
-- taxonomy validation;
-- required provenance;
-- human technical review;
-- human editorial review;
-- review record;
-- active-manifest update;
-- content-version update.
+Taki wpis nie zamyka human editorial gate bez osobnego ręcznego poświadczenia właściciela produktu.
 
-### Runtime relationship
+Codex nie poprawia pytań.
 
-Earlier implementation stages may use:
+## MANUAL CHECKPOINT C4
 
-- bounded reviewed fixtures;
-- bounded approved development banks;
-- already approved active batches.
+Użytkownik:
 
-Unreviewed content cannot be labelled production-ready or added to the production active manifest.
+- poprawia content;
+- wykonuje rzeczywisty human review;
+- zastępuje lub uzupełnia approval records;
+- zatwierdza exact fingerprints.
 
-### Exit criteria
+## P16 — S6-PRODUCTION-ACTIVATION-01
 
-- every active item is covered by a matching review record;
-- fixed-length modes satisfy unique-content requirements;
-- no generic feedback exists;
-- no active item relies on runtime-generated explanation;
-- manifest, version, and review records agree.
+Codex wyłącznie:
 
-## Stage 7 — Security, accessibility, QA, and release hardening
+- waliduje;
+- buduje artifact;
+- sprawdza pełną coverage;
+- publikuje immutable release;
+- przypina exact artifact w aplikacji.
 
-### Goal
+Jeden brak blokuje artifact. Bez subsetu i fallbacku.
 
-Prove the canonical implementation under supported runtime conditions.
+## P17 — S6-CLOSURE-01
 
-### Scope
+Niezależne zamknięcie G-L content gate.
 
-- native MMKV development and release builds;
-- startup and journal recovery;
-- corruption and mismatch states;
-- platform backup policy;
-- log redaction;
-- permission inventory;
-- network inventory;
-- screen-reader QA;
-- dynamic text;
+# 12. Stage 7
+
+## P18 — S7-SECURITY-PRIVACY-01
+
+- logs redaction;
+- no unapproved network/telemetry;
+- permissions inventory;
+- backup policy;
+- no unverified encryption claim;
+- reset/deletion copy;
+- secrets scan.
+
+## P19 — S7-ACCESSIBILITY-NATIVE-QA-01
+
+- iOS i Android development/release-compatible builds;
+- MMKV/Nitro;
+- startup/recovery;
+- screen reader;
+- dynamic type;
 - reduced motion;
 - contrast;
-- structural response states;
 - Maestro critical flows;
-- screenshot comparison;
-- release checklist;
-- CI gates.
+- screenshot comparison.
 
-### Exit criteria
+## P20 — S7-RELEASE-CLOSURE-01
 
-- all Critical and High risks are mitigated;
-- required automated suites pass;
-- required manual QA is recorded;
-- screenshots match approved designs;
-- privacy and reset copy match verified behaviour;
-- no unverified area is reported complete.
+- wszystkie Critical/High risks;
+- CI evidence;
+- native evidence;
+- content evidence;
+- privacy evidence;
+- final release checklist;
+- brak `mostly complete`.
 
-## 10. Current stage status
+# 13. Najbliższa decyzja
 
-| Area                               | Current classification | Reason                                                                    |
-| ---------------------------------- | ---------------------- | ------------------------------------------------------------------------- |
-| Canonical documentation            | `NEEDS_CORRECTION`     | Accepted revisions are not yet applied                                    |
-| Document 14                        | `REJECTED`             | It duplicates other canonical owners                                      |
-| Previous recovery plan             | `REJECTED`             | Separate execution sequencing is no longer permitted                      |
-| Repository-to-contract audit        | `DONE`                 | Historical findings preserved; closure addendum records current evidence  |
-| Shared kernel and mutations        | `VERIFIED`             | One journal/coordinator and recovery paths pass architecture and recovery checks |
-| MMKV and repositories              | `VERIFIED`             | One infrastructure MMKV owner; no reachable parallel repository/store path |
-| S3-CONTENT-CONSUMER-01             | `VERIFIED`             | Track-scoped byte consumer, immutable envelope, checksums, approval coverage, taxonomy, interaction, fixed-pool, lifecycle port, and boundary tests pass |
-| S3-ALGORITHMS-CONTENT-01           | `VERIFIED`             | Approved `algorithms-core-0002` is pinned and validates; all declared modes prepare from the canonical artifact |
-| Algorithms immediate practice      | `AVAILABLE`            | Canonical artifact preparation is available; approved UI work remains in Stage 3 |
-| Algorithms Interview Simulation    | `AVAILABLE`            | Canonical fixed-40 preparation yields exactly 40 unique occurrences without shortening |
-| Certification non-simulation modes | `BLOCKED`              | Exact contracts must be mapped and implemented                            |
-| Certification Exam Simulation      | `NEEDS_CORRECTION`     | Parallel exam runtime was removed; canonical profile/runtime is required  |
-| Product surfaces                   | `PARTIAL`              | Runtime routes remain explicitly unavailable pending Stage 3 work         |
-| Active content quality             | `PARTIAL`              | Production activation requires complete review evidence                   |
-| Static QA                          | `PASS`                 | `npm run qa:static`: recovery, typecheck, 279 tests, content boundary    |
-| UX/UI audit                        | `PARTIAL`              | Existing scripts require updated canonical-state coverage                 |
+Następny prompt do wykonania:
 
-No earlier stage remains `VERIFIED` solely because an older plan marked it complete.
+```txt
+P0 — WEP4-PLAN-REALIGN-01
+```
 
-## 11. Active next task
+Po jego pushu:
 
-### Task ID
+```txt
+P1 — S3-RUNTIME-INTEGRITY-01
+```
 
-`S3-ALGORITHMS-VISUAL-QA-01 — Algorithms failure/recovery visual QA`
-
-### Status
-
-`ACTIVE` — `S3-ALGORITHMS-CONTENT-01` is verified and the canonical UI route cutover is implemented. Real failure/recovery visual QA remains required before Stage 3 can be verified.
-
-### Goal
-
-Capture the remaining approved Algorithms Practice and Interview Simulation failure/recovery states against the verified canonical preparation boundary without adding production fallbacks or debug content.
-
-### Required evidence
-
-- approved UI routes continue to consume the canonical Algorithms preparation boundary for every mode;
-- accessibility and visual evidence covers the remaining approved practice and Interview Simulation states;
-- no Stage 3 completion claim or G-D verification before UI and visual evidence both exist.
-
-## 12. Stage 3 activation
-
-Stage 3 remains `NEEDS_CORRECTION` until `S3-ALGORITHMS-VISUAL-QA-01` completes its remaining visual QA. Algorithms content preparation is available; Certification remains explicitly unavailable and is not marked ready.
-
-## 13. Required implementation report
-
-Every Codex implementation report contains:
-
-- task ID;
-- starting SHA;
-- ending SHA;
-- branch;
-- files changed;
-- canonical owners modified;
-- obsolete owners deleted;
-- applicable risk IDs;
-- gate results;
-- commands and results;
-- test counts;
-- manual QA performed;
-- screenshots produced;
-- unverified areas;
-- blockers;
-- next safe task.
-
-The report must separate:
-
-- implemented and verified;
-- implemented but unverified;
-- planned but not implemented;
-- blocked.
-
-## 14. Forbidden immediate work
-
-Until Stages 0 and 1 are verified, do not:
-
-- add runtime features;
-- add another Algorithms interaction;
-- add Certification modes by inference;
-- expand Home or Progress metrics;
-- preserve legacy Cloud behaviour;
-- add compatibility code;
-- add backend content loading;
-- add analytics or telemetry;
-- add authentication or account UI;
-- perform broad content generation;
-- mark the current Algorithms simulation complete;
-- patch the obsolete recovery plan;
-- create another execution roadmap.
-
-## 15. Working-plan maintenance
-
-This document is updated only when:
-
-- a stage is independently reviewed;
-- pushed repository evidence exists;
-- applicable gates are evaluated;
-- the active next task changes;
-- a new blocker materially changes sequencing.
-
-Do not update status from:
-
-- Codex intention;
-- local unpushed work;
-- a task prompt;
-- a partial test run;
-- a planned follow-up.
-
-This document remains the single execution-control surface.
-
-It must not become a second product specification, but no separate recovery or implementation-sequencing document may duplicate its responsibility.
+Nie uruchamiaj obecnego `S3-ALGORITHMS-VISUAL-QA-01` przed P1 i P2. Screenshoty obecnego timera i recovery states utrwalałyby niekanoniczne zachowanie zamiast je zweryfikować.
