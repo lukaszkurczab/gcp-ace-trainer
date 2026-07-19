@@ -9,15 +9,35 @@ import {
 } from "../../domain";
 import {
   TrainingApplicationFailure,
+  MutationCommitFailure,
   type ApplicationFailureCode,
   type PreparedSession,
   type PracticeFinalization,
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
 } from "./contracts";
+import type { DurableOperationError, DurableOperationState, PracticeDurableOperationState, SimulationDurableOperationState } from "./durableOperationState";
 
 export class TrainingLifecycleUseCases {
+  private readonly operationStates = new Map<string, DurableOperationState>();
+
   constructor(private readonly ports: TrainingLifecyclePorts) {}
+
+  async getPracticeOperationState(session: TrainingSession, hasCommittedAttempt: boolean): Promise<PracticeDurableOperationState> {
+    const pending = await this.pendingFor(session.id);
+    if (pending?.operation === "submit_training_outcome") return practiceRecovery("commit_pending");
+    const current = this.operationStates.get(session.id);
+    if (current && isPracticeOperation(current)) return current;
+    return hasCommittedAttempt ? Object.freeze({ kind: "feedback" }) : Object.freeze({ kind: "unanswered" });
+  }
+
+  async getSimulationOperationState(session: TrainingSession): Promise<SimulationDurableOperationState> {
+    const pending = await this.pendingFor(session.id);
+    if (pending?.operation === "finalize_training_session") return simulationRecovery("finalization_journal_pending");
+    const current = this.operationStates.get(session.id);
+    if (current && isSimulationOperation(current)) return current;
+    return Object.freeze({ kind: "editable" });
+  }
 
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
@@ -45,20 +65,45 @@ export class TrainingLifecycleUseCases {
 
   async submitPracticeResponse(response: unknown): Promise<void> {
     const session = await this.requireActive();
+    const prior = await this.getPracticeOperationState(session, false);
+    if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
+      throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
+    }
+    this.operationStates.set(session.id, Object.freeze({ kind: "submitting_before_journal" }));
     const runtime = this.resolveRuntime(session.trackId);
-    const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts, reviews, now: this.ports.clock.now() }));
+    let outcome;
+    try {
+      const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
+      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts, reviews, now: this.ports.clock.now() }));
+    } catch (error) {
+      this.operationStates.set(session.id, practiceRecovery("submit_journal_failed"));
+      throw error;
+    }
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Practice outcome changed its active session identity.");
-    await this.run("persistence_failure", () => this.ports.mutations.submitPractice(outcome));
+    try {
+      await this.ports.mutations.submitPractice(outcome);
+      this.operationStates.set(session.id, Object.freeze({ kind: "feedback" }));
+    } catch (error) {
+      const state = practiceStateForMutationFailure(error);
+      this.operationStates.set(session.id, state);
+      throw applicationFailureForPracticeMutation(error);
+    }
   }
 
   async advancePracticeSession(): Promise<TrainingSession> {
     const session = await this.requireActive();
+    this.operationStates.set(session.id, Object.freeze({ kind: "advancing" }));
     const next = this.runSync("persistence_failure", () => advanceTrainingSession(session));
-    await this.run("persistence_failure", () => this.ports.mutations.advance(next));
-    const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
-    if (!verified || verified.id !== next.id || verified.currentItemIndex !== next.currentItemIndex) throw new TrainingApplicationFailure("verification_failure", "The next practice occurrence was not durably verified.");
-    return verified;
+    try {
+      await this.ports.mutations.advance(next);
+      const verified = await this.ports.repositories.getActiveSession();
+      if (!verified || verified.id !== next.id || verified.currentItemIndex !== next.currentItemIndex) throw new TrainingApplicationFailure("verification_failure", "The next practice occurrence was not durably verified.");
+      this.operationStates.set(session.id, Object.freeze({ kind: "unanswered" }));
+      return verified;
+    } catch (error) {
+      this.operationStates.set(session.id, Object.freeze({ kind: "advance_failed", error: operationError("practice_advance", "journal_durable", "retry_same_command") }));
+      throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure("advance_failed", "The committed answer remains immutable, but the next occurrence could not be opened.", error);
+    }
   }
 
   /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
@@ -111,29 +156,57 @@ export class TrainingLifecycleUseCases {
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
     const session = await this.requireActive();
+    this.operationStates.set(session.id, Object.freeze({ kind: "saving" }));
     if (session.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
     const runtime = this.resolveRuntime(session.trackId);
-    await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
-    await this.run("persistence_failure", () => this.ports.repositories.saveDraft(input));
+    try {
+      await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
+      await this.ports.repositories.saveDraft(input);
+      this.operationStates.set(session.id, Object.freeze({ kind: "editable" }));
+    } catch (error) {
+      const stale = error instanceof Error && error.message === "Training session draft expected revision is stale.";
+      this.operationStates.set(session.id, stale
+        ? Object.freeze({ kind: "stale_revision", error: operationError("simulation_save", "not_durable", "retry_same_command") })
+        : Object.freeze({ kind: "save_failed", error: operationError("simulation_save", "not_durable", "retry_same_command") }));
+      throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : "Simulation draft save failed without changing the durable draft.", error);
+    }
   }
 
   async finalizeSimulation(): Promise<void> {
     const session = await this.requireActive();
+    this.operationStates.set(session.id, Object.freeze({ kind: "frozen" }));
     const runtime = this.resolveRuntime(session.trackId);
     const draft = await this.run("resume_unavailable", () => this.ports.repositories.getDraft(session.id));
     if (!draft) throw new TrainingApplicationFailure("resume_unavailable", "Simulation finalization requires the exact active draft.");
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
     const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts, reviews, now: this.ports.clock.now() }));
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Simulation finalization changed session identity.");
-    await this.run("persistence_failure", () => this.ports.mutations.finalize(outcome));
-    await this.requireVerifiedSummary(session.id);
+    try {
+      this.operationStates.set(session.id, Object.freeze({ kind: "finalization_journal_pending", error: operationError("simulation_finalization", "journal_durable", "recover") }));
+      await this.ports.mutations.finalize(outcome);
+      await this.requireVerifiedSummary(session.id);
+      this.operationStates.set(session.id, Object.freeze({ kind: "completed" }));
+    } catch (error) {
+      const state = simulationStateForMutationFailure(error);
+      this.operationStates.set(session.id, state);
+      throw applicationFailureForSimulationMutation(error);
+    }
   }
 
   async resumeActiveSession(): Promise<TrainingSession> {
-    const session = await this.requireActive();
+    let session: TrainingSession;
+    try { session = await this.requireActive(); }
+    catch (error) { throw error; }
     const runtime = this.resolveRuntime(session.trackId);
     const draft = await this.run("persistence_failure", () => this.ports.repositories.getDraft(session.id));
-    await this.run("resume_unavailable", () => runtime.validateResume({ session, draft }));
+    try { await this.run("resume_unavailable", () => runtime.validateResume({ session, draft })); }
+    catch (error) {
+      if (session.configurationSnapshot.submission === "manualOrForegroundTimeout") {
+        const kind = !draft ? "missing_draft" : "corrupt_state";
+        this.operationStates.set(session.id, Object.freeze({ kind, error: operationError("simulation_resume", "not_durable", "none") }));
+      }
+      throw error;
+    }
     return session;
   }
 
@@ -179,6 +252,11 @@ export class TrainingLifecycleUseCases {
     return session;
   }
 
+  private async pendingFor(sessionId: string): Promise<Readonly<{ operation: string; sessionId: string }> | null> {
+    const pending = await this.ports.repositories.getPendingMutation?.();
+    return pending?.sessionId === sessionId ? pending : null;
+  }
+
   private resolveRuntime(trackId: TrackId): TrainingFamilyRuntime {
     let registration;
     try {
@@ -199,4 +277,55 @@ export class TrainingLifecycleUseCases {
 
   private async run<T>(code: ApplicationFailureCode, operation: () => Promise<T>): Promise<T> { try { return await operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
   private runSync<T>(code: ApplicationFailureCode, operation: () => T): T { try { return operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }
+}
+
+function isPracticeOperation(value: DurableOperationState): value is PracticeDurableOperationState {
+  return ["unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "feedback", "advancing", "advance_failed"].includes(value.kind);
+}
+
+function isSimulationOperation(value: DurableOperationState): value is SimulationDurableOperationState {
+  return !isPracticeOperation(value) || value.kind === "completed";
+}
+
+function operationError(operation: DurableOperationError["operation"], durableState: DurableOperationError["durableState"], allowedAction: DurableOperationError["allowedAction"]): DurableOperationError {
+  return Object.freeze({ operation, durableState, retrySafety: durableState === "not_durable" ? "safe_retry" : allowedAction === "recover" ? "recovery_only" : "retry_forbidden", allowedAction, prohibitedFallback: "The application will not recreate a response, draft, outcome, or result from UI state." });
+}
+
+function practiceRecovery(kind: "submit_journal_failed" | "commit_pending" | "commit_materialization_failed" | "commit_verification_failed"): Extract<PracticeDurableOperationState, { kind: typeof kind }> {
+  const durableState = kind === "submit_journal_failed" ? "not_durable" : kind === "commit_materialization_failed" ? "journal_durable" : "materialized";
+  return Object.freeze({ kind, error: operationError("practice_submit", durableState, kind === "submit_journal_failed" ? "submit_again" : "recover") }) as Extract<PracticeDurableOperationState, { kind: typeof kind }>;
+}
+
+function simulationRecovery(kind: "finalization_journal_pending" | "finalization_journal_failed" | "materialization_failed" | "verification_failed"): Extract<SimulationDurableOperationState, { kind: typeof kind }> {
+  const durableState = kind === "finalization_journal_failed" ? "not_durable" : kind === "materialization_failed" ? "journal_durable" : "materialized";
+  return Object.freeze({ kind, error: operationError("simulation_finalization", durableState, kind === "finalization_journal_failed" ? "retry_same_command" : "recover") }) as Extract<SimulationDurableOperationState, { kind: typeof kind }>;
+}
+
+function practiceStateForMutationFailure(error: unknown): PracticeDurableOperationState {
+  if (!(error instanceof MutationCommitFailure)) return practiceRecovery("submit_journal_failed");
+  if (error.phase === "journal") return practiceRecovery("submit_journal_failed");
+  if (error.phase === "materialization") return practiceRecovery("commit_materialization_failed");
+  return practiceRecovery("commit_verification_failed");
+}
+
+function simulationStateForMutationFailure(error: unknown): SimulationDurableOperationState {
+  if (!(error instanceof MutationCommitFailure) || error.phase === "journal") return simulationRecovery("finalization_journal_failed");
+  if (error.phase === "materialization") return simulationRecovery("materialization_failed");
+  return simulationRecovery("verification_failed");
+}
+
+function applicationFailureForPracticeMutation(error: unknown): TrainingApplicationFailure {
+  if (error instanceof MutationCommitFailure) {
+    const code = error.phase === "journal" ? "submit_journal_failed" : error.phase === "materialization" ? "commit_materialization_failed" : "commit_verification_failed";
+    return new TrainingApplicationFailure(code, "Practice command did not reach a verified canonical outcome.", error);
+  }
+  return new TrainingApplicationFailure("submit_journal_failed", "Practice response was not durably submitted.", error);
+}
+
+function applicationFailureForSimulationMutation(error: unknown): TrainingApplicationFailure {
+  if (error instanceof MutationCommitFailure) {
+    const code = error.phase === "journal" ? "finalization_journal_failed" : error.phase === "materialization" ? "finalization_materialization_failed" : "finalization_verification_failed";
+    return new TrainingApplicationFailure(code, "Simulation finalization did not reach a verified canonical outcome.", error);
+  }
+  return new TrainingApplicationFailure("finalization_journal_failed", "Simulation finalization did not create a durable journal.", error);
 }

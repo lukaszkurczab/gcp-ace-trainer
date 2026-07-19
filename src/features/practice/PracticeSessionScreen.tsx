@@ -26,14 +26,13 @@ import {
   buildPracticeResponseControl,
   getPracticePrimaryAction,
   type PracticeLocalResponse,
-  type PracticeNotice,
   type PracticeSurfacePhase,
 } from "./practiceSessionPresentation";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type ViewState =
-  | Readonly<{ kind: "session"; phase: PracticeSurfacePhase; projection: AlgorithmsPracticeProjection }>
+  | Readonly<{ kind: "session"; projection: AlgorithmsPracticeProjection }>
   | Readonly<{ kind: "result"; result: AlgorithmsSessionResultProjection }>
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
@@ -41,7 +40,6 @@ type ViewState =
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   const [state, setState] = useState<ViewState | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
-  const [notice, setNotice] = useState<PracticeNotice | undefined>();
   const [exit, setExit] = useState<"none" | "leave" | "abandon_confirmation">("none");
   const permitRouteExit = useRef(false);
 
@@ -54,11 +52,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     let live = true;
     setState(null);
     setLocalResponse(null);
-    setNotice(undefined);
     void loadOrStartAlgorithmsPractice(route.params, algorithmsMode)
       .then((projection) => {
         if (!live) return;
-        setState({ kind: "session", phase: projection.feedback ? "feedback" : "unanswered", projection });
+        setState({ kind: "session", projection });
       })
       .catch((error) => {
         if (live) setState({ kind: "unavailable", reason: describePreparationFailure(error) });
@@ -67,7 +64,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }, [algorithmsMode, route.params]);
 
   useEffect(() => navigation.addListener("beforeRemove", (event) => {
-    if (permitRouteExit.current || state?.kind !== "session" || state.phase === "abandoning") return;
+    if (permitRouteExit.current || state?.kind !== "session") return;
     event.preventDefault();
     setExit("leave");
   }), [navigation, state]);
@@ -84,77 +81,50 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
   const sessionState = state;
   const projection = sessionState.projection;
+  const phase = toPracticeSurfacePhase(projection.operation.kind);
+  const notice = noticeForPracticeOperation(projection.operation);
   const responseControl = buildPracticeResponseControl({
     choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
     feedbackControls: projection.feedback?.controls,
     localResponse,
     renderer: projection.interaction.renderer,
   });
-  const primaryAction = sessionState.phase === "feedback" && notice?.tone === "error" && notice.message.startsWith("Your answer is saved")
-    ? { enabled: true, label: "Retry opening next question", loading: false }
-    : sessionState.phase === "feedback" && notice?.tone === "error" && notice.message.startsWith("Your final answer is saved")
-      ? { enabled: true, label: "Retry verifying session result", loading: false }
-    : getPracticePrimaryAction({ hasLocalResponse: localResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase: sessionState.phase });
+  const primaryAction = getPracticePrimaryAction({ hasLocalResponse: localResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
 
-  const setPhase = (phase: PracticeSurfacePhase) => setState({ kind: "session", phase, projection });
-  const refresh = async (phase?: PracticeSurfacePhase) => {
+  const refresh = async () => {
     const next = await getAlgorithmsPracticeProjection();
-    setLocalResponse(null);
-    setState({ kind: "session", phase: phase ?? (next.feedback ? "feedback" : "unanswered"), projection: next });
+    if (next.operation.kind !== "submit_journal_failed") setLocalResponse(null);
+    setState({ kind: "session", projection: next });
   };
 
   async function submit() {
-    if (!localResponse || sessionState.phase !== "unanswered") return;
-    setPhase("submitting");
-    setNotice({ message: "Saving your answer…", tone: "neutral" });
-    try {
-      await submitAlgorithmsPracticeResponse(localResponse);
-      await refresh("feedback");
-      setNotice(undefined);
-    } catch (error) {
-      setPhase("unanswered");
-      setNotice({ message: isInvalidResponseFailure(error) ? "Complete the response before checking the answer." : "The answer was not saved. No submitted result or feedback was created.", tone: "error" });
-    }
+    if (!localResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    try { await submitAlgorithmsPracticeResponse(localResponse); }
+    catch { /* The typed application projection records retry safety. */ }
+    await refresh();
   }
 
   async function advanceOrFinish() {
-    if (sessionState.phase !== "feedback") return;
+    if (projection.operation.kind !== "feedback" && projection.operation.kind !== "advance_failed") return;
     if (projection.position.current === projection.position.total) {
-      setPhase("commit_pending");
-      setNotice({ message: "Answer saved. Finishing the update…", tone: "success" });
       try {
         const result = await completeAlgorithmsPracticeSession();
         setState({ kind: "result", result });
-        setNotice(undefined);
-      } catch {
-        setPhase("feedback");
-        setNotice({ message: "Your final answer is saved, but the session result could not be verified.", tone: "error" });
-      }
+      } catch { await refresh(); }
       return;
     }
-    setPhase("advancing");
-    setNotice(undefined);
-    try {
-      await advanceAlgorithmsPracticeSession();
-      await refresh("unanswered");
-    } catch {
-      setPhase("feedback");
-      setNotice({ message: "Your answer is saved, but the next question could not be opened.", tone: "error" });
-    }
+    try { await advanceAlgorithmsPracticeSession(); }
+    catch { /* The immutable committed outcome is described by the projection. */ }
+    await refresh();
   }
 
   async function abandon() {
     setExit("none");
-    setPhase("abandoning");
-    setNotice({ message: "Abandoning session…", tone: "neutral" });
     try {
       await abandonAlgorithmsSession();
       permitRouteExit.current = true;
       navigation.navigate(ROUTES.PRACTICE_HUB);
-    } catch {
-      setPhase(projection.feedback ? "feedback" : "unanswered");
-      setNotice({ message: "Abandonment did not complete. This session remains available to resume.", tone: "error" });
-    }
+    } catch { await refresh(); }
   }
 
   function leave() {
@@ -176,10 +146,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       onConfirmLeave={leave}
       onDismissExit={() => setExit("none")}
       onOrderingMove={(elementId, direction) => setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl))}
-      onPrimaryAction={() => void (notice?.message.startsWith("Your answer is saved") ? advanceOrFinish() : sessionState.phase === "unanswered" ? submit() : advanceOrFinish())}
+      onPrimaryAction={() => void ((phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
       onRequestAbandon={() => setExit("abandon_confirmation")}
       onRequestLeave={() => setExit("leave")}
-      phase={sessionState.phase}
+      phase={phase}
       positionLabel={`${projection.position.current} of ${projection.position.total}`}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
@@ -235,8 +205,17 @@ function moveOrderingElement(current: PracticeLocalResponse, elementId: string, 
   return { kind: "ordering", orderedSubgoalIds: order };
 }
 
-function isInvalidResponseFailure(error: unknown): boolean {
-  return error instanceof TrainingApplicationFailure && error.code === "invalid_response";
+function toPracticeSurfacePhase(kind: AlgorithmsPracticeProjection["operation"]["kind"]): PracticeSurfacePhase {
+  return kind;
+}
+
+function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["operation"]) {
+  if (operation.kind === "submitting_before_journal") return { tone: "neutral" as const, message: "Saving your answer…" };
+  if (operation.kind === "submit_journal_failed") return { tone: "error" as const, message: "The answer was not durably submitted. You can safely submit the same local response again." };
+  if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed") return { tone: "error" as const, message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." };
+  if (operation.kind === "advancing") return { tone: "neutral" as const, message: "Opening the next question…" };
+  if (operation.kind === "advance_failed") return { tone: "error" as const, message: "Your answer remains committed. Retry opening the next question." };
+  return undefined;
 }
 
 function describePreparationFailure(error: unknown): string {

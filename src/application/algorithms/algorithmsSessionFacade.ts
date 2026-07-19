@@ -9,20 +9,21 @@ import { getBundledContentAvailability } from "../../content/application/validat
 import type { ContentItemRef, TrainingSession } from "../../domain";
 import {
   buildAlgorithmInteractionViewModel,
-  composeAlgorithmAuthoredFeedback,
+  composeCommittedAlgorithmPracticeFeedback,
   getAlgorithmsInterviewSimulationRemainingMs,
   mutateAlgorithmsInterviewSimulationDraft,
-  scoreAlgorithmQuestion,
 } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
-import { isAlgorithmChoiceQuestion } from "../../tracks/algorithms/algorithmQuestionTypes";
 import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
 import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjection, type AlgorithmsSimulationTimerEvent } from "./AlgorithmsSimulationTimerFacade";
 import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
+import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
+import { TrainingApplicationFailure } from "../trainingLifecycle";
 
 export type AlgorithmsSessionPosition = Readonly<{ current: number; total: number }>;
 export type AlgorithmsPracticeProjection = Readonly<{
   kind: "practice";
+  operation: PracticeDurableOperationState;
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
   item: ContentItemRef;
@@ -41,6 +42,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
 
 export type AlgorithmsSimulationProjection = Readonly<{
   kind: "simulation";
+  operation: SimulationDurableOperationState;
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
   navigator: readonly Readonly<{ index: number; occurrenceId: string; answered: boolean; current: boolean }>[];
@@ -51,6 +53,10 @@ export type AlgorithmsSimulationProjection = Readonly<{
   elapsedForegroundMs: number;
   remainingForegroundMs: number;
 }>;
+
+export type AlgorithmsSimulationScreenProjection =
+  | Readonly<{ kind: "ready"; projection: AlgorithmsSimulationProjection }>
+  | Readonly<{ kind: "unavailable"; operation: Extract<SimulationDurableOperationState, { error: unknown }> }>;
 
 export type AlgorithmsSessionResultProjection = Readonly<{
   sessionId: string;
@@ -109,15 +115,11 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
   const attempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
   const response = (attempt?.response ?? null) as AlgorithmResponse | null;
-  const feedback = attempt
-    ? (() => {
-        const score = scoreAlgorithmQuestion(question, response!);
-        const authored = composeAlgorithmAuthoredFeedback(question, score);
-        return Object.freeze({ correctness: attempt.result.kind, ...authored, controls: feedbackControls(question, response!, score) });
-      })()
-    : null;
+  const feedback = attempt ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> }) : null;
+  const operation = await getTrainingLifecycleUseCases().getPracticeOperationState(session, Boolean(attempt));
   return Object.freeze({
     kind: "practice",
+    operation,
     session,
     position: position(session),
     item: occurrence.item,
@@ -152,8 +154,10 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   const occurrence = session.itemOrder[index]!;
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
   const time = await getAlgorithmsSimulationTimerFacade().projection(session);
+  const operation = await lifecycle.getSimulationOperationState(session);
   return Object.freeze({
     kind: "simulation",
+    operation,
     session,
     position: { current: index + 1, total: session.actualLength },
     navigator: Object.freeze(session.itemOrder.map((candidate, candidateIndex) => Object.freeze({
@@ -169,6 +173,12 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
     elapsedForegroundMs: time.elapsedForegroundMs,
     remainingForegroundMs: time.remainingForegroundMs,
   });
+}
+
+/** Typed failure boundary for presentation; no screen may classify error text. */
+export async function getAlgorithmsSimulationScreenProjection(): Promise<AlgorithmsSimulationScreenProjection> {
+  try { return Object.freeze({ kind: "ready", projection: await getAlgorithmsSimulationProjection() }); }
+  catch (error) { return Object.freeze({ kind: "unavailable", operation: simulationFailureProjection(error) }); }
 }
 
 export async function navigateAlgorithmsSimulationTo(index: number): Promise<TrainingSession> {
@@ -239,45 +249,24 @@ async function requireSimulationDraft(sessionId: string) {
   // The lifecycle owns validation; this facade intentionally never infers a draft.
   await lifecycle.resumeActiveSession();
   const session = await loadActiveTrainingSession();
-  if (!session || session.id !== sessionId) throw new Error("The active Interview Simulation changed while loading its draft.");
+  if (!session || session.id !== sessionId) throw new TrainingApplicationFailure("corrupt_state", "The active Interview Simulation changed while loading its draft.");
   const draft = await loadActiveTrainingSessionDraft();
-  if (!draft || draft.sessionId !== sessionId) throw new Error("The active Interview Simulation draft is unavailable.");
+  if (!draft || draft.sessionId !== sessionId) throw new TrainingApplicationFailure("missing_draft", "The active Interview Simulation draft is unavailable.");
   return draft;
+}
+
+function simulationFailureProjection(error: unknown): Extract<SimulationDurableOperationState, { error: unknown }> {
+  const code = error instanceof TrainingApplicationFailure ? error.code : "corrupt_state";
+  const operation = code === "timer_recovery_failure" ? "timer_recovery_failed"
+    : code === "missing_draft" ? "missing_draft"
+      : code === "version_mismatch" ? "version_mismatch"
+        : code === "stale_revision" ? "stale_revision" : "corrupt_state";
+  const command = operation === "timer_recovery_failed" ? "simulation_resume" : operation === "stale_revision" ? "simulation_save" : "simulation_resume";
+  return Object.freeze({ kind: operation, error: Object.freeze({ operation: command, durableState: "not_durable", retrySafety: "retry_forbidden", allowedAction: "none", prohibitedFallback: "The UI will not reconstruct an Algorithms simulation from local state." }) }) as Extract<SimulationDurableOperationState, { error: unknown }>;
 }
 
 function position(session: TrainingSession): AlgorithmsSessionPosition {
   return Object.freeze({ current: session.currentItemIndex + 1, total: session.actualLength });
-}
-
-function emptyDiagnostics() {
-  return Object.freeze({
-    brokenOrderingRelations: Object.freeze([] as string[]),
-    incorrectComplexityDimensionIds: Object.freeze([] as string[]),
-    omittedCorrectOptionIds: Object.freeze([] as string[]),
-    selectedWrongOptionIds: Object.freeze([] as string[]),
-  });
-}
-
-function feedbackControls(
-  question: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItemById"]>,
-  response: AlgorithmResponse,
-  score: ReturnType<typeof scoreAlgorithmQuestion>,
-): readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }>[] {
-  if (!isAlgorithmChoiceQuestion(question) || response.kind !== "choice") return Object.freeze([]);
-  const selected = new Set(response.selectedOptionIds);
-  const accepted = new Set(question.interaction.acceptedOptionIds);
-  return Object.freeze(question.interaction.options.map((option) => Object.freeze({
-    id: option.id,
-    state: selected.has(option.id) && score.diagnostics.selectedWrongOptionIds.includes(option.id)
-      ? "incorrect" as const
-      : !selected.has(option.id) && score.diagnostics.omittedCorrectOptionIds.includes(option.id)
-        ? "omitted_correct" as const
-        : selected.has(option.id) && accepted.has(option.id)
-          ? "correct" as const
-          : selected.has(option.id)
-            ? "selected" as const
-            : "neutral" as const,
-  })));
 }
 
 function resultScore(value: unknown): AlgorithmsSessionResultProjection["score"] {

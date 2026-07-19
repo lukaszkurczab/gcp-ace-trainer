@@ -1,11 +1,14 @@
 export type PracticeSurfacePhase =
   | "preparing"
   | "unanswered"
-  | "submitting"
+  | "submitting_before_journal"
+  | "submit_journal_failed"
   | "commit_pending"
-  | "commit_recovery"
+  | "commit_materialization_failed"
+  | "commit_verification_failed"
   | "feedback"
   | "advancing"
+  | "advance_failed"
   | "completed"
   | "abandoning";
 
@@ -63,7 +66,7 @@ export type PracticeNotice = Readonly<{
  * enabling controls in a prohibited phase.
  */
 export function allowsPracticeFeedback(phase: PracticeSurfacePhase): boolean {
-  return phase === "feedback" || phase === "commit_recovery" || phase === "advancing" || phase === "completed";
+  return phase === "feedback" || phase === "advancing" || phase === "advance_failed" || phase === "completed";
 }
 
 export function allowsPracticeResponseEditing(phase: PracticeSurfacePhase): boolean {
@@ -71,7 +74,7 @@ export function allowsPracticeResponseEditing(phase: PracticeSurfacePhase): bool
 }
 
 export function isPracticeActionPending(phase: PracticeSurfacePhase): boolean {
-  return phase === "submitting" || phase === "commit_pending" || phase === "advancing" || phase === "abandoning";
+  return phase === "submitting_before_journal" || phase === "commit_pending" || phase === "advancing" || phase === "abandoning";
 }
 
 /**
@@ -124,10 +127,12 @@ export function getPracticePrimaryAction(input: Readonly<{
   if (input.phase === "unanswered") {
     return Object.freeze({ enabled: input.hasLocalResponse, label: "Check answer", loading: false });
   }
-  if (input.phase === "submitting") return Object.freeze({ enabled: false, label: "Checking answer…", loading: true });
+  if (input.phase === "submitting_before_journal") return Object.freeze({ enabled: false, label: "Checking answer…", loading: true });
+  if (input.phase === "submit_journal_failed") return Object.freeze({ enabled: input.hasLocalResponse, label: "Check answer", loading: false });
   if (input.phase === "commit_pending") return Object.freeze({ enabled: false, label: "Finishing the update…", loading: true });
   if (input.phase === "advancing") return Object.freeze({ enabled: false, label: "Loading next question…", loading: true });
   if (input.phase === "feedback") return Object.freeze({ enabled: true, label: input.isFinalPosition ? "View session result" : "Next", loading: false });
+  if (input.phase === "advance_failed") return Object.freeze({ enabled: true, label: input.isFinalPosition ? "Retry session result" : "Retry next question", loading: false });
   if (input.phase === "completed") return Object.freeze({ enabled: true, label: "View session result", loading: false });
   return null;
 }

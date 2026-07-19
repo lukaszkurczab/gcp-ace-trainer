@@ -10,31 +10,31 @@ import {
 } from "../src/features/practice/practiceSessionPresentation";
 
 test("Practice presentation never discloses feedback before the durable feedback boundary", () => {
-  for (const phase of ["preparing", "unanswered", "submitting", "commit_pending", "abandoning"] as const) {
+  for (const phase of ["preparing", "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "abandoning"] as const) {
     assert.equal(allowsPracticeFeedback(phase), false, phase);
   }
-  for (const phase of ["feedback", "commit_recovery", "advancing", "completed"] as const) {
+  for (const phase of ["feedback", "advancing", "advance_failed", "completed"] as const) {
     assert.equal(allowsPracticeFeedback(phase), true, phase);
   }
 });
 
 test("Practice presentation permits response edits only while unanswered", () => {
   assert.equal(allowsPracticeResponseEditing("unanswered"), true);
-  for (const phase of ["preparing", "submitting", "commit_pending", "commit_recovery", "feedback", "advancing", "completed", "abandoning"] as const) {
+  for (const phase of ["preparing", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "feedback", "advancing", "advance_failed", "completed", "abandoning"] as const) {
     assert.equal(allowsPracticeResponseEditing(phase), false, phase);
   }
 });
 
 test("Practice action model prevents duplicate submit and preserves final result transition", () => {
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: false, isFinalPosition: false, phase: "unanswered" }), { enabled: false, label: "Check answer", loading: false });
-  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "submitting" }), { enabled: false, label: "Checking answer…", loading: true });
+  assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "submitting_before_journal" }), { enabled: false, label: "Checking answer…", loading: true });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "commit_pending" }), { enabled: false, label: "Finishing the update…", loading: true });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: false, phase: "feedback" }), { enabled: true, label: "Next", loading: false });
   assert.deepEqual(getPracticePrimaryAction({ hasLocalResponse: true, isFinalPosition: true, phase: "feedback" }), { enabled: true, label: "View session result", loading: false });
 });
 
 test("Practice pending phases retain a stable unsafe-action lock", () => {
-  for (const phase of ["submitting", "commit_pending", "advancing", "abandoning"] as const) {
+  for (const phase of ["submitting_before_journal", "commit_pending", "advancing", "abandoning"] as const) {
     assert.equal(isPracticeActionPending(phase), true, phase);
   }
   assert.equal(isPracticeActionPending("feedback"), false);

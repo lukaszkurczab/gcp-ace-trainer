@@ -24,6 +24,17 @@ export const APPLICATION_FAILURE_CODES = [
   "persistence_failure",
   "verification_failure",
   "timer_recovery_failure",
+  "submit_journal_failed",
+  "commit_materialization_failed",
+  "commit_verification_failed",
+  "advance_failed",
+  "stale_revision",
+  "missing_draft",
+  "version_mismatch",
+  "corrupt_state",
+  "finalization_journal_failed",
+  "finalization_materialization_failed",
+  "finalization_verification_failed",
   "resume_unavailable",
   "summary_unavailable",
 ] as const;
@@ -34,6 +45,14 @@ export class TrainingApplicationFailure extends Error {
   constructor(readonly code: ApplicationFailureCode, message: string, readonly cause?: unknown) {
     super(message);
     this.name = "TrainingApplicationFailure";
+  }
+}
+
+export type MutationCommitPhase = "journal" | "materialization" | "verification";
+export class MutationCommitFailure extends Error {
+  constructor(readonly phase: MutationCommitPhase, readonly journalDurable: boolean, readonly cause?: unknown) {
+    super(`Canonical mutation failed during ${phase}.`);
+    this.name = "MutationCommitFailure";
   }
 }
 
@@ -97,6 +116,7 @@ export interface TrainingLifecycleRepositoryPort {
   getDraft(sessionId: string): Promise<TrainingSessionDraft | null>;
   getResult(sessionId: string): Promise<TrainingSessionResult | null>;
   saveDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void>;
+  getPendingMutation?(): Promise<Readonly<{ operation: string; sessionId: string }> | null>;
 }
 
 /** The only application dependency allowed to mutate canonical records. */

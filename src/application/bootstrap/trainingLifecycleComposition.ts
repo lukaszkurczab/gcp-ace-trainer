@@ -30,6 +30,7 @@ import {
   getTrainingSessionResult,
   getTrainingSessions,
   getActiveForegroundTimer,
+  getActiveMutationJournal,
   saveActiveForegroundTimer,
   saveTrainingSessionDraft,
 } from "../../storage/repositories";
@@ -64,6 +65,10 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
       },
       async getResult(sessionId) { return getTrainingSessionResult(sessionId); },
       async saveDraft(input) { await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision); },
+      async getPendingMutation() {
+        const pending = await getActiveMutationJournal();
+        return pending ? { operation: pending.operation, sessionId: pending.sessionId } : null;
+      },
     },
     mutations: {
       async start(input) { await commitTrainingSessionStart({ session: input.session, draft: input.draft, createdAt: input.session.startedAt }); },
