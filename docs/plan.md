@@ -1187,16 +1187,11 @@ Niezależne zamknięcie G-L content gate.
 
 # 13. Najbliższa decyzja
 
-Następny prompt do wykonania:
-
 ```txt
-P0 — WEP4-PLAN-REALIGN-01
+P1 — VERIFIED
+P2 — VERIFIED
+Stage 3 — NEEDS_CORRECTION
+ACTIVE NEXT TASK — P3 S3-VISUAL-HARNESS-01
 ```
 
-Po jego pushu:
-
-```txt
-P1 — S3-RUNTIME-INTEGRITY-01
-```
-
-Nie uruchamiaj obecnego `S3-ALGORITHMS-VISUAL-QA-01` przed P1 i P2. Screenshoty obecnego timera i recovery states utrwalałyby niekanoniczne zachowanie zamiast je zweryfikować.
+P1 przywrócił canonical timer ownership, a P2 ustanowił phase-aware recovery i application-owned durable operation projections. Stage 3 nadal wymaga P3 visual harness; nie uruchamiaj historycznego `S3-ALGORITHMS-VISUAL-QA-01` zamiast tego zadania.
