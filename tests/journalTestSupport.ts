@@ -88,7 +88,7 @@ export function journal(writes: MutationJournalRecord["writes"], operation: Muta
   const commandFingerprint = "0".repeat(64);
   const plan: MutationJournalPlan = {
     operation,
-    status: "prepared",
+    status: "journal_durable",
     createdAt: timestamp,
     sessionId,
     trackId,

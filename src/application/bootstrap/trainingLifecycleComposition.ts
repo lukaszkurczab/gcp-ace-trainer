@@ -4,6 +4,7 @@ import {
   installAlgorithmsSessionRuntimePorts,
   installAlgorithmsSimulationTimerFacade,
 } from "../algorithms";
+import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
   commitLearningStateReset,
   commitSessionAbandonment,
@@ -86,7 +87,7 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
       async reset() { await commitLearningStateReset(new Date().toISOString()); },
     },
   };
-  const lifecycle = new TrainingLifecycleUseCases(ports);
+  const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
   installAlgorithmsSessionRuntimePorts({
     wallClock,

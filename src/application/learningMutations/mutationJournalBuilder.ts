@@ -14,7 +14,7 @@ export async function buildMutationJournal(input: { operation: MutationOperation
   const commandFingerprint = await createIdentityFingerprint([input.operation, input.sessionId, input.trackId, input.identity]);
   const plan: MutationJournalPlan = {
     operation: input.operation,
-    status: "prepared",
+    status: "journal_durable",
     createdAt: input.createdAt,
     sessionId: input.sessionId,
     trackId: input.trackId,

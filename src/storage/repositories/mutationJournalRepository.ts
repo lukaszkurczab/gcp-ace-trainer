@@ -29,7 +29,7 @@ export type MutationCommandIdentity = Readonly<{ version: 1; fingerprint: string
 export type MutationExpectedRevision = Readonly<{ target: string; revision: number | null }>;
 export type MutationJournalPlan = Readonly<{
   operation: MutationOperation;
-  status: "prepared";
+  status: "journal_durable" | "materialized" | "verified_pending_clear";
   createdAt: string;
   sessionId: string;
   trackId: string;
@@ -271,15 +271,15 @@ export function createMutationPlanFingerprint(plan: MutationJournalPlan): string
 }
 
 function persistedPlan(record: MutationJournalRecord): MutationJournalPlan {
-  const { journalId: _journalId, planFingerprint: _planFingerprint, ...plan } = record;
-  return plan;
+  const { journalId: _journalId, planFingerprint: _planFingerprint, status: _status, ...plan } = record;
+  return { ...plan, status: "journal_durable" };
 }
 
 export function hasValidMutationJournalIntegrity(value: unknown): value is MutationJournalRecord {
   if (!isRecord(value) || !hasExactKeys(value, ["journalId", "operation", "status", "createdAt", "sessionId", "trackId", "commandIdentity", "expectedRevisions", "planFingerprint", "writes"])) return false;
   if (!isRecord(value.commandIdentity) || !hasExactKeys(value.commandIdentity, ["version", "fingerprint"]) || value.commandIdentity.version !== 1 || !isNonEmptyString(value.commandIdentity.fingerprint) || !SHA_256.test(value.commandIdentity.fingerprint) || value.journalId !== `journal:${value.commandIdentity.fingerprint}` ||
     !isNonEmptyString(value.planFingerprint) || !PLAN_FINGERPRINT.test(value.planFingerprint) || !(OPERATIONS as readonly unknown[]).includes(value.operation) ||
-    value.status !== "prepared" || !isTimestamp(value.createdAt) || !isNonEmptyString(value.sessionId) || !isNonEmptyString(value.trackId) ||
+    !["journal_durable", "materialized", "verified_pending_clear"].includes(value.status as string) || !isTimestamp(value.createdAt) || !isNonEmptyString(value.sessionId) || !isNonEmptyString(value.trackId) ||
     !isRegisteredTrackId(value.trackId) || !Array.isArray(value.expectedRevisions) || !value.expectedRevisions.every(isExpectedRevision) || !Array.isArray(value.writes) || !value.writes.every(isJournalWrite)) return false;
   const record = value as MutationJournalRecord;
   return hasConsistentScope(record) && hasExpectedRevisionPlan(record) && createMutationPlanFingerprint(persistedPlan(record)) === record.planFingerprint;
@@ -327,6 +327,16 @@ export async function persistMutationJournal(record: MutationJournalRecord): Pro
     if (error instanceof JournalWriteError) throw error;
     throw new JournalWriteError(error);
   } });
+}
+
+export async function updateMutationJournalPhase(record: MutationJournalRecord, status: MutationJournalRecord["status"]): Promise<MutationJournalRecord> {
+  return inJournalCriticalSection(async () => {
+    const current = await getActiveMutationJournal();
+    if (!current || current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new JournalWriteError(new Error("Pending mutation ownership changed."));
+    const updated = { ...current, status } as MutationJournalRecord;
+    writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, updated);
+    return updated;
+  });
 }
 
 function hasSameReviewIdentity(left: ReviewQueueEntry, right: ReviewQueueEntry): boolean {

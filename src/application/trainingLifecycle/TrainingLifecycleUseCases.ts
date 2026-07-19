@@ -9,19 +9,22 @@ import {
 } from "../../domain";
 import {
   TrainingApplicationFailure,
-  MutationCommitFailure,
   type ApplicationFailureCode,
   type PreparedSession,
   type PracticeFinalization,
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
 } from "./contracts";
+import { MutationCommitFailure } from "../mutationBoundary";
 import type { DurableOperationError, DurableOperationState, PracticeDurableOperationState, SimulationDurableOperationState } from "./durableOperationState";
+import { OperationProjectionStore } from "./operationProjectionStore";
 
 export class TrainingLifecycleUseCases {
-  private readonly operationStates = new Map<string, DurableOperationState>();
+  private readonly operationStates: OperationProjectionStore;
 
-  constructor(private readonly ports: TrainingLifecyclePorts) {}
+  constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
+  getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
+  subscribeOperationProjection(sessionId: string, listener: (value: DurableOperationState) => void) { return this.operationStates.subscribeOperationProjection(sessionId, listener); }
 
   async getPracticeOperationState(session: TrainingSession, hasCommittedAttempt: boolean): Promise<PracticeDurableOperationState> {
     const pending = await this.pendingFor(session.id);
@@ -303,20 +306,20 @@ function simulationRecovery(kind: "finalization_journal_pending" | "finalization
 
 function practiceStateForMutationFailure(error: unknown): PracticeDurableOperationState {
   if (!(error instanceof MutationCommitFailure)) return practiceRecovery("submit_journal_failed");
-  if (error.phase === "journal") return practiceRecovery("submit_journal_failed");
+  if (error.phase === "journal_write") return practiceRecovery("submit_journal_failed");
   if (error.phase === "materialization") return practiceRecovery("commit_materialization_failed");
   return practiceRecovery("commit_verification_failed");
 }
 
 function simulationStateForMutationFailure(error: unknown): SimulationDurableOperationState {
-  if (!(error instanceof MutationCommitFailure) || error.phase === "journal") return simulationRecovery("finalization_journal_failed");
+  if (!(error instanceof MutationCommitFailure) || error.phase === "journal_write") return simulationRecovery("finalization_journal_failed");
   if (error.phase === "materialization") return simulationRecovery("materialization_failed");
   return simulationRecovery("verification_failed");
 }
 
 function applicationFailureForPracticeMutation(error: unknown): TrainingApplicationFailure {
   if (error instanceof MutationCommitFailure) {
-    const code = error.phase === "journal" ? "submit_journal_failed" : error.phase === "materialization" ? "commit_materialization_failed" : "commit_verification_failed";
+    const code = error.phase === "journal_write" ? "submit_journal_failed" : error.phase === "materialization" ? "commit_materialization_failed" : "commit_verification_failed";
     return new TrainingApplicationFailure(code, "Practice command did not reach a verified canonical outcome.", error);
   }
   return new TrainingApplicationFailure("submit_journal_failed", "Practice response was not durably submitted.", error);
@@ -324,7 +327,7 @@ function applicationFailureForPracticeMutation(error: unknown): TrainingApplicat
 
 function applicationFailureForSimulationMutation(error: unknown): TrainingApplicationFailure {
   if (error instanceof MutationCommitFailure) {
-    const code = error.phase === "journal" ? "finalization_journal_failed" : error.phase === "materialization" ? "finalization_materialization_failed" : "finalization_verification_failed";
+    const code = error.phase === "journal_write" ? "finalization_journal_failed" : error.phase === "materialization" ? "finalization_materialization_failed" : "finalization_verification_failed";
     return new TrainingApplicationFailure(code, "Simulation finalization did not reach a verified canonical outcome.", error);
   }
   return new TrainingApplicationFailure("finalization_journal_failed", "Simulation finalization did not create a durable journal.", error);
