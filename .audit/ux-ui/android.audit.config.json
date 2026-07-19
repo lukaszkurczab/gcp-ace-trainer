@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "auditId": "algorithms-stage3-visual-harness-v1",
+  "platform": "android",
+  "appId": "com.lkurczab.gcpacetrainer",
+  "requiredAvdName": "Medium_Phone",
+  "metroPort": 8082,
+  "appActivity": "com.lkurczab.gcpacetrainer/.MainActivity",
+  "hostLaunchUri": "exp+patternly-algorithms-audit://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8082",
+  "debugApk": "android/app/build/outputs/apk/debug/app-debug.apk",
+  "bootstrapFlow": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-bootstrap.yaml",
+  "statesDirectory": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states",
+  "manifestPath": "audit/algorithms-ui/s3-android-capture-manifest.json",
+  "outputDirectory": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android",
+  "states": [
+    {
+      "stateId": "P-01",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-01",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-01.yaml",
+      "screenshotName": "algorithms-stage3__p-01__preparing__android-regular"
+    },
+    {
+      "stateId": "P-02",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-02",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-02.yaml",
+      "screenshotName": "algorithms-stage3__p-02__unanswered__android-regular"
+    },
+    {
+      "stateId": "P-03",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-03",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-03.yaml",
+      "screenshotName": "algorithms-stage3__p-03__submitting-before-journal__android-regular"
+    },
+    {
+      "stateId": "P-04",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-04",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-04.yaml",
+      "screenshotName": "algorithms-stage3__p-04__submit-journal-failed__android-regular"
+    },
+    {
+      "stateId": "P-05",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-05",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-05.yaml",
+      "screenshotName": "algorithms-stage3__p-05__commit-pending__android-regular"
+    },
+    {
+      "stateId": "P-06",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-06",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-06.yaml",
+      "screenshotName": "algorithms-stage3__p-06__commit-materialization-failed__android-regular"
+    },
+    {
+      "stateId": "P-07",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-07",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-07.yaml",
+      "screenshotName": "algorithms-stage3__p-07__feedback-correct__android-regular"
+    },
+    {
+      "stateId": "P-08",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-08",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-08.yaml",
+      "screenshotName": "algorithms-stage3__p-08__feedback-partial-long-details__android-regular"
+    },
+    {
+      "stateId": "P-09",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-09",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-09.yaml",
+      "screenshotName": "algorithms-stage3__p-09__advancing__android-regular"
+    },
+    {
+      "stateId": "P-10",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-10",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-10.yaml",
+      "screenshotName": "algorithms-stage3__p-10__advance-failed__android-regular"
+    },
+    {
+      "stateId": "P-11",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-11",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-11.yaml",
+      "screenshotName": "algorithms-stage3__p-11__completed__android-regular"
+    },
+    {
+      "stateId": "P-12",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-12",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-12.yaml",
+      "screenshotName": "algorithms-stage3__p-12__leave-confirmation__android-regular"
+    },
+    {
+      "stateId": "P-13",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-13",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-13.yaml",
+      "screenshotName": "algorithms-stage3__p-13__abandon-confirmation__android-regular"
+    },
+    {
+      "stateId": "P-14",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-14",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-14.yaml",
+      "screenshotName": "algorithms-stage3__p-14__abandoning__android-regular"
+    },
+    {
+      "stateId": "P-15",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-15",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-15.yaml",
+      "screenshotName": "algorithms-stage3__p-15__abandonment-failed__android-regular"
+    },
+    {
+      "stateId": "S-01",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-01",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-01.yaml",
+      "screenshotName": "algorithms-stage3__s-01__preparing__android-regular"
+    },
+    {
+      "stateId": "S-02",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-02",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-02.yaml",
+      "screenshotName": "algorithms-stage3__s-02__insufficient-content__android-regular"
+    },
+    {
+      "stateId": "S-03",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-03",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-03.yaml",
+      "screenshotName": "algorithms-stage3__s-03__editable-choice__android-regular"
+    },
+    {
+      "stateId": "S-04",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-04",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-04.yaml",
+      "screenshotName": "algorithms-stage3__s-04__editable-unsaved__android-regular"
+    },
+    {
+      "stateId": "S-05",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-05",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-05.yaml",
+      "screenshotName": "algorithms-stage3__s-05__saving__android-regular"
+    },
+    {
+      "stateId": "S-06",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-06",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-06.yaml",
+      "screenshotName": "algorithms-stage3__s-06__editable-saved__android-regular"
+    },
+    {
+      "stateId": "S-07",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-07",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-07.yaml",
+      "screenshotName": "algorithms-stage3__s-07__save-failed__android-regular"
+    },
+    {
+      "stateId": "S-08",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-08",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-08.yaml",
+      "screenshotName": "algorithms-stage3__s-08__stale-revision__android-regular"
+    },
+    {
+      "stateId": "S-09",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-09",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-09.yaml",
+      "screenshotName": "algorithms-stage3__s-09__navigator-inventory__android-regular"
+    },
+    {
+      "stateId": "S-10",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-10",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-10.yaml",
+      "screenshotName": "algorithms-stage3__s-10__navigator-mixed__android-regular"
+    },
+    {
+      "stateId": "S-11",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-11",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-11.yaml",
+      "screenshotName": "algorithms-stage3__s-11__finish-confirmation__android-regular"
+    },
+    {
+      "stateId": "S-12",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-12",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-12.yaml",
+      "screenshotName": "algorithms-stage3__s-12__leave-confirmation__android-regular"
+    },
+    {
+      "stateId": "S-13",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-13",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-13.yaml",
+      "screenshotName": "algorithms-stage3__s-13__abandon-confirmation__android-regular"
+    },
+    {
+      "stateId": "S-14",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-14",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-14.yaml",
+      "screenshotName": "algorithms-stage3__s-14__abandoning__android-regular"
+    },
+    {
+      "stateId": "S-15",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-15",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-15.yaml",
+      "screenshotName": "algorithms-stage3__s-15__abandonment-failed__android-regular"
+    },
+    {
+      "stateId": "S-16",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-16",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-16.yaml",
+      "screenshotName": "algorithms-stage3__s-16__expired__android-regular"
+    },
+    {
+      "stateId": "S-17",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-17",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-17.yaml",
+      "screenshotName": "algorithms-stage3__s-17__frozen__android-regular"
+    },
+    {
+      "stateId": "S-18",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-18",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-18.yaml",
+      "screenshotName": "algorithms-stage3__s-18__finalization-journal-pending__android-regular"
+    },
+    {
+      "stateId": "S-19",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-19",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-19.yaml",
+      "screenshotName": "algorithms-stage3__s-19__finalization-journal-failed__android-regular"
+    },
+    {
+      "stateId": "S-20",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-20",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-20.yaml",
+      "screenshotName": "algorithms-stage3__s-20__materializing__android-regular"
+    },
+    {
+      "stateId": "S-21",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-21",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-21.yaml",
+      "screenshotName": "algorithms-stage3__s-21__materialization-failed__android-regular"
+    },
+    {
+      "stateId": "S-22",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-22",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-22.yaml",
+      "screenshotName": "algorithms-stage3__s-22__verification-failed__android-regular"
+    },
+    {
+      "stateId": "S-23",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-23",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-23.yaml",
+      "screenshotName": "algorithms-stage3__s-23__recovery-required__android-regular"
+    },
+    {
+      "stateId": "S-24",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-24",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-24.yaml",
+      "screenshotName": "algorithms-stage3__s-24__recovered-finalizing__android-regular"
+    },
+    {
+      "stateId": "S-25",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-25",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-25.yaml",
+      "screenshotName": "algorithms-stage3__s-25__timer-recovery-failed__android-regular"
+    },
+    {
+      "stateId": "S-26",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-26",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-26.yaml",
+      "screenshotName": "algorithms-stage3__s-26__missing-draft__android-regular"
+    },
+    {
+      "stateId": "S-27",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-27",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-27.yaml",
+      "screenshotName": "algorithms-stage3__s-27__version-mismatch__android-regular"
+    },
+    {
+      "stateId": "S-28",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-28",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-28.yaml",
+      "screenshotName": "algorithms-stage3__s-28__corrupt-state__android-regular"
+    },
+    {
+      "stateId": "S-29",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-29",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-29.yaml",
+      "screenshotName": "algorithms-stage3__s-29__completed__android-regular"
+    }
+  ]
+}

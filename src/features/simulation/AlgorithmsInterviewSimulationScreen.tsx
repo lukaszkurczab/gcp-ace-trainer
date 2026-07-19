@@ -82,8 +82,8 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     if (operation.kind !== "editable") return operationSurface(projection, operation, () => { void load(); });
     const changed = !sameResponse(response, responseFromProjection(projection));
     return {
-      state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total, timerLabel: timerLabel(projection.remainingForegroundMs),
+      state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection),
+      progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
       notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
       question: question(projection, response), navigator: navigator(projection),
       onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
@@ -96,7 +96,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   return <SimulationSessionSurface projection={surface} />;
 }
 
-function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", positionLabel: `${projection.position.current} of ${projection.position.total}`, progress: projection.position.current / projection.position.total, timerLabel: timerLabel(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
+function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection), progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
 function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, recover: () => void): SimulationSurfaceProjection {
   const state = operation.kind === "saving" ? "saving" : operation.kind === "stale_revision" ? "stale_revision" : operation.kind === "save_failed" ? "save_failed" : operation.kind === "frozen" ? "frozen" : operation.kind === "finalization_journal_pending" ? "finalization_journal_pending" : operation.kind === "finalization_journal_failed" ? "finalization_journal_failed" : operation.kind === "materializing" || operation.kind === "verifying" ? "finalizing" : operation.kind === "verification_failed" || operation.kind === "materialization_failed" || operation.kind === "verified_pending_clear" || operation.kind === "recovery_required" || operation.kind === "navigation_failed" || operation.kind === "abandonment_recovery_required" ? "recovering" : operation.kind === "abandoning" ? "abandoning" : operation.kind === "completed" ? "completed" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : "corrupt_state";
   const error = "error" in operation ? operation.error : null;
@@ -112,3 +112,5 @@ function applyResponseChange(current: SimulationResponse | null, projection: Alg
 function isComplete(response: SimulationResponse | null, projection: AlgorithmsSimulationProjection): boolean { if (!response) return false; if (response.kind === "choice") return response.selectedOptionIds.length > 0; if (response.kind === "ordering") return projection.interaction.renderer.kind === "ordering" && response.orderedSubgoalIds.length === projection.interaction.renderer.elements.length; return projection.interaction.renderer.kind === "complexity" && projection.interaction.renderer.dimensions.every((item) => Boolean(response.selectedValuesByDimension[item.id])); }
 function sameResponse(left: SimulationResponse | null, right: SimulationResponse | null) { return JSON.stringify(left) === JSON.stringify(right); }
 function timerLabel(remainingMs: number) { const seconds = Math.max(0, Math.floor(remainingMs / 1000)); return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+function simulationTimer(remainingMs: number) { const label = timerLabel(remainingMs); return { accessibilityLabel: `Time remaining ${label}`, label }; }
+function simulationPosition(projection: AlgorithmsSimulationProjection) { const label = `${projection.position.current} of ${projection.position.total}`; return { accessibilityLabel: `Question ${label}`, label }; }

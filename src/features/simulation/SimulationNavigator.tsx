@@ -13,7 +13,7 @@ export function SimulationNavigator({ onOccurrencePress, positions }: Simulation
   if (!hasCanonicalSimulationNavigator(positions)) return null;
 
   return (
-    <View accessibilityLabel="Interview Simulation navigator: 40 positions" accessibilityRole="summary" style={styles.grid}>
+    <View style={styles.grid}>
       {positions.map((position, index) => {
         const disabled = position.state === "frozen" || !onOccurrencePress;
         return (
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   currentLabel: { color: colors.dark.textPrimary },
   frozen: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, opacity: 0.62 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  position: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, height: 36, justifyContent: "center", width: 36 },
+  position: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
   positionLabel: { ...typography.caption, color: colors.dark.textSecondary },
   unanswered: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border },
 });

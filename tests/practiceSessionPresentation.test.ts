@@ -7,6 +7,7 @@ import {
   buildPracticeResponseControl,
   getPracticePrimaryAction,
   isPracticeActionPending,
+  practiceOptionCorrectnessValue,
 } from "../src/features/practice/practiceSessionPresentation";
 
 test("Practice presentation never discloses feedback before the durable feedback boundary", () => {
@@ -68,4 +69,12 @@ test("Practice response renderer consumes application feedback states without sc
       { id: "c", state: "correct", text: "C" },
     ],
   });
+});
+
+test("Practice correctness semantics stay separate from the native checked selection state", () => {
+  assert.equal(practiceOptionCorrectnessValue("neutral"), undefined);
+  assert.equal(practiceOptionCorrectnessValue("selected"), undefined);
+  assert.equal(practiceOptionCorrectnessValue("correct"), "Correct response");
+  assert.equal(practiceOptionCorrectnessValue("incorrect"), "Incorrect response");
+  assert.equal(practiceOptionCorrectnessValue("omitted_correct"), "Correct response");
 });

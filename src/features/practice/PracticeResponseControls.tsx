@@ -1,7 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, radius, spacing, typography } from "../../theme";
-import type { PracticeResponseControl } from "./practiceSessionPresentation";
+import {
+  complexityValueAccessibilityLabel,
+  orderingMoveAccessibilityLabel,
+} from "../algorithms/session/sessionAccessibility";
+import { practiceOptionCorrectnessValue, type PracticeResponseControl } from "./practiceSessionPresentation";
 
 type PracticeResponseControlsProps = Readonly<{
   control: PracticeResponseControl;
@@ -21,7 +25,7 @@ export function PracticeResponseControls({
 }: PracticeResponseControlsProps) {
   if (control.kind === "choice") {
     return (
-      <View accessibilityLabel={control.selectionMode === "single" ? "Choose one answer" : "Choose all answers"} style={styles.stack}>
+      <View style={styles.stack}>
         {control.options.map((option) => (
           <ChoiceOption
             editable={editable}
@@ -37,15 +41,15 @@ export function PracticeResponseControls({
 
   if (control.kind === "ordering") {
     return (
-      <View accessibilityLabel="Order the steps" style={styles.stack}>
+      <View style={styles.stack}>
         {control.elements.map((element, index) => (
           <View key={element.id} style={styles.orderRow}>
             <Text style={styles.orderIndex}>{index + 1}</Text>
             <Text style={styles.optionText}>{element.text}</Text>
             {editable ? (
               <View style={styles.orderActions}>
-                <OrderingMove disabled={index === 0} direction="up" onPress={() => onOrderingMove(element.id, "up")} />
-                <OrderingMove disabled={index === control.elements.length - 1} direction="down" onPress={() => onOrderingMove(element.id, "down")} />
+                <OrderingMove disabled={index === 0} direction="up" elementLabel={element.text} index={index} onPress={() => onOrderingMove(element.id, "up")} total={control.elements.length} />
+                <OrderingMove disabled={index === control.elements.length - 1} direction="down" elementLabel={element.text} index={index} onPress={() => onOrderingMove(element.id, "down")} total={control.elements.length} />
               </View>
             ) : null}
           </View>
@@ -64,6 +68,7 @@ export function PracticeResponseControls({
               const selected = dimension.selectedValue === value;
               return (
                 <Pressable
+                  accessibilityLabel={complexityValueAccessibilityLabel(humanizeDimension(dimension.id), value)}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selected, disabled: !editable }}
                   disabled={!editable}
@@ -89,21 +94,14 @@ function ChoiceOption({ editable, onPress, option, role }: Readonly<{
   role: "checkbox" | "radio";
 }>) {
   const selected = option.state === "selected" || option.state === "correct" || option.state === "incorrect";
-  const stateLabel = option.state === "correct"
-    ? "Correct response"
-    : option.state === "incorrect"
-      ? "Incorrect response"
-      : option.state === "omitted_correct"
-        ? "Correct response not selected"
-        : selected
-          ? "Selected"
-          : "Not selected";
+  const correctness = practiceOptionCorrectnessValue(option.state);
 
   return (
     <Pressable
-      accessibilityHint={stateLabel}
+      accessibilityLabel={option.text}
       accessibilityRole={role}
       accessibilityState={{ checked: selected, disabled: !editable }}
+      accessibilityValue={correctness ? { text: correctness } : undefined}
       disabled={!editable}
       onPress={onPress}
       style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
@@ -114,10 +112,17 @@ function ChoiceOption({ editable, onPress, option, role }: Readonly<{
   );
 }
 
-function OrderingMove({ direction, disabled, onPress }: Readonly<{ direction: "up" | "down"; disabled: boolean; onPress: () => void }>) {
+function OrderingMove({ direction, disabled, elementLabel, index, onPress, total }: Readonly<{
+  direction: "up" | "down";
+  disabled: boolean;
+  elementLabel: string;
+  index: number;
+  onPress: () => void;
+  total: number;
+}>) {
   return (
     <Pressable
-      accessibilityLabel={`Move ${direction}`}
+      accessibilityLabel={orderingMoveAccessibilityLabel(elementLabel, index, total, direction)}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       disabled={disabled}
@@ -152,18 +157,18 @@ const styles = StyleSheet.create({
   markerCorrect: { backgroundColor: colors.dark.success, borderColor: colors.dark.success },
   markerIncorrect: { backgroundColor: colors.dark.danger, borderColor: colors.dark.danger },
   markerSelected: { backgroundColor: colors.dark.primary, borderColor: colors.dark.primary },
-  moveButton: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, height: 32, justifyContent: "center", width: 32 },
+  moveButton: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
   moveButtonDisabled: { opacity: 0.4 },
   moveText: { ...typography.bodyStrong, color: colors.dark.textPrimary },
   optionText: { ...typography.body, color: colors.dark.textPrimary, flex: 1 },
-  orderActions: { flexDirection: "row", gap: spacing.xs },
-  orderIndex: { ...typography.bodyStrong, color: colors.dark.accentPurple, width: 20 },
-  orderRow: { alignItems: "center", backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.sm, minHeight: 64, padding: spacing.md },
+  orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
+  orderIndex: { ...typography.bodyStrong, color: colors.dark.accentPurple, minWidth: 20 },
+  orderRow: { alignItems: "flex-start", backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, minHeight: 64, padding: spacing.md },
   pressed: { opacity: 0.82 },
   selectedText: { color: colors.dark.textPrimary },
   stack: { gap: spacing.md },
   valueGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  valueOption: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, minHeight: 40, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  valueOption: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   valueOptionSelected: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 2 },
   valueText: { ...typography.small, color: colors.dark.textSecondary },
 });

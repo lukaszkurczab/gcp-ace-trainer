@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
+import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
 import { SessionShell } from "../algorithms/session/SessionShell";
 import { colors, radius, spacing, typography } from "../../theme";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
@@ -42,12 +43,12 @@ export type PracticeSessionSurfaceProps = Readonly<{
   onRequestLeave: () => void;
   onRetry?: () => void;
   phase: PracticeSurfacePhase;
-  positionLabel?: string;
+  position?: SessionMetricPresentation;
   primaryAction?: Readonly<{ enabled: boolean; label: string; loading: boolean }>;
   progress?: number;
   question?: PracticeQuestionPresentation;
   retryLabel?: string;
-  timerLabel?: string;
+  timer?: SessionMetricPresentation;
 }>;
 
 /**
@@ -75,9 +76,9 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
     <SessionShell
       actionBar={<ActionBar {...props} />}
       modeLabel={props.modeLabel}
-      positionLabel={props.positionLabel}
+      position={props.position}
       progress={props.progress}
-      timerLabel={props.timerLabel}
+      timer={props.timer}
     >
       {props.phase === "preparing" ? <PreparingNotice /> : null}
       {controls}
@@ -113,7 +114,7 @@ function PreparingNotice() {
 
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
   return (
-    <View accessibilityLiveRegion="polite" style={[styles.notice, notice.tone === "error" ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>
+    <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, notice.tone === "error" ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>
       <Text style={styles.noticeText}>{notice.message}</Text>
     </View>
   );

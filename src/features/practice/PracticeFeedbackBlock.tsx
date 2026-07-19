@@ -7,9 +7,10 @@ import type { PracticeFeedback } from "./practiceSessionPresentation";
 export function PracticeFeedbackBlock({ feedback }: Readonly<{ feedback: PracticeFeedback }>) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
-    <View accessibilityLabel="Verified answer explanation" style={styles.container}>
-      <Text style={styles.reason}>{feedback.reason}</Text>
+    <View style={styles.container}>
+      <Text accessibilityLabel={`Verified answer explanation. ${feedback.reason}`} style={styles.reason}>{feedback.reason}</Text>
       <Pressable
+        accessibilityLabel={detailsOpen ? "Hide answer details" : "Show answer details"}
         accessibilityRole="button"
         accessibilityState={{ expanded: detailsOpen }}
         onPress={() => setDetailsOpen((current) => !current)}
@@ -28,6 +29,6 @@ const styles = StyleSheet.create({
   details: { ...typography.small, color: colors.dark.textSecondary },
   detailsIndicator: { ...typography.bodyStrong, color: colors.dark.accentPurple },
   detailsLabel: { ...typography.bodyStrong, color: colors.dark.textPrimary },
-  detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 40 },
+  detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },
   reason: { ...typography.bodyStrong, color: colors.dark.textPrimary },
 });

@@ -1,11 +1,22 @@
 import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  type AccessibilityRole,
+  type AccessibilityState,
+  type ViewStyle,
+} from "react-native";
 
 import { colors, radius, spacing, typography } from "../theme";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 
 type ButtonProps = {
+  accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: Omit<AccessibilityState, "busy" | "disabled">;
   children: ReactNode;
   disabled?: boolean;
   loading?: boolean;
@@ -14,13 +25,24 @@ type ButtonProps = {
   variant?: ButtonVariant;
 };
 
-export function Button({ children, disabled = false, loading = false, onPress, style, variant = "primary" }: ButtonProps) {
+export function Button({
+  accessibilityLabel,
+  accessibilityRole = "button",
+  accessibilityState,
+  children,
+  disabled = false,
+  loading = false,
+  onPress,
+  style,
+  variant = "primary",
+}: ButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ busy: loading, disabled: isDisabled }}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
+      accessibilityState={{ ...accessibilityState, busy: loading, disabled: isDisabled }}
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -50,6 +72,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: "center",
     minHeight: 48,
+    minWidth: 48,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md
   },

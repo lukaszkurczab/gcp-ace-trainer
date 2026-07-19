@@ -153,11 +153,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       onRequestAbandon={() => setExit("abandon_confirmation")}
       onRequestLeave={() => setExit("leave")}
       phase={phase}
-      positionLabel={`${projection.position.current} of ${projection.position.total}`}
+      position={{ accessibilityLabel: `Question ${projection.position.current} of ${projection.position.total}`, label: `${projection.position.current} of ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, prompt: projection.prompt, responseControl }}
-      timerLabel={`Active time ${formatElapsed(projection.session.activeForegroundMs)}`}
+      timer={{ accessibilityLabel: `Active foreground time ${formatElapsed(projection.session.activeForegroundMs)}`, label: `Active time ${formatElapsed(projection.session.activeForegroundMs)}` }}
     />
   );
 }

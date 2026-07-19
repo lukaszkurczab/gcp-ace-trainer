@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
 import { colors, radius, spacing, typography } from "../../theme";
+import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../algorithms/session/sessionAccessibility";
 import { SessionShell } from "../algorithms/session/SessionShell";
 import type { SimulationAction, SimulationResponseChange, SimulationResponseControl, SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationNavigator } from "./SimulationNavigator";
@@ -24,9 +25,9 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
     <SessionShell
       actionBar={actionBar}
       modeLabel={projection.modeLabel}
-      positionLabel={projection.positionLabel}
+      position={projection.position}
       progress={projection.progress}
-      timerLabel={projection.timerLabel}
+      timer={projection.timer}
     >
       <View accessible accessibilityRole="header" style={styles.heading}>
         <Text style={styles.title}>{projection.title}</Text>
@@ -50,11 +51,11 @@ function ActionBar({ primary, secondary }: NonNullable<SimulationSurfaceProjecti
 }
 
 function Action({ action }: Readonly<{ action: SimulationAction }>) {
-  return <Button disabled={action.disabled} loading={action.loading} onPress={action.onPress} variant={action.variant}>{action.label}</Button>;
+  return <Button accessibilityLabel={action.accessibilityLabel} disabled={action.disabled} loading={action.loading} onPress={action.onPress} variant={action.variant}>{action.label}</Button>;
 }
 
 function Notice({ notice }: Readonly<{ notice: NonNullable<SimulationSurfaceProjection["notice"]> }>) {
-  return <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text style={styles.noticeText}>{notice.message}</Text></View>;
+  return <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, styles[notice.tone]]}><Text style={styles.noticeText}>{notice.message}</Text></View>;
 }
 
 function Question({ locked, onChange, question }: Readonly<{ locked: boolean; onChange?: (change: SimulationResponseChange) => void; question: NonNullable<SimulationSurfaceProjection["question"]> }>) {
@@ -69,12 +70,13 @@ function Question({ locked, onChange, question }: Readonly<{ locked: boolean; on
 
 function ResponseControl({ control, disabled, onChange }: Readonly<{ control: SimulationResponseControl; disabled: boolean; onChange?: (change: SimulationResponseChange) => void }>) {
   if (control.kind === "choice") {
-    return <View style={styles.controls}>{control.options.map((option) => <Button disabled={disabled} key={option.id} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} variant={option.selected ? "primary" : "secondary"}>{option.label}</Button>)}</View>;
+    const role = control.selectionMode === "single" ? "radio" : "checkbox";
+    return <View style={styles.controls}>{control.options.map((option) => <Button accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} variant={option.selected ? "primary" : "secondary"}>{option.label}</Button>)}</View>;
   }
   if (control.kind === "ordering") {
-    return <View style={styles.controls}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} variant="secondary">Up</Button><Button disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} variant="secondary">Down</Button></View></View>)}</View>;
+    return <View style={styles.controls}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} variant="secondary">Up</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} variant="secondary">Down</Button></View></View>)}</View>;
   }
-  return <View style={styles.controls}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => <Button disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} variant={dimension.selectedValue === value ? "primary" : "secondary"}>{value}</Button>)}</View></View>)}</View>;
+  return <View style={styles.controls}>{control.dimensions.map((dimension) => <View key={dimension.id} style={styles.dimension}><Text style={styles.dimensionLabel}>{dimension.label}</Text><View style={styles.valueRow}>{dimension.values.map((value) => { const selected = dimension.selectedValue === value; return <Button accessibilityLabel={complexityValueAccessibilityLabel(dimension.label, value)} accessibilityRole="radio" accessibilityState={{ checked: selected }} disabled={disabled} key={value} onPress={() => onChange?.({ dimensionId: dimension.id, kind: "complexity", value })} variant={selected ? "primary" : "secondary"}>{value}</Button>; })}</View></View>)}</View>;
 }
 
 function Confirmation({ confirmation }: Readonly<{ confirmation: NonNullable<SimulationSurfaceProjection["confirmation"]> }>) {
@@ -104,7 +106,7 @@ const styles = StyleSheet.create({
   neutral: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.border },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
   orderLabel: { ...typography.small, color: colors.dark.textPrimary, flex: 1 },
-  orderRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  orderRow: { alignItems: "flex-start", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   prompt: { ...typography.body, color: colors.dark.textPrimary },
   success: { backgroundColor: colors.dark.successSoft, borderColor: colors.dark.success },
   title: { ...typography.title, color: colors.dark.textPrimary },

@@ -1,0 +1,74 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+import {
+  complexityValueAccessibilityLabel,
+  orderingMoveAccessibilityLabel,
+} from "../src/features/algorithms/session/sessionAccessibility";
+
+const source = (path: string) => readFileSync(path, "utf8");
+
+test("session control labels identify the dimension, ordering position, and command", () => {
+  assert.equal(orderingMoveAccessibilityLabel("Partition around the pivot", 2, 5, "up"), "Move Partition around the pivot, position 3 of 5, up");
+  assert.equal(orderingMoveAccessibilityLabel("Merge the runs", 4, 5, "down"), "Move Merge the runs, position 5 of 5, down");
+  assert.equal(complexityValueAccessibilityLabel("Worst case time", "O(n log n)"), "Worst case time: O(n log n)");
+});
+
+test("interactive Algorithms session controls use real 48-point minimum geometry without hit-area substitutes", () => {
+  const button = source("src/components/Button.tsx");
+  const practiceControls = source("src/features/practice/PracticeResponseControls.tsx");
+  const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
+  const navigator = source("src/features/simulation/SimulationNavigator.tsx");
+  const surfaces = `${practiceControls}\n${feedback}\n${navigator}`;
+
+  assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
+  assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
+  assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
+  assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
+  assert.match(navigator, /position:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
+  assert.doesNotMatch(surfaces, /hitSlop/);
+  assert.doesNotMatch(surfaces, /(?:moveButton|valueOption|detailsToggle|position):\s*\{[^}]*(?:height|width):\s*(?:32|36|40)\b/);
+});
+
+test("canonical session surfaces expose deterministic state and do not group interactive descendants", () => {
+  const button = source("src/components/Button.tsx");
+  const shell = source("src/features/algorithms/session/SessionShell.tsx");
+  const practice = source("src/features/practice/PracticeResponseControls.tsx");
+  const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
+  const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
+  const navigator = source("src/features/simulation/SimulationNavigator.tsx");
+
+  assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
+  assert.match(practice, /orderingMoveAccessibilityLabel\(elementLabel, index, total, direction\)/);
+  assert.match(practice, /accessibilityLabel=\{option\.text\}/);
+  assert.match(practice, /accessibilityState=\{\{ checked: selected, disabled: !editable \}\}/);
+  assert.match(practice, /accessibilityValue=\{correctness \? \{ text: correctness \} : undefined\}/);
+  assert.match(simulation, /accessibilityLabel=\{option\.label\} accessibilityRole=\{role\} accessibilityState=\{\{ checked: option\.selected \}\}/);
+  assert.match(simulation, /accessibilityRole="radio" accessibilityState=\{\{ checked: selected \}\}/);
+  assert.match(practiceSurface, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(simulation, /accessible accessibilityLabel=\{notice\.message\} accessibilityLiveRegion="polite" accessibilityRole="alert"/);
+  assert.match(shell, /accessibilityLabel=\{timer\?\.accessibilityLabel\} accessibilityRole=\{timer \? "timer" : undefined\}/);
+  assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);
+  assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : "Session progress"\}/);
+  assert.match(shell, /accessibilityRole=\{verifiedProgress === null \? undefined : "progressbar"\}/);
+  assert.doesNotMatch(navigator, /accessibilityRole="summary"|Interview Simulation navigator/);
+  assert.match(navigator, /accessibilityState=\{\{ disabled, selected: position\.state === "current" \}\}/);
+  assert.doesNotMatch(practice, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.stack\}/);
+  assert.doesNotMatch(simulation, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.controls\}/);
+  assert.doesNotMatch(navigator, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.grid\}/);
+});
+
+test("large text can grow session chrome and controls without fixed interactive heights", () => {
+  const shell = source("src/features/algorithms/session/SessionShell.tsx");
+  const practice = source("src/features/practice/PracticeResponseControls.tsx");
+  const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
+
+  assert.match(shell, /topBar:\s*\{[\s\S]*?minHeight:\s*56/);
+  assert.doesNotMatch(shell, /numberOfLines=\{?1\}?/);
+  assert.doesNotMatch(shell, /topBar:\s*\{[^}]*\bheight:\s*56/);
+  assert.match(practice, /orderRow:\s*\{[^}]*alignItems:\s*"flex-start"/);
+  assert.match(practice, /orderRow:\s*\{[^}]*flexWrap:\s*"wrap"/);
+  assert.match(simulation, /orderRow:\s*\{[^}]*alignItems:\s*"flex-start"/);
+  assert.match(simulation, /orderRow:\s*\{[^}]*flexWrap:\s*"wrap"/);
+});

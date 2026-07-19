@@ -66,6 +66,12 @@ export function isPracticeActionPending(phase: PracticeSurfacePhase): boolean {
   return phase === "submitting_before_journal" || phase === "commit_pending" || phase === "advancing" || phase === "abandoning";
 }
 
+export function practiceOptionCorrectnessValue(state: PracticeOptionState): string | undefined {
+  if (state === "correct" || state === "omitted_correct") return "Correct response";
+  if (state === "incorrect") return "Incorrect response";
+  return undefined;
+}
+
 /**
  * Applies only UI-ephemeral selection or application-provided feedback states
  * to a renderer projection. It never reads accepted answers or scores.

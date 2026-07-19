@@ -3,14 +3,15 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Screen } from "../../../components";
 import { colors, spacing, typography } from "../../../theme";
+import type { SessionMetricPresentation } from "./sessionAccessibility";
 
 type SessionShellProps = Readonly<{
   actionBar?: ReactNode;
   children: ReactNode;
   modeLabel?: string;
-  positionLabel?: string;
+  position?: SessionMetricPresentation;
   progress?: number;
-  timerLabel?: string;
+  timer?: SessionMetricPresentation;
 }>;
 
 /**
@@ -23,9 +24,9 @@ export function SessionShell({
   actionBar,
   children,
   modeLabel,
-  positionLabel,
+  position,
   progress,
-  timerLabel,
+  timer,
 }: SessionShellProps) {
   const verifiedProgress = typeof progress === "number" && Number.isFinite(progress)
     ? Math.min(1, Math.max(0, progress))
@@ -34,18 +35,18 @@ export function SessionShell({
   return (
     <Screen edges={["top", "bottom"]} footer={actionBar ? <View style={styles.actionRegion}>{actionBar}</View> : undefined} style={styles.content}>
       <View style={styles.topBar}>
-        <View accessibilityElementsHidden={!timerLabel} accessibilityLabel={timerLabel ? `Active time remaining ${timerLabel}` : undefined} importantForAccessibility={timerLabel ? "auto" : "no-hide-descendants"} style={styles.topSlot}>
-          {timerLabel ? <Text style={styles.topText}>{timerLabel}</Text> : null}
+        <View accessible={Boolean(timer)} accessibilityElementsHidden={!timer} accessibilityLabel={timer?.accessibilityLabel} accessibilityRole={timer ? "timer" : undefined} importantForAccessibility={timer ? "yes" : "no-hide-descendants"} style={styles.topSlot}>
+          {timer ? <Text style={styles.topText}>{timer.label}</Text> : null}
         </View>
         <View style={styles.modeSlot}>
-          {modeLabel ? <Text numberOfLines={1} style={styles.modeText}>{modeLabel}</Text> : null}
+          {modeLabel ? <Text style={styles.modeText}>{modeLabel}</Text> : null}
         </View>
-        <View accessibilityElementsHidden={!positionLabel} importantForAccessibility={positionLabel ? "auto" : "no-hide-descendants"} style={[styles.topSlot, styles.positionSlot]}>
-          {positionLabel ? <Text style={styles.topText}>{positionLabel}</Text> : null}
+        <View accessible={Boolean(position)} accessibilityElementsHidden={!position} accessibilityLabel={position?.accessibilityLabel} importantForAccessibility={position ? "yes" : "no-hide-descendants"} style={[styles.topSlot, styles.positionSlot]}>
+          {position ? <Text style={styles.topText}>{position.label}</Text> : null}
         </View>
       </View>
-      <View accessibilityElementsHidden={verifiedProgress === null} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "auto"} style={styles.progressTrack}>
-        {verifiedProgress === null ? null : <View accessibilityRole="progressbar" accessibilityValue={{ max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
+      <View accessible={verifiedProgress !== null} accessibilityElementsHidden={verifiedProgress === null} accessibilityLabel={verifiedProgress === null ? undefined : "Session progress"} accessibilityRole={verifiedProgress === null ? undefined : "progressbar"} accessibilityValue={verifiedProgress === null ? undefined : { max: 100, min: 0, now: Math.round(verifiedProgress * 100) }} importantForAccessibility={verifiedProgress === null ? "no-hide-descendants" : "yes"} style={styles.progressTrack}>
+        {verifiedProgress === null ? null : <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
       </View>
       {children}
     </Screen>
@@ -87,9 +88,11 @@ const styles = StyleSheet.create({
   topBar: {
     alignItems: "center",
     flexDirection: "row",
-    height: 56,
+    minHeight: 56,
+    paddingVertical: spacing.sm,
   },
   topSlot: {
+    flexShrink: 1,
     justifyContent: "center",
     minWidth: 72,
   },

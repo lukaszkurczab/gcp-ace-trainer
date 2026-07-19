@@ -1,3 +1,5 @@
+import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
+
 /**
  * Presentation-only contract for the canonical Algorithms Interview
  * Simulation surface. The application lifecycle owns every transition,
@@ -103,10 +105,10 @@ export type SimulationSurfaceProjection = Readonly<{
   notice?: SimulationNotice;
   onOccurrencePress?: (occurrenceId: string) => void;
   onResponseChange?: (change: SimulationResponseChange) => void;
-  positionLabel?: string;
+  position?: SessionMetricPresentation;
   progress?: number;
   question?: SimulationQuestionProjection;
   state: SimulationSurfaceState;
-  timerLabel?: string;
+  timer?: SessionMetricPresentation;
   title: string;
 }>;
