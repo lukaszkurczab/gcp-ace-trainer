@@ -18,9 +18,10 @@ test("Practice presentation never discloses feedback before the durable feedback
   }
 });
 
-test("Practice presentation permits response edits only while unanswered", () => {
+test("Practice presentation permits response edits before a journal exists", () => {
   assert.equal(allowsPracticeResponseEditing("unanswered"), true);
-  for (const phase of ["preparing", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "feedback", "advancing", "advance_failed", "completed", "abandoning"] as const) {
+  assert.equal(allowsPracticeResponseEditing("submit_journal_failed"), true);
+  for (const phase of ["preparing", "submitting_before_journal", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "feedback", "advancing", "advance_failed", "completed", "abandoning"] as const) {
     assert.equal(allowsPracticeResponseEditing(phase), false, phase);
   }
 });

@@ -1,4 +1,4 @@
-import { canPersistTrainingSessionDraft, createTrainingSessionDraft, type TrainingSessionDraft } from "../../domain";
+import { canPersistTrainingSessionDraft, createTrainingSessionDraft, StaleDraftRevisionError, type TrainingSessionDraft } from "../../domain";
 import { canonicalSerialize } from "../../infrastructure/identity/canonicalSerialization";
 import { STORAGE_KEYS } from "../keys";
 import { readCanonicalEnvelope, readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./canonicalRecordCodec";
@@ -33,7 +33,7 @@ export async function saveTrainingSessionDraft(draft: TrainingSessionDraft, expe
     throw new Error("A different training session draft is already active.");
   }
   const previousRevision = existing?.revision ?? null;
-  if (expectedRevision !== previousRevision) throw new Error("Training session draft expected revision is stale.");
+  if (expectedRevision !== previousRevision) throw new StaleDraftRevisionError(expectedRevision, previousRevision);
   const nextRevision = (previousRevision ?? 0) + 1;
   const durable = createTrainingSessionDraft({ ...draft, revision: nextRevision });
   if (await getActiveMutationJournal()) throw new Error("Training session draft cannot change while a durable mutation is pending.");

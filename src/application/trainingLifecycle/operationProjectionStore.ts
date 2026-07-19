@@ -1,5 +1,10 @@
 import type { DurableOperationState } from "./durableOperationState";
 
+export type OperationProjectionReconstruction = Readonly<{
+  sessionId: string;
+  state: DurableOperationState;
+}>;
+
 /** Application-owned observable state; presentation only subscribes and renders. */
 export class OperationProjectionStore {
   private readonly values = new Map<string, DurableOperationState>();
@@ -14,4 +19,9 @@ export class OperationProjectionStore {
   set(sessionId: string, value: DurableOperationState): this { this.publish(sessionId, value); return this; }
   get(sessionId: string): DurableOperationState | undefined { return this.values.get(sessionId); }
   clear(sessionId: string): void { this.values.delete(sessionId); }
+  /** Durable reconstruction wins over an older transient in-memory publication. */
+  reconstruct(input: OperationProjectionReconstruction): DurableOperationState {
+    this.publish(input.sessionId, input.state);
+    return input.state;
+  }
 }

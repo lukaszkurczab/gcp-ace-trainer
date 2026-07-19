@@ -22,7 +22,7 @@ import {
   type TrainingLifecyclePorts,
 } from "../trainingLifecycle";
 import { bundledContentAvailabilityPort } from "../../content/application";
-import { getTrackRegistration, type ReviewQueueEntry, type TrainingSession } from "../../domain";
+import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession } from "../../domain";
 import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
@@ -68,7 +68,25 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
       async saveDraft(input) { await saveTrainingSessionDraft(input.draft, input.expectedPreviousRevision); },
       async getPendingMutation() {
         const pending = await getActiveMutationJournal();
-        return pending ? { operation: pending.operation, sessionId: pending.sessionId } : null;
+        if (!pending) return null;
+        const attempt = pending.writes.find((write): write is Extract<typeof pending.writes[number], { kind: "put_attempt" }> => write.kind === "put_attempt");
+        const reviews: ReviewMutationCommand[] = [];
+        for (const write of pending.writes) {
+          if (write.kind === "put_review_entry" || write.kind === "put_review_entry_for_attempt" || write.kind === "update_review_entry") {
+            reviews.push({ kind: "upsert", entry: write.record, transitionAttemptId: write.kind === "put_review_entry" ? write.record.sourceAttemptId : write.transitionId });
+          }
+          if (write.kind === "delete_review_entry" || write.kind === "delete_review_entry_for_attempt") {
+            reviews.push({ kind: "remove", entry: write.record, ...(write.kind === "delete_review_entry_for_attempt" ? { transitionAttemptId: write.transitionId } : {}) });
+          }
+        }
+        const frozenDraft = pending.writes.find((write): write is Extract<typeof pending.writes[number], { kind: "delete_active_session_draft" }> => write.kind === "delete_active_session_draft");
+        const result = pending.writes.find((write): write is Extract<typeof pending.writes[number], { kind: "put_session_result" }> => write.kind === "put_session_result");
+        return Object.freeze({
+          operation: pending.operation, status: pending.status, sessionId: pending.sessionId, trackId: pending.trackId,
+          commandFingerprint: pending.commandIdentity.fingerprint, planFingerprint: pending.planFingerprint,
+          ...(attempt ? { practiceOutcome: Object.freeze({ attempt: attempt.record, submittedResponse: attempt.record.response, reviewMutations: Object.freeze(reviews) }) } : {}),
+          ...(frozenDraft && result ? { simulationFinalization: Object.freeze({ frozenDraftRevision: frozenDraft.record.revision, resultId: result.record.id }) } : {}),
+        });
       },
     },
     mutations: {

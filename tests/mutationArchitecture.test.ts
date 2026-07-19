@@ -19,6 +19,17 @@ test("one journal contract, materializer, verifier, and coordinator remain", () 
   assert.match(read("src/application/learningMutations/recoverPendingMutation.ts"), /export async function recoverPendingMutation/);
 });
 
+test("mutation failure has one boundary owner and presentation cannot recreate durable state", () => {
+  const source = files("src").map(read).join("\n");
+  assert.equal((source.match(/class MutationCommitFailure/g) ?? []).length, 1);
+  assert.doesNotMatch(read("src/application/trainingLifecycle/contracts.ts"), /MutationCommitFailure|MutationCommitPhase|journalDurable/);
+  assert.doesNotMatch(read("src/application/learningMutations/commitMutation.ts"), /trainingLifecycle\/contracts/);
+  const screen = read("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx");
+  assert.doesNotMatch(screen, /type Operation|setOperation|finalizationFailure|abandonmentFailure|unavailableState|message\.toLowerCase|message\.includes|error\.message ===/);
+  assert.doesNotMatch(screen, /OperationProjectionStore/);
+  for (const path of files("src/features")) assert.doesNotMatch(read(path), /from\s+["'][^"']*(?:storage\/repositories|infrastructure\/storage)[^"']*["']/);
+});
+
 test("features and track semantics cannot import storage or repository implementations", () => {
   for (const path of [...files("src/features"), ...files("src/tracks")]) {
     const source = read(path);

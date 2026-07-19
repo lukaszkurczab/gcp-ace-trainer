@@ -38,6 +38,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
     omittedCorrectOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
   }> | null;
+  response: Readonly<{ source: "local" | "committed" | "materialized"; value: AlgorithmResponse }> | null;
 }>;
 
 export type AlgorithmsSimulationProjection = Readonly<{
@@ -113,10 +114,14 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
-  const attempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
+  const lifecycle = getTrainingLifecycleUseCases();
+  const pending = await lifecycle.getPendingMutationProjection(session.id);
+  const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
+  const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
+  const attempt = materializedAttempt ?? committedAttempt;
   const response = (attempt?.response ?? null) as AlgorithmResponse | null;
   const feedback = attempt ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> }) : null;
-  const operation = await getTrainingLifecycleUseCases().getPracticeOperationState(session, Boolean(attempt));
+  const operation = await lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt));
   return Object.freeze({
     kind: "practice",
     operation,
@@ -127,6 +132,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
     constraints: Object.freeze([...(question.constraints ?? [])]),
     interaction: buildAlgorithmInteractionViewModel(question, response),
     feedback,
+    response: response ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: response }) : null,
   });
 }
 

@@ -1,6 +1,7 @@
 import type { TrackId } from "../../domain";
 import type { PreparedSession } from "./contracts";
 import type { TrainingLifecycleUseCases } from "./TrainingLifecycleUseCases";
+import type { DurableOperationState } from "./durableOperationState";
 
 export type StartTrainingSessionCommand = Readonly<{
   trackId: TrackId;
@@ -30,4 +31,13 @@ export async function startTrainingSession(command: StartTrainingSessionCommand)
 
 export async function resumeActiveTrainingSession() {
   return getTrainingLifecycleUseCases().resumeActiveSession();
+}
+
+/** Presentation-facing observable application read model. */
+export function getTrainingOperationProjection(sessionId: string): DurableOperationState | null {
+  return getTrainingLifecycleUseCases().getOperationProjection(sessionId);
+}
+
+export function subscribeTrainingOperationProjection(sessionId: string, listener: (value: DurableOperationState) => void): () => void {
+  return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, listener);
 }

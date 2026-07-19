@@ -333,6 +333,16 @@ export async function updateMutationJournalPhase(record: MutationJournalRecord, 
   return inJournalCriticalSection(async () => {
     const current = await getActiveMutationJournal();
     if (!current || current.commandIdentity.fingerprint !== record.commandIdentity.fingerprint) throw new JournalWriteError(new Error("Pending mutation ownership changed."));
+    // The plan fingerprint is computed over the immutable operation, scope,
+    // command, expected revisions and write set with status normalized.
+    if (current.planFingerprint !== record.planFingerprint || current.journalId !== record.journalId ||
+      current.operation !== record.operation || current.sessionId !== record.sessionId || current.trackId !== record.trackId) {
+      throw new JournalWriteError(new Error("Pending mutation plan ownership changed."));
+    }
+    const phases: readonly MutationJournalRecord["status"][] = ["journal_durable", "materialized", "verified_pending_clear"];
+    const from = phases.indexOf(current.status);
+    const to = phases.indexOf(status);
+    if (from < 0 || to !== from + 1) throw new JournalWriteError(new Error("Mutation journal phase transition is not monotonic."));
     const updated = { ...current, status } as MutationJournalRecord;
     writeCanonicalJson(STORAGE_KEYS.ACTIVE_JOURNAL, updated);
     return updated;

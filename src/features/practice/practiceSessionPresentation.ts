@@ -1,16 +1,5 @@
-export type PracticeSurfacePhase =
-  | "preparing"
-  | "unanswered"
-  | "submitting_before_journal"
-  | "submit_journal_failed"
-  | "commit_pending"
-  | "commit_materialization_failed"
-  | "commit_verification_failed"
-  | "feedback"
-  | "advancing"
-  | "advance_failed"
-  | "completed"
-  | "abandoning";
+import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
+export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
 export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct";
 
@@ -70,7 +59,7 @@ export function allowsPracticeFeedback(phase: PracticeSurfacePhase): boolean {
 }
 
 export function allowsPracticeResponseEditing(phase: PracticeSurfacePhase): boolean {
-  return phase === "unanswered";
+  return phase === "unanswered" || phase === "submit_journal_failed";
 }
 
 export function isPracticeActionPending(phase: PracticeSurfacePhase): boolean {

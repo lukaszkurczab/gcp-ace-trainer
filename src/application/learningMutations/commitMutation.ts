@@ -2,9 +2,7 @@ import { clearMutationJournal, persistMutationJournal, updateMutationJournalPhas
 import type { MutationJournalRecord } from "../../storage/repositories/mutationJournalRepository";
 import { materializeMutation } from "./mutationMaterializer";
 import { verifyMutation } from "./mutationVerifier";
-import { MutationCommitFailure, type MutationCommitPhase } from "../mutationBoundary";
-export { MutationCommitFailure } from "../mutationBoundary";
-export type { MutationCommitPhase } from "../mutationBoundary";
+import { MutationCommitFailure } from "../mutationBoundary";
 
 export async function commitMutation(record: MutationJournalRecord): Promise<void> {
   let prepared: MutationJournalRecord;

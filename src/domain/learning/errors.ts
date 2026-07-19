@@ -39,3 +39,11 @@ export class MissingContentItemError extends Error {
     this.name = "MissingContentItemError";
   }
 }
+
+/** Typed optimistic-concurrency failure; callers must never classify its copy. */
+export class StaleDraftRevisionError extends Error {
+  constructor(readonly expectedRevision: number | null, readonly actualRevision: number | null) {
+    super("Training session draft expected revision is stale.");
+    this.name = "StaleDraftRevisionError";
+  }
+}

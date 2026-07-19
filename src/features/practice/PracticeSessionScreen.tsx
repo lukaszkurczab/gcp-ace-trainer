@@ -91,11 +91,14 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   });
   const primaryAction = getPracticePrimaryAction({ hasLocalResponse: localResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
 
-  const refresh = async () => {
+  async function refresh() {
     const next = await getAlgorithmsPracticeProjection();
-    if (next.operation.kind !== "submit_journal_failed") setLocalResponse(null);
+    if (next.operation.kind === "unanswered" || next.operation.kind === "submit_journal_failed") {
+      // A pre-journal retry preserves the user-owned editable response. Every
+      // committed response is supplied by the projection, never guessed here.
+    } else setLocalResponse(null);
     setState({ kind: "session", projection: next });
-  };
+  }
 
   async function submit() {
     if (!localResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;

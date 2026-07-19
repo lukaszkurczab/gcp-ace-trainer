@@ -4,18 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppState } from "react-native";
 
 import {
-  abandonAlgorithmsSession,
-  enterAlgorithmsSimulationForeground,
-  finalizeAlgorithmsSimulation,
-  getAlgorithmsSimulationProjection,
-  leaveAlgorithmsSimulationForeground,
-  navigateAlgorithmsSimulationTo,
-  saveAlgorithmsSimulationResponse,
-  startAlgorithmsSession,
-  subscribeAlgorithmsSimulationProjectionRefresh,
-  type AlgorithmsSimulationProjection,
+  abandonAlgorithmsSession, enterAlgorithmsSimulationForeground, finalizeAlgorithmsSimulation,
+  getAlgorithmsSimulationScreenProjection, leaveAlgorithmsSimulationForeground,
+  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, startAlgorithmsSession,
+  subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
+  type AlgorithmsSimulationScreenProjection,
 } from "../../application/algorithms";
-import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
+import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import type { SimulationQuestionProjection, SimulationResponseChange, SimulationSurfaceProjection } from "./simulationProjection";
@@ -23,295 +18,97 @@ import { SimulationSessionSurface } from "./SimulationSessionSurface";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
 type SimulationResponse = Parameters<typeof saveAlgorithmsSimulationResponse>[0]["response"];
-type Operation = "idle" | "saving" | "finalizing" | "abandoning";
 type Overlay = "none" | "finish" | "leave" | "abandon";
 
-/** Canonical route controller: it only requests projections and dispatches application commands. */
+/** This route owns only selection and confirmation overlays. Durable state comes from the application projection. */
 export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props) {
-  const [projection, setProjection] = useState<AlgorithmsSimulationProjection | null>(null);
+  const [screen, setScreen] = useState<AlgorithmsSimulationScreenProjection | null>(null);
   const [localResponse, setLocalResponse] = useState<SimulationResponse | null>(null);
-  const [operation, setOperation] = useState<Operation>("idle");
   const [overlay, setOverlay] = useState<Overlay>("none");
-  const [failure, setFailure] = useState<string | null>(null);
-  const [finalizationFailure, setFinalizationFailure] = useState<string | null>(null);
-  const [abandonmentFailure, setAbandonmentFailure] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      const next = await getAlgorithmsSimulationProjection();
-      setProjection(next);
-      setFailure(null);
-    } catch (error) {
-      setFailure(messageFor(error));
-    }
-  }, []);
+  const load = useCallback(async () => setScreen(await getAlgorithmsSimulationScreenProjection()), []);
 
   useFocusEffect(useCallback(() => {
     void start();
     return () => { void leaveAlgorithmsSimulationForeground().catch(() => undefined); };
-  // Foreground ownership is application-owned; this route only signals focus.
+  // Start is intentionally owned by the validated application facade.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [load, route.params.profileId]));
-
+  }, [route.params.profileId]));
   useEffect(() => {
-    const subscription = AppState.addEventListener("change", (state) => {
-      const command = state === "active" ? enterAlgorithmsSimulationForeground : leaveAlgorithmsSimulationForeground;
-      void command().then(() => load()).catch((error) => setFailure(messageFor(error)));
+    const listener = AppState.addEventListener("change", (state) => {
+      void (state === "active" ? enterAlgorithmsSimulationForeground() : leaveAlgorithmsSimulationForeground()).then(load).catch(load);
     });
-    return () => subscription.remove();
+    return () => listener.remove();
   }, [load]);
-
   useEffect(() => subscribeAlgorithmsSimulationProjectionRefresh((event) => {
-    if (event.kind === "expired") {
-      navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "timeout", sessionId: event.sessionId });
-      return;
-    }
-    void load();
+    if (event.kind === "expired") navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "timeout", sessionId: event.sessionId });
+    else void load();
   }), [load, navigation]);
-
+  const sessionId = screen?.kind === "ready" ? screen.projection.session.id : null;
+  useEffect(() => sessionId ? subscribeTrainingOperationProjection(sessionId, () => { void load(); }) : undefined, [load, sessionId]);
   useEffect(() => {
-    if (!projection || localResponse !== null) return;
-    setLocalResponse(responseFromProjection(projection));
-  }, [localResponse, projection]);
-
-  const surface = useMemo<SimulationSurfaceProjection>(() => {
-    if (!projection) {
-      return {
-        state: failure ? unavailableState(failure) : "preparing",
-        title: failure ? "Interview Simulation unavailable" : "Preparing Interview Simulation",
-        notice: { tone: failure ? "error" : "neutral", message: failure ?? "Checking the required 40 unique items and creating your draft." },
-        actions: failure ? { primary: { label: "Try again", onPress: () => { void start(); } }, secondary: { label: "Back", onPress: () => navigation.goBack(), variant: "secondary" } } : undefined,
-      };
-    }
-
-    const response = localResponse ?? responseFromProjection(projection);
-    const changed = !sameResponse(response, responseFromProjection(projection));
-    const currentOccurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
-    const activeState = operation === "saving" ? "saving" : failure ? "save_failed" : "editable";
-    const activeNotice = operation === "saving"
-      ? { tone: "neutral" as const, message: "Saving…" }
-      : failure
-        ? { tone: "error" as const, message: "The response was not saved. Your last saved draft is unchanged." }
-        : changed
-          ? { tone: "neutral" as const, message: "Not saved yet" }
-          : response === null
-            ? { tone: "neutral" as const, message: "No saved response" }
-            : { tone: "success" as const, message: "Saved" };
-
-    if (operation === "finalizing") return {
-      state: "finalizing",
-      title: "Interview Simulation",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      navigator: frozenNavigator(projection),
-      notice: { tone: "neutral", message: "Finalizing session…" },
-    };
-
-    if (finalizationFailure) return {
-      state: "finalization_failed",
-      title: "Finalization recovery required",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      navigator: frozenNavigator(projection),
-      notice: { tone: "error", message: `Finalization did not complete. The frozen session can be retried safely. ${finalizationFailure}` },
-      actions: { primary: { label: "Retry finalization", onPress: () => { void finish(); } } },
-    };
-
-    if (overlay === "finish") return {
-      state: "finish_confirmation",
-      title: "Finish Interview Simulation",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      navigator: navigator(projection),
-      confirmation: {
-        title: "Finish with unanswered questions?",
-        description: `${projection.navigator.filter((position) => position.answered).length} answered. ${projection.navigator.filter((position) => !position.answered).length} unanswered questions receive zero points.`,
-        secondary: { label: "Keep working", onPress: () => setOverlay("none"), variant: "secondary" },
-        primary: { label: "Finish simulation", onPress: () => { void finish(); } },
-      },
-    };
-
-    if (overlay === "leave") return {
-      state: "leave_confirmation",
-      title: "Leave Interview Simulation",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      confirmation: {
-        title: "Leave and resume later?",
-        description: "Leaving preserves this active session and its latest durable draft for resume.",
-        secondary: { label: "Continue simulation", onPress: () => setOverlay("none"), variant: "secondary" },
-        primary: { label: "Leave and resume later", onPress: () => navigation.goBack() },
-      },
-    };
-
-    if (overlay === "abandon") return {
-      state: operation === "abandoning" ? "abandoning" : "abandon_confirmation",
-      title: "Abandon Interview Simulation",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      confirmation: {
-        title: "Abandon this simulation?",
-        description: "Abandoning ends resumability and discards unsaved local changes. Durable records remain unchanged.",
-        secondary: { label: "Keep session", disabled: operation === "abandoning", onPress: () => { setOverlay("none"); setAbandonmentFailure(null); }, variant: "secondary" },
-        primary: { label: "Abandon simulation", loading: operation === "abandoning", onPress: () => { void abandon(); }, variant: "destructive" },
-      },
-      ...(abandonmentFailure ? { notice: { tone: "error" as const, message: `Abandonment did not complete. The session remains resumable. ${abandonmentFailure}` } } : {}),
-    };
-
-    return {
-      state: activeState,
-      title: "Interview Simulation",
-      modeLabel: "Interview Simulation",
-      positionLabel: `${projection.position.current} of ${projection.position.total}`,
-      progress: projection.position.current / projection.position.total,
-      timerLabel: timerLabel(projection.remainingForegroundMs),
-      notice: activeNotice,
-      question: question(projection, response),
-      navigator: navigator(projection),
-      onOccurrencePress: (occurrenceId) => { void goTo(occurrenceId); },
-      onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
-      actions: changed
-        ? { primary: { label: "Save response", disabled: !isComplete(response, projection), loading: operation === "saving", onPress: () => { void save(); } }, secondary: { label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } }
-        : { primary: { label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
-    };
-  // Commands and navigation intentionally change identity when projection reloads.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abandonmentFailure, failure, finalizationFailure, localResponse, operation, overlay, projection]);
+    if (screen?.kind === "ready" && localResponse === null) setLocalResponse(responseFromProjection(screen.projection));
+  }, [localResponse, screen]);
 
   async function start() {
-    setFailure(null); setFinalizationFailure(null);
     try {
-      await startAlgorithmsSession({
-        modeId: "algorithms-interview-simulation",
-        requestedLength: 40,
-        scope: { simulationProfileId: route.params.profileId },
-        source: "algorithmsInterviewSimulation",
-      });
+      await startAlgorithmsSession({ modeId: "algorithms-interview-simulation", requestedLength: 40, scope: { simulationProfileId: route.params.profileId }, source: "algorithmsInterviewSimulation" });
       await enterAlgorithmsSimulationForeground();
-      await load();
-    } catch (error) {
-      if (error instanceof TrainingApplicationFailure && error.code === "active_session_conflict") {
-        try {
-          await enterAlgorithmsSimulationForeground();
-          await load();
-        } catch (resumeError) {
-          setFailure(messageFor(resumeError));
-        }
-        return;
-      }
-      setFailure(messageFor(error));
-    }
+    } catch { /* The projection maps canonical application failures. */ }
+    await load();
   }
-
   async function save() {
-    if (!projection || !localResponse) return;
-    const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
-    if (!occurrenceId) return setFailure("The current simulation occurrence is unavailable.");
-    setOperation("saving"); setFailure(null);
-    try { await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse }); await load(); }
-    catch (error) { setFailure(messageFor(error)); }
-    finally { setOperation("idle"); }
+    if (screen?.kind !== "ready" || !localResponse) return;
+    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
+    if (!occurrenceId) return;
+    try { await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse }); } catch { /* Durable state is published by lifecycle. */ }
+    await load();
   }
-
-  async function goTo(occurrenceId: string) {
-    if (!projection) return;
-    const position = projection.navigator.find((entry) => entry.occurrenceId === occurrenceId);
-    if (!position) return;
-    try { await navigateAlgorithmsSimulationTo(position.index); setLocalResponse(null); await load(); }
-    catch (error) { setFailure(messageFor(error)); }
-  }
-
+  async function goTo(index: number) { try { await navigateAlgorithmsSimulationTo(index); setLocalResponse(null); } catch { /* projection retains recovery state */ } await load(); }
   async function finish() {
-    setOperation("finalizing"); setFailure(null); setFinalizationFailure(null);
-    try {
-      await finalizeAlgorithmsSimulation();
-      if (projection) navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: projection.session.id });
-    } catch (error) { setFinalizationFailure(messageFor(error)); setOverlay("none"); }
-    finally { setOperation("idle"); }
+    if (screen?.kind !== "ready") return;
+    try { await finalizeAlgorithmsSimulation(); navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: screen.projection.session.id }); } catch { await load(); }
   }
+  async function abandon() { try { await abandonAlgorithmsSession(); navigation.goBack(); } catch { await load(); } }
 
-  async function abandon() {
-    setOperation("abandoning"); setFailure(null); setAbandonmentFailure(null);
-    try { await abandonAlgorithmsSession(); navigation.goBack(); }
-    catch (error) { setAbandonmentFailure(messageFor(error)); setOverlay("abandon"); }
-    finally { setOperation("idle"); }
-  }
-
+  const surface = useMemo<SimulationSurfaceProjection>(() => {
+    if (!screen) return { state: "preparing", title: "Preparing Interview Simulation", notice: { tone: "neutral", message: "Loading canonical session state…" } };
+    if (screen.kind === "unavailable") return unavailableSurface(screen.operation, () => { void start(); }, () => navigation.goBack());
+    const projection = screen.projection;
+    const operation = projection.operation;
+    const response = localResponse ?? responseFromProjection(projection);
+    if (overlay === "finish" && operation.kind === "editable") return confirmationSurface(projection, "finish_confirmation", "Finish with unanswered questions?", `${projection.navigator.filter((item) => item.answered).length} answered. Unanswered questions receive zero points.`, () => setOverlay("none"), () => { void finish(); });
+    if (overlay === "leave" && operation.kind === "editable") return confirmationSurface(projection, "leave_confirmation", "Leave and resume later?", "Leaving preserves the latest durable draft.", () => setOverlay("none"), () => navigation.goBack());
+    if (overlay === "abandon" && operation.kind === "editable") return confirmationSurface(projection, "abandon_confirmation", "Abandon this simulation?", "Abandoning ends resumability. Durable records remain available.", () => setOverlay("none"), () => { void abandon(); });
+    if (operation.kind !== "editable") return operationSurface(projection, operation, () => { void load(); });
+    const changed = !sameResponse(response, responseFromProjection(projection));
+    return {
+      state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", positionLabel: `${projection.position.current} of ${projection.position.total}`,
+      progress: projection.position.current / projection.position.total, timerLabel: timerLabel(projection.remainingForegroundMs),
+      notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
+      question: question(projection, response), navigator: navigator(projection),
+      onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
+      onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
+      actions: changed ? { primary: { label: "Save response", disabled: !isComplete(response, projection), onPress: () => { void save(); } }, secondary: { label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
+    };
+  // UI callbacks intentionally refresh with the current application projection.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localResponse, overlay, screen]);
   return <SimulationSessionSurface projection={surface} />;
 }
 
-function navigator(projection: AlgorithmsSimulationProjection) {
-  return projection.navigator.map((position) => ({ occurrenceId: position.occurrenceId, state: position.current ? "current" as const : position.answered ? "answered" as const : "unanswered" as const }));
+function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", positionLabel: `${projection.position.current} of ${projection.position.total}`, progress: projection.position.current / projection.position.total, timerLabel: timerLabel(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
+function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, recover: () => void): SimulationSurfaceProjection {
+  const state = operation.kind === "saving" ? "saving" : operation.kind === "stale_revision" ? "stale_revision" : operation.kind === "save_failed" ? "save_failed" : operation.kind === "frozen" ? "frozen" : operation.kind === "finalization_journal_pending" ? "finalization_journal_pending" : operation.kind === "finalization_journal_failed" ? "finalization_journal_failed" : operation.kind === "materializing" || operation.kind === "verifying" ? "finalizing" : operation.kind === "verification_failed" || operation.kind === "materialization_failed" || operation.kind === "verified_pending_clear" || operation.kind === "recovery_required" || operation.kind === "navigation_failed" || operation.kind === "abandonment_recovery_required" ? "recovering" : operation.kind === "abandoning" ? "abandoning" : operation.kind === "completed" ? "completed" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : "corrupt_state";
+  const error = "error" in operation ? operation.error : null;
+  return { ...base(projection), state, notice: { tone: error ? "error" : "neutral", message: error ? `Canonical operation requires ${error.allowedAction.replaceAll("_", " ")}.` : "Applying canonical operation…" }, ...(error?.allowedAction === "recover" ? { actions: { primary: { label: "Recover", onPress: recover } } } : {}) };
 }
-
-function frozenNavigator(projection: AlgorithmsSimulationProjection) {
-  return projection.navigator.map((position) => ({ occurrenceId: position.occurrenceId, state: "frozen" as const }));
-}
-
-function question(projection: AlgorithmsSimulationProjection, response: SimulationResponse | null): SimulationQuestionProjection {
-  const renderer = projection.interaction.renderer;
-  if (renderer.kind === "choice") {
-    const selected = response?.kind === "choice" ? new Set(response.selectedOptionIds) : new Set<string>();
-    return { prompt: projection.prompt, control: { kind: "choice", selectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single", options: renderer.options.map((option) => ({ id: option.id, label: option.text, selected: selected.has(option.id) })) } };
-  }
-  if (renderer.kind === "ordering") return { prompt: projection.prompt, control: { kind: "ordering", elements: renderer.elements.map((element) => ({ id: element.id, label: element.text })) } };
-  const selected = response?.kind === "complexity" ? response.selectedValuesByDimension : {};
-  return { prompt: projection.prompt, control: { kind: "complexity", dimensions: renderer.dimensions.map((dimension) => ({ id: dimension.id, label: dimension.id, selectedValue: selected[dimension.id], values: dimension.values })) } };
-}
-
-function responseFromProjection(projection: AlgorithmsSimulationProjection): SimulationResponse | null {
-  const renderer = projection.interaction.renderer;
-  if (renderer.kind === "choice") return renderer.options.some((option) => option.selected) ? { kind: "choice", selectedOptionIds: renderer.options.filter((option) => option.selected).map((option) => option.id) } : null;
-  if (renderer.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: renderer.elements.map((element) => element.id) };
-  const selected = Object.fromEntries(renderer.dimensions.flatMap((dimension) => dimension.selectedValue ? [[dimension.id, dimension.selectedValue]] : []));
-  return Object.keys(selected).length ? { kind: "complexity", selectedValuesByDimension: selected } : null;
-}
-
-function applyResponseChange(current: SimulationResponse | null, projection: AlgorithmsSimulationProjection, change: SimulationResponseChange): SimulationResponse {
-  const fallback = responseFromProjection(projection);
-  if (change.kind === "choice") {
-    const selected = new Set((current?.kind === "choice" ? current : fallback?.kind === "choice" ? fallback : { selectedOptionIds: [] }).selectedOptionIds);
-    const multiple = projection.interaction.accessibility.controls[0]?.role === "checkbox";
-    if (multiple) change.selected ? selected.add(change.optionId) : selected.delete(change.optionId);
-    else { selected.clear(); if (change.selected) selected.add(change.optionId); }
-    return { kind: "choice", selectedOptionIds: [...selected] };
-  }
-  if (change.kind === "ordering") {
-    const values = [...(current?.kind === "ordering" ? current.orderedSubgoalIds : fallback?.kind === "ordering" ? fallback.orderedSubgoalIds : [])];
-    const index = values.indexOf(change.elementId); const target = index + (change.movement === "up" ? -1 : 1);
-    if (index >= 0 && target >= 0 && target < values.length) [values[index], values[target]] = [values[target]!, values[index]!];
-    return { kind: "ordering", orderedSubgoalIds: values };
-  }
-  const base = current?.kind === "complexity" ? current.selectedValuesByDimension : fallback?.kind === "complexity" ? fallback.selectedValuesByDimension : {};
-  return { kind: "complexity", selectedValuesByDimension: { ...base, [change.dimensionId]: change.value } };
-}
-
-function isComplete(response: SimulationResponse | null, projection: AlgorithmsSimulationProjection): boolean {
-  if (!response) return false;
-  if (response.kind === "choice") return response.selectedOptionIds.length > 0;
-  if (response.kind === "ordering") {
-    return projection.interaction.renderer.kind === "ordering" && response.orderedSubgoalIds.length === projection.interaction.renderer.elements.length;
-  }
-  return projection.interaction.renderer.kind === "complexity" && projection.interaction.renderer.dimensions.every((dimension) => Boolean(response.selectedValuesByDimension[dimension.id]));
-}
-
-function sameResponse(left: SimulationResponse | null, right: SimulationResponse | null): boolean { return JSON.stringify(left) === JSON.stringify(right); }
-function timerLabel(remainingMs: number): string { const seconds = Math.max(0, Math.floor(remainingMs / 1000)); return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
-function messageFor(error: unknown): string { return error instanceof Error && error.message.trim() ? error.message : "The simulation could not continue safely."; }
-function unavailableState(message: string): "insufficient_content" | "missing_draft" | "version_mismatch" | "corrupt_state" {
-  const normalized = message.toLowerCase();
-  if (normalized.includes("draft")) return "missing_draft";
-  if (normalized.includes("version") || normalized.includes("fingerprint")) return "version_mismatch";
-  if (normalized.includes("40") || normalized.includes("pool") || normalized.includes("content")) return "insufficient_content";
-  return "corrupt_state";
-}
+function unavailableSurface(operation: Extract<SimulationDurableOperationState, { error: unknown }>, retry: () => void, back: () => void): SimulationSurfaceProjection { return { state: operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : "corrupt_state", title: "Interview Simulation unavailable", notice: { tone: "error", message: "Canonical simulation state is unavailable." }, actions: { primary: { label: "Try again", onPress: retry }, secondary: { label: "Back", onPress: back, variant: "secondary" } } }; }
+function confirmationSurface(projection: AlgorithmsSimulationProjection, state: "finish_confirmation" | "leave_confirmation" | "abandon_confirmation", title: string, description: string, cancel: () => void, confirm: () => void): SimulationSurfaceProjection { return { ...base(projection), state, confirmation: { title, description, secondary: { label: "Keep working", onPress: cancel, variant: "secondary" }, primary: { label: state === "abandon_confirmation" ? "Abandon simulation" : state === "finish_confirmation" ? "Finish simulation" : "Leave and resume later", onPress: confirm, ...(state === "abandon_confirmation" ? { variant: "destructive" as const } : {}) } } }; }
+function navigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, state: item.current ? "current" as const : item.answered ? "answered" as const : "unanswered" as const })); }
+function frozenNavigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, state: "frozen" as const })); }
+function question(projection: AlgorithmsSimulationProjection, response: SimulationResponse | null): SimulationQuestionProjection { const renderer = projection.interaction.renderer; if (renderer.kind === "choice") { const selected = response?.kind === "choice" ? new Set(response.selectedOptionIds) : new Set<string>(); return { prompt: projection.prompt, control: { kind: "choice", selectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single", options: renderer.options.map((option) => ({ id: option.id, label: option.text, selected: selected.has(option.id) })) } }; } if (renderer.kind === "ordering") return { prompt: projection.prompt, control: { kind: "ordering", elements: renderer.elements.map((item) => ({ id: item.id, label: item.text })) } }; const selected = response?.kind === "complexity" ? response.selectedValuesByDimension : {}; return { prompt: projection.prompt, control: { kind: "complexity", dimensions: renderer.dimensions.map((item) => ({ id: item.id, label: item.id, selectedValue: selected[item.id], values: item.values })) } }; }
+function responseFromProjection(projection: AlgorithmsSimulationProjection): SimulationResponse | null { const renderer = projection.interaction.renderer; if (renderer.kind === "choice") return renderer.options.some((item) => item.selected) ? { kind: "choice", selectedOptionIds: renderer.options.filter((item) => item.selected).map((item) => item.id) } : null; if (renderer.kind === "ordering") return { kind: "ordering", orderedSubgoalIds: renderer.elements.map((item) => item.id) }; const selected = Object.fromEntries(renderer.dimensions.flatMap((item) => item.selectedValue ? [[item.id, item.selectedValue]] : [])); return Object.keys(selected).length ? { kind: "complexity", selectedValuesByDimension: selected } : null; }
+function applyResponseChange(current: SimulationResponse | null, projection: AlgorithmsSimulationProjection, change: SimulationResponseChange): SimulationResponse { const fallback = responseFromProjection(projection); if (change.kind === "choice") { const selected = new Set((current?.kind === "choice" ? current : fallback?.kind === "choice" ? fallback : { selectedOptionIds: [] }).selectedOptionIds); if (projection.interaction.accessibility.controls[0]?.role === "checkbox") change.selected ? selected.add(change.optionId) : selected.delete(change.optionId); else { selected.clear(); if (change.selected) selected.add(change.optionId); } return { kind: "choice", selectedOptionIds: [...selected] }; } if (change.kind === "ordering") { const values = [...(current?.kind === "ordering" ? current.orderedSubgoalIds : fallback?.kind === "ordering" ? fallback.orderedSubgoalIds : [])]; const index = values.indexOf(change.elementId); const target = index + (change.movement === "up" ? -1 : 1); if (index >= 0 && target >= 0 && target < values.length) [values[index], values[target]] = [values[target]!, values[index]!]; return { kind: "ordering", orderedSubgoalIds: values }; } const values = current?.kind === "complexity" ? current.selectedValuesByDimension : fallback?.kind === "complexity" ? fallback.selectedValuesByDimension : {}; return { kind: "complexity", selectedValuesByDimension: { ...values, [change.dimensionId]: change.value } }; }
+function isComplete(response: SimulationResponse | null, projection: AlgorithmsSimulationProjection): boolean { if (!response) return false; if (response.kind === "choice") return response.selectedOptionIds.length > 0; if (response.kind === "ordering") return projection.interaction.renderer.kind === "ordering" && response.orderedSubgoalIds.length === projection.interaction.renderer.elements.length; return projection.interaction.renderer.kind === "complexity" && projection.interaction.renderer.dimensions.every((item) => Boolean(response.selectedValuesByDimension[item.id])); }
+function sameResponse(left: SimulationResponse | null, right: SimulationResponse | null) { return JSON.stringify(left) === JSON.stringify(right); }
+function timerLabel(remainingMs: number) { const seconds = Math.max(0, Math.floor(remainingMs / 1000)); return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }

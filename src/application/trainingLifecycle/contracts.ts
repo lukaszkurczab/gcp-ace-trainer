@@ -8,6 +8,7 @@ import type {
   TrainingSession,
   TrainingSessionDraft,
   TrainingSessionResult,
+  JournalOperation,
 } from "../../domain";
 
 export const APPLICATION_FAILURE_CODES = [
@@ -45,14 +46,6 @@ export class TrainingApplicationFailure extends Error {
   constructor(readonly code: ApplicationFailureCode, message: string, readonly cause?: unknown) {
     super(message);
     this.name = "TrainingApplicationFailure";
-  }
-}
-
-export type MutationCommitPhase = "journal" | "materialization" | "verification";
-export class MutationCommitFailure extends Error {
-  constructor(readonly phase: MutationCommitPhase, readonly journalDurable: boolean, readonly cause?: unknown) {
-    super(`Canonical mutation failed during ${phase}.`);
-    this.name = "MutationCommitFailure";
   }
 }
 
@@ -116,8 +109,24 @@ export interface TrainingLifecycleRepositoryPort {
   getDraft(sessionId: string): Promise<TrainingSessionDraft | null>;
   getResult(sessionId: string): Promise<TrainingSessionResult | null>;
   saveDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void>;
-  getPendingMutation?(): Promise<Readonly<{ operation: string; sessionId: string }> | null>;
+  getPendingMutation?(): Promise<PendingMutationProjection | null>;
 }
+
+/** The lifecycle receives a deliberate application projection, never a raw storage record. */
+export type PendingMutationProjection = Readonly<{
+  operation: JournalOperation;
+  status: "journal_durable" | "materialized" | "verified_pending_clear";
+  sessionId: string;
+  trackId: string;
+  commandFingerprint: string;
+  planFingerprint: string;
+  practiceOutcome?: Readonly<{
+    attempt: TrainingAttempt<unknown>;
+    submittedResponse: unknown;
+    reviewMutations: readonly ReviewMutationCommand[];
+  }>;
+  simulationFinalization?: Readonly<{ frozenDraftRevision: number; resultId: string }>;
+}>;
 
 /** The only application dependency allowed to mutate canonical records. */
 export interface TrainingMutationCoordinatorPort {

@@ -1,3 +1,4 @@
+import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { recoverPendingMutation } from "../learningMutations";
 import { canPersistTrainingSessionDraft } from "../../domain";
 import {
@@ -18,13 +19,21 @@ export type ApplicationBootstrapState =
 export async function bootstrapApplication(
   validateBundledContent: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void>,
-  prepareLifecycle: () => Promise<void> = async () => undefined,
+  prepareLifecycle?: () => Promise<void>,
 ): Promise<ApplicationBootstrapState> {
   try {
     await openCanonicalRepositories();
-    await recoverPendingMutation();
+    if (prepareLifecycle) {
+      await prepareLifecycle();
+      const lifecycle = getTrainingLifecycleUseCases();
+      const beforeRecovery = await getActiveTrainingSession();
+      if (beforeRecovery) await lifecycle.reconstructOperationProjection(beforeRecovery);
+      await lifecycle.recoverPendingJournal();
+    } else {
+      // Test-only/headless bootstrap has no lifecycle composition to install.
+      await recoverPendingMutation();
+    }
     await validateBundledContent();
-    await prepareLifecycle();
     const activeSession = await getActiveTrainingSession();
     const sessions = (await getTrainingSessions()).value;
     const activeRecords = sessions.filter((session) => session.status === "active");
