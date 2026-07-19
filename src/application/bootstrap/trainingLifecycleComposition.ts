@@ -1,4 +1,9 @@
-import { createAlgorithmsFamilyRuntime } from "../algorithms";
+import {
+  AlgorithmsSimulationTimerFacade,
+  createAlgorithmsFamilyRuntime,
+  installAlgorithmsSessionRuntimePorts,
+  installAlgorithmsSimulationTimerFacade,
+} from "../algorithms";
 import {
   commitLearningStateReset,
   commitSessionAbandonment,
@@ -24,6 +29,8 @@ import {
   getTrainingAttempts,
   getTrainingSessionResult,
   getTrainingSessions,
+  getActiveForegroundTimer,
+  saveActiveForegroundTimer,
   saveTrainingSessionDraft,
 } from "../../storage/repositories";
 
@@ -33,8 +40,10 @@ import {
  * never these dependencies.
  */
 export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
+  const wallClock = { now: () => new Date().toISOString() };
+  let sessionSequence = 0;
   const ports: TrainingLifecyclePorts = {
-    clock: { now: () => new Date().toISOString() },
+    clock: wallClock,
     tracks: { getTrackRegistration },
     runtimes: {
       resolve(familyId) {
@@ -74,6 +83,19 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
   };
   const lifecycle = new TrainingLifecycleUseCases(ports);
   installTrainingLifecycleUseCases(lifecycle);
+  installAlgorithmsSessionRuntimePorts({
+    wallClock,
+    sessionIds: { next(modeId) { sessionSequence += 1; return `algorithms:${modeId}:${sessionSequence}`; } },
+  });
+  installAlgorithmsSimulationTimerFacade(new AlgorithmsSimulationTimerFacade({
+    repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
+    lifecycle,
+    monotonicClock: { now: () => globalThis.performance?.now?.() ?? Date.now() },
+    wallClock,
+    schedule: (callback) => setInterval(callback, 1_000),
+    cancel: (handle) => clearInterval(handle),
+    finalize: async () => lifecycle.finalizeSimulation(),
+  }));
   return lifecycle;
 }
 

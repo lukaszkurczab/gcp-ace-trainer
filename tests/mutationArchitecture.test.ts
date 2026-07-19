@@ -34,6 +34,22 @@ test("Algorithms runtime composition has no persistence binding", () => {
   assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
 });
 
+test("Algorithms timer persistence is bound only in application composition, never in presentation", () => {
+  const timer = read("src/application/algorithms/AlgorithmsSimulationTimerFacade.ts");
+  const composition = read("src/application/bootstrap/trainingLifecycleComposition.ts");
+  assert.doesNotMatch(timer, /storage\/repositories|getActiveForegroundTimer|saveActiveForegroundTimer/);
+  assert.match(composition, /getActiveForegroundTimer/);
+  assert.match(composition, /saveActiveForegroundTimer/);
+  for (const path of files("src/features")) {
+    const source = read(path);
+    assert.doesNotMatch(source, /getActiveForegroundTimer|saveActiveForegroundTimer|checkpointForExpiry|checkpointSimulationForegroundTime/,
+      `presentation owns timer persistence or expiry in ${path}`);
+  }
+  const screen = read("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx");
+  assert.doesNotMatch(screen, /setInterval|setTimeout|Date\.now|remainingForegroundMs\s*[-+]/,
+    "simulation screen must not own a countdown source");
+});
+
 test("old active exam persistence owner and feature services are deleted", () => {
   assert.equal(existsSync(join(root, "src/storage/repositories/activeSessionRuntimeRepository.ts")), false);
   assert.equal(existsSync(join(root, "src/features/exam/examService.ts")), false);

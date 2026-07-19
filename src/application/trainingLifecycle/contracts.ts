@@ -23,6 +23,7 @@ export const APPLICATION_FAILURE_CODES = [
   "active_session_conflict",
   "persistence_failure",
   "verification_failure",
+  "timer_recovery_failure",
   "resume_unavailable",
   "summary_unavailable",
 ] as const;

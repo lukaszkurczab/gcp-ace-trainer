@@ -1,14 +1,18 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AppState } from "react-native";
 
 import {
   abandonAlgorithmsSession,
+  enterAlgorithmsSimulationForeground,
   finalizeAlgorithmsSimulation,
   getAlgorithmsSimulationProjection,
+  leaveAlgorithmsSimulationForeground,
   navigateAlgorithmsSimulationTo,
   saveAlgorithmsSimulationResponse,
   startAlgorithmsSession,
+  subscribeAlgorithmsSimulationProjectionRefresh,
   type AlgorithmsSimulationProjection,
 } from "../../application/algorithms";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
@@ -42,7 +46,28 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { void start(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    void start();
+    return () => { void leaveAlgorithmsSimulationForeground().catch(() => undefined); };
+  // Foreground ownership is application-owned; this route only signals focus.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load, route.params.profileId]));
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      const command = state === "active" ? enterAlgorithmsSimulationForeground : leaveAlgorithmsSimulationForeground;
+      void command().then(() => load()).catch((error) => setFailure(messageFor(error)));
+    });
+    return () => subscription.remove();
+  }, [load]);
+
+  useEffect(() => subscribeAlgorithmsSimulationProjectionRefresh((event) => {
+    if (event.kind === "expired") {
+      navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "timeout", sessionId: event.sessionId });
+      return;
+    }
+    void load();
+  }), [load, navigation]);
 
   useEffect(() => {
     if (!projection || localResponse !== null) return;
@@ -172,10 +197,16 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
         scope: { simulationProfileId: route.params.profileId },
         source: "algorithmsInterviewSimulation",
       });
+      await enterAlgorithmsSimulationForeground();
       await load();
     } catch (error) {
       if (error instanceof TrainingApplicationFailure && error.code === "active_session_conflict") {
-        await load();
+        try {
+          await enterAlgorithmsSimulationForeground();
+          await load();
+        } catch (resumeError) {
+          setFailure(messageFor(resumeError));
+        }
         return;
       }
       setFailure(messageFor(error));

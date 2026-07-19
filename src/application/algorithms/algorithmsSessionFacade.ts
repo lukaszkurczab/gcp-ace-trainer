@@ -17,7 +17,8 @@ import {
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
 import { isAlgorithmChoiceQuestion } from "../../tracks/algorithms/algorithmQuestionTypes";
 import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
-import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjection } from "./AlgorithmsSimulationTimerFacade";
+import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjection, type AlgorithmsSimulationTimerEvent } from "./AlgorithmsSimulationTimerFacade";
+import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
 
 export type AlgorithmsSessionPosition = Readonly<{ current: number; total: number }>;
 export type AlgorithmsPracticeProjection = Readonly<{
@@ -72,15 +73,14 @@ type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "
   source?: string;
 }>;
 
-let sessionSequence = 0;
-
 /** UI-facing canonical entry points. No storage, runtime, selection or timer ownership leaks into presentation. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
+  const runtime = getAlgorithmsSessionRuntimePorts();
   const prepared = await startTrainingSession({
     trackId: "algorithms",
     modeId: input.modeId,
     source: input.source,
-    request: { ...input, sessionId: nextSessionId(input.modeId) },
+    request: { ...input, sessionId: runtime.sessionIds.next(input.modeId) },
   });
   if (prepared.session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
     await getAlgorithmsSimulationTimerFacade().initialize(prepared.session);
@@ -185,7 +185,7 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
     response: input.response,
     session,
     draft,
-    updatedAt: new Date().toISOString(),
+    updatedAt: getAlgorithmsSessionRuntimePorts().wallClock.now(),
   });
   await getAlgorithmsSimulationTimerFacade().checkpointForDraftSave(session);
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
@@ -193,8 +193,7 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
-  await getAlgorithmsSimulationTimerFacade().checkpointForFinalization(session);
-  await getTrainingLifecycleUseCases().finalizeSimulation();
+  await getAlgorithmsSimulationTimerFacade().finalizeManually(session);
 }
 
 export async function abandonAlgorithmsSession(): Promise<TrainingSession> {
@@ -209,6 +208,11 @@ export async function enterAlgorithmsSimulationForeground(): Promise<AlgorithmsS
 
 export async function leaveAlgorithmsSimulationForeground(): Promise<AlgorithmsSimulationTimeProjection> {
   return getAlgorithmsSimulationTimerFacade().leaveForeground(await requireAlgorithmsSession());
+}
+
+/** Presentation receives application-owned projection refreshes; it never runs a countdown. */
+export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: AlgorithmsSimulationTimerEvent) => void): () => void {
+  return getAlgorithmsSimulationTimerFacade().subscribe(listener);
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
@@ -243,11 +247,6 @@ async function requireSimulationDraft(sessionId: string) {
 
 function position(session: TrainingSession): AlgorithmsSessionPosition {
   return Object.freeze({ current: session.currentItemIndex + 1, total: session.actualLength });
-}
-
-function nextSessionId(modeId: string): string {
-  sessionSequence += 1;
-  return `algorithms:${modeId}:${Date.now().toString(36)}:${sessionSequence}`;
 }
 
 function emptyDiagnostics() {
