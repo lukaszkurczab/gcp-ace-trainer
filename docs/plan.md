@@ -1198,7 +1198,7 @@ evidence yet.
 | G-A | `PASS` | Static architecture checks confirm one composition binding and no feature/track repository imports. |
 | G-P | `PASS` | Local recovery, foreground-timer, finalization, revisioned-draft, and duplicate-submit suites pass. |
 | G-L | `PASS` | Pinned artifact, seven declared modes, fixed 40 unique simulation, unanswered semantics, and delayed simulation feedback pass local contracts. |
-| G-D | `PARTIAL` | The isolated host now renders and captures iOS P-01…P-12 from real surfaces and pinned-artifact projections. P-13…P-15, S-01…S-29, Android, assistive technology, settings, and packet comparison remain unverified. |
+| G-D | `BLOCKED` | iOS captures exist for P-01…P-15 and S-01, S-09, S-16, S-29 through an isolated direct-link host. The other S flows are deterministic but the current Maestro runner terminates multi-flow execution; Android evidence, VoiceOver, large Dynamic Type, reduced motion, and approved-packet comparison remain unverified. |
 | G-Q | `PASS` | GitHub Actions run 29689913577 passed both the Recovery QA gate and the pinned Algorithms cross-repository contract after the sibling-checkout repair. |
 
 The audit host now has its own Expo registration and Metro root. It renders the
@@ -1215,8 +1215,8 @@ ACTIVE NEXT TASK — S3-CLOSURE-EVIDENCE-02
 
 ## S3-CLOSURE-EVIDENCE-02
 
-Goal: obtain the one remaining complete Stage 3 evidence packet from clean iOS
-and Android targets.
+Goal: obtain the remaining complete Stage 3 evidence packet from clean iOS and
+Android targets.
 
 Scope: split Maestro capture into bounded P/S flows; capture all remaining
 states and real bundled happy path; provision Android for required critical

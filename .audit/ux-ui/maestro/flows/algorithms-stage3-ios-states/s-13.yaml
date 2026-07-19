@@ -1,5 +1,5 @@
 appId: com.lkurczab.gcpacetrainer
-name: Algorithms Stage 3 visual harness iOS — P-01
+name: Algorithms Stage 3 iOS audit state S-13
 tags: [ux-ui-audit, algorithms-stage3, manual-fixtures]
 ---
 - openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8082"
@@ -12,4 +12,9 @@ tags: [ux-ui-audit, algorithms-stage3, manual-fixtures]
 - extendedWaitUntil:
     visible: { id: "algorithms-audit-current-P-01" }
     timeout: 20000
-- takeScreenshot: "algorithms-stage3__p-01__preparing__ios-regular"
+- openLink: "com.lkurczab.gcpacetrainer://audit?auditState=S-13"
+- extendedWaitUntil:
+    visible: { id: "algorithms-audit-current-S-13" }
+    timeout: 20000
+- takeScreenshot: "algorithms-stage3__s-13__abandon-confirmation__ios-regular"
+
