@@ -2,19 +2,8 @@ appId: com.lkurczab.gcpacetrainer
 name: Algorithms Stage 3 iOS audit state S-10
 tags: [ux-ui-audit, algorithms-stage3, manual-fixtures]
 ---
-- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8082"
-- runFlow:
-    when: { visible: "Continue" }
-    commands: [{ tapOn: "Continue" }]
-- runFlow:
-    when: { visible: "Close" }
-    commands: [{ tapOn: "Close" }]
-- extendedWaitUntil:
-    visible: { id: "algorithms-audit-current-P-01" }
-    timeout: 20000
 - openLink: "com.lkurczab.gcpacetrainer://audit?auditState=S-10"
 - extendedWaitUntil:
     visible: { id: "algorithms-audit-current-S-10" }
     timeout: 20000
 - takeScreenshot: "algorithms-stage3__s-10__navigator-mixed__ios-regular"
-

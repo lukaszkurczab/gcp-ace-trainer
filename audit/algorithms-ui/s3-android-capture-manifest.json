@@ -1,0 +1,530 @@
+{
+  "schemaVersion": 1,
+  "auditId": "algorithms-stage3-visual-harness-v1",
+  "status": "captured_visual_review_pending",
+  "visualReview": {
+    "approvedPacketComparison": "pending",
+    "accepted": false
+  },
+  "capture": {
+    "startedAt": "2026-07-19T21:27:38.886Z",
+    "completedAt": "2026-07-19T21:35:07.487Z",
+    "runner": "scripts/runAlgorithmsStage3AndroidAudit.mjs",
+    "commandContract": "ANDROID_HOME=<ANDROID_SDK_ROOT> npm run audit:ux-ui:android -- --serial <ANDROID_EMULATOR_SERIAL>",
+    "bootstrapFlow": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-bootstrap.yaml",
+    "bootstrapProcessCount": 1,
+    "serialProcessCount": 44,
+    "explicitComponent": "com.lkurczab.gcpacetrainer/.MainActivity",
+    "device": {
+      "serial": "emulator-5556",
+      "state": "device",
+      "avdName": "Medium_Phone",
+      "apiLevel": "37",
+      "model": "sdk_gphone16k_arm64",
+      "screenSize": "1080x2400",
+      "density": 420,
+      "locale": {
+        "status": "not_set",
+        "rawValue": null
+      },
+      "fontScale": {
+        "status": "recorded",
+        "rawValue": "1.0"
+      },
+      "animatorDurationScale": {
+        "status": "not_set",
+        "rawValue": null
+      },
+      "transitionAnimationScale": {
+        "status": "recorded",
+        "rawValue": "1.0"
+      },
+      "windowAnimationScale": {
+        "status": "recorded",
+        "rawValue": "1.0"
+      },
+      "enabledAccessibilityServices": {
+        "status": "not_set",
+        "rawValue": null
+      },
+      "app": {
+        "appId": "com.lkurczab.gcpacetrainer",
+        "versionName": "0.1.0",
+        "versionCode": 1,
+        "installedApkPath": "/data/app/~~-_muveFjXY9UzCgoBZiQFg==/com.lkurczab.gcpacetrainer-GbV_hjXoia5B8CnXF_yuZw==/base.apk",
+        "installedApkSha256": "53e25124e1b1442d14b4574a56f501bba7b224f54793c997cd73ce7cf6fdf741"
+      }
+    },
+    "theme": "dark",
+    "contentLanguage": "en"
+  },
+  "source": {
+    "appRepositoryCommit": "84bbfd0dca154ef85dc7d0853665f9f8f5ffab67",
+    "androidAuditSourceSha256": "0b4ae7a095e7d8abc4e52022a0bb7360b71377a3f554c7c8ae859b2f94a3f5ed",
+    "worktreeStatusFormat": "git status --porcelain=v1 -z",
+    "worktreeStatus": [
+      " M .audit/ux-ui/audit.config.json",
+      " D .audit/ux-ui/maestro/flows/algorithms-stage3-harness.android.yaml",
+      " D .audit/ux-ui/maestro/flows/algorithms-stage3-harness.ios.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-01.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-02.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-03.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-04.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-05.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-06.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-07.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-08.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-09.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-10.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-11.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-12.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-13.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-14.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/p-15.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-01.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-02.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-03.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-04.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-05.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-06.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-07.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-08.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-09.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-10.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-11.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-12.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-13.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-14.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-15.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-16.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-17.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-18.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-19.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-20.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-21.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-22.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-23.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-24.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-25.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-26.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-27.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-28.yaml",
+      " M .audit/ux-ui/maestro/flows/algorithms-stage3-ios-states/s-29.yaml",
+      " M audit/algorithms-ui/s3-audit-evidence-rerun.md",
+      " M docs/plan.md",
+      " M package.json",
+      " M scripts/validateUxUiAuditConfig.mjs",
+      "?? .audit/ux-ui/android.audit.config.json",
+      "?? .audit/ux-ui/maestro/flows/algorithms-stage3-android-bootstrap.yaml",
+      "?? .audit/ux-ui/maestro/flows/algorithms-stage3-android-states/",
+      "?? .audit/ux-ui/maestro/flows/algorithms-stage3-ios-bootstrap.yaml",
+      "?? audit/algorithms-ui/s3-android-capture-manifest.json",
+      "?? audit/algorithms-ui/s3-ios-capture-manifest.json",
+      "?? scripts/runAlgorithmsStage3AndroidAudit.mjs",
+      "?? scripts/runAlgorithmsStage3IosAudit.mjs",
+      "?? tests/algorithmsStage3AndroidAuditRunner.test.mjs",
+      "?? tests/algorithmsStage3IosAuditRunner.test.mjs"
+    ],
+    "contentReleaseId": "algorithms-core-0002-b424faa6",
+    "contentSourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc",
+    "contentArtifactSha256": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c"
+  },
+  "screenshots": [
+    {
+      "stateId": "P-01",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-01",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-01.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-01__preparing__android-regular.png",
+      "sha256": "cf4a0044b8b922cd1e920d2b3ba531ff1a8ca5dc0787382176946372c3855882",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-02",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-02",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-02.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-02__unanswered__android-regular.png",
+      "sha256": "c2d37fb3cdec00117d4dad71316b5b8453ccd6160e644b85a6db13e5b3e0d666",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-03",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-03",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-03.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-03__submitting-before-journal__android-regular.png",
+      "sha256": "87a175ba15c8803e227c5a4c5ac9d3a054e79883079cab922692d69d327873ae",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-04",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-04",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-04.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-04__submit-journal-failed__android-regular.png",
+      "sha256": "04ae06d7c7b10b60fb8c8b0fad9bf46f880f1b8de6ba39f7e16e9cee99773b96",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-05",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-05",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-05.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-05__commit-pending__android-regular.png",
+      "sha256": "ff230ef09e369125b62a823cce405ba3b467ee522b582ac59528cc4e85e48f71",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-06",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-06",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-06.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-06__commit-materialization-failed__android-regular.png",
+      "sha256": "de5d62d889cd7334970648289cc545eec0ce49bae23a17c865cc79b0a7a435d8",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-07",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-07",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-07.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-07__feedback-correct__android-regular.png",
+      "sha256": "fac570586ae2f96290adcf7e9e2d1e5d3889b599fcb7a08d12c8265315f83e4a",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-08",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-08",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-08.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-08__feedback-partial-long-details__android-regular.png",
+      "sha256": "569b07747fd79ed5603acdbd4d49a594146874f1b050e28c9db4cc91bedafb19",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-09",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-09",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-09.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-09__advancing__android-regular.png",
+      "sha256": "2895da67bfc4755f069daa33999f1cec97710761861b5ee24476acf1a4b0903e",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-10",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-10",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-10.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-10__advance-failed__android-regular.png",
+      "sha256": "5b6d8a8e301213919341f33af49695beee3e045bae0cf6b021bc9903de7b4b6a",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-11",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-11",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-11.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-11__completed__android-regular.png",
+      "sha256": "f352662c130a7d5ff19253d873fb3db352b1e3c7f88b50eec80f2e1d3bd98d1d",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-12",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-12",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-12.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-12__leave-confirmation__android-regular.png",
+      "sha256": "a639935a85174d231bcd7e95b6c7e186d29dba961c18568899ce53352f4e27c8",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-13",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-13",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-13.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-13__abandon-confirmation__android-regular.png",
+      "sha256": "d08b527d11eea1e1d005d5f85368e53bb8142268ace4c3a7b89a5062ffc1a2c0",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-14",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-14",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-14.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-14__abandoning__android-regular.png",
+      "sha256": "f63a7c02c4761dd5c4be95e9972b21815a6d85ae6757977d5ebc2454f37977de",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "P-15",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-15",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-15.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__p-15__abandonment-failed__android-regular.png",
+      "sha256": "373a0280ce24abd3d728c37ab9eebe7cf4fd052b4bdd393b449c9f9b2e23dd1a",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-01",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-01",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-01.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-01__preparing__android-regular.png",
+      "sha256": "87f6cdeca5eed4f886451e87b1a589c6dae3d056a50be112bcf96922609c597b",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-02",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-02",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-02.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-02__insufficient-content__android-regular.png",
+      "sha256": "bed86609bba1e7a650089fb36e03b6eb548d60f673dca740a1f523b2f5131713",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-03",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-03",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-03.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-03__editable-choice__android-regular.png",
+      "sha256": "1b64780431fefdd51b790bc3b30d0a83ae7276f7a4975b4a176faeec85dd925b",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-04",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-04",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-04.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-04__editable-unsaved__android-regular.png",
+      "sha256": "af1a06b896d2436e092da2d16b81f714032daa105eb03a2307ef897a94031821",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-05",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-05",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-05.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-05__saving__android-regular.png",
+      "sha256": "1ae62d4399ebc3b4314abde19825824b78d0fddf83f9b520f51899a8b672f9db",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-06",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-06",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-06.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-06__editable-saved__android-regular.png",
+      "sha256": "5e24e3e03f54c950172374ce0fdefec51506b8a4dccfb30246dd1bd07ef17068",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-07",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-07",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-07.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-07__save-failed__android-regular.png",
+      "sha256": "6b61aceb229181bdc60db5d449adec8cc8a950c49c25a53bf81d6bfdc760f89d",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-08",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-08",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-08.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-08__stale-revision__android-regular.png",
+      "sha256": "93dc315d60f7cdd87b708b4c3ddce702d514d35c2d948648ab177af4c894fa24",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-09",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-09",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-09.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-09__navigator-inventory__android-regular.png",
+      "sha256": "83ffaba54abbf2434c3622951ce34f00e559d73c0a3667555804566573368a79",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-10",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-10",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-10.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-10__navigator-mixed__android-regular.png",
+      "sha256": "b7adf0110c62d9a7127e6e270509121c5058c67da926fe839e319a4d3c979eaa",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-11",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-11",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-11.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-11__finish-confirmation__android-regular.png",
+      "sha256": "84f5a6afd11e8331f912f15b0a3295d989eff2e349f2aa81161b7f5744d01a34",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-12",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-12",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-12.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-12__leave-confirmation__android-regular.png",
+      "sha256": "0703bd00662d144769c71601d528cd6f9dfbdd93dee869607f924ea3fcfdbbab",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-13",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-13",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-13.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-13__abandon-confirmation__android-regular.png",
+      "sha256": "a1be860271e78604edadda5d8a16ac66f8215b59fc9feeec57ed2fbfc0bbf6e9",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-14",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-14",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-14.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-14__abandoning__android-regular.png",
+      "sha256": "20a68b4e34bebaa7ee16a50eee5228a5964185fe36bfa52f8fc8d9402c8929fb",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-15",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-15",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-15.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-15__abandonment-failed__android-regular.png",
+      "sha256": "988860a8fa4ef4d53bbb96b1e7b0726ec2b46104dcf709fb388e09f8fb09d255",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-16",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-16",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-16.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-16__expired__android-regular.png",
+      "sha256": "c5953fbbf1c1464f56b3b7a7711d5688f279864241e7f7dc793980e67fd8c2da",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-17",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-17",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-17.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-17__frozen__android-regular.png",
+      "sha256": "40b195bf24be66311eb0afc0a099c4d65ecd450e7bff2a4fd1af4683584a7e2a",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-18",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-18",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-18.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-18__finalization-journal-pending__android-regular.png",
+      "sha256": "6461baa67bb7c9dc15a6a9b2aa50205fae6f0c95f03b07f9908f7e4c8b10b3fa",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-19",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-19",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-19.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-19__finalization-journal-failed__android-regular.png",
+      "sha256": "004cd4cd422d4335addbcd4747ac07ce86306d9bc065d97ad0bef9b4fd4ec4c7",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-20",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-20",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-20.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-20__materializing__android-regular.png",
+      "sha256": "caa58e58214f16e223bba115a54dfb1b5632724ff1a8de72d03f715f7f9235ff",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-21",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-21",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-21.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-21__materialization-failed__android-regular.png",
+      "sha256": "41c2d3e32dc84892e37bb2392eefcdac56d6fddf5e154c62566e06cd99ec6a94",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-22",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-22",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-22.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-22__verification-failed__android-regular.png",
+      "sha256": "478c892011f22cd2e72b6ae51eea84467c85580e42c5590be0f895cc9d893410",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-23",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-23",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-23.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-23__recovery-required__android-regular.png",
+      "sha256": "5223394553fae467f32a58e5b87715c10557e9f4950be90715e872b912bc7319",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-24",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-24",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-24.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-24__recovered-finalizing__android-regular.png",
+      "sha256": "f687a211b7bde488717343c2096f203b7be9079c02ca181277539346f9ce6c5f",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-25",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-25",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-25.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-25__timer-recovery-failed__android-regular.png",
+      "sha256": "873474dfc59289047fc10169413a788b027921db28273877c8e662874a1b9cb8",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-26",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-26",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-26.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-26__missing-draft__android-regular.png",
+      "sha256": "8a4e34104c0cda44d31ce1b17655d75526ec3586058a57ef2b8404fa29cb3faf",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-27",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-27",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-27.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-27__version-mismatch__android-regular.png",
+      "sha256": "ce54bb3ebfc57b71e7a24e4509f38e55210bad76800706de19922b16bf777d02",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-28",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-28",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-28.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-28__corrupt-state__android-regular.png",
+      "sha256": "2c8fa57c5e4eba028f8b6fa78bbf0eb6b4aec6f75dc93eb4cefc46c7ed3aedbb",
+      "width": 1080,
+      "height": 2400
+    },
+    {
+      "stateId": "S-29",
+      "stateUri": "exp+patternly-algorithms-audit://audit?auditState=S-29",
+      "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/s-29.yaml",
+      "screenshotPath": "docs/audits/ux-ui/algorithms-stage3-visual-harness-v1/maestro/android/screenshots/algorithms-stage3__s-29__completed__android-regular.png",
+      "sha256": "aceacb474287ee21e7efbeb3b78709fc174556c34a53e42d8577e45b32b8a92c",
+      "width": 1080,
+      "height": 2400
+    }
+  ]
+}

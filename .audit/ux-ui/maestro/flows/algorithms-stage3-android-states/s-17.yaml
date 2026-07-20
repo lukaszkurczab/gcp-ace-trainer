@@ -1,0 +1,8 @@
+appId: com.lkurczab.gcpacetrainer
+name: Algorithms Stage 3 Android state S-17
+tags: [ux-ui-audit, algorithms-stage3, android-state]
+---
+- extendedWaitUntil:
+    visible: { id: "algorithms-audit-current-S-17" }
+    timeout: 20000
+- takeScreenshot: "algorithms-stage3__s-17__frozen__android-regular"
