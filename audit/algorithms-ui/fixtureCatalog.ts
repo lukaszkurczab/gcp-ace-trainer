@@ -47,7 +47,7 @@ function artifactForAudit(): AuditArtifact {
 }
 
 function operationFor(id: string): string {
-  const practice = ["preparing", "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "feedback", "feedback", "advancing", "advance_failed", "completed", "leave", "abandon_confirmation", "abandoning", "abandonment_failed_before_journal"];
+  const practice = ["preparing", "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "feedback", "feedback", "advancing", "advance_failed", "completed", "leave", "commit_verification_failed", "abandoning", "abandonment_failed_before_journal"];
   if (id.startsWith("P-")) return practice[Number(id.slice(2)) - 1]!;
   const states = ["preparing", "insufficient_content", "editable", "editable_unsaved", "saving", "editable_saved", "save_failed", "stale_revision", "navigator_inventory", "navigator_mixed", "finish_confirmation", "leave_confirmation", "abandon_confirmation", "abandoning", "abandonment_failed", "expired", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verification_failed", "recovery_required", "recovered_finalizing", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "completed"];
   return states[Number(id.slice(2)) - 1]!;

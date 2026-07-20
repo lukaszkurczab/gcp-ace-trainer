@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
 import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
@@ -23,7 +23,6 @@ export type PracticeQuestionPresentation = Readonly<{
 
 export type PracticeExitPresentation =
   | Readonly<{ kind: "leave" }>
-  | Readonly<{ kind: "abandon_confirmation" }>
   | Readonly<{ kind: "none" }>;
 
 export type PracticeSessionSurfaceProps = Readonly<{
@@ -39,7 +38,6 @@ export type PracticeSessionSurfaceProps = Readonly<{
   onDismissExit: () => void;
   onOrderingMove: (elementId: string, direction: "up" | "down") => void;
   onPrimaryAction?: () => void;
-  onRequestAbandon: () => void;
   onRequestLeave: () => void;
   onRetry?: () => void;
   phase: PracticeSurfacePhase;
@@ -84,8 +82,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       {controls}
       {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
       {visibleFeedback ? <PracticeFeedbackBlock feedback={visibleFeedback} /> : null}
-      {props.exit.kind === "leave" ? <LeaveSurface /> : null}
-      {props.exit.kind === "abandon_confirmation" ? <AbandonSurface /> : null}
+      {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} /> : null}
     </SessionShell>
   );
 }
@@ -121,23 +118,7 @@ function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
 }
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
-  if (props.exit.kind === "leave") {
-    return (
-      <View style={styles.actions}>
-        <Button onPress={props.onDismissExit} variant="secondary">Keep learning</Button>
-        <Button onPress={props.onConfirmLeave}>Leave and resume later</Button>
-        <Button onPress={props.onRequestAbandon} variant="ghost">Abandon session</Button>
-      </View>
-    );
-  }
-  if (props.exit.kind === "abandon_confirmation") {
-    return (
-      <View style={styles.actions}>
-        <Button onPress={props.onDismissExit} variant="secondary">Keep session</Button>
-        <Button onPress={props.onAbandon} variant="destructive">Abandon session</Button>
-      </View>
-    );
-  }
+  if (props.exit.kind !== "none") return null;
   return (
     <View style={styles.actions}>
       {props.primaryAction ? (
@@ -151,21 +132,22 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
   );
 }
 
-function LeaveSurface() {
+function ExitModal({ onAbandon, onDismiss, onLeave }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void }>) {
   return (
-    <View accessibilityViewIsModal style={styles.exitSurface}>
-      <Text style={styles.exitTitle}>Leave this session?</Text>
-      <Text style={styles.noticeText}>Leaving preserves this active session so you can resume later.</Text>
-    </View>
-  );
-}
-
-function AbandonSurface() {
-  return (
-    <View accessibilityViewIsModal style={styles.exitSurface}>
-      <Text style={styles.exitTitle}>Abandon this session?</Text>
-      <Text style={styles.noticeText}>Abandoning ends resumability. Answers already saved remain durable.</Text>
-    </View>
+    <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
+      <View style={styles.modalBackdrop}>
+        <Pressable accessibilityLabel="Keep learning" accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
+        <View accessibilityViewIsModal style={styles.exitSurface}>
+          <Text style={styles.exitTitle}>End this session?</Text>
+          <Text style={styles.noticeText}>Leave and resume later, or abandon it permanently. Answers already saved remain available.</Text>
+          <View style={styles.actions}>
+            <Button onPress={onDismiss} variant="secondary">Keep learning</Button>
+            <Button onPress={onLeave}>Leave and resume later</Button>
+            <Button onPress={onAbandon} variant="destructive">Abandon session</Button>
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -175,12 +157,14 @@ const styles = StyleSheet.create({
   actions: { gap: spacing.sm },
   constraint: { ...typography.small, color: colors.dark.textSecondary },
   constraints: { gap: spacing.xs },
-  exitSurface: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
+  exitSurface: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: "100%" },
   exitTitle: { ...typography.heading, color: colors.dark.textPrimary },
   notice: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
   noticeError: { backgroundColor: colors.dark.dangerSoft, borderColor: colors.dark.danger },
   noticeSuccess: { backgroundColor: colors.dark.successSoft, borderColor: colors.dark.success },
   noticeText: { ...typography.small, color: colors.dark.textSecondary },
+  modalBackdrop: { alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "center", padding: spacing.lg },
+  modalDismissArea: { ...StyleSheet.absoluteFillObject },
   preparing: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
   preparingTitle: { ...typography.heading, color: colors.dark.textPrimary },
   prompt: { ...typography.heading, color: colors.dark.textPrimary },

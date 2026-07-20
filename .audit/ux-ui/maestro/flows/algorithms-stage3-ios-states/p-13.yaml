@@ -6,4 +6,4 @@ tags: [ux-ui-audit, algorithms-stage3, manual-fixtures]
 - extendedWaitUntil:
     visible: { id: "algorithms-audit-current-P-13" }
     timeout: 20000
-- takeScreenshot: "algorithms-stage3__p-13__abandon-confirmation__ios-regular"
+- takeScreenshot: "algorithms-stage3__p-13__commit-verification-failed__ios-regular"

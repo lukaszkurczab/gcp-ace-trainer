@@ -9,6 +9,7 @@ import {
 import {
   TrainingApplicationFailure,
   TrainingLifecycleUseCases,
+  type PendingMutationProjection,
   type PreparedSession,
   type TrainingFamilyRuntime,
   type TrainingLifecyclePorts,
@@ -22,6 +23,7 @@ function fixture() {
   const calls: string[] = [];
   let active: TrainingSession | null = null;
   let dashboardActiveSession: TrainingSession | null = null;
+  let pending: PendingMutationProjection | null = null;
   let persisted: TrainingSession | null = null;
   let result = null as ReturnType<typeof createTrainingSessionResult> | null;
   const runtime: TrainingFamilyRuntime = {
@@ -43,13 +45,13 @@ function fixture() {
     runtimes: { resolve(familyId) { if (familyId !== "test-family") throw new Error("unknown family"); calls.push(`resolve:${familyId}`); return runtime; } },
     content: { async requireAvailable(trackId, modeId) { calls.push(`content:${trackId}:${modeId}`); }, async assertPreparedSession() { calls.push("content-prepared"); }, async assertActiveSession() { calls.push("content-resume"); } },
     repositories: {
-      async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return []; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); },
+      async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return []; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); }, async getPendingMutation() { calls.push("pending"); return pending; },
     },
     mutations: {
-      async start(input) { calls.push("start"); persisted = input.session; active = input.session; }, async submitPractice() { calls.push("commit-submit"); }, async advance(value) { calls.push("advance"); active = value; persisted = value; }, async complete(value) { calls.push("complete"); persisted = value; result = createTrainingSessionResult({ id: "result-1", sessionId: value.id, trackId: value.trackId, totalOccurrences: 2, answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-0", "occurrence-1"], completedAt: "2026-07-16T12:01:00.000Z", evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }); active = null; }, async completeWithResult(value) { calls.push("complete-with-result"); persisted = value.session; result = value.result; active = null; }, async finalize(input) { calls.push("commit-finalize"); persisted = input.session; result = input.result; active = null; }, async abandon(value) { calls.push("abandon"); persisted = value; active = null; }, async recover() { calls.push("recover"); }, async reset() { calls.push("reset"); },
+      async start(input) { calls.push("start"); persisted = input.session; active = input.session; }, async submitPractice() { calls.push("commit-submit"); }, async advance(value) { calls.push("advance"); active = value; persisted = value; }, async complete(value) { calls.push("complete"); persisted = value; result = createTrainingSessionResult({ id: "result-1", sessionId: value.id, trackId: value.trackId, totalOccurrences: 2, answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-0", "occurrence-1"], completedAt: "2026-07-16T12:01:00.000Z", evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }); active = null; }, async completeWithResult(value) { calls.push("complete-with-result"); persisted = value.session; result = value.result; active = null; }, async finalize(input) { calls.push("commit-finalize"); persisted = input.session; result = input.result; active = null; }, async abandon(value) { calls.push("abandon"); persisted = value; active = null; }, async recover() { calls.push("recover"); pending = null; }, async reset() { calls.push("reset"); },
     },
   };
-  return { calls, dashboardActiveSession: () => dashboardActiveSession, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
+  return { calls, dashboardActiveSession: () => dashboardActiveSession, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setPending(value: PendingMutationProjection | null) { pending = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
 }
 
 test("start resolves the exact family and exposes its first item only after active-session verification", async () => {
@@ -95,7 +97,21 @@ test("runtime resolution rejects an unknown or mismatched family without substit
 
 test("practice response is handed to the family runtime and only its deterministic outcome reaches the coordinator", async () => {
   const f = fixture(); f.setActive(session()); await f.useCases.submitPracticeResponse({ selected: "a" });
-  assert.deepEqual(f.calls, ["get-active", "content-resume", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
+  assert.deepEqual(f.calls, ["get-active", "content-resume", "pending", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
+});
+
+test("a non-submit durable journal requires recovery before practice can accept another answer", async () => {
+  const f = fixture(); const active = session(); f.setActive(active);
+  f.setPending({ operation: "start_training_session", status: "verified_pending_clear", sessionId: active.id, trackId: active.trackId, commandFingerprint: "journal-1", planFingerprint: "plan-1" });
+
+  const blocked = await f.useCases.getPracticeOperationState(active, false);
+  assert.equal(blocked.kind, "recovery_required");
+  assert.equal(blocked.error.operation, "practice_resume");
+  assert.equal(blocked.error.allowedAction, "recover");
+
+  await f.useCases.recoverActiveTrainingOperation();
+  assert.equal((await f.useCases.getPracticeOperationState(active, false)).kind, "unanswered");
+  assert.ok(f.calls.includes("recover"));
 });
 
 test("advance verifies the new durable position and no active-session command defaults", async () => {

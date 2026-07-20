@@ -179,6 +179,11 @@ export async function submitAlgorithmsPracticeResponse(response: AlgorithmRespon
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
 
+/** Replays the single durable practice operation that is already journaled. */
+export async function recoverAlgorithmsPracticeOperation(): Promise<void> {
+  await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
+}
+
 export async function advanceAlgorithmsPracticeSession(): Promise<TrainingSession> {
   return getTrainingLifecycleUseCases().advancePracticeSession();
 }

@@ -8,6 +8,7 @@ import {
   completeAlgorithmsPracticeSession,
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
+  recoverAlgorithmsPracticeOperation,
   startAlgorithmsSession,
   type AlgorithmsPracticeProjection,
   type AlgorithmsSessionResultProjection,
@@ -42,7 +43,8 @@ type ViewState =
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
   const [state, setState] = useState<ViewState | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
-  const [exit, setExit] = useState<"none" | "leave" | "abandon_confirmation">("none");
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [exit, setExit] = useState<"none" | "leave">("none");
   const permitRouteExit = useRef(false);
 
   const algorithmsMode = route.params.trackId === ALGORITHMS_TRACK_ID && isAlgorithmModeId(route.params.mode)
@@ -55,6 +57,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     let live = true;
     setState(null);
     setLocalResponse(null);
+    setSubmissionError(null);
     void loadOrStartAlgorithmsPractice(route.params, algorithmsMode)
       .then((projection) => {
         if (!live) return;
@@ -81,7 +84,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
     return <Screen><EmptyState title="Interview Simulation unavailable" description="Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created." actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
-  if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestAbandon={noop} onRequestLeave={noop} phase="preparing" />;
+  if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestLeave={noop} phase="preparing" />;
   if (state.kind === "active_session_conflict") {
     const activeModeLabel = isAlgorithmModeId(state.session.modeId) ? getAlgorithmMode(state.session.modeId).title : "another learning session";
     return (
@@ -103,7 +106,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const sessionState = state;
   const projection = sessionState.projection;
   const phase = toPracticeSurfacePhase(projection.operation.kind);
-  const notice = noticeForPracticeOperation(projection.operation);
+  const notice = submissionError ? { tone: "error" as const, message: submissionError } : noticeForPracticeOperation(projection.operation);
   const responseControl = buildPracticeResponseControl({
     choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
     feedbackControls: projection.feedback?.controls,
@@ -123,8 +126,9 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 
   async function submit() {
     if (!localResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    setSubmissionError(null);
     try { await submitAlgorithmsPracticeResponse(localResponse); }
-    catch { /* The typed application projection records retry safety. */ }
+    catch (error) { setSubmissionError(describePracticeSubmissionFailure(error)); }
     await refresh();
   }
 
@@ -139,6 +143,18 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     }
     try { await advanceAlgorithmsPracticeSession(); }
     catch { /* The immutable committed outcome is described by the projection. */ }
+    await refresh();
+  }
+
+  async function recover() {
+    try {
+      await recoverAlgorithmsPracticeOperation();
+      if (!await loadActiveTrainingSession()) {
+        permitRouteExit.current = true;
+        navigation.navigate(ROUTES.PRACTICE_HUB);
+        return;
+      }
+    } catch { /* Recovery can only replay the existing durable command. */ }
     await refresh();
   }
 
@@ -205,19 +221,20 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       modeLabel={getAlgorithmMode(algorithmsMode).title}
       notice={notice}
       onAbandon={() => void abandon()}
-      onChoicePress={(optionId) => setLocalResponse((current) => toggleChoice(current, optionId, responseControl.kind === "choice" ? responseControl.selectionMode : "single"))}
-      onComplexityValuePress={(dimensionId, value) => setLocalResponse((current) => setComplexityValue(current, dimensionId, value))}
+      onChoicePress={(optionId) => { setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, responseControl.kind === "choice" ? responseControl.selectionMode : "single")); }}
+      onComplexityValuePress={(dimensionId, value) => { setSubmissionError(null); setLocalResponse((current) => setComplexityValue(current, dimensionId, value)); }}
       onConfirmLeave={leave}
       onDismissExit={() => setExit("none")}
-      onOrderingMove={(elementId, direction) => setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl))}
+      onOrderingMove={(elementId, direction) => { setSubmissionError(null); setLocalResponse((current) => moveOrderingElement(current, elementId, direction, responseControl)); }}
       onPrimaryAction={() => void ((phase === "unanswered" || phase === "submit_journal_failed") ? submit() : advanceOrFinish())}
-      onRequestAbandon={() => setExit("abandon_confirmation")}
       onRequestLeave={() => setExit("leave")}
+      onRetry={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
       phase={phase}
       position={{ accessibilityLabel: `Question ${projection.position.current} of ${projection.position.total}`, label: `${projection.position.current} of ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, prompt: projection.prompt, responseControl }}
+      retryLabel={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Recover session" : undefined}
       timer={{ accessibilityLabel: `Active foreground time ${formatElapsed(projection.session.activeForegroundMs)}`, label: `Active time ${formatElapsed(projection.session.activeForegroundMs)}` }}
     />
   );
@@ -291,6 +308,7 @@ function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["ope
   if (operation.kind === "submitting_before_journal") return { tone: "neutral" as const, message: "Saving your answer…" };
   if (operation.kind === "submit_journal_failed") return { tone: "error" as const, message: "The answer was not durably submitted. You can safely submit the same local response again." };
   if (operation.kind === "commit_pending" || operation.kind === "commit_materialization_failed" || operation.kind === "commit_verification_failed") return { tone: "error" as const, message: "Your response is immutable because a durable command exists. Recovery must replay that exact command." };
+  if (operation.kind === "recovery_required") return { tone: "error" as const, message: "A previous session update must be recovered before another answer can be submitted." };
   if (operation.kind === "advancing") return { tone: "neutral" as const, message: "Opening the next question…" };
   if (operation.kind === "advance_failed") return { tone: "error" as const, message: "Your answer remains committed. Retry opening the next question." };
   return undefined;
@@ -299,6 +317,11 @@ function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["ope
 function describePreparationFailure(error: unknown): string {
   const detail = error instanceof Error ? error.message : "The session could not be prepared.";
   return `${detail} No substitute topic, item, or shortened fixed session was created.`;
+}
+
+function describePracticeSubmissionFailure(error: unknown): string {
+  if (error instanceof TrainingApplicationFailure && error.code === "invalid_response" && error.cause instanceof Error) return error.cause.message;
+  return "Your answer could not be submitted. Select an answer and try again.";
 }
 
 function formatElapsed(milliseconds: number): string {

@@ -1,6 +1,6 @@
 /** Application-owned facts. Presentation may render them but never infer them. */
 export type DurableOperationError = Readonly<{
-  operation: "practice_submit" | "practice_advance" | "practice_complete" | "practice_abandon" | "simulation_save" | "simulation_navigation" | "simulation_finalization" | "simulation_abandon" | "simulation_resume";
+  operation: "practice_submit" | "practice_advance" | "practice_complete" | "practice_abandon" | "practice_resume" | "simulation_save" | "simulation_navigation" | "simulation_finalization" | "simulation_abandon" | "simulation_resume";
   durableState: "not_durable" | "journal_durable" | "materialized" | "verified_pending_clear" | "verified";
   retrySafety: "safe_retry" | "recovery_only" | "retry_forbidden";
   allowedAction: "submit_again" | "recover" | "retry_same_command" | "return_to_summary" | "none";
@@ -15,6 +15,7 @@ export type PracticeDurableOperationState =
   | Readonly<{ family: "practice"; kind: "commit_materialization_failed"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "commit_verification_failed"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "verified_pending_clear"; error: DurableOperationError }>
+  | Readonly<{ family: "practice"; kind: "recovery_required"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "feedback" }>
   | Readonly<{ family: "practice"; kind: "advancing" }>
   | Readonly<{ family: "practice"; kind: "advance_failed"; error: DurableOperationError }>

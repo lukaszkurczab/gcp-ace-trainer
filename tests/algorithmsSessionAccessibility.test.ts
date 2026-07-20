@@ -59,6 +59,16 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.doesNotMatch(navigator, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.grid\}/);
 });
 
+test("practice exit makes abandonment a single explicit decision in a modal", () => {
+  const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
+
+  assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
+  assert.match(practiceSurface, /<Pressable accessibilityLabel="Keep learning" accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
+  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>End this session\?<\/Text>/);
+  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} variant="destructive">Abandon session<\/Button>/);
+  assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
+});
+
 test("large text can grow session chrome and controls without fixed interactive heights", () => {
   const shell = source("src/features/algorithms/session/SessionShell.tsx");
   const practice = source("src/features/practice/PracticeResponseControls.tsx");

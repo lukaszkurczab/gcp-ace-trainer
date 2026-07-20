@@ -42,6 +42,7 @@ export class TrainingLifecycleUseCases {
   /** The only recovery retry replays the exact existing immutable journal plan. */
   async recoverActiveTrainingOperation(): Promise<void> {
     const active = await this.requireActive();
+    const pending = await this.pendingFor(active.id);
     await this.reconstructOperationProjection(active);
     await this.ports.mutations.recover();
     const verified = await this.ports.repositories.getActiveSession();
@@ -50,12 +51,13 @@ export class TrainingLifecycleUseCases {
       return;
     }
     const simulationSession = verified.configurationSnapshot.submission === "manualOrForegroundTimeout";
-    this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : practice("feedback"));
+    this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : pending?.operation === "submit_training_outcome" ? practice("feedback") : practice("unanswered"));
   }
 
   async getPracticeOperationState(session: TrainingSession, hasCommittedAttempt: boolean): Promise<PracticeDurableOperationState> {
     const pending = await this.pendingFor(session.id);
     if (pending?.operation === "submit_training_outcome") return practicePendingFor(pending.status);
+    if (pending) return practice("recovery_required", operationError("practice_resume", pending.status, "recover"));
     const current = this.operationStates.get(session.id);
     if (current && isPracticeOperation(current)) return current;
     return hasCommittedAttempt ? practice("feedback") : practice("unanswered");

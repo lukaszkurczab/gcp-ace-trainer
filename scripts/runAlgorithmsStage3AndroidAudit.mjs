@@ -35,7 +35,7 @@ const STATE_SLUGS = Object.freeze([
   ["P-10", "advance-failed"],
   ["P-11", "completed"],
   ["P-12", "leave-confirmation"],
-  ["P-13", "abandon-confirmation"],
+  ["P-13", "commit-verification-failed"],
   ["P-14", "abandoning"],
   ["P-15", "abandonment-failed"],
   ["S-01", "preparing"],

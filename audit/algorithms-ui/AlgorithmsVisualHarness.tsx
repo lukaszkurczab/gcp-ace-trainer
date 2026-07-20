@@ -52,15 +52,15 @@ function auditStateFromUrl(url: string | null): (typeof APPROVED_ALGORITHMS_AUDI
 
 function practiceProjection(fixture: AlgorithmsVisualFixture): PracticeSessionSurfaceProps {
   const item = getAlgorithmsAuditItem(fixture.interaction, fixture.id);
-  const phase = fixture.operation === "preparing" ? "preparing" : fixture.operation === "leave" || fixture.operation === "abandon_confirmation" ? "unanswered" : fixture.operation === "abandonment_failed_before_journal" ? "submit_journal_failed" : fixture.operation as PracticeSessionSurfaceProps["phase"];
+  const phase = fixture.operation === "preparing" ? "preparing" : fixture.operation === "leave" ? "unanswered" : fixture.operation === "abandonment_failed_before_journal" ? "submit_journal_failed" : fixture.operation as PracticeSessionSurfaceProps["phase"];
   const feedback = fixture.id === "P-06" || fixture.id === "P-07" || fixture.id === "P-08" || fixture.id === "P-10" ? { reason: item.feedback.reason, details: item.feedback.details } : undefined;
   return {
-    exit: fixture.operation === "leave" ? { kind: "leave" } : fixture.operation === "abandon_confirmation" ? { kind: "abandon_confirmation" } : { kind: "none" },
+    exit: fixture.operation === "leave" ? { kind: "leave" } : { kind: "none" },
     feedback, isFinalPosition: fixture.id === "P-11", modeLabel: "Guided Practice", position: { accessibilityLabel: "Question 1 of 20", label: "1 of 20" }, progress: 0.05, timer: { accessibilityLabel: "Active foreground time 12:34", label: "Active time 12:34" },
     notice: notice(fixture.operation), phase: phase === "completed" ? "completed" : phase,
     primaryAction: { enabled: fixture.operation === "unanswered" || fixture.operation === "feedback" || fixture.operation === "advance_failed" || fixture.operation === "completed", label: fixture.operation === "feedback" ? "Next" : fixture.operation === "completed" ? "View session result" : "Check answer", loading: fixture.operation === "submitting_before_journal" || fixture.operation === "advancing" },
     question: phase === "preparing" ? undefined : { prompt: item.prompt, constraints: item.constraints, responseControl: practiceControl(item, fixture.id) },
-    onAbandon: noop, onChoicePress: noop, onComplexityValuePress: noop, onConfirmLeave: noop, onDismissExit: noop, onOrderingMove: noop, onPrimaryAction: noop, onRequestAbandon: noop, onRequestLeave: noop, onRetry: fixture.operation.includes("failed") ? noop : undefined, retryLabel: fixture.operation.includes("failed") ? "Retry safely" : undefined,
+    onAbandon: noop, onChoicePress: noop, onComplexityValuePress: noop, onConfirmLeave: noop, onDismissExit: noop, onOrderingMove: noop, onPrimaryAction: noop, onRequestLeave: noop, onRetry: fixture.operation.includes("failed") ? noop : undefined, retryLabel: fixture.operation.includes("failed") ? "Retry safely" : undefined,
   };
 }
 

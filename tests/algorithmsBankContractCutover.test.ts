@@ -13,7 +13,7 @@ import type { BundledContentRelease, PublishedAlgorithmsBank } from "../src/cont
 import { validateAlgorithmsBank } from "../src/content/validation";
 import { createTrainingSession } from "../src/domain";
 import { contentHasher } from "../src/infrastructure/identity/contentHasher";
-import { prepareAlgorithmsInterviewSimulation } from "../src/tracks/algorithms";
+import { prepareAlgorithmsInterviewSimulation, submitAlgorithmInteraction } from "../src/tracks/algorithms";
 
 const commit = "1".repeat(40);
 const itemIds = Array.from({ length: 40 }, (_, index) => `contract-item-${index + 1}`);
@@ -60,6 +60,12 @@ test("validates explicit Algorithms hierarchy links and rejects every broken chi
   assert.doesNotThrow(() => validateAlgorithmsBank(legalContrast, taxonomyManifest));
   const illegalContrast = { ...legalContrast, contrastSets: [{ ...legalContrast.contrastSets[0]!, primaryMentalUnitId: "reason_about_indexed_scans" }] };
   assert.throws(() => validateAlgorithmsBank(illegalContrast, taxonomyManifest), /illegal_contrast_mapping/);
+});
+
+test("uses mandatory Details when a single-choice response omits the correct option without an optional specific explanation", () => {
+  const item = bank({ itemCount: 1 }).items[0]!;
+  const submitted = submitAlgorithmInteraction({ question: item, response: { kind: "choice", selectedOptionIds: ["wrong"] } });
+  assert.deepEqual(submitted.feedback.omittedCorrectOptionExplanations, [{ optionId: "correct", text: "This payload exists only to exercise the consumer contract." }]);
 });
 
 async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?: readonly string[]; checksum?: string; schemaVersion?: string; contentVersion?: string; taxonomyVersion?: string; approvalItemIds?: readonly string[] }> = {}): Promise<BundledContentRelease> {

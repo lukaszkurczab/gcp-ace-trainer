@@ -225,7 +225,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         </Card>
 
         <View style={styles.section}>
-          <SectionHeader title="Other practice modes" tight />
+          <SectionHeader title="Practice options" tight />
           {modes.map((mode) => (
             <ListRow
               detail={mode.unavailableReason ?? mode.detail}

@@ -19,7 +19,7 @@ type State =
 
 export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   const [state, setState] = useState<State>({ kind: "loading" });
-  const modeTitle = route.params.modeId === "algorithms-contrast-practice" ? "Contrast Practice" : route.params.modeId === "algorithms-independent-practice" ? "Independent Practice" : "Recognize Patterns";
+  const modeTitle = route.params.modeId === "algorithms-contrast-practice" ? "Contrast Practice" : route.params.modeId === "algorithms-independent-practice" ? "Mixed Practice" : "Recognize Patterns";
 
   useEffect(() => {
     let active = true;

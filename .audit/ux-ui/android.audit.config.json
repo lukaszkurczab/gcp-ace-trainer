@@ -89,7 +89,7 @@
       "stateId": "P-13",
       "stateUri": "exp+patternly-algorithms-audit://audit?auditState=P-13",
       "flowPath": ".audit/ux-ui/maestro/flows/algorithms-stage3-android-states/p-13.yaml",
-      "screenshotName": "algorithms-stage3__p-13__abandon-confirmation__android-regular"
+      "screenshotName": "algorithms-stage3__p-13__commit-verification-failed__android-regular"
     },
     {
       "stateId": "P-14",
