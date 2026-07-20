@@ -1,6 +1,6 @@
 ---
 plan_date: 2026-07-20
-active_next_task: H04-ALGORITHMS-DECLARED-SCOPE-ACTIONS-01
+active_next_task: H05-CERTIFICATION-CANONICAL-GAP-AUDIT-01
 execution_model: development_first
 ---
 
@@ -72,7 +72,7 @@ Commit i SHA mogą wskazywać historyczne wykonanie zmiany, ale nie są bramką 
 
 **Przekazanie:** H04 jest gotowe do implementacji. Nie ma decyzji właściciela produktu blokującej ten zakres.
 
-### H04-ALGORITHMS-DECLARED-SCOPE-ACTIONS-01
+### H04-ALGORITHMS-DECLARED-SCOPE-ACTIONS-01 — wykonano
 
 **Zależność:** H03.
 
@@ -97,6 +97,13 @@ Commit i SHA mogą wskazywać historyczne wykonanie zmiany, ale nie są bramką 
 
 **Weryfikacja:** testy runtime wyboru scope, Home, Practice Hub i route params; typecheck; pełna kontrola statyczna po zmianie kodu; sprawdzenie nieużywanych akcji, tras i importów.
 
+**Wynik:**
+
+- Home uruchamia `Recognize Patterns` tylko z jednym zestawem pasującym do targetu; brak lub wieloznaczność pozostają jawnie niedostępne.
+- Kontrast i independent practice prowadzą do jednego ekranu wyboru, który czyta tylko opcje zadeklarowane w aktywnym artefakcie i przekazuje wybrany scope do istniejącej ścieżki sesji.
+- Practice Hub używa tej samej trasy. Usunięto poprzednią ścieżkę, w której aktywna pozycja trybu kończyła się błędem braku scope.
+- Dodano testy akcji dashboardu oraz opcji deklarowanych zakresów. Pełna kontrola statyczna po zmianie przeszła: typecheck, 262 testy i kontrola granicy treści.
+
 ### H05-CERTIFICATION-CANONICAL-GAP-AUDIT-01
 
 **Cel:** rozstrzygnąć rozbieżność między deklarowaną rodziną Certification a aktualnym runtime oraz przygotować najmniejszy prawdziwy zakres jej uruchomienia.
@@ -119,4 +126,4 @@ Commit i SHA mogą wskazywać historyczne wykonanie zmiany, ale nie są bramką 
 
 ## Pierwszy następny krok
 
-Wykonać H04. To najmniejsza prawdziwa naprawa aktywnych trybów Algorithms: użytkownik wybiera zadeklarowany zakres tam, gdzie dane nie rozstrzygają go jednoznacznie, a runtime startuje sesję tylko z tym zakresem.
+Wykonać H05. Algorithms ma teraz działającą ścieżkę deklarowanych zakresów; kolejną potwierdzoną luką funkcjonalną jest rozbieżność między obiecaną rodziną Certification a brakiem jej kanonicznego runtime.
