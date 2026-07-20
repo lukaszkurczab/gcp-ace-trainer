@@ -10,10 +10,12 @@ import type { ContentItemRef, TrainingSession } from "../../domain";
 import {
   buildAlgorithmInteractionViewModel,
   composeCommittedAlgorithmPracticeFeedback,
+  getAlgorithmSessionNodeById,
   getAlgorithmsInterviewSimulationRemainingMs,
   mutateAlgorithmsInterviewSimulationDraft,
 } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
+import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
 import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
 import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjection, type AlgorithmsSimulationTimerEvent } from "./AlgorithmsSimulationTimerFacade";
 import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
@@ -75,6 +77,18 @@ export type AlgorithmsInterviewSimulationEntry = Readonly<{
   requestedLength: 40;
 }>;
 
+export type AlgorithmsDeclaredScopeMode =
+  | typeof ALGORITHM_MODE_IDS.recognizePatterns
+  | typeof ALGORITHM_MODE_IDS.contrastPractice
+  | typeof ALGORITHM_MODE_IDS.independentPractice;
+
+export type AlgorithmsDeclaredScopeOption = Readonly<{
+  detail: string;
+  scope: AlgorithmSelectionScope;
+  title: string;
+  topicId: string;
+}>;
+
 type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "sessionId"> & Readonly<{
   modeId: AlgorithmModeId;
   source?: string;
@@ -106,6 +120,31 @@ export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimu
     throw new Error("Algorithms Interview Simulation requires exactly one validated declared profile.");
   }
   return Object.freeze({ trackId: "algorithms", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: profiles[0].profileId, requestedLength: 40 });
+}
+
+/** Application-owned declared-scope read. Presentation receives choices, never the content catalog. */
+export function getAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: AlgorithmsDeclaredScopeMode; targetMentalUnitId?: string }>): readonly AlgorithmsDeclaredScopeOption[] {
+  const availability = getBundledContentAvailability("algorithms");
+  if (availability.kind !== "available" || !availability.declaredModes.includes(input.modeId)) throw new Error("Algorithms practice content is unavailable.");
+  const catalog = getAlgorithmContentCatalog();
+  const option = (itemIds: readonly string[], scope: AlgorithmSelectionScope, detail: string): AlgorithmsDeclaredScopeOption => {
+    const topicIds = [...new Set(itemIds.map((itemId) => catalog.getItemById(itemId).taxonomy.roadmapNodeId))];
+    if (topicIds.length !== 1) throw new Error("A declared Algorithms practice scope must belong to exactly one roadmap topic.");
+    const topicId = topicIds[0]!;
+    return Object.freeze({ detail, scope: Object.freeze(scope), title: getAlgorithmSessionNodeById(topicId).label, topicId });
+  };
+  if (input.modeId === ALGORITHM_MODE_IDS.recognizePatterns) {
+    return Object.freeze(catalog.bank.recognitionSets
+      .filter((set) => !input.targetMentalUnitId || [...(set.taxonomyScope.mentalUnitIds ?? []), ...(set.taxonomyScope.primaryMentalUnitIds ?? [])].includes(input.targetMentalUnitId))
+      .map((set) => option(set.itemIds, { recognitionSetId: set.setId }, "Identify the pattern from its declared signals and constraints.")));
+  }
+  if (input.modeId === ALGORITHM_MODE_IDS.contrastPractice) {
+    return Object.freeze(catalog.bank.contrastSets
+      .filter((set) => !input.targetMentalUnitId || set.primaryMentalUnitId === input.targetMentalUnitId || set.contrastedMentalUnitIds.includes(input.targetMentalUnitId))
+      .map((set) => option(set.itemIds, { contrastSetId: set.setId }, set.transferBoundary)));
+  }
+  return Object.freeze(catalog.bank.interleavedScopes
+    .map((scope) => option(scope.itemIds, { interleavedScopeId: scope.scopeId }, "Interleave the declared mental units without hints or reinsert.")));
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {

@@ -19,6 +19,13 @@ const TOPIC = "binary_search";
 
 function runtime() {
   const catalog = {
+    bank: {
+      recognitionSets: [{
+        itemIds: ["item-1"],
+        setId: "binary-recognition",
+        taxonomyScope: { mentalUnitIds: [MENTAL_UNIT] },
+      }],
+    },
     getItemById() { return { taxonomy: { roadmapNodeId: TOPIC } }; },
     getItemsForMentalUnit(mentalUnitId: string) {
       return mentalUnitId === MENTAL_UNIT ? [{ taxonomy: { roadmapNodeId: TOPIC } }] : [];
@@ -44,14 +51,14 @@ function attempt(result: "correct" | "incorrect" = "correct"): TrainingAttempt<u
   };
 }
 
-function review(input: Readonly<{ dueAt: string; id: string; repeated?: boolean }>): ReviewQueueEntry {
+function review(input: Readonly<{ dueAt: string; id: string; reason?: "wrong_pattern" | "wrong_strategy"; repeated?: boolean }>): ReviewQueueEntry {
   return {
     consecutiveAfterDueSuccesses: 0,
     createdAt: NOW,
     dueAt: input.dueAt,
     id: input.id,
     persistent: Boolean(input.repeated),
-    reasons: input.repeated ? ["repeated_mistake"] : ["incorrect"],
+    reasons: input.repeated ? ["repeated_mistake"] : [input.reason ?? "incorrect"],
     sourceAttemptId: `attempt-${input.id}`,
     sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "algorithms" },
     sourceSessionId: "session-1",
@@ -98,6 +105,23 @@ test("Algorithms dashboard exposes the exact active session as a resume action",
   const value = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: "algorithms" });
   assert.equal(value.recommendation.reason, "active_session");
   assert.deepEqual(value.recommendation.action, { kind: "resume_active_session", modeId: ALGORITHM_MODE_IDS.guidedPractice, sessionId: "active-session", topicId: TOPIC });
+});
+
+test("Algorithms dashboard starts recognition only with its one declared set", async () => {
+  const value = await dashboard({ reviews: [review({ dueAt: "2026-07-21T11:00:00.000Z", id: "pattern", reason: "wrong_pattern" })] });
+  assert.deepEqual(value.recommendation.action, {
+    kind: "start_practice",
+    modeId: ALGORITHM_MODE_IDS.recognizePatterns,
+    scope: { recognitionSetId: "binary-recognition" },
+    topicId: TOPIC,
+  });
+});
+
+test("Algorithms dashboard requires an explicit contrast or independent-practice scope", async () => {
+  const contrast = await dashboard({ reviews: [review({ dueAt: "2026-07-21T11:00:00.000Z", id: "strategy", reason: "wrong_strategy" })] });
+  assert.deepEqual(contrast.recommendation.action, { kind: "choose_declared_scope", modeId: ALGORITHM_MODE_IDS.contrastPractice, targetMentalUnitId: MENTAL_UNIT });
+  const independent = await dashboard({});
+  assert.deepEqual(independent.recommendation.action, { kind: "choose_declared_scope", modeId: ALGORITHM_MODE_IDS.independentPractice });
 });
 
 test("active session stays ahead of every later recommendation condition", () => {

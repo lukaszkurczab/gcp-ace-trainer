@@ -140,6 +140,17 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
       return;
     }
+    if (activeTrack.id === "algorithms" && (
+      resolvedMode === ALGORITHM_MODE_IDS.recognizePatterns ||
+      resolvedMode === ALGORITHM_MODE_IDS.contrastPractice ||
+      resolvedMode === ALGORITHM_MODE_IDS.independentPractice
+    )) {
+      navigation.navigate(ROUTES.ALGORITHMS_SCOPE_SELECTION, {
+        modeId: resolvedMode,
+        source: "practiceHub",
+      });
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({

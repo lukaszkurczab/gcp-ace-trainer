@@ -65,6 +65,7 @@ export type AlgorithmsRecommendation = Readonly<{
 export type AlgorithmsRecommendationAction =
   | Readonly<{ kind: "resume_active_session"; modeId: AlgorithmModeId; sessionId: string; simulationProfileId?: string; topicId: string }>
   | Readonly<{ kind: "start_practice"; modeId: AlgorithmModeId; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope; topicId: string }>
+  | Readonly<{ kind: "choose_declared_scope"; modeId: typeof ALGORITHM_MODE_IDS.contrastPractice | typeof ALGORITHM_MODE_IDS.independentPractice; targetMentalUnitId?: string }>
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
 export type AlgorithmsDashboardRecommendation = AlgorithmsRecommendation & Readonly<{ action: AlgorithmsRecommendationAction }>;
@@ -356,6 +357,14 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     if (recommendation.modeId === ALGORITHM_MODE_IDS.learnApproach || recommendation.modeId === ALGORITHM_MODE_IDS.guidedPractice) {
       return this.practiceAction(recommendation.modeId, recommendation.targetMentalUnitId);
     }
+    if (recommendation.modeId === ALGORITHM_MODE_IDS.recognizePatterns) return this.recognitionAction(recommendation.targetMentalUnitId);
+    if (recommendation.modeId === ALGORITHM_MODE_IDS.contrastPractice) {
+      if (!recommendation.targetMentalUnitId) return Object.freeze({ kind: "unavailable", reason: "The contrast recommendation has no declared Algorithms target." });
+      return Object.freeze({ kind: "choose_declared_scope", modeId: ALGORITHM_MODE_IDS.contrastPractice, targetMentalUnitId: recommendation.targetMentalUnitId });
+    }
+    if (recommendation.modeId === ALGORITHM_MODE_IDS.independentPractice) {
+      return Object.freeze({ kind: "choose_declared_scope", modeId: ALGORITHM_MODE_IDS.independentPractice });
+    }
     return Object.freeze({ kind: "unavailable", reason: "This recommendation requires an explicitly selected declared practice scope." });
   }
 
@@ -386,6 +395,18 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
   private topicForMentalUnit(mentalUnitId: string): string | null {
     const topicIds = [...new Set(this.catalog.getItemsForMentalUnit(mentalUnitId).map((item) => item.taxonomy.roadmapNodeId))];
     return topicIds.length === 1 ? topicIds[0]! : null;
+  }
+
+  private recognitionAction(mentalUnitId: string | undefined): AlgorithmsRecommendationAction {
+    if (!mentalUnitId) return Object.freeze({ kind: "unavailable", reason: "The recognition recommendation has no declared Algorithms target." });
+    const matches = this.catalog.bank.recognitionSets.filter((set) => [
+      ...(set.taxonomyScope.mentalUnitIds ?? []),
+      ...(set.taxonomyScope.primaryMentalUnitIds ?? []),
+    ].includes(mentalUnitId));
+    if (matches.length !== 1) return Object.freeze({ kind: "unavailable", reason: matches.length === 0 ? "No declared recognition set covers this Algorithms target." : "More than one declared recognition set covers this Algorithms target." });
+    const topicIds = [...new Set(matches[0]!.itemIds.map((itemId) => this.catalog.getItemById(itemId).taxonomy.roadmapNodeId))];
+    if (topicIds.length !== 1) return Object.freeze({ kind: "unavailable", reason: "The declared recognition set does not belong to one Algorithms roadmap topic." });
+    return Object.freeze({ kind: "start_practice", modeId: ALGORITHM_MODE_IDS.recognizePatterns, scope: { recognitionSetId: matches[0]!.setId }, topicId: topicIds[0]! });
   }
 }
 

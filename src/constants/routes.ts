@@ -2,6 +2,7 @@ export const ROUTES = {
   HOME: "Home",
   SELECT_TRACK: "select_track",
   PRACTICE_HUB: "PracticeHub",
+  ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",
   TOPIC_ROADMAP: "TopicRoadmap",
   EXAM: "Exam",
   EXAM_REVIEW: "ExamReview",

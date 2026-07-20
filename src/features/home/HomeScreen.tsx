@@ -196,6 +196,14 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   async function handleRecommendationAction(action: AlgorithmsRecommendationAction) {
     if (action.kind === "unavailable") return;
     try {
+      if (action.kind === "choose_declared_scope") {
+        navigation.navigate(ROUTES.ALGORITHMS_SCOPE_SELECTION, {
+          modeId: action.modeId,
+          source: "home",
+          targetMentalUnitId: action.targetMentalUnitId,
+        });
+        return;
+      }
       if (action.kind === "resume_active_session") {
         const session = await resumeActiveTrainingSession();
         if (session.id !== action.sessionId || session.trackId !== ALGORITHMS_TRACK_ID || session.modeId !== action.modeId) {
@@ -212,6 +220,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         buildPracticeSessionConfig({
           mode: action.modeId,
           reviewSource: action.kind === "start_practice" ? action.reviewSource : undefined,
+          algorithmScope: action.kind === "start_practice" ? action.scope : undefined,
           source: "home",
           topicId: action.topicId,
           trackId: ALGORITHMS_TRACK_ID,

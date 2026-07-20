@@ -8,6 +8,7 @@ import { HomeScreen } from "../features/home/HomeScreen";
 import { SelectTrackScreen } from "../features/home/SelectTrackScreen";
 import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
+import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
 import { ResultScreen } from "../features/exam/ResultScreen";
@@ -48,6 +49,11 @@ export function RootNavigator() {
         name={ROUTES.PRACTICE_HUB}
         component={PracticeHubScreen}
         options={{ headerShown: false, title: "Practice Hub" }}
+      />
+      <Stack.Screen
+        name={ROUTES.ALGORITHMS_SCOPE_SELECTION}
+        component={AlgorithmsScopeSelectionScreen}
+        options={{ headerShown: false, title: "Choose practice scope" }}
       />
       <Stack.Screen
         name={ROUTES.TOPIC_ROADMAP}

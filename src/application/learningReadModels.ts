@@ -1,6 +1,6 @@
 import type { TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
-import type { AlgorithmsDashboard } from "./algorithms";
+import { getAlgorithmsDeclaredScopeOptions, type AlgorithmsDashboard, type AlgorithmsDeclaredScopeMode } from "./algorithms";
 import {
   getActiveTrackId,
   getActiveTrainingSession,
@@ -33,6 +33,10 @@ export async function loadAlgorithmsDashboard(): Promise<AlgorithmsDashboard> {
   const dashboard = await getTrainingLifecycleUseCases().queryDashboard("algorithms");
   if (!isAlgorithmsDashboard(dashboard)) throw new Error("Algorithms dashboard returned an unsupported projection.");
   return dashboard;
+}
+
+export async function loadAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: AlgorithmsDeclaredScopeMode; targetMentalUnitId?: string }>) {
+  return getAlgorithmsDeclaredScopeOptions(input);
 }
 
 export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
