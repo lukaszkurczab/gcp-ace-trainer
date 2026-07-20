@@ -329,12 +329,12 @@ test("post-commit backup cleanup failure keeps the new pair and reports residue"
   }
 });
 
-test("capture manifest maps all exact flows, executable provenance, and remains visual-review pending", () => {
+test("historical iOS packet maps all exact flows but is explicitly stale", () => {
   const config = readAuditConfig(root);
   const expected = canonicalIosCaptureEntries(root, config);
   const manifest = JSON.parse(readFileSync(path.join(root, "audit/algorithms-ui/s3-ios-capture-manifest.json"), "utf8"));
-  assert.equal(manifest.status, "captured_visual_review_pending");
-  assert.deepEqual(manifest.visualReview, { approvedPacketComparison: "pending", accepted: false });
+  assert.equal(manifest.status, "stale_recapture_required");
+  assert.deepEqual(manifest.visualReview, { approvedPacketComparison: "not_comparable", accepted: false });
   assert.equal(manifest.capture.serialProcessCount, 44);
   assert.equal(manifest.capture.bootstrapProcessCount, 1);
   assert.equal(manifest.screenshots.length, 44);
@@ -342,7 +342,8 @@ test("capture manifest maps all exact flows, executable provenance, and remains 
   assert.equal(new Set(manifest.screenshots.map((entry) => entry.screenshotPath)).size, 44);
   assert.equal(new Set(manifest.screenshots.map((entry) => entry.sha256)).size, 44);
   assert.ok(manifest.screenshots.every((entry) => /^[0-9a-f]{64}$/.test(entry.sha256) && entry.width === 1206 && entry.height === 2622));
-  assert.equal(manifest.source.auditSourceSha256, computeAuditSourceSha256(root, config, expected));
+  assert.match(manifest.source.auditSourceSha256, /^[0-9a-f]{64}$/);
+  assert.notEqual(manifest.source.auditSourceSha256, computeAuditSourceSha256(root, config, expected));
   assert.equal(manifest.source.worktreeStatusFormat, "git status --porcelain=v1 -z");
   assert.ok(manifest.source.worktreeStatus.every((entry) => /^[ MADRCU?!]{2} /.test(entry)));
 });

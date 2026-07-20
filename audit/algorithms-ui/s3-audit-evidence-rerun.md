@@ -39,9 +39,9 @@ untracked in this worktree. Its stored executable-source SHA-256 is
 `6d5888808dea61c6b5d27ce28796df588cb199ff25b3ca323bbc5d05cdf0d53e`,
 while the current full provenance graph computes to
 `aa0f0fa680f9df328eda503e96e737c412c39d8b76162acb0dadf9e34dd41a80`.
-The hashes differ, so the stored `captured_visual_review_pending` status and
-the per-state result cells below are superseded until a fresh canonical
-recapture publishes a matching manifest.
+The hashes differ, so the manifest is explicitly classified
+`stale_recapture_required` and the per-state result cells below are superseded
+until a fresh canonical recapture publishes a matching manifest.
 The runner starts the isolated host once. Each state flow then deep-links one
 requested state, waits for the exact `algorithms-audit-current-<STATE>` testID,
 and takes exactly one screenshot. All 44 bounded invocations exited successfully; the filesystem

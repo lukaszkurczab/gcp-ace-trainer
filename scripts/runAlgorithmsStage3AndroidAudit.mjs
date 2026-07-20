@@ -132,8 +132,6 @@ export function validateAndroidConfig(root, config) {
   for (const retiredKey of ["stateLaunchUri", "captureFlow", "screenshotName"]) {
     if (Object.hasOwn(config, retiredKey)) errors.push(`retired single-state key ${retiredKey} must not exist`);
   }
-  if (!existsSync(path.join(root, config.debugApk ?? ""))) errors.push(`required file is missing: ${config.debugApk}`);
-
   const bootstrapPath = path.join(root, config.bootstrapFlow ?? "");
   if (!existsSync(bootstrapPath)) {
     errors.push(`required file is missing: ${config.bootstrapFlow}`);
@@ -296,6 +294,10 @@ function adbText(adb, serial, args, allowEmpty = false) {
 }
 
 function readDevice(root, adb, serial, config) {
+  const localApkPath = path.join(root, config.debugApk);
+  if (!existsSync(localApkPath)) {
+    throw new Error(`Canonical Android debug APK is missing: ${config.debugApk}; build it before native capture`);
+  }
   const devices = spawnSync(adb, ["devices", "-l"], { encoding: "utf8" });
   if (devices.status !== 0) throw new Error(`Could not enumerate ADB devices: ${(devices.stderr || devices.stdout || "unknown error").trim()}`);
   selectOnlineDevice(devices.stdout, serial);
@@ -315,7 +317,7 @@ function readDevice(root, adb, serial, config) {
   if (!screenSize || !density) throw new Error("Could not read physical Android resolution and density");
   const installedApkSha256 = adbText(adb, serial, ["shell", "sha256sum", installedApkPath]).match(/^([0-9a-f]{64})\s/)?.[1];
   if (!installedApkSha256) throw new Error("Could not read installed APK SHA-256 for identity verification");
-  const localApkSha256 = sha256(readFileSync(path.join(root, config.debugApk)));
+  const localApkSha256 = sha256(readFileSync(localApkPath));
   if (installedApkSha256 !== localApkSha256) throw new Error("Installed APK does not match the canonical local debug APK; rebuild/install it before capture");
   return Object.freeze({
     serial,

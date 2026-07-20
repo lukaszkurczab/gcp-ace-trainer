@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "auditId": "algorithms-stage3-visual-harness-v1",
-  "status": "captured_visual_review_pending",
+  "status": "stale_recapture_required",
   "visualReview": {
-    "approvedPacketComparison": "pending",
+    "approvedPacketComparison": "not_comparable",
     "accepted": false
   },
   "capture": {

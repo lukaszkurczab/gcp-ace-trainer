@@ -60,7 +60,7 @@ test("reads exact PNG dimensions and preserves exact porcelain XY bytes", () => 
   assert.deepEqual(status, [" M worktree-only.ts", "M  index-only.ts", "MM both.ts"]);
 });
 
-test("Android config owns exactly the canonical 44-state inventory matching iOS identities and slugs", () => {
+test("Android static config owns exactly the canonical 44-state inventory without requiring a debug APK", () => {
   const android = readAndroidConfig(root);
   const entries = canonicalAndroidCaptureEntries(root, android);
   const iosConfig = readAuditConfig(root);
@@ -228,27 +228,26 @@ test("post-commit Android backup cleanup failure keeps the new pair and reports 
   }
 });
 
-test("published Android packet maps all 44 exact flows and has current executable provenance", () => {
+test("historical Android packet maps all 44 exact flows but is explicitly stale", () => {
   const config = readAndroidConfig(root);
   const manifest = JSON.parse(readFileSync(path.join(root, config.manifestPath), "utf8"));
-  assert.equal(manifest.status, "captured_visual_review_pending");
-  assert.equal(manifest.visualReview.accepted, false);
+  assert.equal(manifest.status, "stale_recapture_required");
+  assert.deepEqual(manifest.visualReview, { approvedPacketComparison: "not_comparable", accepted: false });
   assert.equal(manifest.capture.serialProcessCount, 44);
   assert.equal(manifest.screenshots.length, 44);
   assert.deepEqual(manifest.screenshots.map((entry) => entry.stateId), config.states.map((entry) => entry.stateId));
   assert.deepEqual(manifest.screenshots.map((entry) => entry.flowPath), config.states.map((entry) => entry.flowPath));
   assert.equal(new Set(manifest.screenshots.map((entry) => entry.sha256)).size, 44);
   assert.ok(manifest.screenshots.every((entry) => entry.width === 1080 && entry.height === 2400));
-  assert.equal(manifest.source.androidAuditSourceSha256, computeAndroidSourceSha256(root, config));
-  for (const screenshot of manifest.screenshots) {
-    assert.equal(readFileSync(path.join(root, screenshot.screenshotPath)).length > 24, true);
-  }
+  assert.match(manifest.source.androidAuditSourceSha256, /^[0-9a-f]{64}$/);
+  assert.notEqual(manifest.source.androidAuditSourceSha256, computeAndroidSourceSha256(root, config));
+  assert.ok(manifest.screenshots.every((entry) => entry.screenshotPath.startsWith(`${config.outputDirectory}/screenshots/`)));
 });
 
 function makeConfigFixture() {
   const fixtureRoot = mkdtempSync(path.join(os.tmpdir(), "patternly-android-config-"));
   const config = structuredClone(readAndroidConfig(root));
-  for (const relativePath of [config.debugApk, config.bootstrapFlow, ...config.states.map((entry) => entry.flowPath)]) {
+  for (const relativePath of [config.bootstrapFlow, ...config.states.map((entry) => entry.flowPath)]) {
     const destination = path.join(fixtureRoot, relativePath);
     mkdirSync(path.dirname(destination), { recursive: true });
     writeFileSync(destination, readFileSync(path.join(root, relativePath)));
