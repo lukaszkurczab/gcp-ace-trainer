@@ -7,7 +7,7 @@ import { buildProgressTabModel } from "../src/features/home/tabs/progressTabMode
 import { buildCloudCertificationProgressViewModel } from "../src/tracks/cloud-certification";
 
 test("Home projection exposes a stable empty-state focus without inventing evidence", () => {
-  const model = buildHomeTabModel({ activeTrack: getTrackDisplay("cloud-certification"), analytics: buildAnalyticsData([], []), trainingAttempts: [] });
+  const model = buildHomeTabModel({ activeTrack: getTrackDisplay("cloud-certification"), algorithmsDashboard: null, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] });
   assert.equal(model.focusTitle, "Cloud Certification");
   assert.equal(model.primaryLabel, "Start learning");
 });

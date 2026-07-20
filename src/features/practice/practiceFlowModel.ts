@@ -35,10 +35,6 @@ export type PracticeModeModel = {
   unavailableReason?: string;
 };
 
-export type RecommendedPracticeModel = PracticeModeModel & {
-  label: string;
-};
-
 export type PracticeStatsSummary = {
   detail: string;
   metricLabel: string;
@@ -184,73 +180,6 @@ export function hasTrackProgress(input: {
     input.analytics.summary.totalPracticeQuestionsAnswered > 0 ||
     input.analytics.summary.totalCompletedExams > 0
   );
-}
-
-export function buildRecommendedPracticeModes(input: {
-  activeTrack: TrackDisplay;
-  analytics: AnalyticsData;
-  trainingAttempts: readonly TrainingAttempt[];
-}): RecommendedPracticeModel[] {
-  if (!hasTrackProgress({
-    activeTrackId: input.activeTrack.id,
-    analytics: input.analytics,
-    trainingAttempts: input.trainingAttempts,
-  })) {
-    return [];
-  }
-
-  if (input.activeTrack.id === ALGORITHMS_TRACK_ID) {
-    return [
-      {
-        detail: "Practice Algorithms review items that are currently due.",
-        enabled: true,
-        icon: "rotate-ccw",
-        label: "Weak area review",
-        mode: ALGORITHM_MODE_IDS.weakAreaReview,
-        title: "Weak Area Review",
-        tone: "primary",
-      },
-      {
-        detail: "Interleave unlocked topics without hints or reinsert.",
-        enabled: true,
-        icon: "clipboard",
-        label: "Independent practice",
-        mode: ALGORITHM_MODE_IDS.independentPractice,
-        title: "Independent Practice",
-        tone: "info",
-      },
-    ];
-  }
-
-  return [
-    {
-      detail: "Revisit recent misses from the current track.",
-      enabled: true,
-      icon: "rotate-ccw",
-      label: "Review",
-      mode: "review",
-      title: "Review",
-      tone: "primary",
-    },
-    {
-      detail: "Focus on areas where recent answers are weaker.",
-      enabled: true,
-      icon: "alert-triangle",
-      label: "Weak area",
-      mode: "weakArea",
-      title: "Weak area",
-      tone: "warning",
-    },
-    {
-      detail: "Mixed practice session for the selected track.",
-      enabled: true,
-      icon: "clipboard",
-      label: "Practice",
-      mode: "practice",
-      title: "Practice",
-      tone: "info",
-    },
-  ];
 }
 
 export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel[] {

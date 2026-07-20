@@ -1,11 +1,8 @@
 import type { IconName } from "../../../components";
 import type { TrackDisplay, TrainingAttempt } from "../../../domain";
+import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import {
-  buildRecommendedPracticeModes,
-  getCurrentPracticeTopic,
-} from "../../practice/practiceFlowModel";
-import type { PracticeSessionMode } from "../../practice/sessionConfig";
+import { getCurrentPracticeTopic } from "../../practice/practiceFlowModel";
 
 type HomeRecommendationTone = "info" | "primary" | "warning";
 
@@ -14,7 +11,7 @@ export type HomeRecommendationModel = {
   enabled: boolean;
   icon: IconName;
   label: string;
-  mode: PracticeSessionMode;
+  action: AlgorithmsRecommendationAction;
   title: string;
   tone: HomeRecommendationTone;
   unavailableReason?: string;
@@ -33,23 +30,14 @@ export type HomeTabModel = {
 export type BuildHomeTabModelInput = {
   activeTrack: TrackDisplay;
   analytics: AnalyticsData;
+  algorithmsDashboard: AlgorithmsDashboard | null;
+  dashboardError: string | null;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
 export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
   const topic = getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
-  const recommendations = buildRecommendedPracticeModes(input).map((item) => ({
-    detail: item.detail,
-    enabled: item.enabled,
-    icon: item.icon,
-    label: item.label,
-    mode: item.mode,
-    title: item.title,
-    tone: item.tone === "danger" || item.tone === "muted" || item.tone === "success"
-      ? "warning"
-      : item.tone,
-    unavailableReason: item.unavailableReason,
-  }));
+  const recommendations = buildAlgorithmsRecommendations(input);
   const hasProgress = recommendations.length > 0;
 
   return {
@@ -61,4 +49,47 @@ export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
     recommendations,
     topicId: topic.id,
   };
+}
+
+function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeRecommendationModel[] {
+  if (input.activeTrack.id !== "algorithms") return [];
+  if (input.dashboardError) {
+    return [{ action: { kind: "unavailable", reason: input.dashboardError }, detail: input.dashboardError, enabled: false, icon: "alert-triangle", label: "Unavailable", title: "Recommendation unavailable", tone: "warning", unavailableReason: input.dashboardError }];
+  }
+  const recommendation = input.algorithmsDashboard?.recommendation;
+  if (!recommendation) return [];
+  const unavailableReason = recommendation.action.kind === "unavailable" ? recommendation.action.reason : undefined;
+  return [{
+    action: recommendation.action,
+    detail: recommendation.explanation,
+    enabled: !unavailableReason,
+    icon: iconFor(recommendation.reason),
+    label: labelFor(recommendation.reason),
+    title: titleFor(recommendation.reason),
+    tone: recommendation.reason === "active_session" || recommendation.reason === "overdue_review" || recommendation.reason === "repeated_mistake" ? "primary" : "info",
+    unavailableReason,
+  }];
+}
+
+function iconFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): IconName {
+  if (reason === "active_session") return "practice";
+  if (reason === "overdue_review" || reason === "repeated_mistake") return "rotate-ccw";
+  return "route";
+}
+
+function labelFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): string {
+  if (reason === "active_session") return "Continue";
+  if (reason === "overdue_review") return "Due review";
+  if (reason === "repeated_mistake") return "Priority review";
+  return "Recommended";
+}
+
+function titleFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): string {
+  if (reason === "active_session") return "Continue active session";
+  if (reason === "overdue_review" || reason === "repeated_mistake") return "Weak Area Review";
+  if (reason === "learn_approach") return "Learn Approach";
+  if (reason === "guided_practice") return "Guided Practice";
+  if (reason === "contrast_practice") return "Contrast Practice";
+  if (reason === "recognize_patterns") return "Recognize Patterns";
+  return "Independent Practice";
 }

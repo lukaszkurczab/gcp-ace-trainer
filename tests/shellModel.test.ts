@@ -6,7 +6,6 @@ import {
   buildShellSafetyModel,
   HOME_CHANGE_FOCUS_CTA,
   HOME_PRIMARY_CTA,
-  HOME_RECOMMENDATIONS,
   MAIN_TAB_ITEMS,
   PRACTICE_PRIMARY_CTA,
   PRACTICE_REVIEW_CTA,
@@ -47,14 +46,6 @@ test("shell safety model exposes no gamified status fields", () => {
   assert.equal("readinessPercent" in model, false);
   assert.equal("retentionPercent" in model, false);
   assert.equal("examPassPrediction" in model, false);
-});
-
-test("Home recommendations are static unless explicitly wired", () => {
-  assert.deepEqual(
-    HOME_RECOMMENDATIONS.map((item) => item.route ?? null),
-    [null, null, null],
-  );
-  assert.deepEqual(buildShellSafetyModel().homeRecommendationRoutes, []);
 });
 
 test("Practice review weak items routes to canonical review queue", () => {

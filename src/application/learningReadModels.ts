@@ -1,4 +1,6 @@
 import type { TrackId } from "../domain";
+import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
+import type { AlgorithmsDashboard } from "./algorithms";
 import {
   getActiveTrackId,
   getActiveTrainingSession,
@@ -26,6 +28,13 @@ export async function loadReviewQueueItems() { return getReviewQueueItems(); }
 export async function loadActiveTrainingSession() { return getActiveTrainingSession(); }
 export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(); }
 
+/** Typed Home read. Presentation receives the family dashboard, never its runtime or repositories. */
+export async function loadAlgorithmsDashboard(): Promise<AlgorithmsDashboard> {
+  const dashboard = await getTrainingLifecycleUseCases().queryDashboard("algorithms");
+  if (!isAlgorithmsDashboard(dashboard)) throw new Error("Algorithms dashboard returned an unsupported projection.");
+  return dashboard;
+}
+
 export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
   const [attempts, reviews] = await Promise.all([getTrainingAttempts(), getReviewQueueItems()]);
   return buildCloudCertificationProgressViewModel({
@@ -35,4 +44,10 @@ export async function loadCloudCertificationProgress(input: { now?: string; rece
     recentAttemptCount: input.recentAttemptCount,
     reviewQueueItems: reviews.value,
   });
+}
+
+function isAlgorithmsDashboard(value: unknown): value is AlgorithmsDashboard {
+  if (!value || typeof value !== "object" || !("recommendation" in value)) return false;
+  const recommendation = value.recommendation;
+  return Boolean(recommendation && typeof recommendation === "object" && "action" in recommendation && "explanation" in recommendation && "reason" in recommendation);
 }

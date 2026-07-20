@@ -21,6 +21,7 @@ function session(status: "active" | "completed" | "abandoned" = "active"): Train
 function fixture() {
   const calls: string[] = [];
   let active: TrainingSession | null = null;
+  let dashboardActiveSession: TrainingSession | null = null;
   let persisted: TrainingSession | null = null;
   let result = null as ReturnType<typeof createTrainingSessionResult> | null;
   const runtime: TrainingFamilyRuntime = {
@@ -31,7 +32,7 @@ function fixture() {
     async finalizePractice(input) { calls.push("finalize-practice"); const completed = createTrainingSession({ ...input.session, status: "completed", currentItemIndex: 1, completedAt: "2026-07-16T12:01:00.000Z" }); return { session: completed, result: createTrainingSessionResult({ id: "result-1", sessionId: completed.id, trackId: completed.trackId, totalOccurrences: 2, answeredOccurrenceIds: ["occurrence-0", "occurrence-1"], unansweredOccurrenceIds: [], completedAt: completed.completedAt!, evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }) }; },
     async finalizeSimulation(input) { calls.push("finalize"); const completed = createTrainingSession({ ...input.session, status: "completed", currentItemIndex: 1, completedAt: "2026-07-16T12:01:00.000Z" }); return { session: completed, result: createTrainingSessionResult({ id: "result-1", sessionId: completed.id, trackId: completed.trackId, totalOccurrences: 2, answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-0", "occurrence-1"], completedAt: completed.completedAt!, evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }), attempts: [], reviewMutations: [], frozenDraft: input.draft }; },
     async validateDraftCommand() { calls.push("validate-draft"); },
-    async queryDashboard() { calls.push("dashboard"); return { kind: "dashboard" }; },
+    async queryDashboard(input) { calls.push("dashboard"); dashboardActiveSession = input.activeSession; return { kind: "dashboard" }; },
     async queryProgress() { calls.push("progress"); return { kind: "progress" }; },
     async queryReview() { calls.push("review"); return { kind: "review" }; },
   };
@@ -48,7 +49,7 @@ function fixture() {
       async start(input) { calls.push("start"); persisted = input.session; active = input.session; }, async submitPractice() { calls.push("commit-submit"); }, async advance(value) { calls.push("advance"); active = value; persisted = value; }, async complete(value) { calls.push("complete"); persisted = value; result = createTrainingSessionResult({ id: "result-1", sessionId: value.id, trackId: value.trackId, totalOccurrences: 2, answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-0", "occurrence-1"], completedAt: "2026-07-16T12:01:00.000Z", evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }); active = null; }, async completeWithResult(value) { calls.push("complete-with-result"); persisted = value.session; result = value.result; active = null; }, async finalize(input) { calls.push("commit-finalize"); persisted = input.session; result = input.result; active = null; }, async abandon(value) { calls.push("abandon"); persisted = value; active = null; }, async recover() { calls.push("recover"); }, async reset() { calls.push("reset"); },
     },
   };
-  return { calls, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
+  return { calls, dashboardActiveSession: () => dashboardActiveSession, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
 }
 
 test("start resolves the exact family and exposes its first item only after active-session verification", async () => {
@@ -119,4 +120,10 @@ test("recovery, reset, family queries, resume, and draft commands remain applica
   await f.useCases.saveSimulationDraft({ draft: { schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: "session-1", trackId: "test-track", responsesByOccurrenceId: {}, updatedAt: "2026-07-16T12:00:00.000Z" }, expectedPreviousRevision: 0 });
   assert.deepEqual(await f.useCases.queryDashboard("test-track"), { kind: "dashboard" }); assert.deepEqual(await f.useCases.queryProgress("test-track"), { kind: "progress" }); assert.deepEqual(await f.useCases.queryReview("test-track"), { kind: "review" });
   assert.ok(f.calls.includes("recover") && f.calls.includes("reset") && f.calls.includes("validate-draft") && f.calls.includes("save-draft"));
+});
+
+test("dashboard receives the active session only when it belongs to the queried track", async () => {
+  const f = fixture(); const current = session(); f.setActive(current);
+  await f.useCases.queryDashboard("test-track");
+  assert.equal(f.dashboardActiveSession()?.id, current.id);
 });

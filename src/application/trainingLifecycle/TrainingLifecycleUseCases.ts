@@ -284,7 +284,12 @@ export class TrainingLifecycleUseCases {
   private async query(trackId: TrackId, method: "queryDashboard" | "queryProgress" | "queryReview"): Promise<unknown> {
     const runtime = this.resolveRuntime(trackId);
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    return this.run("persistence_failure", () => runtime[method]({ trackId, attempts: attempts.filter((attempt) => attempt.trackId === trackId), reviews: reviews.filter((review) => review.trackId === trackId), now: this.ports.clock.now() }));
+    const input = { trackId, attempts: attempts.filter((attempt) => attempt.trackId === trackId), reviews: reviews.filter((review) => review.trackId === trackId), now: this.ports.clock.now() };
+    if (method === "queryDashboard") {
+      const activeSession = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
+      return this.run("persistence_failure", () => runtime.queryDashboard({ ...input, activeSession: activeSession?.trackId === trackId && activeSession.status === "active" ? activeSession : null }));
+    }
+    return this.run("persistence_failure", () => runtime[method](input));
   }
 
   private async requireVerifiedSummary(sessionId: string) {

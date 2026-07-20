@@ -18,13 +18,6 @@ export type StaticCta = {
   label: string;
 };
 
-export type HomeRecommendation = {
-  detail: string;
-  label: string;
-  route?: VisibleCta["route"];
-  title: string;
-};
-
 export const MAIN_TAB_ITEMS: readonly ShellTabItem[] = [
   { icon: "home", id: "home", label: "Home" },
   { icon: "practice", id: "practice", label: "Practice" },
@@ -57,27 +50,8 @@ export const PRACTICE_REVIEW_CTA = {
   route: ROUTES.MISTAKES_REVIEW,
 } satisfies VisibleCta;
 
-export const HOME_RECOMMENDATIONS: readonly HomeRecommendation[] = [
-  {
-    detail: "Suggested because of recent practice gaps.",
-    label: "Recommended",
-    title: "Review IAM policies",
-  },
-  {
-    detail: "Concepts will appear after practice history is available.",
-    label: "After practice",
-    title: "Due for review",
-  },
-  {
-    detail: "Access-control scenarios from Cloud Certification practice.",
-    label: "Focus area",
-    title: "IAM roles",
-  },
-] as const;
-
 export type ShellSafetyModel = {
   gamifiedFields: readonly string[];
-  homeRecommendationRoutes: readonly VisibleCta["route"][];
   primaryHomeRoute: VisibleCta["route"];
   primaryPracticeRoute: VisibleCta["route"];
   practiceReviewRoute: VisibleCta["route"] | null;
@@ -112,9 +86,6 @@ export const SETTINGS_ROWS: readonly SettingsRowModel[] = [
 export function buildShellSafetyModel(): ShellSafetyModel {
   return {
     gamifiedFields: [],
-    homeRecommendationRoutes: HOME_RECOMMENDATIONS.flatMap((item) =>
-      item.route ? [item.route] : [],
-    ),
     primaryHomeRoute: HOME_PRIMARY_CTA.route,
     primaryPracticeRoute: PRACTICE_PRIMARY_CTA.route,
     practiceReviewRoute: PRACTICE_REVIEW_CTA.route,

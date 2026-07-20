@@ -11,29 +11,33 @@ import {
 } from "../../../components";
 import type { TrackDisplay } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
+import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
 import { colors, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import type { PracticeSessionMode } from "../../practice/sessionConfig";
 import { buildHomeTabModel } from "./homeTabModel";
 
 type HomeTabProps = {
   activeTrack: TrackDisplay;
   analytics: AnalyticsData;
+  algorithmsDashboard: AlgorithmsDashboard | null;
+  dashboardError: string | null;
   onChangeTrack: () => void;
+  onRecommendationAction: (action: AlgorithmsRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
-  onStartMode: (mode: PracticeSessionMode, topicId: string) => void;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
 export function HomeTab({
   activeTrack,
   analytics,
+  algorithmsDashboard,
+  dashboardError,
   onChangeTrack,
+  onRecommendationAction,
   onStartLearning,
-  onStartMode,
   trainingAttempts,
 }: HomeTabProps) {
-  const model = buildHomeTabModel({ activeTrack, analytics, trainingAttempts });
+  const model = buildHomeTabModel({ activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
 
   return (
     <>
@@ -72,7 +76,7 @@ export function HomeTab({
               detail={item.unavailableReason ?? item.detail}
               key={item.title}
               leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
-              onPress={item.enabled ? () => onStartMode(item.mode, model.topicId) : undefined}
+              onPress={item.enabled ? () => onRecommendationAction(item.action) : undefined}
               style={[
                 index === 0 ? styles.recommendedPrimary : undefined,
                 item.enabled ? undefined : styles.unavailableRow,

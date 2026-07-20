@@ -10,12 +10,14 @@ import {
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
+  ALGORITHMS_TRACK_ID,
   getTrackDisplay,
   type TrackId,
 } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
+  loadAlgorithmsDashboard,
   loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
   loadExamSummaries as getAttempts,
   loadPracticeHistory as getPracticeHistory,
@@ -27,11 +29,12 @@ import { colors } from "../../theme";
 import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
+import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../application/algorithms";
+import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import {
   buildPracticeSessionConfig,
-  getGeneralPracticeReviewSource,
 } from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
@@ -49,6 +52,8 @@ type HomeScreenProps = NativeStackScreenProps<
 >;
 
 type ShellData = {
+  algorithmsDashboard: AlgorithmsDashboard | null;
+  algorithmsDashboardError: string | null;
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: CertificationPracticeAnswerViewModel[];
@@ -65,6 +70,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<ShellData>({
+    algorithmsDashboard: null,
+    algorithmsDashboardError: null,
     attempts: [],
     cloudProgress: null,
     practiceHistory: [],
@@ -84,25 +91,32 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       let isActive = true;
 
       async function loadShellData() {
+        const savedTrackId = await getActiveTrackId();
         const [
-          savedTrackId,
           savedAttempts,
           savedPracticeHistory,
           cloudProgress,
           reviewQueueItemsResult,
           trainingAttemptsResult,
         ] = await Promise.all([
-          getActiveTrackId(),
           getAttempts(),
           getPracticeHistory(),
           loadCloudCertificationProgressViewModel(),
           getReviewQueueItems(),
           getTrainingAttempts(),
         ]);
+        let algorithmsDashboard: AlgorithmsDashboard | null = null;
+        let algorithmsDashboardError: string | null = null;
+        if (savedTrackId === ALGORITHMS_TRACK_ID) {
+          try { algorithmsDashboard = await loadAlgorithmsDashboard(); }
+          catch (error) { algorithmsDashboardError = error instanceof Error ? error.message : "Algorithms recommendation is unavailable."; }
+        }
 
         if (isActive) {
           if (savedTrackId) setActiveTrackId(savedTrackId);
           setData({
+            algorithmsDashboard,
+            algorithmsDashboardError,
             attempts: savedAttempts,
             cloudProgress,
             practiceHistory: savedPracticeHistory,
@@ -149,6 +163,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     const result = await tryClearPatternlyLocalHistory();
     if (result.ok) {
       setData({
+        algorithmsDashboard: null,
+        algorithmsDashboardError: null,
         attempts: [],
         cloudProgress: null,
         practiceHistory: [],
@@ -177,6 +193,35 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     navigation.navigate(ROUTES.MISTAKES_REVIEW);
   }
 
+  async function handleRecommendationAction(action: AlgorithmsRecommendationAction) {
+    if (action.kind === "unavailable") return;
+    try {
+      if (action.kind === "resume_active_session") {
+        const session = await resumeActiveTrainingSession();
+        if (session.id !== action.sessionId || session.trackId !== ALGORITHMS_TRACK_ID || session.modeId !== action.modeId) {
+          throw new Error("The active Algorithms session changed before it could be resumed.");
+        }
+        if (action.modeId === "algorithms-interview-simulation") {
+          if (!action.simulationProfileId) throw new Error("The active Interview Simulation profile is unavailable.");
+          navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: action.simulationProfileId });
+          return;
+        }
+      }
+      navigation.navigate(
+        ROUTES.PRACTICE_SESSION,
+        buildPracticeSessionConfig({
+          mode: action.modeId,
+          reviewSource: action.kind === "start_practice" ? action.reviewSource : undefined,
+          source: "home",
+          topicId: action.topicId,
+          trackId: ALGORITHMS_TRACK_ID,
+        }),
+      );
+    } catch (error) {
+      Alert.alert("Recommendation unavailable", error instanceof Error ? error.message : "The recommended session could not be opened.");
+    }
+  }
+
   return (
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
@@ -188,20 +233,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           <HomeTab
             activeTrack={activeTrack}
             analytics={analytics}
+            algorithmsDashboard={data.algorithmsDashboard}
+            dashboardError={data.algorithmsDashboardError}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
             onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
-            onStartMode={(mode, topicId) =>
-              navigation.navigate(
-                ROUTES.PRACTICE_SESSION,
-                buildPracticeSessionConfig({
-                  mode,
-                  reviewSource: getGeneralPracticeReviewSource(mode),
-                  source: "home",
-                  topicId,
-                  trackId: activeTrack.id,
-                }),
-              )
-            }
             trainingAttempts={data.trainingAttempts}
           />
         ) : null}

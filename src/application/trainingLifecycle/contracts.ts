@@ -86,7 +86,7 @@ export interface TrainingFamilyRuntime {
   finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>): Promise<PracticeFinalization>;
   finalizeSimulation(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<SimulationFinalization>;
   validateDraftCommand(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void>;
-  queryDashboard(input: Readonly<{ trackId: TrackId; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
+  queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: TrackId; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
   queryProgress(input: Readonly<{ trackId: TrackId; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
   queryReview(input: Readonly<{ trackId: TrackId; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
 }
