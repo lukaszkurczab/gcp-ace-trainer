@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 
 import {
   abandonAlgorithmsSession,
@@ -14,9 +14,10 @@ import {
   submitAlgorithmsPracticeResponse,
 } from "../../application/algorithms";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
+import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
-import { ALGORITHMS_TRACK_ID } from "../../domain";
+import { ALGORITHMS_TRACK_ID, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms/domain";
@@ -34,6 +35,7 @@ type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typ
 type ViewState =
   | Readonly<{ kind: "session"; projection: AlgorithmsPracticeProjection }>
   | Readonly<{ kind: "result"; result: AlgorithmsSessionResultProjection }>
+  | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
@@ -46,6 +48,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const algorithmsMode = route.params.trackId === ALGORITHMS_TRACK_ID && isAlgorithmModeId(route.params.mode)
     ? route.params.mode
     : null;
+  const requestedMode = algorithmsMode as Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>;
 
   useEffect(() => {
     if (!algorithmsMode || algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) return;
@@ -58,7 +61,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         setState({ kind: "session", projection });
       })
       .catch((error) => {
-        if (live) setState({ kind: "unavailable", reason: describePreparationFailure(error) });
+        if (!live) return;
+        setState(error instanceof ActiveAlgorithmsSessionConflict
+          ? { kind: "active_session_conflict", session: error.session }
+          : { kind: "unavailable", reason: describePreparationFailure(error) });
       });
     return () => { live = false; };
   }, [algorithmsMode, route.params]);
@@ -76,6 +82,21 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     return <Screen><EmptyState title="Interview Simulation unavailable" description="Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created." actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestAbandon={noop} onRequestLeave={noop} phase="preparing" />;
+  if (state.kind === "active_session_conflict") {
+    const activeModeLabel = isAlgorithmModeId(state.session.modeId) ? getAlgorithmMode(state.session.modeId).title : "another learning session";
+    return (
+      <Screen style={styles.conflictScreen}>
+        <EmptyState
+          title="Finish or leave the active session first"
+          description={`${activeModeLabel} is active. Resume it, or explicitly abandon it before starting ${getAlgorithmMode(algorithmsMode).title}.`}
+          actionLabel={`Resume ${activeModeLabel}`}
+          onActionPress={() => { void resumeConflictingSession(state.session); }}
+        />
+        <Button onPress={() => confirmReplacement(state.session)} variant="destructive">Abandon and start {getAlgorithmMode(algorithmsMode).title}</Button>
+        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">Back to practice</Button>
+      </Screen>
+    );
+  }
   if (state.kind === "unavailable") return <Screen><EmptyState title="Practice session unavailable" description={state.reason} actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (state.kind === "result") return <VerifiedPracticeResult result={state.result} onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)} />;
 
@@ -130,6 +151,46 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     } catch { await refresh(); }
   }
 
+  async function replaceActiveSession() {
+    try {
+      await abandonAlgorithmsSession();
+      const projection = await loadOrStartAlgorithmsPractice(route.params, requestedMode);
+      setState({ kind: "session", projection });
+    } catch (error) {
+      setState(error instanceof ActiveAlgorithmsSessionConflict
+        ? { kind: "active_session_conflict", session: error.session }
+        : { kind: "unavailable", reason: describePreparationFailure(error) });
+    }
+  }
+
+  function confirmReplacement(session: TrainingSession) {
+    Alert.alert(
+      "Abandon active session?",
+      `This ends the active ${isAlgorithmModeId(session.modeId) ? getAlgorithmMode(session.modeId).title : "learning"} session. Its durable records stay available, but it cannot be resumed.`,
+      [
+        { text: "Keep session", style: "cancel" },
+        { text: `Abandon and start ${getAlgorithmMode(requestedMode).title}`, style: "destructive", onPress: () => { void replaceActiveSession(); } },
+      ],
+    );
+  }
+
+  async function resumeConflictingSession(session: TrainingSession) {
+    if (!isAlgorithmModeId(session.modeId)) {
+      navigation.navigate(ROUTES.HOME);
+      return;
+    }
+    if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
+      const profileId = session.configurationSnapshot.simulationProfileId;
+      if (typeof profileId !== "string") {
+        setState({ kind: "unavailable", reason: "The active Interview Simulation profile is unavailable." });
+        return;
+      }
+      navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId });
+      return;
+    }
+    navigation.replace(ROUTES.PRACTICE_SESSION, { ...route.params, mode: session.modeId });
+  }
+
   function leave() {
     permitRouteExit.current = true;
     if (navigation.canGoBack()) navigation.goBack();
@@ -163,6 +224,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 }
 
 async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams, modeId: Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>) {
+  const active = await loadActiveTrainingSession();
+  if (active) {
+    if (active.trackId !== ALGORITHMS_TRACK_ID || active.modeId !== modeId) throw new ActiveAlgorithmsSessionConflict(active);
+    return getAlgorithmsPracticeProjection();
+  }
   try {
     await startAlgorithmsSession({
       modeId,
@@ -174,10 +240,19 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
     });
   } catch (error) {
     if (!(error instanceof TrainingApplicationFailure) || error.code !== "active_session_conflict") throw error;
+    const conflicting = await loadActiveTrainingSession();
+    if (conflicting) throw new ActiveAlgorithmsSessionConflict(conflicting);
+    throw error;
   }
   const projection = await getAlgorithmsPracticeProjection();
   if (projection.session.modeId !== modeId) throw new Error("A different active Algorithms session must be resumed or abandoned before starting this mode.");
   return projection;
+}
+
+class ActiveAlgorithmsSessionConflict extends Error {
+  constructor(readonly session: TrainingSession) {
+    super(`Active session ${session.id} must be resumed or abandoned first.`);
+  }
 }
 
 function resolveScope(params: PracticeSessionRouteParams, modeId: string) {
@@ -247,6 +322,7 @@ function VerifiedPracticeResult({ onBack, result }: Readonly<{ onBack: () => voi
 }
 
 const styles = StyleSheet.create({
+  conflictScreen: { gap: spacing.md },
   result: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.lg, margin: spacing.xl, padding: spacing.xl },
   resultText: { ...typography.body, color: colors.dark.textSecondary },
   resultTitle: { ...typography.heading, color: colors.dark.textPrimary },
