@@ -1,6 +1,9 @@
 import { StyleSheet, View } from "react-native";
 
-import { colors, radius, spacing } from "../theme";
+import { radius, spacing } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type DomainAccentTone = "primary" | "purple" | "teal" | "orange" | "info";
 
@@ -9,6 +12,7 @@ type DomainAccentProps = {
 };
 
 export function DomainAccent({ tone = "primary" }: DomainAccentProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.frame, styles[`${tone}Frame`]]}>
       <View style={[styles.bar, styles[tone]]} />
@@ -17,7 +21,7 @@ export function DomainAccent({ tone = "primary" }: DomainAccentProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   frame: {
     alignItems: "center",
     borderRadius: radius.sm,
@@ -38,33 +42,33 @@ const styles = StyleSheet.create({
     width: 6
   },
   primaryFrame: {
-    backgroundColor: colors.dark.primarySoft
+    backgroundColor: palette.primarySoft
   },
   purpleFrame: {
-    backgroundColor: colors.dark.accentPurpleSoft
+    backgroundColor: palette.accentPurpleSoft
   },
   tealFrame: {
-    backgroundColor: colors.dark.accentTealSoft
+    backgroundColor: palette.accentTealSoft
   },
   orangeFrame: {
-    backgroundColor: colors.dark.accentOrangeSoft
+    backgroundColor: palette.accentOrangeSoft
   },
   infoFrame: {
-    backgroundColor: colors.dark.infoSoft
+    backgroundColor: palette.infoSoft
   },
   primary: {
-    backgroundColor: colors.dark.primary
+    backgroundColor: palette.primary
   },
   purple: {
-    backgroundColor: colors.dark.accentPurple
+    backgroundColor: palette.accentPurple
   },
   teal: {
-    backgroundColor: colors.dark.accentTeal
+    backgroundColor: palette.accentTeal
   },
   orange: {
-    backgroundColor: colors.dark.accentOrange
+    backgroundColor: palette.accentOrange
   },
   info: {
-    backgroundColor: colors.dark.info
+    backgroundColor: palette.info
   }
 });

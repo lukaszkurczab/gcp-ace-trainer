@@ -1,0 +1,107 @@
+20:40:57.337 [ INFO] maestro.cli.report.TestDebugReporter.logSystemInfo: Debug output path: /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f01-debug/.maestro/tests/2026-07-21_204057
+20:40:57.339 [ INFO] MAESTRO.logSystemInfo: ---- System Info ----
+20:40:57.339 [ INFO] MAESTRO.logSystemInfo: Maestro Version: 2.6.1
+20:40:57.340 [ INFO] MAESTRO.logSystemInfo: CI: Undefined
+20:40:57.340 [ INFO] MAESTRO.logSystemInfo: OS Name: Mac OS X
+20:40:57.340 [ INFO] MAESTRO.logSystemInfo: OS Version: 26.2
+20:40:57.340 [ INFO] MAESTRO.logSystemInfo: Architecture: aarch64
+20:40:57.341 [ INFO] MAESTRO.logSystemInfo: Java Version: 23
+20:40:57.438 [ INFO] MAESTRO.logSystemInfo: Xcode Version: 26.4.1
+20:40:57.442 [ INFO] MAESTRO.logSystemInfo: Flutter Version: Undefined
+20:40:57.446 [ INFO] MAESTRO.logSystemInfo: Flutter Channel: Undefined
+20:40:57.446 [ INFO] MAESTRO.logSystemInfo: ---------------------
+20:40:57.756 [DEBUG] io.micrometer.common.util.internal.logging.InternalLoggerFactory.newDefaultFactory: Using SLF4J as the default logging framework
+20:40:58.085 [ INFO] maestro.cli.command.TestCommand.runShardSuite: [shard 1] Selected device 7F315654-3175-4F3C-BB24-B0263F59360C using port 58067 with execution plan ExecutionPlan(flowsToRun=[/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f01-home-practice.yaml], sequence=FlowSequence(flows=[], continueOnFailure=true), workspaceConfig=WorkspaceConfig(flows=null, includeTags=null, excludeTags=null, executionOrder=null, baselineBranch=null, notifications=null, disableRetries=false, platform=PlatformConfiguration(android=AndroidConfiguration(disableAnimations=false), ios=IOSConfiguration(disableAnimations=false, snapshotKeyHonorModalViews=null)), testOutputDir=null))
+20:40:58.283 [TRACE] ios.xctest.XCTestIOSDevice.open: Opening a connection
+20:40:58.283 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: start()
+20:40:58.283 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: [Start] Install XCUITest runner on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:58.283 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:58.284 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:40:58.284 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing build products
+20:40:58.330 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing build products
+20:40:58.330 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing maestro-driver-iosUITests-Runner app
+20:40:58.556 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing maestro-driver-iosUITests-Runner app
+20:40:58.556 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing maestro-driver-ios app
+20:40:58.563 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing maestro-driver-ios app
+20:40:58.564 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: Installing driver with xcodebuild
+20:40:58.565 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: [Start] Running XcUITest with `xcodebuild test-without-building` with 58067 and config: IOSDriverConfig(prebuiltRunner=false, sourceDirectory=driver-iPhoneSimulator, context=CLI, snapshotKeyHonorModalViews=null)
+20:40:58.566 [ INFO] util.CommandLineUtils.runCommand: Running command line operation: [xcodebuild, test-without-building, -xctestrun, /var/folders/c6/3wwmzjlj0xsf025jk7xr00100000gn/T/7F315654-3175-4F3C-BB24-B0263F59360C15629267916085410612/maestro-driver-ios-config.xctestrun, -destination, id=7F315654-3175-4F3C-BB24-B0263F59360C, -derivedDataPath, /var/folders/c6/3wwmzjlj0xsf025jk7xr00100000gn/T/maestro_xctestrunner_xcodebuild_output16104728837548397207] with {TEST_RUNNER_PORT=58067}
+20:40:58.569 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: [Done] Running XcUITest with `xcodebuild test-without-building`
+20:40:58.569 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: [Done] Install XCUITest runner on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:58.569 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:58.570 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:40:59.075 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:59.076 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:40:59.581 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:40:59.582 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:41:00.087 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:00.088 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:41:00.593 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:00.594 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:41:01.097 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:01.097 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:41:01.603 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:01.605 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:58067
+20:41:02.108 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:02.126 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Done] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:41:02.151 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow:  Running flow F01 Home and F03 Practice entry — observed build
+20:41:02.159 [ INFO] maestro.Maestro.cachedDeviceInfo_delegate$lambda$0: Getting device info
+20:41:02.224 [ INFO] maestro.Maestro.cachedDeviceInfo_delegate$lambda$0: Got device info: DeviceInfo(platform=IOS, widthPixels=1206, heightPixels=2622, widthGrid=402, heightGrid=874)
+20:41:02.267 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Define variables RUNNING
+20:41:02.268 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Define variables COMPLETED
+20:41:02.269 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Apply configuration RUNNING
+20:41:02.269 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Apply configuration COMPLETED
+20:41:02.269 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Launch app "com.lkurczab.gcpacetrainer" RUNNING
+20:41:02.270 [ INFO] device.SimctlIOSDevice.setPermissions: [Start] Setting permissions all=allow through applesimutils
+20:41:02.270 [ INFO] util.LocalSimulatorUtils.setAppleSimutilsPermissions: [Start] Setting permissions via pinned applesimutils
+20:41:02.271 [ INFO] util.CommandLineUtils.runCommand: Running command line operation: [/Users/lukaszkurczab/.maestro/deps/applesimutils, --byId, 7F315654-3175-4F3C-BB24-B0263F59360C, --bundle, com.lkurczab.gcpacetrainer, --setPermissions, calendar=YES,camera=YES,contacts=YES,faceid=YES,homekit=YES,medialibrary=YES,microphone=YES,motion=YES,photos=YES,reminders=YES,siri=YES,speech=YES,userTracking=YES] with {}
+20:41:02.526 [ INFO] util.LocalSimulatorUtils.setAppleSimutilsPermissions: [Done] Setting permissions pinned applesimutils
+20:41:02.527 [ INFO] device.SimctlIOSDevice.setPermissions: [Done] Setting permissions through applesimutils
+20:41:02.527 [ INFO] device.SimctlIOSDevice.setPermissions: [Start] Setting Permissions all=allow through simctl
+20:41:02.527 [ INFO] util.CommandLineUtils.runCommand: Running command line operation: [xcrun, simctl, privacy, 7F315654-3175-4F3C-BB24-B0263F59360C, grant, location-always, com.lkurczab.gcpacetrainer] with {}
+20:41:02.652 [ INFO] device.SimctlIOSDevice.setPermissions: [Done] Setting Permissions all=allow through simctl
+20:41:02.665 [ INFO] maestro.Maestro.launchApp$lambda$2: Launching app com.lkurczab.gcpacetrainer
+20:41:02.665 [ INFO] maestro.Maestro.launchApp$lambda$2: Stopping com.lkurczab.gcpacetrainer app during launch
+20:41:03.710 [ INFO] util.CommandLineUtils.runCommand: Running command line operation: [xcrun, simctl, launch, 7F315654-3175-4F3C-BB24-B0263F59360C, com.lkurczab.gcpacetrainer] with {}
+20:41:04.014 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Launch app "com.lkurczab.gcpacetrainer" COMPLETED
+20:41:04.016 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Wait for animation to end within 12000 ms RUNNING
+20:41:04.018 [ INFO] maestro.Maestro.waitForAnimationToEnd$lambda$51: Waiting for animation to end with timeout 12000
+20:41:04.020 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:04.020 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:04.441 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:04.442 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:05.777 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:05.777 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:05.919 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:05.919 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:06.264 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Wait for animation to end within 12000 ms COMPLETED
+20:41:06.265 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Assert that "Patternly" is visible RUNNING
+20:41:06.619 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Assert that "Patternly" is visible COMPLETED
+20:41:06.619 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Assert that "Algorithms" is visible RUNNING
+20:41:07.044 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Assert that "Algorithms" is visible COMPLETED
+20:41:07.044 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Take screenshot f01-home RUNNING
+20:41:07.046 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot
+20:41:07.047 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:07.155 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Take screenshot f01-home COMPLETED
+20:41:07.155 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Tap on id: main-tab-bar-practice RUNNING
+20:41:07.306 [ INFO] maestro.Maestro.tap-HgV9Ck0: Tapping on element:  UiElement(treeNode=TreeNode(attributes={accessibilityText=Practice, title=, value=, text=, hintText=, resource-id=main-tab-bar-practice, bounds=[106,788][201,840], enabled=true, focused=false, selected=false, checked=false}, children=[], clickable=null, enabled=true, focused=false, checked=false, selected=false), bounds=Bounds(x=106, y=788, width=95, height=52))
+20:41:07.309 [ INFO] device.IOSDevice.invoke-F9mIFpk: Waiting for animation to end with timeout 3000
+20:41:07.523 [ INFO] maestro.Maestro.tap-HgV9Ck0: Refreshed element
+20:41:07.525 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Try tapping at (153, 814) using hierarchy based logic for wait
+20:41:07.526 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:07.526 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:08.141 [ INFO] device.IOSDevice.invoke-F9mIFpk: Waiting for animation to end with timeout 3000
+20:41:08.794 [ INFO] maestro.Maestro.screenshotBasedTap-ogj28Uc: Something have changed in the UI judging by view hierarchy. Proceed.
+20:41:08.795 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Tap on id: main-tab-bar-practice COMPLETED
+20:41:08.795 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Wait for animation to end within 12000 ms RUNNING
+20:41:08.796 [ INFO] maestro.Maestro.waitForAnimationToEnd$lambda$51: Waiting for animation to end with timeout 12000
+20:41:08.796 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:08.796 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:08.975 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to byte array
+20:41:08.975 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:09.338 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Wait for animation to end within 12000 ms COMPLETED
+20:41:09.338 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Take screenshot f03-practice-hub RUNNING
+20:41:09.338 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot
+20:41:09.339 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:41:09.498 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Take screenshot f03-practice-hub COMPLETED
+20:41:09.690 [ INFO] maestro.cli.report.TestDebugReporter.deleteOldFiles: Performing purge of logs older than 14 days from /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f01-screenshots

@@ -22,7 +22,7 @@ import { ALGORITHMS_TRACK_ID, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms/domain";
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
   buildPracticeResponseControl,
@@ -31,6 +31,9 @@ import {
   type PracticeSurfacePhase,
 } from "./practiceSessionPresentation";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type ViewState =
@@ -41,6 +44,8 @@ type ViewState =
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [state, setState] = useState<ViewState | null>(null);
   const [localResponse, setLocalResponse] = useState<PracticeLocalResponse>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
@@ -79,10 +84,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }), [navigation, state]);
 
   if (!algorithmsMode) {
-    return <Screen><EmptyState title="Certification Practice unavailable" description="Certification has no approved bundled artifact yet. Algorithms sessions remain available." actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen><EmptyState title={t("Certification Practice unavailable")} description={t("Certification has no approved bundled artifact yet. Algorithms sessions remain available.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
-    return <Screen><EmptyState title="Interview Simulation unavailable" description="Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created." actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen><EmptyState title={t("Interview Simulation unavailable")} description={t("Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestLeave={noop} phase="preparing" />;
   if (state.kind === "active_session_conflict") {
@@ -90,17 +95,17 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     return (
       <Screen style={styles.conflictScreen}>
         <EmptyState
-          title="Finish or leave the active session first"
-          description={`${activeModeLabel} is active. Resume it, or explicitly abandon it before starting ${getAlgorithmMode(algorithmsMode).title}.`}
-          actionLabel={`Resume ${activeModeLabel}`}
+          title={t("Finish or leave the active session first")}
+          description={`${t(activeModeLabel)} ${t("is active. Resume it, or explicitly abandon it before starting")} ${t(getAlgorithmMode(algorithmsMode).title)}.`}
+          actionLabel={`${t("Resume")} ${t(activeModeLabel)}`}
           onActionPress={() => { void resumeConflictingSession(state.session); }}
         />
-        <Button onPress={() => confirmReplacement(state.session)} variant="destructive">Abandon and start {getAlgorithmMode(algorithmsMode).title}</Button>
-        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">Back to practice</Button>
+        <Button onPress={() => confirmReplacement(state.session)} variant="destructive">{t("Abandon and start")} {t(getAlgorithmMode(algorithmsMode).title)}</Button>
+        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} variant="secondary">{t("Back to practice")}</Button>
       </Screen>
     );
   }
-  if (state.kind === "unavailable") return <Screen><EmptyState title="Practice session unavailable" description={state.reason} actionLabel="Back to practice" onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (state.kind === "unavailable") return <Screen><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (state.kind === "result") return <VerifiedPracticeResult result={state.result} onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)} />;
 
   const sessionState = state;
@@ -109,7 +114,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const notice = submissionError ? { tone: "error" as const, message: submissionError } : noticeForPracticeOperation(projection.operation);
   const responseControl = buildPracticeResponseControl({
     choiceSelectionMode: projection.interaction.accessibility.controls[0]?.role === "checkbox" ? "multiple" : "single",
-    feedbackControls: projection.feedback?.controls,
+    feedbackControls: projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" ? projection.feedback?.controls : undefined,
     localResponse,
     renderer: projection.interaction.renderer,
   });
@@ -216,9 +221,9 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   return (
     <PracticeSessionSurface
       exit={{ kind: exit }}
-      feedback={projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason } : undefined}
+      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason } : undefined}
       isFinalPosition={projection.position.current === projection.position.total}
-      modeLabel={getAlgorithmMode(algorithmsMode).title}
+      modeLabel={t(getAlgorithmMode(algorithmsMode).title)}
       notice={notice}
       onAbandon={() => void abandon()}
       onChoicePress={(optionId) => { setSubmissionError(null); setLocalResponse((current) => toggleChoice(current, optionId, responseControl.kind === "choice" ? responseControl.selectionMode : "single")); }}
@@ -230,12 +235,12 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       onRequestLeave={() => setExit("leave")}
       onRetry={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? () => void recover() : undefined}
       phase={phase}
-      position={{ accessibilityLabel: `Question ${projection.position.current} of ${projection.position.total}`, label: `${projection.position.current} of ${projection.position.total}` }}
+      position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
       question={{ constraints: projection.constraints, prompt: projection.prompt, responseControl }}
       retryLabel={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Recover session" : undefined}
-      timer={{ accessibilityLabel: `Active foreground time ${formatElapsed(projection.session.activeForegroundMs)}`, label: `Active time ${formatElapsed(projection.session.activeForegroundMs)}` }}
+      timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.session.activeForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.session.activeForegroundMs)}` }}
     />
   );
 }
@@ -248,8 +253,10 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
   }
   try {
     await startAlgorithmsSession({
+      feedbackMode: params.feedbackMode,
       modeId,
       requestedLength: params.sessionLength,
+      reinsertEnabled: params.reviewBehaviorEnabled,
       reviewItemRefs: params.reviewItemRefs,
       reviewSource: params.reviewSource,
       scope: resolveScope(params, modeId),
@@ -332,21 +339,23 @@ function formatElapsed(milliseconds: number): string {
 function noop() {}
 
 function VerifiedPracticeResult({ onBack, result }: Readonly<{ onBack: () => void; result: AlgorithmsSessionResultProjection }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   return (
     <Screen edges={["top", "bottom"]}>
       <View style={styles.result}>
-        <Text style={styles.resultTitle}>Session result</Text>
-        <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} answered · {result.unansweredOccurrenceIds.length} unanswered</Text>
-        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} correct · {result.score.partialCount} partial · {result.score.incorrectCount} incorrect · {result.score.pointsEarned} / {result.score.maxPoints} points</Text> : <Text style={styles.resultText}>Verified result details are unavailable.</Text>}
-        <Button onPress={onBack}>Back to practice</Button>
+        <Text style={styles.resultTitle}>{t("Session result")}</Text>
+        <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} {t("answered")} · {result.unansweredOccurrenceIds.length} {t("unanswered")}</Text>
+        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {result.score.partialCount} {t("partial")} · {result.score.incorrectCount} {t("incorrect")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
+        <Button onPress={onBack}>{t("Back to practice")}</Button>
       </View>
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   conflictScreen: { gap: spacing.md },
-  result: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.lg, margin: spacing.xl, padding: spacing.xl },
-  resultText: { ...typography.body, color: colors.dark.textSecondary },
-  resultTitle: { ...typography.heading, color: colors.dark.textPrimary },
+  result: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.lg, margin: spacing.xl, padding: spacing.xl },
+  resultText: { ...typography.body, color: palette.textSecondary },
+  resultTitle: { ...typography.heading, color: palette.textPrimary },
 });

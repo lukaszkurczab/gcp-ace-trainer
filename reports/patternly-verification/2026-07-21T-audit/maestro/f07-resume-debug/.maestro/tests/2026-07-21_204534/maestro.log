@@ -1,0 +1,59 @@
+20:45:35.054 [ INFO] maestro.cli.report.TestDebugReporter.logSystemInfo: Debug output path: /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f07-resume-debug/.maestro/tests/2026-07-21_204534
+20:45:35.055 [ INFO] MAESTRO.logSystemInfo: ---- System Info ----
+20:45:35.055 [ INFO] MAESTRO.logSystemInfo: Maestro Version: 2.6.1
+20:45:35.056 [ INFO] MAESTRO.logSystemInfo: CI: Undefined
+20:45:35.056 [ INFO] MAESTRO.logSystemInfo: OS Name: Mac OS X
+20:45:35.056 [ INFO] MAESTRO.logSystemInfo: OS Version: 26.2
+20:45:35.056 [ INFO] MAESTRO.logSystemInfo: Architecture: aarch64
+20:45:35.057 [ INFO] MAESTRO.logSystemInfo: Java Version: 23
+20:45:35.145 [ INFO] MAESTRO.logSystemInfo: Xcode Version: 26.4.1
+20:45:35.148 [ INFO] MAESTRO.logSystemInfo: Flutter Version: Undefined
+20:45:35.152 [ INFO] MAESTRO.logSystemInfo: Flutter Channel: Undefined
+20:45:35.152 [ INFO] MAESTRO.logSystemInfo: ---------------------
+20:45:35.505 [DEBUG] io.micrometer.common.util.internal.logging.InternalLoggerFactory.newDefaultFactory: Using SLF4J as the default logging framework
+20:45:35.766 [ INFO] maestro.cli.command.TestCommand.runShardSuite: [shard 1] Selected device 7F315654-3175-4F3C-BB24-B0263F59360C using port 61540 with execution plan ExecutionPlan(flowsToRun=[/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f07-resume.yaml], sequence=FlowSequence(flows=[], continueOnFailure=true), workspaceConfig=WorkspaceConfig(flows=null, includeTags=null, excludeTags=null, executionOrder=null, baselineBranch=null, notifications=null, disableRetries=false, platform=PlatformConfiguration(android=AndroidConfiguration(disableAnimations=false), ios=IOSConfiguration(disableAnimations=false, snapshotKeyHonorModalViews=null)), testOutputDir=null))
+20:45:35.966 [TRACE] ios.xctest.XCTestIOSDevice.open: Opening a connection
+20:45:35.967 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: start()
+20:45:35.967 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: [Start] Install XCUITest runner on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:35.967 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:35.968 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:35.968 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing build products
+20:45:36.012 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing build products
+20:45:36.013 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing maestro-driver-iosUITests-Runner app
+20:45:36.238 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing maestro-driver-iosUITests-Runner app
+20:45:36.238 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Start] Writing maestro-driver-ios app
+20:45:36.245 [ INFO] xcuitest.installer.IOSBuildProductsExtractor.extract: [Done] Writing maestro-driver-ios app
+20:45:36.246 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: Installing driver with xcodebuild
+20:45:36.247 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: [Start] Running XcUITest with `xcodebuild test-without-building` with 61540 and config: IOSDriverConfig(prebuiltRunner=false, sourceDirectory=driver-iPhoneSimulator, context=CLI, snapshotKeyHonorModalViews=null)
+20:45:36.248 [ INFO] util.CommandLineUtils.runCommand: Running command line operation: [xcodebuild, test-without-building, -xctestrun, /var/folders/c6/3wwmzjlj0xsf025jk7xr00100000gn/T/7F315654-3175-4F3C-BB24-B0263F59360C8871984565900848500/maestro-driver-ios-config.xctestrun, -destination, id=7F315654-3175-4F3C-BB24-B0263F59360C, -derivedDataPath, /var/folders/c6/3wwmzjlj0xsf025jk7xr00100000gn/T/maestro_xctestrunner_xcodebuild_output7220952947745200407] with {TEST_RUNNER_PORT=61540}
+20:45:36.251 [ INFO] xcuitest.installer.LocalXCTestInstaller.startXCTestRunner: [Done] Running XcUITest with `xcodebuild test-without-building`
+20:45:36.251 [ INFO] xcuitest.installer.LocalXCTestInstaller.start$lambda$3: [Done] Install XCUITest runner on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:36.251 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:36.252 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:36.762 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:36.763 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:37.273 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:37.274 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:37.783 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:37.784 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:38.294 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:38.295 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:38.806 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:38.807 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:39.315 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:39.316 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Failed] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C, exception: java.net.ConnectException: Failed to connect to /127.0.0.1:61540
+20:45:39.818 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Start] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:39.838 [ INFO] xcuitest.installer.LocalXCTestInstaller.xcTestDriverStatusCheck: [Done] Perform XCUITest driver status check on 7F315654-3175-4F3C-BB24-B0263F59360C
+20:45:39.862 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow:  Running flow F07 Resume observed Practice session
+20:45:39.868 [ INFO] maestro.Maestro.cachedDeviceInfo_delegate$lambda$0: Getting device info
+20:45:39.935 [ INFO] maestro.Maestro.cachedDeviceInfo_delegate$lambda$0: Got device info: DeviceInfo(platform=IOS, widthPixels=1206, heightPixels=2622, widthGrid=402, heightGrid=874)
+20:45:39.976 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Define variables RUNNING
+20:45:39.979 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Define variables COMPLETED
+20:45:39.980 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Apply configuration RUNNING
+20:45:39.980 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$7: Apply configuration COMPLETED
+20:45:39.980 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$5: Tap on "Continue active session" RUNNING
+20:45:57.097 [ERROR] maestro.orchestra.Orchestra.executeCommands: [Command execution] CommandFailed: Element not found: Text matching regex: Continue active session
+20:45:57.098 [ INFO] maestro.cli.runner.TestSuiteInteractor.runFlow$lambda$17$lambda$9: Tap on "Continue active session" FAILED
+20:45:57.102 [ INFO] maestro.Maestro.takeScreenshot: Taking screenshot
+20:45:57.106 [TRACE] maestro.utils.ScreenshotUtils.takeScreenshot: Taking screenshot to output sink
+20:45:57.475 [ INFO] maestro.cli.report.TestDebugReporter.deleteOldFiles: Performing purge of logs older than 14 days from /Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/reports/patternly-verification/2026-07-21T-audit/maestro/f07-resume-screenshots

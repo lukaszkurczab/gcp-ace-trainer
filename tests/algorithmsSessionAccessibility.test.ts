@@ -63,9 +63,9 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
 
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
-  assert.match(practiceSurface, /<Pressable accessibilityLabel="Keep learning" accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
-  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>End this session\?<\/Text>/);
-  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} variant="destructive">Abandon session<\/Button>/);
+  assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
+  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("End this session\?"\)\}<\/Text>/);
+  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} variant="destructive">\{t\("Abandon session"\)\}<\/Button>/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
 });
 

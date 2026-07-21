@@ -2,8 +2,11 @@ import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Screen } from "../../../components";
-import { colors, spacing, typography } from "../../../theme";
+import { spacing, typography } from "../../../theme";
 import type { SessionMetricPresentation } from "./sessionAccessibility";
+import { useThemedStyles } from "../../../preferences";
+import type { AppColors } from "../../../theme";
+
 
 type SessionShellProps = Readonly<{
   actionBar?: ReactNode;
@@ -28,6 +31,7 @@ export function SessionShell({
   progress,
   timer,
 }: SessionShellProps) {
+  const styles = useThemedStyles(createStyles);
   const verifiedProgress = typeof progress === "number" && Number.isFinite(progress)
     ? Math.min(1, Math.max(0, progress))
     : null;
@@ -53,7 +57,7 @@ export function SessionShell({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   actionRegion: {
     minHeight: 80,
   },
@@ -69,18 +73,18 @@ const styles = StyleSheet.create({
   },
   modeText: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
     textAlign: "center",
   },
   positionSlot: {
     alignItems: "flex-end",
   },
   progressFill: {
-    backgroundColor: colors.dark.primary,
+    backgroundColor: palette.primary,
     height: 4,
   },
   progressTrack: {
-    backgroundColor: colors.dark.surface,
+    backgroundColor: palette.surface,
     height: 4,
     marginHorizontal: -spacing.xl,
     overflow: "hidden",
@@ -98,6 +102,6 @@ const styles = StyleSheet.create({
   },
   topText: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
 });

@@ -9,7 +9,6 @@ import {
   MAIN_TAB_ITEMS,
   PRACTICE_PRIMARY_CTA,
   PRACTICE_REVIEW_CTA,
-  SETTINGS_ROWS,
 } from "../src/features/home/shellModel";
 
 test("bottom navigation labels stay canonical", () => {
@@ -54,19 +53,4 @@ test("Practice review weak items routes to canonical review queue", () => {
     route: ROUTES.MISTAKES_REVIEW,
   });
   assert.equal(buildShellSafetyModel().practiceReviewRoute, ROUTES.MISTAKES_REVIEW);
-});
-
-test("Settings model keeps only clear local history as destructive active action", () => {
-  assert.deepEqual(
-    SETTINGS_ROWS.filter((row) => row.behavior === "destructive").map((row) => row.id),
-    ["clearLocalHistory"],
-  );
-  assert.equal(
-    SETTINGS_ROWS.filter((row) => row.behavior !== "static" && row.behavior !== "destructive").length,
-    0,
-  );
-  assert.deepEqual(
-    SETTINGS_ROWS.filter((row) => row.section === "account").map((row) => row.behavior),
-    ["static", "static", "static"],
-  );
 });

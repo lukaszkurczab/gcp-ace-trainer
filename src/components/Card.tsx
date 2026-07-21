@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View, type ViewStyle } from "react-native";
 
-import { colors, radius, shadows, spacing } from "../theme";
+import { radius, shadows, spacing } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type CardVariant = "default" | "elevated" | "interactive" | "tonal" | "warning" | "success";
 
@@ -14,6 +17,7 @@ type CardProps = {
 };
 
 export function Card({ children, onPress, style, testID, variant = "default" }: CardProps) {
+  const styles = useThemedStyles(createStyles);
   if (onPress) {
     return (
       <Pressable
@@ -30,10 +34,10 @@ export function Card({ children, onPress, style, testID, variant = "default" }: 
   return <View style={[styles.card, styles[variant], style]} testID={testID}>{children}</View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   card: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
@@ -44,24 +48,24 @@ const styles = StyleSheet.create({
   },
   elevated: {
     ...shadows.elevated,
-    backgroundColor: colors.dark.surface
+    backgroundColor: palette.surface
   },
   interactive: {
-    borderColor: colors.dark.borderStrong
+    borderColor: palette.borderStrong
   },
   tonal: {
     ...shadows.elevated,
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.borderStrong
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.borderStrong
   },
   warning: {
-    backgroundColor: colors.dark.warningSoft,
-    borderColor: colors.dark.warningSoft,
+    backgroundColor: palette.warningSoft,
+    borderColor: palette.warningSoft,
     ...shadows.none
   },
   success: {
-    backgroundColor: colors.dark.successSoft,
-    borderColor: colors.dark.successSoft,
+    backgroundColor: palette.successSoft,
+    borderColor: palette.successSoft,
     ...shadows.none
   },
   pressed: {

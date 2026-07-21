@@ -1,0 +1,16 @@
+{
+  "evidence": "STATICALLY_VERIFIED",
+  "answer": "The audited app build consumes the immutable Algorithms artifact embedded in src/content/bundled/generatedArtifacts.ts: release algorithms-core-0002-b424faa6, artifact algorithms-core-0002, SHA-256 fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c, source commit b424faa6d8c7209acb51ac23af812d08c31842dc.",
+  "steps": [
+    {"stage": "manual source", "path": "patternly-content/manual/source/algorithms/**/*.json", "required": true},
+    {"stage": "inspection/technical evidence", "path": "patternly-content/scripts/publishing/pipeline.mjs", "required": true},
+    {"stage": "human approval", "path": "patternly-content/manual/approvals/algorithms/*.json", "required": true},
+    {"stage": "activation", "path": "patternly-content/manual/activations/algorithms/algorithms-core-0002.json", "required": true},
+    {"stage": "immutable track artifact", "path": "patternly-content/artifacts/tracks/algorithms/algorithms-core-0002/track-artifact.json", "required": true},
+    {"stage": "pinned build bundle", "path": "patternly/src/content/bundled/generatedArtifacts.ts", "required": true},
+    {"stage": "validation/install", "path": "patternly/src/content/application/validateBundledContent.ts", "required": true},
+    {"stage": "Algorithms facade/runtime", "path": "patternly/src/application/algorithms/AlgorithmsFamilyRuntime.ts", "required": true},
+    {"stage": "Practice/Simulation/Progress", "path": "patternly/src/features/{practice,simulation,home}/", "required": true}
+  ],
+  "bypassAssessment": {"legacyTracks": "not runtime ingress", "http": "development server exists only in content repo; production runtime boundary forbids fetch", "testFixtures": "boundary checker and tests prohibit production imports", "cloudCertification": "no bundled artifact; explicitly unavailable"}
+}

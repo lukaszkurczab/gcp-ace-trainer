@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type SettingsGroupProps = {
   children: ReactNode;
@@ -9,6 +12,7 @@ type SettingsGroupProps = {
 };
 
 export function SettingsGroup({ children, title }: SettingsGroupProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.group}>
       <Text style={styles.title}>{title}</Text>
@@ -17,19 +21,19 @@ export function SettingsGroup({ children, title }: SettingsGroupProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   group: {
     gap: spacing.xs,
   },
   title: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
     paddingHorizontal: spacing.sm,
     textTransform: "uppercase",
   },
   rows: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",

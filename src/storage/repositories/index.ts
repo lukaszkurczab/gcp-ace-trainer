@@ -3,6 +3,7 @@ export * from "./canonicalRepositories";
 export * from "./storageMetadataRepository";
 export * from "./reviewQueueRepository";
 export * from "./settingsRepository";
+export * from "./notificationSettingsRepository";
 export * from "./result";
 export * from "./mutationJournalRepository";
 export * from "./trainingAttemptRepository";

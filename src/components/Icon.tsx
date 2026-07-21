@@ -18,7 +18,7 @@ import SettingsIcon from "../assets/icons/settings.svg";
 import ShieldCheckIcon from "../assets/icons/shield-check.svg";
 import TrashIcon from "../assets/icons/trash.svg";
 import ZapIcon from "../assets/icons/zap.svg";
-import { colors } from "../theme";
+import { useAppPreferences } from "../preferences";
 
 export type IconName =
   | "alert-triangle"
@@ -65,13 +65,14 @@ const icons: Record<IconName, ComponentType<SvgProps>> = {
   zap: ZapIcon,
 };
 
-export function Icon({ color = colors.dark.textMuted, name, size = 24 }: IconProps) {
+export function Icon({ color, name, size = 24 }: IconProps) {
+  const { colors } = useAppPreferences();
   const SvgIcon = icons[name];
 
   return (
     <SvgIcon
       accessibilityElementsHidden
-      color={color}
+      color={color ?? colors.textMuted}
       height={size}
       importantForAccessibility="no-hide-descendants"
       width={size}

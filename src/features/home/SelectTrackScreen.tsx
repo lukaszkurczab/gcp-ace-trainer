@@ -1,4 +1,4 @@
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -27,21 +27,25 @@ import {
   loadTrainingAttempts as getTrainingAttempts,
   selectActiveTrack as saveActiveTrackId,
 } from "../../application/learningReadModels";
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography } from "../../theme";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 import {
   buildTrackProgressPercent,
   getCurrentPracticeTopic,
   hasTrackProgress,
 } from "../practice/practiceFlowModel";
 
-type SelectTrackScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  typeof ROUTES.SELECT_TRACK
->;
+type SelectTrackScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+  onboarding?: boolean;
+  onTrackSelected?: (trackId: TrackId) => void;
+};
 
 type SelectTrackData = {
   attempts: CertificationExamSummaryViewModel[];
@@ -51,7 +55,9 @@ type SelectTrackData = {
 
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
-export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
+export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<SelectTrackData>({
     attempts: [],
@@ -107,6 +113,11 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
     await saveActiveTrackId(track.id);
     setActiveTrackId(track.id);
 
+    if (destination === "home" && onTrackSelected) {
+      onTrackSelected(track.id);
+      return;
+    }
+
     if (destination === "roadmap") {
       navigation.navigate(ROUTES.TOPIC_ROADMAP, { trackId: track.id });
       return;
@@ -118,16 +129,36 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
   return (
     <View style={styles.shell}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppStackHeader navigation={navigation} showBack />
+        <AppStackHeader navigation={navigation} showBack={!onboarding} />
 
-        <View style={styles.intro}>
-          <Text style={styles.title}>Choose track</Text>
-          <Text style={styles.subtitle}>
-            Select the context for your next focused practice session.
-          </Text>
-        </View>
+        {onboarding ? (
+          <Card variant="tonal" style={styles.onboardingHero}>
+            <IconTile name="grid" size={56} tone="primary" />
+            <View style={styles.introCopy}>
+              <Text style={styles.eyebrow}>{t("Welcome to Patternly")}</Text>
+              <Text style={styles.onboardingTitle}>{t("Choose your learning path")}</Text>
+              <Text style={styles.subtitle}>
+                {t("Start with one path. You can switch whenever your goal changes.")}
+              </Text>
+            </View>
+          </Card>
+        ) : (
+          <View style={styles.intro}>
+            <Text style={styles.title}>{t("Choose track")}</Text>
+            <Text style={styles.subtitle}>
+              Select the context for your next focused practice session.
+            </Text>
+          </View>
+        )}
 
         <View style={styles.trackList}>
+          {onboarding ? (
+            <SectionHeader
+              title={t("Available paths")}
+              subtitle={t("Choose the kind of practice you want to begin with.")}
+              tight
+            />
+          ) : null}
           {getTrackDisplays().map((track) => {
             const isActive = track.id === activeTrackId;
             const progress = buildTrackProgressPercent({
@@ -157,35 +188,46 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
                   />
                   <View style={styles.trackMetaCopy}>
                     <Text style={styles.trackCategory}>{track.subtitle}</Text>
-                    <Text style={styles.nextTopic}>Next: {topic.title}</Text>
+                    <Text style={styles.nextTopic}>{onboarding ? "Start with" : "Next"}: {topic.title}</Text>
                   </View>
                 </View>
-                <View style={styles.progressBlock}>
-                  <View style={styles.progressHeader}>
-                    <Text style={styles.progressLabel}>{started ? "Progress" : "Not started"}</Text>
-                    <Text style={styles.progressValue}>{progress}%</Text>
+                {!onboarding ? (
+                  <View style={styles.progressBlock}>
+                    <View style={styles.progressHeader}>
+                      <Text style={styles.progressLabel}>{started ? "Progress" : "Not started"}</Text>
+                      <Text style={styles.progressValue}>{progress}%</Text>
+                    </View>
+                    <ProgressBar progress={progress / 100} tone="primary" />
                   </View>
-                  <ProgressBar progress={progress / 100} tone="primary" />
-                </View>
-                <View style={styles.actions}>
-                  {!started ? (
-                    <Button
-                      onPress={() => void selectTrack(track, "roadmap")}
-                      style={styles.actionButton}
-                      variant="secondary"
-                    >
-                      View track
-                    </Button>
-                  ) : null}
+                ) : null}
+                {onboarding ? (
                   <Button
                     disabled={track.status === "archived"}
                     onPress={() => void selectTrack(track, "home")}
-                    style={styles.actionButton}
-                    variant={isActive ? "secondary" : "primary"}
                   >
-                    {primaryLabel}
+                    Start {track.shortTitle}
                   </Button>
-                </View>
+                ) : (
+                  <View style={styles.actions}>
+                    {!started ? (
+                      <Button
+                        onPress={() => void selectTrack(track, "roadmap")}
+                        style={styles.actionButton}
+                        variant="secondary"
+                      >
+                        {t("View track")}
+                      </Button>
+                    ) : null}
+                    <Button
+                      disabled={track.status === "archived"}
+                      onPress={() => void selectTrack(track, "home")}
+                      style={styles.actionButton}
+                      variant={isActive ? "secondary" : "primary"}
+                    >
+                      {t(primaryLabel)}
+                    </Button>
+                  </View>
+                )}
               </Card>
             );
           })}
@@ -196,9 +238,9 @@ export function SelectTrackScreen({ navigation }: SelectTrackScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1,
   },
   screenContent: {
@@ -207,22 +249,38 @@ const styles = StyleSheet.create({
   intro: {
     gap: spacing.sm,
   },
+  onboardingHero: {
+    gap: spacing.lg,
+    padding: spacing.xxl,
+  },
+  introCopy: {
+    gap: spacing.sm,
+  },
+  eyebrow: {
+    ...typography.caption,
+    color: palette.primary,
+    textTransform: "uppercase",
+  },
   title: {
     ...typography.title,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
+  },
+  onboardingTitle: {
+    ...typography.display,
+    color: palette.textPrimary,
   },
   subtitle: {
     ...typography.body,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   trackList: {
     gap: spacing.lg,
   },
   activeTrackCard: {
-    borderColor: colors.dark.primary,
+    borderColor: palette.primary,
   },
   trackAccent: {
-    backgroundColor: colors.dark.primary,
+    backgroundColor: palette.primary,
     borderRadius: 999,
     height: 3,
     left: spacing.lg,
@@ -241,12 +299,12 @@ const styles = StyleSheet.create({
   },
   trackCategory: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
     textTransform: "uppercase",
   },
   nextTopic: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   progressBlock: {
     gap: spacing.sm,
@@ -258,11 +316,11 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   progressValue: {
     ...typography.bodyStrong,
-    color: colors.dark.info,
+    color: palette.info,
   },
   actions: {
     flexDirection: "row",

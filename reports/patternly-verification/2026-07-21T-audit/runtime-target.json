@@ -1,0 +1,9 @@
+{
+  "evidence": "OBSERVED",
+  "platform": "iOS Simulator",
+  "device": "iPhone 17, iOS 26.4, UDID 7F315654-3175-4F3C-BB24-B0263F8636A",
+  "appIdentity": {"bundleId": "com.lkurczab.gcpacetrainer", "displayName": "Patternly", "version": "0.1.0", "build": "local Expo dev build from dirty application worktree"},
+  "launchCommand": "npm run ios -- --device 'iPhone 17'",
+  "content": {"releaseId": "algorithms-core-0002-b424faa6", "trackId": "algorithms", "contentVersion": "algorithms-core-0002", "taxonomyVersion": "algorithms-taxonomy-v2", "checksumSha256": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c", "sourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc"},
+  "secondPlatform": {"status": "BLOCKED", "reason": "No Android target was exercised; the available iOS target completed the usable runtime slice."}
+}

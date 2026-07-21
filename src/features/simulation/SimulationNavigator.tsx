@@ -1,8 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import type { SimulationNavigatorPosition } from "./simulationProjection";
 import { hasCanonicalSimulationNavigator, navigatorAccessibilityLabel } from "./simulationViewModel";
+import { useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type SimulationNavigatorProps = Readonly<{
   onOccurrencePress?: (occurrenceId: string) => void;
@@ -10,6 +13,7 @@ type SimulationNavigatorProps = Readonly<{
 }>;
 
 export function SimulationNavigator({ onOccurrencePress, positions }: SimulationNavigatorProps) {
+  const styles = useThemedStyles(createStyles);
   if (!hasCanonicalSimulationNavigator(positions)) return null;
 
   return (
@@ -35,13 +39,13 @@ export function SimulationNavigator({ onOccurrencePress, positions }: Simulation
   );
 }
 
-const styles = StyleSheet.create({
-  answered: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.success },
-  current: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 2 },
-  currentLabel: { color: colors.dark.textPrimary },
-  frozen: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, opacity: 0.62 },
+const createStyles = (palette: AppColors) => StyleSheet.create({
+  answered: { backgroundColor: palette.elevatedSurface, borderColor: palette.success },
+  current: { backgroundColor: palette.primarySoft, borderColor: palette.primary, borderWidth: 2 },
+  currentLabel: { color: palette.textPrimary },
+  frozen: { backgroundColor: palette.surface, borderColor: palette.border, opacity: 0.62 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  position: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
-  positionLabel: { ...typography.caption, color: colors.dark.textSecondary },
-  unanswered: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border },
+  position: { alignItems: "center", borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
+  positionLabel: { ...typography.caption, color: palette.textSecondary },
+  unanswered: { backgroundColor: palette.surface, borderColor: palette.border },
 });

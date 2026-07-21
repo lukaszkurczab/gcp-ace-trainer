@@ -77,6 +77,8 @@ export type AlgorithmsDashboard = Readonly<{ recommendation: AlgorithmsDashboard
  * computes deterministic recommendations from supplied canonical evidence.
  */
 export type AlgorithmsLifecyclePreparationRequest = Readonly<{
+  feedbackMode?: "afterEachAnswer" | "atSessionEnd";
+  reinsertEnabled?: boolean;
   sessionId: string;
   requestedLength: 10 | 20 | 40;
   reviewItemRefs?: readonly ContentItemRef[];
@@ -128,7 +130,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
       id: request.sessionId,
       trackId: "algorithms",
       modeId: mode.id,
-      configurationSnapshot: practiceConfiguration(mode, blueprint),
+      configurationSnapshot: practiceConfiguration(mode, blueprint, request),
       requestedLength: request.requestedLength,
       actualLength: selection.actualLength,
       currentItemIndex: 0,
@@ -308,6 +310,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     return prepareAlgorithmsConditionalReinsertPlan({
       entries: getAlgorithmQuestionEntries(this.catalog.getItems()),
       compatibilitySets: this.catalog.bank.compatibilitySets,
+      reinsertEnabled: input.session.configurationSnapshot.reinsertEnabled === true,
       mode: input.session.modeId as AlgorithmModeId,
       optionOrderByItemId: input.optionOrderByItemId,
       reviewedItemRefs: input.reviewedItemRefs,
@@ -425,24 +428,26 @@ function firstValue<T>(values: Readonly<Record<string, T>> | undefined, predicat
 
 function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationRequest {
   if (!isRecord(value) || typeof value.sessionId !== "string" || !value.sessionId.trim() ||
-    (value.requestedLength !== 10 && value.requestedLength !== 20 && value.requestedLength !== 40)) {
+    (value.requestedLength !== 10 && value.requestedLength !== 20 && value.requestedLength !== 40) ||
+    (value.feedbackMode !== undefined && value.feedbackMode !== "afterEachAnswer" && value.feedbackMode !== "atSessionEnd") ||
+    (value.reinsertEnabled !== undefined && typeof value.reinsertEnabled !== "boolean")) {
     throw new Error("Algorithms session preparation requires a sessionId and a supported requestedLength.");
   }
   return value as AlgorithmsLifecyclePreparationRequest;
 }
 
-function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }): Readonly<Record<string, string | number | boolean>> {
+function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }, request: AlgorithmsLifecyclePreparationRequest): Readonly<Record<string, string | number | boolean>> {
   return Object.freeze({
     kind: "algorithmsPractice",
     blueprintId: blueprint.blueprintId,
     blueprintVersion: blueprint.blueprintVersion,
-    feedbackMode: mode.profile.feedbackMode,
+    feedbackMode: request.feedbackMode ?? mode.profile.feedbackMode,
     answerChanges: mode.profile.answerChanges,
     navigation: mode.profile.navigation,
     submission: mode.profile.submission,
     timer: mode.profile.timer.kind,
     ...(mode.profile.timer.kind === "countdownForeground" ? { timerDurationMs: mode.profile.timer.durationMs } : {}),
-    reinsertEnabled: mode.profile.reinsertEnabled,
+    reinsertEnabled: request.reinsertEnabled ?? mode.profile.reinsertEnabled,
   });
 }
 

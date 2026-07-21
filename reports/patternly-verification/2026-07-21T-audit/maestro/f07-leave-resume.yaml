@@ -1,0 +1,12 @@
+appId: com.lkurczab.gcpacetrainer
+name: "F07 Leave and resume an observed Practice session"
+---
+- tapOn: "Leave and resume later"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "f07-after-leave"
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "f07-after-relaunch"

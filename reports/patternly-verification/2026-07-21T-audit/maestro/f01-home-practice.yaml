@@ -1,0 +1,15 @@
+appId: com.lkurczab.gcpacetrainer
+name: "F01 Home and F03 Practice entry — observed build"
+---
+- launchApp:
+    clearState: false
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible: "Patternly"
+- assertVisible: "Algorithms"
+- takeScreenshot: "f01-home"
+- tapOn:
+    id: "main-tab-bar-practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "f03-practice-hub"

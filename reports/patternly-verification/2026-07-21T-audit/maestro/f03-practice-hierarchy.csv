@@ -1,0 +1,72 @@
+element_num,depth,attributes,parent_num
+0,0,"bounds=[0,0][0,0]",
+1,1,"accessibilityText=Patternly; bounds=[0,0][402,874]; enabled=true; enabled=true",0
+2,2,"bounds=[0,0][402,874]; enabled=true; enabled=true",1
+3,3,"bounds=[0,0][402,874]; enabled=true; enabled=true",2
+4,4,"bounds=[0,0][402,874]; enabled=true; enabled=true",3
+5,5,"bounds=[0,0][402,874]; enabled=true; enabled=true",4
+6,6,"bounds=[0,0][402,874]; enabled=true; enabled=true",5
+7,7,"bounds=[0,0][402,874]; enabled=true; enabled=true",6
+8,8,"bounds=[0,0][402,874]; enabled=true; enabled=true",7
+9,9,"bounds=[0,0][402,874]; enabled=true; enabled=true",8
+10,10,"bounds=[0,0][402,874]; enabled=true; enabled=true",9
+11,11,"bounds=[0,0][402,874]; enabled=true; enabled=true",10
+12,12,"bounds=[0,0][402,874]; enabled=true; enabled=true",11
+13,13,"bounds=[0,0][402,874]; enabled=true; enabled=true",12
+14,14,"bounds=[0,0][402,874]; enabled=true; enabled=true",13
+61,15,"bounds=[0,0][402,874]; enabled=true; enabled=true",14
+16,15,"bounds=[0,0][402,874]; enabled=true; enabled=true",14
+17,16,"bounds=[0,62][402,874]; enabled=true; enabled=true",16
+18,17,"bounds=[0,62][402,874]; enabled=true; enabled=true",17
+19,18,"bounds=[0,62][402,1392]; enabled=true; enabled=true",18
+20,19,"bounds=[0,62][402,1392]; enabled=true; enabled=true",19
+21,20,"accessibilityText=Go back; bounds=[16,83][52,119]; enabled=true; enabled=true",20
+22,20,"accessibilityText=Patternly; bounds=[106,78][386,106]; enabled=true; enabled=true",20
+23,21,"accessibilityText=Patternly; bounds=[106,78][386,106]; enabled=true; enabled=true",22
+24,20,"accessibilityText=Algorithms; bounds=[106,108][386,124]; enabled=true; enabled=true",20
+25,21,"accessibilityText=Algorithms; bounds=[106,108][386,124]; enabled=true; enabled=true",24
+26,20,"bounds=[16,140][386,322]; enabled=true; enabled=true",20
+27,21,"accessibilityText=NEXT TOPIC; bounds=[32,156][369,172]; enabled=true; enabled=true",26
+28,22,"accessibilityText=NEXT TOPIC; bounds=[32,156][369,172]; enabled=true; enabled=true",27
+29,21,"accessibilityText=Complexity and constraints; bounds=[32,176][369,200]; enabled=true; enabled=true",26
+30,22,"accessibilityText=Complexity and constraints; bounds=[32,176][369,200]; enabled=true; enabled=true",29
+31,21,"accessibilityText=Roadmap item practice for algorithmic problem solving.; bounds=[32,204][369,244]; enabled=true; enabled=true",26
+32,22,"accessibilityText=Roadmap item practice for algorithmic problem solving.; bounds=[32,204][369,244]; enabled=true; enabled=true",31
+33,21,"accessibilityText=Change topic; bounds=[32,256][158,306]; enabled=true; enabled=true",26
+34,20,"bounds=[16,338][386,563]; enabled=true; enabled=true",20
+35,21,"accessibilityText=CONTINUE PRACTICE; bounds=[32,355][369,371]; enabled=true; enabled=true",34
+36,22,"accessibilityText=CONTINUE PRACTICE; bounds=[32,355][369,371]; enabled=true; enabled=true",35
+37,21,"accessibilityText=Complexity and constraints; bounds=[32,387][369,411]; enabled=true; enabled=true",34
+38,22,"accessibilityText=Complexity and constraints; bounds=[32,387][369,411]; enabled=true; enabled=true",37
+39,21,"accessibilityText=Current track: Algorithms; bounds=[32,413][369,433]; enabled=true; enabled=true",34
+40,22,"accessibilityText=Current track: Algorithms; bounds=[32,413][369,433]; enabled=true; enabled=true",39
+41,21,"accessibilityText=Start session; bounds=[32,449][369,499]; enabled=true; enabled=true",34
+42,21,"accessibilityText=Manage settings; bounds=[32,511][172,547]; enabled=true; enabled=true",34
+43,20,"accessibilityText=Practice options; bounds=[16,579][386,603]; enabled=true; enabled=true",20
+44,21,"accessibilityText=Practice options; bounds=[16,579][386,603]; enabled=true; enabled=true",43
+45,20,"accessibilityText=Default Practice, Start Guided Practice with the recommended session settings.; bounds=[16,615][386,708]; enabled=true; enabled=true",20
+46,20,"accessibilityText=Weak Area Review, Practice Algorithms review items that are currently due.; bounds=[16,720][386,812]; enabled=true; enabled=true",20
+47,20,"accessibilityText=Mixed Practice, Practice random questions from completed topics without hints or reinsert.; bounds=[16,824][386,937]; enabled=true; enabled=true",20
+50,18,"accessibilityText=Horizontal scroll bar, 1 page; value=0%; text=0%; bounds=[62,841][340,871]; enabled=true; enabled=true",18
+51,19,"bounds=[65,868][337,871]; enabled=true; enabled=true",50
+50,18,"accessibilityText=Horizontal scroll bar, 1 page; value=0%; text=0%; bounds=[62,841][340,871]; enabled=true; enabled=true",18
+51,19,"bounds=[65,868][337,871]; enabled=true; enabled=true",50
+52,15,"resource-id=main-tab-bar; bounds=[0,775][402,874]; enabled=true; enabled=true",14
+53,15,"accessibilityText=Home; resource-id=main-tab-bar-home; bounds=[12,788][106,840]; enabled=true; enabled=true",14
+54,15,"accessibilityText=Practice; resource-id=main-tab-bar-practice; bounds=[106,788][201,840]; enabled=true; selected=true; enabled=true; selected=true",14
+55,15,"accessibilityText=Progress; resource-id=main-tab-bar-progress; bounds=[201,788][295,840]; enabled=true; enabled=true",14
+56,15,"accessibilityText=Settings; resource-id=main-tab-bar-settings; bounds=[295,788][390,840]; enabled=true; enabled=true",14
+60,11,"bounds=[0,0][402,874]; enabled=true; enabled=true",10
+61,12,"bounds=[0,0][402,874]; enabled=true; enabled=true",60
+59,8,"bounds=[0,0][402,874]; enabled=true; enabled=true",7
+60,9,"bounds=[0,0][402,874]; enabled=true; enabled=true",59
+61,10,"bounds=[0,0][402,874]; enabled=true; enabled=true",60
+62,1,"bounds=[0,0][0,0]",0
+63,2,"bounds=[0,0][402,54]; enabled=true; enabled=true",62
+64,2,"bounds=[0,0][402,54]; enabled=true; enabled=true",62
+65,3,"bounds=[0,0][402,54]; enabled=true; enabled=true",64
+66,4,"bounds=[0,0][402,54]; enabled=true; enabled=true",65
+67,5,"accessibilityText=20:41; bounds=[51,22][96,42]; enabled=true; enabled=true",66
+68,5,"accessibilityText=Sieć komórkowa; value=Brak sygnału; text=Brak sygnału; bounds=[288,26][307,38]; enabled=true; enabled=true",66
+69,5,"value=SSID, 3 z 3 paski sygnału Wi‑Fi; text=SSID, 3 z 3 paski sygnału Wi‑Fi; resource-id=3 z 3 paski sygnału Wi‑Fi; bounds=[315,26][332,38]; enabled=true; enabled=true",66
+70,5,"accessibilityText=100% baterii; value=Ładowanie nie odbywa się; text=Ładowanie nie odbywa się; bounds=[339,26][366,39]; enabled=true; enabled=true",66

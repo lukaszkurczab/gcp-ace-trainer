@@ -1,16 +1,19 @@
 import { DefaultTheme, type Theme } from "@react-navigation/native";
 
-import { colors } from "./tokens";
+import type { AppColors } from "./tokens";
 
-export const navigationTheme: Theme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: colors.dark.background,
-    border: colors.dark.border,
-    card: colors.dark.surface,
-    notification: colors.dark.primary,
-    primary: colors.dark.primary,
-    text: colors.dark.textPrimary
-  }
-};
+export function buildNavigationTheme(colors: AppColors): Theme {
+  return {
+    ...DefaultTheme,
+    dark: colors.background === "#0C1324",
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.background,
+      border: colors.border,
+      card: colors.surface,
+      notification: colors.primary,
+      primary: colors.primary,
+      text: colors.textPrimary,
+    },
+  };
+}

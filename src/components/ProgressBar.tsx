@@ -1,6 +1,9 @@
 import { StyleSheet, View } from "react-native";
 
-import { colors, radius } from "../theme";
+import { radius } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type ProgressTone = "primary" | "success" | "warning" | "danger" | "info";
 
@@ -10,6 +13,7 @@ type ProgressBarProps = {
 };
 
 export function ProgressBar({ progress, tone = "primary" }: ProgressBarProps) {
+  const styles = useThemedStyles(createStyles);
   const clampedProgress = Math.max(0, Math.min(1, progress));
 
   return (
@@ -19,9 +23,9 @@ export function ProgressBar({ progress, tone = "primary" }: ProgressBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   track: {
-    backgroundColor: colors.dark.elevatedSurface,
+    backgroundColor: palette.elevatedSurface,
     borderRadius: radius.pill,
     height: 8,
     overflow: "hidden",
@@ -32,18 +36,18 @@ const styles = StyleSheet.create({
     height: "100%"
   },
   primary: {
-    backgroundColor: colors.dark.primary
+    backgroundColor: palette.primary
   },
   success: {
-    backgroundColor: colors.dark.success
+    backgroundColor: palette.success
   },
   warning: {
-    backgroundColor: colors.dark.warning
+    backgroundColor: palette.warning
   },
   danger: {
-    backgroundColor: colors.dark.danger
+    backgroundColor: palette.danger
   },
   info: {
-    backgroundColor: colors.dark.info
+    backgroundColor: palette.info
   }
 });

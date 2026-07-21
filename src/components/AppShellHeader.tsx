@@ -1,8 +1,11 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography } from "../theme";
 import { Icon } from "./Icon";
+import { useAppPreferences, useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type AppShellHeaderProps = {
   action?: ReactNode;
@@ -11,11 +14,13 @@ type AppShellHeaderProps = {
 };
 
 export function AppShellHeader({ action, subtitle, title }: AppShellHeaderProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette } = useAppPreferences();
   return (
     <View style={styles.header}>
       <View style={styles.brandRow}>
         <View style={styles.brandMark}>
-          <Icon color={colors.dark.primary} name="grid" size={30} />
+          <Icon color={palette.primary} name="grid" size={30} />
         </View>
         <View style={styles.headerCopy}>
           <Text style={styles.brandTitle}>{title}</Text>
@@ -27,7 +32,7 @@ export function AppShellHeader({ action, subtitle, title }: AppShellHeaderProps)
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -49,10 +54,10 @@ const styles = StyleSheet.create({
   },
   brandTitle: {
     ...typography.heading,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   headerMeta: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
 });

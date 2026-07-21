@@ -2,7 +2,10 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Icon } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type AppStackHeaderProps = {
   navigation: {
@@ -21,6 +24,8 @@ export function AppStackHeader({
   showBack = false,
   subtitle,
 }: AppStackHeaderProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette, t } = useAppPreferences();
   function goBack() {
     if (onBackPress) {
       onBackPress();
@@ -40,17 +45,17 @@ export function AppStackHeader({
       <View style={styles.brandRow}>
         {showBack ? (
           <Pressable
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("Go back")}
             accessibilityRole="button"
             onPress={goBack}
             style={({ pressed }) => [styles.backButton, pressed ? styles.pressed : null]}
           >
             <View style={styles.backIcon}>
-              <Icon color={colors.dark.textSecondary} name="chevron-right" size={18} />
+              <Icon color={palette.textSecondary} name="chevron-right" size={18} />
             </View>
           </Pressable>
         ) : null}
-        <Icon color={colors.dark.primary} name="grid" size={30} />
+        <Icon color={palette.primary} name="grid" size={30} />
         <View style={styles.copy}>
           <Text style={styles.title}>Patternly</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -60,7 +65,7 @@ export function AppStackHeader({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -74,8 +79,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignItems: "center",
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: radius.pill,
     borderWidth: StyleSheet.hairlineWidth,
     height: 36,
@@ -94,10 +99,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   subtitle: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
 });

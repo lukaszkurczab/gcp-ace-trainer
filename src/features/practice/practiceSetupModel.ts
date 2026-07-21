@@ -12,9 +12,9 @@ export type PracticeReviewBehaviorCopy = {
 export function getPracticeReviewBehaviorCopy(trackId: TrackId): PracticeReviewBehaviorCopy {
   if (trackId === ALGORITHMS_TRACK_ID) {
     return {
-      detail: "Missed Algorithms items are saved to the Review queue automatically.",
-      showToggle: false,
-      title: "Review behavior",
+      detail: "Reinsert one missed item later in this session. Missed Algorithms items are always saved to the Review queue.",
+      showToggle: true,
+      title: "Reinsert missed items",
     };
   }
 

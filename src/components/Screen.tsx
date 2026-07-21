@@ -2,7 +2,10 @@ import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
 
-import { colors, spacing } from "../theme";
+import { spacing } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type ScreenProps = {
   children: ReactNode;
@@ -14,6 +17,7 @@ type ScreenProps = {
 };
 
 export function Screen({ children, compact = false, edges = ["bottom"], footer, scroll = true, style }: ScreenProps) {
+  const styles = useThemedStyles(createStyles);
   const contentStyle = [styles.content, compact ? styles.contentCompact : null, footer ? styles.contentWithFooter : null, style];
   const content = <View style={contentStyle}>{children}</View>;
 
@@ -35,9 +39,9 @@ export function Screen({ children, compact = false, edges = ["bottom"], footer, 
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   safeArea: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1
   },
   scrollContent: {
@@ -60,8 +64,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md
   },
   footer: {
-    backgroundColor: colors.dark.background,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.background,
+    borderColor: palette.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
     padding: spacing.lg

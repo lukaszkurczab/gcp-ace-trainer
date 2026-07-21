@@ -1,0 +1,120 @@
+
+> gcp-ace-trainer@0.1.0 test:algorithms-cross-repo
+> node --import tsx --test tests/algorithmsCrossRepoContract.test.ts
+
+TAP version 13
+# Subtest: round-trips a production-pipeline test artifact through the exact Algorithms consumer and every declared mode
+not ok 1 - round-trips a production-pipeline test artifact through the exact Algorithms consumer and every declared mode
+  ---
+  duration_ms: 52.2
+  type: 'test'
+  location: '/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/tests/algorithmsCrossRepoContract.test.ts:2:1679'
+  failureType: 'testCodeFailure'
+  error: |-
+    DIRTY_INTEGRATION_INPUT: Application checkout is dirty: M App.tsx
+     M app.json
+     M package-lock.json
+     M package.json
+     M src/application/algorithms/AlgorithmsFamilyRuntime.ts
+     M src/components/AppShellHeader.tsx
+     M src/components/Badge.tsx
+     M src/components/BottomTabBar.tsx
+     M src/components/Button.tsx
+     M src/components/Card.tsx
+     M src/components/DomainAccent.tsx
+     M src/components/EmptyState.tsx
+     M src/components/Icon.tsx
+     M src/components/IconTile.tsx
+     M src/components/ListRow.tsx
+     M src/components/MetricCard.tsx
+     M src/components/ProgressBar.tsx
+     M src/components/Screen.tsx
+     M src/components/SectionHeader.tsx
+     M src/components/SettingsGroup.tsx
+     M src/components/index.ts
+     M src/constants/routes.ts
+     M src/features/algorithms/session/SessionShell.tsx
+     M src/features/exam/ExamReviewScreen.tsx
+     M src/features/exam/ExamScreen.tsx
+     M src/features/exam/ResultScreen.tsx
+     M src/features/home/HomeScreen.tsx
+     M src/features/home/SelectTrackScreen.tsx
+     M src/features/home/shellModel.ts
+     M src/features/home/tabs/HomeTab.tsx
+     M src/features/home/tabs/ProgressTab.tsx
+     M src/features/home/tabs/SettingsTab.tsx
+     M src/features/navigation/AppBottomNavigation.tsx
+     M src/features/navigation/AppStackHeader.tsx
+     M src/features/practice/AlgorithmsScopeSelectionScreen.tsx
+     M src/features/practice/PracticeFeedbackBlock.tsx
+     M src/features/practice/PracticeHubScreen.tsx
+     M src/features/practice/PracticeResponseControls.tsx
+     M src/features/practice/PracticeSessionScreen.tsx
+     M src/features/practice/PracticeSessionSurface.tsx
+     M src/features/practice/PracticeSetupScreen.tsx
+     M src/features/practice/TopicRoadmapScreen.tsx
+     M src/features/practice/practiceFlowModel.ts
+     M src/features/practice/practiceSetupModel.ts
+     M src/features/practice/sessionConfig.ts
+     M src/features/review/AnswerReviewScreen.tsx
+     M src/features/review/MistakesReviewScreen.tsx
+     M src/features/simulation/SimulationNavigator.tsx
+     M src/features/simulation/SimulationSessionSurface.tsx
+     M src/navigation/RootNavigator.tsx
+     M src/navigation/types.ts
+     M src/storage/keys.ts
+     M src/storage/repositories/index.ts
+     M src/storage/repositories/settingsRepository.ts
+     M src/theme/navigationTheme.ts
+     M src/theme/tokens.ts
+     M src/tracks/algorithms/algorithmConditionalReinsert.ts
+     M tests/algorithmsSessionAccessibility.test.ts
+     M tests/shellModel.test.ts
+    ?? docs/plans/settings-recomposition-plan.md
+    ?? src/application/appPreferences.ts
+    ?? src/application/notificationPreferences.ts
+    ?? src/components/InfoBlock.tsx
+    ?? src/components/SettingsBottomSheet.tsx
+    ?? src/components/SettingsDialog.tsx
+    ?? src/features/home/AppearanceSettingsScreen.tsx
+    ?? src/features/home/LanguageSettingsScreen.tsx
+    ?? src/features/home/LegalInformationScreen.tsx
+    ?? src/features/home/NotificationSettingsScreen.tsx
+    ?? src/features/home/PreferenceSelectionScreen.tsx
+    ?? src/features/home/SettingsInformationScreen.tsx
+    ?? src/features/home/YourDataScreen.tsx
+    ?? src/features/home/settingsFeatureGate.ts
+    ?? src/infrastructure/notifications/expoNotificationPlatform.ts
+    ?? src/preferences/AppPreferencesProvider.tsx
+    ?? src/preferences/index.ts
+    ?? src/preferences/translations.ts
+    ?? src/preferences/useNotificationSettings.ts
+    ?? src/storage/repositories/notificationSettingsRepository.ts
+    ?? tests/appPreferences.test.ts
+    ?? tests/notificationPreferences.test.ts
+    ?? tests/practiceSessionConfig.test.ts
+    ?? tests/settingsFeatureGate.test.ts
+  code: 'DIRTY_INTEGRATION_INPUT'
+  stack: |-
+    assertClean (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/integration/contracts/algorithms-content/harness.mjs:18:165)
+    async verifyCrossRepositoryInputs (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/integration/contracts/algorithms-content/harness.mjs:22:116)
+    async Module.buildCrossRepositoryAlgorithmsRelease (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/integration/contracts/algorithms-content/harness.mjs:108:26)
+    async TestContext.<anonymous> (/Users/lukaszkurczab/Desktop/Projects/Patternly/patternly/tests/algorithmsCrossRepoContract.test.ts:18:17)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: production source cannot import the cross-repository harness or its generated test artifacts
+ok 2 - production source cannot import the cross-repository harness or its generated test artifacts
+  ---
+  duration_ms: 46.110542
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 511.766

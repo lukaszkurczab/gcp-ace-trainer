@@ -2,6 +2,7 @@ import { BottomTabBar } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { MAIN_TAB_ITEMS } from "../home/shellModel";
 import type { ShellTab } from "../home/types";
+import { useAppPreferences } from "../../preferences";
 
 type BottomNavigationTarget = {
   navigate: (name: string, params?: object) => void;
@@ -18,6 +19,7 @@ export function AppBottomNavigation({
   navigation,
   onHomeTabChange,
 }: AppBottomNavigationProps) {
+  const { t } = useAppPreferences();
   function handleChange(tab: ShellTab) {
     if (tab === "practice") {
       navigation.navigate(ROUTES.PRACTICE_HUB);
@@ -35,7 +37,7 @@ export function AppBottomNavigation({
   return (
     <BottomTabBar
       activeId={activeId}
-      items={MAIN_TAB_ITEMS}
+      items={MAIN_TAB_ITEMS.map((item) => ({ ...item, label: t(item.label) }))}
       onChange={handleChange}
       testID="main-tab-bar"
     />

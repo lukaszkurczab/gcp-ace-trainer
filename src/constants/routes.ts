@@ -1,5 +1,10 @@
 export const ROUTES = {
   HOME: "Home",
+  APPEARANCE_SETTINGS: "AppearanceSettings",
+  LEGAL_INFORMATION: "LegalInformation",
+  LANGUAGE_SETTINGS: "LanguageSettings",
+  NOTIFICATION_SETTINGS: "NotificationSettings",
+  YOUR_DATA: "YourData",
   SELECT_TRACK: "select_track",
   PRACTICE_HUB: "PracticeHub",
   ALGORITHMS_SCOPE_SELECTION: "AlgorithmsScopeSelection",

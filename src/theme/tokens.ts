@@ -9,7 +9,6 @@ export const colors = {
     textSecondary: "#506176",
     textMuted: "#7B8798",
     primary: "#2563EB",
-    primaryPressed: "#1D4ED8",
     primarySoft: "#E8F0FF",
     success: "#15803D",
     successSoft: "#E8F7EE",
@@ -24,8 +23,7 @@ export const colors = {
     accentTeal: "#0F766E",
     accentTealSoft: "#E6F6F4",
     accentOrange: "#C2410C",
-    accentOrangeSoft: "#FFF1E7",
-    shadow: "#152033"
+    accentOrangeSoft: "#FFF1E7"
   },
   dark: {
     background: "#0C1324",
@@ -37,7 +35,6 @@ export const colors = {
     textSecondary: "#CBD5E1",
     textMuted: "#94A3B8",
     primary: "#8B5CF6",
-    primaryPressed: "#7C3AED",
     primarySoft: "#2B2147",
     success: "#6EE7A8",
     successSoft: "#123B2A",
@@ -52,8 +49,7 @@ export const colors = {
     accentTeal: "#5EEAD4",
     accentTealSoft: "#143A38",
     accentOrange: "#FDBA74",
-    accentOrangeSoft: "#43240F",
-    shadow: "#020617"
+    accentOrangeSoft: "#43240F"
   }
 } as const;
 
@@ -130,14 +126,14 @@ export const shadows = {
     elevation: 0
   },
   card: {
-    shadowColor: colors.dark.shadow,
+    shadowColor: "#020617",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.05,
     shadowRadius: 16,
     elevation: 1
   },
   elevated: {
-    shadowColor: colors.dark.shadow,
+    shadowColor: "#020617",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 24,

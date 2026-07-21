@@ -12,9 +12,12 @@ import {
 import type { TrackDisplay } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
 import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
-import { colors, spacing, typography } from "../../../theme";
+import { spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { buildHomeTabModel } from "./homeTabModel";
+import { useAppPreferences, useThemedStyles } from "../../../preferences";
+import type { AppColors } from "../../../theme";
+
 
 type HomeTabProps = {
   activeTrack: TrackDisplay;
@@ -37,43 +40,45 @@ export function HomeTab({
   onStartLearning,
   trainingAttempts,
 }: HomeTabProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette, t } = useAppPreferences();
   const model = buildHomeTabModel({ activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
 
   return (
     <>
       <Card style={styles.focusStrip}>
         <View style={styles.focusCopy}>
-          <Text style={styles.eyebrow}>Current track</Text>
-          <Text style={styles.focusTitle}>{model.focusTitle}</Text>
+          <Text style={styles.eyebrow}>{t("Current track")}</Text>
+          <Text style={styles.focusTitle}>{t(model.focusTitle)}</Text>
         </View>
         <Pressable
           accessibilityRole="button"
           onPress={onChangeTrack}
           style={({ pressed }) => [styles.changeFocusButton, pressed ? styles.pressed : null]}
         >
-          <Text style={styles.changeFocusText}>Change track</Text>
-          <Icon color={colors.dark.accentPurple} name="chevron-right" size={18} />
+          <Text style={styles.changeFocusText}>{t("Change track")}</Text>
+          <Icon color={palette.accentPurple} name="chevron-right" size={18} />
         </Pressable>
       </Card>
 
       <Card variant="tonal" style={styles.hero}>
-        <Text style={styles.heroEyebrow}>{model.heroEyebrow}</Text>
+        <Text style={styles.heroEyebrow}>{t(model.heroEyebrow)}</Text>
         <SectionHeader
-          title={model.heroTitle}
-          subtitle={model.heroSubtitle}
+          title={t(model.heroTitle)}
+          subtitle={t(model.heroSubtitle)}
           tight
         />
         <Button onPress={() => onStartLearning(model.topicId)}>
-          {model.primaryLabel}
+          {t(model.primaryLabel)}
         </Button>
       </Card>
 
       {model.recommendations.length > 0 ? (
         <View style={styles.section}>
-          <SectionHeader title="Recommended today" tight />
+          <SectionHeader title={t("Recommended today")} tight />
           {model.recommendations.map((item, index) => (
             <ListRow
-              detail={item.unavailableReason ?? item.detail}
+              detail={t(item.unavailableReason ?? item.detail)}
               key={item.title}
               leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
               onPress={item.enabled ? () => onRecommendationAction(item.action) : undefined}
@@ -81,8 +86,8 @@ export function HomeTab({
                 index === 0 ? styles.recommendedPrimary : undefined,
                 item.enabled ? undefined : styles.unavailableRow,
               ]}
-              title={item.title}
-              trailing={<Badge label={item.label} tone={item.enabled ? "info" : "neutral"} />}
+              title={t(item.title)}
+              trailing={<Badge label={t(item.label)} tone={item.enabled ? "info" : "neutral"} />}
             />
           ))}
         </View>
@@ -91,7 +96,7 @@ export function HomeTab({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   focusStrip: {
     alignItems: "center",
     flexDirection: "row",
@@ -103,7 +108,7 @@ const styles = StyleSheet.create({
   },
   focusTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   changeFocusButton: {
     alignItems: "center",
@@ -114,7 +119,7 @@ const styles = StyleSheet.create({
   },
   changeFocusText: {
     ...typography.bodyStrong,
-    color: colors.dark.accentPurple,
+    color: palette.accentPurple,
   },
   pressed: {
     opacity: 0.78,
@@ -124,19 +129,19 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
     textTransform: "uppercase",
   },
   heroEyebrow: {
     ...typography.caption,
-    color: colors.dark.accentPurple,
+    color: palette.accentPurple,
     textTransform: "uppercase",
   },
   section: {
     gap: spacing.md,
   },
   recommendedPrimary: {
-    borderColor: colors.dark.primary,
+    borderColor: palette.primary,
   },
   unavailableRow: {
     opacity: 0.62,

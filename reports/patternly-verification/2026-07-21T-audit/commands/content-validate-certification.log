@@ -1,0 +1,5 @@
+
+> patternly-content@1.0.0 validate:real:certification
+> node scripts/publishing/cli.mjs validate-track --track cloud-certification
+
+EMPTY_INGRESS: No manual source JSON exists for cloud-certification.

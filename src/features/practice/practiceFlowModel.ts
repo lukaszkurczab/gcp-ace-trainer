@@ -185,6 +185,7 @@ export function hasTrackProgress(input: {
 export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel[] {
   if (activeTrack.id === ALGORITHMS_TRACK_ID) {
     return [
+      { detail: "Start Guided Practice with the recommended session settings.", enabled: true, icon: "practice", mode: ALGORITHM_MODE_IDS.guidedPractice, title: "Default Practice", tone: "primary" },
       { detail: "Practice Algorithms review items that are currently due.", enabled: true, icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
       { detail: "Practice random questions from completed topics without hints or reinsert.", enabled: true, icon: "clipboard", mode: ALGORITHM_MODE_IDS.independentPractice, title: "Mixed Practice", tone: "success" },
       { detail: "Forty freely navigable items with feedback after final submission.", enabled: true, icon: "shield-check", mode: ALGORITHM_MODE_IDS.interviewSimulation, title: "Interview Simulation", tone: "warning" },

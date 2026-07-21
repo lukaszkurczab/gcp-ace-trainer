@@ -1,11 +1,14 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import {
   complexityValueAccessibilityLabel,
   orderingMoveAccessibilityLabel,
 } from "../algorithms/session/sessionAccessibility";
 import { practiceOptionCorrectnessValue, type PracticeResponseControl } from "./practiceSessionPresentation";
+import { useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type PracticeResponseControlsProps = Readonly<{
   control: PracticeResponseControl;
@@ -23,6 +26,7 @@ export function PracticeResponseControls({
   onComplexityValuePress,
   onOrderingMove,
 }: PracticeResponseControlsProps) {
+  const styles = useThemedStyles(createStyles);
   if (control.kind === "choice") {
     return (
       <View style={styles.stack}>
@@ -93,6 +97,7 @@ function ChoiceOption({ editable, onPress, option, role }: Readonly<{
   option: Readonly<{ id: string; state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct"; text: string }>;
   role: "checkbox" | "radio";
 }>) {
+  const styles = useThemedStyles(createStyles);
   const selected = option.state === "selected" || option.state === "correct" || option.state === "incorrect";
   const correctness = practiceOptionCorrectnessValue(option.state);
 
@@ -104,7 +109,7 @@ function ChoiceOption({ editable, onPress, option, role }: Readonly<{
       accessibilityValue={correctness ? { text: correctness } : undefined}
       disabled={!editable}
       onPress={onPress}
-      style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
+      style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state, styles), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
     >
       <View style={[styles.marker, selected ? styles.markerSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.markerCorrect : null, option.state === "incorrect" ? styles.markerIncorrect : null]} />
       <Text style={styles.optionText}>{option.text}</Text>
@@ -120,6 +125,7 @@ function OrderingMove({ direction, disabled, elementLabel, index, onPress, total
   onPress: () => void;
   total: number;
 }>) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       accessibilityLabel={orderingMoveAccessibilityLabel(elementLabel, index, total, direction)}
@@ -134,7 +140,7 @@ function OrderingMove({ direction, disabled, elementLabel, index, onPress, total
   );
 }
 
-function choiceStateStyle(state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct") {
+function choiceStateStyle(state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct", styles: ReturnType<typeof createStyles>) {
   if (state === "correct" || state === "omitted_correct") return styles.choiceCorrect;
   if (state === "incorrect") return styles.choiceIncorrect;
   if (state === "selected") return styles.choiceSelected;
@@ -145,30 +151,30 @@ function humanizeDimension(value: string): string {
   return value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 }
 
-const styles = StyleSheet.create({
-  choiceCorrect: { backgroundColor: colors.dark.successSoft, borderColor: colors.dark.success, borderWidth: 2 },
-  choiceIncorrect: { backgroundColor: colors.dark.dangerSoft, borderColor: colors.dark.danger, borderWidth: 2 },
-  choiceOption: { alignItems: "flex-start", backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.md, minHeight: 64, padding: spacing.md },
-  choiceSelected: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 2 },
+const createStyles = (palette: AppColors) => StyleSheet.create({
+  choiceCorrect: { backgroundColor: palette.successSoft, borderColor: palette.success, borderWidth: 2 },
+  choiceIncorrect: { backgroundColor: palette.dangerSoft, borderColor: palette.danger, borderWidth: 2 },
+  choiceOption: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.md, minHeight: 64, padding: spacing.md },
+  choiceSelected: { backgroundColor: palette.primarySoft, borderColor: palette.primary, borderWidth: 2 },
   dimension: { gap: spacing.sm },
-  dimensionTitle: { ...typography.bodyStrong, color: colors.dark.textPrimary },
+  dimensionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
   locked: { opacity: 0.9 },
-  marker: { borderColor: colors.dark.borderStrong, borderRadius: radius.pill, borderWidth: 2, height: 20, marginTop: spacing.xxs, width: 20 },
-  markerCorrect: { backgroundColor: colors.dark.success, borderColor: colors.dark.success },
-  markerIncorrect: { backgroundColor: colors.dark.danger, borderColor: colors.dark.danger },
-  markerSelected: { backgroundColor: colors.dark.primary, borderColor: colors.dark.primary },
-  moveButton: { alignItems: "center", borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
+  marker: { borderColor: palette.borderStrong, borderRadius: radius.pill, borderWidth: 2, height: 20, marginTop: spacing.xxs, width: 20 },
+  markerCorrect: { backgroundColor: palette.success, borderColor: palette.success },
+  markerIncorrect: { backgroundColor: palette.danger, borderColor: palette.danger },
+  markerSelected: { backgroundColor: palette.primary, borderColor: palette.primary },
+  moveButton: { alignItems: "center", borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
   moveButtonDisabled: { opacity: 0.4 },
-  moveText: { ...typography.bodyStrong, color: colors.dark.textPrimary },
-  optionText: { ...typography.body, color: colors.dark.textPrimary, flex: 1 },
+  moveText: { ...typography.bodyStrong, color: palette.textPrimary },
+  optionText: { ...typography.body, color: palette.textPrimary, flex: 1 },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
-  orderIndex: { ...typography.bodyStrong, color: colors.dark.accentPurple, minWidth: 20 },
-  orderRow: { alignItems: "flex-start", backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, minHeight: 64, padding: spacing.md },
+  orderIndex: { ...typography.bodyStrong, color: palette.accentPurple, minWidth: 20 },
+  orderRow: { alignItems: "flex-start", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, minHeight: 64, padding: spacing.md },
   pressed: { opacity: 0.82 },
-  selectedText: { color: colors.dark.textPrimary },
+  selectedText: { color: palette.textPrimary },
   stack: { gap: spacing.md },
   valueGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  valueOption: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  valueOptionSelected: { backgroundColor: colors.dark.primarySoft, borderColor: colors.dark.primary, borderWidth: 2 },
-  valueText: { ...typography.small, color: colors.dark.textSecondary },
+  valueOption: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  valueOptionSelected: { backgroundColor: palette.primarySoft, borderColor: palette.primary, borderWidth: 2 },
+  valueText: { ...typography.small, color: palette.textSecondary },
 });

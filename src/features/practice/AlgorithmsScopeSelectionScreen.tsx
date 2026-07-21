@@ -7,7 +7,8 @@ import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningRe
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { colors, spacing } from "../../theme";
+import { spacing } from "../../theme";
+import { useAppPreferences } from "../../preferences";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import { buildPracticeSessionConfig } from "./sessionConfig";
 
@@ -18,6 +19,7 @@ type State =
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
 export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
+  const { colors, t } = useAppPreferences();
   const [state, setState] = useState<State>({ kind: "loading" });
   const modeTitle = route.params.modeId === "algorithms-contrast-practice" ? "Contrast Practice" : route.params.modeId === "algorithms-independent-practice" ? "Mixed Practice" : "Recognize Patterns";
 
@@ -33,14 +35,14 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   }, [route.params.modeId, route.params.targetMentalUnitId]);
 
   if (state.kind === "unavailable") {
-    return <Screen><EmptyState title="Practice scope unavailable" description={state.reason} actionLabel="Back to practice" onActionPress={() => navigation.goBack()} /></Screen>;
+    return <Screen><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.goBack()} /></Screen>;
   }
-  if (state.kind === "loading") return <Screen><AppStackHeader navigation={navigation} showBack subtitle="Algorithms" /><SectionHeader title="Loading practice scopes" subtitle="Reading the declared content scopes." /></Screen>;
+  if (state.kind === "loading") return <Screen><AppStackHeader navigation={navigation} showBack subtitle={t("Algorithms")} /><SectionHeader title={t("Loading practice scopes")} subtitle={t("Reading the declared content scopes.")} /></Screen>;
 
   return (
     <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
-      <AppStackHeader navigation={navigation} showBack subtitle="Algorithms" />
-      <SectionHeader title={`Choose a scope for ${modeTitle}`} subtitle="Each option is declared by the active Algorithms content artifact." />
+      <AppStackHeader navigation={navigation} showBack subtitle={t("Algorithms")} />
+      <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Each option is declared by the active Algorithms content artifact.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (
           <ListRow
@@ -49,7 +51,7 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
             leading={<IconTile name="route" tone="primary" />}
             onPress={() => navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ algorithmScope: option.scope, mode: route.params.modeId, source: route.params.source, topicId: option.topicId, trackId: ALGORITHMS_TRACK_ID }))}
             title={option.title}
-            trailing={<Icon color={colors.dark.textMuted} name="chevron-right" size={18} />}
+            trailing={<Icon color={colors.textMuted} name="chevron-right" size={18} />}
           />
         ))}
       </View>

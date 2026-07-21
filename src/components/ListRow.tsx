@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type ListRowProps = {
   detail?: string;
@@ -24,6 +27,7 @@ export function ListRow({
   trailing,
   variant = "card",
 }: ListRowProps) {
+  const styles = useThemedStyles(createStyles);
   const rowStyle = [
     styles.row,
     variant === "grouped" ? styles.groupedRow : styles.cardRow,
@@ -60,7 +64,7 @@ export function ListRow({
   return <View style={rowStyle}>{content}</View>;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   row: {
     alignItems: "center",
     flexDirection: "row",
@@ -70,14 +74,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   cardRow: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
   },
   groupedRow: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderBottomColor: colors.dark.border,
+    backgroundColor: palette.elevatedSurface,
+    borderBottomColor: palette.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   pressed: {
@@ -97,16 +101,16 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
     flexShrink: 1,
   },
   detail: {
     ...typography.small,
-    color: colors.dark.textSecondary
+    color: palette.textSecondary
   },
   meta: {
     ...typography.caption,
-    color: colors.dark.textMuted
+    color: palette.textMuted
   },
   trailing: {
     alignItems: "center",

@@ -7,7 +7,6 @@ import {
   Badge,
   Button,
   Card,
-  EmptyState,
   Icon,
   IconTile,
   ListRow,
@@ -27,7 +26,7 @@ import {
   loadTrainingAttempts as getTrainingAttempts,
 } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
 } from "../../tracks/algorithms";
@@ -36,6 +35,10 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
+import { SelectTrackScreen } from "../home/SelectTrackScreen";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 import {
   buildPracticeModes,
   buildPracticeStatsSummary,
@@ -64,6 +67,8 @@ type PracticeHubData = {
 const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette, t } = useAppPreferences();
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<PracticeHubData>({
     attempts: [],
@@ -114,7 +119,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="Practice is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const topic = resolvePracticeTopic({
     activeTrack,
@@ -169,12 +174,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         <AppStackHeader
           navigation={navigation}
           showBack
-          subtitle={activeTrack.title}
+          subtitle={t(activeTrack.title)}
         />
 
         <Card style={styles.topicStrip}>
           <View style={styles.topicCopy}>
-            <Text style={styles.eyebrow}>Next topic</Text>
+            <Text style={styles.eyebrow}>{t("Next topic")}</Text>
             <Text style={styles.topicTitle}>{topic.title}</Text>
             <Text style={styles.mutedText}>{topic.detail}</Text>
           </View>
@@ -188,20 +193,20 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             style={styles.compactButton}
             variant="ghost"
           >
-            Change topic
+            {t("Change topic")}
           </Button>
         </Card>
 
         <Card variant="tonal" style={styles.heroCard}>
-          <Text style={styles.heroEyebrow}>Continue practice</Text>
+          <Text style={styles.heroEyebrow}>{t("Continue practice")}</Text>
           <SectionHeader
             title={topic.title}
-            subtitle={`Current track: ${activeTrack.title}`}
+            subtitle={`${t("Current track")}: ${t(activeTrack.title)}`}
             tight
           />
           <View style={styles.heroActions}>
             <Button onPress={() => startSession()}>
-              Start session
+              {t("Start session")}
             </Button>
             <Pressable
               accessibilityRole="button"
@@ -218,27 +223,27 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               }
               style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
             >
-              <Text style={styles.settingsActionText}>Manage settings</Text>
-              <Icon color={colors.dark.accentPurple} name="chevron-right" size={16} />
+              <Text style={styles.settingsActionText}>{t("Manage settings")}</Text>
+              <Icon color={palette.accentPurple} name="chevron-right" size={16} />
             </Pressable>
           </View>
         </Card>
 
         <View style={styles.section}>
-          <SectionHeader title="Practice options" tight />
+          <SectionHeader title={t("Practice options")} tight />
           {modes.map((mode) => (
             <ListRow
-              detail={mode.unavailableReason ?? mode.detail}
+              detail={t(mode.unavailableReason ?? mode.detail)}
               key={mode.mode}
               leading={<IconTile name={mode.icon} tone={mode.enabled ? mode.tone : "muted"} />}
               onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
               style={mode.enabled ? undefined : styles.disabledRow}
-              title={mode.title}
+              title={t(mode.title)}
               trailing={
                 mode.enabled ? (
-                  <Icon color={colors.dark.textMuted} name="chevron-right" size={18} />
+                  <Icon color={palette.textMuted} name="chevron-right" size={18} />
                 ) : (
-                  <Badge label="Unavailable" tone="neutral" />
+                  <Badge label={t("Unavailable")} tone="neutral" />
                 )
               }
             />
@@ -248,11 +253,11 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         <Card variant="tonal" style={styles.statsCard}>
           <View style={styles.statsHeader}>
             <View style={styles.statsCopy}>
-              <Text style={styles.statsTitle}>{stats.title}</Text>
-              <Text style={styles.mutedText}>{stats.detail}</Text>
+              <Text style={styles.statsTitle}>{t(stats.title)}</Text>
+              <Text style={styles.mutedText}>{t(stats.detail)}</Text>
             </View>
             <MetricCard
-              label={stats.metricLabel}
+              label={t(stats.metricLabel)}
               style={styles.statsMetric}
               tone="primary"
               value={stats.metricValue}
@@ -262,7 +267,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             onPress={() => navigation.navigate(ROUTES.HOME, { initialTab: "progress" })}
             variant="secondary"
           >
-            More stats
+            {t("More stats")}
           </Button>
         </Card>
       </Screen>
@@ -294,9 +299,9 @@ function resolvePracticeTopic(input: {
   return getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1,
   },
   screenContent: {
@@ -311,16 +316,16 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
     textTransform: "uppercase",
   },
   topicTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   mutedText: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   compactButton: {
     alignSelf: "flex-start",
@@ -332,7 +337,7 @@ const styles = StyleSheet.create({
   },
   heroEyebrow: {
     ...typography.caption,
-    color: colors.dark.primary,
+    color: palette.primary,
     textTransform: "uppercase",
   },
   heroActions: {
@@ -352,7 +357,7 @@ const styles = StyleSheet.create({
   },
   settingsActionText: {
     ...typography.small,
-    color: colors.dark.accentPurple,
+    color: palette.accentPurple,
     fontWeight: "600",
   },
   section: {
@@ -375,7 +380,7 @@ const styles = StyleSheet.create({
   },
   statsTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   statsMetric: {
     minWidth: 112,

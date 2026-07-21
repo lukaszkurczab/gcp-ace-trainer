@@ -1,0 +1,54 @@
+element_num,depth,attributes,parent_num
+0,0,"bounds=[0,0][0,0]",
+1,1,"accessibilityText=Patternly; bounds=[0,0][402,874]; enabled=true; enabled=true",0
+2,2,"bounds=[0,0][402,874]; enabled=true; enabled=true",1
+3,3,"bounds=[0,0][402,874]; enabled=true; enabled=true",2
+4,4,"bounds=[0,0][402,874]; enabled=true; enabled=true",3
+5,5,"bounds=[0,0][402,874]; enabled=true; enabled=true",4
+6,6,"bounds=[0,0][402,874]; enabled=true; enabled=true",5
+7,7,"bounds=[0,0][402,874]; enabled=true; enabled=true",6
+8,8,"bounds=[0,0][402,874]; enabled=true; enabled=true",7
+9,9,"bounds=[0,0][402,874]; enabled=true; enabled=true",8
+10,10,"bounds=[0,0][402,874]; enabled=true; enabled=true",9
+11,11,"bounds=[0,0][402,874]; enabled=true; enabled=true",10
+12,12,"bounds=[0,0][402,874]; enabled=true; enabled=true",11
+13,13,"bounds=[0,0][402,874]; enabled=true; enabled=true",12
+14,14,"bounds=[0,0][402,874]; enabled=true; enabled=true",13
+15,15,"bounds=[0,0][402,874]; enabled=true; enabled=true",14
+16,16,"bounds=[0,62][402,699]; enabled=true; enabled=true",15
+17,17,"bounds=[0,62][402,699]; enabled=true; enabled=true",16
+18,18,"bounds=[0,62][402,700]; enabled=true; enabled=true",17
+19,19,"bounds=[0,62][402,700]; enabled=true; enabled=true",18
+20,20,"accessibilityText=Active foreground time 00:00; bounds=[20,98][123,114]; enabled=true; enabled=true",19
+21,20,"accessibilityText=Guided Practice; bounds=[170,98][262,114]; enabled=true; enabled=true",19
+22,21,"accessibilityText=Guided Practice; bounds=[170,98][262,114]; enabled=true; enabled=true",21
+23,20,"accessibilityText=Question 1 of 20; bounds=[310,98][382,114]; enabled=true; enabled=true",19
+24,20,"accessibilityText=Session progress; value=5%; text=5%; bounds=[0,158][402,162]; enabled=true; enabled=true",19
+25,20,"bounds=[20,186][382,274]; enabled=true; enabled=true",19
+26,21,"accessibilityText=What does an amortized O(1) operation guarantee?; bounds=[36,202][365,258]; enabled=true; enabled=true",25
+27,22,"accessibilityText=What does an amortized O(1) operation guarantee?; bounds=[36,202][365,258]; enabled=true; enabled=true",26
+28,20,"accessibilityText=For every allowed operation sequence, total cost divided across the sequence is O(1) per operation, even if some individual operations are expensive.; value=radio button, unchecked, Correct response; text=radio button, unchecked, Correct response; bounds=[20,298][382,422]; enabled=true; enabled=true",19
+29,20,"accessibilityText=Every individual operation has worst-case O(1) cost.; value=radio button, checked, Incorrect response; text=radio button, checked, Incorrect response; bounds=[20,434][382,510]; enabled=true; enabled=true",19
+30,20,"accessibilityText=The expected cost is O(1) only under a random input distribution.; value=radio button, unchecked; text=radio button, unchecked; bounds=[20,522][382,596]; enabled=true; enabled=true",19
+31,20,"accessibilityText=Only the first operation is O(1).; value=radio button, unchecked; text=radio button, unchecked; bounds=[20,608][382,672]; enabled=true; enabled=true",19
+34,18,"accessibilityText=Horizontal scroll bar, 1 page; value=0%; text=0%; bounds=[0,666][402,696]; enabled=true; enabled=true",17
+35,19,"bounds=[3,693][399,696]; enabled=true; enabled=true",34
+34,18,"accessibilityText=Horizontal scroll bar, 1 page; value=0%; text=0%; bounds=[0,666][402,696]; enabled=true; enabled=true",17
+35,19,"bounds=[3,693][399,696]; enabled=true; enabled=true",34
+36,16,"bounds=[0,699][402,840]; enabled=true; enabled=true",15
+37,16,"accessibilityText=Check answer; bounds=[16,716][386,766]",15
+38,16,"accessibilityText=Leave session; bounds=[16,774][386,824]; enabled=true; enabled=true",15
+42,11,"bounds=[0,0][402,874]; enabled=true; enabled=true",10
+43,12,"bounds=[0,0][402,874]; enabled=true; enabled=true",42
+41,8,"bounds=[0,0][402,874]; enabled=true; enabled=true",7
+42,9,"bounds=[0,0][402,874]; enabled=true; enabled=true",41
+43,10,"bounds=[0,0][402,874]; enabled=true; enabled=true",42
+44,1,"bounds=[0,0][0,0]",0
+45,2,"bounds=[0,0][402,54]; enabled=true; enabled=true",44
+46,2,"bounds=[0,0][402,54]; enabled=true; enabled=true",44
+47,3,"bounds=[0,0][402,54]; enabled=true; enabled=true",46
+48,4,"bounds=[0,0][402,54]; enabled=true; enabled=true",47
+49,5,"accessibilityText=20:46; bounds=[50,22][98,42]; enabled=true; enabled=true",48
+50,5,"accessibilityText=Sieć komórkowa; value=Brak sygnału; text=Brak sygnału; bounds=[288,26][307,38]; enabled=true; enabled=true",48
+51,5,"value=SSID, 3 z 3 paski sygnału Wi‑Fi; text=SSID, 3 z 3 paski sygnału Wi‑Fi; resource-id=3 z 3 paski sygnału Wi‑Fi; bounds=[315,26][332,38]; enabled=true; enabled=true",48
+52,5,"accessibilityText=100% baterii; value=Ładowanie nie odbywa się; text=Ładowanie nie odbywa się; bounds=[339,26][366,39]; enabled=true; enabled=true",48

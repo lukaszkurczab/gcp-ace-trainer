@@ -1,0 +1,22 @@
+[
+  {
+    "id": "CM-001",
+    "severity": "P2",
+    "area": "auditability",
+    "evidence": "OBSERVED",
+    "expected": "A runtime content sample can correlate its item to the immutable artifact.",
+    "actual": "Practice accessibility tree exposes prompt/options but no item ID, content version, or audit correlation key.",
+    "impact": "The observed item cannot be deterministically joined to the pinned artifact without text inference.",
+    "recommendedNextWork": "QA/observability packet: expose a non-learner-visible audit-safe correlation mechanism."
+  },
+  {
+    "id": "CM-002",
+    "severity": "P1",
+    "area": "track availability",
+    "evidence": "STATICALLY_VERIFIED",
+    "expected": "Cloud Certification smoke test uses a pinned, valid artifact.",
+    "actual": "No Cloud Certification ingress or bundled artifact exists; runtime returns missing_artifact.",
+    "impact": "No real Certification Practice/Exam/Summary/Progress path is available to test.",
+    "recommendedNextWork": "Vertical Certification readiness packet."
+  }
+]

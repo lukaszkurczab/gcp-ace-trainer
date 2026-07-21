@@ -1,0 +1,210 @@
+
+> patternly-content@1.0.0 test
+> npm run test:architecture
+
+
+> patternly-content@1.0.0 test:architecture
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: Algorithms planning is an exact projection of the canonical taxonomy
+ok 1 - Algorithms planning is an exact projection of the canonical taxonomy
+  ---
+  duration_ms: 83.616625
+  type: 'test'
+  ...
+# Subtest: Algorithms planning creates no canonical source batches
+ok 2 - Algorithms planning creates no canonical source batches
+  ---
+  duration_ms: 0.856083
+  type: 'test'
+  ...
+# Subtest: canonical discovery is deterministic and ignores legacy content
+ok 3 - canonical discovery is deterministic and ignores legacy content
+  ---
+  duration_ms: 95.031625
+  type: 'test'
+  ...
+# Subtest: publisher accepts only exact application Algorithms mode IDs
+ok 4 - publisher accepts only exact application Algorithms mode IDs
+  ---
+  duration_ms: 8.615834
+  type: 'test'
+  ...
+# Subtest: Algorithms track configuration owns six practice blueprints and rejects batch-owned blueprints
+ok 5 - Algorithms track configuration owns six practice blueprints and rejects batch-owned blueprints
+  ---
+  duration_ms: 9.660417
+  type: 'test'
+  ...
+# Subtest: constraints and difficulty compile as the application contract's legal optional fields
+ok 6 - constraints and difficulty compile as the application contract's legal optional fields
+  ---
+  duration_ms: 22.168958
+  type: 'test'
+  ...
+# Subtest: empty canonical ingress is explicit even with a legacy bank
+ok 7 - empty canonical ingress is explicit even with a legacy bank
+  ---
+  duration_ms: 4.390125
+  type: 'test'
+  ...
+# Subtest: technical evidence is emitted before human approval and current evidence is mandatory
+ok 8 - technical evidence is emitted before human approval and current evidence is mandatory
+  ---
+  duration_ms: 19.452083
+  type: 'test'
+  ...
+# Subtest: technical evidence survives the clean multi-commit approval and activation cycle
+ok 9 - technical evidence survives the clean multi-commit approval and activation cycle
+  ---
+  duration_ms: 579.972583
+  type: 'test'
+  ...
+# Subtest: build rejects modified and untracked technical evidence outside the committed release candidate
+ok 10 - build rejects modified and untracked technical evidence outside the committed release candidate
+  ---
+  duration_ms: 795.8955
+  type: 'test'
+  ...
+# Subtest: technical input fingerprint includes config, taxonomy, and source schema
+ok 11 - technical input fingerprint includes config, taxonomy, and source schema
+  ---
+  duration_ms: 122.530209
+  type: 'test'
+  ...
+# Subtest: validation is read-only and cannot create approvals or publish a subset
+ok 12 - validation is read-only and cannot create approvals or publish a subset
+  ---
+  duration_ms: 28.005917
+  type: 'test'
+  ...
+# Subtest: taxonomy is batch-owned and fully resolved on each item
+ok 13 - taxonomy is batch-owned and fully resolved on each item
+  ---
+  duration_ms: 21.195584
+  type: 'test'
+  ...
+# Subtest: choice scoring rejects isCorrect-era incomplete contracts
+ok 14 - choice scoring rejects isCorrect-era incomplete contracts
+  ---
+  duration_ms: 6.406167
+  type: 'test'
+  ...
+# Subtest: simulation has an explicit pool, profile, deterministic legal selector, and no truncation
+ok 15 - simulation has an explicit pool, profile, deterministic legal selector, and no truncation
+  ---
+  duration_ms: 25.1435
+  type: 'test'
+  ...
+# Subtest: simulation selection prefers declared targets without weakening fixed-40 constraints
+ok 16 - simulation selection prefers declared targets without weakening fixed-40 constraints
+  ---
+  duration_ms: 19.950042
+  type: 'test'
+  ...
+# Subtest: simulation branch-and-bound finds the global multi-dimensional target optimum
+ok 17 - simulation branch-and-bound finds the global multi-dimensional target optimum
+  ---
+  duration_ms: 0.610417
+  type: 'test'
+  ...
+# Subtest: simulation rejects the previous local-target greedy counterexample
+ok 18 - simulation rejects the previous local-target greedy counterexample
+  ---
+  duration_ms: 6.03375
+  type: 'test'
+  ...
+# Subtest: simulation tie-break is SHA-ranked, seed-dependent only on ties, and input-order independent
+ok 19 - simulation tie-break is SHA-ranked, seed-dependent only on ties, and input-order independent
+  ---
+  duration_ms: 1.238333
+  type: 'test'
+  ...
+# Subtest: simulation treats minima and maxima as hard constraints and distinguishes infeasibility from a limit
+ok 20 - simulation treats minima and maxima as hard constraints and distinguishes infeasibility from a limit
+  ---
+  duration_ms: 1.014667
+  type: 'test'
+  ...
+# Subtest: approvals and activations bind exact immutable fingerprints
+ok 21 - approvals and activations bind exact immutable fingerprints
+  ---
+  duration_ms: 22.928875
+  type: 'test'
+  ...
+# Subtest: approval item identities must exactly match the cited technical evidence
+ok 22 - approval item identities must exactly match the cited technical evidence
+  ---
+  duration_ms: 19.925458
+  type: 'test'
+  ...
+# Subtest: an unchanged item approval is reusable across a later content version with new exact activation
+ok 23 - an unchanged item approval is reusable across a later content version with new exact activation
+  ---
+  duration_ms: 23.523167
+  type: 'test'
+  ...
+# Subtest: symmetric compatibility accepts overlap and bounded solver exposes its limit
+ok 24 - symmetric compatibility accepts overlap and bounded solver exposes its limit
+  ---
+  duration_ms: 14.23925
+  type: 'test'
+  ...
+# Subtest: real source without canonical Algorithms taxonomy stops after ingress discovery
+ok 25 - real source without canonical Algorithms taxonomy stops after ingress discovery
+  ---
+  duration_ms: 8.040083
+  type: 'test'
+  ...
+# Subtest: build refuses dirty or untracked canonical inputs before emitting an artifact
+ok 26 - build refuses dirty or untracked canonical inputs before emitting an artifact
+  ---
+  duration_ms: 118.148667
+  type: 'test'
+  ...
+# Subtest: build checks every immutable target before making an artifact visible
+ok 27 - build checks every immutable target before making an artifact visible
+  ---
+  duration_ms: 18.90125
+  type: 'test'
+  ...
+# Subtest: artifact and release are immutable, exact-byte checked, and tracks remain independent
+ok 28 - artifact and release are immutable, exact-byte checked, and tracks remain independent
+  ---
+  duration_ms: 34.142291
+  type: 'test'
+  ...
+# Subtest: fixtures and legacy paths cannot enter production publishing code
+ok 29 - fixtures and legacy paths cannot enter production publishing code
+  ---
+  duration_ms: 0.8975
+  type: 'test'
+  ...
+# Subtest: Algorithms batch taxonomy uses mental-unit legal families, not family entry-unit equality
+ok 30 - Algorithms batch taxonomy uses mental-unit legal families, not family entry-unit equality
+  ---
+  duration_ms: 9.1995
+  type: 'test'
+  ...
+# Subtest: taxonomy exporter fingerprints exactly the generated structural payload
+ok 31 - taxonomy exporter fingerprints exactly the generated structural payload
+  ---
+  duration_ms: 0.350667
+  type: 'test'
+  ...
+# Subtest: Algorithms structural SOT has the resolved node, family, and cross-family unit contract
+ok 32 - Algorithms structural SOT has the resolved node, family, and cross-family unit contract
+  ---
+  duration_ms: 1.110084
+  type: 'test'
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2149.60725

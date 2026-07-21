@@ -11,15 +11,20 @@ import {
   SectionHeader,
 } from "../../components";
 import { loadActiveTrackId as getActiveTrackId } from "../../application/learningReadModels";
-import { colors, spacing, typography } from "../../theme";
+import { spacing, typography } from "../../theme";
 import {
   buildReviewQueueScreenModel,
   type ReviewQueueRow,
   type ReviewQueueScreenModel,
 } from "./reviewQueueModel";
 import { loadTrackReviewQueueViewModel } from "../../application/reviewQueueQueries";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 export function MistakesReviewScreen() {
+  const styles = useThemedStyles(createStyles);
+  const { locale, t } = useAppPreferences();
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -65,8 +70,8 @@ export function MistakesReviewScreen() {
     <Screen>
       <Card>
         <SectionHeader
-          title="Review queue"
-          subtitle={model ? `${model.trackTitle} items scheduled from local practice.` : "Items scheduled from local practice."}
+          title={t("Review queue")}
+          subtitle={model ? `${t(model.trackTitle)} — ${t("items scheduled from local practice.")}` : t("Items scheduled from local practice.")}
         />
         {model?.warning ? (
           <View style={styles.warningBanner}>
@@ -75,9 +80,9 @@ export function MistakesReviewScreen() {
         ) : null}
         {model ? (
           <View style={styles.summaryRow}>
-            <Badge label={`${model.totalCount} total`} tone="info" />
-            <Badge label={`${model.dueRows.length} due`} tone="warning" />
-            <Badge label={`${model.upcomingRows.length} upcoming`} tone="neutral" />
+            <Badge label={`${model.totalCount} ${t("total")}`} tone="info" />
+            <Badge label={`${model.dueRows.length} ${t("due")}`} tone="warning" />
+            <Badge label={`${model.upcomingRows.length} ${t("upcoming")}`} tone="neutral" />
           </View>
         ) : null}
       </Card>
@@ -85,8 +90,8 @@ export function MistakesReviewScreen() {
       {loading ? (
         <Card>
           <EmptyState
-            title="Loading review queue"
-            description="Reading local review data for the active track."
+            title={t("Loading review queue")}
+            description={t("Reading local review data for the active track.")}
           />
         </Card>
       ) : null}
@@ -94,11 +99,11 @@ export function MistakesReviewScreen() {
       {!loading && model && visibleRows.length > 0 ? (
         <View style={styles.list}>
           <SectionHeader
-            title={model.dueRows.length > 0 ? "Due now" : "Upcoming"}
+            title={t(model.dueRows.length > 0 ? "Due now" : "Upcoming")}
             subtitle={
               model.dueRows.length > 0
-                ? "Overdue and due items from the canonical queue."
-                : "No due items right now. Upcoming items are listed for visibility."
+                ? t("Overdue and due items from the review queue.")
+                : t("No due items right now. Upcoming items are listed for visibility.")
             }
             tight
           />
@@ -106,14 +111,14 @@ export function MistakesReviewScreen() {
             <ListRow
               detail={row.taxonomyLabel}
               key={row.id}
-              meta={formatDueAt(row.dueAt)}
+              meta={formatDueAt(row.dueAt, locale)}
               onPress={() =>
                 setSelectedRowId((current) => (current === row.id ? null : row.id))
               }
               title={row.title}
               trailing={
                 <View style={styles.badgeRow}>
-                  <Badge label={formatStatus(row.status)} tone={getStatusTone(row.status)} />
+                  <Badge label={t(formatStatus(row.status))} tone={getStatusTone(row.status)} />
                 </View>
               }
             />
@@ -124,8 +129,8 @@ export function MistakesReviewScreen() {
       {!loading && model && visibleRows.length === 0 ? (
         <Card>
           <EmptyState
-            title={model.emptyTitle}
-            description={model.emptyDescription}
+            title={t(model.emptyTitle)}
+            description={t(model.emptyDescription)}
           />
         </Card>
       ) : null}
@@ -140,17 +145,19 @@ type ReviewQueueDetailProps = {
 };
 
 function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
+  const styles = useThemedStyles(createStyles);
+  const { locale, t } = useAppPreferences();
   return (
     <Card>
-      <SectionHeader title="Review item" subtitle={row.taxonomyLabel} />
+      <SectionHeader title={t("Review item")} subtitle={t(row.taxonomyLabel)} />
       <View style={styles.badgeRow}>
-        <Badge label={formatStatus(row.status)} tone={getStatusTone(row.status)} />
+        <Badge label={t(formatStatus(row.status))} tone={getStatusTone(row.status)} />
       </View>
-      <DetailBlock label="Prompt" value={row.promptPreview} />
-      <DetailBlock label="Reasons" value={formatList(row.reasonLabels)} />
-      <DetailBlock label="Mistake types" value={formatList(row.mistakeTypeLabels)} />
-      <DetailBlock label="Source attempt" value={row.sourceAttemptId} />
-      <DetailBlock label="Due" value={formatDueAt(row.dueAt)} />
+      <DetailBlock label={t("Prompt")} value={row.promptPreview} />
+      <DetailBlock label={t("Reasons")} value={formatList(row.reasonLabels, t)} />
+      <DetailBlock label={t("Mistake types")} value={formatList(row.mistakeTypeLabels, t)} />
+      <DetailBlock label={t("Source attempt")} value={row.sourceAttemptId} />
+      <DetailBlock label={t("Due")} value={formatDueAt(row.dueAt, locale)} />
     </Card>
   );
 }
@@ -161,6 +168,7 @@ type DetailBlockProps = {
 };
 
 function DetailBlock({ label, value }: DetailBlockProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.detailBlock}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -169,18 +177,18 @@ function DetailBlock({ label, value }: DetailBlockProps) {
   );
 }
 
-function formatList(values: readonly string[]): string {
-  return values.length > 0 ? values.join(", ") : "Not recorded.";
+function formatList(values: readonly string[], t: (value: string) => string): string {
+  return values.length > 0 ? values.map(t).join(", ") : t("Not recorded.");
 }
 
-function formatDueAt(value: string): string {
+function formatDueAt(value: string, locale: "en" | "pl"): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return value;
   }
 
-  return date.toLocaleString();
+  return date.toLocaleString(locale === "pl" ? "pl-PL" : "en-US");
 }
 
 function formatStatus(status: ReviewQueueRow["status"]): string {
@@ -209,7 +217,7 @@ function getStatusTone(status: ReviewQueueRow["status"]): "danger" | "info" | "n
   }
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   badgeRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -220,11 +228,11 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   detailText: {
     ...typography.body,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   list: {
     gap: spacing.md,
@@ -235,12 +243,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   warningBanner: {
-    backgroundColor: colors.dark.warningSoft,
+    backgroundColor: palette.warningSoft,
     borderRadius: 8,
     padding: spacing.md,
   },
   warningText: {
     ...typography.small,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
 });

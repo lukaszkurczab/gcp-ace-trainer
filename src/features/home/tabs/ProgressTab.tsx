@@ -17,9 +17,12 @@ import {
 } from "../../../domain";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
-import { colors, spacing, typography } from "../../../theme";
+import { spacing, typography } from "../../../theme";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/cloud-certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { useAppPreferences, useThemedStyles } from "../../../preferences";
+import type { AppColors } from "../../../theme";
+
 import {
   buildProgressTabModel,
   type AlgorithmsProgressScreenModel,
@@ -47,6 +50,8 @@ export function ProgressTab({
   trainingAttempts = [],
   onProgressAction,
 }: ProgressTabProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const progress = buildProgressTabModel({
     activeTrackId: activeTrack.id,
     analytics,
@@ -70,35 +75,35 @@ export function ProgressTab({
   return (
     <>
       <View style={styles.pageIntro}>
-        <Text style={styles.screenTitle}>Focus overview</Text>
+        <Text style={styles.screenTitle}>{t("Focus overview")}</Text>
         <Text style={styles.screenSubtitle}>
-          Review what needs attention and track recent local practice.
+          {t("Review what needs attention and track recent local practice.")}
         </Text>
       </View>
 
       <Card variant="tonal" style={styles.reviewCard}>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewCopy}>
-            <Text style={styles.reviewTitle}>Due review</Text>
+            <Text style={styles.reviewTitle}>{t("Due review")}</Text>
             <Text style={styles.mutedText}>
-              {progress.reviewQueueCopy}
+              {t(progress.reviewQueueCopy)}
             </Text>
           </View>
           <Text style={styles.reviewNumber}>{progress.reviewQueueCount}</Text>
         </View>
         {progress.warning ? (
           <View style={styles.warningBanner}>
-            <Text style={styles.warningText}>{progress.warning}</Text>
+            <Text style={styles.warningText}>{t(progress.warning)}</Text>
           </View>
         ) : null}
         {progress.reviewActionEnabled && reviewAction && onProgressAction ? (
           <Button onPress={() => onProgressAction(reviewAction)} variant="secondary">
-            {progress.reviewActionLabel}
+            {t(progress.reviewActionLabel)}
           </Button>
         ) : (
           <View style={styles.unavailableAction}>
             <Text style={styles.unavailableActionText}>
-              {progress.reviewActionLabel}
+              {t(progress.reviewActionLabel)}
             </Text>
           </View>
         )}
@@ -106,8 +111,8 @@ export function ProgressTab({
 
       <View style={styles.section}>
         <SectionHeader
-          title="Practice activity"
-          action={<Badge label="Local data" tone="neutral" />}
+          title={t("Practice activity")}
+          action={<Badge label={t("Local data")} tone="neutral" />}
           tight
         />
         <Card>
@@ -118,10 +123,10 @@ export function ProgressTab({
                 {progress.activitySummary.value}
               </Text>
               <Text style={styles.performanceTitle}>
-                {progress.activitySummary.label}
+                {t(progress.activitySummary.label)}
               </Text>
               <Text style={styles.mutedText}>
-                {progress.activitySummary.detail}
+                {t(progress.activitySummary.detail)}
               </Text>
             </View>
           </View>
@@ -129,7 +134,7 @@ export function ProgressTab({
       </View>
 
       <View style={styles.section}>
-        <SectionHeader title={progress.performanceSectionTitle} tight />
+        <SectionHeader title={t(progress.performanceSectionTitle)} tight />
         {progress.performanceScores.length > 0 ? (
           <View style={styles.actionList}>
             {progress.performanceScores.map((score) => (
@@ -140,9 +145,9 @@ export function ProgressTab({
                     tone="info"
                   />
                   <View style={styles.performanceCopy}>
-                    <Text style={styles.performanceTitle}>{score.label}</Text>
+                    <Text style={styles.performanceTitle}>{t(score.label)}</Text>
                     <Text style={styles.mutedText}>
-                      {score.detail ?? `${score.correct}/${score.total} correct`}
+                      {score.detail ? t(score.detail) : `${score.correct}/${score.total} ${t("correct")}`}
                     </Text>
                   </View>
                   <View style={styles.performanceMeta}>
@@ -155,19 +160,19 @@ export function ProgressTab({
           </View>
         ) : (
           <EmptyState
-            title={getProgressEmptyTitle(activeTrack.id)}
-            description={getProgressEmptyDescription(activeTrack.id, progress.hasData)}
+            title={t(getProgressEmptyTitle(activeTrack.id))}
+            description={t(getProgressEmptyDescription(activeTrack.id, progress.hasData))}
           />
         )}
       </View>
 
       <View style={styles.section}>
-        <SectionHeader title="Concrete metrics" tight />
+        <SectionHeader title={t("Concrete metrics")} tight />
         <View style={styles.metricRow}>
           {progress.metrics.map((metric) => (
             <MetricCard
               key={metric.label}
-              label={metric.label}
+              label={t(metric.label)}
               tone={metric.tone}
               value={metric.value}
             />
@@ -185,6 +190,8 @@ function AlgorithmsProgressContent({
   model: AlgorithmsProgressScreenModel;
   onProgressAction?: (action: ProgressAction) => void;
 }) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(!model.diagnostics.collapsedByDefault);
   const roadmapNodes = showAllRoadmapNodes
@@ -194,21 +201,21 @@ function AlgorithmsProgressContent({
   return (
     <>
       <View style={styles.pageIntro}>
-        <Text style={styles.screenTitle}>Learning priority</Text>
+        <Text style={styles.screenTitle}>{t("Learning priority")}</Text>
         <Text style={styles.screenSubtitle}>
-          Use your current evidence to choose the next learning action.
+          {t("Use your current evidence to choose the next learning action.")}
         </Text>
       </View>
 
       <Card variant="tonal" style={styles.priorityCard}>
-        <Badge label={model.priority.label} tone={getBadgeTone(model.priority.tone)} />
-        <Text style={styles.priorityTitle}>{model.priority.title}</Text>
-        <Text style={styles.mutedText}>{model.priority.detail}</Text>
+        <Badge label={t(model.priority.label)} tone={getBadgeTone(model.priority.tone)} />
+        <Text style={styles.priorityTitle}>{t(model.priority.title)}</Text>
+        <Text style={styles.mutedText}>{t(model.priority.detail)}</Text>
         <Button
           disabled={!onProgressAction}
           onPress={() => onProgressAction?.(model.priority.primaryAction)}
         >
-          {model.priority.primaryActionLabel}
+          {t(model.priority.primaryActionLabel)}
         </Button>
         {model.priority.secondaryAction && model.priority.secondaryActionLabel ? (
           <Button
@@ -216,60 +223,60 @@ function AlgorithmsProgressContent({
             onPress={() => onProgressAction?.(model.priority.secondaryAction!)}
             variant="ghost"
           >
-            {model.priority.secondaryActionLabel}
+            {t(model.priority.secondaryActionLabel)}
           </Button>
         ) : null}
       </Card>
 
       <View style={styles.section}>
-        <SectionHeader title="Current focus" tight />
+        <SectionHeader title={t("Current focus")} tight />
         <Card style={styles.focusCard}>
           <View style={styles.cardHeading}>
             <Text style={styles.activityValue}>{model.currentFocus.title}</Text>
             <Badge
-              label={model.currentFocus.statusLabel}
+              label={t(model.currentFocus.statusLabel)}
               tone={getBadgeTone(model.currentFocus.statusTone)}
             />
           </View>
           <View style={styles.focusMetrics}>
             <FocusMetric
-              label="Practiced"
+              label={t("Practiced")}
               showDivider
               value={model.currentFocus.practicedLabel}
             />
             <FocusMetric
-              label="Core skills"
+              label={t("Core skills")}
               showDivider
               value={model.currentFocus.coreSkillsLabel}
             />
-            <FocusMetric label="Score" value={model.currentFocus.scoreLabel} />
+            <FocusMetric label={t("Score")} value={model.currentFocus.scoreLabel} />
           </View>
           <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
-          <Text style={styles.mutedText}>{model.currentFocus.explanation}</Text>
+          <Text style={styles.mutedText}>{t(model.currentFocus.explanation)}</Text>
         </Card>
       </View>
 
       {model.nextTopic ? (
         <View style={styles.section}>
-          <SectionHeader title="Next topic" tight />
+          <SectionHeader title={t("Next topic")} tight />
           <Card style={styles.focusCard}>
             <View style={styles.cardHeading}>
               <Text style={styles.activityValue}>{model.nextTopic.title}</Text>
               <Badge
-                label={getNextTopicStateLabel(model.nextTopic.state)}
+                label={t(getNextTopicStateLabel(model.nextTopic.state))}
                 tone={model.nextTopic.state === "locked" ? "neutral" : "success"}
               />
             </View>
-            <Text style={styles.mutedText}>{model.nextTopic.detail}</Text>
+            <Text style={styles.mutedText}>{t(model.nextTopic.detail)}</Text>
             {model.nextTopic.requirements.length > 0 ? (
               <View style={styles.requirementList}>
-                <Text style={styles.performanceTitle}>To unlock</Text>
+                <Text style={styles.performanceTitle}>{t("To unlock")}</Text>
                 {model.nextTopic.requirements.map((requirement) => (
                   <View key={requirement.label} style={styles.requirementRow}>
                     <Text style={requirement.met ? styles.metMark : styles.unmetMark}>
                       {requirement.met ? "✓" : "○"}
                     </Text>
-                    <Text style={styles.mutedText}>{requirement.label}</Text>
+                    <Text style={styles.mutedText}>{t(requirement.label)}</Text>
                   </View>
                 ))}
               </View>
@@ -279,7 +286,7 @@ function AlgorithmsProgressContent({
       ) : null}
 
       <View style={styles.section}>
-        <SectionHeader title="Roadmap summary" tight />
+        <SectionHeader title={t("Roadmap summary")} tight />
         <Card style={styles.roadmapCard}>
           {roadmapNodes.map((node) => (
             <View key={node.id} style={styles.roadmapRow}>
@@ -289,7 +296,7 @@ function AlgorithmsProgressContent({
                   <ProgressBar progress={node.progressPercent / 100} tone="primary" />
                 ) : null}
               </View>
-              <Badge label={node.label} tone={getBadgeTone(node.tone)} />
+              <Badge label={t(node.label)} tone={getBadgeTone(node.tone)} />
             </View>
           ))}
           {model.roadmapSummary.allNodes.length > model.roadmapSummary.nodes.length ? (
@@ -297,7 +304,7 @@ function AlgorithmsProgressContent({
               onPress={() => setShowAllRoadmapNodes((current) => !current)}
               variant="ghost"
             >
-              {showAllRoadmapNodes ? "Show roadmap summary" : model.roadmapSummary.showAllActionLabel}
+              {showAllRoadmapNodes ? t("Show roadmap summary") : t(model.roadmapSummary.showAllActionLabel)}
             </Button>
           ) : null}
         </Card>
@@ -306,29 +313,29 @@ function AlgorithmsProgressContent({
       <View style={styles.explanationDisclosure}>
         <View style={styles.explanationHeader}>
           <View style={styles.explanationCopy}>
-            <Text style={styles.explanationTitle}>{model.diagnostics.title}</Text>
-            <Text style={styles.explanationSubtitle}>{model.diagnostics.subtitle}</Text>
+            <Text style={styles.explanationTitle}>{t(model.diagnostics.title)}</Text>
+            <Text style={styles.explanationSubtitle}>{t(model.diagnostics.subtitle)}</Text>
           </View>
           <Button onPress={() => setShowDiagnostics((current) => !current)} variant="ghost">
-            {showDiagnostics ? model.diagnostics.hideActionLabel : model.diagnostics.showActionLabel}
+            {showDiagnostics ? t(model.diagnostics.hideActionLabel) : t(model.diagnostics.showActionLabel)}
           </Button>
         </View>
         {showDiagnostics ? (
           <View style={styles.explanationDetails}>
             <ExplanationBlock
-              label="Attempt outcomes"
+              label={t("Attempt outcomes")}
               text={formatDiagnosticFacts(model.diagnostics.outcomeSummary)}
             />
             <ExplanationBlock
-              label="Detected mistake patterns"
+              label={t("Detected mistake patterns")}
               text={
                 model.diagnostics.mistakePatterns.length > 0
                   ? model.diagnostics.mistakePatterns.join(" · ")
-                  : "No repeated mistake patterns detected yet."
+                  : t("No repeated mistake patterns detected yet.")
               }
             />
             <ExplanationBlock
-              label="Roadmap state"
+              label={t("Roadmap state")}
               text={formatDiagnosticFacts(model.diagnostics.roadmapFacts)}
             />
           </View>
@@ -345,6 +352,7 @@ function ExplanationBlock({
   label: string;
   text: string;
 }) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.explanationBlock}>
       <Text style={styles.explanationLabel}>{label}</Text>
@@ -362,6 +370,7 @@ function FocusMetric({
   showDivider?: boolean;
   value: string;
 }) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.focusMetric, showDivider ? styles.focusMetricDivider : null]}>
       <Text style={styles.focusMetricValue}>{value}</Text>
@@ -407,17 +416,17 @@ function getProgressEmptyDescription(
     : "Start a focused practice session to build track-aware performance data.";
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   pageIntro: {
     gap: spacing.md,
   },
   screenTitle: {
     ...typography.heading,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   screenSubtitle: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   reviewCard: {
     gap: spacing.lg,
@@ -434,11 +443,11 @@ const styles = StyleSheet.create({
   },
   reviewTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   reviewNumber: {
     ...typography.display,
-    color: colors.dark.info,
+    color: palette.info,
     fontVariant: ["tabular-nums"],
   },
   metricRow: {
@@ -447,15 +456,15 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   unavailableAction: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,
     padding: spacing.md,
   },
   unavailableActionText: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
     textAlign: "center",
   },
   section: {
@@ -472,7 +481,7 @@ const styles = StyleSheet.create({
   },
   activityValue: {
     ...typography.heading,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
     fontVariant: ["tabular-nums"],
   },
   priorityCard: {
@@ -480,7 +489,7 @@ const styles = StyleSheet.create({
   },
   priorityTitle: {
     ...typography.heading,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   focusCard: {
     gap: spacing.lg,
@@ -502,21 +511,21 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   focusMetricDivider: {
-    borderColor: colors.dark.border,
+    borderColor: palette.border,
     borderRightWidth: StyleSheet.hairlineWidth,
   },
   focusMetricValue: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
     fontVariant: ["tabular-nums"],
   },
   focusMetricLabel: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   mutedText: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   requirementList: {
     gap: spacing.md,
@@ -528,11 +537,11 @@ const styles = StyleSheet.create({
   },
   metMark: {
     ...typography.bodyStrong,
-    color: colors.dark.success,
+    color: palette.success,
   },
   unmetMark: {
     ...typography.bodyStrong,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
   },
   roadmapCard: {
     gap: spacing.lg,
@@ -547,8 +556,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   explanationDisclosure: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
@@ -566,14 +575,14 @@ const styles = StyleSheet.create({
   },
   explanationTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   explanationSubtitle: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
   },
   explanationDetails: {
-    borderColor: colors.dark.border,
+    borderColor: palette.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
     paddingTop: spacing.md,
@@ -583,27 +592,27 @@ const styles = StyleSheet.create({
   },
   explanationLabel: {
     ...typography.caption,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   explanationText: {
     ...typography.small,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   warningBanner: {
-    backgroundColor: colors.dark.warningSoft,
+    backgroundColor: palette.warningSoft,
     borderRadius: 8,
     padding: spacing.md,
   },
   warningText: {
     ...typography.small,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   actionList: {
     gap: spacing.md,
   },
   performanceRow: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: 8,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.sm,
@@ -621,7 +630,7 @@ const styles = StyleSheet.create({
   },
   performanceTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
     flexShrink: 1,
   },
   performanceMeta: {
@@ -631,7 +640,7 @@ const styles = StyleSheet.create({
   },
   performanceValue: {
     ...typography.bodyStrong,
-    color: colors.dark.primary,
+    color: palette.primary,
     flexShrink: 0,
     fontVariant: ["tabular-nums"],
   },

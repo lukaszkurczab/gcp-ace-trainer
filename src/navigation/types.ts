@@ -6,6 +6,11 @@ import type { AlgorithmsDeclaredScopeMode } from "../application/algorithms";
 
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;
+  [ROUTES.APPEARANCE_SETTINGS]: undefined;
+  [ROUTES.LEGAL_INFORMATION]: undefined;
+  [ROUTES.LANGUAGE_SETTINGS]: undefined;
+  [ROUTES.NOTIFICATION_SETTINGS]: undefined;
+  [ROUTES.YOUR_DATA]: undefined;
   [ROUTES.SELECT_TRACK]: undefined;
   [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home" | "practiceHub"; targetMentalUnitId?: string };

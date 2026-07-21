@@ -1,0 +1,23 @@
+App crashed or stopped while executing flow, please check diagnostic logs: ~/Library/Logs/DiagnosticReports directory
+
+The stack trace was:
+maestro.MaestroException$AppCrash: App crashed or stopped while executing flow, please check diagnostic logs: ~/Library/Logs/DiagnosticReports directory
+	at maestro.drivers.IOSDriver.runDeviceCall(IOSDriver.kt:552)
+	at maestro.drivers.IOSDriver.contentDescriptor$lambda$22(IOSDriver.kt:172)
+	at maestro.utils.Metrics.measured(Metrics.kt:48)
+	at maestro.drivers.IOSDriver.contentDescriptor(IOSDriver.kt:171)
+	at maestro.ViewHierarchy$Companion.from-8JJjmZI(ViewHierarchy.kt:29)
+	at maestro.Maestro$viewHierarchy$2.invoke-prqvCes(Maestro.kt:429)
+	at maestro.Maestro$viewHierarchy$2.invoke(Maestro.kt:428)
+	at kotlinx.coroutines.InterruptibleKt.runInterruptibleInExpectedContext(Interruptible.kt:48)
+	at kotlinx.coroutines.InterruptibleKt.access$runInterruptibleInExpectedContext(Interruptible.kt:1)
+	at kotlinx.coroutines.InterruptibleKt$runInterruptible$2.invokeSuspend(Interruptible.kt:40)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+	at kotlinx.coroutines.internal.LimitedDispatcher$Worker.run(LimitedDispatcher.kt:124)
+	at kotlinx.coroutines.scheduling.TaskImpl.run(Tasks.kt:89)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:586)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:820)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:717)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:704)
+

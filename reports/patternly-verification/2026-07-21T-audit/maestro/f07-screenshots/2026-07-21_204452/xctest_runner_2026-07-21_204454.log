@@ -1,0 +1,83 @@
+2026-07-21 20:44:54.827 xcodebuild[83297:11358758] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-07-21 20:44:54.835 xcodebuild[83297:11358758] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-07-21 20:44:55.075 xcodebuild[83297:11358758] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+23046
+
+2026-07-21 20:44:56.760599+0200 maestro-driver-iosUITests-Runner[83300:11359014] [Default] Running tests...
+2026-07-21 20:44:56.818569+0200 maestro-driver-iosUITests-Runner[83300:11359014] snapshotKeyHonorModalViews configured to value: (null)
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-07-21 20:44:57.396.
+Test Suite 'maestro-driver-iosUITests.xctest' started at 2026-07-21 20:44:57.397.
+Test Suite 'maestro_driver_iosUITests' started at 2026-07-21 20:44:57.397.
+    t =      nans Suite Set Up
+Test Case '-[maestro_driver_iosUITests.maestro_driver_iosUITests testHttpServer]' started.
+    t =     0.00s Start Test at 2026-07-21 20:44:57.398
+    t =     0.02s Set Up
+2026-07-21 20:44:57.416599+0200 maestro-driver-iosUITests-Runner[83300:11359058] [maestro_driver_iosUITests] Will start HTTP server
+2026-07-21 20:44:57.495274+0200 maestro-driver-iosUITests-Runner[83300:11359048] [FlyingFox] starting server 127.0.0.1:60839
+2026-07-21 20:44:57.662695+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> open connection
+2026-07-21 20:44:57.668544+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> request: GET /status
+2026-07-21 20:44:57.710567+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> open connection
+2026-07-21 20:44:57.711686+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> request: POST /deviceInfo
+    t =     0.31s Getting device orientation
+2026-07-21 20:44:57.714767+0200 maestro-driver-iosUITests-Runner[83300:11359014] Using singleton test manager
+2026-07-21 20:44:57.718523+0200 maestro-driver-iosUITests-Runner[83300:11359014] Detected running apps: ["com.lkurczab.gcpacetrainer"]
+    t =     0.32s Getting device orientation
+    t =     0.32s Find the Application 'com.lkurczab.gcpacetrainer'
+2026-07-21 20:44:57.745722+0200 maestro-driver-iosUITests-Runner[83300:11359014] Device orientation is 1
+2026-07-21 20:44:57.808777+0200 maestro-driver-iosUITests-Runner[83300:11359060] [FlyingFox] <127.0.0.1> request: POST /deviceInfo
+    t =     0.41s Getting device orientation
+2026-07-21 20:44:57.816226+0200 maestro-driver-iosUITests-Runner[83300:11359014] Detected running apps: ["com.lkurczab.gcpacetrainer"]
+    t =     0.42s Getting device orientation
+2026-07-21 20:44:57.817993+0200 maestro-driver-iosUITests-Runner[83300:11359014] Returning cached screen size
+2026-07-21 20:44:57.818080+0200 maestro-driver-iosUITests-Runner[83300:11359014] Device orientation is 1
+2026-07-21 20:44:57.899563+0200 maestro-driver-iosUITests-Runner[83300:11359066] [FlyingFox] <127.0.0.1> request: POST /viewHierarchy
+2026-07-21 20:44:57.904533+0200 maestro-driver-iosUITests-Runner[83300:11359014] Detected running apps: ["com.lkurczab.gcpacetrainer"]
+2026-07-21 20:44:57.905079+0200 maestro-driver-iosUITests-Runner[83300:11359014] [Start] View hierarchy snapshot for Application 'com.lkurczab.gcpacetrainer'
+2026-07-21 20:44:57.905132+0200 maestro-driver-iosUITests-Runner[83300:11359014] [ViewHierarchyHandler] Starting getHierarchyWithFallback for element.
+    t =     0.51s Find the Application 'com.lkurczab.gcpacetrainer'
+2026-07-21 20:44:57.922923+0200 maestro-driver-iosUITests-Runner[83300:11359014] [ViewHierarchyHandler] Successfully retrieved element hierarchy.
+2026-07-21 20:44:57.923385+0200 maestro-driver-iosUITests-Runner[83300:11359014] Foreground app is not springboard skipping auto tapping on permissions
+2026-07-21 20:44:57.923439+0200 maestro-driver-iosUITests-Runner[83300:11359014] [ViewHierarchyHandler] Fetch status bar hierarchy - start
+    t =     0.53s Checking existence of `StatusBar (First Match)`
+    t =     0.54s Get all elements bound by index for: Descendants matching type StatusBar
+    t =     0.56s Find the StatusBar (Element at index 0)
+    t =     0.58s Find the StatusBar (Element at index 1)
+2026-07-21 20:44:58.005416+0200 maestro-driver-iosUITests-Runner[83300:11359014] Fetch status bar hierarchy - duration 0.0783689022064209
+2026-07-21 20:44:58.005492+0200 maestro-driver-iosUITests-Runner[83300:11359014] [ViewHierarchyHandler] Fetch Safari WebView hierarchy - start
+2026-07-21 20:44:58.007789+0200 maestro-driver-iosUITests-Runner[83300:11359014] Fetch Safari WebView hierarchy - duration 0.0022699832916259766
+    t =     0.61s Find the Application 'com.apple.springboard'
+2026-07-21 20:44:58.032027+0200 maestro-driver-iosUITests-Runner[83300:11359014] [Done] View hierarchy snapshot for Application 'com.lkurczab.gcpacetrainer' 
+2026-07-21 20:44:58.070665+0200 maestro-driver-iosUITests-Runner[83300:11359073] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+objc[83300]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23E254a/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.4.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x109fc0310) and /Library/Developer/CoreSimulator/Volumes/iOS_23E254a/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.4.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10ad50398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-07-21 20:44:58.286886+0200 maestro-driver-iosUITests-Runner[83300:11359048] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:44:58.509259+0200 maestro-driver-iosUITests-Runner[83300:11359048] [FlyingFox] <127.0.0.1> request: POST /touch
+2026-07-21 20:44:58.514869+0200 maestro-driver-iosUITests-Runner[83300:11359014] Detected running apps: ["com.lkurczab.gcpacetrainer"]
+    t =     1.12s Getting device orientation
+2026-07-21 20:44:58.516749+0200 maestro-driver-iosUITests-Runner[83300:11359014] Returning cached screen size
+    t =     1.12s Getting device orientation
+2026-07-21 20:44:58.517779+0200 maestro-driver-iosUITests-Runner[83300:11359014] Tapping 201.0, 483.0
+    t =     1.12s Getting device orientation
+2026-07-21 20:44:58.858127+0200 maestro-driver-iosUITests-Runner[83300:11359014] Tapping took 0.3365999460220337
+2026-07-21 20:44:58.861302+0200 maestro-driver-iosUITests-Runner[83300:11359060] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+2026-07-21 20:44:59.078768+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+2026-07-21 20:44:59.280792+0200 maestro-driver-iosUITests-Runner[83300:11359048] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+2026-07-21 20:44:59.505009+0200 maestro-driver-iosUITests-Runner[83300:11359060] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+2026-07-21 20:44:59.740259+0200 maestro-driver-iosUITests-Runner[83300:11359066] [FlyingFox] <127.0.0.1> request: GET /isScreenStatic
+2026-07-21 20:44:59.960771+0200 maestro-driver-iosUITests-Runner[83300:11359049] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:00.132126+0200 maestro-driver-iosUITests-Runner[83300:11359058] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:00.767888+0200 maestro-driver-iosUITests-Runner[83300:11359066] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:00.958840+0200 maestro-driver-iosUITests-Runner[83300:11359053] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:01.333884+0200 maestro-driver-iosUITests-Runner[83300:11359068] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:01.900221+0200 maestro-driver-iosUITests-Runner[83300:11359065] [FlyingFox] <127.0.0.1> request: POST /setPermissions
+2026-07-21 20:45:01.910310+0200 maestro-driver-iosUITests-Runner[83300:11359069] [FlyingFox] <127.0.0.1> request: POST /terminateApp
+2026-07-21 20:45:01.913806+0200 maestro-driver-iosUITests-Runner[83300:11359014] [Start] Terminating app com.lkurczab.gcpacetrainer
+    t =     4.52s Terminate com.lkurczab.gcpacetrainer:81396
+2026-07-21 20:45:02.996676+0200 maestro-driver-iosUITests-Runner[83300:11359014] [End] Terminating app com.lkurczab.gcpacetrainer
+2026-07-21 20:45:03.316726+0200 maestro-driver-iosUITests-Runner[83300:11359072] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:03.609738+0200 maestro-driver-iosUITests-Runner[83300:11359072] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:04.621699+0200 maestro-driver-iosUITests-Runner[83300:11359074] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:04.763974+0200 maestro-driver-iosUITests-Runner[83300:11359069] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:05.091069+0200 maestro-driver-iosUITests-Runner[83300:11359047] [FlyingFox] <127.0.0.1> request: GET /screenshot
+2026-07-21 20:45:07.382174+0200 maestro-driver-iosUITests-Runner[83300:11359072] [FlyingFox] <127.0.0.1> close connection
+2026-07-21 20:45:07.382387+0200 maestro-driver-iosUITests-Runner[83300:11359072] [FlyingFox] <127.0.0.1> close connection

@@ -9,7 +9,10 @@ import {
   type ViewStyle,
 } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
+import { useAppPreferences, useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive";
 
@@ -36,6 +39,8 @@ export function Button({
   style,
   variant = "primary",
 }: ButtonProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette } = useAppPreferences();
   const isDisabled = disabled || loading;
 
   return (
@@ -53,17 +58,17 @@ export function Button({
         style
       ]}
     >
-      {loading ? <ActivityIndicator color={getActivityColor(variant)} size="small" style={styles.spinner} /> : null}
+      {loading ? <ActivityIndicator color={getActivityColor(variant, palette)} size="small" style={styles.spinner} /> : null}
       <Text style={[styles.label, styles[`${variant}Label`], isDisabled ? styles.disabledLabel : null]}>{children}</Text>
     </Pressable>
   );
 }
 
-function getActivityColor(variant: ButtonVariant): string {
-  return variant === "primary" || variant === "destructive" ? colors.dark.textPrimary : colors.dark.primary;
+function getActivityColor(variant: ButtonVariant, palette: AppColors): string {
+  return variant === "primary" || variant === "destructive" ? palette.textPrimary : palette.primary;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   base: {
     alignItems: "center",
     borderRadius: radius.md,
@@ -77,27 +82,27 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md
   },
   primary: {
-    backgroundColor: colors.dark.primary,
-    borderColor: colors.dark.primary
+    backgroundColor: palette.primary,
+    borderColor: palette.primary
   },
   secondary: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border
+    backgroundColor: palette.surface,
+    borderColor: palette.border
   },
   ghost: {
-    backgroundColor: colors.dark.primarySoft,
-    borderColor: colors.dark.primarySoft
+    backgroundColor: palette.primarySoft,
+    borderColor: palette.primarySoft
   },
   destructive: {
-    backgroundColor: colors.dark.danger,
-    borderColor: colors.dark.danger
+    backgroundColor: palette.danger,
+    borderColor: palette.danger
   },
   pressed: {
     opacity: 0.82
   },
   disabled: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border
   },
   spinner: {
     marginLeft: -spacing.xs
@@ -108,18 +113,18 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   primaryLabel: {
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   secondaryLabel: {
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   ghostLabel: {
-    color: colors.dark.primary
+    color: palette.primary
   },
   destructiveLabel: {
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   disabledLabel: {
-    color: colors.dark.textMuted
+    color: palette.textMuted
   }
 });

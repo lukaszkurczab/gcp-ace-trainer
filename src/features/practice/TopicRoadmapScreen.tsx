@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
-  EmptyState,
   Icon,
   Screen,
   type IconName,
@@ -18,9 +17,13 @@ import {
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
-import { colorWithOpacity, colors, radius, spacing, typography } from "../../theme";
+import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
+import { SelectTrackScreen } from "../home/SelectTrackScreen";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 import {
   buildTopicRoadmapNodes,
   type TopicRoadmapNodeModel,
@@ -40,6 +43,8 @@ const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
 
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
   const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
@@ -78,7 +83,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
     }
   }, [route.params?.trackId]);
 
-  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="The topic roadmap is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
   const rows = buildRoadmapRows(topics);
@@ -106,9 +111,9 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
         />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>Choose topic</Text>
+          <Text style={styles.title}>{t("Choose topic")}</Text>
           <Text style={styles.subtitle}>
-            Select a topic to practice in {activeTrack.title}. Patternly may still suggest areas based on your answers.
+            {t("Select a topic to practice in")} {t(activeTrack.title)}. {t("Patternly may still suggest areas based on your answers.")}
           </Text>
         </View>
 
@@ -228,6 +233,8 @@ function RoadmapNode({
   selected,
   topic,
 }: RoadmapNodeProps) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette } = useAppPreferences();
   const locked = !topic.enabled;
   const iconName = getTopicIcon(topic, activeTrackId);
 
@@ -248,11 +255,11 @@ function RoadmapNode({
         style={[
           styles.nodeCircle,
           large ? styles.nodeCircleLarge : null,
-          getCircleStyle(topic, selected),
+          getCircleStyle(topic, selected, styles),
         ]}
       >
         <Icon
-          color={getIconColor(topic, selected)}
+          color={getIconColor(topic, selected, palette)}
           name={iconName}
           size={large ? 30 : 25}
         />
@@ -260,7 +267,7 @@ function RoadmapNode({
       <Text numberOfLines={2} style={[styles.nodeTitle, locked ? styles.nodeTitleLocked : null]}>
         {topic.title}
       </Text>
-      <Text style={[styles.nodeLabel, getLabelStyle(topic, selected)]}>
+      <Text style={[styles.nodeLabel, getLabelStyle(topic, selected, styles)]}>
         {formatNodeLabel(topic)}
       </Text>
     </Pressable>
@@ -268,6 +275,7 @@ function RoadmapNode({
 }
 
 function DotGrid() {
+  const styles = useThemedStyles(createStyles);
   const dots = [];
 
   for (let row = 0; row < DOT_ROWS; row += 1) {
@@ -312,7 +320,7 @@ function getTopicIcon(topic: TopicRoadmapNodeModel, activeTrackId: TrackId): Ico
   return "cloud";
 }
 
-function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
+function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: ReturnType<typeof createStyles>) {
   if (!topic.enabled) {
     return styles.nodeCircleLocked;
   }
@@ -324,19 +332,19 @@ function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
   return styles.nodeCircleAvailable;
 }
 
-function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean): string {
+function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean, palette: AppColors): string {
   if (!topic.enabled) {
-    return colors.dark.textMuted;
+    return palette.textMuted;
   }
 
   if (selected) {
-    return colors.dark.textPrimary;
+    return palette.textPrimary;
   }
 
-  return colors.dark.primary;
+  return palette.primary;
 }
 
-function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean) {
+function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: ReturnType<typeof createStyles>) {
   if (!topic.enabled) {
     return styles.nodeLabelLocked;
   }
@@ -368,9 +376,9 @@ function formatNodeLabel(topic: TopicRoadmapNodeModel): string {
   return topic.label;
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1,
   },
   screenContent: {
@@ -381,11 +389,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   subtitle: {
     ...typography.body,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   canvas: {
     borderRadius: radius.lg,
@@ -400,14 +408,14 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   dot: {
-    backgroundColor: colorWithOpacity(colors.dark.textPrimary, 0.08),
+    backgroundColor: colorWithOpacity(palette.textPrimary, 0.08),
     borderRadius: radius.pill,
     height: 2,
     position: "absolute",
     width: 2,
   },
   verticalConnector: {
-    borderColor: colors.dark.border,
+    borderColor: palette.border,
     borderLeftWidth: StyleSheet.hairlineWidth,
     borderStyle: "dashed",
     bottom: spacing.xxl,
@@ -432,7 +440,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   horizontalConnector: {
-    borderColor: colors.dark.border,
+    borderColor: palette.border,
     borderStyle: "dashed",
     borderTopWidth: StyleSheet.hairlineWidth,
     left: spacing.xxl,
@@ -443,7 +451,7 @@ const styles = StyleSheet.create({
   },
   node: {
     alignItems: "center",
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     gap: spacing.xs,
     maxWidth: 144,
     minWidth: 122,
@@ -474,28 +482,28 @@ const styles = StyleSheet.create({
     width: 66,
   },
   nodeCircleAvailable: {
-    backgroundColor: colors.dark.background,
-    borderColor: colors.dark.primary,
+    backgroundColor: palette.background,
+    borderColor: palette.primary,
   },
   nodeCircleActive: {
-    backgroundColor: colors.dark.primary,
-    borderColor: colors.dark.background,
-    shadowColor: colors.dark.primary,
+    backgroundColor: palette.primary,
+    borderColor: palette.background,
+    shadowColor: palette.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.36,
     shadowRadius: 20,
   },
   nodeCircleLocked: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.borderStrong,
+    backgroundColor: palette.surface,
+    borderColor: palette.borderStrong,
   },
   nodeTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
     textAlign: "center",
   },
   nodeTitleLocked: {
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
   },
   nodeLabel: {
     ...typography.caption,
@@ -505,12 +513,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   nodeLabelAvailable: {
-    color: colors.dark.primary,
+    color: palette.primary,
   },
   nodeLabelCurrent: {
-    color: colors.dark.accentPurple,
+    color: palette.accentPurple,
   },
   nodeLabelLocked: {
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
   },
 });

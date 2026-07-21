@@ -1,0 +1,7 @@
+appId: com.lkurczab.gcpacetrainer
+name: "F04 Practice question — observed build"
+---
+- tapOn: "Start session"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "f04-practice-question"

@@ -1,18 +1,19 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, EmptyState, Screen, SectionHeader } from "../../components";
+import { Button, Card, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";
+import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
   buildTopicRoadmapNodes,
   getCurrentPracticeTopic,
@@ -26,6 +27,9 @@ import {
   type PracticeSessionLength,
 } from "./sessionConfig";
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -35,6 +39,8 @@ type PracticeSetupScreenProps = NativeStackScreenProps<
 const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
   const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
@@ -72,18 +78,15 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     }, [route.params?.trackId]),
   );
 
-  useEffect(() => {
-    if (feedbackMode === "atSessionEnd") {
-      setReviewBehaviorEnabled(false);
-    }
-  }, [feedbackMode]);
-
   const resolvedTrackId = route.params?.trackId ?? activeTrackId;
-  if (!resolvedTrackId) return <Screen><EmptyState title="Choose a learning track" description="Session setup is unavailable until a track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
   const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
+  const configuredSessionLength = algorithmMode && !algorithmMode.profile.supportedLengths.includes(sessionLength)
+    ? algorithmMode.profile.sessionLength
+    : sessionLength;
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
@@ -107,10 +110,13 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       buildPracticeSessionConfig({
         ...(activeTrack.id === ALGORITHMS_TRACK_ID
           ? {
+              feedbackMode,
               reviewItemRefs: route.params?.reviewItemRefs,
               reviewSource: route.params?.reviewSource,
+              reviewBehaviorEnabled,
+              sessionLength: configuredSessionLength,
             }
-          : { feedbackMode, reviewBehaviorEnabled, sessionLength }),
+          : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
         topicId: topic.id,
@@ -125,102 +131,68 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         <AppStackHeader
           navigation={navigation}
           showBack
-          subtitle={activeTrack.title}
+          subtitle={t(activeTrack.title)}
         />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>Practice setup</Text>
+          <Text style={styles.title}>{t("Practice setup")}</Text>
           <Text style={styles.subtitle}>
-            {algorithmMode
-              ? `Review the fixed ${algorithmMode.title} profile for ${topic.title}.`
-              : `Configure the next session for ${topic.title}.`}
+            {`${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
         </View>
 
-        {algorithmMode ? (
-          <View style={styles.section}>
-            <SectionHeader
-              title="Fixed mode profile"
-              subtitle="Algorithms session settings are owned by the selected mode."
-              tight
-            />
-            <Card style={styles.reviewCard}>
-              <View style={styles.reviewCopy}>
-                <Text style={styles.reviewTitle}>{algorithmMode.title}</Text>
-                <Text style={styles.subtitle}>
-                  {algorithmMode.profile.sessionLength} items · {algorithmMode.profile.feedbackMode === "afterEachAnswer" ? "Feedback after each answer" : "Feedback at session end"} · {algorithmMode.profile.timer.kind === "elapsedForeground" ? "Elapsed foreground timer" : "45-minute foreground countdown"} · {algorithmMode.profile.reinsertEnabled ? "Reinsert enabled" : "Reinsert disabled"}
-                </Text>
-              </View>
-            </Card>
+        <View style={styles.section}>
+          <SectionHeader title={t("Session length")} tight />
+          <View style={styles.lengthGrid}>
+            {(algorithmMode?.profile.supportedLengths ?? sessionLengths).map((length) => (
+              <SelectableOption
+                key={length}
+                label={String(length)}
+                meta={t("Questions")}
+                onPress={() => setSessionLength(length)}
+                selected={configuredSessionLength === length}
+              />
+            ))}
           </View>
-        ) : (
-          <>
-            <View style={styles.section}>
-              <SectionHeader title="Session length" tight />
-              <View style={styles.lengthGrid}>
-                {sessionLengths.map((length) => (
-                  <SelectableOption
-                    key={length}
-                    label={String(length)}
-                    meta="Questions"
-                    onPress={() => setSessionLength(length)}
-                    selected={sessionLength === length}
-                  />
-                ))}
-              </View>
-            </View>
+        </View>
 
-            <View style={styles.section}>
-              <SectionHeader title="Feedback mode" tight />
-              <SelectablePanel
-                detail="Correctness and explanation are shown after every item."
-                label="After each answer"
-                onPress={() => setFeedbackMode("afterEachAnswer")}
-                selected={feedbackMode === "afterEachAnswer"}
-              />
-              <SelectablePanel
-                detail="Correctness is hidden until the final summary and review."
-                label="At session end"
-                onPress={() => setFeedbackMode("atSessionEnd")}
-                selected={feedbackMode === "atSessionEnd"}
-              />
-            </View>
+        <View style={styles.section}>
+          <SectionHeader title={t("Feedback mode")} tight />
+          <SelectablePanel
+            detail={t("Correctness and explanation are shown after every item.")}
+            label={t("After each answer")}
+            onPress={() => setFeedbackMode("afterEachAnswer")}
+            selected={feedbackMode === "afterEachAnswer"}
+          />
+          <SelectablePanel
+            detail={t("Correctness is hidden until the final summary and review.")}
+            label={t("At session end")}
+            onPress={() => setFeedbackMode("atSessionEnd")}
+            selected={feedbackMode === "atSessionEnd"}
+          />
+        </View>
 
-            {feedbackMode === "afterEachAnswer" ? (
-              <Card style={styles.reviewCard}>
-                <View style={styles.reviewCopy}>
-                  <Text style={styles.reviewTitle}>{reviewBehaviorCopy.title}</Text>
-                  <Text style={styles.subtitle}>
-                    {reviewBehaviorCopy.detail}
-                  </Text>
-                </View>
-                {reviewBehaviorCopy.showToggle ? (
-                  <Pressable
-                    accessibilityRole="switch"
-                    accessibilityState={{ checked: reviewBehaviorEnabled }}
-                    onPress={() => setReviewBehaviorEnabled((current) => !current)}
-                    style={[
-                      styles.switchTrack,
-                      reviewBehaviorEnabled ? styles.switchTrackEnabled : null,
-                    ]}
-                  >
-                    <View
-                      style={[
-                        styles.switchThumb,
-                        reviewBehaviorEnabled ? styles.switchThumbEnabled : null,
-                      ]}
-                    />
-                  </Pressable>
-                ) : null}
-              </Card>
-            ) : null}
-          </>
-        )}
+        <Card style={styles.reviewCard}>
+          <View style={styles.reviewCopy}>
+            <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+            <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+          </View>
+          {reviewBehaviorCopy.showToggle ? (
+            <Pressable
+              accessibilityRole="switch"
+              accessibilityState={{ checked: reviewBehaviorEnabled }}
+              onPress={() => setReviewBehaviorEnabled((current) => !current)}
+              style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
+            >
+              <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
+            </Pressable>
+          ) : null}
+        </Card>
 
         <View style={styles.actions}>
-          <Button onPress={startSession}>Start session</Button>
+          <Button onPress={startSession}>{t("Start session")}</Button>
           <Button onPress={() => navigation.goBack()} variant="secondary">
-            Back
+            {t("Back")}
           </Button>
         </View>
       </Screen>
@@ -236,6 +208,7 @@ type SelectableOptionProps = {
 };
 
 function SelectableOption({ label, meta, onPress, selected }: SelectableOptionProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -261,6 +234,7 @@ type SelectablePanelProps = {
 };
 
 function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
@@ -308,9 +282,9 @@ function resolvePracticeTopic(input: {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1,
   },
   intro: {
@@ -318,11 +292,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.title,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   subtitle: {
     ...typography.small,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   section: {
     gap: spacing.md,
@@ -333,8 +307,8 @@ const styles = StyleSheet.create({
   },
   lengthOption: {
     alignItems: "center",
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.borderStrong,
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.borderStrong,
     borderRadius: radius.md,
     borderWidth: 1,
     flex: 1,
@@ -344,29 +318,29 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   selectedOption: {
-    backgroundColor: colors.dark.primarySoft,
-    borderColor: colors.dark.primary,
+    backgroundColor: palette.primarySoft,
+    borderColor: palette.primary,
   },
   pressed: {
     opacity: 0.82,
   },
   lengthValue: {
     ...typography.heading,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
     fontVariant: ["tabular-nums"],
   },
   selectedText: {
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   optionMeta: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
     textTransform: "uppercase",
   },
   panel: {
     alignItems: "center",
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.borderStrong,
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.borderStrong,
     borderRadius: radius.md,
     borderWidth: 1,
     flexDirection: "row",
@@ -380,11 +354,11 @@ const styles = StyleSheet.create({
   },
   panelTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textSecondary,
+    color: palette.textSecondary,
   },
   radio: {
     alignItems: "center",
-    borderColor: colors.dark.borderStrong,
+    borderColor: palette.borderStrong,
     borderRadius: radius.pill,
     borderWidth: 2,
     height: 28,
@@ -392,10 +366,10 @@ const styles = StyleSheet.create({
     width: 28,
   },
   radioSelected: {
-    borderColor: colors.dark.primary,
+    borderColor: palette.primary,
   },
   radioDot: {
-    backgroundColor: colors.dark.primary,
+    backgroundColor: palette.primary,
     borderRadius: radius.pill,
     height: 12,
     width: 12,
@@ -412,10 +386,10 @@ const styles = StyleSheet.create({
   },
   reviewTitle: {
     ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
+    color: palette.textPrimary,
   },
   switchTrack: {
-    backgroundColor: colors.dark.borderStrong,
+    backgroundColor: palette.borderStrong,
     borderRadius: radius.pill,
     height: 32,
     justifyContent: "center",
@@ -423,10 +397,10 @@ const styles = StyleSheet.create({
     width: 56,
   },
   switchTrackEnabled: {
-    backgroundColor: colors.dark.primary,
+    backgroundColor: palette.primary,
   },
   switchThumb: {
-    backgroundColor: colors.dark.textPrimary,
+    backgroundColor: palette.textPrimary,
     borderRadius: radius.pill,
     height: 24,
     width: 24,

@@ -1,216 +1,211 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import {
-  Badge,
-  Card,
-  IconTile,
-  ListRow,
-  SettingsGroup,
-} from "../../../components";
-import type { TrackDisplay } from "../../../domain";
+import { Card, Icon, IconTile, ListRow, SettingsGroup, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
-import { colors, spacing, typography } from "../../../theme";
-import { CLEAR_LOCAL_HISTORY_DETAIL } from "../localReset";
-import { SETTINGS_ROWS } from "../shellModel";
+import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
+import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
+import { spacing, typography, type AppColors } from "../../../theme";
+import { throwSettingsFeatureNotImplemented, type DeferredSettingsFeature } from "../settingsFeatureGate";
 
 type SettingsTabProps = {
-  activeTrack: TrackDisplay;
-  onClearAllLocalData: () => void;
+  onOpenAppearance: () => void;
+  onOpenLanguage: () => void;
+  onOpenLegalInformation: () => void;
+  onOpenNotifications: () => void;
+  onOpenYourData: () => void;
   storageIssues: readonly StorageIssue[];
 };
 
+const copy = {
+  en: {
+    appearance: "Appearance",
+    appearanceDetail: "Choose the theme used on this device.",
+    appSettings: "App settings",
+    data: "Your data",
+    dataDetail: "View the local data contract for this app.",
+    dataPrivacy: "Data & privacy",
+    feedback: "Send feedback",
+    feedbackDetail: "Report a problem or suggest an improvement.",
+    helpAccount: "Help & account",
+    info: "These settings control how Patternly looks and sends reminders on this device.",
+    language: "Language",
+    languageDetail: "Choose the language used across Patternly.",
+    legal: "Legal information",
+    legalDetail: "Privacy and study-use information.",
+    notifications: "Notifications",
+    notificationsDetail: "Set permission and daily practice reminders.",
+    preferences: "Preferences",
+    storageDegraded: "Local data degraded",
+    storageStatus: "Storage status",
+    subscription: "Subscription",
+    subscriptionDetail: "Manage your Patternly subscription.",
+  },
+  pl: {
+    appearance: "Wygląd",
+    appearanceDetail: "Wybierz motyw używany na tym urządzeniu.",
+    appSettings: "Ustawienia aplikacji",
+    data: "Twoje dane",
+    dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
+    dataPrivacy: "Dane i prywatność",
+    feedback: "Wyślij opinię",
+    feedbackDetail: "Zgłoś problem albo zaproponuj usprawnienie.",
+    helpAccount: "Pomoc i konto",
+    info: "Te ustawienia kontrolują wygląd Patternly i przypomnienia na tym urządzeniu.",
+    language: "Język",
+    languageDetail: "Wybierz język używany w całym Patternly.",
+    legal: "Informacje prawne",
+    legalDetail: "Prywatność i informacje o korzystaniu z materiałów.",
+    notifications: "Powiadomienia",
+    notificationsDetail: "Ustaw zgodę i codzienne przypomnienie o ćwiczeniach.",
+    preferences: "Preferencje",
+    storageDegraded: "Problem z danymi lokalnymi",
+    storageStatus: "Stan danych",
+    subscription: "Subskrypcja",
+    subscriptionDetail: "Zarządzaj subskrypcją Patternly.",
+  },
+} as const;
+
 export function SettingsTab({
-  activeTrack,
-  onClearAllLocalData,
+  onOpenAppearance,
+  onOpenLanguage,
+  onOpenLegalInformation,
+  onOpenNotifications,
+  onOpenYourData,
   storageIssues,
 }: SettingsTabProps) {
+  const styles = useThemedStyles(createStyles);
+  const { appearance, language, locale } = useAppPreferences();
+  const text = copy[locale];
   const latestStorageIssue = storageIssues[0] ?? null;
 
   return (
     <>
       <View style={styles.pageIntro} testID="settings-screen">
-        <Text style={styles.screenTitle}>Settings</Text>
-        <Text style={styles.screenSubtitle}>
-          Manage learning preferences and local data controls.
-        </Text>
+        <Text style={styles.screenTitle}>{text.appSettings}</Text>
       </View>
 
-      <Card variant="tonal" style={styles.hero}>
-        <View style={styles.localProfile}>
-          <IconTile name="cloud" size={56} tone="primary" />
-          <View style={styles.localProfileCopy}>
-            <Text style={styles.profileTitle}>Patternly local workspace</Text>
-            <Text style={styles.profileSubtitle}>{activeTrack.title}</Text>
-          </View>
-          <Badge
-            label={latestStorageIssue ? "Storage issue" : activeTrack.shortTitle}
-            tone={latestStorageIssue ? "warning" : "info"}
-          />
-        </View>
+      <Card style={styles.infoCard} variant="tonal">
+        <IconTile name="settings" tone="primary" />
+        <Text style={styles.infoText}>{text.info}</Text>
       </Card>
 
       {latestStorageIssue ? (
-        <SettingsGroup title="Storage status">
+        <SettingsGroup title={text.storageStatus}>
           <ListRow
-            detail={formatStorageIssue(latestStorageIssue)}
+            detail={formatStorageIssue(latestStorageIssue, locale)}
             leading={<IconTile name="alert-triangle" tone="warning" />}
-            title="Local data degraded"
-            trailing={<Badge label="Check" tone="warning" />}
+            title={text.storageDegraded}
             variant="grouped"
           />
         </SettingsGroup>
       ) : null}
 
-      <SettingsGroup title="Learning preferences">
-        <ListRow
-          detail={activeTrack.title}
-          leading={<IconTile name="route" tone="primary" />}
-          title={getSettingsRowLabel("activeTracks")}
-          trailing={<Badge label={activeTrack.shortTitle} tone="info" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Chosen when starting each practice session."
-          leading={<IconTile name="practice" tone="muted" />}
-          title={getSettingsRowLabel("sessionLength")}
-          trailing={<Badge label="Per session" tone="neutral" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Available after review queue is verified."
-          leading={<IconTile name="rotate-ccw" tone="warning" />}
-          title={getSettingsRowLabel("reviewPriority")}
-          trailing={<Badge label="Unavailable" tone="warning" />}
-          variant="grouped"
+      <SettingsGroup title={text.appearance}>
+        <SettingsNavigationRow
+          detail={text.appearanceDetail}
+          icon="grid"
+          onPress={onOpenAppearance}
+          title={text.appearance}
+          value={appearanceLabel(locale, appearance)}
         />
       </SettingsGroup>
 
-      <SettingsGroup title="App preferences">
-        <ListRow
-          detail="Notifications are not implemented in this local build."
-          leading={<IconTile name="settings" tone="muted" />}
-          title={getSettingsRowLabel("notifications")}
-          trailing={<Badge label="Unavailable" tone="neutral" />}
-          variant="grouped"
+      <SettingsGroup title={text.preferences}>
+        <SettingsNavigationRow
+          detail={text.languageDetail}
+          icon="settings"
+          onPress={onOpenLanguage}
+          title={text.language}
+          value={languageLabel(locale, language)}
         />
-        <ListRow
-          detail="Reminder scheduling is not connected yet."
-          leading={<IconTile name="rotate-ccw" tone="muted" />}
-          title={getSettingsRowLabel("dailyReminder")}
-          trailing={<Badge label="Unavailable" tone="neutral" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Dark-first Focus Lab style."
-          leading={<IconTile name="settings" tone="primary" />}
-          title={getSettingsRowLabel("appearance")}
-          trailing={<Badge label="Dark" tone="info" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Sound preferences are not implemented."
-          leading={<IconTile name="settings" tone="muted" />}
-          title={getSettingsRowLabel("soundEffects")}
-          trailing={<Badge label="Unavailable" tone="neutral" />}
-          variant="grouped"
+        <SettingsNavigationRow
+          detail={text.notificationsDetail}
+          icon="rotate-ccw"
+          onPress={onOpenNotifications}
+          title={text.notifications}
         />
       </SettingsGroup>
 
-      <SettingsGroup title="Data and privacy">
-        <ListRow
-          detail="Data stays on this device; account sync is not implemented."
-          leading={<IconTile name="database" tone="info" />}
-          title={getSettingsRowLabel("localOnlyData")}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Certification and algorithm references are independent study context only."
-          leading={<IconTile name="shield-check" tone="muted" />}
-          title={getSettingsRowLabel("legalSafety")}
-          variant="grouped"
-        />
-        <ListRow
-          detail={CLEAR_LOCAL_HISTORY_DETAIL}
-          leading={<IconTile name="trash" tone="danger" />}
-          onPress={onClearAllLocalData}
-          title={getSettingsRowLabel("clearLocalHistory")}
-          trailing={<Badge label="Destructive" tone="danger" />}
-          variant="grouped"
-        />
+      <SettingsGroup title={text.dataPrivacy}>
+        <SettingsNavigationRow detail={text.dataDetail} icon="database" onPress={onOpenYourData} title={text.data} />
+        <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} title={text.legal} />
       </SettingsGroup>
 
-      <SettingsGroup title="Account and help">
-        <ListRow
-          detail="No auth or profile layer in this build."
-          leading={<IconTile name="shield-check" tone="muted" />}
-          title={getSettingsRowLabel("accountStatus")}
-          trailing={<Badge label="Local" tone="neutral" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Subscription management is not implemented."
-          leading={<IconTile name="database" tone="muted" />}
-          title={getSettingsRowLabel("subscription")}
-          trailing={<Badge label="Unavailable" tone="neutral" />}
-          variant="grouped"
-        />
-        <ListRow
-          detail="Help and feedback are not connected in the local app."
-          leading={<IconTile name="alert-triangle" tone="muted" />}
-          title={getSettingsRowLabel("helpFeedback")}
-          trailing={<Badge label="Unavailable" tone="neutral" />}
-          variant="grouped"
-        />
+      <SettingsGroup title={text.helpAccount}>
+        <DeferredSettingsRow detail={text.feedbackDetail} feature="feedback" icon="alert-triangle" title={text.feedback} />
+        <DeferredSettingsRow detail={text.subscriptionDetail} feature="subscription" icon="cloud" title={text.subscription} />
       </SettingsGroup>
     </>
   );
 }
 
-function getSettingsRowLabel(id: string): string {
-  return SETTINGS_ROWS.find((row) => row.id === id)?.label ?? id;
+function appearanceLabel(locale: AppLocale, appearance: AppearancePreference): string {
+  const labels: Record<AppLocale, Record<AppearancePreference, string>> = {
+    en: { dark: "Dark", light: "Light", system: "System" },
+    pl: { dark: "Ciemny", light: "Jasny", system: "System" },
+  };
+  return labels[locale][appearance];
 }
 
-function formatStorageIssue(issue: StorageIssue): string {
-  const action = {
-    parse: "read",
-    read: "read",
-    remove: "clear",
-    write: "save",
-  }[issue.operation];
+function languageLabel(locale: AppLocale, language: LanguagePreference): string {
+  const labels: Record<AppLocale, Record<LanguagePreference, string>> = {
+    en: { en: "English", pl: "Polish", system: "System" },
+    pl: { en: "Angielski", pl: "Polski", system: "System" },
+  };
+  return labels[locale][language];
+}
 
+function SettingsNavigationRow({ detail, icon, onPress, title, value }: Readonly<{
+  detail: string;
+  icon: IconName;
+  onPress: () => void;
+  title: string;
+  value?: string;
+}>) {
+  const { colors } = useAppPreferences();
+  const styles = useThemedStyles(createStyles);
+  return (
+    <ListRow
+      detail={detail}
+      leading={<IconTile name={icon} tone="primary" />}
+      onPress={onPress}
+      title={title}
+      trailing={<View style={styles.preferenceMeta}>{value ? <Text style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.textMuted} name="chevron-right" size={18} /></View>}
+      variant="grouped"
+    />
+  );
+}
+
+function DeferredSettingsRow({ detail, feature, icon, title }: Readonly<{
+  detail: string;
+  feature: DeferredSettingsFeature;
+  icon: IconName;
+  title: string;
+}>) {
+  const { colors } = useAppPreferences();
+  return (
+    <ListRow
+      detail={detail}
+      leading={<IconTile name={icon} tone="muted" />}
+      onPress={() => throwSettingsFeatureNotImplemented(feature)}
+      title={title}
+      trailing={<Icon color={colors.textMuted} name="chevron-right" size={18} />}
+      variant="grouped"
+    />
+  );
+}
+
+function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
+  const action = { parse: "read", read: "read", remove: "clear", write: "save" }[issue.operation];
+  if (locale === "pl") return `Nie udało się wykonać operacji „${action}” na danych lokalnych: ${issue.message}`;
   return `Could not ${action} local data: ${issue.message}`;
 }
 
-const styles = StyleSheet.create({
-  pageIntro: {
-    gap: spacing.md,
-  },
-  screenTitle: {
-    ...typography.heading,
-    color: colors.dark.textPrimary,
-  },
-  screenSubtitle: {
-    ...typography.small,
-    color: colors.dark.textSecondary,
-  },
-  hero: {
-    gap: spacing.lg,
-  },
-  localProfile: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  localProfileCopy: {
-    flex: 1,
-    gap: spacing.xxs,
-  },
-  profileTitle: {
-    ...typography.bodyStrong,
-    color: colors.dark.textPrimary,
-  },
-  profileSubtitle: {
-    ...typography.caption,
-    color: colors.dark.primary,
-  },
+const createStyles = (palette: AppColors) => StyleSheet.create({
+  pageIntro: { gap: spacing.md },
+  screenTitle: { ...typography.heading, color: palette.textPrimary },
+  infoCard: { alignItems: "center", flexDirection: "row" },
+  infoText: { ...typography.small, color: palette.textSecondary, flex: 1 },
+  preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
+  preferenceValue: { ...typography.caption, color: palette.textMuted },
 });

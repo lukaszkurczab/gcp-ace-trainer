@@ -1,7 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
 import { Button } from "./Button";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type EmptyStateProps = {
   actionLabel?: string;
@@ -11,6 +14,7 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ actionLabel, description, onActionPress, title }: EmptyStateProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
@@ -20,11 +24,11 @@ export function EmptyState({ actionLabel, description, onActionPress, title }: E
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   container: {
     alignItems: "flex-start",
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.md,
@@ -32,10 +36,10 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   description: {
     ...typography.body,
-    color: colors.dark.textSecondary
+    color: palette.textSecondary
   }
 });

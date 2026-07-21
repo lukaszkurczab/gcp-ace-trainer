@@ -1,6 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type SectionHeaderProps = {
   action?: React.ReactNode;
@@ -10,6 +13,7 @@ type SectionHeaderProps = {
 };
 
 export function SectionHeader({ action, subtitle, tight = false, title }: SectionHeaderProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.container}>
       <View style={[styles.copy, tight ? styles.copyTight : null]}>
@@ -21,7 +25,7 @@ export function SectionHeader({ action, subtitle, tight = false, title }: Sectio
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   container: {
     alignItems: "flex-start",
     flexDirection: "row",
@@ -37,13 +41,13 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading,
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   titleTight: {
     ...typography.bodyStrong
   },
   subtitle: {
     ...typography.small,
-    color: colors.dark.textSecondary
+    color: palette.textSecondary
   }
 });

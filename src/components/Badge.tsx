@@ -1,6 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type BadgeTone = "neutral" | "primary" | "ready" | "success" | "warning" | "danger" | "info";
 
@@ -10,6 +13,7 @@ type BadgeProps = {
 };
 
 export function Badge({ label, tone = "neutral" }: BadgeProps) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View style={[styles.badge, styles[tone]]}>
       <Text style={[styles.label, styles[`${tone}Label`]]}>{label}</Text>
@@ -17,7 +21,7 @@ export function Badge({ label, tone = "neutral" }: BadgeProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   badge: {
     alignSelf: "flex-start",
     borderRadius: radius.pill,
@@ -26,55 +30,55 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs
   },
   neutral: {
-    backgroundColor: colors.dark.elevatedSurface,
-    borderColor: colors.dark.border
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.border
   },
   primary: {
-    backgroundColor: colors.dark.infoSoft,
-    borderColor: colors.dark.infoSoft
+    backgroundColor: palette.infoSoft,
+    borderColor: palette.infoSoft
   },
   ready: {
-    backgroundColor: colors.dark.primarySoft,
-    borderColor: colors.dark.primarySoft
+    backgroundColor: palette.primarySoft,
+    borderColor: palette.primarySoft
   },
   success: {
-    backgroundColor: colors.dark.successSoft,
-    borderColor: colors.dark.successSoft
+    backgroundColor: palette.successSoft,
+    borderColor: palette.successSoft
   },
   warning: {
-    backgroundColor: colors.dark.warningSoft,
-    borderColor: colors.dark.warningSoft
+    backgroundColor: palette.warningSoft,
+    borderColor: palette.warningSoft
   },
   danger: {
-    backgroundColor: colors.dark.dangerSoft,
-    borderColor: colors.dark.dangerSoft
+    backgroundColor: palette.dangerSoft,
+    borderColor: palette.dangerSoft
   },
   info: {
-    backgroundColor: colors.dark.infoSoft,
-    borderColor: colors.dark.infoSoft
+    backgroundColor: palette.infoSoft,
+    borderColor: palette.infoSoft
   },
   label: {
     ...typography.caption
   },
   neutralLabel: {
-    color: colors.dark.textSecondary
+    color: palette.textSecondary
   },
   primaryLabel: {
-    color: colors.dark.info
+    color: palette.info
   },
   readyLabel: {
-    color: colors.dark.primary
+    color: palette.primary
   },
   successLabel: {
-    color: colors.dark.success
+    color: palette.success
   },
   warningLabel: {
-    color: colors.dark.warning
+    color: palette.warning
   },
   dangerLabel: {
-    color: colors.dark.danger
+    color: palette.danger
   },
   infoLabel: {
-    color: colors.dark.info
+    color: palette.info
   }
 });

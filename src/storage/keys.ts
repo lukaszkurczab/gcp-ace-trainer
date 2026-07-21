@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   reviewEntry: (id: string) => `${PREFIX}review-entry:${id}`,
   REVIEW_INDEX: `${PREFIX}review-index`,
   SETTINGS: `${PREFIX}settings`,
+  NOTIFICATION_SETTINGS: `${PREFIX}notification-settings`,
   ACTIVE_JOURNAL: `${PREFIX}journal:active`,
 } as const;
 export const STORAGE_NAMESPACE = PREFIX;

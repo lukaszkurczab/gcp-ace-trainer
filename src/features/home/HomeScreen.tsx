@@ -5,7 +5,6 @@ import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
-  EmptyState,
   Screen,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -25,7 +24,6 @@ import {
   loadTrainingAttempts as getTrainingAttempts,
   type StorageIssue,
 } from "../../application/learningReadModels";
-import { colors } from "../../theme";
 import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
@@ -33,6 +31,7 @@ import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
+import { SelectTrackScreen } from "./SelectTrackScreen";
 import {
   buildPracticeSessionConfig,
 } from "../practice/sessionConfig";
@@ -40,11 +39,10 @@ import { HomeTab } from "./tabs/HomeTab";
 import { ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsTab } from "./tabs/SettingsTab";
-import {
-  CLEAR_LOCAL_HISTORY_CONFIRMATION,
-  tryClearPatternlyLocalHistory,
-} from "./localReset";
 import type { ShellTab } from "./types";
+import { useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 
 type HomeScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -67,8 +65,10 @@ const TAB_BAR_RESERVED_HEIGHT = 128;
 type HomeShellTab = Exclude<ShellTab, "practice">;
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
+  const styles = useThemedStyles(createStyles);
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
+  const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
   const [data, setData] = useState<ShellData>({
     algorithmsDashboard: null,
     algorithmsDashboardError: null,
@@ -113,7 +113,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         }
 
         if (isActive) {
-          if (savedTrackId) setActiveTrackId(savedTrackId);
+          setActiveTrackId(savedTrackId ?? null);
+          setHasLoadedActiveTrack(true);
           setData({
             algorithmsDashboard,
             algorithmsDashboardError,
@@ -139,50 +140,17 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-  if (!activeTrackId) return <Screen><EmptyState title="Choose a learning track" description="No active track is selected." actionLabel="Choose track" onActionPress={() => navigation.navigate(ROUTES.SELECT_TRACK)} /></Screen>;
+  if (!hasLoadedActiveTrack) return <Screen scroll={false}><View /></Screen>;
+  if (!activeTrackId) {
+    return (
+      <SelectTrackScreen
+        navigation={navigation}
+        onboarding
+        onTrackSelected={setActiveTrackId}
+      />
+    );
+  }
   const activeTrack = getTrackDisplay(activeTrackId);
-
-  function clearAllLocalData() {
-    Alert.alert(
-      "Clear all local data?",
-      CLEAR_LOCAL_HISTORY_CONFIRMATION,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Clear",
-          style: "destructive",
-          onPress: () => {
-            void runLocalHistoryReset();
-          },
-        },
-      ],
-    );
-  }
-
-  async function runLocalHistoryReset() {
-    const result = await tryClearPatternlyLocalHistory();
-    if (result.ok) {
-      setData({
-        algorithmsDashboard: null,
-        algorithmsDashboardError: null,
-        attempts: [],
-        cloudProgress: null,
-        practiceHistory: [],
-        reviewQueueItems: [],
-        storageIssues: [],
-        trainingAttempts: [],
-      });
-      return;
-    }
-    Alert.alert(
-      "Local data was not cleared",
-      result.message,
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Try again", onPress: () => { void runLocalHistoryReset(); } },
-      ],
-    );
-  }
 
   function handleProgressAction(action: ProgressAction) {
     if (action.kind === "practiceSession") {
@@ -264,8 +232,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         ) : null}
         {activeTab === "settings" ? (
           <SettingsTab
-            activeTrack={activeTrack}
-            onClearAllLocalData={clearAllLocalData}
+            onOpenAppearance={() => navigation.navigate(ROUTES.APPEARANCE_SETTINGS)}
+            onOpenLanguage={() => navigation.navigate(ROUTES.LANGUAGE_SETTINGS)}
+            onOpenLegalInformation={() => navigation.navigate(ROUTES.LEGAL_INFORMATION)}
+            onOpenNotifications={() => navigation.navigate(ROUTES.NOTIFICATION_SETTINGS)}
+            onOpenYourData={() => navigation.navigate(ROUTES.YOUR_DATA)}
             storageIssues={data.storageIssues}
           />
         ) : null}
@@ -279,9 +250,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {
-    backgroundColor: colors.dark.background,
+    backgroundColor: palette.background,
     flex: 1,
   },
   screenContent: {

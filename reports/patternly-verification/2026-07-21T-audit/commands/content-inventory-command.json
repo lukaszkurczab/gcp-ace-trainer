@@ -1,0 +1,207 @@
+{
+  "release": {
+    "envelopeVersion": 1,
+    "releaseId": "algorithms-core-0002-b424faa6",
+    "sourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc"
+  },
+  "artifact": {
+    "trackId": "algorithms",
+    "contentVersion": "algorithms-core-0002",
+    "taxonomyVersion": "algorithms-taxonomy-v2",
+    "checksum": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c",
+    "itemCount": 2375,
+    "approvalItemCount": 2375
+  },
+  "roadmapNodeCount": 26,
+  "itemsByRoadmapNode": {
+    "arrays_and_strings": 130,
+    "backtracking": 156,
+    "binary_search": 134,
+    "bit_manipulation": 154,
+    "complexity_and_constraints": 158,
+    "contrast_binary_search_vs_linear_scan": 154,
+    "contrast_hash_map_vs_sorting": 160,
+    "contrast_sliding_window_vs_prefix_sums": 160,
+    "contrast_stack_vs_monotonic_stack_intro": 138,
+    "contrast_two_pointers_vs_sliding_window": 43,
+    "dynamic_programming_intro": 84,
+    "graph_traversal": 74,
+    "greedy_intro": 42,
+    "hash_map_and_set": 66,
+    "heap_priority_queue": 44,
+    "intervals": 77,
+    "linked_list": 64,
+    "math_and_geometry": 60,
+    "prefix_sums": 65,
+    "recursion_basics": 56,
+    "sliding_window": 44,
+    "sorting_based": 64,
+    "stack": 56,
+    "strategy_selection_core": 52,
+    "tree_traversal": 50,
+    "two_pointers": 90
+  },
+  "itemsByInteraction": {
+    "choice": 1813,
+    "complexity": 268,
+    "ordering": 294
+  },
+  "itemsByLearningStage": {
+    "undefined": 2375
+  },
+  "practiceBlueprints": [
+    {
+      "modeId": "algorithms-contrast-practice",
+      "requestedLengths": [
+        10,
+        20,
+        40
+      ],
+      "minimumActualLength": 10,
+      "shortening": "allowed"
+    },
+    {
+      "modeId": "algorithms-guided-practice",
+      "requestedLengths": [
+        10,
+        20,
+        40
+      ],
+      "minimumActualLength": 10,
+      "shortening": "allowed"
+    },
+    {
+      "modeId": "algorithms-independent-practice",
+      "requestedLengths": [
+        10,
+        20,
+        40
+      ],
+      "minimumActualLength": 10,
+      "shortening": "blueprint_controlled"
+    },
+    {
+      "modeId": "algorithms-interview-simulation",
+      "requestedLengths": [
+        40
+      ],
+      "minimumActualLength": 40,
+      "shortening": "prohibited"
+    },
+    {
+      "modeId": "algorithms-learn-approach",
+      "requestedLengths": [
+        10
+      ],
+      "minimumActualLength": 5,
+      "shortening": "allowed"
+    },
+    {
+      "modeId": "algorithms-recognize-patterns",
+      "requestedLengths": [
+        10,
+        20,
+        40
+      ],
+      "minimumActualLength": 10,
+      "shortening": "allowed"
+    },
+    {
+      "modeId": "algorithms-weak-area-review",
+      "requestedLengths": [
+        10,
+        20
+      ],
+      "minimumActualLength": 1,
+      "shortening": "allowed"
+    }
+  ],
+  "simulation": {
+    "poolCount": 1,
+    "poolSizes": [
+      {
+        "poolId": "algorithms-interview-simulation-v1",
+        "itemCount": 40
+      }
+    ],
+    "profiles": [
+      {
+        "profileId": "algorithms-interview-simulation-v1",
+        "totalOccurrences": 40,
+        "selectionPolicy": {
+          "algorithmVersion": "sha256-ranked-constraints-v1",
+          "deterministic": true,
+          "replacement": false,
+          "uniqueItems": true
+        }
+      }
+    ]
+  },
+  "emptyFields": {
+    "reason": 0,
+    "details": 0,
+    "prompt": 0
+  },
+  "firstItem": {
+    "compatibilityMemberships": [],
+    "difficulty": "intro",
+    "feedback": {
+      "details": "The first 4 is retained and the later 4 is removed. The first 2 is retained and the later 2 is removed. The value 3 appears once. Sorting would produce the same set of values but would violate the required first-appearance order.",
+      "reason": "The contract removes repeated occurrences but preserves the position of each value's first occurrence.",
+      "wrongOptionExplanationsByOptionId": {
+        "grouped_duplicates": "Grouping equal values changes order and still preserves repeated occurrences.",
+        "sorted_unique": "This removes duplicates but changes the required order of first appearance.",
+        "unchanged_input": "This preserves order and multiplicity, but the contract requires every distinct value exactly once."
+      }
+    },
+    "id": "alg-arrays-duplicate-handling-001",
+    "interaction": {
+      "acceptedOptionIds": [
+        "first_occurrence_order"
+      ],
+      "options": [
+        {
+          "id": "first_occurrence_order",
+          "text": "[4, 2, 3]"
+        },
+        {
+          "id": "sorted_unique",
+          "text": "[2, 3, 4]"
+        },
+        {
+          "id": "unchanged_input",
+          "text": "[4, 2, 4, 3, 2]"
+        },
+        {
+          "id": "grouped_duplicates",
+          "text": "[4, 4, 2, 2, 3]"
+        }
+      ],
+      "selectionMode": "single",
+      "type": "choice"
+    },
+    "itemFingerprint": "1154fd2661ee471c85085c760358dddaf7bb3a2e1c997fa7ce8b106989b4152d",
+    "prompt": "A function must return every distinct value exactly once while preserving the order of first appearance. What is the correct output for [4, 2, 4, 3, 2]?",
+    "provenance": {
+      "author": "lukasz-kurczab",
+      "authoringMethod": "independently_authored",
+      "contentBatchId": "arrays-and-strings-duplicate-handling-v1",
+      "createdAt": "2026-07-17T00:00:00.000Z",
+      "externalSources": []
+    },
+    "scoringContract": {
+      "resultSemantics": "exact_selected_set_with_partial_v1",
+      "type": "choice"
+    },
+    "taxonomy": {
+      "learningStage": "foundations",
+      "patternFamilyId": "arrays_and_strings",
+      "patternVariantId": "linear_scan",
+      "primaryMentalUnitId": "duplicate_handling",
+      "primarySkillAtomId": "preserve_duplicate_contract",
+      "problemArchetypeId": "normalize_and_compare_sequences",
+      "roadmapNodeId": "arrays_and_strings",
+      "secondarySkillAtomIds": []
+    }
+  }
+}

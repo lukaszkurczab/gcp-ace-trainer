@@ -1,7 +1,10 @@
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
 
-import { colors, radius, spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
 import { ProgressBar } from "./ProgressBar";
+import { useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 type MetricTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
 
@@ -15,6 +18,7 @@ type MetricCardProps = {
 };
 
 export function MetricCard({ helper, label, progress, style, tone = "neutral", value }: MetricCardProps) {
+  const styles = useThemedStyles(createStyles);
   const progressTone = tone === "neutral" ? "primary" : tone;
 
   return (
@@ -27,10 +31,10 @@ export function MetricCard({ helper, label, progress, style, tone = "neutral", v
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   card: {
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
@@ -39,38 +43,38 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   neutral: {
-    backgroundColor: colors.dark.surface
+    backgroundColor: palette.surface
   },
   primary: {
-    backgroundColor: colors.dark.primarySoft,
-    borderColor: colors.dark.primarySoft
+    backgroundColor: palette.primarySoft,
+    borderColor: palette.primarySoft
   },
   success: {
-    backgroundColor: colors.dark.successSoft,
-    borderColor: colors.dark.successSoft
+    backgroundColor: palette.successSoft,
+    borderColor: palette.successSoft
   },
   warning: {
-    backgroundColor: colors.dark.warningSoft,
-    borderColor: colors.dark.warningSoft
+    backgroundColor: palette.warningSoft,
+    borderColor: palette.warningSoft
   },
   danger: {
-    backgroundColor: colors.dark.dangerSoft,
-    borderColor: colors.dark.dangerSoft
+    backgroundColor: palette.dangerSoft,
+    borderColor: palette.dangerSoft
   },
   info: {
-    backgroundColor: colors.dark.infoSoft,
-    borderColor: colors.dark.infoSoft
+    backgroundColor: palette.infoSoft,
+    borderColor: palette.infoSoft
   },
   value: {
     ...typography.heading,
-    color: colors.dark.textPrimary
+    color: palette.textPrimary
   },
   label: {
     ...typography.caption,
-    color: colors.dark.textSecondary
+    color: palette.textSecondary
   },
   helper: {
     ...typography.caption,
-    color: colors.dark.textMuted
+    color: palette.textMuted
   }
 });

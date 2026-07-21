@@ -3,9 +3,12 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { Button, Card } from "../../components";
 import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
 import { SessionShell } from "../algorithms/session/SessionShell";
-import { colors, radius, spacing, typography } from "../../theme";
+import { radius, spacing, typography } from "../../theme";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 import { PracticeResponseControls } from "./PracticeResponseControls";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
+import type { AppColors } from "../../theme";
+
 import {
   allowsPracticeFeedback,
   allowsPracticeResponseEditing,
@@ -88,6 +91,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 }
 
 function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresentation }>) {
+  const styles = useThemedStyles(createStyles);
   return (
     <Card style={styles.questionCard}>
       <Text style={styles.prompt}>{question.prompt}</Text>
@@ -101,15 +105,18 @@ function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresent
 }
 
 function PreparingNotice() {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   return (
-    <View accessibilityLabel="Preparing session" style={styles.preparing}>
-      <Text style={styles.preparingTitle}>Preparing Guided Practice</Text>
-      <Text style={styles.noticeText}>Preparing the session plan and first question.</Text>
+    <View accessibilityLabel={t("Preparing session")} style={styles.preparing}>
+      <Text style={styles.preparingTitle}>{t("Preparing practice")}</Text>
+      <Text style={styles.noticeText}>{t("Preparing the session plan and first question.")}</Text>
     </View>
   );
 }
 
 function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
+  const styles = useThemedStyles(createStyles);
   return (
     <View accessible accessibilityLabel={notice.message} accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.notice, notice.tone === "error" ? styles.noticeError : notice.tone === "success" ? styles.noticeSuccess : null]}>
       <Text style={styles.noticeText}>{notice.message}</Text>
@@ -118,32 +125,36 @@ function DurabilityNotice({ notice }: Readonly<{ notice: PracticeNotice }>) {
 }
 
 function ActionBar(props: PracticeSessionSurfaceProps) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   if (props.exit.kind !== "none") return null;
   return (
     <View style={styles.actions}>
       {props.primaryAction ? (
         <Button disabled={!props.primaryAction.enabled} loading={props.primaryAction.loading} onPress={props.onPrimaryAction ?? noop}>
-          {props.primaryAction.label}
+          {t(props.primaryAction.label)}
         </Button>
       ) : null}
-      {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{props.retryLabel}</Button> : null}
-      {props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "abandoning" ? <Button onPress={props.onRequestLeave} variant="ghost">Leave session</Button> : null}
+      {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{t(props.retryLabel)}</Button> : null}
+      {props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "abandoning" ? <Button onPress={props.onRequestLeave} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
 
 function ExitModal({ onAbandon, onDismiss, onLeave }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
       <View style={styles.modalBackdrop}>
-        <Pressable accessibilityLabel="Keep learning" accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
+        <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
         <View accessibilityViewIsModal style={styles.exitSurface}>
-          <Text style={styles.exitTitle}>End this session?</Text>
-          <Text style={styles.noticeText}>Leave and resume later, or abandon it permanently. Answers already saved remain available.</Text>
+          <Text style={styles.exitTitle}>{t("End this session?")}</Text>
+          <Text style={styles.noticeText}>{t("Leave and resume later, or abandon it permanently. Answers already saved remain available.")}</Text>
           <View style={styles.actions}>
-            <Button onPress={onDismiss} variant="secondary">Keep learning</Button>
-            <Button onPress={onLeave}>Leave and resume later</Button>
-            <Button onPress={onAbandon} variant="destructive">Abandon session</Button>
+            <Button onPress={onDismiss} variant="secondary">{t("Keep learning")}</Button>
+            <Button onPress={onLeave}>{t("Leave and resume later")}</Button>
+            <Button onPress={onAbandon} variant="destructive">{t("Abandon session")}</Button>
           </View>
         </View>
       </View>
@@ -153,20 +164,20 @@ function ExitModal({ onAbandon, onDismiss, onLeave }: Readonly<{ onAbandon: () =
 
 function noop() {}
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   actions: { gap: spacing.sm },
-  constraint: { ...typography.small, color: colors.dark.textSecondary },
+  constraint: { ...typography.small, color: palette.textSecondary },
   constraints: { gap: spacing.xs },
-  exitSurface: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: "100%" },
-  exitTitle: { ...typography.heading, color: colors.dark.textPrimary },
-  notice: { backgroundColor: colors.dark.surface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
-  noticeError: { backgroundColor: colors.dark.dangerSoft, borderColor: colors.dark.danger },
-  noticeSuccess: { backgroundColor: colors.dark.successSoft, borderColor: colors.dark.success },
-  noticeText: { ...typography.small, color: colors.dark.textSecondary },
+  exitSurface: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 480, padding: spacing.lg, width: "100%" },
+  exitTitle: { ...typography.heading, color: palette.textPrimary },
+  notice: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
+  noticeError: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
+  noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
+  noticeText: { ...typography.small, color: palette.textSecondary },
   modalBackdrop: { alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "center", padding: spacing.lg },
   modalDismissArea: { ...StyleSheet.absoluteFillObject },
-  preparing: { backgroundColor: colors.dark.elevatedSurface, borderColor: colors.dark.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
-  preparingTitle: { ...typography.heading, color: colors.dark.textPrimary },
-  prompt: { ...typography.heading, color: colors.dark.textPrimary },
+  preparing: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
+  preparingTitle: { ...typography.heading, color: palette.textPrimary },
+  prompt: { ...typography.heading, color: palette.textPrimary },
   questionCard: { gap: spacing.lg },
 });

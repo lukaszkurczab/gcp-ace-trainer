@@ -1,7 +1,11 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors, spacing, typography } from "../theme";
+import { spacing, typography } from "../theme";
 import { Icon, type IconName } from "./Icon";
+import { useAppPreferences, useThemedStyles } from "../preferences";
+import type { AppColors } from "../theme";
+
 
 export type BottomTabBarItem<TId extends string> = {
   icon: IconName;
@@ -22,8 +26,16 @@ export function BottomTabBar<TId extends string>({
   onChange,
   testID,
 }: BottomTabBarProps<TId>) {
+  const styles = useThemedStyles(createStyles);
+  const { colors: palette } = useAppPreferences();
+  const insets = useSafeAreaInsets();
+
   return (
-    <View accessibilityRole="tablist" style={styles.tabBar} testID={testID}>
+    <View
+      accessibilityRole="tablist"
+      style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}
+      testID={testID}
+    >
       {items.map((item) => {
         const isActive = activeId === item.id;
 
@@ -44,7 +56,7 @@ export function BottomTabBar<TId extends string>({
               ]}
             />
             <Icon
-              color={isActive ? colors.dark.primary : colors.dark.textMuted}
+              color={isActive ? palette.primary : palette.textMuted}
               name={item.icon}
               size={22}
             />
@@ -58,17 +70,16 @@ export function BottomTabBar<TId extends string>({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (palette: AppColors) => StyleSheet.create({
   tabBar: {
     alignItems: "center",
-    backgroundColor: colors.dark.surface,
-    borderColor: colors.dark.border,
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: "row",
     justifyContent: "space-around",
     left: 0,
-    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     position: "absolute",
@@ -89,13 +100,13 @@ const styles = StyleSheet.create({
     width: 24,
   },
   activeIndicatorVisible: {
-    backgroundColor: colors.dark.primary,
+    backgroundColor: palette.primary,
   },
   tabLabel: {
     ...typography.caption,
-    color: colors.dark.textMuted,
+    color: palette.textMuted,
   },
   tabLabelActive: {
-    color: colors.dark.primary,
+    color: palette.primary,
   },
 });
