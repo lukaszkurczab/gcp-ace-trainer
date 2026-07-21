@@ -14,7 +14,9 @@ export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback:
   const [detailsOpen, setDetailsOpen] = useState(false);
   return (
     <View style={styles.container} testID={runtimeSelectors.session.feedback(itemId)}>
-      <View testID={runtimeSelectors.session.result(itemId, feedback.result)} />
+      <Text style={styles.result} testID={runtimeSelectors.session.result(itemId, feedback.result)}>
+        {feedback.result === "correct" ? t("Correct") : t("Incorrect")}
+      </Text>
       <Text accessibilityLabel={`${t("Verified answer explanation.")} ${feedback.reason}`} style={styles.reason} testID={runtimeSelectors.session.reason(itemId)}>{feedback.reason}</Text>
       <Pressable
         accessibilityLabel={t(detailsOpen ? "Hide answer details" : "Show answer details")}
@@ -39,4 +41,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },
   reason: { ...typography.bodyStrong, color: palette.textPrimary },
+  result: { ...typography.bodyStrong, color: palette.textSecondary },
 });
