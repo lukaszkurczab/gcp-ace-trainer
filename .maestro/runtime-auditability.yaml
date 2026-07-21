@@ -52,6 +52,10 @@ tags:
     direction: DOWN
 - tapOn:
     id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details:alg-complexity-amortized-001"
+    direction: DOWN
 - assertVisible:
     id: "patternly:session:details:alg-complexity-amortized-001"
 - takeScreenshot: runtime-auditability-feedback-details-open
