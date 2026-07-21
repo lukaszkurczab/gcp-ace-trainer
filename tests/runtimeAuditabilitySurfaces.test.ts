@@ -4,6 +4,17 @@ import test from "node:test";
 
 const source = (path: string) => readFileSync(path, "utf8");
 
+test("passive runtime selectors are attached to visible content rather than containers with interactive descendants", () => {
+  const home = source("src/features/home/tabs/HomeTab.tsx");
+  const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
+
+  assert.match(home, /<Card style=\{styles\.focusStrip\}>/);
+  assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
+  assert.doesNotMatch(home, /<Card style=\{styles\.focusStrip\} testID=/);
+  assert.match(feedback, /<Text style=\{styles\.result\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
+  assert.doesNotMatch(feedback, /<View style=\{styles\.container\} testID=\{runtimeSelectors\.session\.result/);
+});
+
 test("active-session resume has a non-interactive container and a separate continue control", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
   const resume = home.slice(home.indexOf("function ResumeRecommendation"));

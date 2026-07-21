@@ -47,10 +47,10 @@ export function HomeTab({
 
   return (
     <>
-      <Card style={styles.focusStrip} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
+      <Card style={styles.focusStrip}>
         <View style={styles.focusCopy}>
           <Text style={styles.eyebrow}>{t("Current track")}</Text>
-          <Text style={styles.focusTitle}>{t(model.focusTitle)}</Text>
+          <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>{t(model.focusTitle)}</Text>
         </View>
         <Pressable
           accessibilityRole="button"

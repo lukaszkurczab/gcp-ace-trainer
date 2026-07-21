@@ -1,4 +1,5 @@
 import type { ContentItemRef, TrackId } from "../domain";
+import type { AlgorithmFeedbackMode } from "../tracks/algorithms/domain/algorithmModes";
 
 /**
  * Stable native identifiers for observing product runtime state in development
@@ -13,7 +14,6 @@ const SEGMENT = /^[a-z0-9][a-z0-9:_-]*$/;
 declare const runtimeSelectorId: unique symbol;
 
 export type RuntimeSelectorId = string & Readonly<{ [runtimeSelectorId]: "RuntimeSelectorId" }>;
-export type FeedbackTiming = "afterEachAnswer" | "atSessionEnd";
 export type ResponseResult = "correct" | "incorrect" | "partial";
 
 type ItemId = ContentItemRef["itemId"];
@@ -30,7 +30,7 @@ export const runtimeSelectors = Object.freeze({
     setup: () => selector("practice", "setup"),
     setupRoot: () => selector("practice", "setup", "root"),
     sessionLength: (length: number) => selector("practice", "session-length", positiveInteger(length, "session length")),
-    feedbackTiming: (timing: FeedbackTiming) => selector("practice", "feedback-timing", feedbackTimingSegment(timing)),
+    feedbackTiming: (timing: AlgorithmFeedbackMode) => selector("practice", "feedback-timing", feedbackTimingSegment(timing)),
     startSession: () => selector("practice", "start-session"),
   }),
   session: Object.freeze({
@@ -50,7 +50,7 @@ export const runtimeSelectors = Object.freeze({
       const position = sessionPosition(ordinal, length);
       return selector("session", "counter", sessionId, "ordinal", position.ordinal, "length", position.length);
     },
-    configuration: (sessionId: string, length: number, feedbackTiming: FeedbackTiming) => selector(
+    configuration: (sessionId: string, length: number, feedbackTiming: AlgorithmFeedbackMode) => selector(
       "session",
       "configuration",
       sessionId,
@@ -119,6 +119,6 @@ function sessionPosition(ordinal: number, length: number): Readonly<{ ordinal: s
   return Object.freeze({ length: normalizedLength, ordinal: normalizedOrdinal });
 }
 
-function feedbackTimingSegment(timing: FeedbackTiming): string {
+function feedbackTimingSegment(timing: AlgorithmFeedbackMode): string {
   return timing === "afterEachAnswer" ? "after-each-answer" : "at-session-end";
 }
