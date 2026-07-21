@@ -17,10 +17,13 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
+  const lifecycleReady = useRef(false);
+  const pendingRuntimeAuditabilityUrl = useRef<string | null>(null);
 
   useEffect(() => {
     let live = true;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
+    lifecycleReady.current = false;
     void (async () => {
       const initialUrl = __DEV__ ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
@@ -35,7 +38,10 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         },
         async () => {
           lifecycle = composeTrainingLifecycleUseCases();
-          await handleRuntimeAuditabilityUrl(initialUrl);
+          lifecycleReady.current = true;
+          const queuedUrl = pendingRuntimeAuditabilityUrl.current;
+          pendingRuntimeAuditabilityUrl.current = null;
+          await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
         },
       );
     })().then((result) => {
@@ -49,10 +55,15 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     // A reset must also be available after bootstrap has reported a blocking
     // persisted-state error; otherwise the development recovery command cannot
     // restore the very state that prevents the app from becoming ready.
-    if (!__DEV__ || state.kind === "loading") return;
+    if (!__DEV__) return;
     let live = true;
     const apply = async (url: string | null) => {
-      if (resetInFlight.current || !live) return;
+      if (!live) return;
+      if (state.kind === "loading" || !lifecycleReady.current) {
+        pendingRuntimeAuditabilityUrl.current = url;
+        return;
+      }
+      if (resetInFlight.current) return;
       resetInFlight.current = true;
       try {
         const result = await handleRuntimeAuditabilityUrl(url);

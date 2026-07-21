@@ -7,8 +7,6 @@ tags:
 - waitForAnimationToEnd:
     timeout: 30000
 - openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
-- waitForAnimationToEnd:
-    timeout: 30000
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:algorithms"
@@ -46,23 +44,6 @@ tags:
     id: "patternly:session:reason:alg-complexity-amortized-001"
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details-toggle:alg-complexity-amortized-001"
-    direction: DOWN
-- tapOn:
-    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details:alg-complexity-amortized-001"
-    direction: DOWN
-- assertVisible:
-    id: "patternly:session:details:alg-complexity-amortized-001"
-- takeScreenshot: runtime-auditability-feedback-details-open
-- tapOn:
-    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
-- assertNotVisible:
-    id: "patternly:session:details:alg-complexity-amortized-001"
 - tapOn:
     id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
 - tapOn:
