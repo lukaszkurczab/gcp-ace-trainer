@@ -1,5 +1,0 @@
-
-> gcp-ace-trainer@0.1.0 validate:content-boundary
-> node scripts/validateContentBoundary.mjs
-
-CONTENT_BOUNDARY_CHECK=passed

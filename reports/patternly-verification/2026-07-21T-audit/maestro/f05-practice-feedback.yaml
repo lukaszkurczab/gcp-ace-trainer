@@ -1,8 +1,0 @@
-appId: com.lkurczab.gcpacetrainer
-name: "F05 Practice feedback after an incorrect real answer"
----
-- tapOn: "Every individual operation has worst-case O(1) cost."
-- tapOn: "Check answer"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: "f05-incorrect-feedback"

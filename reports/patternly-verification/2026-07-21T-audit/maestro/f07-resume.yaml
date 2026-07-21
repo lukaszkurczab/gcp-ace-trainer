@@ -1,7 +1,0 @@
-appId: com.lkurczab.gcpacetrainer
-name: "F07 Resume observed Practice session"
----
-- tapOn: "Continue active session"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: "f07-resumed-session"

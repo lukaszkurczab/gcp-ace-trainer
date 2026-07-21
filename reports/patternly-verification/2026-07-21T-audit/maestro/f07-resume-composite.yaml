@@ -1,7 +1,0 @@
-appId: com.lkurczab.gcpacetrainer
-name: "F07 Resume by observed composite accessibility label"
----
-- tapOn: "Continue active session, Continue or deliberately abandon the active session., Continue"
-- waitForAnimationToEnd:
-    timeout: 12000
-- takeScreenshot: "f07-resumed-session"
