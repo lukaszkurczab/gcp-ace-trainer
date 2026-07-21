@@ -33,9 +33,13 @@ export class TrainingLifecycleUseCases {
   async reconstructOperationProjection(session: TrainingSession): Promise<DurableOperationState> {
     const pending = await this.pendingFor(session.id);
     const simulationSession = session.configurationSnapshot.submission === "manualOrForegroundTimeout";
+    const currentOccurrence = session.itemOrder[session.currentItemIndex];
+    const hasMaterializedCurrentPracticeAttempt = !pending && !simulationSession && currentOccurrence
+      ? (await this.ports.repositories.getAttempts()).some((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === currentOccurrence.occurrenceId)
+      : false;
     const state = pending
       ? simulationSession ? simulationPendingFor(pending.status) : pending.operation === "submit_training_outcome" ? practicePendingFor(pending.status) : simulationSession ? simulation("recovery_required", operationError("simulation_resume", "journal_durable", "recover")) : practice("commit_pending", operationError("practice_submit", "journal_durable", "recover"))
-      : simulationSession ? simulation("editable") : practice("unanswered");
+      : simulationSession ? simulation("editable") : hasMaterializedCurrentPracticeAttempt ? practice("feedback") : practice("unanswered");
     return this.operationStates.reconstruct({ sessionId: session.id, state });
   }
 
