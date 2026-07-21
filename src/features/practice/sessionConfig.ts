@@ -80,6 +80,12 @@ export function buildPracticeSessionConfig(
     if (!profile.supportedLengths.includes(sessionLength)) {
       throw new Error(`Algorithms mode ${mode} does not support session length ${sessionLength}.`);
     }
+    if (input.feedbackMode !== undefined && input.feedbackMode !== profile.feedbackMode) {
+      throw new Error(`Algorithms mode ${mode} owns feedback mode ${profile.feedbackMode}.`);
+    }
+    if (input.reviewBehaviorEnabled !== undefined && input.reviewBehaviorEnabled !== profile.reinsertEnabled) {
+      throw new Error(`Algorithms mode ${mode} owns reinsert setting ${profile.reinsertEnabled}.`);
+    }
     if ((input.reviewSource || input.reviewItemRefs) && mode !== ALGORITHM_MODE_IDS.weakAreaReview) {
       throw new Error(`Algorithms review source requires mode ${ALGORITHM_MODE_IDS.weakAreaReview}.`);
     }
@@ -92,10 +98,10 @@ export function buildPracticeSessionConfig(
     const topicId = getAlgorithmSessionNodeById(input.topicId).id;
 
     return {
-      feedbackMode: input.feedbackMode ?? profile.feedbackMode,
+      feedbackMode: profile.feedbackMode,
       algorithmScope: input.algorithmScope,
       mode,
-      reviewBehaviorEnabled: input.reviewBehaviorEnabled ?? profile.reinsertEnabled,
+      reviewBehaviorEnabled: profile.reinsertEnabled,
       reviewItemRefs: input.reviewItemRefs,
       reviewSource: input.reviewSource,
       sessionLength,

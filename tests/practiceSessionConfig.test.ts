@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getTrackDisplay } from "../src/domain";
-import { buildPracticeModes } from "../src/features/practice/practiceFlowModel";
 import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
 
 test("allows an Algorithms session length declared by the selected mode", () => {
@@ -19,34 +17,29 @@ test("allows an Algorithms session length declared by the selected mode", () => 
   assert.equal(config.reviewBehaviorEnabled, true);
 });
 
-test("preserves fully configured Algorithms feedback and reinsert choices", () => {
-  const config = buildPracticeSessionConfig({
-    feedbackMode: "atSessionEnd",
-    mode: "algorithms-guided-practice",
-    reviewBehaviorEnabled: false,
-    sessionLength: 40,
-    source: "practiceSetup",
-    topicId: "binary_search",
-    trackId: "algorithms",
-  });
-
-  assert.equal(config.sessionLength, 40);
-  assert.equal(config.feedbackMode, "atSessionEnd");
-  assert.equal(config.reviewBehaviorEnabled, false);
-});
-
-test("offers a default Algorithms practice option alongside configurable setup", () => {
-  const defaultPractice = buildPracticeModes(getTrackDisplay("algorithms"))
-    .find((mode) => mode.title === "Default Practice");
-
-  assert.deepEqual(defaultPractice, {
-    detail: "Start Guided Practice with the recommended session settings.",
-    enabled: true,
-    icon: "practice",
-    mode: "algorithms-guided-practice",
-    title: "Default Practice",
-    tone: "primary",
-  });
+test("rejects Algorithms feedback and reinsert overrides while retaining declared session lengths", () => {
+  assert.throws(
+    () => buildPracticeSessionConfig({
+      feedbackMode: "atSessionEnd",
+      mode: "algorithms-guided-practice",
+      sessionLength: 40,
+      source: "practiceSetup",
+      topicId: "binary_search",
+      trackId: "algorithms",
+    }),
+    /owns feedback mode afterEachAnswer/,
+  );
+  assert.throws(
+    () => buildPracticeSessionConfig({
+      mode: "algorithms-guided-practice",
+      reviewBehaviorEnabled: false,
+      sessionLength: 40,
+      source: "practiceSetup",
+      topicId: "binary_search",
+      trackId: "algorithms",
+    }),
+    /owns reinsert setting true/,
+  );
 });
 
 test("rejects an Algorithms session length that the selected mode does not declare", () => {
