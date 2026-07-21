@@ -23,7 +23,6 @@ export type AlgorithmsConditionalReinsertPlanInput = Readonly<{
   /** Prepared deterministic option orders for catalog items used only in alternate branches. */
   optionOrderByItemId: Readonly<Record<string, readonly string[]>>;
   compatibilitySets: readonly PublishedAlgorithmsCompatibilitySet[];
-  reinsertEnabled: boolean;
 }>;
 
 export type AlgorithmsConditionalReinsertResolution = Readonly<{
@@ -54,7 +53,7 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
   if (input.mode === ALGORITHM_MODE_IDS.weakAreaReview && !input.reviewSource) {
     throw new Error("Algorithms Weak Area Review reinsert preparation requires due_queue or session_misses source.");
   }
-  if (!input.reinsertEnabled) return createTrainingSession({ ...input.session, conditionalReinsertSlots: [] });
+  if (!isReinsertEnabled(input.mode, input.reviewSource)) return createTrainingSession({ ...input.session, conditionalReinsertSlots: [] });
 
   const entryByItemId = new Map(input.entries.map((entry) => [entry.question.id, entry]));
   const planItemIds = new Set<string>();
@@ -183,6 +182,11 @@ function materializedAttemptsByOccurrence(
     result.set(attempt.occurrenceId, attempt);
   }
   return result;
+}
+
+function isReinsertEnabled(mode: AlgorithmModeId, reviewSource: AlgorithmReviewSource | undefined): boolean {
+  return mode === ALGORITHM_MODE_IDS.guidedPractice ||
+    (mode === ALGORITHM_MODE_IDS.weakAreaReview && (reviewSource === "due_queue" || reviewSource === "session_misses"));
 }
 
 function getValidatedEntry(

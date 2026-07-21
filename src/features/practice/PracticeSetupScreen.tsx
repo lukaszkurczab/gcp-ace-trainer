@@ -156,38 +156,42 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         </View>
 
-        <View style={styles.section}>
-          <SectionHeader title={t("Feedback mode")} tight />
-          <SelectablePanel
-            detail={t("Correctness and explanation are shown after every item.")}
-            label={t("After each answer")}
-            onPress={() => setFeedbackMode("afterEachAnswer")}
-            selected={feedbackMode === "afterEachAnswer"}
-          />
-          <SelectablePanel
-            detail={t("Correctness is hidden until the final summary and review.")}
-            label={t("At session end")}
-            onPress={() => setFeedbackMode("atSessionEnd")}
-            selected={feedbackMode === "atSessionEnd"}
-          />
-        </View>
+        {!algorithmMode ? (
+          <>
+            <View style={styles.section}>
+              <SectionHeader title={t("Feedback mode")} tight />
+              <SelectablePanel
+                detail={t("Correctness and explanation are shown after every item.")}
+                label={t("After each answer")}
+                onPress={() => setFeedbackMode("afterEachAnswer")}
+                selected={feedbackMode === "afterEachAnswer"}
+              />
+              <SelectablePanel
+                detail={t("Correctness is hidden until the final summary and review.")}
+                label={t("At session end")}
+                onPress={() => setFeedbackMode("atSessionEnd")}
+                selected={feedbackMode === "atSessionEnd"}
+              />
+            </View>
 
-        <Card style={styles.reviewCard}>
-          <View style={styles.reviewCopy}>
-            <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
-            <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
-          </View>
-          {reviewBehaviorCopy.showToggle ? (
-            <Pressable
-              accessibilityRole="switch"
-              accessibilityState={{ checked: reviewBehaviorEnabled }}
-              onPress={() => setReviewBehaviorEnabled((current) => !current)}
-              style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
-            >
-              <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
-            </Pressable>
-          ) : null}
-        </Card>
+            <Card style={styles.reviewCard}>
+              <View style={styles.reviewCopy}>
+                <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+                <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+              </View>
+              {reviewBehaviorCopy.showToggle ? (
+                <Pressable
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: reviewBehaviorEnabled }}
+                  onPress={() => setReviewBehaviorEnabled((current) => !current)}
+                  style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
+                >
+                  <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
+                </Pressable>
+              ) : null}
+            </Card>
+          </>
+        ) : null}
 
         <View style={styles.actions}>
           <Button onPress={startSession}>{t("Start session")}</Button>

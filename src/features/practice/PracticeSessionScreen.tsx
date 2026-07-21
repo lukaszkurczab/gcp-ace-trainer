@@ -253,10 +253,8 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
   }
   try {
     await startAlgorithmsSession({
-      feedbackMode: params.feedbackMode,
       modeId,
       requestedLength: params.sessionLength,
-      reinsertEnabled: params.reviewBehaviorEnabled,
       reviewItemRefs: params.reviewItemRefs,
       reviewSource: params.reviewSource,
       scope: resolveScope(params, modeId),
