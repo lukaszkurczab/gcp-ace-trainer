@@ -8,11 +8,13 @@ import {
 import { practiceOptionCorrectnessValue, type PracticeResponseControl } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type PracticeResponseControlsProps = Readonly<{
   control: PracticeResponseControl;
   editable: boolean;
+  itemId?: string;
   onChoicePress: (optionId: string) => void;
   onComplexityValuePress: (dimensionId: string, value: string) => void;
   onOrderingMove: (elementId: string, direction: "up" | "down") => void;
@@ -22,6 +24,7 @@ type PracticeResponseControlsProps = Readonly<{
 export function PracticeResponseControls({
   control,
   editable,
+  itemId,
   onChoicePress,
   onComplexityValuePress,
   onOrderingMove,
@@ -33,6 +36,7 @@ export function PracticeResponseControls({
         {control.options.map((option) => (
           <ChoiceOption
             editable={editable}
+            itemId={itemId}
             key={option.id}
             onPress={() => onChoicePress(option.id)}
             option={option}
@@ -47,7 +51,7 @@ export function PracticeResponseControls({
     return (
       <View style={styles.stack}>
         {control.elements.map((element, index) => (
-          <View key={element.id} style={styles.orderRow}>
+          <View key={element.id} style={styles.orderRow} testID={itemId ? runtimeSelectors.session.option(itemId, element.id) : undefined}>
             <Text style={styles.orderIndex}>{index + 1}</Text>
             <Text style={styles.optionText}>{element.text}</Text>
             {editable ? (
@@ -79,6 +83,7 @@ export function PracticeResponseControls({
                   key={value}
                   onPress={() => onComplexityValuePress(dimension.id, value)}
                   style={({ pressed }) => [styles.valueOption, selected ? styles.valueOptionSelected : null, pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
+                  testID={itemId ? runtimeSelectors.session.option(itemId, `${dimension.id}:${value}`) : undefined}
                 >
                   <Text style={[styles.valueText, selected ? styles.selectedText : null]}>{value}</Text>
                 </Pressable>
@@ -91,8 +96,9 @@ export function PracticeResponseControls({
   );
 }
 
-function ChoiceOption({ editable, onPress, option, role }: Readonly<{
+function ChoiceOption({ editable, itemId, onPress, option, role }: Readonly<{
   editable: boolean;
+  itemId?: string;
   onPress: () => void;
   option: Readonly<{ id: string; state: "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct"; text: string }>;
   role: "checkbox" | "radio";
@@ -110,6 +116,7 @@ function ChoiceOption({ editable, onPress, option, role }: Readonly<{
       disabled={!editable}
       onPress={onPress}
       style={({ pressed }) => [styles.choiceOption, choiceStateStyle(option.state, styles), pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
+      testID={itemId ? runtimeSelectors.session.option(itemId, option.id) : undefined}
     >
       <View style={[styles.marker, selected ? styles.markerSelected : null, option.state === "correct" || option.state === "omitted_correct" ? styles.markerCorrect : null, option.state === "incorrect" ? styles.markerIncorrect : null]} />
       <Text style={styles.optionText}>{option.text}</Text>

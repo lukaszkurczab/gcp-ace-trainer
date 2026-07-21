@@ -22,6 +22,7 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
+import { runtimeSelectors } from "../../../testing/runtimeSelectors";
 
 import {
   buildProgressTabModel,
@@ -289,7 +290,7 @@ function AlgorithmsProgressContent({
         <SectionHeader title={t("Roadmap summary")} tight />
         <Card style={styles.roadmapCard}>
           {roadmapNodes.map((node) => (
-            <View key={node.id} style={styles.roadmapRow}>
+            <View key={node.id} style={styles.roadmapRow} testID={runtimeSelectors.progress.node(node.id)}>
               <View style={styles.roadmapCopy}>
                 <Text style={styles.performanceTitle}>{node.title}</Text>
                 {node.showProgress ? (

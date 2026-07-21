@@ -1,0 +1,88 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly runtime auditability smoke
+tags:
+  - runtime-auditability
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 30000
+- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
+- waitForAnimationToEnd:
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
+- waitForAnimationToEnd:
+    timeout: 30000
+- takeScreenshot: runtime-auditability-session-start
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:each_worst_constant"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- waitForAnimationToEnd:
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+    direction: DOWN
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- takeScreenshot: runtime-auditability-feedback-details-open
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+- tapOn:
+    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+- killApp
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 30000
+- assertVisible:
+    id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+- tapOn:
+    id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+- waitForAnimationToEnd:
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:root:algorithms:algorithms-guided-practice:1"
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
+- takeScreenshot: runtime-auditability-resumed-feedback

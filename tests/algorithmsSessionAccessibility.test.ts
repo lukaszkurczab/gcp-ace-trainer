@@ -65,7 +65,7 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
   assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
   assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("End this session\?"\)\}<\/Text>/);
-  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} variant="destructive">\{t\("Abandon session"\)\}<\/Button>/);
+  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\("Abandon session"\)\}<\/Button>/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
 });
 
@@ -81,4 +81,30 @@ test("large text can grow session chrome and controls without fixed interactive 
   assert.match(practice, /orderRow:\s*\{[^}]*flexWrap:\s*"wrap"/);
   assert.match(simulation, /orderRow:\s*\{[^}]*alignItems:\s*"flex-start"/);
   assert.match(simulation, /orderRow:\s*\{[^}]*flexWrap:\s*"wrap"/);
+});
+
+test("practice runtime selectors are derived from the canonical session projection without entering speech labels", () => {
+  const screen = source("src/features/practice/PracticeSessionScreen.tsx");
+  const surface = source("src/features/practice/PracticeSessionSurface.tsx");
+  const controls = source("src/features/practice/PracticeResponseControls.tsx");
+  const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
+
+  assert.match(screen, /itemId: projection\.item\.itemId/);
+  assert.match(screen, /actualLength: projection\.session\.actualLength/);
+  assert.match(screen, /feedbackTiming: feedbackTiming\(projection\.session\.configurationSnapshot\.feedbackMode\)/);
+  assert.match(screen, /ordinal: projection\.position\.current/);
+  assert.match(screen, /roadmapNodeId: projection\.roadmapNodeId/);
+  assert.doesNotMatch(screen, /itemId:\s*projection\.prompt/);
+
+  assert.match(surface, /runtimeSelectors\.session\.root\(props\.runtimeIdentity\.sessionId\)/);
+  assert.match(surface, /runtimeSelectors\.session\.counter\(props\.runtimeIdentity\.sessionId, props\.runtimeIdentity\.ordinal, props\.runtimeIdentity\.actualLength\)/);
+  assert.match(surface, /runtimeSelectors\.session\.configuration\(props\.runtimeIdentity\.sessionId, props\.runtimeIdentity\.actualLength, props\.runtimeIdentity\.feedbackTiming\)/);
+  assert.match(surface, /runtimeSelectors\.session\.question\(question\.itemId\)/);
+  assert.match(surface, /runtimeSelectors\.session\.submit\(props\.runtimeIdentity\.itemId\)/);
+  assert.match(surface, /runtimeSelectors\.session\.continue\(props\.runtimeIdentity\.itemId\)/);
+  assert.match(surface, /runtimeSelectors\.session\.leaveAndResume\(sessionId\)/);
+  assert.match(controls, /runtimeSelectors\.session\.option\(itemId, option\.id\)/);
+  assert.match(feedback, /runtimeSelectors\.session\.result\(itemId, feedback\.result\)/);
+  assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Verified answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
+  assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });

@@ -29,6 +29,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
   session: TrainingSession;
   position: AlgorithmsSessionPosition;
   item: ContentItemRef;
+  roadmapNodeId: string;
   prompt: string;
   constraints: readonly string[];
   interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
@@ -167,6 +168,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
     session,
     position: position(session),
     item: occurrence.item,
+    roadmapNodeId: question.taxonomy.roadmapNodeId,
     prompt: question.prompt,
     constraints: Object.freeze([...(question.constraints ?? [])]),
     interaction: buildAlgorithmInteractionViewModel(question, response),

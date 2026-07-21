@@ -33,6 +33,7 @@ import {
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -221,7 +222,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   return (
     <PracticeSessionSurface
       exit={{ kind: exit }}
-      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason } : undefined}
+      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason, result: projection.feedback.correctness } : undefined}
       isFinalPosition={projection.position.current === projection.position.total}
       modeLabel={t(getAlgorithmMode(algorithmsMode).title)}
       notice={notice}
@@ -238,8 +239,18 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
-      question={{ constraints: projection.constraints, prompt: projection.prompt, responseControl }}
+      question={{ constraints: projection.constraints, itemId: projection.item.itemId, prompt: projection.prompt, responseControl }}
       retryLabel={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Recover session" : undefined}
+      runtimeIdentity={{
+        itemId: projection.item.itemId,
+        actualLength: projection.session.actualLength,
+        feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode),
+        modeId: projection.session.modeId,
+        ordinal: projection.position.current,
+        roadmapNodeId: projection.roadmapNodeId,
+        sessionId: projection.session.id,
+        trackId: projection.session.trackId,
+      }}
       timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.session.activeForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.session.activeForegroundMs)}` }}
     />
   );
@@ -334,6 +345,11 @@ function formatElapsed(milliseconds: number): string {
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 }
 
+function feedbackTiming(value: unknown): "afterEachAnswer" | "atSessionEnd" {
+  if (value === "afterEachAnswer" || value === "atSessionEnd") return value;
+  throw new Error("Algorithms practice session is missing its canonical feedback timing.");
+}
+
 function noop() {}
 
 function VerifiedPracticeResult({ onBack, result }: Readonly<{ onBack: () => void; result: AlgorithmsSessionResultProjection }>) {
@@ -341,7 +357,7 @@ function VerifiedPracticeResult({ onBack, result }: Readonly<{ onBack: () => voi
   const { t } = useAppPreferences();
   return (
     <Screen edges={["top", "bottom"]}>
-      <View style={styles.result}>
+      <View style={styles.result} testID={runtimeSelectors.summary.root(result.sessionId)}>
         <Text style={styles.resultTitle}>{t("Session result")}</Text>
         <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} {t("answered")} · {result.unansweredOccurrenceIds.length} {t("unanswered")}</Text>
         {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {result.score.partialCount} {t("partial")} · {result.score.incorrectCount} {t("incorrect")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}

@@ -31,6 +31,7 @@ export type PracticeResponseControl =
 export type PracticeFeedback = Readonly<{
   details: string;
   reason: string;
+  result: "correct" | "partial" | "incorrect";
 }>;
 
 export type PracticeInteractionRenderer =

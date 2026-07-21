@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
 
 import {
   Badge,
@@ -17,6 +17,7 @@ import type { AnalyticsData } from "../../analytics/analyticsService";
 import { buildHomeTabModel } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
+import { runtimeSelectors } from "../../../testing/runtimeSelectors";
 
 
 type HomeTabProps = {
@@ -46,7 +47,7 @@ export function HomeTab({
 
   return (
     <>
-      <Card style={styles.focusStrip}>
+      <Card style={styles.focusStrip} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
         <View style={styles.focusCopy}>
           <Text style={styles.eyebrow}>{t("Current track")}</Text>
           <Text style={styles.focusTitle}>{t(model.focusTitle)}</Text>
@@ -77,22 +78,67 @@ export function HomeTab({
         <View style={styles.section}>
           <SectionHeader title={t("Recommended today")} tight />
           {model.recommendations.map((item, index) => (
-            <ListRow
-              detail={t(item.unavailableReason ?? item.detail)}
-              key={item.title}
-              leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
-              onPress={item.enabled ? () => onRecommendationAction(item.action) : undefined}
-              style={[
-                index === 0 ? styles.recommendedPrimary : undefined,
-                item.enabled ? undefined : styles.unavailableRow,
-              ]}
-              title={t(item.title)}
-              trailing={<Badge label={t(item.label)} tone={item.enabled ? "info" : "neutral"} />}
-            />
+            item.action.kind === "resume_active_session" ? (
+              <ResumeRecommendation
+                action={item.action}
+                detail={t(item.detail)}
+                key={item.action.sessionId}
+                label={t(item.label)}
+                onContinue={onRecommendationAction}
+                style={index === 0 ? styles.recommendedPrimary : undefined}
+                title={t(item.title)}
+              />
+            ) : (
+              <ListRow
+                detail={t(item.unavailableReason ?? item.detail)}
+                key={item.title}
+                leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
+                onPress={item.enabled ? () => onRecommendationAction(item.action) : undefined}
+                style={[
+                  index === 0 ? styles.recommendedPrimary : undefined,
+                  item.enabled ? undefined : styles.unavailableRow,
+                ]}
+                title={t(item.title)}
+                trailing={<Badge label={t(item.label)} tone={item.enabled ? "info" : "neutral"} />}
+              />
+            )
           ))}
         </View>
       ) : null}
     </>
+  );
+}
+
+function ResumeRecommendation({
+  action,
+  detail,
+  label,
+  onContinue,
+  style,
+  title,
+}: Readonly<{
+  action: Extract<AlgorithmsRecommendationAction, { kind: "resume_active_session" }>;
+  detail: string;
+  label: string;
+  onContinue: (action: AlgorithmsRecommendationAction) => void;
+  style?: ViewStyle;
+  title: string;
+}>) {
+  const styles = useThemedStyles(createStyles);
+
+  return (
+    <Card style={style ? { ...styles.resumeCard, ...style } : styles.resumeCard} testID={runtimeSelectors.resume.card(action.sessionId)}>
+      <View style={styles.resumeHeading}>
+        <Text style={styles.resumeTitle} testID={runtimeSelectors.resume.title(action.sessionId)}>{title}</Text>
+        <View testID={runtimeSelectors.resume.status(action.sessionId)}>
+          <Badge label={label} tone="info" />
+        </View>
+      </View>
+      <Text style={styles.resumeDetail}>{detail}</Text>
+      <Button onPress={() => onContinue(action)} testID={runtimeSelectors.resume.continue(action.sessionId)}>
+        {label}
+      </Button>
+    </Card>
   );
 }
 
@@ -142,6 +188,24 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   recommendedPrimary: {
     borderColor: palette.primary,
+  },
+  resumeCard: {
+    gap: spacing.md,
+  },
+  resumeHeading: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  resumeTitle: {
+    ...typography.bodyStrong,
+    color: palette.textPrimary,
+    flex: 1,
+  },
+  resumeDetail: {
+    ...typography.small,
+    color: palette.textSecondary,
   },
   unavailableRow: {
     opacity: 0.62,

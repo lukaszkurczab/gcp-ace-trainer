@@ -29,6 +29,7 @@ import {
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
@@ -126,7 +127,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   }
 
   return (
-    <View style={styles.shell}>
+    <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen edges={["top", "bottom"]}>
         <AppStackHeader
           navigation={navigation}
@@ -151,6 +152,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
                 meta={t("Questions")}
                 onPress={() => setSessionLength(length)}
                 selected={configuredSessionLength === length}
+                testID={runtimeSelectors.practice.sessionLength(length)}
               />
             ))}
           </View>
@@ -165,12 +167,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
                 label={t("After each answer")}
                 onPress={() => setFeedbackMode("afterEachAnswer")}
                 selected={feedbackMode === "afterEachAnswer"}
+                testID={runtimeSelectors.practice.feedbackTiming("afterEachAnswer")}
               />
               <SelectablePanel
                 detail={t("Correctness is hidden until the final summary and review.")}
                 label={t("At session end")}
                 onPress={() => setFeedbackMode("atSessionEnd")}
                 selected={feedbackMode === "atSessionEnd"}
+                testID={runtimeSelectors.practice.feedbackTiming("atSessionEnd")}
               />
             </View>
 
@@ -194,7 +198,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         ) : null}
 
         <View style={styles.actions}>
-          <Button onPress={startSession}>{t("Start session")}</Button>
+          <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           <Button onPress={() => navigation.goBack()} variant="secondary">
             {t("Back")}
           </Button>
@@ -209,9 +213,10 @@ type SelectableOptionProps = {
   meta: string;
   onPress: () => void;
   selected: boolean;
+  testID: string;
 };
 
-function SelectableOption({ label, meta, onPress, selected }: SelectableOptionProps) {
+function SelectableOption({ label, meta, onPress, selected, testID }: SelectableOptionProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -223,6 +228,7 @@ function SelectableOption({ label, meta, onPress, selected }: SelectableOptionPr
         selected ? styles.selectedOption : null,
         pressed ? styles.pressed : null,
       ]}
+      testID={testID}
     >
       <Text style={[styles.lengthValue, selected ? styles.selectedText : null]}>{label}</Text>
       <Text style={styles.optionMeta}>{meta}</Text>
@@ -235,9 +241,10 @@ type SelectablePanelProps = {
   label: string;
   onPress: () => void;
   selected: boolean;
+  testID: string;
 };
 
-function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelProps) {
+function SelectablePanel({ detail, label, onPress, selected, testID }: SelectablePanelProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -249,6 +256,7 @@ function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelPr
         selected ? styles.selectedOption : null,
         pressed ? styles.pressed : null,
       ]}
+      testID={testID}
     >
       <View style={styles.panelCopy}>
         <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>

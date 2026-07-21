@@ -1,9 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Linking, Text, View } from "react-native";
 import { EmptyState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getAlgorithmsSimulationTimerFacade } from "../../application/algorithms";
+import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
 import { validateBundledContent } from "./validateBundledContent";
 
 export type ContentPreparationState =
@@ -13,6 +14,10 @@ export type ContentPreparationState =
 
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
+  const [bootstrapRevision, setBootstrapRevision] = useState(0);
+  const initialUrlHandled = useRef(false);
+  const resetInFlight = useRef(false);
+
   useEffect(() => {
     let live = true;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
@@ -31,7 +36,33 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       setState(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
     });
     return () => { live = false; };
-  }, []);
+  }, [bootstrapRevision]);
+
+  useEffect(() => {
+    if (!__DEV__ || state.kind !== "ready") return;
+    let live = true;
+    const apply = async (url: string | null) => {
+      if (resetInFlight.current || !live) return;
+      resetInFlight.current = true;
+      try {
+        const result = await handleRuntimeAuditabilityUrl(url);
+        if (!live || result.kind !== "reset_learning_state") return;
+        setState({ kind: "loading" });
+        setBootstrapRevision((revision) => revision + 1);
+      } catch (error) {
+        if (live) setState({ kind: "blocking", reason: error instanceof Error ? error.message : "Development reset failed." });
+      } finally {
+        resetInFlight.current = false;
+      }
+    };
+    if (!initialUrlHandled.current) {
+      initialUrlHandled.current = true;
+      void Linking.getInitialURL().then(apply);
+    }
+    const subscription = Linking.addEventListener("url", ({ url }) => { void apply(url); });
+    return () => { live = false; subscription.remove(); };
+  }, [state.kind]);
+
   if (state.kind === "ready") return <>{children}</>;
   if (state.kind === "loading") return <Screen><View><Text>Preparing content…</Text></View></Screen>;
   return <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
