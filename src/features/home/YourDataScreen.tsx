@@ -27,7 +27,7 @@ const copy = {
             title: "Not collected",
             paragraphs: [
               "Patternly does not require an account, name, email address, authentication credentials, or an identity profile.",
-              "It does not require location, contacts, photos, microphone, camera, health data, advertising identifiers, confidence ratings, or synthetic readiness and mastery metrics.",
+              "It does not require location, contacts, photos, microphone, camera, health data, advertising identifiers, self-assessments, or synthetic readiness and mastery metrics.",
             ],
           },
           {
@@ -84,7 +84,7 @@ const copy = {
             title: "Nie zbieramy",
             paragraphs: [
               "Patternly nie wymaga konta, imienia, adresu e-mail, danych logowania ani profilu tożsamości.",
-              "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, ocen pewności ani syntetycznych metryk gotowości i opanowania materiału.",
+              "Nie wymaga lokalizacji, kontaktów, zdjęć, mikrofonu, kamery, danych zdrowotnych, identyfikatorów reklamowych, samoocen ani syntetycznych metryk gotowości i opanowania materiału.",
             ],
           },
           {
