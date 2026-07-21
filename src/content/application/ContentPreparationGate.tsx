@@ -21,17 +21,24 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     let live = true;
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
-    void bootstrapApplication(
-      validateBundledContent,
-      async () => {
-        if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
-        const session = await lifecycle.resumeActiveSession();
-        if (session.trackId === "algorithms" && session.configurationSnapshot.timer === "countdownForeground") {
-          await getAlgorithmsSimulationTimerFacade().restoreForResume(session);
-        }
-      },
-      async () => { lifecycle = composeTrainingLifecycleUseCases(); },
-    ).then((result) => {
+    void (async () => {
+      const initialUrl = __DEV__ ? await Linking.getInitialURL() : null;
+      initialUrlHandled.current = true;
+      return bootstrapApplication(
+        validateBundledContent,
+        async () => {
+          if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
+          const session = await lifecycle.resumeActiveSession();
+          if (session.trackId === "algorithms" && session.configurationSnapshot.timer === "countdownForeground") {
+            await getAlgorithmsSimulationTimerFacade().restoreForResume(session);
+          }
+        },
+        async () => {
+          lifecycle = composeTrainingLifecycleUseCases();
+          await handleRuntimeAuditabilityUrl(initialUrl);
+        },
+      );
+    })().then((result) => {
       if (!live) return;
       setState(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
     });
@@ -39,7 +46,10 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   }, [bootstrapRevision]);
 
   useEffect(() => {
-    if (!__DEV__ || state.kind !== "ready") return;
+    // A reset must also be available after bootstrap has reported a blocking
+    // persisted-state error; otherwise the development recovery command cannot
+    // restore the very state that prevents the app from becoming ready.
+    if (!__DEV__ || state.kind === "loading") return;
     let live = true;
     const apply = async (url: string | null) => {
       if (resetInFlight.current || !live) return;
@@ -55,10 +65,6 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         resetInFlight.current = false;
       }
     };
-    if (!initialUrlHandled.current) {
-      initialUrlHandled.current = true;
-      void Linking.getInitialURL().then(apply);
-    }
     const subscription = Linking.addEventListener("url", ({ url }) => { void apply(url); });
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
