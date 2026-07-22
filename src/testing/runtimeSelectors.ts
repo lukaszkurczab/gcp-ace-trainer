@@ -21,6 +21,7 @@ type ItemId = ContentItemRef["itemId"];
 export const runtimeSelectors = Object.freeze({
   content: Object.freeze({
     ready: (bootstrapRevision: number) => selector("content", "ready", nonNegativeInteger(bootstrapRevision, "content bootstrap revision")),
+    auditCommandListener: () => selector("content", "audit-command-listener", "ready"),
   }),
   home: Object.freeze({
     root: () => selector("home", "root"),

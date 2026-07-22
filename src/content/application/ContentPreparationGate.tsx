@@ -17,6 +17,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
   const [auditResetRevision, setAuditResetRevision] = useState(0);
+  const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
   const lifecycleReady = useRef(false);
@@ -81,10 +82,14 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       }
     };
     const subscription = Linking.addEventListener("url", ({ url }) => { void apply(url); });
+    setAuditCommandListenerReady(true);
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
 
-  if (state.kind === "ready") return <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(auditResetRevision)}>{children}</View>;
-  if (state.kind === "loading") return <Screen><View><Text>Preparing content…</Text></View></Screen>;
-  return <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
+  const body = state.kind === "ready"
+    ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(auditResetRevision)}>{children}</View>
+    : state.kind === "loading"
+      ? <Screen><View><Text>Preparing content…</Text></View></Screen>
+      : <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
+  return <View style={{ flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

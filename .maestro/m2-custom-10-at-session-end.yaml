@@ -7,6 +7,10 @@ tags:
 - openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
 - waitForAnimationToEnd:
     timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:audit-command-listener:ready"
+    timeout: 30000
 - openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
