@@ -15,12 +15,13 @@ export class CrossRepositoryContractError extends Error { constructor(code, mess
 const sha = (value) => typeof value === "string" && /^[a-f0-9]{40}$/.test(value);
 async function git(root, ...args) { return exec("git", args, { cwd: root }); }
 async function gitHead(root, unavailableCode) { try { return (await git(root, "rev-parse", "HEAD")).stdout.trim(); } catch { throw new CrossRepositoryContractError(unavailableCode, `Git checkout is unavailable: ${root}`); } }
+async function assertContainsCommit(root, commit) { try { await git(root, "merge-base", "--is-ancestor", commit, "HEAD"); } catch { throw new CrossRepositoryContractError("INPUT_SHA_MISMATCH", `lockedContentCommit=${commit} is not reachable from content HEAD=${await gitHead(root, "CONTENT_CHECKOUT_UNAVAILABLE")}`); } }
 async function assertClean(root, label) { try { const status = (await git(root, "status", "--porcelain", "--untracked-files=all")).stdout.trim(); if (status) throw new CrossRepositoryContractError("DIRTY_INTEGRATION_INPUT", `${label} checkout is dirty: ${status}`); } catch (error) { if (error instanceof CrossRepositoryContractError) throw error; throw new CrossRepositoryContractError("CONTENT_CHECKOUT_UNAVAILABLE", `${label} checkout is unavailable: ${root}`); } }
 async function readLock() { try { const lock = JSON.parse(await readFile(LOCK_PATH, "utf8")); if (lock?.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !sha(lock.commit) || lock.taxonomyVersion !== "algorithms-taxonomy-v2" || !/^[a-f0-9]{64}$/.test(lock.taxonomyFingerprint) || lock.applicationContractSnapshot?.bankContract !== "PublishedAlgorithmsBank" || lock.applicationContractSnapshot?.artifactSchema !== "published-bank-v1") throw new Error("invalid"); return lock; } catch { throw new CrossRepositoryContractError("MISSING_CONTENT_LOCK", `Missing or invalid immutable content lock: ${LOCK_PATH}`); } }
 function equalSnapshot(left, right) { return JSON.stringify(left) === JSON.stringify(right); }
 export async function verifyCrossRepositoryInputs({ appRoot = APP_ROOT, contentRoot = CONTENT_ROOT } = {}) {
   const lock = await readLock(); const applicationCommit = await gitHead(appRoot, "CONTENT_CHECKOUT_UNAVAILABLE"); await assertClean(appRoot, "Application"); await assertClean(contentRoot, "Content"); const contentCommit = await gitHead(contentRoot, "CONTENT_CHECKOUT_UNAVAILABLE");
-  if (contentCommit !== lock.commit) throw new CrossRepositoryContractError("INPUT_SHA_MISMATCH", `expectedContentCommit=${lock.commit}\nactualContentCommit=${contentCommit}`);
+  await assertContainsCommit(contentRoot, lock.commit);
   const [producer, producerFixtures, producerSnapshot, appDescriptor, taxonomyExporter, appTaxonomy, taxonomyText] = await Promise.all([
     import(pathToFileURL(join(contentRoot, "scripts/publishing/pipeline.mjs")).href),
     import(pathToFileURL(join(contentRoot, "tests/fixtures/manualPublishingFixture.mjs")).href),
