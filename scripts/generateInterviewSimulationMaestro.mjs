@@ -3,6 +3,10 @@ import { dirname, resolve } from "node:path";
 
 const output = process.argv[2];
 if (!output) throw new Error("Usage: node scripts/generateInterviewSimulationMaestro.mjs <flow.yaml>");
+const recoveryAfter = process.env.SIMULATION_RECOVERY_AFTER === undefined ? null : Number(process.env.SIMULATION_RECOVERY_AFTER);
+if (recoveryAfter !== null && (!Number.isInteger(recoveryAfter) || recoveryAfter < 1 || recoveryAfter >= 40)) {
+  throw new Error("SIMULATION_RECOVERY_AFTER must be an ordinal from 1 through 39.");
+}
 
 const source = readFileSync(resolve("src/content/bundled/generatedArtifacts.ts"), "utf8");
 const encodedArtifact = source.match(/"artifactBytes":("(?:\\.|[^"\\])*")/)?.[1];
@@ -108,6 +112,26 @@ for (const [index, item] of items.entries()) {
     screenshot(`s1-${String(index + 1).padStart(2, "0")}-${item.id}`);
   }
   tap(selector("simulation", "action", sessionId, "save-response"));
+  if (index + 1 === recoveryAfter) {
+    lines.push(
+      "- killApp",
+      "- launchApp:",
+      "    clearState: false",
+      "- extendedWaitUntil:",
+      "    visible:",
+      `      id: \"${selector("content", "ready", "1")}\"`,
+      "    timeout: 30000",
+      "- tapOn:",
+      "    id: \"main-tab-bar-practice\"",
+      "- scrollUntilVisible:",
+      "    element:",
+      `      id: \"${selector("practice", "mode-card", "algorithms-interview-simulation")}\"`,
+      "    direction: DOWN",
+      "    centerElement: true",
+      "- tapOn:",
+      `    id: \"${selector("practice", "mode-card", "algorithms-interview-simulation")}\"`,
+    );
+  }
 }
 
 waitFor(selector("simulation", "action", sessionId, "review-session"));
