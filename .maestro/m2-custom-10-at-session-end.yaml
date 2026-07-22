@@ -252,6 +252,11 @@ tags:
 - assertVisible:
     id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:6"
 
+- scrollUntilVisible:
+    element:
+      id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
+    direction: UP
+    centerElement: true
 - tapOn:
     id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
 - assertVisible:
