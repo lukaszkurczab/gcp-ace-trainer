@@ -437,7 +437,16 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
   if (value.reviewItemRefs !== undefined && value.reviewSource !== "session_misses") {
     throw new Error("Algorithms review item refs require the session_misses review source.");
   }
+  if (Array.isArray(value.reviewItemRefs) && !value.reviewItemRefs.every(isAlgorithmsContentItemRef)) {
+    throw new Error("Algorithms review item refs must contain only Algorithms content item references.");
+  }
   return value as AlgorithmsLifecyclePreparationRequest;
+}
+
+function isAlgorithmsContentItemRef(value: unknown): value is ContentItemRef {
+  return isRecord(value) && value.trackId === "algorithms" &&
+    typeof value.itemId === "string" && Boolean(value.itemId.trim()) &&
+    typeof value.contentVersion === "string" && Boolean(value.contentVersion.trim());
 }
 
 function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }, reviewSource: AlgorithmReviewSource | undefined): Readonly<Record<string, string | number | boolean>> {

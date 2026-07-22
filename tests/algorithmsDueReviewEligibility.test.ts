@@ -95,4 +95,12 @@ test("Algorithms runtime rejects malformed review requests before selecting or p
     runtime.prepare({ ...input, request: { sessionId: "invalid-refs", requestedLength: 10, reviewSource: "due_queue", reviewItemRefs: [] } }),
     /review item refs require the session_misses review source/,
   );
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "null-ref", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [null] } }),
+    /review item refs must contain only Algorithms content item references/,
+  );
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "invalid-ref", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [{ trackId: "algorithms", itemId: "", contentVersion: "algorithms-core-0002" }] } }),
+    /review item refs must contain only Algorithms content item references/,
+  );
 });
