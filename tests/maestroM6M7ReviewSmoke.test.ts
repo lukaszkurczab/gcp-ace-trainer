@@ -72,7 +72,7 @@ function assertReviewInteraction(flow: string, expectedResult: "correct"): void 
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.result(itemId, expectedResult))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.abandon(weakReviewSessionId))));
   assert.equal(count(flow, runtimeSelectors.progress.root()), 2, "Progress must be observed before and after relaunch.");
-  assert.equal(count(flow, runtimeSelectors.progress.node(nodeId)), 2, "The affected roadmap node must be observed before and after relaunch.");
+  assert.equal(count(flow, `assertVisible:\n    id: "${runtimeSelectors.progress.node(nodeId)}"`), 2, "The affected roadmap node must be observed before and after relaunch.");
   assert.match(flow, /- killApp\n- launchApp/);
 }
 
