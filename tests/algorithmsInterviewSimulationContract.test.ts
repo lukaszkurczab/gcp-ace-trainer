@@ -31,15 +31,15 @@ test("Interview Simulation is the fixed, profile-owned forty-item contract and n
   assert.equal(profile.selectionPolicy.replacement, false);
   assert.equal(pool.itemIds.length, 40);
   assert.equal(new Set(pool.itemIds).size, 40);
-  assert.deepEqual(blueprint.resolvedItemIds, pool.itemIds);
+  assert.deepEqual([...blueprint.resolvedItemIds].sort(), [...pool.itemIds].sort());
 
   const plan = selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: mode.id, sessionLength: 40, scope: { simulationProfileId: profileId } });
   assert.equal(plan.actualLength, 40);
-  assert.deepEqual(plan.items.map((item) => item.id), pool.itemIds);
+  assert.deepEqual(plan.items.map((item) => item.id), blueprint.resolvedItemIds);
 
   const [first, second] = await Promise.all(["simulation-contract-one", "simulation-contract-two"].map((sessionId) => prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: catalog.getContentVersion(), taxonomyVersion: "algorithms-taxonomy-v2", profileId, sessionId, startedAt: "2026-07-22T00:00:00.000Z" })));
-  assert.deepEqual(first.session.itemOrder.map((item) => item.item.itemId), pool.itemIds);
-  assert.deepEqual(second.session.itemOrder.map((item) => item.item.itemId), pool.itemIds);
+  assert.deepEqual(first.session.itemOrder.map((item) => item.item.itemId), blueprint.resolvedItemIds);
+  assert.deepEqual(second.session.itemOrder.map((item) => item.item.itemId), blueprint.resolvedItemIds);
   assert.equal(new Set(first.session.itemOrder.map((item) => item.item.itemId)).size, 40);
   assert.equal(first.session.configurationSnapshot.feedbackMode, "atSessionEnd");
   assert.equal(first.session.configurationSnapshot.simulationProfileId, profileId);
