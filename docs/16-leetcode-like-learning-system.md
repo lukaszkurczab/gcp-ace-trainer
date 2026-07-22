@@ -374,7 +374,7 @@ Algorithms entry intents map as follows:
 
 `due_queue` and `session_misses` are sources for `Weak Area Review`, not modes.
 
-`Custom Practice` is the eighth Algorithms mode. It has its own runtime mode ID but is content-bound to the immutable Guided Practice blueprint and the chosen mental unit; it is not a second content taxonomy. Its valid learner choices are session lengths 10, 20, and 40, plus `afterEachAnswer` or `atSessionEnd` feedback. It shares the regular one-active-session lifecycle and profile-owned reinsert policy.
+`Custom Practice` is the third Algorithms mode. It has its own runtime mode ID but is content-bound to the immutable Guided Practice blueprint and the chosen mental unit; it is not a second content taxonomy. Its valid learner choices are session lengths 10, 20, and 40, plus `afterEachAnswer` or `atSessionEnd` feedback. It shares the regular one-active-session lifecycle and profile-owned reinsert policy.
 
 ## Shared non-simulation contract
 
