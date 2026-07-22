@@ -40,9 +40,12 @@ test("M1 Guided 10 derives real item and option identities from the pinned Algor
 
   for (const planned of manifest.items) {
     const item = catalog.getItemById(planned.itemId);
-    assert.equal(item.interaction.type, "choice");
-    const accepted = item.interaction.acceptedOptionIds;
-    assert.ok(planned.selectedOptionIds.every((optionId) => item.interaction.options.some((option) => option.id === optionId)));
+    if (item.interaction.type !== "choice") {
+      assert.fail(`M1 item ${planned.itemId} must retain its declared choice interaction.`);
+    }
+    const choice = item.interaction;
+    const accepted = choice.acceptedOptionIds;
+    assert.ok(planned.selectedOptionIds.every((optionId) => choice.options.some((option) => option.id === optionId)));
     const outcome = planned.selectedOptionIds.length === accepted.length && planned.selectedOptionIds.every((optionId) => accepted.includes(optionId))
       ? "correct"
       : "incorrect";
