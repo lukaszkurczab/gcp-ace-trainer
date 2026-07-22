@@ -26,6 +26,7 @@ export const runtimeSelectors = Object.freeze({
   home: Object.freeze({
     root: () => selector("home", "root"),
     trackCard: (trackId: TrackId) => selector("home", "track-card", trackId),
+    selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
   }),
   practice: Object.freeze({
     hubRoot: () => selector("practice", "hub", "root"),
