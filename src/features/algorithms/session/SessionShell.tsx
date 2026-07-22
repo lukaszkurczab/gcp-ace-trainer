@@ -65,6 +65,7 @@ export function SessionShell({
           {verifiedProgress === null ? null : <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[styles.progressFill, { width: `${verifiedProgress * 100}%` }]} />}
         </View>
         {children}
+        {actionBar ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={styles.footerClearance} /> : null}
       </View>
     </Screen>
   );
@@ -81,6 +82,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     // Keep the final feedback control scrollable clear of that fixed region.
     paddingBottom: SESSION_ACTION_FOOTER_CLEARANCE,
     paddingTop: spacing.lg,
+  },
+  footerClearance: {
+    height: SESSION_ACTION_FOOTER_CLEARANCE,
   },
   modeSlot: {
     alignItems: "center",
