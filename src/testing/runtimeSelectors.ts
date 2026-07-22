@@ -19,6 +19,9 @@ export type ResponseResult = "correct" | "incorrect" | "partial";
 type ItemId = ContentItemRef["itemId"];
 
 export const runtimeSelectors = Object.freeze({
+  content: Object.freeze({
+    ready: (bootstrapRevision: number) => selector("content", "ready", nonNegativeInteger(bootstrapRevision, "content bootstrap revision")),
+  }),
   home: Object.freeze({
     root: () => selector("home", "root"),
     trackCard: (trackId: TrackId) => selector("home", "track-card", trackId),
@@ -113,6 +116,13 @@ function assertSegment(value: string): void {
 function positiveInteger(value: number, label: string): string {
   if (!Number.isSafeInteger(value) || value < 1) {
     throw new Error(`Runtime selector ${label} must be a positive integer.`);
+  }
+  return String(value);
+}
+
+function nonNegativeInteger(value: number, label: string): string {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`Runtime selector ${label} must be a non-negative integer.`);
   }
   return String(value);
 }

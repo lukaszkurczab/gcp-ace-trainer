@@ -5,6 +5,7 @@ import { bootstrapApplication } from "../../application/bootstrap";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getAlgorithmsSimulationTimerFacade } from "../../application/algorithms";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { validateBundledContent } from "./validateBundledContent";
 
 export type ContentPreparationState =
@@ -80,7 +81,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
 
-  if (state.kind === "ready") return <>{children}</>;
+  if (state.kind === "ready") return <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(bootstrapRevision)}>{children}</View>;
   if (state.kind === "loading") return <Screen><View><Text>Preparing content…</Text></View></Screen>;
   return <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
 }

@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createAlgorithmsFamilyRuntime } from "../src/application/algorithms";
+import { createAlgorithmsFamilyRuntime, startAlgorithmsSession } from "../src/application/algorithms";
+import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../src/domain";
 import { createAlgorithmReviewEntry } from "../src/tracks/algorithms";
 import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
 import type { AlgorithmResponse } from "../src/tracks/algorithms/domain";
+import { getActiveTrainingSession } from "../src/storage/repositories";
+import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
@@ -92,6 +95,26 @@ test("Algorithms Custom Practice persists its chosen timing while consuming the 
   assert.equal(prepared.session.modeId, "algorithms-custom-practice");
   assert.equal(prepared.session.configurationSnapshot.feedbackMode, "atSessionEnd");
   assert.match(String(prepared.session.configurationSnapshot.blueprintId), /guided/);
+});
+
+test("production lifecycle starts Custom Practice from the pinned Guided blueprint", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const catalog = getAlgorithmContentCatalog();
+  const topicId = catalog.getItems()[0]!.taxonomy.roadmapNodeId;
+
+  const prepared = await startAlgorithmsSession({
+    feedbackMode: "atSessionEnd",
+    modeId: "algorithms-custom-practice",
+    requestedLength: 10,
+    scope: { roadmapNodeId: topicId },
+  });
+
+  assert.equal(prepared.session.modeId, "algorithms-custom-practice");
+  assert.equal(prepared.session.configurationSnapshot.feedbackMode, "atSessionEnd");
+  assert.equal(prepared.session.actualLength, 10);
+  assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
 });
 
 test("Algorithms runtime rejects malformed review requests before selecting or persisting a session", async () => {
