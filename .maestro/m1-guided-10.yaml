@@ -17,7 +17,13 @@ tags:
 - assertVisible:
     id: "patternly:practice:hub:root"
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-guided-practice"
+    id: "patternly:practice:start-session"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-001"
