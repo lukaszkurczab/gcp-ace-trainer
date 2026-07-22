@@ -29,15 +29,14 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   const interactionLocked = projection.state !== "editable";
 
   return (
-    <View>
-      <SessionShell
-        actionBar={actionBar}
-        modeLabel={projection.modeLabel}
-        position={projection.position}
-        progress={projection.progress}
-        rootTestID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}
-        timer={projection.timer}
-      >
+    <SessionShell
+      actionBar={actionBar}
+      modeLabel={projection.modeLabel}
+      position={projection.position}
+      progress={projection.progress}
+      rootTestID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}
+      timer={projection.timer}
+    >
         <View accessible accessibilityRole="header" style={styles.heading}>
           <Text style={styles.title}>{projection.title}</Text>
         </View>
@@ -46,8 +45,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         {projection.navigator ? <SimulationNavigator onOccurrencePress={interactionLocked ? undefined : projection.onOccurrencePress} positions={projection.navigator} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
         {mayRenderSimulationCompletion(projection) ? <Completion completion={projection.completion!} sessionId={runtimeIdentity?.sessionId} /> : null}
-      </SessionShell>
-    </View>
+    </SessionShell>
   );
 }
 

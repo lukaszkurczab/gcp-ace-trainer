@@ -11,6 +11,7 @@ test("Interview Simulation review renders the immutable completed feedback proje
   assert.match(resultScreen, /runtimeIdentity: \{ sessionId: result\.sessionId \}/);
   assert.match(surface, /sessionId \? runtimeSelectors\.summary\.feedbackItem\(sessionId, item\.occurrenceId\) : undefined/);
   assert.match(surface, /rootTestID=\{runtimeIdentity \? runtimeSelectors\.simulation\.root\(runtimeIdentity\.sessionId\) : undefined\}/);
+  assert.doesNotMatch(surface, /<View>\s*<SessionShell/);
   assert.match(card, /collapsable=\{testID \? false : undefined\}/);
   assert.match(surface, /PracticeFeedbackBlock feedback=\{\{ details: item\.details, reason: item\.reason, result: item\.correctness \}\}/);
   assert.doesNotMatch(resultScreen, /loadTrainingAttempts|composeCommittedAlgorithmPracticeFeedback/);
