@@ -56,7 +56,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingBottom: spacing.md
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
   },
