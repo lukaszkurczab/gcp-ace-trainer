@@ -19,6 +19,22 @@ function session(status: "active" | "completed" | "abandoned" = "active"): Train
   return createTrainingSession({ id: "session-1", trackId: "test-track", modeId: "practice", configurationSnapshot: { kind: "test" }, requestedLength: 2, actualLength: 2, currentItemIndex: status === "completed" ? 1 : 0, itemOrder: ["one", "two"].map((itemId, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "test-track", itemId, contentVersion: "v1" } })), optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v1", status, startedAt: "2026-07-16T12:00:00.000Z", ...(status === "completed" ? { completedAt: "2026-07-16T12:01:00.000Z" } : {}) });
 }
 
+function simulationSession(): TrainingSession {
+  return createTrainingSession({
+    ...session(),
+    modeId: "algorithms-interview-simulation",
+    configurationSnapshot: {
+      answerChanges: "untilFinalSubmission",
+      feedbackMode: "atSessionEnd",
+      kind: "algorithmsInterviewSimulation",
+      navigation: "free",
+      submission: "manualOrForegroundTimeout",
+      timer: "countdownForeground",
+      timerDurationMs: 2_700_000,
+    },
+  });
+}
+
 function fixture() {
   const calls: string[] = [];
   let active: TrainingSession | null = null;
@@ -136,6 +152,16 @@ test("reconstruction restores feedback when the current practice occurrence alre
 test("advance verifies the new durable position and no active-session command defaults", async () => {
   const f = fixture(); f.setActive(session()); const advanced = await f.useCases.advancePracticeSession(); assert.equal(advanced.currentItemIndex, 1);
   const none = fixture(); await assert.rejects(() => none.useCases.advancePracticeSession(), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "no_active_session");
+});
+
+test("free simulation navigation durably verifies the selected immutable occurrence", async () => {
+  const f = fixture();
+  f.setActive(simulationSession());
+
+  const moved = await f.useCases.moveSimulationSessionTo(1);
+
+  assert.equal(moved.currentItemIndex, 1);
+  assert.ok(f.calls.includes("advance"));
 });
 
 test("completion and finalization withhold summary until a canonical completed result exists", async () => {

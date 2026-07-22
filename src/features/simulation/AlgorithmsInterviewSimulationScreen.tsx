@@ -69,6 +69,11 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
         navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: projection.session.id });
         return;
       }
+      const nextIndex = projection.position.current;
+      if (nextIndex < projection.position.total) {
+        await navigateAlgorithmsSimulationTo(nextIndex);
+        setLocalResponse(null);
+      }
     } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
@@ -97,7 +102,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
       onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
       onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
-      actions: changed ? { primary: { id: "save-response", label: "Save response", disabled: !isComplete(response, projection), onPress: () => { void save(); } }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { id: "finish-simulation", label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
+      actions: changed ? { primary: { id: "save-response", label: "Save and continue", disabled: !isComplete(response, projection), onPress: () => { void save(); } }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { id: "finish-simulation", label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps

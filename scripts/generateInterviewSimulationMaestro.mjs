@@ -107,15 +107,11 @@ for (const [index, item] of items.entries()) {
   } else {
     throw new Error(`Pinned Simulation item ${item.id} has an unsupported interaction type.`);
   }
-  tap(selector("simulation", "action", sessionId, "save-response"));
   if (index < items.length - 1) {
     lines.push("- assertNotVisible:", "    text: \"Reason\"");
     screenshot(`s1-${String(index + 1).padStart(2, "0")}-${item.id}`);
-    const nextNavigator = selector("simulation", "navigator", `${sessionId}:occurrence:${index + 1}`);
-    revealById(selector("simulation", "navigator", `${sessionId}:occurrence:39`), "DOWN");
-    revealById(nextNavigator, "UP");
-    tap(nextNavigator);
   }
+  tap(selector("simulation", "action", sessionId, "save-response"));
 }
 
 waitFor(selector("simulation", "action", sessionId, "review-session"));

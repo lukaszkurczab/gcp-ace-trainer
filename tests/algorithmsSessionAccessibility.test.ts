@@ -53,7 +53,7 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : "Session progress"\}/);
   assert.match(shell, /accessibilityRole=\{verifiedProgress === null \? undefined : "progressbar"\}/);
   assert.doesNotMatch(navigator, /accessibilityRole="summary"|Interview Simulation navigator/);
-  assert.match(navigator, /accessibilityState=\{\{ disabled, selected: position\.state === "current" \}\}/);
+  assert.match(navigator, /accessibilityState=\{\{ selected: position\.state === "current" \}\}/);
   assert.doesNotMatch(practice, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.stack\}/);
   assert.doesNotMatch(simulation, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.controls\}/);
   assert.doesNotMatch(navigator, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.grid\}/);

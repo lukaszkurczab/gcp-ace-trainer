@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { radius, spacing, typography } from "../../theme";
+import { Button } from "../../components";
+import { radius, spacing } from "../../theme";
 import type { SimulationNavigatorPosition } from "./simulationProjection";
 import { hasCanonicalSimulationNavigator, navigatorAccessibilityLabel } from "./simulationViewModel";
 import { useThemedStyles } from "../../preferences";
@@ -22,18 +23,19 @@ export function SimulationNavigator({ onOccurrencePress, positions }: Simulation
       {positions.map((position, index) => {
         const disabled = position.state === "frozen" || !onOccurrencePress;
         return (
-          <Pressable
+          <Button
             accessibilityLabel={navigatorAccessibilityLabel(position, index)}
             accessibilityRole="button"
-            accessibilityState={{ disabled, selected: position.state === "current" }}
+            accessibilityState={{ selected: position.state === "current" }}
             disabled={disabled}
             key={position.occurrenceId}
             onPress={() => onOccurrencePress?.(position.occurrenceId)}
-            style={[styles.position, styles[position.state]]}
+            style={{ ...styles.position, ...styles[position.state] }}
             testID={runtimeSelectors.simulation.navigator(position.occurrenceId)}
+            variant="secondary"
           >
-            <Text style={[styles.positionLabel, position.state === "current" ? styles.currentLabel : null]}>{index + 1}</Text>
-          </Pressable>
+            {String(index + 1)}
+          </Button>
         );
       })}
     </View>
@@ -43,10 +45,8 @@ export function SimulationNavigator({ onOccurrencePress, positions }: Simulation
 const createStyles = (palette: AppColors) => StyleSheet.create({
   answered: { backgroundColor: palette.elevatedSurface, borderColor: palette.success },
   current: { backgroundColor: palette.primarySoft, borderColor: palette.primary, borderWidth: 2 },
-  currentLabel: { color: palette.textPrimary },
   frozen: { backgroundColor: palette.surface, borderColor: palette.border, opacity: 0.62 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   position: { alignItems: "center", borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 48 },
-  positionLabel: { ...typography.caption, color: palette.textSecondary },
   unanswered: { backgroundColor: palette.surface, borderColor: palette.border },
 });
