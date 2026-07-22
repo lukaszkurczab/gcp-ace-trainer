@@ -275,6 +275,7 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
   }
   try {
     await startAlgorithmsSession({
+      feedbackMode: params.feedbackMode,
       modeId,
       requestedLength: params.sessionLength,
       reviewItemRefs: params.reviewItemRefs,
@@ -300,7 +301,7 @@ class ActiveAlgorithmsSessionConflict extends Error {
 }
 
 function resolveScope(params: PracticeSessionRouteParams, modeId: string) {
-  if (modeId === ALGORITHM_MODE_IDS.learnApproach || modeId === ALGORITHM_MODE_IDS.guidedPractice) return { roadmapNodeId: params.topicId };
+  if (modeId === ALGORITHM_MODE_IDS.learnApproach || modeId === ALGORITHM_MODE_IDS.guidedPractice || modeId === ALGORITHM_MODE_IDS.customPractice) return { roadmapNodeId: params.topicId };
   if (modeId === ALGORITHM_MODE_IDS.weakAreaReview) return undefined;
   if (!params.algorithmScope) throw new Error("This Algorithms mode requires its declared content scope before a session can be prepared.");
   return params.algorithmScope;
