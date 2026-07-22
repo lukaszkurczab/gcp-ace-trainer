@@ -59,7 +59,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
             {result.feedbackItems.map((item) => (
               <View key={item.occurrenceId} style={styles.feedbackItem} testID={runtimeSelectors.summary.feedbackItem(result.sessionId, item.occurrenceId)}>
                 <Text style={styles.feedbackPrompt}>{item.ordinal}. {item.prompt}</Text>
-                <PracticeFeedbackBlock itemId={`${result.sessionId}:${item.occurrenceId}`} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} />
+                <PracticeFeedbackBlock itemId={item.occurrenceId} feedback={{ details: item.details, reason: item.reason, result: item.correctness }} />
               </View>
             ))}
           </View>
