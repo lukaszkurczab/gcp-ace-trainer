@@ -15,6 +15,7 @@ import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import type { SimulationQuestionProjection, SimulationResponseChange, SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
+import { willAnswerEverySimulationOccurrence } from "./simulationCompletion";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
 type SimulationResponse = Parameters<typeof saveAlgorithmsSimulationResponse>[0]["response"];
@@ -58,9 +59,17 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   }
   async function save() {
     if (screen?.kind !== "ready" || !localResponse) return;
-    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
+    const projection = screen.projection;
+    const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
     if (!occurrenceId) return;
-    try { await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse }); } catch { /* Durable state is published by lifecycle. */ }
+    try {
+      await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse });
+      if (willAnswerEverySimulationOccurrence(projection.navigator, occurrenceId)) {
+        await finalizeAlgorithmsSimulation();
+        navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: projection.session.id });
+        return;
+      }
+    } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
   async function goTo(index: number) { try { await navigateAlgorithmsSimulationTo(index); setLocalResponse(null); } catch { /* projection retains recovery state */ } await load(); }
