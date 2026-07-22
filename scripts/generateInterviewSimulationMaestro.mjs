@@ -49,10 +49,8 @@ const lines = [
   `    id: \"${selector("practice", "mode-card", "algorithms-interview-simulation")}\"`,
   "- extendedWaitUntil:",
   "    visible:",
-  `      id: \"${selector("simulation", "root", sessionId)}\"`,
+  `      id: \"${selector("simulation", "action", sessionId, "finish-simulation")}\"`,
   "    timeout: 30000",
-  "- assertVisible:",
-  `    id: \"${selector("simulation", "question", items[0].id)}\"`,
 ];
 
 function add(command, value) {
@@ -61,6 +59,8 @@ function add(command, value) {
 function tap(id) { add("tapOn", { id }); }
 function waitFor(id) { lines.push("- extendedWaitUntil:", "    visible:", `      id: \"${id}\"`, "    timeout: 30000"); }
 function screenshot(name) { lines.push(`- takeScreenshot: \"${name}\"`); }
+function revealById(id, direction) { lines.push("- scrollUntilVisible:", "    element:", `      id: \"${id}\"`, `    direction: ${direction}`, "    centerElement: true"); }
+function revealByText(text, direction) { lines.push("- scrollUntilVisible:", "    element:", `      text: \"${text}\"`, `    direction: ${direction}`, "    centerElement: true"); }
 
 function selectOrdering(item, target) {
   const current = item.interaction.elements.map((entry) => entry.id);
@@ -68,7 +68,9 @@ function selectOrdering(item, target) {
     const itemId = target[targetIndex];
     let currentIndex = current.indexOf(itemId);
     while (currentIndex > targetIndex) {
-      tap(selector("simulation", "action", sessionId, `${itemId}:move:up`));
+      const moveAction = selector("simulation", "action", sessionId, `${itemId}:move:up`);
+      revealById(moveAction, "DOWN");
+      tap(moveAction);
       [current[currentIndex - 1], current[currentIndex]] = [current[currentIndex], current[currentIndex - 1]];
       currentIndex -= 1;
     }
@@ -78,12 +80,17 @@ function selectOrdering(item, target) {
 for (const [index, item] of items.entries()) {
   const wantsCorrect = index < 20;
   const interaction = item.interaction;
+  revealById(selector("simulation", "question", item.id), "UP");
   if (interaction.type === "choice") {
     const selected = wantsCorrect
       ? interaction.acceptedOptionIds
       : [interaction.options.find((option) => !interaction.acceptedOptionIds.includes(option.id))?.id];
     if (!selected.every(Boolean)) throw new Error(`Pinned Simulation item ${item.id} has no explicit incorrect option.`);
-    for (const optionId of selected) tap(selector("simulation", "option", item.id, optionId));
+    for (const optionId of selected) {
+      const optionSelector = selector("simulation", "option", item.id, optionId);
+      revealById(optionSelector, "DOWN");
+      tap(optionSelector);
+    }
   } else if (interaction.type === "ordering") {
     const target = wantsCorrect ? interaction.canonicalOrder : [...interaction.canonicalOrder].reverse();
     selectOrdering(item, target);
@@ -94,6 +101,7 @@ for (const [index, item] of items.entries()) {
         ? accepted[0]
         : interaction.availableValuesByDimension[dimension].find((candidate) => !accepted.includes(candidate));
       if (!value) throw new Error(`Pinned Simulation complexity item ${item.id} has no explicit value for ${dimension}.`);
+      revealByText(`${dimension}: ${value}`, "DOWN");
       add("tapOn", { text: `${dimension}: ${value}` });
     }
   } else {
@@ -103,17 +111,20 @@ for (const [index, item] of items.entries()) {
   if (index < items.length - 1) {
     lines.push("- assertNotVisible:", "    text: \"Reason\"");
     screenshot(`s1-${String(index + 1).padStart(2, "0")}-${item.id}`);
-    tap(selector("simulation", "navigator", `${sessionId}:occurrence:${index + 1}`));
-    waitFor(selector("simulation", "question", items[index + 1].id));
+    const nextNavigator = selector("simulation", "navigator", `${sessionId}:occurrence:${index + 1}`);
+    revealById(nextNavigator, "DOWN");
+    tap(nextNavigator);
   }
 }
 
-waitFor(selector("summary", "root", sessionId));
+waitFor(selector("simulation", "action", sessionId, "review-session"));
 screenshot("s1-40-summary");
 tap(selector("simulation", "action", sessionId, "review-session"));
-waitFor(selector("summary", "feedback-item", sessionId, `${sessionId}:occurrence:0`));
+revealById(selector("summary", "feedback-item", sessionId, `${sessionId}:occurrence:0`), "UP");
 for (const item of [items[0], items[1], items[2], items[20], items[21]]) {
-  tap(selector("session", "details-toggle", item.id));
+  const detailsToggle = selector("session", "details-toggle", item.id);
+  revealById(detailsToggle, "DOWN");
+  tap(detailsToggle);
   lines.push("- assertVisible:", `    id: \"${selector("session", "details", item.id)}\"`);
 }
 screenshot("s1-review-details");
