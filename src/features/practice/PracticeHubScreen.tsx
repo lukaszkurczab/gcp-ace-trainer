@@ -215,7 +215,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: activeTrack.id === "algorithms" ? ALGORITHM_MODE_IDS.guidedPractice : "default",
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "default" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -225,7 +225,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
               testID={runtimeSelectors.practice.openSetup()}
             >
-              <Text style={styles.settingsActionText}>{t("Manage settings")}</Text>
+              <Text style={styles.settingsActionText}>{t(activeTrack.id === "algorithms" ? "Custom Practice" : "Manage settings")}</Text>
               <Icon color={palette.accentPurple} name="chevron-right" size={16} />
             </Pressable>
           </View>

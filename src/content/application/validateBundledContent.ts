@@ -1,4 +1,4 @@
-import { ALGORITHM_MODES } from "../../tracks/algorithms/domain/algorithmModes";
+import { ALGORITHM_MODES, getAlgorithmContentBlueprintModeId, isAlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
 import { CERTIFICATION_MODES } from "../../tracks/cloud-certification/domain/certificationModes";
 import { getContentFamilyHandler } from "../../tracks/contentFamilyHandlers";
 import { getTracks, type TrackRegistration } from "../../domain/tracks";
@@ -99,7 +99,10 @@ export function getBundledContentAvailability(trackId: string): BundledTrackAvai
 export function requireBundledTrackMode(trackId: string, modeId: string): AvailableBundledTrack {
   const track = getBundledContentAvailability(trackId);
   if (track.kind !== "available") throw new Error(`Content unavailable for ${trackId}: ${track.reason}.`);
-  if (!track.declaredModes.includes(modeId)) throw new Error(`Content unavailable for ${trackId}: declared_mode_unsupported.`);
+  const declaredModeId = trackId === "algorithms" && isAlgorithmModeId(modeId)
+    ? getAlgorithmContentBlueprintModeId(modeId)
+    : modeId;
+  if (!track.declaredModes.includes(declaredModeId)) throw new Error(`Content unavailable for ${trackId}: declared_mode_unsupported.`);
   return track;
 }
 

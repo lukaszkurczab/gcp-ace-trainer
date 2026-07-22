@@ -114,7 +114,6 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               feedbackMode,
               reviewItemRefs: route.params?.reviewItemRefs,
               reviewSource: route.params?.reviewSource,
-              reviewBehaviorEnabled,
               sessionLength: configuredSessionLength,
             }
           : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
@@ -136,7 +135,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>{t("Practice setup")}</Text>
+          <Text style={styles.title}>{t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}</Text>
           <Text style={styles.subtitle}>
             {`${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
@@ -158,43 +157,43 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         </View>
 
-        {!algorithmMode ? (
-          <>
-            <View style={styles.section}>
-              <SectionHeader title={t("Feedback mode")} tight />
-              <SelectablePanel
-                detail={t("Correctness and explanation are shown after every item.")}
-                label={t("After each answer")}
-                onPress={() => setFeedbackMode("afterEachAnswer")}
-                selected={feedbackMode === "afterEachAnswer"}
-                testID={runtimeSelectors.practice.feedbackTiming("afterEachAnswer")}
-              />
-              <SelectablePanel
-                detail={t("Correctness is hidden until the final summary and review.")}
-                label={t("At session end")}
-                onPress={() => setFeedbackMode("atSessionEnd")}
-                selected={feedbackMode === "atSessionEnd"}
-                testID={runtimeSelectors.practice.feedbackTiming("atSessionEnd")}
-              />
-            </View>
+        {(!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+          <View style={styles.section}>
+            <SectionHeader title={t("Feedback mode")} tight />
+            <SelectablePanel
+              detail={t("Correctness and explanation are shown after every item.")}
+              label={t("After each answer")}
+              onPress={() => setFeedbackMode("afterEachAnswer")}
+              selected={feedbackMode === "afterEachAnswer"}
+              testID={runtimeSelectors.practice.feedbackTiming("afterEachAnswer")}
+            />
+            <SelectablePanel
+              detail={t("Correctness is hidden until the final summary and review.")}
+              label={t("At session end")}
+              onPress={() => setFeedbackMode("atSessionEnd")}
+              selected={feedbackMode === "atSessionEnd"}
+              testID={runtimeSelectors.practice.feedbackTiming("atSessionEnd")}
+            />
+          </View>
+        ) : null}
 
-            <Card style={styles.reviewCard}>
-              <View style={styles.reviewCopy}>
-                <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
-                <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
-              </View>
-              {reviewBehaviorCopy.showToggle ? (
-                <Pressable
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: reviewBehaviorEnabled }}
-                  onPress={() => setReviewBehaviorEnabled((current) => !current)}
-                  style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
-                >
-                  <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
-                </Pressable>
-              ) : null}
-            </Card>
-          </>
+        {!algorithmMode ? (
+          <Card style={styles.reviewCard}>
+            <View style={styles.reviewCopy}>
+              <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+              <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+            </View>
+            {reviewBehaviorCopy.showToggle ? (
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityState={{ checked: reviewBehaviorEnabled }}
+                onPress={() => setReviewBehaviorEnabled((current) => !current)}
+                style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
+              >
+                <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
+              </Pressable>
+            ) : null}
+          </Card>
         ) : null}
 
         <View style={styles.actions}>

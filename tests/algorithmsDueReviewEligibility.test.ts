@@ -76,6 +76,24 @@ test("Algorithms runtime persists due_queue source and makes only that session e
   if (ordinaryMutation?.kind === "upsert") assert.equal(ordinaryMutation.entry.consecutiveAfterDueSuccesses, 0);
 });
 
+test("Algorithms Custom Practice persists its chosen timing while consuming the declared Guided blueprint", async () => {
+  await validateBundledContent();
+  const catalog = getAlgorithmContentCatalog();
+  const runtime = createAlgorithmsFamilyRuntime();
+  const topicId = catalog.getItems()[0]!.taxonomy.roadmapNodeId;
+  const prepared = await runtime.prepare({
+    trackId: "algorithms",
+    modeId: "algorithms-custom-practice",
+    request: { feedbackMode: "atSessionEnd", requestedLength: 10, scope: { roadmapNodeId: topicId }, sessionId: "custom-practice-session" },
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  });
+  assert.equal(prepared.session.modeId, "algorithms-custom-practice");
+  assert.equal(prepared.session.configurationSnapshot.feedbackMode, "atSessionEnd");
+  assert.match(String(prepared.session.configurationSnapshot.blueprintId), /guided/);
+});
+
 test("Algorithms runtime rejects malformed review requests before selecting or persisting a session", async () => {
   await validateBundledContent();
   const runtime = createAlgorithmsFamilyRuntime();
