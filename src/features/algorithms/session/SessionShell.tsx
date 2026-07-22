@@ -7,6 +7,7 @@ import type { SessionMetricPresentation } from "./sessionAccessibility";
 import { useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 
+const SESSION_ACTION_FOOTER_CLEARANCE = (48 * 2) + spacing.sm + (spacing.lg * 2);
 
 type SessionShellProps = Readonly<{
   actionBar?: ReactNode;
@@ -76,6 +77,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   content: {
     gap: spacing.xxl,
     paddingHorizontal: spacing.xl,
+    // A two-button action footer occupies this space below the scroll viewport.
+    // Keep the final feedback control scrollable clear of that fixed region.
+    paddingBottom: SESSION_ACTION_FOOTER_CLEARANCE,
     paddingTop: spacing.lg,
   },
   modeSlot: {

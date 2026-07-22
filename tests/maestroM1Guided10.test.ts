@@ -69,6 +69,7 @@ test("M1 flow uses only runtime selectors for the complete deterministic session
     const itemId = manifest.items[ordinal - 1]!.itemId;
     assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.detailsToggle(itemId)}"`)));
     assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.details(itemId)}"`)));
+    assert.match(flow, new RegExp(`scrollUntilVisible:\\n\\s+element:\\n\\s+id: "${escapeForRegExp(runtimeSelectors.session.detailsToggle(itemId))}"\\n\\s+direction: DOWN\\n\\s+centerElement: true`));
   }
 
   const sessionId = manifest.session.sessionId;

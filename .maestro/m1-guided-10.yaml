@@ -41,6 +41,11 @@ tags:
     direction: DOWN
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+    direction: DOWN
+    centerElement: true
 - tapOn:
     id: "patternly:session:details-toggle:alg-complexity-amortized-001"
 - assertVisible:
@@ -96,6 +101,11 @@ tags:
     direction: DOWN
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-004:incorrect"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-004"
+    direction: DOWN
+    centerElement: true
 - tapOn:
     id: "patternly:session:details-toggle:alg-complexity-amortized-004"
 - assertVisible:
@@ -151,6 +161,11 @@ tags:
     direction: DOWN
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-007:correct"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-007"
+    direction: DOWN
+    centerElement: true
 - tapOn:
     id: "patternly:session:details-toggle:alg-complexity-amortized-007"
 - assertVisible:
