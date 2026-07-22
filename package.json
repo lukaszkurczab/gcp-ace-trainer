@@ -24,6 +24,7 @@
     "test:algorithms-cross-repo": "node --import tsx --test tests/algorithmsCrossRepoContract.test.ts",
     "e2e:runtime-audit:maestro": "node scripts/runRuntimeAuditMaestro.mjs",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs"
+    ,"sync:content-release": "node scripts/syncBundledContentRelease.mjs"
   },
   "dependencies": {
     "@react-navigation/native": "^7.2.4",

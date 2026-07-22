@@ -285,13 +285,14 @@ function simulatorDefault(udid, defaultsArgs, spawn) {
 
 function readPinnedContentIdentity(root) {
   const source = readFileSync(path.join(root, "src/content/bundled/generatedArtifacts.ts"), "utf8");
-  const manifestMatch = source.match(/manifest: Object\.freeze\(\{ envelopeVersion: 1, releaseId: "([^"]+)", sourceRepositoryCommit: "([0-9a-f]{40})" \}\)/);
-  const checksumMatches = [...source.matchAll(/"checksumSha256":"([0-9a-f]{64})"/g)];
-  if (!manifestMatch || checksumMatches.length !== 1) throw new Error("Pinned bundled content identity is not exact or contains multiple artifacts");
+  const releaseId = source.match(/BUNDLED_CONTENT_RELEASE_ID = "([^"]+)"/);
+  const sourceCommit = source.match(/BUNDLED_CONTENT_RELEASE_SOURCE_COMMIT = "([0-9a-f]{40})"/);
+  const checksum = source.match(/"algorithms":"([0-9a-f]{64})"/);
+  if (!releaseId || !sourceCommit || !checksum) throw new Error("Pinned bundled content identity is not exact");
   return Object.freeze({
-    contentReleaseId: manifestMatch[1],
-    contentSourceRepositoryCommit: manifestMatch[2],
-    contentArtifactSha256: checksumMatches[0][1],
+    contentReleaseId: releaseId[1],
+    contentSourceRepositoryCommit: sourceCommit[1],
+    contentArtifactSha256: checksum[1],
   });
 }
 
