@@ -5,6 +5,7 @@ import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { prepareAlgorithmsInterviewSimulation, selectAlgorithmSessionPlan } from "../src/tracks/algorithms";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../src/tracks/algorithms/domain/algorithmModes";
+import { readFileSync } from "node:fs";
 
 const profileId = "algorithms-interview-simulation-v1";
 
@@ -26,6 +27,7 @@ test("Interview Simulation is the fixed, profile-owned forty-item contract and n
   assert.equal(profile.totalOccurrences, 40);
   assert.equal(profile.poolId, pool.poolId);
   assert.equal(profile.selectionPolicy.algorithmVersion, "sha256-ranked-constraints-v1");
+  assert.match(readFileSync("src/tracks/algorithms/algorithmSessionSelection.ts", "utf8"), /selectionPolicy\.algorithmVersion !== "sha256-ranked-constraints-v1"/);
   assert.equal(profile.selectionPolicy.deterministic, true);
   assert.equal(profile.selectionPolicy.uniqueItems, true);
   assert.equal(profile.selectionPolicy.replacement, false);
