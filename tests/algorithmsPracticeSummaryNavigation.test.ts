@@ -25,6 +25,9 @@ test("practice summary reloads the immutable canonical result and terminal recov
   assert.match(summary, /<Text style=\{styles\.resultTitle\} testID=\{runtimeSelectors\.summary\.root\(result\.sessionId\)\}>/);
   assert.doesNotMatch(summary, /<View style=\{styles\.result\} testID=\{runtimeSelectors\.summary\.root/);
   assert.match(summary, /runtimeSelectors\.summary\.backToPractice\(result\.sessionId\)/);
+  assert.match(summary, /runtimeSelectors\.summary\.configuration\(result\.sessionId, result\.configuration\.actualLength, result\.configuration\.feedbackTiming\)/);
+  assert.match(summary, /result\.feedbackItems\.map/);
+  assert.match(summary, /PracticeFeedbackBlock/);
   assert.match(summary, /result\.score\.correctCount\} \{t\("correct"\)\} · \{missedCount\} \{t\("Missed"\)\}/);
   assert.doesNotMatch(summary, /result\.score\.partialCount\} \{t\("partial"\)\}|result\.score\.incorrectCount\} \{t\("incorrect"\)\}/);
   assert.match(session, /if \(!await loadActiveTrainingSession\(\)\) \{[\s\S]*navigation\.replace\(ROUTES\.ALGORITHMS_PRACTICE_SUMMARY, \{ sessionId: projection\.session\.id \}\)/);

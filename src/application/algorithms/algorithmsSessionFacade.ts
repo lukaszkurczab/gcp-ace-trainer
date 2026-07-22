@@ -68,6 +68,20 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   answeredOccurrenceIds: readonly string[];
   unansweredOccurrenceIds: readonly string[];
   completedAt: string;
+  configuration: Readonly<{
+    actualLength: number;
+    feedbackTiming: "afterEachAnswer" | "atSessionEnd";
+    requestedLength: number;
+  }>;
+  feedbackItems: readonly Readonly<{
+    correctness: "correct" | "partial" | "incorrect";
+    details: string;
+    itemId: string;
+    occurrenceId: string;
+    ordinal: number;
+    prompt: string;
+    reason: string;
+  }>[];
   score: Readonly<{ correctCount: number; partialCount: number; incorrectCount: number; pointsEarned: number; maxPoints: number }> | null;
 }>;
 
@@ -160,7 +174,9 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const attempt = materializedAttempt ?? committedAttempt;
   const response = (attempt?.response ?? null) as AlgorithmResponse | null;
-  const feedback = attempt ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> }) : null;
+  const feedback = attempt && feedbackIsAvailableDuringPractice(session)
+    ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> })
+    : null;
   const operation = await lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt));
   return Object.freeze({
     kind: "practice",
@@ -278,14 +294,31 @@ export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event:
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
-  const result = await getTrainingLifecycleUseCases().loadSummary(sessionId);
-  if (result.trackId !== "algorithms") throw new Error("The completed session is not an Algorithms result.");
+  const lifecycle = getTrainingLifecycleUseCases();
+  const [result, history, attempts] = await Promise.all([
+    lifecycle.loadSummary(sessionId),
+    lifecycle.queryHistory(),
+    loadTrainingAttempts(),
+  ]);
+  const session = history.find((candidate) => candidate.id === sessionId);
+  if (!session || session.trackId !== "algorithms" || session.status !== "completed" || result.trackId !== "algorithms") {
+    throw new Error("The completed session is not an Algorithms result.");
+  }
+  const feedbackTiming = feedbackTimingFromSession(session);
   return Object.freeze({
     sessionId: result.sessionId,
     totalOccurrences: result.totalOccurrences,
     answeredOccurrenceIds: Object.freeze([...result.answeredOccurrenceIds]),
     unansweredOccurrenceIds: Object.freeze([...result.unansweredOccurrenceIds]),
     completedAt: result.completedAt,
+    configuration: Object.freeze({
+      actualLength: session.actualLength,
+      feedbackTiming,
+      requestedLength: session.requestedLength,
+    }),
+    feedbackItems: feedbackTiming === "atSessionEnd"
+      ? completedFeedbackItems(session, attempts.value)
+      : Object.freeze([]),
     score: resultScore(result.evidence.details),
   });
 }
@@ -319,6 +352,44 @@ function simulationFailureProjection(error: unknown): Extract<SimulationDurableO
 
 function position(session: TrainingSession): AlgorithmsSessionPosition {
   return Object.freeze({ current: session.currentItemIndex + 1, total: session.actualLength });
+}
+
+function feedbackIsAvailableDuringPractice(session: TrainingSession): boolean {
+  return feedbackTimingFromSession(session) === "afterEachAnswer";
+}
+
+function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" | "atSessionEnd" {
+  const timing = session.configurationSnapshot.feedbackMode;
+  if (timing === "afterEachAnswer" || timing === "atSessionEnd") return timing;
+  throw new Error("Algorithms session is missing its canonical feedback timing.");
+}
+
+function completedFeedbackItems(session: TrainingSession, attempts: readonly import("../../domain").TrainingAttempt<unknown>[]): AlgorithmsSessionResultProjection["feedbackItems"] {
+  const attemptsByOccurrenceId = new Map<string, import("../../domain").TrainingAttempt<unknown>>();
+  for (const attempt of attempts) {
+    if (attempt.sessionId !== session.id) continue;
+    if (attemptsByOccurrenceId.has(attempt.occurrenceId)) throw new Error("Completed Algorithms session has duplicate attempts for one occurrence.");
+    attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
+  }
+  const catalog = getAlgorithmContentCatalog();
+  return Object.freeze(session.itemOrder.flatMap((occurrence, index) => {
+    const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
+    if (!attempt) return [];
+    const question = catalog.getItemById(occurrence.item.itemId);
+    const feedback = composeCommittedAlgorithmPracticeFeedback({
+      question,
+      attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse>,
+    });
+    return [Object.freeze({
+      correctness: feedback.correctness,
+      details: feedback.details,
+      itemId: occurrence.item.itemId,
+      occurrenceId: occurrence.occurrenceId,
+      ordinal: index + 1,
+      prompt: question.prompt,
+      reason: feedback.reason,
+    })];
+  }));
 }
 
 function resultScore(value: unknown): AlgorithmsSessionResultProjection["score"] {
