@@ -82,7 +82,7 @@ export async function validateBundledContent(
       unavailableTracks.push(unavailable(track, "missing_artifact", `No pinned artifact is bundled for ${track.id}.`));
       continue;
     }
-    const outcome = await validateTrackArtifact(track, reference, typedRelease.manifest.sourceRepositoryCommit);
+    const outcome = await validateTrackArtifact(track, reference);
     if (outcome.kind === "unavailable") unavailableTracks.push(outcome);
     else validated.push(outcome);
   }
@@ -117,15 +117,11 @@ function validateReleaseEnvelope(value: unknown): string | null {
 async function validateTrackArtifact(
   track: TrackRegistration,
   reference: BundledTrackArtifactReference,
-  releaseSourceCommit: string,
 ): Promise<UnavailableBundledTrack | Readonly<{ kind: "available"; availability: AvailableBundledTrack; payload: unknown; reference: BundledTrackArtifactReference }>> {
   const invalid = validateReference(track, reference);
   if (invalid) return unavailable(track, "invalid_envelope", invalid);
   if (reference.trackId !== track.id || reference.familyId !== track.familyId) {
     return unavailable(track, "invalid_taxonomy_reference", "Artifact track/family identity does not match the canonical registry.");
-  }
-  if (reference.sourceRepositoryCommit !== releaseSourceCommit) {
-    return unavailable(track, "invalid_envelope", "Artifact source commit does not match the bundled release manifest.");
   }
   const supportedModes = modesFor(track.familyId);
   if (!supportedModes || reference.declaredModes.some((mode) => !supportedModes.has(mode))) {

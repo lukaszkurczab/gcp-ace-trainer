@@ -15,8 +15,7 @@ test("prepares every Algorithms mode from the pinned core 0002 artifact without 
   const algorithms = required(validation.tracks.find((track) => track.trackId === "algorithms"), "Algorithms availability");
   const certification = required(validation.tracks.find((track) => track.trackId === "cloud-certification"), "Certification availability");
   assert.equal(algorithms.kind, "available");
-  assert.equal(certification.kind, "unavailable");
-  if (certification.kind === "unavailable") assert.equal(certification.reason, "missing_artifact");
+  assert.equal(certification.kind, "available");
 
   const catalog = getAlgorithmContentCatalog();
   assert.equal(catalog.getContentVersion(), "algorithms-core-0002");

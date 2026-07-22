@@ -139,8 +139,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     const resolvedMode = mode ?? (
       activeTrack.id === "algorithms"
         ? ALGORITHM_MODE_IDS.guidedPractice
-        : "default"
+        : "cloud-practice"
     );
+    if (activeTrack.id === "cloud-certification" && resolvedMode === "cloud-exam-simulation") {
+      navigation.navigate(ROUTES.EXAM);
+      return;
+    }
     if (activeTrack.id === "algorithms" && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
@@ -211,7 +215,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "default" as const }),
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "cloud-practice" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -228,7 +232,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "default" as const }),
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "cloud-practice" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

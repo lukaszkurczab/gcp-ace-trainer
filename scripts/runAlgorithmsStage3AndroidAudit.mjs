@@ -536,10 +536,11 @@ function readWorktreeStatus(root) {
 
 function readPinnedContentIdentity(root) {
   const source = readFileSync(path.join(root, "src/content/bundled/generatedArtifacts.ts"), "utf8");
-  const manifest = source.match(/manifest: Object\.freeze\(\{ envelopeVersion: 1, releaseId: "([^"]+)", sourceRepositoryCommit: "([0-9a-f]{40})" \}\)/);
-  const checksums = [...source.matchAll(/"checksumSha256":"([0-9a-f]{64})"/g)];
-  if (!manifest || checksums.length !== 1) throw new Error("Pinned bundled content identity is not exact");
-  return Object.freeze({ contentReleaseId: manifest[1], contentSourceRepositoryCommit: manifest[2], contentArtifactSha256: checksums[0][1] });
+  const releaseId = source.match(/BUNDLED_CONTENT_RELEASE_ID = "([^"]+)"/);
+  const sourceCommit = source.match(/BUNDLED_CONTENT_RELEASE_SOURCE_COMMIT = "([0-9a-f]{40})"/);
+  const checksum = source.match(/"algorithms":"([0-9a-f]{64})"/);
+  if (!releaseId || !sourceCommit || !checksum) throw new Error("Pinned bundled content identity is not exact");
+  return Object.freeze({ contentReleaseId: releaseId[1], contentSourceRepositoryCommit: sourceCommit[1], contentArtifactSha256: checksum[1] });
 }
 
 function commandText(command, args, cwd) {
