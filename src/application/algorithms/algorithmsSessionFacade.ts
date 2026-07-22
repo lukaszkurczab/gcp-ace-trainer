@@ -21,6 +21,7 @@ import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjec
 import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
+import { recordSimulationTrace, simulationTraceIdentity } from "./simulationTrace";
 
 export type AlgorithmsSessionPosition = Readonly<{ current: number; total: number }>;
 export type AlgorithmsPracticeProjection = Readonly<{
@@ -223,7 +224,7 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
   const time = await getAlgorithmsSimulationTimerFacade().projection(session);
   const operation = await lifecycle.getSimulationOperationState(session);
-  return Object.freeze({
+  const projection = Object.freeze({
     kind: "simulation",
     operation,
     session,
@@ -241,6 +242,8 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
     elapsedForegroundMs: time.elapsedForegroundMs,
     remainingForegroundMs: time.remainingForegroundMs,
   });
+  traceProjection("projection_emission", projection, "succeeded");
+  return projection;
 }
 
 /** Typed failure boundary for presentation; no screen may classify error text. */
@@ -250,13 +253,29 @@ export async function getAlgorithmsSimulationScreenProjection(): Promise<Algorit
 }
 
 export async function navigateAlgorithmsSimulationTo(index: number): Promise<TrainingSession> {
-  return getTrainingLifecycleUseCases().moveSimulationSessionTo(index);
+  const session = await requireAlgorithmsSession();
+  const before = session.itemOrder[session.currentItemIndex]?.item.itemId ?? null;
+  const target = session.itemOrder[index]?.item.itemId ?? null;
+  const operationId = simulationTraceIdentity({ sessionId: session.id, operationKind: "navigation", ordinal: index + 1, itemId: target, revision: session.currentItemIndex });
+  traceMutation({ session, operationId, operationKind: "navigation", itemId: target, ordinalAfter: index + 1, currentItemIdAfter: target, result: "started", typedError: null });
+  try {
+    const moved = await getTrainingLifecycleUseCases().moveSimulationSessionTo(index);
+    traceMutation({ session, operationId, operationKind: "navigation", itemId: before, ordinalAfter: moved.currentItemIndex + 1, currentItemIdAfter: moved.itemOrder[moved.currentItemIndex]?.item.itemId ?? null, result: "succeeded", typedError: null });
+    return moved;
+  } catch (error) {
+    traceMutation({ session, operationId, operationKind: "navigation", itemId: before, ordinalAfter: null, currentItemIdAfter: null, result: "rejected", typedError: traceError(error) });
+    throw error;
+  }
 }
 
 export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null }>): Promise<void> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation has a persisted response draft.");
   const draft = await requireSimulationDraft(session.id);
+  const occurrence = session.itemOrder.find((candidate) => candidate.occurrenceId === input.occurrenceId);
+  const itemId = occurrence?.item.itemId ?? null;
+  const operationId = simulationTraceIdentity({ sessionId: session.id, operationKind: "submit_save", ordinal: session.currentItemIndex + 1, itemId, revision: draft.revision });
+  traceMutation({ session, operationId, operationKind: "submit_save", itemId, ordinalAfter: session.currentItemIndex + 1, currentItemIdAfter: itemId, result: "started", typedError: null, draftRevision: draft.revision, response: input.response });
   const nextDraft = mutateAlgorithmsInterviewSimulationDraft({
     entries: getAlgorithmContentCatalog().getItems().map((question) => ({ question, roadmapNodeId: question.taxonomy.roadmapNodeId })),
     occurrenceId: input.occurrenceId,
@@ -265,8 +284,14 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
     draft,
     updatedAt: getAlgorithmsSessionRuntimePorts().wallClock.now(),
   });
-  await getAlgorithmsSimulationTimerFacade().checkpointForDraftSave(session);
-  await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
+  try {
+    await getAlgorithmsSimulationTimerFacade().checkpointForDraftSave(session);
+    await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
+    traceMutation({ session, operationId, operationKind: "submit_save", itemId, ordinalAfter: session.currentItemIndex + 1, currentItemIdAfter: itemId, result: "succeeded", typedError: null, draftRevision: nextDraft.revision, response: input.response });
+  } catch (error) {
+    traceMutation({ session, operationId, operationKind: "submit_save", itemId, ordinalAfter: null, currentItemIdAfter: null, result: "rejected", typedError: traceError(error), draftRevision: draft.revision, response: input.response });
+    throw error;
+  }
 }
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
@@ -363,6 +388,46 @@ function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" 
   if (timing === "afterEachAnswer" || timing === "atSessionEnd") return timing;
   throw new Error("Algorithms session is missing its canonical feedback timing.");
 }
+
+function traceProjection(operationKind: "projection_emission", projection: AlgorithmsSimulationProjection, result: "succeeded" | "rejected"): void {
+  const ordinal = projection.position.current;
+  const itemId = projection.item.itemId;
+  const operationId = simulationTraceIdentity({ sessionId: projection.session.id, operationKind, ordinal, itemId, revision: projection.durableDraftRevision });
+  recordSimulationTrace({
+    sessionId: projection.session.id, operationId, operationKind, idempotencyKey: operationId,
+    interactionType: projection.interaction.renderer.kind, itemId, ordinalBefore: ordinal, ordinalAfter: ordinal,
+    currentItemIdBefore: itemId, currentItemIdAfter: itemId, draftStatus: "present", responseIdentity: responseIdentityFromProjection(projection),
+    journalRevisionBefore: null, journalRevisionAfter: null, aggregateRevisionBefore: projection.session.currentItemIndex, aggregateRevisionAfter: projection.session.currentItemIndex,
+    projectionRevisionBefore: projection.durableDraftRevision, projectionRevisionAfter: projection.durableDraftRevision,
+    timerRevision: projection.elapsedForegroundMs, navigationRevision: projection.session.currentItemIndex,
+    routeKey: "algorithms-interview-simulation", screenItemId: itemId, selectorItemId: itemId, result, typedError: null,
+  });
+}
+
+function traceMutation(input: Readonly<{ session: TrainingSession; operationId: string; operationKind: "submit_save" | "navigation"; itemId: string | null; ordinalAfter: number | null; currentItemIdAfter: string | null; result: "started" | "succeeded" | "rejected"; typedError: string | null; draftRevision?: number; response?: AlgorithmResponse | null }>): void {
+  const ordinal = input.session.currentItemIndex + 1;
+  recordSimulationTrace({
+    sessionId: input.session.id, operationId: input.operationId, operationKind: input.operationKind, idempotencyKey: input.operationId,
+    interactionType: input.response?.kind ?? null, itemId: input.itemId, ordinalBefore: ordinal, ordinalAfter: input.ordinalAfter,
+    currentItemIdBefore: input.session.itemOrder[input.session.currentItemIndex]?.item.itemId ?? null, currentItemIdAfter: input.currentItemIdAfter,
+    draftStatus: input.result === "rejected" ? "rejected" : input.result === "succeeded" ? "saved" : "present",
+    responseIdentity: input.response ? JSON.stringify(input.response) : null,
+    journalRevisionBefore: null, journalRevisionAfter: null, aggregateRevisionBefore: input.session.currentItemIndex, aggregateRevisionAfter: input.ordinalAfter === null ? null : input.ordinalAfter - 1,
+    projectionRevisionBefore: input.draftRevision ?? null, projectionRevisionAfter: input.draftRevision ?? null,
+    timerRevision: input.session.activeForegroundMs, navigationRevision: input.session.currentItemIndex,
+    routeKey: "algorithms-interview-simulation", screenItemId: input.session.itemOrder[input.session.currentItemIndex]?.item.itemId ?? null,
+    selectorItemId: input.itemId, result: input.result, typedError: input.typedError,
+  });
+}
+
+function responseIdentityFromProjection(projection: AlgorithmsSimulationProjection): string | null {
+  const renderer = projection.interaction.renderer;
+  if (renderer.kind === "choice") return renderer.options.filter((option) => option.selected).map((option) => option.id).join(",") || null;
+  if (renderer.kind === "ordering") return renderer.elements.map((element) => element.id).join(",");
+  return renderer.dimensions.map((dimension) => `${dimension.id}:${dimension.selectedValue ?? ""}`).join(",") || null;
+}
+
+function traceError(error: unknown): string { return error instanceof TrainingApplicationFailure ? error.code : error instanceof Error ? error.name : "unknown"; }
 
 function completedFeedbackItems(session: TrainingSession, attempts: readonly import("../../domain").TrainingAttempt<unknown>[]): AlgorithmsSessionResultProjection["feedbackItems"] {
   const attemptsByOccurrenceId = new Map<string, import("../../domain").TrainingAttempt<unknown>>();

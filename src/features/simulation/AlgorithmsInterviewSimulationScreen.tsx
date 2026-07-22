@@ -10,6 +10,7 @@ import {
   subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
   type AlgorithmsSimulationScreenProjection,
 } from "../../application/algorithms";
+import { recordSimulationTrace, simulationTraceIdentity } from "../../application/algorithms/simulationTrace";
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -49,6 +50,20 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   useEffect(() => {
     if (screen?.kind === "ready" && localResponse === null) setLocalResponse(responseFromProjection(screen.projection));
   }, [localResponse, screen]);
+  useEffect(() => {
+    if (screen?.kind !== "ready") return;
+    const projection = screen.projection;
+    const operationId = simulationTraceIdentity({ sessionId: projection.session.id, operationKind: "screen_render", ordinal: projection.position.current, itemId: projection.item.itemId, revision: projection.durableDraftRevision });
+    recordSimulationTrace({
+      sessionId: projection.session.id, operationId, operationKind: "screen_render", idempotencyKey: operationId,
+      interactionType: projection.interaction.renderer.kind, itemId: projection.item.itemId, ordinalBefore: projection.position.current, ordinalAfter: projection.position.current,
+      currentItemIdBefore: projection.item.itemId, currentItemIdAfter: projection.item.itemId, draftStatus: "present", responseIdentity: null,
+      journalRevisionBefore: null, journalRevisionAfter: null, aggregateRevisionBefore: projection.session.currentItemIndex, aggregateRevisionAfter: projection.session.currentItemIndex,
+      projectionRevisionBefore: projection.durableDraftRevision, projectionRevisionAfter: projection.durableDraftRevision,
+      timerRevision: projection.elapsedForegroundMs, navigationRevision: projection.session.currentItemIndex, routeKey: route.name,
+      screenItemId: projection.item.itemId, selectorItemId: projection.item.itemId, result: "succeeded", typedError: null,
+    });
+  }, [route.name, screen]);
 
   async function start() {
     try {
