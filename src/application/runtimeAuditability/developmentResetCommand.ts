@@ -1,4 +1,6 @@
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
+import { clearForegroundTimers, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessionDrafts, clearTrainingSessions } from "../../storage/repositories";
+import { clearMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 
 export const DEVELOPMENT_RESET_LEARNING_STATE_URL = "com.lkurczab.gcpacetrainer://audit/reset-learning-state";
 export const DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL = "com.lkurczab.gcpacetrainer://audit/clock/advance";
@@ -40,8 +42,27 @@ export async function handleRuntimeAuditabilityUrl(url: string | null): Promise<
   const command = parseRuntimeAuditabilityCommand(url);
   if (!command) return { kind: "ignored" };
   if (command.kind === "reset_learning_state") {
-    await getTrainingLifecycleUseCases().resetLearningState();
+    try {
+      await getTrainingLifecycleUseCases().resetLearningState();
+    } catch {
+      await clearUnrecoverableDevelopmentLearningState();
+    }
     return { kind: command.kind };
   }
   return { kind: command.kind, now: getTrainingLifecycleUseCases().advanceRuntimeAuditabilityClock(command.milliseconds) };
+}
+
+/**
+ * The documented development reset must remain able to restore a reproducible
+ * baseline when an interrupted journal itself cannot be recovered. This path
+ * is unavailable in production and clears exactly the same canonical learning
+ * records as the lifecycle reset; it never derives or substitutes learner data.
+ */
+async function clearUnrecoverableDevelopmentLearningState(): Promise<void> {
+  await clearMutationJournal();
+  await clearForegroundTimers();
+  await clearTrainingSessionDrafts();
+  await clearTrainingSessions();
+  await clearTrainingAttempts();
+  await clearReviewQueueItems();
 }

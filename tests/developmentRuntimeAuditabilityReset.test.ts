@@ -8,6 +8,7 @@ import {
   parseRuntimeAuditabilityCommand,
 } from "../src/application/runtimeAuditability/developmentResetCommand";
 import { installTrainingLifecycleUseCases, type TrainingLifecycleUseCases } from "../src/application/trainingLifecycle";
+import { installMemoryStorage } from "./journalTestSupport";
 
 const developmentFlag = globalThis as typeof globalThis & { __DEV__?: boolean };
 
@@ -67,6 +68,20 @@ test("runtime-audit reset is unavailable in production and reaches only the life
     assert.deepEqual(await handleRuntimeAuditabilityUrl(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=604800000`), { kind: "advance_clock", now: "2026-07-29T00:00:00.000Z" });
     assert.equal(lifecycle.resetCalls(), 1);
     assert.equal(lifecycle.advancedMilliseconds(), 604800000);
+  } finally {
+    setDevelopment(previous);
+  }
+});
+
+test("development reset still restores a clean baseline when an interrupted journal cannot recover", async () => {
+  const previous = developmentFlag.__DEV__;
+  setDevelopment(true);
+  try {
+    installMemoryStorage();
+    installTrainingLifecycleUseCases({
+      async resetLearningState() { throw new Error("interrupted journal cannot recover"); },
+    } as unknown as TrainingLifecycleUseCases);
+    assert.deepEqual(await handleRuntimeAuditabilityUrl(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "reset_learning_state" });
   } finally {
     setDevelopment(previous);
   }
