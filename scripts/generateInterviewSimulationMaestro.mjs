@@ -112,8 +112,9 @@ for (const [index, item] of items.entries()) {
     lines.push("- assertNotVisible:", "    text: \"Reason\"");
     screenshot(`s1-${String(index + 1).padStart(2, "0")}-${item.id}`);
     const nextNavigator = selector("simulation", "navigator", `${sessionId}:occurrence:${index + 1}`);
-    revealById(nextNavigator, "DOWN");
+    lines.push("- swipe:", "    direction: UP");
     tap(nextNavigator);
+    lines.push("- swipe:", "    direction: DOWN");
   }
 }
 
