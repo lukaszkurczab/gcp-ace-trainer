@@ -216,16 +216,18 @@ Test exactly these Algorithms modes:
 
 1. `Learn Approach`
 2. `Guided Practice`
-3. `Recognize Patterns`
-4. `Contrast Practice`
-5. `Weak Area Review`
-6. `Independent Practice`
-7. `Interview Simulation`
+3. `Custom Practice`
+4. `Recognize Patterns`
+5. `Contrast Practice`
+6. `Weak Area Review`
+7. `Independent Practice`
+8. `Interview Simulation`
 
 Test entry mappings:
 
 - approach primer or new mental unit → `Learn Approach`;
 - topic/default practice → `Guided Practice`;
+- `Custom Practice` setup → `Custom Practice`, using only the Guided Practice content blueprint for its selected mental unit;
 - pattern recognition → `Recognize Patterns`;
 - contrast → `Contrast Practice`;
 - due review → `Weak Area Review`, `source = due_queue`;
@@ -234,6 +236,8 @@ Test entry mappings:
 - timed validation → `Interview Simulation`.
 
 `due_queue` and `session_misses` must never be accepted as mode IDs.
+
+For `Custom Practice`, test all declared lengths (10, 20, and 40), both declared feedback timings (`afterEachAnswer` and `atSessionEnd`), the resolved Custom Practice mode ID, and the normal one-active-session lifecycle. Test that it can consume only the Guided Practice content blueprint for its selected mental unit, does not accept an unsupported feedback value or reinsert override, and does not create a second active session. With `atSessionEnd`, test that per-item correctness and authored feedback remain withheld until the verified summary, where persisted feedback is available. A real-device evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree.
 
 ## Review selection tests
 

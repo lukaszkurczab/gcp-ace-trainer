@@ -25,18 +25,26 @@ test("correct Algorithms attempt creates scheduled retrieval while correct Certi
   assert.equal(createCertificationReviewEntry({ ...correct, trackId: "cloud-certification", item: { ...item, trackId: "cloud-certification" }, reviewEvidence: { ...correct.reviewEvidence, sourceItem: { ...item, trackId: "cloud-certification" } }, response: { kind: "option_selection", selectedOptionIds: ["a"] } }), undefined);
 });
 
-test("review transition counts only after due, resets on incorrect and partial, and resolves after two successes", () => {
+const dueQueueEligibility = { eligibleForPersistentResolution: true } as const;
+
+test("review transition counts only after due, resets on incorrect and partial, and resolves after two eligible successes", () => {
   const entry = createAlgorithmReviewEntry(attempt("incorrect", "source", "source-session", "2026-01-01T00:00:00.000Z"), "2026-01-02T00:00:00.000Z");
-  assert.equal(updateAlgorithmReviewEntry(entry, attempt("correct", "early", "other", "2026-01-01T12:00:00.000Z"))?.consecutiveAfterDueSuccesses, 0);
-  const once = updateAlgorithmReviewEntry(entry, attempt("correct", "one", "other", "2026-01-02T00:00:00.000Z"));
+  assert.equal(updateAlgorithmReviewEntry(entry, attempt("correct", "early", "other", "2026-01-01T12:00:00.000Z"), dueQueueEligibility)?.consecutiveAfterDueSuccesses, 0);
+  const once = updateAlgorithmReviewEntry(entry, attempt("correct", "one", "other", "2026-01-02T00:00:00.000Z"), dueQueueEligibility);
   assert.equal(once?.consecutiveAfterDueSuccesses, 1);
-  assert.equal(updateAlgorithmReviewEntry(once!, attempt("incorrect", "wrong", "other", "2026-01-03T00:00:00.000Z"))?.consecutiveAfterDueSuccesses, 0);
-  assert.equal(updateAlgorithmReviewEntry(once!, attempt("partial", "partial", "other", "2026-01-03T00:00:00.000Z"))?.consecutiveAfterDueSuccesses, 0);
-  assert.equal(updateAlgorithmReviewEntry(once!, attempt("correct", "two", "third", "2026-01-03T00:00:00.000Z")), undefined);
+  assert.equal(updateAlgorithmReviewEntry(once!, attempt("incorrect", "wrong", "other", "2026-01-03T00:00:00.000Z"), dueQueueEligibility)?.consecutiveAfterDueSuccesses, 0);
+  assert.equal(updateAlgorithmReviewEntry(once!, attempt("partial", "partial", "other", "2026-01-03T00:00:00.000Z"), dueQueueEligibility)?.consecutiveAfterDueSuccesses, 0);
+  assert.equal(updateAlgorithmReviewEntry(once!, attempt("correct", "two", "third", "2026-01-03T00:00:00.000Z"), dueQueueEligibility), undefined);
 });
 
 test("same-session correction does not resolve persistent review and only canonical reasons exist", () => {
   const entry = createAlgorithmReviewEntry(attempt("incorrect", "opaque-attempt-id", "same-session", "2026-01-01T00:00:00.000Z"), "2026-01-02T00:00:00.000Z");
-  assert.equal(updateAlgorithmReviewEntry(entry, attempt("correct", "correction", "same-session", "2026-01-02T00:00:00.000Z"))?.consecutiveAfterDueSuccesses, 0);
+  assert.equal(updateAlgorithmReviewEntry(entry, attempt("correct", "correction", "same-session", "2026-01-02T00:00:00.000Z"), dueQueueEligibility)?.consecutiveAfterDueSuccesses, 0);
   assert.deepEqual(REVIEW_REASONS, ["incorrect", "partial", "hint_used", "wrong_pattern", "wrong_strategy", "complexity_error", "repeated_mistake", "scheduled_retrieval", "weak_taxonomy_area", "manual_mark"]);
+});
+
+test("ordinary Algorithms practice cannot resolve persistent review after due", () => {
+  const entry = createAlgorithmReviewEntry(attempt("incorrect", "source", "source-session", "2026-01-01T00:00:00.000Z"), "2026-01-02T00:00:00.000Z");
+  const ordinarySuccess = updateAlgorithmReviewEntry(entry, attempt("correct", "ordinary", "another-session", "2026-01-03T00:00:00.000Z"), { eligibleForPersistentResolution: false });
+  assert.equal(ordinarySuccess, entry);
 });

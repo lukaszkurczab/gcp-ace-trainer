@@ -40,6 +40,7 @@ Algorithms modes are:
 
 - `Learn Approach`
 - `Guided Practice`
+- `Custom Practice`
 - `Recognize Patterns`
 - `Contrast Practice`
 - `Weak Area Review`

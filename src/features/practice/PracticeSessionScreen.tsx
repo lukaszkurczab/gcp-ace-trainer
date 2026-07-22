@@ -1,6 +1,6 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet } from "react-native";
 
 import {
   abandonAlgorithmsSession,
@@ -11,7 +11,6 @@ import {
   recoverAlgorithmsPracticeOperation,
   startAlgorithmsSession,
   type AlgorithmsPracticeProjection,
-  type AlgorithmsSessionResultProjection,
   submitAlgorithmsPracticeResponse,
 } from "../../application/algorithms";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
@@ -22,7 +21,7 @@ import { ALGORITHMS_TRACK_ID, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms/domain";
-import { radius, spacing, typography } from "../../theme";
+import { spacing } from "../../theme";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
   buildPracticeResponseControl,
@@ -38,7 +37,6 @@ import type { AppColors } from "../../theme";
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type ViewState =
   | Readonly<{ kind: "session"; projection: AlgorithmsPracticeProjection }>
-  | Readonly<{ kind: "result"; result: AlgorithmsSessionResultProjection }>
   | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
@@ -106,8 +104,6 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     );
   }
   if (state.kind === "unavailable") return <Screen><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (state.kind === "result") return <VerifiedPracticeResult result={state.result} onBack={() => navigation.navigate(ROUTES.PRACTICE_HUB)} />;
-
   const sessionState = state;
   const projection = sessionState.projection;
   const phase = toPracticeSurfacePhase(projection.operation.kind);
@@ -142,8 +138,17 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     if (projection.position.current === projection.position.total) {
       try {
         const result = await completeAlgorithmsPracticeSession();
-        setState({ kind: "result", result });
-      } catch { await refresh(); }
+        permitRouteExit.current = true;
+        navigation.replace(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: result.sessionId });
+      } catch {
+        const result = await getAlgorithmsPracticeResultProjection(projection.session.id).catch(() => null);
+        if (result) {
+          permitRouteExit.current = true;
+          navigation.replace(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: result.sessionId });
+          return;
+        }
+        await refresh();
+      }
       return;
     }
     try { await advanceAlgorithmsPracticeSession(); }
@@ -156,10 +161,17 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       await recoverAlgorithmsPracticeOperation();
       if (!await loadActiveTrainingSession()) {
         permitRouteExit.current = true;
-        navigation.navigate(ROUTES.PRACTICE_HUB);
+        navigation.replace(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: projection.session.id });
         return;
       }
-    } catch { /* Recovery can only replay the existing durable command. */ }
+    } catch {
+      const result = await getAlgorithmsPracticeResultProjection(projection.session.id).catch(() => null);
+      if (result) {
+        permitRouteExit.current = true;
+        navigation.replace(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: result.sessionId });
+        return;
+      }
+    }
     await refresh();
   }
 
@@ -221,7 +233,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   return (
     <PracticeSessionSurface
       exit={{ kind: exit }}
-      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason } : undefined}
+      feedback={projection.session.configurationSnapshot.feedbackMode === "afterEachAnswer" && projection.feedback ? { details: projection.feedback.details, reason: projection.feedback.reason, result: projection.feedback.correctness } : undefined}
       isFinalPosition={projection.position.current === projection.position.total}
       modeLabel={t(getAlgorithmMode(algorithmsMode).title)}
       notice={notice}
@@ -238,8 +250,18 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       position={{ accessibilityLabel: `${t("Question")} ${projection.position.current} ${t("of")} ${projection.position.total}`, label: `${projection.position.current} ${t("of")} ${projection.position.total}` }}
       primaryAction={primaryAction ?? undefined}
       progress={projection.position.current / projection.position.total}
-      question={{ constraints: projection.constraints, prompt: projection.prompt, responseControl }}
+      question={{ constraints: projection.constraints, itemId: projection.item.itemId, prompt: projection.prompt, responseControl }}
       retryLabel={"error" in projection.operation && projection.operation.error.allowedAction === "recover" ? "Recover session" : undefined}
+      runtimeIdentity={{
+        itemId: projection.item.itemId,
+        actualLength: projection.session.actualLength,
+        feedbackTiming: feedbackTiming(projection.session.configurationSnapshot.feedbackMode),
+        modeId: projection.session.modeId,
+        ordinal: projection.position.current,
+        roadmapNodeId: projection.roadmapNodeId,
+        sessionId: projection.session.id,
+        trackId: projection.session.trackId,
+      }}
       timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.session.activeForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.session.activeForegroundMs)}` }}
     />
   );
@@ -253,6 +275,7 @@ async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams,
   }
   try {
     await startAlgorithmsSession({
+      feedbackMode: params.feedbackMode,
       modeId,
       requestedLength: params.sessionLength,
       reviewItemRefs: params.reviewItemRefs,
@@ -278,7 +301,7 @@ class ActiveAlgorithmsSessionConflict extends Error {
 }
 
 function resolveScope(params: PracticeSessionRouteParams, modeId: string) {
-  if (modeId === ALGORITHM_MODE_IDS.learnApproach || modeId === ALGORITHM_MODE_IDS.guidedPractice) return { roadmapNodeId: params.topicId };
+  if (modeId === ALGORITHM_MODE_IDS.learnApproach || modeId === ALGORITHM_MODE_IDS.guidedPractice || modeId === ALGORITHM_MODE_IDS.customPractice) return { roadmapNodeId: params.topicId };
   if (modeId === ALGORITHM_MODE_IDS.weakAreaReview) return undefined;
   if (!params.algorithmScope) throw new Error("This Algorithms mode requires its declared content scope before a session can be prepared.");
   return params.algorithmScope;
@@ -320,7 +343,9 @@ function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["ope
 }
 
 function describePreparationFailure(error: unknown): string {
-  const detail = error instanceof Error ? error.message : "The session could not be prepared.";
+  const detail = error instanceof TrainingApplicationFailure && error.cause instanceof Error
+    ? error.cause.message
+    : error instanceof Error ? error.message : "The session could not be prepared.";
   return `${detail} No substitute topic, item, or shortened fixed session was created.`;
 }
 
@@ -334,26 +359,13 @@ function formatElapsed(milliseconds: number): string {
   return `${Math.floor(seconds / 60).toString().padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 }
 
-function noop() {}
-
-function VerifiedPracticeResult({ onBack, result }: Readonly<{ onBack: () => void; result: AlgorithmsSessionResultProjection }>) {
-  const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
-  return (
-    <Screen edges={["top", "bottom"]}>
-      <View style={styles.result}>
-        <Text style={styles.resultTitle}>{t("Session result")}</Text>
-        <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} {t("answered")} · {result.unansweredOccurrenceIds.length} {t("unanswered")}</Text>
-        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {result.score.partialCount} {t("partial")} · {result.score.incorrectCount} {t("incorrect")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
-        <Button onPress={onBack}>{t("Back to practice")}</Button>
-      </View>
-    </Screen>
-  );
+function feedbackTiming(value: unknown): "afterEachAnswer" | "atSessionEnd" {
+  if (value === "afterEachAnswer" || value === "atSessionEnd") return value;
+  throw new Error("Algorithms practice session is missing its canonical feedback timing.");
 }
+
+function noop() {}
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   conflictScreen: { gap: spacing.md },
-  result: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.lg, margin: spacing.xl, padding: spacing.xl },
-  resultText: { ...typography.body, color: palette.textSecondary },
-  resultTitle: { ...typography.heading, color: palette.textPrimary },
 });

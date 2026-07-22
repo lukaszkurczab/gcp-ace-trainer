@@ -26,6 +26,7 @@ function fixture() {
   let pending: PendingMutationProjection | null = null;
   let persisted: TrainingSession | null = null;
   let result = null as ReturnType<typeof createTrainingSessionResult> | null;
+  let attempts: readonly import("../src/domain").TrainingAttempt<unknown>[] = [];
   const runtime: TrainingFamilyRuntime = {
     familyId: "test-family",
     async prepare(input) { calls.push(`prepare:${input.trackId}:${input.modeId}`); const value = session(); return { session: value, firstOccurrence: value.itemOrder[0]!.item, draft: null }; },
@@ -45,13 +46,13 @@ function fixture() {
     runtimes: { resolve(familyId) { if (familyId !== "test-family") throw new Error("unknown family"); calls.push(`resolve:${familyId}`); return runtime; } },
     content: { async requireAvailable(trackId, modeId) { calls.push(`content:${trackId}:${modeId}`); }, async assertPreparedSession() { calls.push("content-prepared"); }, async assertActiveSession() { calls.push("content-resume"); } },
     repositories: {
-      async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return []; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); }, async getPendingMutation() { calls.push("pending"); return pending; },
+      async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return attempts; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); }, async getPendingMutation() { calls.push("pending"); return pending; },
     },
     mutations: {
       async start(input) { calls.push("start"); persisted = input.session; active = input.session; }, async submitPractice() { calls.push("commit-submit"); }, async advance(value) { calls.push("advance"); active = value; persisted = value; }, async complete(value) { calls.push("complete"); persisted = value; result = createTrainingSessionResult({ id: "result-1", sessionId: value.id, trackId: value.trackId, totalOccurrences: 2, answeredOccurrenceIds: [], unansweredOccurrenceIds: ["occurrence-0", "occurrence-1"], completedAt: "2026-07-16T12:01:00.000Z", evidence: createFamilyEnvelope({ familyId: "test-family", details: {} }) }); active = null; }, async completeWithResult(value) { calls.push("complete-with-result"); persisted = value.session; result = value.result; active = null; }, async finalize(input) { calls.push("commit-finalize"); persisted = input.session; result = input.result; active = null; }, async abandon(value) { calls.push("abandon"); persisted = value; active = null; }, async recover() { calls.push("recover"); pending = null; }, async reset() { calls.push("reset"); },
     },
   };
-  return { calls, dashboardActiveSession: () => dashboardActiveSession, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setPending(value: PendingMutationProjection | null) { pending = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
+  return { calls, dashboardActiveSession: () => dashboardActiveSession, ports, prepared, setActive(value: TrainingSession | null) { active = value; }, setAttempts(value: typeof attempts) { attempts = value; }, setPending(value: PendingMutationProjection | null) { pending = value; }, setResult(value: typeof result) { result = value; }, useCases: new TrainingLifecycleUseCases(ports) };
 }
 
 test("start resolves the exact family and exposes its first item only after active-session verification", async () => {
@@ -112,6 +113,24 @@ test("a non-submit durable journal requires recovery before practice can accept 
   await f.useCases.recoverActiveTrainingOperation();
   assert.equal((await f.useCases.getPracticeOperationState(active, false)).kind, "unanswered");
   assert.ok(f.calls.includes("recover"));
+});
+
+test("reconstruction restores feedback when the current practice occurrence already has a materialized attempt", async () => {
+  const f = fixture();
+  const active = session();
+  f.setActive(active);
+  f.setAttempts([{
+    id: "attempt-1", sessionId: active.id, trackId: active.trackId, modeId: active.modeId,
+    occurrenceId: active.itemOrder[0]!.occurrenceId, item: active.itemOrder[0]!.item,
+    response: { value: "wrong" }, result: { kind: "incorrect", earnedPoints: 0, maxPoints: 1 },
+    reviewEvidence: { sourceItem: active.itemOrder[0]!.item, taxonomyOrSkillRefs: [] },
+    answeredAt: "2026-07-16T12:00:01.000Z", committedAt: "2026-07-16T12:00:01.000Z",
+  }]);
+
+  const reconstructed = await f.useCases.reconstructOperationProjection(active);
+
+  assert.equal(reconstructed.kind, "feedback");
+  assert.equal((await f.useCases.getPracticeOperationState(active, true)).kind, "feedback");
 });
 
 test("advance verifies the new durable position and no active-session command defaults", async () => {

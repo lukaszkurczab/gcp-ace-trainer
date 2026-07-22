@@ -203,7 +203,7 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
       const reasons = deriveAlgorithmReviewReasons({ priorAttemptsForSameItem: (input.priorAttempts ?? []).filter((prior) => sameContent(prior.item, attempt.item)), score: submitted.score });
       reviewMutations.push(Object.freeze({ action: "put", record: createAlgorithmReviewEntry(attempt, undefined, reasons), transitionAttemptId: attempt.id }));
     } else {
-      const updated = updateAlgorithmReviewEntry(existing, attempt);
+      const updated = updateAlgorithmReviewEntry(existing, attempt, { eligibleForPersistentResolution: false });
       if (!updated) reviewMutations.push(Object.freeze({ action: "delete", record: existing, transitionAttemptId: attempt.id }));
       else if (updated !== existing) reviewMutations.push(Object.freeze({ action: "update", record: updated, transitionAttemptId: attempt.id }));
     }

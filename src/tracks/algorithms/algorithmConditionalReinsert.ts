@@ -185,7 +185,7 @@ function materializedAttemptsByOccurrence(
 }
 
 function isReinsertEnabled(mode: AlgorithmModeId, reviewSource: AlgorithmReviewSource | undefined): boolean {
-  return mode === ALGORITHM_MODE_IDS.guidedPractice ||
+  return mode === ALGORITHM_MODE_IDS.guidedPractice || mode === ALGORITHM_MODE_IDS.customPractice ||
     (mode === ALGORITHM_MODE_IDS.weakAreaReview && (reviewSource === "due_queue" || reviewSource === "session_misses"));
 }
 

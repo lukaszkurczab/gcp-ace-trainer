@@ -1,0 +1,28 @@
+{
+  "kind": "maestro-real-content-session-v1",
+  "release": {
+    "releaseId": "algorithms-core-0002-b424faa6",
+    "sourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc",
+    "checksumSha256": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c"
+  },
+  "session": {
+    "sessionId": "algorithms:algorithms-guided-practice:1",
+    "modeId": "algorithms-guided-practice",
+    "roadmapNodeId": "complexity_and_constraints",
+    "length": 10,
+    "feedbackTiming": "afterEachAnswer"
+  },
+  "detailsOnOrdinals": [1, 4, 7],
+  "items": [
+    { "ordinal": 1, "itemId": "alg-complexity-amortized-001", "selectedOptionIds": ["sequence_average"], "expectedResult": "correct" },
+    { "ordinal": 2, "itemId": "alg-complexity-amortized-002", "selectedOptionIds": ["same"], "expectedResult": "incorrect" },
+    { "ordinal": 3, "itemId": "alg-complexity-amortized-003", "selectedOptionIds": ["worst_n_amortized_1"], "expectedResult": "correct" },
+    { "ordinal": 4, "itemId": "alg-complexity-amortized-004", "selectedOptionIds": ["copy_never"], "expectedResult": "incorrect" },
+    { "ordinal": 5, "itemId": "alg-complexity-amortized-005", "selectedOptionIds": ["each_item_once"], "expectedResult": "correct" },
+    { "ordinal": 6, "itemId": "alg-complexity-amortized-006", "selectedOptionIds": ["every_increment_one_flip"], "expectedResult": "incorrect" },
+    { "ordinal": 7, "itemId": "alg-complexity-amortized-007", "selectedOptionIds": ["yes_individual_expensive"], "expectedResult": "correct" },
+    { "ordinal": 8, "itemId": "alg-complexity-amortized-008", "selectedOptionIds": ["yes_usually"], "expectedResult": "incorrect" },
+    { "ordinal": 9, "itemId": "alg-complexity-amortized-009", "selectedOptionIds": ["total_n_linear"], "expectedResult": "correct" },
+    { "ordinal": 10, "itemId": "alg-complexity-amortized-010", "selectedOptionIds": ["amortized_each"], "expectedResult": "incorrect" }
+  ]
+}

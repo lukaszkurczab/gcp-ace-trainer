@@ -29,7 +29,7 @@ import {
   prepareAlgorithmsInterviewSimulation,
 } from "../../tracks/algorithms/algorithmInterviewSimulation";
 import { getAlgorithmQuestionEntries } from "../../tracks/algorithms/algorithmItems";
-import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId, type AlgorithmModeDefinition, type AlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
+import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId, type AlgorithmFeedbackMode, type AlgorithmModeDefinition, type AlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
 import type { AlgorithmResponse } from "../../tracks/algorithms/domain/algorithmResponse";
 import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../../tracks/algorithms/algorithmReview";
 import { getAlgorithmInteractionCompleteness, submitAlgorithmInteraction } from "../../tracks/algorithms/algorithmInteractionHandlers";
@@ -77,6 +77,7 @@ export type AlgorithmsDashboard = Readonly<{ recommendation: AlgorithmsDashboard
  * computes deterministic recommendations from supplied canonical evidence.
  */
 export type AlgorithmsLifecyclePreparationRequest = Readonly<{
+  feedbackMode?: AlgorithmFeedbackMode;
   sessionId: string;
   requestedLength: 10 | 20 | 40;
   reviewItemRefs?: readonly ContentItemRef[];
@@ -122,13 +123,13 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
       reviews: input.reviews,
       source: request.reviewSource,
     });
-    const blueprint = this.catalog.bank.practiceBlueprints.find((candidate) => candidate.modeId === mode.id);
+    const blueprint = this.catalog.bank.practiceBlueprints.find((candidate) => candidate.modeId === mode.contentBlueprintModeId);
     if (!blueprint || selection.actualLength !== selection.items.length || selection.items.length === 0) throw new Error(`Algorithms mode ${mode.id} has no valid declared practice plan.`);
     const base = {
       id: request.sessionId,
       trackId: "algorithms",
       modeId: mode.id,
-      configurationSnapshot: practiceConfiguration(mode, blueprint),
+      configurationSnapshot: practiceConfiguration(mode, blueprint, request.feedbackMode, request.reviewSource),
       requestedLength: request.requestedLength,
       actualLength: selection.actualLength,
       currentItemIndex: 0,
@@ -193,7 +194,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     const reviewMutations: readonly ReviewMutationCommand[] = !existing
       ? [Object.freeze({ kind: "upsert" as const, entry: createAlgorithmReviewEntry(attempt, undefined, submitted.score.status === "correct" ? [] : undefined), transitionAttemptId: attempt.id })]
       : (() => {
-          const updated = updateAlgorithmReviewEntry(existing, attempt);
+          const updated = updateAlgorithmReviewEntry(existing, attempt, { eligibleForPersistentResolution: isAlgorithmsDueQueueReviewSession(input.session) });
           return updated
             ? [Object.freeze({ kind: "upsert" as const, entry: updated, transitionAttemptId: attempt.id })]
             : [Object.freeze({ kind: "remove" as const, entry: existing, transitionAttemptId: attempt.id })];
@@ -428,22 +429,59 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
     (value.requestedLength !== 10 && value.requestedLength !== 20 && value.requestedLength !== 40)) {
     throw new Error("Algorithms session preparation requires a sessionId and a supported requestedLength.");
   }
+  if (value.feedbackMode !== undefined && value.feedbackMode !== "afterEachAnswer" && value.feedbackMode !== "atSessionEnd") {
+    throw new Error("Algorithms feedback mode must be afterEachAnswer or atSessionEnd.");
+  }
+  if (value.reviewSource !== undefined && value.reviewSource !== "due_queue" && value.reviewSource !== "session_misses") {
+    throw new Error("Algorithms review source must be due_queue or session_misses.");
+  }
+  if (value.reviewItemRefs !== undefined && !Array.isArray(value.reviewItemRefs)) {
+    throw new Error("Algorithms review item refs must be an array.");
+  }
+  if (value.reviewItemRefs !== undefined && value.reviewSource !== "session_misses") {
+    throw new Error("Algorithms review item refs require the session_misses review source.");
+  }
+  if (Array.isArray(value.reviewItemRefs) && !value.reviewItemRefs.every(isAlgorithmsContentItemRef)) {
+    throw new Error("Algorithms review item refs must contain only Algorithms content item references.");
+  }
   return value as AlgorithmsLifecyclePreparationRequest;
 }
 
-function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }): Readonly<Record<string, string | number | boolean>> {
+function isAlgorithmsContentItemRef(value: unknown): value is ContentItemRef {
+  return isRecord(value) && value.trackId === "algorithms" &&
+    typeof value.itemId === "string" && Boolean(value.itemId.trim()) &&
+    typeof value.contentVersion === "string" && Boolean(value.contentVersion.trim());
+}
+
+function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }, requestedFeedbackMode: AlgorithmFeedbackMode | undefined, reviewSource: AlgorithmReviewSource | undefined): Readonly<Record<string, string | number | boolean>> {
+  if (mode.id === ALGORITHM_MODE_IDS.weakAreaReview ? !reviewSource : reviewSource !== undefined) {
+    throw new Error("Algorithms review source must match the declared practice mode.");
+  }
+  if (mode.id === ALGORITHM_MODE_IDS.customPractice && requestedFeedbackMode === undefined) {
+    throw new Error("Algorithms Custom Practice requires an explicit feedback mode.");
+  }
+  const feedbackMode = requestedFeedbackMode ?? mode.profile.feedbackMode;
+  if (!mode.profile.supportedFeedbackModes.includes(feedbackMode)) {
+    throw new Error(`Algorithms mode ${mode.id} does not support feedback mode ${feedbackMode}.`);
+  }
   return Object.freeze({
     kind: "algorithmsPractice",
     blueprintId: blueprint.blueprintId,
     blueprintVersion: blueprint.blueprintVersion,
-    feedbackMode: mode.profile.feedbackMode,
+    feedbackMode,
     answerChanges: mode.profile.answerChanges,
     navigation: mode.profile.navigation,
     submission: mode.profile.submission,
     timer: mode.profile.timer.kind,
+    ...(reviewSource ? { reviewSource } : {}),
     ...(mode.profile.timer.kind === "countdownForeground" ? { timerDurationMs: mode.profile.timer.durationMs } : {}),
     reinsertEnabled: mode.profile.reinsertEnabled,
   });
+}
+
+/** Only the declared due-queue session context may advance persistent review retention. */
+function isAlgorithmsDueQueueReviewSession(session: TrainingSession): boolean {
+  return session.modeId === ALGORITHM_MODE_IDS.weakAreaReview && session.configurationSnapshot.reviewSource === "due_queue";
 }
 
 function optionOrder(item: ReturnType<AlgorithmContentCatalog["getItemById"]>): readonly string[] {

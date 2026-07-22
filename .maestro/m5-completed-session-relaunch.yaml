@@ -1,0 +1,21 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly M5 — Completed session never resumes after relaunch
+tags:
+  - runtime-auditability
+  - m5
+---
+- runFlow: m1-guided-10.yaml
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+- assertNotVisible:
+    id: "patternly:session:root:algorithms:algorithms-guided-practice:1"
+- tapOn:
+    id: "main-tab-bar-practice"
+- assertVisible:
+    id: "patternly:practice:hub:root"

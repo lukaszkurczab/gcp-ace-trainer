@@ -8,7 +8,7 @@ It owns:
 
 - the Algorithms taxonomy;
 - Algorithms practice blueprints;
-- semantics of the seven Algorithms modes;
+- semantics of the eight Algorithms modes;
 - Algorithms item selection;
 - mental-unit sequencing;
 - pattern and strategy discrimination;
@@ -157,7 +157,7 @@ It does not infer readiness, retention, or mastery from a recent percentage.
 
 Research supports the learning mechanisms above. It does not prescribe:
 
-- Patternly’s seven mode names;
+- Patternly’s eight mode names;
 - exact session lengths;
 - a 40-item simulation;
 - a 45-minute timer;
@@ -283,6 +283,7 @@ The Algorithms track instance owns:
 type AlgorithmsMode =
   | "Learn Approach"
   | "Guided Practice"
+  | "Custom Practice"
   | "Recognize Patterns"
   | "Contrast Practice"
   | "Weak Area Review"
@@ -328,11 +329,12 @@ Algorithms has exactly these user-facing modes:
 
 1. `Learn Approach`
 2. `Guided Practice`
-3. `Recognize Patterns`
-4. `Contrast Practice`
-5. `Weak Area Review`
-6. `Independent Practice`
-7. `Interview Simulation`
+3. `Custom Practice`
+4. `Recognize Patterns`
+5. `Contrast Practice`
+6. `Weak Area Review`
+7. `Independent Practice`
+8. `Interview Simulation`
 
 No second Algorithms mode taxonomy exists.
 
@@ -342,6 +344,7 @@ No second Algorithms mode taxonomy exists.
 | ------------------------------------ | -------------: | --------------------------------- | ------------------------- | ------------------------------ | -------- | ----------- |
 | `Learn Approach`                     |             10 | one mental unit                   | after each durable submit | elapsed foreground             | no       | yes         |
 | `Guided Practice`                    |             20 | one mental unit                   | after each durable submit | elapsed foreground             | yes      | yes         |
+| `Custom Practice`                    |             20 | one mental unit, Guided blueprint | after each or session end | elapsed foreground             | yes      | yes         |
 | `Recognize Patterns`                 |             20 | declared recognition set          | after each durable submit | elapsed foreground             | no       | yes         |
 | `Contrast Practice`                  |             20 | declared contrast set             | after each durable submit | elapsed foreground             | no       | yes         |
 | `Weak Area Review`, `due_queue`      |             10 | eligible due review evidence      | after each durable submit | elapsed foreground             | yes      | yes         |
@@ -361,6 +364,7 @@ Algorithms entry intents map as follows:
 | --------------------------------------------- | --------------------------------------------- |
 | Approach primer or newly selected mental unit | `Learn Approach`                              |
 | Topic or default practice                     | `Guided Practice`                             |
+| `Custom Practice` setup                       | `Custom Practice`, Guided Practice blueprint  |
 | Pattern recognition                           | `Recognize Patterns`                          |
 | Strategy or pattern contrast                  | `Contrast Practice`                           |
 | Due review                                    | `Weak Area Review`, `source = due_queue`      |
@@ -370,9 +374,11 @@ Algorithms entry intents map as follows:
 
 `due_queue` and `session_misses` are sources for `Weak Area Review`, not modes.
 
+`Custom Practice` is the third Algorithms mode. It has its own runtime mode ID but is content-bound to the immutable Guided Practice blueprint and the chosen mental unit; it is not a second content taxonomy. Its valid learner choices are session lengths 10, 20, and 40, plus `afterEachAnswer` or `atSessionEnd` feedback. It shares the regular one-active-session lifecycle and profile-owned reinsert policy.
+
 ## Shared non-simulation contract
 
-All six non-simulation modes:
+All seven non-simulation modes:
 
 - use one canonical active session;
 - use unique content identities except an explicitly scheduled exact-item reinsert;
@@ -380,7 +386,7 @@ All six non-simulation modes:
 - use elapsed foreground count-up;
 - keep an unsubmitted response in UI state only;
 - create an immutable attempt after durable submission;
-- reveal authored feedback after durable submission;
+- reveal authored feedback after durable submission, except `Custom Practice` with `atSessionEnd`, which reveals it only after verified completion;
 - may create or update review;
 - produce a family-specific completed-session result;
 - show no confidence, readiness, retention, or mastery measure.
@@ -1192,6 +1198,7 @@ Ordinary correct practice does not silently resolve persistent review.
 Reinsert is enabled only in:
 
 - `Guided Practice`;
+- `Custom Practice`;
 - `Weak Area Review`, `source = due_queue`;
 - `Weak Area Review`, `source = session_misses`.
 

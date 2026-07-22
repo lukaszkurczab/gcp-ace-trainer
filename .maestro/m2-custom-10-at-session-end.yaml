@@ -1,0 +1,274 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly M2 — Custom Practice 10 at session end
+tags:
+  - runtime-auditability
+  - m2
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready:1"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- assertVisible:
+    id: "patternly:practice:custom-entry"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:custom-setup-title"
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:feedback-timing:at-session-end"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:at-session-end"
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-002"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-002:same"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-002"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-002"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-002"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-002"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-002"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-003"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-003:worst_n_amortized_1"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-003"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-003"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-003"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-003"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-003"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-004"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-004:copy_never"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-004"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-004"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-004"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-004"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-004"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-005"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-005:each_item_once"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-005"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-005"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-005"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-005"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-005"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-006"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-006:every_increment_one_flip"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-006"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-006"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-006"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-006"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-006"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-007"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-007:yes_individual_expensive"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-007"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-007"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-007"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-007"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-007"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-008"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-008:yes_usually"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-008"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-008"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-008"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-008"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-008"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-009"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-009:total_n_linear"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-009"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-009"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-009"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-009"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-009"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-010"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-010:amortized_each"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-010"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-010"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:algorithms:algorithms-custom-practice:1"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:summary:configuration:algorithms:algorithms-custom-practice:1:10:at-session-end"
+- assertNotVisible:
+    id: "patternly:session:question:alg-complexity-amortized-011"
+
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
+    direction: UP
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:0"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:0"
+- assertVisible:
+    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:0"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:3"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:3"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:3"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:3"
+- assertVisible:
+    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:3"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:6"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:6"
+- assertVisible:
+    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:6"
+
+- tapOn:
+    id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "main-tab-bar-progress"
+- assertVisible:
+    id: "patternly:progress:root"
+- tapOn:
+    id: "main-tab-bar-home"
+- assertVisible:
+    id: "patternly:home:track-card:algorithms"
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:resume:card:algorithms:algorithms-custom-practice:1"

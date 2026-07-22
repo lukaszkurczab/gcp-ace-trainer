@@ -29,6 +29,7 @@ import {
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
@@ -113,7 +114,6 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               feedbackMode,
               reviewItemRefs: route.params?.reviewItemRefs,
               reviewSource: route.params?.reviewSource,
-              reviewBehaviorEnabled,
               sessionLength: configuredSessionLength,
             }
           : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
@@ -126,7 +126,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   }
 
   return (
-    <View style={styles.shell}>
+    <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen edges={["top", "bottom"]}>
         <AppStackHeader
           navigation={navigation}
@@ -135,7 +135,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>{t("Practice setup")}</Text>
+          <Text
+            style={styles.title}
+            testID={algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
+          >
+            {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
+          </Text>
           <Text style={styles.subtitle}>
             {`${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
@@ -151,50 +156,53 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
                 meta={t("Questions")}
                 onPress={() => setSessionLength(length)}
                 selected={configuredSessionLength === length}
+                testID={runtimeSelectors.practice.sessionLength(length)}
               />
             ))}
           </View>
         </View>
 
-        {!algorithmMode ? (
-          <>
-            <View style={styles.section}>
-              <SectionHeader title={t("Feedback mode")} tight />
-              <SelectablePanel
-                detail={t("Correctness and explanation are shown after every item.")}
-                label={t("After each answer")}
-                onPress={() => setFeedbackMode("afterEachAnswer")}
-                selected={feedbackMode === "afterEachAnswer"}
-              />
-              <SelectablePanel
-                detail={t("Correctness is hidden until the final summary and review.")}
-                label={t("At session end")}
-                onPress={() => setFeedbackMode("atSessionEnd")}
-                selected={feedbackMode === "atSessionEnd"}
-              />
-            </View>
+        {(!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+          <View style={styles.section}>
+            <SectionHeader title={t("Feedback mode")} tight />
+            <SelectablePanel
+              detail={t("Correctness and explanation are shown after every item.")}
+              label={t("After each answer")}
+              onPress={() => setFeedbackMode("afterEachAnswer")}
+              selected={feedbackMode === "afterEachAnswer"}
+              testID={runtimeSelectors.practice.feedbackTiming("afterEachAnswer")}
+            />
+            <SelectablePanel
+              detail={t("Correctness is hidden until the final summary and review.")}
+              label={t("At session end")}
+              onPress={() => setFeedbackMode("atSessionEnd")}
+              selected={feedbackMode === "atSessionEnd"}
+              testID={runtimeSelectors.practice.feedbackTiming("atSessionEnd")}
+            />
+          </View>
+        ) : null}
 
-            <Card style={styles.reviewCard}>
-              <View style={styles.reviewCopy}>
-                <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
-                <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
-              </View>
-              {reviewBehaviorCopy.showToggle ? (
-                <Pressable
-                  accessibilityRole="switch"
-                  accessibilityState={{ checked: reviewBehaviorEnabled }}
-                  onPress={() => setReviewBehaviorEnabled((current) => !current)}
-                  style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
-                >
-                  <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
-                </Pressable>
-              ) : null}
-            </Card>
-          </>
+        {!algorithmMode ? (
+          <Card style={styles.reviewCard}>
+            <View style={styles.reviewCopy}>
+              <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
+              <Text style={styles.subtitle}>{t(reviewBehaviorCopy.detail)}</Text>
+            </View>
+            {reviewBehaviorCopy.showToggle ? (
+              <Pressable
+                accessibilityRole="switch"
+                accessibilityState={{ checked: reviewBehaviorEnabled }}
+                onPress={() => setReviewBehaviorEnabled((current) => !current)}
+                style={[styles.switchTrack, reviewBehaviorEnabled ? styles.switchTrackEnabled : null]}
+              >
+                <View style={[styles.switchThumb, reviewBehaviorEnabled ? styles.switchThumbEnabled : null]} />
+              </Pressable>
+            ) : null}
+          </Card>
         ) : null}
 
         <View style={styles.actions}>
-          <Button onPress={startSession}>{t("Start session")}</Button>
+          <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           <Button onPress={() => navigation.goBack()} variant="secondary">
             {t("Back")}
           </Button>
@@ -209,9 +217,10 @@ type SelectableOptionProps = {
   meta: string;
   onPress: () => void;
   selected: boolean;
+  testID: string;
 };
 
-function SelectableOption({ label, meta, onPress, selected }: SelectableOptionProps) {
+function SelectableOption({ label, meta, onPress, selected, testID }: SelectableOptionProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -223,6 +232,7 @@ function SelectableOption({ label, meta, onPress, selected }: SelectableOptionPr
         selected ? styles.selectedOption : null,
         pressed ? styles.pressed : null,
       ]}
+      testID={testID}
     >
       <Text style={[styles.lengthValue, selected ? styles.selectedText : null]}>{label}</Text>
       <Text style={styles.optionMeta}>{meta}</Text>
@@ -235,9 +245,10 @@ type SelectablePanelProps = {
   label: string;
   onPress: () => void;
   selected: boolean;
+  testID: string;
 };
 
-function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelProps) {
+function SelectablePanel({ detail, label, onPress, selected, testID }: SelectablePanelProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -249,6 +260,7 @@ function SelectablePanel({ detail, label, onPress, selected }: SelectablePanelPr
         selected ? styles.selectedOption : null,
         pressed ? styles.pressed : null,
       ]}
+      testID={testID}
     >
       <View style={styles.panelCopy}>
         <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>

@@ -575,6 +575,7 @@ Do not merge review entries in a way that:
 Reinsert is enabled only for:
 
 - Algorithms `Guided Practice`;
+- Algorithms `Custom Practice`;
 - Algorithms `Weak Area Review`, `source = due_queue`;
 - Algorithms `Weak Area Review`, `source = session_misses`.
 

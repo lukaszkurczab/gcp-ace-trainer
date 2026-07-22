@@ -1,0 +1,114 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly M6 — due retention smoke
+tags:
+  - algorithms-completion-evidence
+  - m6
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready:1"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:after-each-answer"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+    direction: DOWN
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+- tapOn:
+    id: "patternly:session:abandon:algorithms:algorithms-custom-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- openLink: "com.lkurczab.gcpacetrainer://audit/clock/advance?milliseconds=604800000"
+- tapOn:
+    id: "patternly:practice:mode-card:algorithms-weak-area-review"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:mode:algorithms-weak-area-review"
+- takeScreenshot: m6-due-item
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- takeScreenshot: m6-due-correct-feedback
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:leave:algorithms:algorithms-weak-area-review:2"
+    direction: DOWN
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-weak-area-review:2"
+- tapOn:
+    id: "patternly:session:abandon:algorithms:algorithms-weak-area-review:2"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-progress"
+- assertVisible:
+    id: "patternly:progress:root"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:node:complexity_and_constraints"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:progress:node:complexity_and_constraints"
+- takeScreenshot: m6-due-progress
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-progress"
+- assertVisible:
+    id: "patternly:progress:root"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:node:complexity_and_constraints"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:progress:node:complexity_and_constraints"

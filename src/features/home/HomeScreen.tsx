@@ -42,6 +42,7 @@ import { SettingsTab } from "./tabs/SettingsTab";
 import type { ShellTab } from "./types";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 
 
 type HomeScreenProps = NativeStackScreenProps<
@@ -182,6 +183,19 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: action.simulationProfileId });
           return;
         }
+        if (action.modeId === "algorithms-custom-practice") {
+          navigation.navigate(
+            ROUTES.PRACTICE_SESSION,
+            buildPracticeSessionConfig({
+              feedbackMode: feedbackTimingFromDurableSession(session),
+              mode: action.modeId,
+              source: "home",
+              topicId: action.topicId,
+              trackId: ALGORITHMS_TRACK_ID,
+            }),
+          );
+          return;
+        }
       }
       navigation.navigate(
         ROUTES.PRACTICE_SESSION,
@@ -249,6 +263,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     </View>
   );
 }
+
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   shell: {

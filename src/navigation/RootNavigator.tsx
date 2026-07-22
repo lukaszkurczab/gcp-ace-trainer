@@ -15,6 +15,7 @@ import { MistakesReviewScreen } from "../features/review/MistakesReviewScreen";
 import { PracticeHubScreen } from "../features/practice/PracticeHubScreen";
 import { AlgorithmsScopeSelectionScreen } from "../features/practice/AlgorithmsScopeSelectionScreen";
 import { PracticeSessionScreen } from "../features/practice/PracticeSessionScreen";
+import { AlgorithmsPracticeSummaryScreen } from "../features/practice/AlgorithmsPracticeSummaryScreen";
 import { PracticeSetupScreen } from "../features/practice/PracticeSetupScreen";
 import { ResultScreen } from "../features/exam/ResultScreen";
 import {
@@ -120,6 +121,11 @@ export function RootNavigator() {
         name={ROUTES.PRACTICE_SESSION}
         component={PracticeSessionScreen}
         options={{ headerShown: false, title: t("Practice Session") }}
+      />
+      <Stack.Screen
+        name={ROUTES.ALGORITHMS_PRACTICE_SUMMARY}
+        component={AlgorithmsPracticeSummaryScreen}
+        options={{ headerShown: false, title: t("Session result") }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}

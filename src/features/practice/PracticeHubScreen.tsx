@@ -38,6 +38,7 @@ import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 import {
   buildPracticeModes,
@@ -169,7 +170,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   }
 
   return (
-    <View style={styles.shell}>
+    <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
       <Screen edges={["top"]} style={styles.screenContent}>
         <AppStackHeader
           navigation={navigation}
@@ -205,7 +206,20 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             tight
           />
           <View style={styles.heroActions}>
-            <Button onPress={() => startSession()}>
+            <Button
+              onPress={() =>
+                navigation.navigate(
+                  ROUTES.PRACTICE_SETUP,
+                  buildPracticeSessionConfig({
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "default" as const }),
+                    source: "practiceHub",
+                    topicId: topic.id,
+                    trackId: activeTrack.id,
+                  }),
+                )
+              }
+              testID={runtimeSelectors.practice.startSession()}
+            >
               {t("Start session")}
             </Button>
             <Pressable
@@ -214,7 +228,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    mode: activeTrack.id === "algorithms" ? ALGORITHM_MODE_IDS.guidedPractice : "default",
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "default" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -222,8 +236,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 )
               }
               style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
+              testID={runtimeSelectors.practice.openSetup()}
             >
-              <Text style={styles.settingsActionText}>{t("Manage settings")}</Text>
+              <Text
+                style={styles.settingsActionText}
+                testID={activeTrack.id === "algorithms" ? runtimeSelectors.practice.customEntry() : undefined}
+              >
+                {t(activeTrack.id === "algorithms" ? "Custom Practice" : "Manage settings")}
+              </Text>
               <Icon color={palette.accentPurple} name="chevron-right" size={16} />
             </Pressable>
           </View>
@@ -238,6 +258,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               leading={<IconTile name={mode.icon} tone={mode.enabled ? mode.tone : "muted"} />}
               onPress={mode.enabled ? () => startSession(mode.mode) : undefined}
               style={mode.enabled ? undefined : styles.disabledRow}
+              testID={runtimeSelectors.practice.modeCard(mode.mode)}
               title={t(mode.title)}
               trailing={
                 mode.enabled ? (

@@ -25,6 +25,7 @@ type ButtonProps = {
   loading?: boolean;
   onPress: () => void;
   style?: ViewStyle;
+  testID?: string;
   variant?: ButtonVariant;
 };
 
@@ -37,6 +38,7 @@ export function Button({
   loading = false,
   onPress,
   style,
+  testID,
   variant = "primary",
 }: ButtonProps) {
   const styles = useThemedStyles(createStyles);
@@ -57,6 +59,7 @@ export function Button({
         isDisabled ? styles.disabled : null,
         style
       ]}
+      testID={testID}
     >
       {loading ? <ActivityIndicator color={getActivityColor(variant, palette)} size="small" style={styles.spinner} /> : null}
       <Text style={[styles.label, styles[`${variant}Label`], isDisabled ? styles.disabledLabel : null]}>{children}</Text>

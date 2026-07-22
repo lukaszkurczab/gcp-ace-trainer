@@ -3,21 +3,36 @@ import test from "node:test";
 
 import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
 
-test("allows an Algorithms session length declared by the selected mode", () => {
-  const config = buildPracticeSessionConfig({
-    mode: "algorithms-guided-practice",
-    sessionLength: 10,
-    source: "practiceSetup",
-    topicId: "binary_search",
-    trackId: "algorithms",
-  });
-
-  assert.equal(config.sessionLength, 10);
-  assert.equal(config.feedbackMode, "afterEachAnswer");
-  assert.equal(config.reviewBehaviorEnabled, true);
+test("Custom Practice accepts every declared length and persists its selected feedback timing", () => {
+  for (const sessionLength of [10, 20, 40] as const) {
+    for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"] as const) {
+      const config = buildPracticeSessionConfig({
+        feedbackMode,
+        mode: "algorithms-custom-practice",
+        sessionLength,
+        source: "practiceSetup",
+        topicId: "binary_search",
+        trackId: "algorithms",
+      });
+      assert.equal(config.mode, "algorithms-custom-practice");
+      assert.equal(config.sessionLength, sessionLength);
+      assert.equal(config.feedbackMode, feedbackMode);
+      assert.equal(config.reviewBehaviorEnabled, true);
+    }
+  }
 });
 
-test("rejects Algorithms feedback and reinsert overrides while retaining declared session lengths", () => {
+test("Custom Practice requires a selected timing while predefined Algorithms modes retain fixed timings", () => {
+  assert.throws(
+    () => buildPracticeSessionConfig({
+      mode: "algorithms-custom-practice",
+      sessionLength: 20,
+      source: "practiceSetup",
+      topicId: "binary_search",
+      trackId: "algorithms",
+    }),
+    /Custom Practice requires an explicit feedback mode/,
+  );
   assert.throws(
     () => buildPracticeSessionConfig({
       feedbackMode: "atSessionEnd",
@@ -27,13 +42,14 @@ test("rejects Algorithms feedback and reinsert overrides while retaining declare
       topicId: "binary_search",
       trackId: "algorithms",
     }),
-    /owns feedback mode afterEachAnswer/,
+    /does not support feedback mode atSessionEnd/,
   );
   assert.throws(
     () => buildPracticeSessionConfig({
-      mode: "algorithms-guided-practice",
+      mode: "algorithms-custom-practice",
       reviewBehaviorEnabled: false,
-      sessionLength: 40,
+      feedbackMode: "afterEachAnswer",
+      sessionLength: 20,
       source: "practiceSetup",
       topicId: "binary_search",
       trackId: "algorithms",

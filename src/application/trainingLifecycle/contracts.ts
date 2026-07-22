@@ -141,6 +141,11 @@ export interface TrainingMutationCoordinatorPort {
   reset(): Promise<void>;
 }
 
+/** Development audit commands may adjust only an injected application clock. */
+export interface RuntimeAuditabilityPort {
+  advanceWallClockBy(milliseconds: number): string;
+}
+
 export type TrainingLifecyclePorts = Readonly<{
   clock: Readonly<{ now(): string }>;
   tracks: TrackRegistryPort;
@@ -148,4 +153,5 @@ export type TrainingLifecyclePorts = Readonly<{
   content: BundledContentAvailabilityPort;
   repositories: TrainingLifecycleRepositoryPort;
   mutations: TrainingMutationCoordinatorPort;
+  runtimeAuditability?: RuntimeAuditabilityPort;
 }>;

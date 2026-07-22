@@ -5,6 +5,7 @@ import type { SimulationNavigatorPosition } from "./simulationProjection";
 import { hasCanonicalSimulationNavigator, navigatorAccessibilityLabel } from "./simulationViewModel";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 
 type SimulationNavigatorProps = Readonly<{
@@ -29,7 +30,7 @@ export function SimulationNavigator({ onOccurrencePress, positions }: Simulation
             key={position.occurrenceId}
             onPress={() => onOccurrencePress?.(position.occurrenceId)}
             style={[styles.position, styles[position.state]]}
-            testID={`simulation-navigator-position-${index + 1}`}
+            testID={runtimeSelectors.simulation.navigator(position.occurrenceId)}
           >
             <Text style={[styles.positionLabel, position.state === "current" ? styles.currentLabel : null]}>{index + 1}</Text>
           </Pressable>

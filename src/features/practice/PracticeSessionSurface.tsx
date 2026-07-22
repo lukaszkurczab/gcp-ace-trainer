@@ -1,6 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
+import type { TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
 import { SessionShell } from "../algorithms/session/SessionShell";
 import { radius, spacing, typography } from "../../theme";
@@ -8,6 +9,7 @@ import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 import { PracticeResponseControls } from "./PracticeResponseControls";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 import {
   allowsPracticeFeedback,
@@ -20,8 +22,20 @@ import {
 
 export type PracticeQuestionPresentation = Readonly<{
   constraints?: readonly string[];
+  itemId: string;
   prompt: string;
   responseControl: PracticeResponseControl;
+}>;
+
+export type PracticeRuntimeIdentity = Readonly<{
+  actualLength: number;
+  feedbackTiming: "afterEachAnswer" | "atSessionEnd";
+  itemId: string;
+  modeId: string;
+  ordinal: number;
+  roadmapNodeId: string;
+  sessionId: string;
+  trackId: TrackId;
 }>;
 
 export type PracticeExitPresentation =
@@ -49,6 +63,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   progress?: number;
   question?: PracticeQuestionPresentation;
   retryLabel?: string;
+  runtimeIdentity?: PracticeRuntimeIdentity;
   timer?: SessionMetricPresentation;
 }>;
 
@@ -60,12 +75,14 @@ export type PracticeSessionSurfaceProps = Readonly<{
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   const editable = allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
+  const itemId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
   const controls = props.question && props.phase !== "preparing" ? (
     <>
       <QuestionCard question={props.question} />
       <PracticeResponseControls
         control={props.question.responseControl}
         editable={editable}
+        itemId={itemId}
         onChoicePress={props.onChoicePress}
         onComplexityValuePress={props.onComplexityValuePress}
         onOrderingMove={props.onOrderingMove}
@@ -76,16 +93,25 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   return (
     <SessionShell
       actionBar={<ActionBar {...props} />}
+      modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}
       position={props.position}
+      positionTestID={props.runtimeIdentity ? runtimeSelectors.session.counter(props.runtimeIdentity.sessionId, props.runtimeIdentity.ordinal, props.runtimeIdentity.actualLength) : undefined}
       progress={props.progress}
+      progressTestID={props.runtimeIdentity ? runtimeSelectors.session.configuration(props.runtimeIdentity.sessionId, props.runtimeIdentity.actualLength, props.runtimeIdentity.feedbackTiming) : undefined}
+      rootTestID={props.runtimeIdentity ? runtimeSelectors.session.root(props.runtimeIdentity.sessionId) : undefined}
       timer={props.timer}
+      timerTestID={props.runtimeIdentity ? runtimeSelectors.session.timer(props.runtimeIdentity.sessionId) : undefined}
     >
       {props.phase === "preparing" ? <PreparingNotice /> : null}
-      {controls}
+      {props.runtimeIdentity && controls ? (
+        <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)}>
+          <View testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>
+        </View>
+      ) : controls}
       {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
-      {visibleFeedback ? <PracticeFeedbackBlock feedback={visibleFeedback} /> : null}
-      {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} /> : null}
+      {visibleFeedback && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} itemId={itemId} /> : null}
+      {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} /> : null}
     </SessionShell>
   );
 }
@@ -93,7 +119,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresentation }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Card style={styles.questionCard}>
+    <Card style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
       <Text style={styles.prompt}>{question.prompt}</Text>
       {question.constraints?.length ? (
         <View style={styles.constraints}>
@@ -131,17 +157,29 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
   return (
     <View style={styles.actions}>
       {props.primaryAction ? (
-        <Button disabled={!props.primaryAction.enabled} loading={props.primaryAction.loading} onPress={props.onPrimaryAction ?? noop}>
+        <Button
+          disabled={!props.primaryAction.enabled}
+          loading={props.primaryAction.loading}
+          onPress={props.onPrimaryAction ?? noop}
+          testID={primaryActionTestID(props)}
+        >
           {t(props.primaryAction.label)}
         </Button>
       ) : null}
       {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{t(props.retryLabel)}</Button> : null}
-      {props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "abandoning" ? <Button onPress={props.onRequestLeave} variant="ghost">{t("Leave session")}</Button> : null}
+      {props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "abandoning" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
 
-function ExitModal({ onAbandon, onDismiss, onLeave }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void }>) {
+function primaryActionTestID(props: PracticeSessionSurfaceProps): string | undefined {
+  if (!props.runtimeIdentity || !props.primaryAction) return undefined;
+  return props.phase === "unanswered" || props.phase === "submit_journal_failed"
+    ? runtimeSelectors.session.submit(props.runtimeIdentity.itemId)
+    : runtimeSelectors.session.continue(props.runtimeIdentity.itemId);
+}
+
+function ExitModal({ onAbandon, onDismiss, onLeave, sessionId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   return (
@@ -152,9 +190,9 @@ function ExitModal({ onAbandon, onDismiss, onLeave }: Readonly<{ onAbandon: () =
           <Text style={styles.exitTitle}>{t("End this session?")}</Text>
           <Text style={styles.noticeText}>{t("Leave and resume later, or abandon it permanently. Answers already saved remain available.")}</Text>
           <View style={styles.actions}>
-            <Button onPress={onDismiss} variant="secondary">{t("Keep learning")}</Button>
-            <Button onPress={onLeave}>{t("Leave and resume later")}</Button>
-            <Button onPress={onAbandon} variant="destructive">{t("Abandon session")}</Button>
+            <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined} variant="secondary">{t("Keep learning")}</Button>
+            <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined}>{t("Leave and resume later")}</Button>
+            <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t("Abandon session")}</Button>
           </View>
         </View>
       </View>

@@ -45,6 +45,7 @@ export type SimulationNotice = Readonly<{
 export type SimulationAction = Readonly<{
   accessibilityLabel?: string;
   disabled?: boolean;
+  id?: string;
   label: string;
   loading?: boolean;
   onPress: () => void;
@@ -108,6 +109,10 @@ export type SimulationSurfaceProjection = Readonly<{
   position?: SessionMetricPresentation;
   progress?: number;
   question?: SimulationQuestionProjection;
+  runtimeIdentity?: Readonly<{
+    itemId?: string;
+    sessionId: string;
+  }>;
   state: SimulationSurfaceState;
   timer?: SessionMetricPresentation;
   title: string;

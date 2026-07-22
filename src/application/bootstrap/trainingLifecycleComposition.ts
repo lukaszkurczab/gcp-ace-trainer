@@ -36,13 +36,46 @@ import {
   saveTrainingSessionDraft,
 } from "../../storage/repositories";
 
+export type WallClock = Readonly<{ now(): string }>;
+export type AdjustableWallClock = WallClock & Readonly<{ advanceBy(milliseconds: number): string }>;
+export type TrainingLifecycleCompositionDependencies = Readonly<{ wallClock?: WallClock }>;
+
+const realWallClock: WallClock = Object.freeze({ now: () => new Date().toISOString() });
+const MAX_ISO_DATE_MILLISECONDS = 8_640_000_000_000_000;
+
+/** A development-only offset preserves production time semantics while allowing legal time travel in audit runs. */
+export function createAdjustableWallClock(now: () => string = realWallClock.now): AdjustableWallClock {
+  let offsetMilliseconds = 0;
+  const timestampAtOffset = (offset: number): string => {
+    const baseTimestamp = Date.parse(now());
+    const timestamp = baseTimestamp + offset;
+    if (!Number.isFinite(baseTimestamp) || !Number.isFinite(timestamp) || Math.abs(timestamp) > MAX_ISO_DATE_MILLISECONDS) {
+      throw new Error("Runtime audit clock timestamp must remain within the valid ISO date range.");
+    }
+    return new Date(timestamp).toISOString();
+  };
+  return Object.freeze({
+    now: () => timestampAtOffset(offsetMilliseconds),
+    advanceBy(milliseconds: number) {
+      if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0) throw new Error("Runtime audit clock advance must be a positive safe integer.");
+      const nextOffset = offsetMilliseconds + milliseconds;
+      if (!Number.isSafeInteger(nextOffset)) throw new Error("Runtime audit clock offset exceeds the supported range.");
+      const timestamp = timestampAtOffset(nextOffset);
+      offsetMilliseconds = nextOffset;
+      return timestamp;
+    },
+  });
+}
+
 /**
  * The only production composition of family semantics, canonical persistence,
  * content identity and wall clock. Presentation imports the lifecycle facade,
  * never these dependencies.
  */
-export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
-  const wallClock = { now: () => new Date().toISOString() };
+export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycleCompositionDependencies = {}): TrainingLifecycleUseCases {
+  const developmentAuditability = isDevelopmentRuntimeAuditabilityBuild();
+  const wallClock = dependencies.wallClock ?? (developmentAuditability ? createAdjustableWallClock() : realWallClock);
+  const adjustableWallClock = isAdjustableWallClock(wallClock) ? wallClock : null;
   let sessionSequence = 0;
   const ports: TrainingLifecyclePorts = {
     clock: wallClock,
@@ -96,14 +129,15 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
         const resolvedReviews = input.reviewMutations.filter((mutation) => mutation.kind === "remove").map((mutation) => mutation.entry);
         await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, createdAt: input.attempt.committedAt });
       },
-      async advance(session) { await commitTrainingSessionAdvance(session, new Date().toISOString()); },
-      async complete(session) { await commitSessionCompletion(session, session.completedAt ?? new Date().toISOString()); },
-      async completeWithResult(input) { await commitSessionCompletion(input.session, input.session.completedAt ?? new Date().toISOString(), input.result); },
-      async finalize(input) { await commitFinalization(input); },
-      async abandon(session) { await commitSessionAbandonment(session, session.completedAt ?? new Date().toISOString()); },
+      async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
+      async complete(session) { await commitSessionCompletion(session, session.completedAt ?? wallClock.now()); },
+      async completeWithResult(input) { await commitSessionCompletion(input.session, input.session.completedAt ?? wallClock.now(), input.result); },
+      async finalize(input) { await commitFinalization(input, wallClock); },
+      async abandon(session) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now()); },
       async recover() { await recoverPendingMutation(); },
-      async reset() { await commitLearningStateReset(new Date().toISOString()); },
+      async reset() { await commitLearningStateReset(wallClock.now()); },
     },
+    ...(developmentAuditability && adjustableWallClock ? { runtimeAuditability: { advanceWallClockBy: (milliseconds: number) => adjustableWallClock.advanceBy(milliseconds) } } : {}),
   };
   const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
@@ -123,7 +157,7 @@ export function composeTrainingLifecycleUseCases(): TrainingLifecycleUseCases {
   return lifecycle;
 }
 
-async function commitFinalization(input: SimulationFinalization): Promise<void> {
+async function commitFinalization(input: SimulationFinalization, wallClock: WallClock): Promise<void> {
   const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));
   await commitTrainingSessionFinalization({
     session: input.session,
@@ -135,8 +169,16 @@ async function commitFinalization(input: SimulationFinalization): Promise<void> 
     })),
     result: input.result,
     cleanup: { kind: "training_session_draft", draft: input.frozenDraft, submittedOccurrenceIds: input.attempts.map((attempt) => attempt.occurrenceId) },
-    createdAt: input.session.completedAt ?? new Date().toISOString(),
+    createdAt: input.session.completedAt ?? wallClock.now(),
   });
+}
+
+function isDevelopmentRuntimeAuditabilityBuild(): boolean {
+  return typeof __DEV__ !== "undefined" && __DEV__;
+}
+
+function isAdjustableWallClock(value: WallClock): value is AdjustableWallClock {
+  return "advanceBy" in value && typeof value.advanceBy === "function";
 }
 
 export async function resumePersistedTrainingSession(): Promise<TrainingSession> {

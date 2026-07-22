@@ -28,6 +28,7 @@ export function Screen({ children, compact = false, edges = ["bottom"], footer, 
           contentContainerStyle={[styles.scrollContent, compact ? styles.scrollContentCompact : null]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          style={styles.scroll}
         >
           {content}
         </ScrollView>
@@ -47,6 +48,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingBottom: spacing.lg
+  },
+  scroll: {
+    flex: 1,
   },
   scrollContentCompact: {
     paddingBottom: spacing.md

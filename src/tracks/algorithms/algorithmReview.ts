@@ -26,12 +26,14 @@ export function createAlgorithmReviewEntry(
 export function updateAlgorithmReviewEntry(
   entry: ReviewQueueEntry,
   attempt: TrainingAttempt<AlgorithmResponse>,
+  input: Readonly<{ eligibleForPersistentResolution: boolean }>,
 ): ReviewQueueEntry | undefined {
   if (attempt.id === entry.sourceAttemptId) return entry;
   if (attempt.committedAt < entry.dueAt) return entry;
   if (attempt.result.kind !== "correct") {
     return { ...entry, consecutiveAfterDueSuccesses: 0, lastReviewedAt: attempt.committedAt, persistent: true, reasons: [attempt.result.kind] };
   }
+  if (!input.eligibleForPersistentResolution) return entry;
   const sameSessionCorrection = entry.persistent && entry.sourceSessionId === attempt.sessionId;
   const consecutiveAfterDueSuccesses = sameSessionCorrection
     ? entry.consecutiveAfterDueSuccesses

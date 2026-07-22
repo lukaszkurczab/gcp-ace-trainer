@@ -10,7 +10,7 @@ export const APPLICATION_ALGORITHMS_CONTRACT_DESCRIPTOR = Object.freeze({
   artifactSchema: "published-bank-v1",
   bankContract: "PublishedAlgorithmsBank",
   bankRequiredKeys: Object.freeze([...PUBLISHED_ALGORITHMS_BANK_REQUIRED_KEYS].sort()),
-  canonicalModeIds: Object.freeze(ALGORITHM_MODES.map((mode) => mode.id).sort()),
+  canonicalModeIds: Object.freeze([...new Set(ALGORITHM_MODES.map((mode) => mode.contentBlueprintModeId))].sort()),
   itemOptionalKeys: Object.freeze([...PUBLISHED_ALGORITHMS_ITEM_OPTIONAL_KEYS].sort()),
   itemRequiredKeys: Object.freeze([...PUBLISHED_ALGORITHMS_ITEM_REQUIRED_KEYS].sort()),
 });

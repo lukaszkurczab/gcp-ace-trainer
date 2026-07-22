@@ -35,11 +35,12 @@ Algorithms has exactly these user-facing modes:
 
 1. `Learn Approach`
 2. `Guided Practice`
-3. `Recognize Patterns`
-4. `Contrast Practice`
-5. `Weak Area Review`
-6. `Independent Practice`
-7. `Interview Simulation`
+3. `Custom Practice`
+4. `Recognize Patterns`
+5. `Contrast Practice`
+6. `Weak Area Review`
+7. `Independent Practice`
+8. `Interview Simulation`
 
 Certification has exactly these user-facing modes:
 

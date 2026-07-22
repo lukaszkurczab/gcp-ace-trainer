@@ -80,8 +80,12 @@ export function buildPracticeSessionConfig(
     if (!profile.supportedLengths.includes(sessionLength)) {
       throw new Error(`Algorithms mode ${mode} does not support session length ${sessionLength}.`);
     }
-    if (input.feedbackMode !== undefined && input.feedbackMode !== profile.feedbackMode) {
-      throw new Error(`Algorithms mode ${mode} owns feedback mode ${profile.feedbackMode}.`);
+    if (mode === ALGORITHM_MODE_IDS.customPractice && input.feedbackMode === undefined) {
+      throw new Error("Algorithms Custom Practice requires an explicit feedback mode.");
+    }
+    const feedbackMode = input.feedbackMode ?? profile.feedbackMode;
+    if (!profile.supportedFeedbackModes.includes(feedbackMode)) {
+      throw new Error(`Algorithms mode ${mode} does not support feedback mode ${feedbackMode}.`);
     }
     if (input.reviewBehaviorEnabled !== undefined && input.reviewBehaviorEnabled !== profile.reinsertEnabled) {
       throw new Error(`Algorithms mode ${mode} owns reinsert setting ${profile.reinsertEnabled}.`);
@@ -98,7 +102,7 @@ export function buildPracticeSessionConfig(
     const topicId = getAlgorithmSessionNodeById(input.topicId).id;
 
     return {
-      feedbackMode: profile.feedbackMode,
+      feedbackMode,
       algorithmScope: input.algorithmScope,
       mode,
       reviewBehaviorEnabled: profile.reinsertEnabled,

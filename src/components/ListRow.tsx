@@ -12,6 +12,7 @@ type ListRowProps = {
   meta?: string;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
   title: string;
   trailing?: ReactNode;
   variant?: "card" | "grouped";
@@ -23,6 +24,7 @@ export function ListRow({
   meta,
   onPress,
   style,
+  testID,
   title,
   trailing,
   variant = "card",
@@ -55,13 +57,14 @@ export function ListRow({
         accessibilityRole="button"
         onPress={onPress}
         style={({ pressed }) => [rowStyle, pressed ? styles.pressed : null]}
+        testID={testID}
       >
         {content}
       </Pressable>
     );
   }
 
-  return <View style={rowStyle}>{content}</View>;
+  return <View style={rowStyle} testID={testID}>{content}</View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

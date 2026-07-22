@@ -21,6 +21,7 @@ export type RootStackParamList = {
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
   [ROUTES.PRACTICE_SETUP]: Partial<PracticeSessionRouteParams> | undefined;
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;
+  [ROUTES.ALGORITHMS_PRACTICE_SUMMARY]: { sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION]: { profileId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY]: { completionKind: "manual" | "timeout"; sessionId: string };
   [ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW]: { sessionId: string };
