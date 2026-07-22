@@ -343,7 +343,9 @@ function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["ope
 }
 
 function describePreparationFailure(error: unknown): string {
-  const detail = error instanceof Error ? error.message : "The session could not be prepared.";
+  const detail = error instanceof TrainingApplicationFailure && error.cause instanceof Error
+    ? error.cause.message
+    : error instanceof Error ? error.message : "The session could not be prepared.";
   return `${detail} No substitute topic, item, or shortened fixed session was created.`;
 }
 
