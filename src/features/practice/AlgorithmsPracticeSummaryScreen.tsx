@@ -47,7 +47,10 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   const { result } = state;
   const missedCount = result.score ? result.score.partialCount + result.score.incorrectCount : null;
   return (
-    <Screen edges={["top", "bottom"]}>
+    <Screen
+      edges={["top", "bottom"]}
+      footer={<Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.summary.backToPractice(result.sessionId)}>{t("Back to practice")}</Button>}
+    >
       <View style={styles.result}>
         <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t("Session result")}</Text>
         <Text style={styles.resultText} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text>
@@ -64,7 +67,6 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
             ))}
           </View>
         ) : null}
-        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.summary.backToPractice(result.sessionId)}>{t("Back to practice")}</Button>
       </View>
     </Screen>
   );
