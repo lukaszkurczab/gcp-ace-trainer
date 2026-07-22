@@ -46,5 +46,6 @@ test("Interview Simulation is the fixed, profile-owned forty-item contract and n
   assert.deepEqual(second.session.itemOrder.map((item) => item.item.itemId), blueprint.resolvedItemIds);
   assert.equal(new Set(first.session.itemOrder.map((item) => item.item.itemId)).size, 40);
   assert.equal(first.session.configurationSnapshot.feedbackMode, "atSessionEnd");
+  assert.equal(first.session.configurationSnapshot.navigation, "free");
   assert.equal(first.session.configurationSnapshot.simulationProfileId, profileId);
 });

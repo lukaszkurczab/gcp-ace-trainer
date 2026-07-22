@@ -98,6 +98,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
       answerChanges: "untilFinalSubmission",
       feedbackMode: "atSessionEnd",
       kind: "algorithmsInterviewSimulation",
+      navigation: "free",
       simulationBlueprintId: blueprint.blueprintId,
       simulationBlueprintVersion: blueprint.blueprintVersion,
       simulationProfileId: profile.profileId,
