@@ -89,6 +89,10 @@ tags:
     id: "main-tab-bar-progress"
 - assertVisible:
     id: "patternly:progress:root"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:node:complexity_and_constraints"
+    direction: DOWN
 - assertVisible:
     id: "patternly:progress:node:complexity_and_constraints"
 - takeScreenshot: m6-due-progress
@@ -102,5 +106,9 @@ tags:
     id: "main-tab-bar-progress"
 - assertVisible:
     id: "patternly:progress:root"
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:node:complexity_and_constraints"
+    direction: DOWN
 - assertVisible:
     id: "patternly:progress:node:complexity_and_constraints"
