@@ -1,0 +1,20 @@
+{
+  "m3": {
+    "sessionId": "algorithms:algorithms-custom-practice:1",
+    "feedbackTiming": "atSessionEnd",
+    "length": 10,
+    "itemId": "alg-complexity-amortized-001",
+    "selectedOptionId": "sequence_average"
+  },
+  "m4": {
+    "sessionId": "algorithms:algorithms-custom-practice:1",
+    "feedbackTiming": "afterEachAnswer",
+    "length": 10,
+    "itemId": "alg-complexity-amortized-001",
+    "selectedOptionId": "each_worst_constant",
+    "expectedResult": "incorrect"
+  },
+  "m5": {
+    "completedSessionId": "algorithms:algorithms-guided-practice:1"
+  }
+}

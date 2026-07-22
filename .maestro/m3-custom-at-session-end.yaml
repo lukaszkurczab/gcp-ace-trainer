@@ -1,0 +1,74 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly M3 — Custom Practice at session end survives relaunch
+tags:
+  - runtime-auditability
+  - m3
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 30000
+- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:feedback-timing:at-session-end"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:at-session-end"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+- tapOn:
+    id: "patternly:session:leave-and-resume:algorithms:algorithms-custom-practice:1"
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:resume:card:algorithms:algorithms-custom-practice:1"
+    timeout: 30000
+- tapOn:
+    id: "patternly:resume:continue:algorithms:algorithms-custom-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:root:algorithms:algorithms-custom-practice:1"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:at-session-end"
+- assertNotVisible:
+    id: "patternly:session:feedback:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- assertNotVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- assertNotVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
