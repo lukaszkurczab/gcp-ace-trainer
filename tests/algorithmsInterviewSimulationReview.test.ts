@@ -7,7 +7,8 @@ const surface = readFileSync("src/features/simulation/SimulationSessionSurface.t
 
 test("Interview Simulation review renders the immutable completed feedback projection by occurrence", () => {
   assert.match(resultScreen, /reviewItems: result\.feedbackItems/);
-  assert.match(surface, /runtimeSelectors\.summary\.feedbackItem\(sessionId \?\? "simulation-result", item\.occurrenceId\)/);
+  assert.match(resultScreen, /runtimeIdentity: \{ sessionId: result\.sessionId \}/);
+  assert.match(surface, /sessionId \? runtimeSelectors\.summary\.feedbackItem\(sessionId, item\.occurrenceId\) : undefined/);
   assert.match(surface, /PracticeFeedbackBlock feedback=\{\{ details: item\.details, reason: item\.reason, result: item\.correctness \}\}/);
   assert.doesNotMatch(resultScreen, /loadTrainingAttempts|composeCommittedAlgorithmPracticeFeedback/);
 });

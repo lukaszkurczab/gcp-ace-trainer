@@ -38,6 +38,8 @@ test("Interview Simulation is the fixed, profile-owned forty-item contract and n
   assert.deepEqual(plan.items.map((item) => item.id), blueprint.resolvedItemIds);
 
   const [first, second] = await Promise.all(["simulation-contract-one", "simulation-contract-two"].map((sessionId) => prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: catalog.getContentVersion(), taxonomyVersion: "algorithms-taxonomy-v2", profileId, sessionId, startedAt: "2026-07-22T00:00:00.000Z" })));
+  assert.ok(first);
+  assert.ok(second);
   assert.deepEqual(first.session.itemOrder.map((item) => item.item.itemId), blueprint.resolvedItemIds);
   assert.deepEqual(second.session.itemOrder.map((item) => item.item.itemId), blueprint.resolvedItemIds);
   assert.equal(new Set(first.session.itemOrder.map((item) => item.item.itemId)).size, 40);

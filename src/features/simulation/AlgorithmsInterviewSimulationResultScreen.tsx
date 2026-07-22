@@ -34,6 +34,7 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, review, sessio
     ? {
         state: "completed",
         title: review ? "Interview Simulation review" : "Interview Simulation complete",
+        runtimeIdentity: { sessionId: result.sessionId },
         completion: {
           answeredCount: result.answeredOccurrenceIds.length,
           unansweredCount: result.unansweredOccurrenceIds.length,
