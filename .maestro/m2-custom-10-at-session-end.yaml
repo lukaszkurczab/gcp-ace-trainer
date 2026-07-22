@@ -206,7 +206,7 @@ tags:
 - scrollUntilVisible:
     element:
       id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
-    direction: UP
+    direction: DOWN
     centerElement: true
 - assertVisible:
     id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
