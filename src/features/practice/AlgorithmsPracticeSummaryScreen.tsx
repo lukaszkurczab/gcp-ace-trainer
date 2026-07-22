@@ -44,13 +44,14 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   }
 
   const { result } = state;
+  const missedCount = result.score ? result.score.partialCount + result.score.incorrectCount : null;
   return (
     <Screen edges={["top", "bottom"]}>
-      <View style={styles.result} testID={runtimeSelectors.summary.root(result.sessionId)}>
-        <Text style={styles.resultTitle}>{t("Session result")}</Text>
+      <View style={styles.result}>
+        <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t("Session result")}</Text>
         <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} {t("answered")} · {result.unansweredOccurrenceIds.length} {t("unanswered")}</Text>
-        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {result.score.partialCount} {t("partial")} · {result.score.incorrectCount} {t("incorrect")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
-        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)}>{t("Back to practice")}</Button>
+        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
+        <Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.summary.backToPractice(result.sessionId)}>{t("Back to practice")}</Button>
       </View>
     </Screen>
   );

@@ -74,6 +74,7 @@ export const runtimeSelectors = Object.freeze({
   }),
   summary: Object.freeze({
     root: (sessionId: string) => selector("summary", "root", sessionId),
+    backToPractice: (sessionId: string) => selector("summary", "back-to-practice", sessionId),
   }),
   progress: Object.freeze({
     root: () => selector("progress", "root"),

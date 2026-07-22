@@ -22,7 +22,11 @@ test("practice summary reloads the immutable canonical result and terminal recov
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
 
   assert.match(summary, /await getAlgorithmsPracticeResultProjection\(sessionId\)/);
-  assert.match(summary, /runtimeSelectors\.summary\.root\(result\.sessionId\)/);
+  assert.match(summary, /<Text style=\{styles\.resultTitle\} testID=\{runtimeSelectors\.summary\.root\(result\.sessionId\)\}>/);
+  assert.doesNotMatch(summary, /<View style=\{styles\.result\} testID=\{runtimeSelectors\.summary\.root/);
+  assert.match(summary, /runtimeSelectors\.summary\.backToPractice\(result\.sessionId\)/);
+  assert.match(summary, /result\.score\.correctCount\} \{t\("correct"\)\} · \{missedCount\} \{t\("Missed"\)\}/);
+  assert.doesNotMatch(summary, /result\.score\.partialCount\} \{t\("partial"\)\}|result\.score\.incorrectCount\} \{t\("incorrect"\)\}/);
   assert.match(session, /if \(!await loadActiveTrainingSession\(\)\) \{[\s\S]*navigation\.replace\(ROUTES\.ALGORITHMS_PRACTICE_SUMMARY, \{ sessionId: projection\.session\.id \}\)/);
   assert.match(session, /getAlgorithmsPracticeResultProjection\(projection\.session\.id\)\.catch\(\(\) => null\)/);
 });
