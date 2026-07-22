@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { prepareAlgorithmsInterviewSimulation, selectAlgorithmSessionPlan } from "../src/tracks/algorithms";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../src/tracks/algorithms/domain/algorithmModes";
@@ -8,6 +9,7 @@ import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../src/tracks/algorithms/d
 const profileId = "algorithms-interview-simulation-v1";
 
 test("Interview Simulation is the fixed, profile-owned forty-item contract and not Custom Practice 40", async () => {
+  await validateBundledContent();
   const catalog = getAlgorithmContentCatalog();
   const mode = getAlgorithmMode(ALGORITHM_MODE_IDS.interviewSimulation);
   const custom = getAlgorithmMode(ALGORITHM_MODE_IDS.customPractice);
