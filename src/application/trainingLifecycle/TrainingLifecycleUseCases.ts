@@ -23,6 +23,7 @@ import { OperationProjectionStore } from "./operationProjectionStore";
 
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
+  private activeSimulationMutation: Promise<void> = Promise.resolve();
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
@@ -144,36 +145,40 @@ export class TrainingLifecycleUseCases {
 
   /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
   async moveSimulationSessionTo(index: number): Promise<TrainingSession> {
-    const session = await this.requireActive();
-    if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
-      throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
-    }
-    const next = this.runSync("invalid_response", () => moveTrainingSessionToIndex(session, index));
-    this.operationStates.set(session.id, simulation("navigating"));
-    try {
-      await this.run("persistence_failure", () => this.ports.mutations.advance(next));
-      const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
-      if (!verified || verified.id !== next.id || verified.currentItemIndex !== next.currentItemIndex) throw new TrainingApplicationFailure("verification_failure", "The simulation navigator position was not durably verified.");
-      this.operationStates.set(session.id, simulation("editable"));
-      return verified;
-    } catch (error) {
-      this.operationStates.set(session.id, simulation("navigation_failed", operationError("simulation_navigation", error instanceof MutationCommitFailure ? error.durableState : "not_durable", error instanceof MutationCommitFailure && error.durableState !== "not_durable" ? "recover" : "retry_same_command")));
-      throw error;
-    }
+    return this.serializeActiveSimulationMutation(async () => {
+      const session = await this.requireActive();
+      if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
+        throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
+      }
+      const next = this.runSync("invalid_response", () => moveTrainingSessionToIndex(session, index));
+      this.operationStates.set(session.id, simulation("navigating"));
+      try {
+        await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+        const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+        if (!verified || verified.id !== next.id || verified.currentItemIndex !== next.currentItemIndex) throw new TrainingApplicationFailure("verification_failure", "The simulation navigator position was not durably verified.");
+        this.operationStates.set(session.id, simulation("editable"));
+        return verified;
+      } catch (error) {
+        this.operationStates.set(session.id, simulation("navigation_failed", operationError("simulation_navigation", error instanceof MutationCommitFailure ? error.durableState : "not_durable", error instanceof MutationCommitFailure && error.durableState !== "not_durable" ? "recover" : "retry_same_command")));
+        throw error;
+      }
+    });
   }
 
   async checkpointSimulationForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
-    const session = await this.requireActive();
-    if (session.configurationSnapshot.timer !== "countdownForeground" || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
-      throw new TrainingApplicationFailure("invalid_response", "Simulation foreground timer checkpoint is invalid.");
-    }
-    const next = createTrainingSession({ ...session, activeForegroundMs });
-    await this.run("persistence_failure", () => this.ports.mutations.advance(next));
-    const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
-    if (!verified || verified.id !== next.id || verified.activeForegroundMs !== activeForegroundMs) {
-      throw new TrainingApplicationFailure("verification_failure", "Simulation foreground time was not durably verified.");
-    }
-    return verified;
+    return this.serializeActiveSimulationMutation(async () => {
+      const session = await this.requireActive();
+      if (session.configurationSnapshot.timer !== "countdownForeground" || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
+        throw new TrainingApplicationFailure("invalid_response", "Simulation foreground timer checkpoint is invalid.");
+      }
+      const next = createTrainingSession({ ...session, activeForegroundMs });
+      await this.run("persistence_failure", () => this.ports.mutations.advance(next));
+      const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
+      if (!verified || verified.id !== next.id || verified.activeForegroundMs !== activeForegroundMs) {
+        throw new TrainingApplicationFailure("verification_failure", "Simulation foreground time was not durably verified.");
+      }
+      return verified;
+    });
   }
 
   async completeOrdinarySession(session: TrainingSession): Promise<void> {
@@ -310,6 +315,15 @@ export class TrainingLifecycleUseCases {
     const result = await this.run("summary_unavailable", () => this.ports.repositories.getResult(sessionId));
     if (!result) throw new TrainingApplicationFailure("summary_unavailable", "Completed-session result has not been verified.");
     return result;
+  }
+
+  private async serializeActiveSimulationMutation<T>(operation: () => Promise<T>): Promise<T> {
+    const preceding = this.activeSimulationMutation;
+    let release: () => void = () => undefined;
+    this.activeSimulationMutation = new Promise<void>((resolve) => { release = resolve; });
+    await preceding;
+    try { return await operation(); }
+    finally { release(); }
   }
 
   private async requireActive(): Promise<TrainingSession> {
