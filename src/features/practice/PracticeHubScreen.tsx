@@ -225,7 +225,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
               style={({ pressed }) => [styles.settingsAction, pressed ? styles.settingsActionPressed : null]}
               testID={runtimeSelectors.practice.openSetup()}
             >
-              <Text style={styles.settingsActionText}>{t(activeTrack.id === "algorithms" ? "Custom Practice" : "Manage settings")}</Text>
+              <Text
+                style={styles.settingsActionText}
+                testID={activeTrack.id === "algorithms" ? runtimeSelectors.practice.customEntry() : undefined}
+              >
+                {t(activeTrack.id === "algorithms" ? "Custom Practice" : "Manage settings")}
+              </Text>
               <Icon color={palette.accentPurple} name="chevron-right" size={16} />
             </Pressable>
           </View>

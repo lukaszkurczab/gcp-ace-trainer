@@ -44,6 +44,8 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.home.trackCard("algorithms"),
     runtimeSelectors.practice.modeCard("algorithms-guided-practice"),
     runtimeSelectors.practice.openSetup(),
+    runtimeSelectors.practice.customEntry(),
+    runtimeSelectors.practice.customSetupTitle(),
     runtimeSelectors.practice.sessionLength(10),
     runtimeSelectors.practice.sessionLength(20),
     runtimeSelectors.practice.feedbackTiming("afterEachAnswer"),
@@ -57,12 +59,13 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.summary.backToPractice("algorithms:algorithms-guided-practice:1"),
     runtimeSelectors.summary.configuration("algorithms:algorithms-guided-practice:1", 10, "atSessionEnd"),
     runtimeSelectors.summary.feedbackItem("algorithms:algorithms-guided-practice:1", "occurrence:1"),
+    runtimeSelectors.progress.root(),
     runtimeSelectors.progress.node("complexity"),
     runtimeSelectors.simulation.root("algorithms:algorithms-interview-simulation:2"),
     runtimeSelectors.simulation.navigator("algorithms:algorithms-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 19);
+  assert.equal(selectors.size, 22);
 });
 
 test("runtime selector factories reject values that cannot be represented in the contract", () => {

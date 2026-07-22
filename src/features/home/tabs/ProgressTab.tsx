@@ -202,7 +202,7 @@ function AlgorithmsProgressContent({
   return (
     <>
       <View style={styles.pageIntro}>
-        <Text style={styles.screenTitle}>{t("Learning priority")}</Text>
+        <Text style={styles.screenTitle} testID={runtimeSelectors.progress.root()}>{t("Learning priority")}</Text>
         <Text style={styles.screenSubtitle}>
           {t("Use your current evidence to choose the next learning action.")}
         </Text>

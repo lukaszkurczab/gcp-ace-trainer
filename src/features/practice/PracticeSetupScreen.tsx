@@ -135,7 +135,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         />
 
         <View style={styles.intro}>
-          <Text style={styles.title}>{t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}</Text>
+          <Text
+            style={styles.title}
+            testID={algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
+          >
+            {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
+          </Text>
           <Text style={styles.subtitle}>
             {`${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
