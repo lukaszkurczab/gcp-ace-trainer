@@ -16,8 +16,8 @@ export type RootStackParamList = {
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home" | "practiceHub"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
   [ROUTES.EXAM]: { questionIndex?: number } | undefined;
-  [ROUTES.EXAM_REVIEW]: undefined;
-  [ROUTES.RESULT]: { attemptId?: string; autoSubmitted?: boolean } | undefined;
+  [ROUTES.EXAM_REVIEW]: { sessionId: string };
+  [ROUTES.RESULT]: { sessionId: string };
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;
   [ROUTES.PRACTICE_SETUP]: Partial<PracticeSessionRouteParams> | undefined;
   [ROUTES.PRACTICE_SESSION]: PracticeSessionRouteParams;

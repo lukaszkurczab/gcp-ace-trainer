@@ -101,10 +101,13 @@ export type PublishedAlgorithmsBank = Readonly<{
   approvalActivationIdentity: string;
 }>;
 
+/** The validator requires this identity in a published artifact; catalog fixtures may omit it because they do not cross the artifact boundary. */
+export type PublishedCertificationQuestion = CertificationQuestion & Readonly<{ itemFingerprint?: string }>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
   familyId: "certification";
   contentVersion: string;
-  items: readonly CertificationQuestion[];
+  items: readonly PublishedCertificationQuestion[];
 };

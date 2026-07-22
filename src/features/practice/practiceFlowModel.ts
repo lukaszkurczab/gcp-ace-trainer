@@ -85,16 +85,6 @@ const cloudTopics: readonly TopicRoadmapNodeModel[] = [
     tone: "info",
   },
   {
-    detail: "Storage service scenarios will unlock after the core domains are grounded.",
-    enabled: false,
-    id: "cloud_storage",
-    label: "New",
-    progress: 0,
-    status: "locked",
-    title: "Storage",
-    tone: "muted",
-  },
-  {
     detail: "Operations, networking, and day-two reliability scenarios.",
     enabled: true,
     id: "operations",
@@ -103,46 +93,6 @@ const cloudTopics: readonly TopicRoadmapNodeModel[] = [
     status: "available",
     title: "Networking",
     tone: "info",
-  },
-  {
-    detail: "Database service scenarios are not available in this topic map yet.",
-    enabled: false,
-    id: "cloud_databases",
-    label: "Locked",
-    progress: 0,
-    status: "locked",
-    title: "Databases",
-    tone: "muted",
-  },
-  {
-    detail: "Monitoring scenarios are not available in this topic map yet.",
-    enabled: false,
-    id: "cloud_monitoring",
-    label: "Locked",
-    progress: 0,
-    status: "locked",
-    title: "Monitoring",
-    tone: "muted",
-  },
-  {
-    detail: "Billing scenarios are not available in this topic map yet.",
-    enabled: false,
-    id: "cloud_billing",
-    label: "Locked",
-    progress: 0,
-    status: "locked",
-    title: "Billing",
-    tone: "muted",
-  },
-  {
-    detail: "Exam scenario practice is available from Practice mode.",
-    enabled: false,
-    id: "cloud_exam_scenarios",
-    label: "Later",
-    progress: 0,
-    status: "later",
-    title: "Exam Scenarios",
-    tone: "muted",
   },
 ];
 
@@ -161,9 +111,9 @@ export function getCurrentPracticeTopic(
   }
 
   return {
-    detail: "Access-control scenarios for Cloud Certification practice.",
-    id: "access_security",
-    title: "IAM policies",
+    detail: "Scenario practice across the canonical Cloud Certification domains.",
+    id: "planning_implementation",
+    title: "Planning & implementation",
   };
 }
 
@@ -192,46 +142,9 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
   }
 
   return [
-    {
-      detail: "Guided explanations after each item with solving hints.",
-      enabled: true,
-      icon: "book-open",
-      mode: "learn",
-      title: "Learn",
-      tone: "info",
-    },
-    {
-      detail: "Repeated and interleaved tasks for the current topic.",
-      enabled: true,
-      icon: "zap",
-      mode: "drill",
-      title: "Drill",
-      tone: "primary",
-    },
-    {
-      detail: "Revisit recent misses from the current track.",
-      enabled: true,
-      icon: "rotate-ccw",
-      mode: "review",
-      title: "Review",
-      tone: "warning",
-    },
-    {
-      detail: "Focus on areas where recent answers are weaker.",
-      enabled: true,
-      icon: "alert-triangle",
-      mode: "weakArea",
-      title: "Weak area",
-      tone: "danger",
-    },
-    {
-      detail: "Mixed item session for the selected track.",
-      enabled: true,
-      icon: "clipboard",
-      mode: "practice",
-      title: "Practice",
-      tone: "success",
-    },
+    { detail: "Ten scenario-based questions with immediate explanation.", enabled: true, icon: "clipboard", mode: "cloud-practice", title: "Cloud Practice", tone: "success" },
+    { detail: "Due items only. It is unavailable until a Cloud mistake is due for review.", enabled: true, icon: "rotate-ccw", mode: "cloud-review", title: "Due review", tone: "warning" },
+    { detail: "A fixed 50-question simulation: 12 setup, 15 planning, 13 access, 10 operations.", enabled: true, icon: "shield-check", mode: "cloud-exam-simulation", title: "Exam Simulation", tone: "primary" },
   ];
 }
 

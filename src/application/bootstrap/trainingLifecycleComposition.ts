@@ -4,6 +4,7 @@ import {
   installAlgorithmsSessionRuntimePorts,
   installAlgorithmsSimulationTimerFacade,
 } from "../algorithms";
+import { createCertificationFamilyRuntime } from "../certification";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
   commitLearningStateReset,
@@ -82,8 +83,9 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     tracks: { getTrackRegistration },
     runtimes: {
       resolve(familyId) {
-        if (familyId !== "algorithms") throw new Error(`No family runtime is installed for ${familyId}.`);
-        return createAlgorithmsFamilyRuntime();
+        if (familyId === "algorithms") return createAlgorithmsFamilyRuntime();
+        if (familyId === "certification") return createCertificationFamilyRuntime();
+        throw new Error(`No family runtime is installed for ${familyId}.`);
       },
     },
     content: bundledContentAvailabilityPort,

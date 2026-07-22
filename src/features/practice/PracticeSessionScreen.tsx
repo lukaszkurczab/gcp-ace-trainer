@@ -32,6 +32,7 @@ import {
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { CertificationPracticeSessionScreen } from "./CertificationPracticeSessionScreen";
 
 
 type PracticeSessionScreenProps = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -42,6 +43,9 @@ type ViewState =
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
+  if (route.params.trackId === "cloud-certification" && (route.params.mode === "cloud-practice" || route.params.mode === "cloud-review")) {
+    return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
+  }
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [state, setState] = useState<ViewState | null>(null);

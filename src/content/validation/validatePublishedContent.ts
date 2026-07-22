@@ -97,4 +97,56 @@ function validateModeStructureShapes(structures: Readonly<Record<string, readonl
 }
 function validateItemFeedback(value: unknown): void { const feedback = record(value, "Algorithms item feedback"); exact(feedback, ["reason", "details", "wrongOptionExplanationsByOptionId", "omittedCorrectExplanationsByOptionId"].filter((key) => feedback[key] !== undefined), "Algorithms item feedback"); text(feedback.reason, "Algorithms feedback reason"); text(feedback.details, "Algorithms feedback details"); for (const explanations of [feedback.wrongOptionExplanationsByOptionId, feedback.omittedCorrectExplanationsByOptionId]) if (explanations !== undefined) for (const [id, explanation] of Object.entries(record(explanations, "Algorithms feedback explanations"))) { text(id, "Algorithms feedback option id"); text(explanation, "Algorithms feedback explanation"); } }
 function validateItemProvenance(value: unknown): void { const provenance = record(value, "Algorithms item provenance"); exact(provenance, ["author", "createdAt", "contentBatchId", "authoringMethod", "externalSources"], "Algorithms item provenance"); for (const key of ["author", "createdAt", "contentBatchId", "authoringMethod"]) text(provenance[key], `provenance.${key}`); if (Number.isNaN(Date.parse(provenance.createdAt as string)) || provenance.authoringMethod !== "independently_authored") throw new ContentValidationError("Algorithms provenance is invalid."); for (const source of values(provenance.externalSources, "provenance.externalSources")) { const declared = record(source, "Algorithms provenance source"); exact(declared, ["sourceId", "publisher", "title", "locator", "retrievedAt", "publicationOrRevisionDate", "versionOrScope"].filter((key) => declared[key] !== undefined), "Algorithms provenance source"); for (const key of ["sourceId", "publisher", "title", "locator", "retrievedAt"]) text(declared[key], `Algorithms provenance source.${key}`); if (Number.isNaN(Date.parse(declared.retrievedAt as string))) throw new ContentValidationError("Algorithms provenance source retrieval date is invalid."); } }
-export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank { const bank = record(value); exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "items"], "Certification bank"); if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) throw new ContentValidationError("Certification bank identity is invalid."); const items = values(bank.items, "items"); if (items.length !== manifest.itemCount) throw new ContentValidationError("Bank item count does not match manifest."); return bank as PublishedCertificationBank; }
+export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
+  const bank = record(value, "Certification bank");
+  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "items"], "Certification bank");
+  if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
+    throw new ContentValidationError("Certification bank identity is invalid.");
+  }
+  const items = values(bank.items, "Certification items");
+  if (items.length !== manifest.itemCount || items.length === 0) throw new ContentValidationError("Certification bank item count does not match manifest.");
+  const ids = new Set<string>();
+  const fingerprints = new Set<string>();
+  const domains = new Set(["setup_environment", "planning_implementation", "access_security", "operations"]);
+  for (const unknown of items) {
+    const item = record(unknown, "Certification item");
+    exact(item, ["id", "domain", "type", "difficulty", "question", "options", "correctOptionIds", "explanation", "whyOthersAreWrong", "watchOutFor", "tags", "examSignals", "itemFingerprint"].filter((key) => item[key] !== undefined), "Certification item");
+    const id = text(item.id, "Certification item id");
+    if (ids.has(id)) throw new ContentValidationError("Certification bank contains duplicate item IDs.");
+    ids.add(id);
+    if (!domains.has(text(item.domain, "Certification item domain"))) throw new ContentValidationError("Certification item references an unknown Cloud domain.");
+    if (item.type !== "single" && item.type !== "multiple") throw new ContentValidationError("Certification item type is invalid.");
+    if (item.difficulty !== "easy" && item.difficulty !== "medium" && item.difficulty !== "hard") throw new ContentValidationError("Certification item difficulty is invalid.");
+    text(item.question, "Certification question");
+    text(item.explanation, "Certification explanation");
+    const fingerprint = text(item.itemFingerprint, "Certification item fingerprint");
+    if (!/^[a-f0-9]{64}$/.test(fingerprint) || fingerprints.has(fingerprint)) throw new ContentValidationError("Certification item fingerprints must be unique SHA-256 identities.");
+    fingerprints.add(fingerprint);
+    const options = values(item.options, "Certification options");
+    if (options.length < 2) throw new ContentValidationError("Certification item needs at least two options.");
+    const optionIds = new Set<string>();
+    const optionTexts = new Set<string>();
+    for (const optionValue of options) {
+      const option = record(optionValue, "Certification option"); exact(option, ["id", "text"], "Certification option");
+      const optionId = text(option.id, "Certification option id"); const optionText = text(option.text, "Certification option text");
+      if (optionIds.has(optionId) || optionTexts.has(optionText)) throw new ContentValidationError("Certification options must have unique identities and visible text.");
+      optionIds.add(optionId); optionTexts.add(optionText);
+    }
+    const correct = stringValues(item.correctOptionIds, "Certification correct option IDs");
+    if (correct.some((optionId) => !optionIds.has(optionId)) || (item.type === "single" && correct.length !== 1) || (item.type === "multiple" && correct.length < 2)) {
+      throw new ContentValidationError("Certification correct answers do not match the question type or options.");
+    }
+    const wrong = item.whyOthersAreWrong === undefined ? {} : record(item.whyOthersAreWrong, "Certification wrong-answer explanations");
+    for (const [optionId, explanation] of Object.entries(wrong)) {
+      if (!optionIds.has(optionId) || correct.includes(optionId)) throw new ContentValidationError("Certification wrong-answer explanation references an invalid option.");
+      text(explanation, "Certification wrong-answer explanation");
+    }
+    if (item.watchOutFor !== undefined) {
+      if (typeof item.watchOutFor === "string") text(item.watchOutFor, "Certification watch-out");
+      else stringValues(item.watchOutFor, "Certification watch-outs");
+    }
+    stringValues(item.tags, "Certification tags");
+    if (item.examSignals !== undefined) stringValues(item.examSignals, "Certification exam signals");
+  }
+  return bank as PublishedCertificationBank;
+}

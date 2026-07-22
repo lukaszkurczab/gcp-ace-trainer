@@ -99,7 +99,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     const mode = route.params?.mode ?? (
       activeTrack.id === ALGORITHMS_TRACK_ID
         ? ALGORITHM_MODE_IDS.guidedPractice
-        : "default"
+        : "cloud-practice"
     );
     if (activeTrack.id === ALGORITHMS_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
