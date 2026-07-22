@@ -31,7 +31,7 @@ export function Card({ children, onPress, style, testID, variant = "default" }: 
     );
   }
 
-  return <View style={[styles.card, styles[variant], style]} testID={testID}>{children}</View>;
+  return <View collapsable={testID ? false : undefined} style={[styles.card, styles[variant], style]} testID={testID}>{children}</View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
