@@ -42,7 +42,7 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, review, sessio
           incorrectCount: result.score.incorrectCount,
           earnedPoints: result.score.pointsEarned,
           maxPoints: result.score.maxPoints,
-          ...(review ? {} : { reviewAction: { id: "review-session", label: "Review session", onPress: () => navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW, { sessionId: result.sessionId }), variant: "secondary" as const } }),
+          ...(review ? { reviewItems: result.feedbackItems } : { reviewAction: { id: "review-session", label: "Review session", onPress: () => navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW, { sessionId: result.sessionId }), variant: "secondary" as const } }),
         },
         actions: { primary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) } },
       }

@@ -7,6 +7,7 @@ import { SessionShell } from "../algorithms/session/SessionShell";
 import type { SimulationAction, SimulationResponseChange, SimulationResponseControl, SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationNavigator } from "./SimulationNavigator";
 import { mayRenderSimulationCompletion } from "./simulationViewModel";
+import { PracticeFeedbackBlock } from "../practice/PracticeFeedbackBlock";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { isRuntimeSelectorId, runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -114,13 +115,14 @@ function ConfirmationActionBar({ confirmation, sessionId }: Readonly<{ confirmat
 function Completion({ completion, sessionId }: Readonly<{ completion: NonNullable<SimulationSurfaceProjection["completion"]>; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  return <Card variant="success"><Text style={styles.confirmationTitle}>{t("Verified session result")}</Text><Text style={styles.body}>{`${completion.answeredCount} ${t("answered")} · ${completion.unansweredCount} ${t("unanswered")}`}</Text><Text style={styles.body}>{`${completion.correctCount} ${t("correct")} · ${completion.partialCount} ${t("partial")} · ${completion.incorrectCount} ${t("incorrect")}`}</Text><Text style={styles.body}>{`${completion.earnedPoints} ${t("of")} ${completion.maxPoints} ${t("points")}`}</Text>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}</Card>;
+  return <View style={styles.completion}><Card variant="success"><Text style={styles.confirmationTitle}>{t("Verified session result")}</Text><Text style={styles.body}>{`${completion.answeredCount} ${t("answered")} · ${completion.unansweredCount} ${t("unanswered")}`}</Text><Text style={styles.body}>{`${completion.correctCount} ${t("correct")} · ${completion.partialCount} ${t("partial")} · ${completion.incorrectCount} ${t("incorrect")}`}</Text><Text style={styles.body}>{`${completion.earnedPoints} ${t("of")} ${completion.maxPoints} ${t("points")}`}</Text>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}</Card>{completion.reviewItems?.map((item) => <View key={item.occurrenceId} style={styles.reviewItem} testID={runtimeSelectors.summary.feedbackItem(sessionId ?? "simulation-result", item.occurrenceId)}><Text style={styles.body}>{`${item.ordinal}. ${item.prompt}`}</Text><PracticeFeedbackBlock feedback={{ details: item.details, reason: item.reason, result: item.correctness }} itemId={item.occurrenceId} /></View>)}</View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   actionBar: { gap: spacing.sm },
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
+  completion: { gap: spacing.lg },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
   controls: { gap: spacing.sm },
   dimension: { gap: spacing.xs },
@@ -134,6 +136,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   orderLabel: { ...typography.small, color: palette.textPrimary, flex: 1 },
   orderRow: { alignItems: "flex-start", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   prompt: { ...typography.body, color: palette.textPrimary },
+  reviewItem: { gap: spacing.sm },
   success: { backgroundColor: palette.successSoft, borderColor: palette.success },
   title: { ...typography.title, color: palette.textPrimary },
   valueRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },

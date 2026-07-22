@@ -89,6 +89,14 @@ export type SimulationCompletionProjection = Readonly<{
   maxPoints: number;
   partialCount: number;
   reviewAction?: SimulationAction;
+  reviewItems?: readonly Readonly<{
+    correctness: "correct" | "partial" | "incorrect";
+    details: string;
+    occurrenceId: string;
+    ordinal: number;
+    prompt: string;
+    reason: string;
+  }>[];
   unansweredCount: number;
 }>;
 
