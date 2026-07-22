@@ -58,12 +58,14 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     await load();
   }
   async function save() {
-    if (screen?.kind !== "ready" || !localResponse) return;
+    if (screen?.kind !== "ready") return;
     const projection = screen.projection;
+    const response = localResponse ?? responseFromProjection(projection);
+    if (!response) return;
     const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
     if (!occurrenceId) return;
     try {
-      await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse });
+      await saveAlgorithmsSimulationResponse({ occurrenceId, response });
       if (willAnswerEverySimulationOccurrence(projection.navigator, occurrenceId)) {
         await finalizeAlgorithmsSimulation();
         navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: projection.session.id });
