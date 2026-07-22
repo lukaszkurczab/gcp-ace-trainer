@@ -16,6 +16,7 @@ export type ContentPreparationState =
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
+  const [auditResetRevision, setAuditResetRevision] = useState(0);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
   const lifecycleReady = useRef(false);
@@ -26,7 +27,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     let lifecycle: ReturnType<typeof composeTrainingLifecycleUseCases> | null = null;
     lifecycleReady.current = false;
     void (async () => {
-      const initialUrl = __DEV__ ? await Linking.getInitialURL() : null;
+      const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
       return bootstrapApplication(
         validateBundledContent,
@@ -42,7 +43,8 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
           lifecycleReady.current = true;
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
           pendingRuntimeAuditabilityUrl.current = null;
-          await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
+          const handling = await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
+          if (handling.kind === "reset_learning_state") setAuditResetRevision((revision) => revision + 1);
         },
       );
     })().then((result) => {
@@ -69,6 +71,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       try {
         const result = await handleRuntimeAuditabilityUrl(url);
         if (!live || result.kind !== "reset_learning_state") return;
+        setAuditResetRevision((revision) => revision + 1);
         setState({ kind: "loading" });
         setBootstrapRevision((revision) => revision + 1);
       } catch (error) {
@@ -81,7 +84,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
     return () => { live = false; subscription.remove(); };
   }, [state.kind]);
 
-  if (state.kind === "ready") return <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(bootstrapRevision)}>{children}</View>;
+  if (state.kind === "ready") return <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(auditResetRevision)}>{children}</View>;
   if (state.kind === "loading") return <Screen><View><Text>Preparing content…</Text></View></Screen>;
   return <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
 }
