@@ -80,7 +80,7 @@ Complexity content declares its checked dimensions, available values, accepted v
 
 ## Review and reinsert
 
-Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert is enabled only for `Guided Practice` and Algorithms `Weak Area Review`, is maximum once, has at least three other submitted items between attempts, prefers a reviewed variant of the same mechanism, and preserves both diagnostic attempts.
+Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert is enabled only for `Guided Practice`, `Custom Practice`, and Algorithms `Weak Area Review`, is maximum once, has at least three other submitted items between attempts, prefers a reviewed variant of the same mechanism, and preserves both diagnostic attempts.
 
 ## Durable storage model
 

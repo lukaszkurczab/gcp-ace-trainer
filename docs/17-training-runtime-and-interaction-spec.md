@@ -82,6 +82,7 @@ Algorithms supports exactly these modes:
 | --------------------------------------------- | -------------: | --------------------------- | --------------------------- | ------------------------------ | -------- | -------------------- |
 | `Learn Approach`                              |             10 | 10                          | after each durable submit   | elapsed foreground             | no       | allowed              |
 | `Guided Practice`                             |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | yes      | allowed              |
+| `Custom Practice`                             |             20 | 10, 20, 40                  | after each or session end   | elapsed foreground             | yes      | allowed              |
 | `Recognize Patterns`                          |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
 | `Contrast Practice`                           |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
 | `Weak Area Review`, `source = due_queue`      |             10 | 10, 20                      | after each durable submit   | elapsed foreground             | yes      | allowed              |
@@ -95,6 +96,7 @@ Entry mappings are:
 | --------------------------------------------- | --------------------------------------------- |
 | Approach primer or newly selected mental unit | `Learn Approach`                              |
 | Topic or default practice                     | `Guided Practice`                             |
+| `Custom Practice` setup                       | `Custom Practice`, Guided Practice blueprint  |
 | Pattern recognition                           | `Recognize Patterns`                          |
 | Strategy or pattern contrast                  | `Contrast Practice`                           |
 | Due review                                    | `Weak Area Review`, `source = due_queue`      |
@@ -103,6 +105,8 @@ Entry mappings are:
 | Timed validation                              | `Interview Simulation`                        |
 
 `due_queue` and `session_misses` are review sources, not mode IDs.
+
+`Custom Practice` resolves through the existing setup route with its own Algorithms mode ID. Its content blueprint and mental-unit selection boundary are fixed to Guided Practice; it must not introduce a second taxonomy or content policy. Its runtime accepts only lengths 10, 20, or 40 and explicit feedback timing `afterEachAnswer` or `atSessionEnd`; it rejects an omitted or unsupported feedback timing. Reinsert remains profile-owned. `afterEachAnswer` reveals feedback after durable submit; `atSessionEnd` withholds correctness and authored feedback until the verified session summary.
 
 ## 3. Certification mode configuration
 
@@ -530,6 +534,7 @@ Other Certification practice and simulation modes may create or increase review 
 Reinsert is enabled only in:
 
 - Algorithms `Guided Practice`;
+- Algorithms `Custom Practice`;
 - Algorithms `Weak Area Review`, `source = due_queue`;
 - Algorithms `Weak Area Review`, `source = session_misses`.
 

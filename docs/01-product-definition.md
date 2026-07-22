@@ -29,7 +29,7 @@ The table is an extensibility target, not a commitment to ship these tracks. A t
 
 ## Modes
 
-Algorithms modes are `Learn Approach`, `Guided Practice`, `Recognize Patterns`, `Contrast Practice`, `Weak Area Review`, `Independent Practice`, and `Interview Simulation`.
+Algorithms modes are `Learn Approach`, `Guided Practice`, `Custom Practice`, `Recognize Patterns`, `Contrast Practice`, `Weak Area Review`, `Independent Practice`, and `Interview Simulation`.
 
 Certification modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`.
 
@@ -38,12 +38,15 @@ Algorithms entry points map as follows:
 | Entry intent | Canonical configuration |
 | --- | --- |
 | Topic/default practice | `Guided Practice` for the chosen mental unit |
+| `Custom Practice` setup | `Custom Practice` for the chosen mental unit, using the Guided Practice content blueprint |
 | Pattern recognition | `Recognize Patterns` |
 | Contrast | `Contrast Practice` |
 | Due review | `Weak Area Review`, `source = due_queue` |
 | Session misses | `Weak Area Review`, `source = session_misses` |
 | Mixed practice | `Independent Practice` |
 | Timed validation | `Interview Simulation` |
+
+`Custom Practice` is an Algorithms mode with its own stored mode ID and the same one-active-session lifecycle as other non-simulation practice. It consumes only the immutable Guided Practice content blueprint for the selected mental unit; it does not create a second content taxonomy or selection policy. It permits requested lengths 10, 20, or 40 and explicit feedback timing `afterEachAnswer` or `atSessionEnd`. Reinsert remains profile-owned and cannot be overridden by the learner.
 
 ## Evidence and recommendation
 

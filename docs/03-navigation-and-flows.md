@@ -25,11 +25,12 @@ The only user-facing Algorithms mode labels are:
 
 1. `Learn Approach`
 2. `Guided Practice`
-3. `Recognize Patterns`
-4. `Contrast Practice`
-5. `Weak Area Review`
-6. `Independent Practice`
-7. `Interview Simulation`
+3. `Custom Practice`
+4. `Recognize Patterns`
+5. `Contrast Practice`
+6. `Weak Area Review`
+7. `Independent Practice`
+8. `Interview Simulation`
 
 Algorithms entry intents map as follows:
 
@@ -37,6 +38,7 @@ Algorithms entry intents map as follows:
 | ---------------------------------- | --------------------------------------------- |
 | Approach primer or new mental unit | `Learn Approach`                              |
 | Topic or default practice          | `Guided Practice`                             |
+| `Custom Practice` setup            | `Custom Practice`, Guided Practice blueprint  |
 | Pattern recognition                | `Recognize Patterns`                          |
 | Contrast                           | `Contrast Practice`                           |
 | Due review                         | `Weak Area Review`, `source = due_queue`      |
@@ -45,6 +47,8 @@ Algorithms entry intents map as follows:
 | Timed validation                   | `Interview Simulation`                        |
 
 `due_queue` and `session_misses` are sources for `Weak Area Review`, not separate modes.
+
+`Custom Practice` uses the existing setup route and non-simulation lifecycle, but it resolves to its own Algorithms mode ID. It must consume the Guided Practice content blueprint and selected mental-unit boundary; it must not create a second content taxonomy or selection policy. It may choose length 10, 20, or 40 and feedback timing `afterEachAnswer` or `atSessionEnd`. Reinsert remains profile-owned and cannot be overridden by the learner.
 
 For `Weak Area Review`, selection takes eligible source items first. It may then add only reviewed items compatible under the Algorithms family review policy, using the same mental unit, mechanism, pattern relationship, or approved repair boundary.
 
