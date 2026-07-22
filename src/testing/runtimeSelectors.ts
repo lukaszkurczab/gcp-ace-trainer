@@ -46,7 +46,7 @@ export const runtimeSelectors = Object.freeze({
     mode: (modeId: string) => selector("session", "mode", modeId),
     roadmapNode: (roadmapNodeId: string) => selector("session", "roadmap-node", roadmapNodeId),
     question: (itemId: ItemId) => selector("session", "question", itemId),
-    option: (itemId: ItemId, optionId: string) => selector("session", "option", itemId, optionId),
+    option: (itemId: ItemId, optionId: string) => selector("session", "option", itemId, optionId.toLowerCase()),
     submit: (itemId: ItemId) => selector("session", "submit", itemId),
     continue: (itemId: ItemId) => selector("session", "continue", itemId),
     feedback: (itemId: ItemId) => selector("session", "feedback", itemId),
@@ -92,7 +92,7 @@ export const runtimeSelectors = Object.freeze({
   simulation: Object.freeze({
     root: (sessionId: string) => selector("simulation", "root", sessionId),
     question: (itemId: ItemId) => selector("simulation", "question", itemId),
-    option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId),
+    option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId.toLowerCase()),
     action: (sessionId: string, actionId: string) => selector("simulation", "action", sessionId, actionId),
     navigator: (occurrenceId: string) => selector("simulation", "navigator", occurrenceId),
   }),
