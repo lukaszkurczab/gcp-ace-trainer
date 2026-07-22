@@ -94,7 +94,8 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     if (overlay === "leave" && operation.kind === "editable") return confirmationSurface(projection, "leave_confirmation", "Leave and resume later?", "Leaving preserves the latest durable draft.", () => setOverlay("none"), () => navigation.goBack());
     if (overlay === "abandon" && operation.kind === "editable") return confirmationSurface(projection, "abandon_confirmation", "Abandon this simulation?", "Abandoning ends resumability. Durable records remain available.", () => setOverlay("none"), () => { void abandon(); });
     if (operation.kind !== "editable") return operationSurface(projection, operation, () => { void load(); });
-    const changed = !sameResponse(response, responseFromProjection(projection));
+    const hasDurableResponse = projection.navigator[projection.position.current - 1]?.answered === true;
+    const changed = !hasDurableResponse || !sameResponse(response, responseFromProjection(projection));
     return {
       state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection),
       progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
