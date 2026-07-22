@@ -1,0 +1,220 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly M1 — Guided Practice 10 after each answer
+tags:
+  - runtime-auditability
+  - m1
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 30000
+- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- tapOn:
+    id: "patternly:practice:open-setup"
+- assertVisible:
+    id: "patternly:practice:setup:root"
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-guided-practice:1:length:10:feedback-timing:after-each-answer"
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-001:correct"
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-002"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-002:same"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-002"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-002"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-002:incorrect"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-002"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-003"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-003:worst_n_amortized_1"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-003"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-003"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-003:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-003"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-004"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-004:copy_never"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-004"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-004"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-004:incorrect"
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-004"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-004"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-004"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-005"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-005:each_item_once"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-005"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-005"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-005:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-005"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-006"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-006:every_increment_one_flip"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-006"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-006"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-006:incorrect"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-006"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-007"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-007:yes_individual_expensive"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-007"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-007"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-007:correct"
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-007"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-007"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-007"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-008"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-008:yes_usually"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-008"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-008"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-008:incorrect"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-008"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-009"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-009:total_n_linear"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-009"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-009"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-009:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-009"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-010"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-010:amortized_each"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-010"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-010"
+    direction: DOWN
+- assertVisible:
+    id: "patternly:session:result:alg-complexity-amortized-010:incorrect"
+- tapOn:
+    id: "patternly:session:continue:alg-complexity-amortized-010"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+    timeout: 30000
+- assertNotVisible:
+    id: "patternly:session:question:alg-complexity-amortized-011"
+- tapOn:
+    id: "patternly:summary:back-to-practice:algorithms:algorithms-guided-practice:1"
+- assertVisible:
+    id: "patternly:practice:hub:root"
