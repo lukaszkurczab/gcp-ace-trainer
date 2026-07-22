@@ -130,7 +130,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}
         component={AlgorithmsInterviewSimulationScreen}
-        options={{ headerShown: false, title: t("Interview Simulation") }}
+        options={{ headerShown: false, presentation: "fullScreenModal", title: t("Interview Simulation") }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY}
