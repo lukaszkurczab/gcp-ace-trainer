@@ -29,12 +29,13 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   const interactionLocked = projection.state !== "editable";
 
   return (
-    <View collapsable={false} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
+    <View>
       <SessionShell
         actionBar={actionBar}
         modeLabel={projection.modeLabel}
         position={projection.position}
         progress={projection.progress}
+        rootTestID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}
         timer={projection.timer}
       >
         <View accessible accessibilityRole="header" style={styles.heading}>
