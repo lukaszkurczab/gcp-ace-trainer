@@ -276,6 +276,14 @@ export class TrainingLifecycleUseCases {
   async recoverPendingJournal(): Promise<void> { await this.run("persistence_failure", () => this.ports.mutations.recover()); }
   async resetLearningState(): Promise<void> { await this.run("persistence_failure", () => this.ports.mutations.reset()); }
 
+  /** Development auditability changes the injected clock only; it never writes storage. */
+  advanceRuntimeAuditabilityClock(milliseconds: number): string {
+    if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0) throw new TrainingApplicationFailure("invalid_response", "Runtime audit clock advance must be a positive safe integer.");
+    const auditability = this.ports.runtimeAuditability;
+    if (!auditability) throw new TrainingApplicationFailure("persistence_failure", "Runtime audit clock control is unavailable.");
+    return auditability.advanceWallClockBy(milliseconds);
+  }
+
   async loadSummary(sessionId: string) {
     const session = await this.run("summary_unavailable", () => this.ports.repositories.getSession(sessionId));
     if (!session || session.status !== "completed") throw new TrainingApplicationFailure("summary_unavailable", "A verified completed session is required for summary.");

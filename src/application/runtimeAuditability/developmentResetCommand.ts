@@ -1,18 +1,30 @@
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 
 export const DEVELOPMENT_RESET_LEARNING_STATE_URL = "com.lkurczab.gcpacetrainer://audit/reset-learning-state";
+export const DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL = "com.lkurczab.gcpacetrainer://audit/clock/advance";
 
-export type RuntimeAuditabilityCommand = Readonly<{ kind: "reset_learning_state" }>;
+export type RuntimeAuditabilityCommand =
+  | Readonly<{ kind: "reset_learning_state" }>
+  | Readonly<{ kind: "advance_clock"; milliseconds: number }>;
 export type RuntimeAuditabilityUrlHandling =
   | Readonly<{ kind: "unavailable_in_production" }>
   | Readonly<{ kind: "ignored" }>
-  | Readonly<{ kind: "reset_learning_state" }>;
+  | Readonly<{ kind: "reset_learning_state" }>
+  | Readonly<{ kind: "advance_clock"; now: string }>;
 
 const resetLearningStateCommand: RuntimeAuditabilityCommand = Object.freeze({ kind: "reset_learning_state" });
 
 /** Accept only the one documented command; query strings and fragments are not commands. */
 export function parseRuntimeAuditabilityCommand(url: string | null): RuntimeAuditabilityCommand | null {
-  return url === DEVELOPMENT_RESET_LEARNING_STATE_URL ? resetLearningStateCommand : null;
+  if (url === DEVELOPMENT_RESET_LEARNING_STATE_URL) return resetLearningStateCommand;
+  if (!url) return null;
+  let parsed: URL;
+  try { parsed = new URL(url); } catch { return null; }
+  if (`${parsed.protocol}//${parsed.host}${parsed.pathname}` !== DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL || parsed.hash || [...parsed.searchParams.keys()].length !== 1) return null;
+  const milliseconds = parsed.searchParams.get("milliseconds");
+  if (!milliseconds || !/^[1-9][0-9]*$/.test(milliseconds)) return null;
+  const value = Number(milliseconds);
+  return Number.isSafeInteger(value) ? Object.freeze({ kind: "advance_clock" as const, milliseconds: value }) : null;
 }
 
 export function isDevelopmentRuntimeAuditabilityEnabled(): boolean {
@@ -27,6 +39,9 @@ export async function handleRuntimeAuditabilityUrl(url: string | null): Promise<
   if (!isDevelopmentRuntimeAuditabilityEnabled()) return { kind: "unavailable_in_production" };
   const command = parseRuntimeAuditabilityCommand(url);
   if (!command) return { kind: "ignored" };
-  await getTrainingLifecycleUseCases().resetLearningState();
-  return { kind: command.kind };
+  if (command.kind === "reset_learning_state") {
+    await getTrainingLifecycleUseCases().resetLearningState();
+    return { kind: command.kind };
+  }
+  return { kind: command.kind, now: getTrainingLifecycleUseCases().advanceRuntimeAuditabilityClock(command.milliseconds) };
 }

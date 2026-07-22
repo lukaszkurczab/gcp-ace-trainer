@@ -128,7 +128,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
       id: request.sessionId,
       trackId: "algorithms",
       modeId: mode.id,
-      configurationSnapshot: practiceConfiguration(mode, blueprint),
+      configurationSnapshot: practiceConfiguration(mode, blueprint, request.reviewSource),
       requestedLength: request.requestedLength,
       actualLength: selection.actualLength,
       currentItemIndex: 0,
@@ -193,7 +193,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     const reviewMutations: readonly ReviewMutationCommand[] = !existing
       ? [Object.freeze({ kind: "upsert" as const, entry: createAlgorithmReviewEntry(attempt, undefined, submitted.score.status === "correct" ? [] : undefined), transitionAttemptId: attempt.id })]
       : (() => {
-          const updated = updateAlgorithmReviewEntry(existing, attempt);
+          const updated = updateAlgorithmReviewEntry(existing, attempt, { eligibleForPersistentResolution: isAlgorithmsDueQueueReviewSession(input.session) });
           return updated
             ? [Object.freeze({ kind: "upsert" as const, entry: updated, transitionAttemptId: attempt.id })]
             : [Object.freeze({ kind: "remove" as const, entry: existing, transitionAttemptId: attempt.id })];
@@ -431,7 +431,10 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
   return value as AlgorithmsLifecyclePreparationRequest;
 }
 
-function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }): Readonly<Record<string, string | number | boolean>> {
+function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { blueprintId: string; blueprintVersion: string }, reviewSource: AlgorithmReviewSource | undefined): Readonly<Record<string, string | number | boolean>> {
+  if (mode.id === ALGORITHM_MODE_IDS.weakAreaReview ? !reviewSource : reviewSource !== undefined) {
+    throw new Error("Algorithms review source must match the declared practice mode.");
+  }
   return Object.freeze({
     kind: "algorithmsPractice",
     blueprintId: blueprint.blueprintId,
@@ -441,9 +444,15 @@ function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { bluep
     navigation: mode.profile.navigation,
     submission: mode.profile.submission,
     timer: mode.profile.timer.kind,
+    ...(reviewSource ? { reviewSource } : {}),
     ...(mode.profile.timer.kind === "countdownForeground" ? { timerDurationMs: mode.profile.timer.durationMs } : {}),
     reinsertEnabled: mode.profile.reinsertEnabled,
   });
+}
+
+/** Only the declared due-queue session context may advance persistent review retention. */
+function isAlgorithmsDueQueueReviewSession(session: TrainingSession): boolean {
+  return session.modeId === ALGORITHM_MODE_IDS.weakAreaReview && session.configurationSnapshot.reviewSource === "due_queue";
 }
 
 function optionOrder(item: ReturnType<AlgorithmContentCatalog["getItemById"]>): readonly string[] {
