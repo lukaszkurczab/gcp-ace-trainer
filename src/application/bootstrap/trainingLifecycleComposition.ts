@@ -41,17 +41,28 @@ export type AdjustableWallClock = WallClock & Readonly<{ advanceBy(milliseconds:
 export type TrainingLifecycleCompositionDependencies = Readonly<{ wallClock?: WallClock }>;
 
 const realWallClock: WallClock = Object.freeze({ now: () => new Date().toISOString() });
+const MAX_ISO_DATE_MILLISECONDS = 8_640_000_000_000_000;
 
 /** A development-only offset preserves production time semantics while allowing legal time travel in audit runs. */
 export function createAdjustableWallClock(now: () => string = realWallClock.now): AdjustableWallClock {
   let offsetMilliseconds = 0;
+  const timestampAtOffset = (offset: number): string => {
+    const baseTimestamp = Date.parse(now());
+    const timestamp = baseTimestamp + offset;
+    if (!Number.isFinite(baseTimestamp) || !Number.isFinite(timestamp) || Math.abs(timestamp) > MAX_ISO_DATE_MILLISECONDS) {
+      throw new Error("Runtime audit clock timestamp must remain within the valid ISO date range.");
+    }
+    return new Date(timestamp).toISOString();
+  };
   return Object.freeze({
-    now: () => new Date(Date.parse(now()) + offsetMilliseconds).toISOString(),
+    now: () => timestampAtOffset(offsetMilliseconds),
     advanceBy(milliseconds: number) {
       if (!Number.isSafeInteger(milliseconds) || milliseconds <= 0) throw new Error("Runtime audit clock advance must be a positive safe integer.");
-      offsetMilliseconds += milliseconds;
-      if (!Number.isSafeInteger(offsetMilliseconds)) throw new Error("Runtime audit clock offset exceeds the supported range.");
-      return new Date(Date.parse(now()) + offsetMilliseconds).toISOString();
+      const nextOffset = offsetMilliseconds + milliseconds;
+      if (!Number.isSafeInteger(nextOffset)) throw new Error("Runtime audit clock offset exceeds the supported range.");
+      const timestamp = timestampAtOffset(nextOffset);
+      offsetMilliseconds = nextOffset;
+      return timestamp;
     },
   });
 }

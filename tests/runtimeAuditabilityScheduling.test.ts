@@ -45,3 +45,11 @@ test("injected audit clock drives normal scheduling and both due retention outco
   assert.equal(failedDue?.consecutiveAfterDueSuccesses, 0);
   assert.equal(updateAlgorithmReviewEntry(failedDue!, attempt({ id: "remediation-success", kind: "correct", sessionId: "remediation", timestamp: clock.now() }), dueQueue)?.consecutiveAfterDueSuccesses, 1);
 });
+
+test("injected audit clock rejects an advance outside the ISO date range without changing its offset", () => {
+  const base = new Date(8_640_000_000_000_000 - 1).toISOString();
+  const clock = createAdjustableWallClock(() => base);
+
+  assert.throws(() => clock.advanceBy(2), /valid ISO date range/);
+  assert.equal(clock.now(), base);
+});

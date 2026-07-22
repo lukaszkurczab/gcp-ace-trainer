@@ -428,6 +428,15 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
     (value.requestedLength !== 10 && value.requestedLength !== 20 && value.requestedLength !== 40)) {
     throw new Error("Algorithms session preparation requires a sessionId and a supported requestedLength.");
   }
+  if (value.reviewSource !== undefined && value.reviewSource !== "due_queue" && value.reviewSource !== "session_misses") {
+    throw new Error("Algorithms review source must be due_queue or session_misses.");
+  }
+  if (value.reviewItemRefs !== undefined && !Array.isArray(value.reviewItemRefs)) {
+    throw new Error("Algorithms review item refs must be an array.");
+  }
+  if (value.reviewItemRefs !== undefined && value.reviewSource !== "session_misses") {
+    throw new Error("Algorithms review item refs require the session_misses review source.");
+  }
   return value as AlgorithmsLifecyclePreparationRequest;
 }
 

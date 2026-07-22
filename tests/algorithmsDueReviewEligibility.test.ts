@@ -75,3 +75,24 @@ test("Algorithms runtime persists due_queue source and makes only that session e
   assert.equal(ordinaryMutation?.kind, "upsert");
   if (ordinaryMutation?.kind === "upsert") assert.equal(ordinaryMutation.entry.consecutiveAfterDueSuccesses, 0);
 });
+
+test("Algorithms runtime rejects malformed review requests before selecting or persisting a session", async () => {
+  await validateBundledContent();
+  const runtime = createAlgorithmsFamilyRuntime();
+  const input = {
+    trackId: "algorithms",
+    modeId: "algorithms-weak-area-review",
+    attempts: [],
+    reviews: [],
+    now: NOW,
+  } as const;
+
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "invalid-source", requestedLength: 10, reviewSource: "unknown" } }),
+    /review source must be due_queue or session_misses/,
+  );
+  await assert.rejects(
+    runtime.prepare({ ...input, request: { sessionId: "invalid-refs", requestedLength: 10, reviewSource: "due_queue", reviewItemRefs: [] } }),
+    /review item refs require the session_misses review source/,
+  );
+});
