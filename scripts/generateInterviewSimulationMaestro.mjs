@@ -47,10 +47,6 @@ const lines = [
   "    centerElement: true",
   "- tapOn:",
   `    id: \"${selector("practice", "mode-card", "algorithms-interview-simulation")}\"`,
-  "- extendedWaitUntil:",
-  "    visible:",
-  `      id: \"${selector("simulation", "action", sessionId, "finish-simulation")}\"`,
-  "    timeout: 30000",
 ];
 
 function add(command, value) {
