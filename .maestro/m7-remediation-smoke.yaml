@@ -9,11 +9,6 @@ tags:
     timeout: 30000
 - extendedWaitUntil:
     visible:
-      id: "patternly:content:audit-command-listener:ready"
-    timeout: 30000
-- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
-- extendedWaitUntil:
-    visible:
       id: "patternly:content:ready:1"
     timeout: 30000
 - extendedWaitUntil:
