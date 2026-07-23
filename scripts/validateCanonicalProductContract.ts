@@ -127,6 +127,7 @@ export type CanonicalPracticeSessionState =
 
 export type CanonicalSimulationSessionState =
   | "editable" | "saving" | "save_failed" | "stale_revision" | "navigating" | "navigation_failed"
+  | "save_and_continue_advance_recovery"
   | "frozen" | "finalization_journal_pending" | "finalization_journal_failed" | "materializing"
   | "materialization_failed" | "verifying" | "verification_failed" | "verified_pending_clear"
   | "recovery_required" | "timer_recovery_failed" | "missing_draft" | "version_mismatch" | "corrupt_state"
@@ -137,7 +138,7 @@ export type CanonicalSessionStateMachineTrigger =
   | "validation_rejected" | "journal_write_failed" | "submit_verified" | "advance_verified" | "advance_failed"
   | "completion_verified" | "completion_failed" | "abandonment_verified" | "abandonment_before_journal_failed"
   | "abandonment_recovery_required" | "save_verified" | "save_failed" | "stale_revision" | "navigation_verified"
-  | "navigation_failed" | "reconstruct" | "finalization_started" | "finalization_verified" | "materialization_failed"
+  | "navigation_failed" | "advance_not_verified_after_saved_response" | "reconstruct" | "finalization_started" | "finalization_verified" | "materialization_failed"
   | "materialization_verified" | "verification_failed" | "verification_verified";
 
 export type CanonicalSessionTransition<State extends string> = Readonly<{
@@ -324,7 +325,7 @@ const canonicalPracticeSessionStates: readonly CanonicalPracticeSessionState[] =
 ];
 
 const canonicalSimulationSessionStates: readonly CanonicalSimulationSessionState[] = [
-  "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
+  "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "save_and_continue_advance_recovery", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
 ];
 
 const canonicalSimulationMutationKinds: readonly CanonicalSimulationMutationKind[] = [
@@ -348,7 +349,7 @@ const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<C
 const canonicalSimulationSessionTransitions: readonly CanonicalSessionTransition<CanonicalSimulationSessionState>[] = [
   { from: "editable", trigger: "save", to: "saving" }, { from: "editable", trigger: "navigator_jump", to: "navigating" }, { from: "editable", trigger: "finish", to: "frozen" }, { from: "editable", trigger: "abandon", to: "abandoning" },
   { from: "saving", trigger: "save_verified", to: "editable" }, { from: "saving", trigger: "save_failed", to: "save_failed" }, { from: "saving", trigger: "stale_revision", to: "stale_revision" }, { from: "save_failed", trigger: "save", to: "saving" }, { from: "stale_revision", trigger: "save", to: "saving" },
-  { from: "navigating", trigger: "navigation_verified", to: "editable" }, { from: "navigating", trigger: "navigation_failed", to: "navigation_failed" }, { from: "navigation_failed", trigger: "navigator_jump", condition: "durable_state_not_durable", to: "navigating" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_durable", to: "materializing" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_materialized", to: "verifying" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_verified_pending_clear", to: "verified_pending_clear" },
+  { from: "navigating", trigger: "navigation_verified", to: "editable" }, { from: "navigating", trigger: "navigation_failed", to: "navigation_failed" }, { from: "navigating", trigger: "advance_not_verified_after_saved_response", to: "save_and_continue_advance_recovery" }, { from: "navigation_failed", trigger: "navigator_jump", condition: "durable_state_not_durable", to: "navigating" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_durable", to: "materializing" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_materialized", to: "verifying" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_verified_pending_clear", to: "verified_pending_clear" }, { from: "save_and_continue_advance_recovery", trigger: "recover", to: "navigating" },
   { from: "frozen", trigger: "finalization_started", to: "finalization_journal_pending" }, { from: "finalization_journal_pending", trigger: "finalization_verified", to: "completed" }, { from: "finalization_journal_pending", trigger: "journal_write_failed", to: "finalization_journal_failed" }, { from: "finalization_journal_pending", trigger: "materialization_failed", to: "materialization_failed" }, { from: "finalization_journal_pending", trigger: "verification_failed", to: "verification_failed" }, { from: "finalization_journal_failed", trigger: "finish", to: "frozen" }, { from: "materializing", trigger: "recover", condition: "recovered_active_session", to: "editable" }, { from: "verifying", trigger: "recover", condition: "recovered_active_session", to: "editable" }, { from: "verified_pending_clear", trigger: "recover", condition: "recovered_active_session", to: "editable" },
   { from: "abandoning", trigger: "abandonment_verified", to: "abandoned" }, { from: "abandoning", trigger: "abandonment_before_journal_failed", to: "abandonment_failed_before_journal" }, { from: "abandoning", trigger: "abandonment_recovery_required", to: "abandonment_recovery_required" }, { from: "abandonment_failed_before_journal", trigger: "abandon", to: "abandoning" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_durable", to: "materializing" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_materialized", to: "verifying" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_verified_pending_clear", to: "verified_pending_clear" },
 ];

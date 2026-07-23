@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getAlgorithmsInterviewSimulationEntry,
   getAlgorithmsSimulationProjection,
+  recoverAlgorithmsSimulationSaveAndContinue,
   saveAlgorithmsSimulationResponse,
   saveAlgorithmsSimulationResponseAndContinue,
   startAlgorithmsSession,
@@ -12,6 +13,7 @@ import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { getActiveTrainingSessionDraft } from "../src/storage/repositories";
+import { STORAGE_KEYS } from "../src/storage/keys";
 import {
   isAlgorithmChoiceQuestion,
   isAlgorithmComplexityQuestion,
@@ -103,4 +105,35 @@ test("Algorithms save-and-continue verifies its durable response revision before
   assert.equal(projection.durableDraftRevision, 2);
   assert.equal(draft?.revision, 2);
   assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
+test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {
+  await validateBundledContent();
+  const storage = installMemoryStorage();
+  const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  storage.resetCounters();
+  storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.trainingSession(started.session.id), occurrence: 2 });
+
+  await assert.rejects(() => saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }));
+  const durableAfterFailure = await getActiveTrainingSessionDraft();
+  assert.equal(durableAfterFailure?.revision, 2);
+  assert.deepEqual(durableAfterFailure?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "save_and_continue_advance_recovery");
+
+  storage.setFailurePlan(null);
+  const recovered = await recoverAlgorithmsSimulationSaveAndContinue({ occurrenceId: occurrence.occurrenceId });
+  const durableAfterRecovery = await getActiveTrainingSessionDraft();
+
+  assert.equal(recovered.position.current, 2);
+  assert.equal(durableAfterRecovery?.revision, 2);
+  assert.deepEqual(durableAfterRecovery?.responsesByOccurrenceId[occurrence.occurrenceId], response);
 });

@@ -77,6 +77,12 @@ export class TrainingLifecycleUseCases {
     return simulation("editable");
   }
 
+  /** A save-and-continue retry may advance only; its draft response is already durable. */
+  markSimulationSaveAndContinueAdvanceRecovery(sessionId: string, error: unknown): void {
+    const durableState = error instanceof MutationCommitFailure ? error.durableState : "not_durable";
+    this.operationStates.set(sessionId, simulation("save_and_continue_advance_recovery", operationError("simulation_save_and_continue", durableState, "recover")));
+  }
+
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
     const runtime = this.resolveRuntime(input.trackId);

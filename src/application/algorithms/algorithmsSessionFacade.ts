@@ -282,13 +282,44 @@ export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonl
   if (saved.revision !== previousRevision + 1 || saved.responsesByOccurrenceId[input.occurrenceId] === undefined) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation response revision.");
   }
-  const advanced = await navigateAlgorithmsSimulationTo(session.currentItemIndex + 1);
+  let advanced: TrainingSession;
+  try { advanced = await navigateAlgorithmsSimulationTo(session.currentItemIndex + 1); }
+  catch (error) {
+    getTrainingLifecycleUseCases().markSimulationSaveAndContinueAdvanceRecovery(session.id, error);
+    throw error;
+  }
   if (advanced.currentItemIndex !== session.currentItemIndex + 1) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation position.");
   }
   const projection = await getAlgorithmsSimulationProjection();
   if (projection.session.id !== session.id || projection.position.current !== advanced.currentItemIndex + 1 || projection.durableDraftRevision !== saved.revision) {
     throw new TrainingApplicationFailure("verification_failure", "Save and continue could not publish the verified next simulation projection.");
+  }
+  return projection;
+}
+
+/** Recovery continues a response already verified as durable; it never writes that response again. */
+export async function recoverAlgorithmsSimulationSaveAndContinue(input: Readonly<{ occurrenceId: string }>): Promise<AlgorithmsSimulationProjection> {
+  let session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can recover save and continue.");
+  const sourceIndex = session.itemOrder.findIndex((occurrence) => occurrence.occurrenceId === input.occurrenceId);
+  if (sourceIndex < 0 || sourceIndex >= session.itemOrder.length - 1 || session.currentItemIndex !== sourceIndex) {
+    throw new TrainingApplicationFailure("invalid_response", "Save-and-continue recovery requires its still-active non-final occurrence.");
+  }
+  const draft = await requireSimulationDraft(session.id);
+  if (draft.responsesByOccurrenceId[input.occurrenceId] === undefined) {
+    throw new TrainingApplicationFailure("missing_draft", "Save-and-continue recovery requires the durable response it is continuing from.");
+  }
+  const lifecycle = getTrainingLifecycleUseCases();
+  await lifecycle.recoverActiveTrainingOperation();
+  session = await requireAlgorithmsSession();
+  if (session.currentItemIndex === sourceIndex) await navigateAlgorithmsSimulationTo(sourceIndex + 1);
+  if (session.currentItemIndex !== sourceIndex + 1) {
+    throw new TrainingApplicationFailure("verification_failure", "Save-and-continue recovery could not verify the next simulation position.");
+  }
+  const projection = await getAlgorithmsSimulationProjection();
+  if (projection.durableDraftRevision !== draft.revision || projection.position.current !== sourceIndex + 2) {
+    throw new TrainingApplicationFailure("verification_failure", "Save-and-continue recovery could not publish the verified next simulation projection.");
   }
   return projection;
 }

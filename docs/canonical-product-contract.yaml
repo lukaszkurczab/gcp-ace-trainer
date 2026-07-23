@@ -22,6 +22,8 @@ requirements:
     statement: The save-and-continue user action for a non-final Algorithms Interview Simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.
   - id: SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001
     statement: Save-and-continue verifies the durable draft revision and persisted response before it advances exactly one occurrence and publishes the verified next simulation projection.
+  - id: SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001
+    statement: If save-and-continue persists a response but does not verify its advance, it exposes explicit recovery that advances only from the durable response without creating another draft revision.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -67,6 +69,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-continue verifies its durable response revision before publishing occurrence two
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001]
+    - id: algorithms-save-and-continue-recovery
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: Algorithms save-and-continue recovery advances a durable response without a second draft revision
+      requirementIds: [SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
@@ -155,7 +161,7 @@ sessionStateMachine:
       - { from: abandonment_failed_before_journal, trigger: abandon, to: abandoning }
   simulation:
     initialState: editable
-    states: [editable, saving, save_failed, stale_revision, navigating, navigation_failed, frozen, finalization_journal_pending, finalization_journal_failed, materializing, materialization_failed, verifying, verification_failed, verified_pending_clear, recovery_required, timer_recovery_failed, missing_draft, version_mismatch, corrupt_state, abandoning, abandonment_failed_before_journal, abandonment_recovery_required, abandoned, completed]
+    states: [editable, saving, save_failed, stale_revision, navigating, navigation_failed, save_and_continue_advance_recovery, frozen, finalization_journal_pending, finalization_journal_failed, materializing, materialization_failed, verifying, verification_failed, verified_pending_clear, recovery_required, timer_recovery_failed, missing_draft, version_mismatch, corrupt_state, abandoning, abandonment_failed_before_journal, abandonment_recovery_required, abandoned, completed]
     transitions:
       - { from: editable, trigger: save, to: saving }
       - { from: editable, trigger: navigator_jump, to: navigating }
@@ -168,10 +174,12 @@ sessionStateMachine:
       - { from: stale_revision, trigger: save, to: saving }
       - { from: navigating, trigger: navigation_verified, to: editable }
       - { from: navigating, trigger: navigation_failed, to: navigation_failed }
+      - { from: navigating, trigger: advance_not_verified_after_saved_response, to: save_and_continue_advance_recovery }
       - { from: navigation_failed, trigger: navigator_jump, condition: durable_state_not_durable, to: navigating }
       - { from: navigation_failed, trigger: reconstruct, condition: journal_status_durable, to: materializing }
       - { from: navigation_failed, trigger: reconstruct, condition: journal_status_materialized, to: verifying }
       - { from: navigation_failed, trigger: reconstruct, condition: journal_status_verified_pending_clear, to: verified_pending_clear }
+      - { from: save_and_continue_advance_recovery, trigger: recover, to: navigating }
       - { from: frozen, trigger: finalization_started, to: finalization_journal_pending }
       - { from: finalization_journal_pending, trigger: finalization_verified, to: completed }
       - { from: finalization_journal_pending, trigger: journal_write_failed, to: finalization_journal_failed }

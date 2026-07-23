@@ -254,14 +254,14 @@
         "states": {
           "type": "array",
           "minItems": 24,
-          "maxItems": 24,
+          "maxItems": 25,
           "uniqueItems": true,
           "items": { "$ref": "#/$defs/simulationSessionState" }
         },
         "transitions": {
           "type": "array",
           "minItems": 31,
-          "maxItems": 31,
+          "maxItems": 33,
           "items": { "$ref": "#/$defs/simulationSessionTransition" }
         }
       }
@@ -272,11 +272,11 @@
     },
     "simulationSessionState": {
       "type": "string",
-      "enum": ["editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed"]
+      "enum": ["editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "save_and_continue_advance_recovery", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed"]
     },
     "sessionStateMachineTrigger": {
       "type": "string",
-      "enum": ["submit", "next", "save", "navigator_jump", "finish", "abandon", "recover", "validation_rejected", "journal_write_failed", "submit_verified", "advance_verified", "advance_failed", "completion_verified", "completion_failed", "abandonment_verified", "abandonment_before_journal_failed", "abandonment_recovery_required", "save_verified", "save_failed", "stale_revision", "navigation_verified", "navigation_failed", "reconstruct", "finalization_started", "finalization_verified", "materialization_failed", "materialization_verified", "verification_failed", "verification_verified"]
+      "enum": ["submit", "next", "save", "navigator_jump", "finish", "abandon", "recover", "validation_rejected", "journal_write_failed", "submit_verified", "advance_verified", "advance_failed", "completion_verified", "completion_failed", "abandonment_verified", "abandonment_before_journal_failed", "abandonment_recovery_required", "save_verified", "save_failed", "stale_revision", "navigation_verified", "navigation_failed", "advance_not_verified_after_saved_response", "reconstruct", "finalization_started", "finalization_verified", "materialization_failed", "materialization_verified", "verification_failed", "verification_verified"]
     },
     "sessionStateMachineTransitionCondition": {
       "type": "string",

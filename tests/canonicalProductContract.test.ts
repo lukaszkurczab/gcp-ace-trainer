@@ -68,6 +68,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
       ["SIMULATION-SAVE-AND-CONTINUE-001", ["algorithms-save-and-continue-command"]],
       ["SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001", ["algorithms-save-and-continue-verification"]],
+      ["SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001", ["algorithms-save-and-continue-recovery"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
@@ -107,6 +108,10 @@ test("defines canonical user commands and maps every session CTA to its one appl
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001"), {
     id: "SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001",
     statement: "Save-and-continue verifies the durable draft revision and persisted response before it advances exactly one occurrence and publishes the verified next simulation projection.",
+  });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001"), {
+    id: "SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001",
+    statement: "If save-and-continue persists a response but does not verify its advance, it exposes explicit recovery that advances only from the durable response without creating another draft revision.",
   });
   assert.deepEqual(contract.userCommands, {
     commands: [
@@ -223,7 +228,7 @@ test("defines the closed durable session state machines and accepts only declare
     "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "verified_pending_clear", "recovery_required", "feedback", "advancing", "advance_failed", "completing", "completion_failed", "completed", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned",
   ]);
   assert.deepEqual(contract.sessionStateMachine.simulation.states, [
-    "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
+    "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "save_and_continue_advance_recovery", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
   ]);
 
   const machines = [

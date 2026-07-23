@@ -1,6 +1,6 @@
 /** Application-owned facts. Presentation may render them but never infer them. */
 export type DurableOperationError = Readonly<{
-  operation: "practice_submit" | "practice_advance" | "practice_complete" | "practice_abandon" | "practice_resume" | "simulation_save" | "simulation_navigation" | "simulation_finalization" | "simulation_abandon" | "simulation_resume";
+  operation: "practice_submit" | "practice_advance" | "practice_complete" | "practice_abandon" | "practice_resume" | "simulation_save" | "simulation_navigation" | "simulation_save_and_continue" | "simulation_finalization" | "simulation_abandon" | "simulation_resume";
   durableState: "not_durable" | "journal_durable" | "materialized" | "verified_pending_clear" | "verified";
   retrySafety: "safe_retry" | "recovery_only" | "retry_forbidden";
   allowedAction: "submit_again" | "recover" | "retry_same_command" | "return_to_summary" | "none";
@@ -34,6 +34,7 @@ export type SimulationDurableOperationState =
   | Readonly<{ family: "simulation"; kind: "stale_revision"; error: DurableOperationError }>
   | Readonly<{ family: "simulation"; kind: "navigating" }>
   | Readonly<{ family: "simulation"; kind: "navigation_failed"; error: DurableOperationError }>
+  | Readonly<{ family: "simulation"; kind: "save_and_continue_advance_recovery"; error: DurableOperationError }>
   | Readonly<{ family: "simulation"; kind: "frozen" }>
   | Readonly<{ family: "simulation"; kind: "finalization_journal_pending"; error: DurableOperationError }>
   | Readonly<{ family: "simulation"; kind: "finalization_journal_failed"; error: DurableOperationError }>
