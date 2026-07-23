@@ -74,6 +74,22 @@ test("locks FIFO serialization for every simulation mutation of one active sessi
   }
 });
 
+test("defines the versioned simulation timer cadence without per-refresh durable writes", () => {
+  const contract = loadCanonicalProductContract();
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-TIMER-CADENCE-001"), {
+    id: "SIMULATION-TIMER-CADENCE-001",
+    statement: "Simulation timer projections refresh every second without a durable write; durable checkpoints occur every 15 seconds with at most one second of drift and at every declared lifecycle checkpoint.",
+  });
+  assert.deepEqual(contract.simulationTimerCadence, {
+    version: 1,
+    uiRefreshIntervalMs: 1_000,
+    uiRefreshWritesDurably: false,
+    durableCheckpointIntervalMs: 15_000,
+    maxDurableCheckpointDriftMs: 1_000,
+    lifecycleCheckpoints: ["foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry"],
+  });
+});
+
 test("defines the closed durable session state machines and accepts only declared triggered transitions", () => {
   const contract = loadCanonicalProductContract();
   const lifecycleSource = readFileSync("src/application/trainingLifecycle/TrainingLifecycleUseCases.ts", "utf8");
@@ -225,10 +241,21 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["missing simulation concurrency contract", validContract.replace(/simulationConcurrency:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'simulationConcurrency'/],
     ["unknown simulation concurrency field", validContract.replace("  maxInFlight: 1\n", "  maxInFlight: 1\n  extra: value\n"), /must NOT have additional properties/],
     ["changed simulation queue discipline", validContract.replace("  queueDiscipline: fifo\n", "  queueDiscipline: lifo\n"), /must be equal to constant/],
-    ["missing serialized simulation mutation", validContract.replace(", abandonment]\nalgorithms:", "]\nalgorithms:"), /must NOT have fewer than 6 items/],
+    ["missing serialized simulation mutation", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization]"), /must NOT have fewer than 6 items/],
     ["duplicate serialized simulation mutation", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, save, timer-checkpoint, foreground-transition, finalization, abandonment]"), /must NOT have duplicate items/],
     ["unknown serialized simulation mutation", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, unknown]"), /must be equal to one of the allowed values/],
     ["reordered serialized simulation mutations", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [navigation, save, timer-checkpoint, foreground-transition, finalization, abandonment]"), /Canonical Simulation concurrency contract must declare exactly its serialized mutation kinds in canonical order/],
+    ["missing simulation timer cadence", validContract.replace(/simulationTimerCadence:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'simulationTimerCadence'/],
+    ["unknown simulation timer cadence field", validContract.replace("  uiRefreshIntervalMs: 1000\n", "  uiRefreshIntervalMs: 1000\n  extra: value\n"), /must NOT have additional properties/],
+    ["missing timer cadence version", validContract.replace("  version: 1\n  uiRefreshIntervalMs: 1000\n", "  uiRefreshIntervalMs: 1000\n"), /must have required property 'version'/],
+    ["changed timer cadence version", validContract.replace("  version: 1\n  uiRefreshIntervalMs: 1000\n", "  version: 2\n  uiRefreshIntervalMs: 1000\n"), /must be equal to constant/],
+    ["UI refresh writes durably", validContract.replace("  uiRefreshWritesDurably: false\n", "  uiRefreshWritesDurably: true\n"), /must be equal to constant/],
+    ["changed UI refresh interval", validContract.replace("  uiRefreshIntervalMs: 1000\n", "  uiRefreshIntervalMs: 2000\n"), /must be equal to constant/],
+    ["changed durable checkpoint interval", validContract.replace("  durableCheckpointIntervalMs: 15000\n", "  durableCheckpointIntervalMs: 1000\n"), /must be equal to constant/],
+    ["missing durable checkpoint drift", validContract.replace("  maxDurableCheckpointDriftMs: 1000\n", ""), /must have required property 'maxDurableCheckpointDriftMs'/],
+    ["changed durable checkpoint drift", validContract.replace("  maxDurableCheckpointDriftMs: 1000\n", "  maxDurableCheckpointDriftMs: 2000\n"), /must be equal to constant/],
+    ["missing lifecycle checkpoint", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-enter, foreground-leave, draft-save, finalization]"), /must NOT have fewer than 5 items/],
+    ["reordered lifecycle checkpoints", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-leave, foreground-enter, draft-save, finalization, expiry]"), /Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

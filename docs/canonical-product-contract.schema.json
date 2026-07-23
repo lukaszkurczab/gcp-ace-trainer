@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "simulationConcurrency", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -52,6 +52,7 @@
     "userCommands": { "$ref": "#/$defs/userCommands" },
     "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
     "simulationConcurrency": { "$ref": "#/$defs/simulationConcurrency" },
+    "simulationTimerCadence": { "$ref": "#/$defs/simulationTimerCadence" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -129,6 +130,29 @@
     "simulationMutationKind": {
       "type": "string",
       "enum": ["save", "navigation", "timer-checkpoint", "foreground-transition", "finalization", "abandonment"]
+    },
+    "simulationTimerCadence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "uiRefreshIntervalMs", "uiRefreshWritesDurably", "durableCheckpointIntervalMs", "maxDurableCheckpointDriftMs", "lifecycleCheckpoints"],
+      "properties": {
+        "version": { "const": 1 },
+        "uiRefreshIntervalMs": { "const": 1000 },
+        "uiRefreshWritesDurably": { "const": false },
+        "durableCheckpointIntervalMs": { "const": 15000 },
+        "maxDurableCheckpointDriftMs": { "const": 1000 },
+        "lifecycleCheckpoints": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/simulationTimerLifecycleCheckpoint" }
+        }
+      }
+    },
+    "simulationTimerLifecycleCheckpoint": {
+      "type": "string",
+      "enum": ["foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry"]
     },
     "practiceSessionStateMachine": {
       "type": "object",

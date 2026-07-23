@@ -79,6 +79,13 @@ export type CanonicalSimulationMutationKind =
   | "finalization"
   | "abandonment";
 
+export type CanonicalSimulationTimerLifecycleCheckpoint =
+  | "foreground-enter"
+  | "foreground-leave"
+  | "draft-save"
+  | "finalization"
+  | "expiry";
+
 export type CanonicalPracticeSessionState =
   | "unanswered" | "submitting_before_journal" | "submit_journal_failed" | "commit_pending"
   | "commit_materialization_failed" | "commit_verification_failed" | "verified_pending_clear" | "recovery_required"
@@ -196,6 +203,14 @@ export type CanonicalProductContract = Readonly<{
     revalidateActiveSessionAtExecution: true;
     mutationKinds: readonly CanonicalSimulationMutationKind[];
   }>;
+  simulationTimerCadence: Readonly<{
+    version: 1;
+    uiRefreshIntervalMs: 1_000;
+    uiRefreshWritesDurably: false;
+    durableCheckpointIntervalMs: 15_000;
+    maxDurableCheckpointDriftMs: 1_000;
+    lifecycleCheckpoints: readonly CanonicalSimulationTimerLifecycleCheckpoint[];
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
@@ -258,6 +273,10 @@ const canonicalSimulationSessionStates: readonly CanonicalSimulationSessionState
 
 const canonicalSimulationMutationKinds: readonly CanonicalSimulationMutationKind[] = [
   "save", "navigation", "timer-checkpoint", "foreground-transition", "finalization", "abandonment",
+];
+
+const canonicalSimulationTimerLifecycleCheckpoints: readonly CanonicalSimulationTimerLifecycleCheckpoint[] = [
+  "foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry",
 ];
 
 const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[] = [
@@ -383,6 +402,11 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const simulationConcurrency = (contract as CanonicalProductContract).simulationConcurrency;
   if (!hasExactValues(simulationConcurrency.mutationKinds, canonicalSimulationMutationKinds)) {
     throw new CanonicalProductContractValidationError("Canonical Simulation concurrency contract must declare exactly its serialized mutation kinds in canonical order");
+  }
+
+  const simulationTimerCadence = (contract as CanonicalProductContract).simulationTimerCadence;
+  if (!hasExactValues(simulationTimerCadence.lifecycleCheckpoints, canonicalSimulationTimerLifecycleCheckpoints)) {
+    throw new CanonicalProductContractValidationError("Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order");
   }
 
   const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);

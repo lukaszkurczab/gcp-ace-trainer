@@ -20,6 +20,8 @@ requirements:
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
     statement: "A simulation has one active session mutation lane: save, navigation, timer checkpoint, foreground transition, finalization, and abandonment are FIFO-serialized with at most one in flight, and revalidate the active session immediately before execution."
+  - id: SIMULATION-TIMER-CADENCE-001
+    statement: "Simulation timer projections refresh every second without a durable write; durable checkpoints occur every 15 seconds with at most one second of drift and at every declared lifecycle checkpoint."
 userCommands:
   commands:
     - id: submit
@@ -127,6 +129,13 @@ simulationConcurrency:
   maxInFlight: 1
   revalidateActiveSessionAtExecution: true
   mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]
+simulationTimerCadence:
+  version: 1
+  uiRefreshIntervalMs: 1000
+  uiRefreshWritesDurably: false
+  durableCheckpointIntervalMs: 15000
+  maxDurableCheckpointDriftMs: 1000
+  lifecycleCheckpoints: [foreground-enter, foreground-leave, draft-save, finalization, expiry]
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice
