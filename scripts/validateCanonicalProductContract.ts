@@ -39,6 +39,14 @@ export type CanonicalAlgorithmTimer =
   | Readonly<{ kind: "elapsedForeground" }>
   | Readonly<{ kind: "countdownForeground"; durationMs: 2_700_000 }>;
 
+export type CanonicalCustomPracticeContract = Readonly<{
+  modeId: "algorithms-custom-practice";
+  contentBlueprintModeId: "algorithms-guided-practice";
+  mentalUnitSelection: "explicit";
+  reinsertOwnership: "profile";
+  lifecycle: "sharedOneActiveSession";
+}>;
+
 export type CanonicalAlgorithmMode = Readonly<{
   id: CanonicalAlgorithmModeId;
   label: CanonicalAlgorithmModeLabel;
@@ -68,6 +76,7 @@ export type CanonicalProductContract = Readonly<{
     statement: string;
   }>[];
   algorithms: Readonly<{
+    customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
   }>;
 }>;
@@ -88,6 +97,10 @@ const algorithmModeLabels: Readonly<Record<CanonicalAlgorithmModeId, CanonicalAl
   "algorithms-independent-practice": "Independent Practice",
   "algorithms-interview-simulation": "Interview Simulation",
 };
+
+function hasExactValues<T>(actual: readonly T[], expected: readonly T[]): boolean {
+  return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
 
 export function parseCanonicalProductContract(source: string): CanonicalProductContract {
   const document = parseDocument(source, { uniqueKeys: true });
@@ -131,6 +144,25 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   );
   if (modeWithUnsupportedDefaultFeedback) {
     throw new CanonicalProductContractValidationError(`Algorithms mode default feedback must be supported: ${modeWithUnsupportedDefaultFeedback.id}`);
+  }
+
+  const customPractice = (contract as CanonicalProductContract).algorithms.customPractice;
+  const customPracticeMode = (contract as CanonicalProductContract).algorithms.modes.find(
+    (mode) => mode.id === customPractice.modeId,
+  );
+  if (!customPracticeMode) {
+    throw new CanonicalProductContractValidationError("Custom Practice contract must reference its declared Algorithms mode");
+  }
+
+  const customPracticeHasExpectedModeConfiguration =
+    hasExactValues(customPracticeMode.lengths.supported, [10, 20, 40]) &&
+    customPracticeMode.lengths.default === 20 &&
+    hasExactValues(customPracticeMode.feedback.supported, ["afterEachAnswer", "atSessionEnd"]) &&
+    customPracticeMode.feedback.default === "afterEachAnswer" &&
+    customPracticeMode.scope === "guidedPracticeBlueprintForSelectedMentalUnit" &&
+    customPracticeMode.reinsert;
+  if (!customPracticeHasExpectedModeConfiguration) {
+    throw new CanonicalProductContractValidationError("Custom Practice mode must preserve its declared lengths, feedback, Guided Practice mental-unit blueprint, and reinsert profile");
   }
 
   return contract as CanonicalProductContract;

@@ -8,7 +8,15 @@ requirements:
     statement: Product behavior is normative only when defined by this contract.
   - id: ALGORITHMS-MODE-MATRIX-001
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
+  - id: ALGORITHMS-CUSTOM-PRACTICE-001
+    statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
 algorithms:
+  customPractice:
+    modeId: algorithms-custom-practice
+    contentBlueprintModeId: algorithms-guided-practice
+    mentalUnitSelection: explicit
+    reinsertOwnership: profile
+    lifecycle: sharedOneActiveSession
   modes:
     - id: algorithms-learn-approach
       label: Learn Approach

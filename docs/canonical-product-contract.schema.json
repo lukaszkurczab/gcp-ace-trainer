@@ -52,8 +52,9 @@
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["modes"],
+      "required": ["customPractice", "modes"],
       "properties": {
+        "customPractice": { "$ref": "#/$defs/customPractice" },
         "modes": {
           "type": "array",
           "minItems": 8,
@@ -64,6 +65,18 @@
     }
   },
   "$defs": {
+    "customPractice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modeId", "contentBlueprintModeId", "mentalUnitSelection", "reinsertOwnership", "lifecycle"],
+      "properties": {
+        "modeId": { "const": "algorithms-custom-practice" },
+        "contentBlueprintModeId": { "const": "algorithms-guided-practice" },
+        "mentalUnitSelection": { "const": "explicit" },
+        "reinsertOwnership": { "const": "profile" },
+        "lifecycle": { "const": "sharedOneActiveSession" }
+      }
+    },
     "algorithmMode": {
       "type": "object",
       "additionalProperties": false,
