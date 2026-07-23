@@ -6,14 +6,14 @@ import { AppState } from "react-native";
 import {
   abandonAlgorithmsSession, enterAlgorithmsSimulationForeground, finalizeAlgorithmsSimulation,
   getAlgorithmsSimulationScreenProjection, leaveAlgorithmsSimulationForeground,
-  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
+  navigateAlgorithmsSimulationTo, recoverAlgorithmsSimulationOperation, recoverAlgorithmsSimulationSaveAndContinue, resumeAlgorithmsSimulationEditingAfterSaveFailure, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
   subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
   type AlgorithmsSimulationScreenProjection,
 } from "../../application/algorithms";
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { simulationPrimaryAction, simulationTimer, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
+import { simulationPrimaryAction, simulationTimer, type SimulationAction, type SimulationOperationPresentation, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
@@ -25,6 +25,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
   const [screen, setScreen] = useState<AlgorithmsSimulationScreenProjection | null>(null);
   const [localResponse, setLocalResponse] = useState<SimulationResponse | null>(null);
   const [overlay, setOverlay] = useState<Overlay>("none");
+  const [pendingNavigationIndex, setPendingNavigationIndex] = useState<number | null>(null);
   const load = useCallback(async () => setScreen(await getAlgorithmsSimulationScreenProjection()), []);
 
   useFocusEffect(useCallback(() => {
@@ -78,10 +79,12 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     if (!occurrenceId) return "save_failed";
     const changed = !sameResponse(response, responseFromProjection(projection));
     if (changed && !isComplete(response, projection)) return "incomplete_response";
+    setPendingNavigationIndex(index);
     try {
       if (sameResponse(response, responseFromProjection(projection))) await navigateAlgorithmsSimulationTo(index);
       else await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId, response, targetIndex: index });
       setLocalResponse(null);
+      setPendingNavigationIndex(null);
     } catch {
       await load();
       return "save_failed";
@@ -94,17 +97,37 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     try { await finalizeAlgorithmsSimulation(); navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: screen.projection.session.id }); } catch { await load(); }
   }
   async function abandon() { try { await abandonAlgorithmsSession(); navigation.goBack(); } catch { await load(); } }
+  async function resumeEditingAfterSaveFailure() { try { await resumeAlgorithmsSimulationEditingAfterSaveFailure(); } catch { /* The application keeps the operation state when resume-editing is invalid. */ } await load(); }
+  async function recoverOperation() { try { await recoverAlgorithmsSimulationOperation(); } catch { /* Recovery remains exclusively application-owned. */ } await load(); }
+  async function continueAfterNavigationFailure(operation: SimulationDurableOperationState) {
+    if (screen?.kind !== "ready") return;
+    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
+    try {
+      if (operation.kind === "save_and_continue_advance_recovery" && occurrenceId) await recoverAlgorithmsSimulationSaveAndContinue({ occurrenceId });
+      else if ("error" in operation && operation.error.allowedAction === "retry_same_command" && pendingNavigationIndex !== null) await goTo(pendingNavigationIndex);
+      else await recoverAlgorithmsSimulationOperation();
+    } catch { /* The application projection retains the exact recovery state. */ }
+    await load();
+  }
 
   const surface = useMemo<SimulationSurfaceProjection>(() => {
     if (!screen) return { state: "preparing", title: "Preparing Interview Simulation", notice: { tone: "neutral", message: "Loading canonical session state…" } };
-    if (screen.kind === "unavailable") return unavailableSurface(screen.operation, () => { void start(); }, () => navigation.goBack());
+    if (screen.kind === "unavailable") return unavailableSurface(screen.operation, () => navigation.goBack());
     const projection = screen.projection;
     const operation = projection.operation;
     const response = localResponse ?? responseFromProjection(projection);
     if (overlay === "finish" && operation.kind === "editable") return confirmationSurface(projection, "finish_confirmation", "Finish with unanswered questions?", `${projection.navigator.filter((item) => item.answered).length} answered. Unanswered questions receive zero points.`, () => setOverlay("none"), () => { void finish(); });
     if (overlay === "leave" && operation.kind === "editable") return confirmationSurface(projection, "leave_confirmation", "Leave and resume later?", "Leaving preserves the latest durable draft.", () => setOverlay("none"), () => navigation.goBack());
     if (overlay === "abandon" && operation.kind === "editable") return confirmationSurface(projection, "abandon_confirmation", "Abandon this simulation?", "Abandoning ends resumability. Durable records remain available.", () => setOverlay("none"), () => { void abandon(); });
-    if (operation.kind !== "editable") return operationSurface(projection, operation, () => { void load(); });
+    if (operation.kind !== "editable") return operationSurface(projection, operation, {
+      onClose: () => navigation.goBack(),
+      onContinueNavigation: () => { void continueAfterNavigationFailure(operation); },
+      onLeave: () => navigation.goBack(),
+      onRecover: () => { void recoverOperation(); },
+      onResumeEditing: () => { void resumeEditingAfterSaveFailure(); },
+      onRetryFinalization: () => { void finish(); },
+      onRetrySave: () => { void save(); },
+    });
     const changed = !sameResponse(response, responseFromProjection(projection));
     return {
       state: "editable", title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection),
@@ -120,17 +143,33 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localResponse, overlay, screen]);
+  }, [localResponse, overlay, pendingNavigationIndex, screen]);
   return <SimulationSessionSurface projection={surface} />;
 }
 
 function base(projection: AlgorithmsSimulationProjection) { return { title: "Interview Simulation", modeLabel: "Interview Simulation", position: simulationPosition(projection), progress: projection.position.current / projection.position.total, runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id }, timer: simulationTimer(projection.remainingForegroundMs), navigator: frozenNavigator(projection) }; }
-function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, recover: () => void): SimulationSurfaceProjection {
-  const state = operation.kind === "saving" ? "saving" : operation.kind === "stale_revision" ? "stale_revision" : operation.kind === "save_failed" ? "save_failed" : operation.kind === "frozen" ? "frozen" : operation.kind === "finalization_journal_pending" ? "finalization_journal_pending" : operation.kind === "finalization_journal_failed" ? "finalization_journal_failed" : operation.kind === "materializing" || operation.kind === "verifying" ? "finalizing" : operation.kind === "verification_failed" || operation.kind === "materialization_failed" || operation.kind === "verified_pending_clear" || operation.kind === "recovery_required" || operation.kind === "navigation_failed" || operation.kind === "abandonment_recovery_required" ? "recovering" : operation.kind === "abandoning" ? "abandoning" : operation.kind === "completed" ? "completed" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : "corrupt_state";
-  const error = "error" in operation ? operation.error : null;
-  return { ...base(projection), state, notice: { tone: error ? "error" : "neutral", message: error ? `Canonical operation requires ${error.allowedAction.replaceAll("_", " ")}.` : "Applying canonical operation…" }, ...(error?.allowedAction === "recover" ? { actions: { primary: { id: "recover", label: "Recover", onPress: recover } } } : {}) };
+type SimulationActionHandlers = Readonly<{ onClose: () => void; onContinueNavigation: () => void; onLeave: () => void; onRecover: () => void; onResumeEditing: () => void; onRetryFinalization: () => void; onRetrySave: () => void }>;
+function operationSurface(projection: AlgorithmsSimulationProjection, operation: SimulationDurableOperationState, callbacks: SimulationActionHandlers): SimulationSurfaceProjection {
+  const lockedLeave: SimulationAction = { id: "simulation-leave-resumable", label: "Leave and resume later", disabled: true, onPress: noop, variant: "secondary" };
+  if (operation.kind === "saving") return operationProjection(projection, "saving", savingOperation(), { primary: { id: "simulation-save", label: "Saving response…", disabled: true, loading: true, onPress: noop }, secondary: lockedLeave });
+  if (operation.kind === "save_failed" || operation.kind === "stale_revision") return operationProjection(projection, operation.kind === "save_failed" ? "save_failed" : "stale_revision", saveFailureOperation(callbacks.onResumeEditing), { primary: { id: "simulation-save", label: "Try again", onPress: callbacks.onRetrySave, variant: "destructive" }, secondary: { id: "simulation-leave-resumable", label: "Leave and resume later", onPress: callbacks.onLeave, variant: "secondary" } });
+  if (operation.kind === "navigation_failed" || operation.kind === "save_and_continue_advance_recovery") return operationProjection(projection, "recovering", navigationFailureOperation(operation.error.allowedAction === "recover"), { primary: { id: operation.error.allowedAction === "recover" ? "simulation-recover" : "simulation-navigator-jump", label: operation.error.allowedAction === "recover" ? "Resume navigation" : "Continue to next question", onPress: callbacks.onContinueNavigation }, secondary: { id: "simulation-leave-resumable", label: "Leave and resume later", onPress: callbacks.onLeave, variant: "secondary" } });
+  if (["frozen", "finalization_journal_pending", "materializing", "verifying", "verified_pending_clear"].includes(operation.kind)) return operationProjection(projection, operation.kind === "frozen" ? "frozen" : "finalizing", finalizingOperation(), { secondary: lockedLeave });
+  if (operation.kind === "finalization_journal_failed" || operation.kind === "materialization_failed" || operation.kind === "verification_failed" || operation.kind === "recovery_required") {
+    const retry = operation.error.allowedAction === "retry_same_command" ? callbacks.onRetryFinalization : callbacks.onRecover;
+    return operationProjection(projection, "recovering", finalizationRecoveryOperation(), { primary: { id: operation.error.allowedAction === "retry_same_command" ? "simulation-finish" : "simulation-recover", label: "Resume finalization", onPress: retry }, secondary: { id: "close", label: "Close", onPress: callbacks.onClose, variant: "secondary" } });
+  }
+  const state = operation.kind === "abandoning" ? "abandoning" : operation.kind === "completed" ? "completed" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : "corrupt_state";
+  return { ...base(projection), state, notice: { tone: "error", message: "This simulation state is unavailable." }, actions: { secondary: { id: "close", label: "Close", onPress: callbacks.onClose, variant: "secondary" } } };
 }
-function unavailableSurface(operation: Extract<SimulationDurableOperationState, { error: unknown }>, retry: () => void, back: () => void): SimulationSurfaceProjection { return { state: operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : "corrupt_state", title: "Interview Simulation unavailable", notice: { tone: "error", message: "Canonical simulation state is unavailable." }, actions: { primary: { id: "retry", label: "Try again", onPress: retry }, secondary: { id: "back", label: "Back", onPress: back, variant: "secondary" } } }; }
+function operationProjection(projection: AlgorithmsSimulationProjection, state: SimulationSurfaceProjection["state"], operation: SimulationOperationPresentation, actions: NonNullable<SimulationSurfaceProjection["actions"]>): SimulationSurfaceProjection { return { ...base(projection), state, operation, actions, question: question(projection, responseFromProjection(projection)) }; }
+function savingOperation(): SimulationOperationPresentation { return { kind: "saving-response", title: "Saving response", description: "Please wait while your response is saved.", lockMessage: "Editing and navigation are locked until save completes." }; }
+function saveFailureOperation(onResumeEditing: () => void): SimulationOperationPresentation { return { kind: "save-failed", title: "Couldn't save this response.", description: "Your last saved response is unchanged.", lockMessage: "You can keep editing or save again.", auxiliaryAction: { id: "simulation-keep-editing", label: "Keep editing", onPress: onResumeEditing, variant: "secondary" } }; }
+function navigationFailureOperation(recoveryRequired: boolean): SimulationOperationPresentation { return { kind: "response-saved-navigation-failed", title: "Response saved", description: recoveryRequired ? "Your response is safe. Resume the verified navigation." : "Your response is safe. Continue to open the next question.", lockMessage: "Answer editing is locked while navigation completes." }; }
+function finalizingOperation(): SimulationOperationPresentation { return { kind: "finalizing", title: "Finalizing simulation", description: "Your saved responses are being processed. This may take a moment.", lockMessage: "You can't edit answers or navigate while finalization is in progress." }; }
+function finalizationRecoveryOperation(): SimulationOperationPresentation { return { kind: "finalization-recovery-required", title: "Finalization incomplete", description: "Your session is frozen and saved responses are preserved.", lockMessage: "Resume finalization before any results are shown." }; }
+function unavailableSurface(operation: Extract<SimulationDurableOperationState, { error: unknown }>, close: () => void): SimulationSurfaceProjection { return { state: operation.kind === "missing_draft" ? "missing_draft" : operation.kind === "version_mismatch" ? "version_mismatch" : operation.kind === "timer_recovery_failed" ? "timer_recovery_failed" : "corrupt_state", title: "Interview Simulation unavailable", notice: { tone: "error", message: "Canonical simulation state is unavailable." }, actions: { secondary: { id: "close", label: "Close", onPress: close, variant: "secondary" } } }; }
+function noop() {}
 function confirmationSurface(projection: AlgorithmsSimulationProjection, state: "finish_confirmation" | "leave_confirmation" | "abandon_confirmation", title: string, description: string, cancel: () => void, confirm: () => void): SimulationSurfaceProjection { return { ...base(projection), state, confirmation: { title, description, secondary: { id: "cancel-confirmation", label: "Keep working", onPress: cancel, variant: "secondary" }, primary: { id: `confirm:${state}`, label: state === "abandon_confirmation" ? "Abandon simulation" : state === "finish_confirmation" ? "Finish simulation" : "Leave and resume later", onPress: confirm, ...(state === "abandon_confirmation" ? { variant: "destructive" as const } : {}) } } }; }
 function navigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, state: item.current ? "current" as const : item.answered ? "answered" as const : "unanswered" as const })); }
 function frozenNavigator(projection: AlgorithmsSimulationProjection) { return projection.navigator.map((item) => ({ occurrenceId: item.occurrenceId, state: "frozen" as const })); }

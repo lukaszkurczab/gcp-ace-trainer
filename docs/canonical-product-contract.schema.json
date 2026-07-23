@@ -123,7 +123,7 @@
         "commands": {
           "type": "array",
           "minItems": 10,
-          "maxItems": 10,
+          "maxItems": 11,
           "items": { "$ref": "#/$defs/userCommand" }
         },
         "sessionCtaMappings": {
@@ -358,7 +358,8 @@
         "leave-resumable",
         "abandon",
         "recover",
-        "resume"
+        "resume",
+        "resume-editing"
       ]
     },
     "sessionCtaMapping": {
@@ -376,6 +377,7 @@
             "practice-abandon",
             "practice-recover",
             "simulation-save",
+            "simulation-keep-editing",
             "simulation-save-and-continue",
             "simulation-navigator-jump",
             "simulation-finish",

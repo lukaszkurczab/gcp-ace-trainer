@@ -54,6 +54,14 @@ export type SimulationAction = Readonly<{
   variant?: "primary" | "secondary" | "destructive";
 }>;
 
+export type SimulationOperationPresentation = Readonly<{
+  auxiliaryAction?: SimulationAction;
+  description: string;
+  kind: "saving-response" | "save-failed" | "response-saved-navigation-failed" | "finalizing" | "finalization-recovery-required";
+  lockMessage: string;
+  title: string;
+}>;
+
 /** Keeps response submission and final review/finish transitions in one screen action model. */
 export function simulationPrimaryAction(input: Readonly<{ complete: boolean; finalOccurrence: boolean; responseChanged: boolean; onSave: () => void; onSaveAndContinue: () => void; onFinish: () => void }>): SimulationAction {
   if (!input.responseChanged) return { id: "finish-simulation", label: "Finish simulation", disabled: false, onPress: input.onFinish };
@@ -121,6 +129,7 @@ export type SimulationSurfaceProjection = Readonly<{
   modeLabel?: string;
   navigator?: readonly SimulationNavigatorPosition[];
   notice?: SimulationNotice;
+  operation?: SimulationOperationPresentation;
   onOccurrencePress?: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
   onResponseChange?: (change: SimulationResponseChange) => void;
   position?: SessionMetricPresentation;

@@ -52,6 +52,8 @@ requirements:
     statement: The approved active Algorithms Interview Simulation screen fills its viewport and presents the timer, counter, active question, save state, and leave/save actions without an inline question navigator.
   - id: SIMULATION-NAVIGATOR-FIDELITY-001
     statement: The approved Algorithms Interview Simulation question navigator exposes exactly forty positions in reading order with current, answered-and-saved, and unanswered states, adapts to four columns at larger text sizes, and labels every position without showing correctness.
+  - id: SIMULATION-OPERATION-STATE-ACTIONS-001
+    statement: The approved Algorithms Interview Simulation operation states render only the state and CTA actions returned by the application layer; a save failure may explicitly resume local editing only when no response was durably saved, and no generic retry is rendered.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -157,6 +159,14 @@ requirementTestCoverage:
       testPath: tests/simulationNavigator.test.ts
       testName: simulation question navigator has the approved states, accessible labels, and large-text grid adaptation
       requirementIds: [SIMULATION-NAVIGATOR-FIDELITY-001]
+    - id: simulation-operation-state-rendering
+      testPath: tests/simulationOperationSurface.test.ts
+      testName: simulation operation surface renders only declared state actions and never a generic retry
+      requirementIds: [SIMULATION-OPERATION-STATE-ACTIONS-001]
+    - id: simulation-operation-state-resume-editing
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: a non-durable simulation save failure can explicitly resume local editing without a durable write
+      requirementIds: [SIMULATION-OPERATION-STATE-ACTIONS-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
@@ -183,6 +193,7 @@ userCommands:
     - id: next
     - id: save
     - id: save-and-continue
+    - id: resume-editing
     - id: navigator-jump
     - id: finish
     - id: leave-resumable
@@ -204,6 +215,8 @@ userCommands:
       commandId: recover
     - ctaId: simulation-save
       commandId: save
+    - ctaId: simulation-keep-editing
+      commandId: resume-editing
     - ctaId: simulation-save-and-continue
       commandId: save-and-continue
     - ctaId: simulation-navigator-jump
@@ -331,16 +344,16 @@ simulationOperationStateCtas:
       allowedCtaIds: []
     - id: save-failed
       operationStates: [save_failed, stale_revision]
-      allowedCtaIds: [simulation-save, simulation-leave-resumable]
+      allowedCtaIds: [simulation-save, simulation-keep-editing, simulation-leave-resumable]
     - id: response-saved-navigation-failed
       operationStates: [navigation_failed, save_and_continue_advance_recovery]
-      allowedCtaIds: [simulation-navigator-jump, simulation-leave-resumable]
+      allowedCtaIds: [simulation-navigator-jump, simulation-recover, simulation-leave-resumable]
     - id: finalizing
       operationStates: [frozen, finalization_journal_pending, materializing, verifying, verified_pending_clear]
       allowedCtaIds: []
     - id: finalization-recovery-required
       operationStates: [finalization_journal_failed, materialization_failed, verification_failed, recovery_required]
-      allowedCtaIds: [simulation-recover]
+      allowedCtaIds: [simulation-finish, simulation-recover]
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

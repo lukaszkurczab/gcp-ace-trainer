@@ -84,6 +84,19 @@ export class TrainingLifecycleUseCases {
     this.operationStates.set(sessionId, simulation("save_and_continue_advance_recovery", operationError("simulation_save_and_continue", durableState, "recover")));
   }
 
+  /** Dismissing an unpersisted save failure re-enables only the existing local response; it never writes or reconstructs data. */
+  async resumeEditableSimulationAfterSaveFailure(): Promise<void> {
+    const active = await this.requireActive();
+    if (active.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
+      throw new TrainingApplicationFailure("invalid_response", "Only an Interview Simulation can resume editing after a failed save.");
+    }
+    const operation = await this.getSimulationOperationState(active);
+    if ((operation.kind !== "save_failed" && operation.kind !== "stale_revision") || operation.error.allowedAction !== "retry_same_command") {
+      throw new TrainingApplicationFailure("invalid_response", "Simulation editing may resume only after an unpersisted save failure.");
+    }
+    this.operationStates.publish(active.id, simulation("editable"));
+  }
+
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
     const runtime = this.resolveRuntime(input.trackId);

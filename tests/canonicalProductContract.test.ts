@@ -83,6 +83,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001", ["algorithms-simulation-timer-force-close-boundary"]],
       ["SIMULATION-ACTIVE-SCREEN-FIDELITY-001", ["simulation-active-screen-fidelity"]],
       ["SIMULATION-NAVIGATOR-FIDELITY-001", ["simulation-navigator-fidelity"]],
+      ["SIMULATION-OPERATION-STATE-ACTIONS-001", ["simulation-operation-state-rendering", "simulation-operation-state-resume-editing"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
@@ -133,8 +134,8 @@ test("defines canonical user commands and maps every session CTA to its one appl
   });
   assert.deepEqual(contract.userCommands, {
     commands: [
-      { id: "submit" }, { id: "next" }, { id: "save" }, { id: "save-and-continue" }, { id: "navigator-jump" },
-      { id: "finish" }, { id: "leave-resumable" }, { id: "abandon" }, { id: "recover" }, { id: "resume" },
+      { id: "submit" }, { id: "next" }, { id: "save" }, { id: "save-and-continue" }, { id: "resume-editing" },
+      { id: "navigator-jump" }, { id: "finish" }, { id: "leave-resumable" }, { id: "abandon" }, { id: "recover" }, { id: "resume" },
     ],
     sessionCtaMappings: [
       { ctaId: "practice-submit", commandId: "submit" },
@@ -144,6 +145,7 @@ test("defines canonical user commands and maps every session CTA to its one appl
       { ctaId: "practice-abandon", commandId: "abandon" },
       { ctaId: "practice-recover", commandId: "recover" },
       { ctaId: "simulation-save", commandId: "save" },
+      { ctaId: "simulation-keep-editing", commandId: "resume-editing" },
       { ctaId: "simulation-save-and-continue", commandId: "save-and-continue" },
       { ctaId: "simulation-navigator-jump", commandId: "navigator-jump" },
       { ctaId: "simulation-finish", commandId: "finish" },
@@ -268,10 +270,10 @@ test("locks the approved Simulation operational-state CTA policy", () => {
     version: 1,
     policies: [
       { id: "saving-response", operationStates: ["saving"], allowedCtaIds: [] },
-      { id: "save-failed", operationStates: ["save_failed", "stale_revision"], allowedCtaIds: ["simulation-save", "simulation-leave-resumable"] },
-      { id: "response-saved-navigation-failed", operationStates: ["navigation_failed", "save_and_continue_advance_recovery"], allowedCtaIds: ["simulation-navigator-jump", "simulation-leave-resumable"] },
+      { id: "save-failed", operationStates: ["save_failed", "stale_revision"], allowedCtaIds: ["simulation-save", "simulation-keep-editing", "simulation-leave-resumable"] },
+      { id: "response-saved-navigation-failed", operationStates: ["navigation_failed", "save_and_continue_advance_recovery"], allowedCtaIds: ["simulation-navigator-jump", "simulation-recover", "simulation-leave-resumable"] },
       { id: "finalizing", operationStates: ["frozen", "finalization_journal_pending", "materializing", "verifying", "verified_pending_clear"], allowedCtaIds: [] },
-      { id: "finalization-recovery-required", operationStates: ["finalization_journal_failed", "materialization_failed", "verification_failed", "recovery_required"], allowedCtaIds: ["simulation-recover"] },
+      { id: "finalization-recovery-required", operationStates: ["finalization_journal_failed", "materialization_failed", "verification_failed", "recovery_required"], allowedCtaIds: ["simulation-finish", "simulation-recover"] },
     ],
   });
   assert.throws(

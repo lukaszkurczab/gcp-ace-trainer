@@ -363,6 +363,22 @@ export async function recoverAlgorithmsSimulationSaveAndContinue(input: Readonly
   return projection;
 }
 
+/** Restores response editing only after the lifecycle proves that the failed save made no durable draft change. */
+export async function resumeAlgorithmsSimulationEditingAfterSaveFailure(): Promise<void> {
+  await getTrainingLifecycleUseCases().resumeEditableSimulationAfterSaveFailure();
+}
+
+/** Replays only the exact durable Simulation operation that the lifecycle exposes as recoverable. */
+export async function recoverAlgorithmsSimulationOperation(): Promise<void> {
+  const session = await requireAlgorithmsSession();
+  const lifecycle = getTrainingLifecycleUseCases();
+  const operation = await lifecycle.getSimulationOperationState(session);
+  if (!("error" in operation) || operation.error.allowedAction !== "recover") {
+    throw new TrainingApplicationFailure("invalid_response", "The current simulation operation does not allow recovery.");
+  }
+  await lifecycle.recoverActiveTrainingOperation();
+}
+
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
   await getAlgorithmsSimulationTimerFacade().finalizeManually(session);

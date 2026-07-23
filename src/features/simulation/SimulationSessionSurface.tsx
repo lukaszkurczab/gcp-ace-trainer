@@ -11,6 +11,7 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { isRuntimeSelectorId, runtimeSelectors } from "../../testing/runtimeSelectors";
 import { SimulationQuestionNavigator } from "./navigator/SimulationQuestionNavigator";
+import { SimulationOperationPanel } from "./operation/SimulationOperationPanel";
 
 
 type SimulationSessionSurfaceProps = Readonly<{ projection: SimulationSurfaceProjection }>;
@@ -45,6 +46,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         </Pressable>
         {projection.notice ? <Notice notice={projection.notice} /> : null}
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} /> : null}
+        {projection.operation ? <SimulationOperationPanel operation={projection.operation} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
         {mayRenderSimulationCompletion(projection) ? <Completion completion={projection.completion!} sessionId={runtimeIdentity?.sessionId} /> : null}
       </SessionShell>

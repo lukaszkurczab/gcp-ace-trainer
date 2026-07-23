@@ -6,6 +6,7 @@ import {
   getAlgorithmsSimulationProjection,
   enterAlgorithmsSimulationForeground,
   finalizeAlgorithmsSimulation,
+  resumeAlgorithmsSimulationEditingAfterSaveFailure,
   recoverAlgorithmsSimulationSaveAndContinue,
   saveAlgorithmsSimulationResponse,
   saveAlgorithmsSimulationResponseAndContinue,
@@ -175,6 +176,27 @@ test("Algorithms save-and-jump durably saves a changed response before publishin
 
   await assert.rejects(() => saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: started.session.itemOrder.length }));
   assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
+});
+
+test("a non-durable simulation save failure can explicitly resume local editing without a durable write", async () => {
+  await validateBundledContent();
+  const storage = installMemoryStorage();
+  const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  storage.resetCounters();
+  storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: 1 });
+  await assert.rejects(() => saveAlgorithmsSimulationResponse({ occurrenceId: occurrence.occurrenceId, response }));
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "save_failed");
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 1);
+
+  storage.setFailurePlan(null);
+  await resumeAlgorithmsSimulationEditingAfterSaveFailure();
+  assert.equal((await lifecycle.getSimulationOperationState(started.session)).kind, "editable");
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 1);
 });
 
 test("Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session", async () => {
