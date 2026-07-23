@@ -93,6 +93,7 @@ export function renderCloudExamFlow(exam: GeneratedCloudExam, recoveryAfter?: nu
     "appId: com.lkurczab.gcpacetrainer",
     "---",
     '- tapOn:', '    id: "main-tab-bar-practice"',
+    '- scrollUntilVisible:', '    element:', '      id: "patternly:practice:mode-card:cloud-exam-simulation"', '    direction: DOWN', '    centerElement: true',
     '- tapOn:', '    id: "patternly:practice:mode-card:cloud-exam-simulation"',
     '- extendedWaitUntil:', '    visible:', `      id: "patternly:simulation:root:${session}"`, '    timeout: 10000',
   ];
@@ -105,7 +106,7 @@ export function renderCloudExamFlow(exam: GeneratedCloudExam, recoveryAfter?: nu
     if (item.ordinal < EXAM_LENGTH) {
       lines.push('- tapOn:', `    id: "patternly:simulation:action:${session}:next"`);
       if (recoveryAfter === item.ordinal) {
-        lines.push("- killApp", "- launchApp", '- tapOn:', '    id: "main-tab-bar-practice"', '- tapOn:', '    id: "patternly:practice:mode-card:cloud-exam-simulation"');
+        lines.push("- killApp", "- launchApp", '- tapOn:', '    id: "main-tab-bar-practice"', '- scrollUntilVisible:', '    element:', '      id: "patternly:practice:mode-card:cloud-exam-simulation"', '    direction: DOWN', '    centerElement: true', '- tapOn:', '    id: "patternly:practice:mode-card:cloud-exam-simulation"');
       }
     }
   }
