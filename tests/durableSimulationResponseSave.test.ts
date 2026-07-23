@@ -7,6 +7,7 @@ import {
   recoverAlgorithmsSimulationSaveAndContinue,
   saveAlgorithmsSimulationResponse,
   saveAlgorithmsSimulationResponseAndContinue,
+  saveAlgorithmsSimulationResponseAndNavigate,
   startAlgorithmsSession,
 } from "../src/application/algorithms";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
@@ -105,6 +106,31 @@ test("Algorithms save-and-continue verifies its durable response revision before
   assert.equal(projection.durableDraftRevision, 2);
   assert.equal(draft?.revision, 2);
   assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
+test("Algorithms save-and-jump durably saves a changed response before publishing the requested occurrence", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  const jumped = await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: 4 });
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(jumped.position.current, 5);
+  assert.equal(jumped.durableDraftRevision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+
+  await assert.rejects(() => saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: started.session.itemOrder.length }));
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
 });
 
 test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {

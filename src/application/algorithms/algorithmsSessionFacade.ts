@@ -253,6 +253,33 @@ export async function navigateAlgorithmsSimulationTo(index: number): Promise<Tra
   return getTrainingLifecycleUseCases().moveSimulationSessionTo(index);
 }
 
+/** One navigator command persists a changed response before it changes the durable active occurrence. */
+export async function saveAlgorithmsSimulationResponseAndNavigate(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null; targetIndex: number }>): Promise<AlgorithmsSimulationProjection> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and jump.");
+  const current = session.itemOrder[session.currentItemIndex];
+  if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and jump requires the active Interview Simulation occurrence.");
+  if (!Number.isSafeInteger(input.targetIndex) || input.targetIndex < 0 || input.targetIndex >= session.itemOrder.length) {
+    throw new TrainingApplicationFailure("invalid_response", "Save and jump requires a valid Interview Simulation target occurrence.");
+  }
+  const previousRevision = (await requireSimulationDraft(session.id)).revision;
+  await saveAlgorithmsSimulationResponse({ occurrenceId: input.occurrenceId, response: input.response });
+  const saved = await requireSimulationDraft(session.id);
+  const savedResponse = saved.responsesByOccurrenceId[input.occurrenceId];
+  if (saved.revision !== previousRevision + 1 || (input.response === null ? savedResponse !== undefined : JSON.stringify(savedResponse) !== JSON.stringify(input.response))) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and jump could not verify the durable simulation response revision.");
+  }
+  const navigated = input.targetIndex === session.currentItemIndex ? session : await navigateAlgorithmsSimulationTo(input.targetIndex);
+  if (navigated.currentItemIndex !== input.targetIndex) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and jump could not verify the requested simulation position.");
+  }
+  const projection = await getAlgorithmsSimulationProjection();
+  if (projection.session.id !== session.id || projection.position.current !== input.targetIndex + 1 || projection.durableDraftRevision !== saved.revision) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and jump could not publish the verified simulation projection.");
+  }
+  return projection;
+}
+
 export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse | null }>): Promise<void> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation has a persisted response draft.");

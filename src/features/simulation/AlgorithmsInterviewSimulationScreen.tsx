@@ -6,7 +6,7 @@ import { AppState } from "react-native";
 import {
   abandonAlgorithmsSession, enterAlgorithmsSimulationForeground, finalizeAlgorithmsSimulation,
   getAlgorithmsSimulationScreenProjection, leaveAlgorithmsSimulationForeground,
-  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, startAlgorithmsSession,
+  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
   subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
   type AlgorithmsSimulationScreenProjection,
 } from "../../application/algorithms";
@@ -70,7 +70,19 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     try { await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId, response: localResponse }); setLocalResponse(null); } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
-  async function goTo(index: number) { try { await navigateAlgorithmsSimulationTo(index); setLocalResponse(null); } catch { /* projection retains recovery state */ } await load(); }
+  async function goTo(index: number) {
+    if (screen?.kind !== "ready") return;
+    const projection = screen.projection;
+    const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
+    const response = localResponse ?? responseFromProjection(projection);
+    if (!occurrenceId) return;
+    try {
+      if (sameResponse(response, responseFromProjection(projection))) await navigateAlgorithmsSimulationTo(index);
+      else await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId, response, targetIndex: index });
+      setLocalResponse(null);
+    } catch { /* The durable projection retains the saved response or navigation recovery state. */ }
+    await load();
+  }
   async function finish() {
     if (screen?.kind !== "ready") return;
     try { await finalizeAlgorithmsSimulation(); navigation.replace(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY, { completionKind: "manual", sessionId: screen.projection.session.id }); } catch { await load(); }
