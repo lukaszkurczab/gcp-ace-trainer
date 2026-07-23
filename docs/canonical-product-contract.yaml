@@ -298,9 +298,17 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: algorithms-simulation-question-navigator
+      screenStateTarget: algorithms-interview-simulation-question-navigator
+      patternPath: docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
     - sourcePathPrefix: src/features/simulation/
       designReferenceId: algorithms-active-simulation-screen
+    - sourcePathPrefix: src/features/simulation/navigator/
+      designReferenceId: algorithms-simulation-question-navigator
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

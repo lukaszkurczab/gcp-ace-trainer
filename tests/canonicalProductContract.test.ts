@@ -215,7 +215,21 @@ test("requires a registered APPROVED design reference before a user-facing task 
   assert.deepEqual(approvedContract.designReferences.uiOwnership, [{
     sourcePathPrefix: "src/features/simulation/",
     designReferenceId: "algorithms-active-simulation-screen",
+  }, {
+    sourcePathPrefix: "src/features/simulation/navigator/",
+    designReferenceId: "algorithms-simulation-question-navigator",
   }]);
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "algorithms-simulation-question-navigator",
+  }), {
+    id: "algorithms-simulation-question-navigator",
+    screenStateTarget: "algorithms-interview-simulation-question-navigator",
+    patternPath: "docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "not-ready" }), undefined);
   assert.throws(
     () => resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "ready" }),
