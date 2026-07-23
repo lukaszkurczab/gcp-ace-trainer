@@ -21,6 +21,8 @@ test("Cloud Exam Maestro generator uses identity selectors and emits the early, 
     assert.match(flow, /patternly:simulation:question:ace-q-\d{4}/);
     assert.match(flow, /patternly:simulation:option:ace-q-\d{4}:[a-z]/);
     assert.match(flow, /patternly:session:counter:certification:cloud-exam-simulation:\[0-9\]\+:ordinal:/);
+    assert.match(flow, /patternly:home:change-track/);
+    assert.match(flow, /patternly:home:select-track:cloud-certification/);
     assert.equal((flow.match(/- scrollUntilVisible/g) ?? []).length, 2);
     assert.equal((flow.match(/- killApp/g) ?? []).length, 1);
     assert.equal((flow.match(/- takeScreenshot: c3-item-/g) ?? []).length, 50);

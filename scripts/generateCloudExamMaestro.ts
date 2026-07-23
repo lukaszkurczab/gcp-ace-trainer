@@ -92,6 +92,9 @@ export function renderCloudExamFlow(exam: GeneratedCloudExam, recoveryAfter?: nu
   const lines = [
     "appId: com.lkurczab.gcpacetrainer",
     "---",
+    '- tapOn:', '    id: "main-tab-bar-home"',
+    '- tapOn:', '    id: "patternly:home:change-track"',
+    '- tapOn:', '    id: "patternly:home:select-track:cloud-certification"',
     '- tapOn:', '    id: "main-tab-bar-practice"',
     '- scrollUntilVisible:', '    element:', '      id: "patternly:practice:mode-card:cloud-exam-simulation"', '    direction: DOWN', '    centerElement: true',
     '- tapOn:', '    id: "patternly:practice:mode-card:cloud-exam-simulation"',

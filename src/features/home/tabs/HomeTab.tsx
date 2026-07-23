@@ -56,6 +56,7 @@ export function HomeTab({
           accessibilityRole="button"
           onPress={onChangeTrack}
           style={({ pressed }) => [styles.changeFocusButton, pressed ? styles.pressed : null]}
+          testID={runtimeSelectors.home.changeTrack()}
         >
           <Text style={styles.changeFocusText}>{t("Change track")}</Text>
           <Icon color={palette.accentPurple} name="chevron-right" size={18} />
