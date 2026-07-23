@@ -180,25 +180,24 @@ test("defines the versioned simulation timer cadence without per-refresh durable
 });
 
 test("requires a registered APPROVED design reference before a user-facing task is ready", () => {
-  const sourceWithApprovedReference = validContract.replace(
-    "  references: []\n",
-    "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n",
-  );
-  const approvedContract = parseCanonicalProductContract(sourceWithApprovedReference);
+  const approvedContract = loadCanonicalProductContract();
   const approvedReference = resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
     status: "ready",
-    designReferenceId: "algorithms-stage3-ui-reference-packet",
+    designReferenceId: "algorithms-active-simulation-screen",
   });
 
   assert.deepEqual(approvedReference, {
-    id: "algorithms-stage3-ui-reference-packet",
-    screenStateTarget: "algorithms-practice-and-interview-simulation",
-    patternPath: "docs/designs/algorithms_stage3_ui/DESIGN.md",
+    id: "algorithms-active-simulation-screen",
+    screenStateTarget: "algorithms-interview-simulation-active-question",
+    patternPath: "docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png",
     version: 1,
     approvalStatus: "APPROVED",
     owner: "product-owner",
   });
-  assert.deepEqual(approvedContract.designReferences.uiOwnership, []);
+  assert.deepEqual(approvedContract.designReferences.uiOwnership, [{
+    sourcePathPrefix: "src/features/simulation/",
+    designReferenceId: "algorithms-active-simulation-screen",
+  }]);
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "not-ready" }), undefined);
   assert.throws(
     () => resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "ready" }),
@@ -209,9 +208,9 @@ test("requires a registered APPROVED design reference before a user-facing task 
     (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /unknown design reference/.test(error.message),
   );
 
-  const pendingContract = parseCanonicalProductContract(sourceWithApprovedReference.replace("approvalStatus: APPROVED", "approvalStatus: PENDING"));
+  const pendingContract = parseCanonicalProductContract(validContract.replace("approvalStatus: APPROVED", "approvalStatus: PENDING"));
   assert.throws(
-    () => resolveCanonicalUserFacingTaskDesignReference(pendingContract, { status: "ready", designReferenceId: "algorithms-stage3-ui-reference-packet" }),
+    () => resolveCanonicalUserFacingTaskDesignReference(pendingContract, { status: "ready", designReferenceId: "algorithms-active-simulation-screen" }),
     (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /requires an APPROVED design reference/.test(error.message),
   );
 });
@@ -408,15 +407,15 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["missing lifecycle checkpoint", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-enter, foreground-leave, draft-save, finalization]"), /must NOT have fewer than 5 items/],
     ["reordered lifecycle checkpoints", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-leave, foreground-enter, draft-save, finalization, expiry]"), /Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order/],
     ["missing design reference registry", validContract.replace(/designReferences:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'designReferences'/],
-    ["unknown design reference field", validContract.replace("  references: []\n", "  references: []\n  extra: value\n"), /must NOT have additional properties/],
-    ["missing design reference UI ownership", validContract.replace("  uiOwnership: []\n", ""), /must have required property 'uiOwnership'/],
-    ["missing design reference approval status", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      owner: product-owner\n"), /must have required property 'approvalStatus'/],
-    ["missing design reference pattern", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/missing.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /pattern path does not resolve to a file/],
-    ["design reference pattern escapes design registry", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/../plan.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /must resolve within docs\/designs/],
-    ["duplicate design reference identifier", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /Duplicate canonical design reference identifier/],
-    ["design reference UI ownership with an unknown reference", validContract.replace("  uiOwnership: []\n", "  uiOwnership:\n    - sourcePathPrefix: src/features/\n      designReferenceId: unknown-reference\n"), /Canonical design reference UI ownership names an unknown reference: unknown-reference/],
-    ["design reference UI ownership without a directory boundary", validContract.replace("  uiOwnership: []\n", "  uiOwnership:\n    - sourcePathPrefix: src/features\n      designReferenceId: unknown-reference\n"), /must match pattern/],
-    ["design reference UI ownership without a trailing directory boundary", validContract.replace("  uiOwnership: []\n", "  uiOwnership:\n    - sourcePathPrefix: src/features/foo\n      designReferenceId: unknown-reference\n"), /must match pattern/],
+    ["unknown design reference field", validContract.replace("designReferences:\n", "designReferences:\n  extra: value\n"), /must NOT have additional properties/],
+    ["missing design reference UI ownership", validContract.replace(/  uiOwnership:\n(?:    .*\n){2}/, ""), /must have required property 'uiOwnership'/],
+    ["missing design reference approval status", validContract.replace("      approvalStatus: APPROVED\n", ""), /must have required property 'approvalStatus'/],
+    ["missing design reference pattern", validContract.replace("docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png", "docs/designs/algorithms_active_simulation/missing.png"), /pattern path does not resolve to a file/],
+    ["design reference pattern escapes design registry", validContract.replace("docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png", "docs/designs/../plan.md"), /must resolve within docs\/designs/],
+    ["duplicate design reference identifier", validContract.replace("      owner: product-owner\n  uiOwnership:", "      owner: product-owner\n    - id: algorithms-active-simulation-screen\n      screenStateTarget: algorithms-interview-simulation-active-question\n      patternPath: docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n  uiOwnership:"), /Duplicate canonical design reference identifier/],
+    ["design reference UI ownership with an unknown reference", validContract.replace("designReferenceId: algorithms-active-simulation-screen", "designReferenceId: unknown-reference"), /Canonical design reference UI ownership names an unknown reference: unknown-reference/],
+    ["design reference UI ownership without a directory boundary", validContract.replace("sourcePathPrefix: src/features/simulation/", "sourcePathPrefix: src/features"), /must match pattern/],
+    ["design reference UI ownership without a trailing directory boundary", validContract.replace("sourcePathPrefix: src/features/simulation/", "sourcePathPrefix: src/features/foo"), /must match pattern/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

@@ -211,8 +211,16 @@ simulationTimerCadence:
   lifecycleCheckpoints: [foreground-enter, foreground-leave, draft-save, finalization, expiry]
 designReferences:
   version: 1
-  references: []
-  uiOwnership: []
+  references:
+    - id: algorithms-active-simulation-screen
+      screenStateTarget: algorithms-interview-simulation-active-question
+      patternPath: docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
+  uiOwnership:
+    - sourcePathPrefix: src/features/simulation/
+      designReferenceId: algorithms-active-simulation-screen
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice
