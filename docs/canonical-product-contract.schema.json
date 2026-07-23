@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements"],
+  "required": ["version", "contractId", "authority", "requirements", "algorithms"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -47,6 +47,115 @@
             "minLength": 1
           }
         }
+      }
+    },
+    "algorithms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modes"],
+      "properties": {
+        "modes": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "items": { "$ref": "#/$defs/algorithmMode" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "algorithmMode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "lengths", "scope", "shortening", "feedback", "timer", "reinsert"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "algorithms-learn-approach",
+            "algorithms-guided-practice",
+            "algorithms-custom-practice",
+            "algorithms-recognize-patterns",
+            "algorithms-contrast-practice",
+            "algorithms-weak-area-review",
+            "algorithms-independent-practice",
+            "algorithms-interview-simulation"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "enum": [
+            "Learn Approach",
+            "Guided Practice",
+            "Custom Practice",
+            "Recognize Patterns",
+            "Contrast Practice",
+            "Weak Area Review",
+            "Independent Practice",
+            "Interview Simulation"
+          ]
+        },
+        "lengths": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "supported"],
+          "properties": {
+            "default": { "type": "integer", "enum": [10, 20, 40] },
+            "supported": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "integer", "enum": [10, 20, 40] }
+            }
+          }
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "oneMentalUnit",
+            "guidedPracticeBlueprintForSelectedMentalUnit",
+            "declaredRecognitionSet",
+            "declaredContrastSet",
+            "eligibleDueReviewOrCompletedSessionMisses",
+            "declaredInterleavedScope",
+            "fixedSimulationBlueprint"
+          ]
+        },
+        "shortening": { "type": "string", "enum": ["allowed", "blueprintControlled", "prohibited"] },
+        "feedback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "supported"],
+          "properties": {
+            "default": { "type": "string", "enum": ["afterEachAnswer", "atSessionEnd"] },
+            "supported": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": "string", "enum": ["afterEachAnswer", "atSessionEnd"] }
+            }
+          }
+        },
+        "timer": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind"],
+              "properties": { "kind": { "const": "elapsedForeground" } }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["kind", "durationMs"],
+              "properties": {
+                "kind": { "const": "countdownForeground" },
+                "durationMs": { "const": 2700000 }
+              }
+            }
+          ]
+        },
+        "reinsert": { "type": "boolean" }
       }
     }
   }

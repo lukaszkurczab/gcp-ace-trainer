@@ -6,3 +6,112 @@ authority:
 requirements:
   - id: CONTRACT-AUTHORITY-001
     statement: Product behavior is normative only when defined by this contract.
+  - id: ALGORITHMS-MODE-MATRIX-001
+    statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
+algorithms:
+  modes:
+    - id: algorithms-learn-approach
+      label: Learn Approach
+      lengths:
+        default: 10
+        supported: [10]
+      scope: oneMentalUnit
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: false
+    - id: algorithms-guided-practice
+      label: Guided Practice
+      lengths:
+        default: 20
+        supported: [10, 20, 40]
+      scope: oneMentalUnit
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: true
+    - id: algorithms-custom-practice
+      label: Custom Practice
+      lengths:
+        default: 20
+        supported: [10, 20, 40]
+      scope: guidedPracticeBlueprintForSelectedMentalUnit
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer, atSessionEnd]
+      timer:
+        kind: elapsedForeground
+      reinsert: true
+    - id: algorithms-recognize-patterns
+      label: Recognize Patterns
+      lengths:
+        default: 20
+        supported: [10, 20, 40]
+      scope: declaredRecognitionSet
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: false
+    - id: algorithms-contrast-practice
+      label: Contrast Practice
+      lengths:
+        default: 20
+        supported: [10, 20, 40]
+      scope: declaredContrastSet
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: false
+    - id: algorithms-weak-area-review
+      label: Weak Area Review
+      lengths:
+        default: 10
+        supported: [10, 20]
+      scope: eligibleDueReviewOrCompletedSessionMisses
+      shortening: allowed
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: true
+    - id: algorithms-independent-practice
+      label: Independent Practice
+      lengths:
+        default: 20
+        supported: [10, 20, 40]
+      scope: declaredInterleavedScope
+      shortening: blueprintControlled
+      feedback:
+        default: afterEachAnswer
+        supported: [afterEachAnswer]
+      timer:
+        kind: elapsedForeground
+      reinsert: false
+    - id: algorithms-interview-simulation
+      label: Interview Simulation
+      lengths:
+        default: 40
+        supported: [40]
+      scope: fixedSimulationBlueprint
+      shortening: prohibited
+      feedback:
+        default: atSessionEnd
+        supported: [atSessionEnd]
+      timer:
+        kind: countdownForeground
+        durationMs: 2700000
+      reinsert: false
