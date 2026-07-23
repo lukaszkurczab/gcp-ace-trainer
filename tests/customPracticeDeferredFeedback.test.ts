@@ -3,7 +3,9 @@ import test from "node:test";
 
 import {
   advanceAlgorithmsPracticeSession,
+  completeAlgorithmsPracticeSession,
   getAlgorithmsPracticeProjection,
+  getAlgorithmsPracticeResultProjection,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
 } from "../src/application/algorithms";
@@ -52,4 +54,32 @@ test("Custom Practice atSessionEnd withholds correctness, Reason, Details, and d
 
     if (index < prepared.session.actualLength - 1) await advanceAlgorithmsPracticeSession();
   }
+});
+
+test("Custom Practice atSessionEnd reloads its complete feedback from the canonical result after relaunch", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const catalog = getAlgorithmContentCatalog();
+  const prepared = await startAlgorithmsSession({
+    feedbackMode: "atSessionEnd",
+    modeId: "algorithms-custom-practice",
+    requestedLength: 10,
+    scope: { roadmapNodeId: catalog.getItems()[0]!.taxonomy.roadmapNodeId },
+  });
+
+  for (let index = 0; index < prepared.session.actualLength; index += 1) {
+    const projection = await getAlgorithmsPracticeProjection();
+    await submitAlgorithmsPracticeResponse(responseFor(catalog.getItemById(projection.item.itemId)));
+    if (index < prepared.session.actualLength - 1) await advanceAlgorithmsPracticeSession();
+  }
+  await completeAlgorithmsPracticeSession();
+
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const reloaded = await getAlgorithmsPracticeResultProjection(prepared.session.id);
+  assert.deepEqual(reloaded.configuration, { actualLength: 10, feedbackTiming: "atSessionEnd", requestedLength: 10 });
+  assert.equal(reloaded.answeredOccurrenceIds.length, 10);
+  assert.equal(reloaded.unansweredOccurrenceIds.length, 0);
+  assert.equal(reloaded.feedbackItems.length, 10);
+  assert.ok(reloaded.feedbackItems.every((item) => item.reason.length > 0 && item.details.length > 0));
 });

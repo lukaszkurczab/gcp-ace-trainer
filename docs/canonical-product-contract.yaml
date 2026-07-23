@@ -14,6 +14,8 @@ requirements:
     statement: Custom Practice with afterEachAnswer journals and materializes each submitted response before exposing that item's feedback, advances only after the durable response, and finalizes one canonical session result.
   - id: ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001
     statement: Custom Practice with atSessionEnd keeps correctness, Reason, Details, and distractor explanations unavailable after every durable per-item submission until its canonical completed result is loaded.
+  - id: ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001
+    statement: A completed Custom Practice atSessionEnd session reloads its complete feedback only from the durable canonical result after application relaunch.
   - id: ALGORITHMS-REINSERT-POLICY-001
     statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
@@ -93,6 +95,10 @@ requirementTestCoverage:
       testPath: tests/customPracticeDeferredFeedback.test.ts
       testName: Custom Practice atSessionEnd withholds correctness, Reason, Details, and distractor explanations after every submit
       requirementIds: [ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001]
+    - id: custom-practice-deferred-summary-relaunch
+      testPath: tests/customPracticeDeferredFeedback.test.ts
+      testName: Custom Practice atSessionEnd reloads its complete feedback from the canonical result after relaunch
+      requirementIds: [ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001]
     - id: canonical-algorithms-reinsert-policy
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the versioned Algorithms reinsert placement policy
