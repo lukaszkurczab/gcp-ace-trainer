@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getAlgorithmsInterviewSimulationEntry,
   getAlgorithmsSimulationProjection,
+  enterAlgorithmsSimulationForeground,
   finalizeAlgorithmsSimulation,
   recoverAlgorithmsSimulationSaveAndContinue,
   saveAlgorithmsSimulationResponse,
@@ -110,6 +111,22 @@ test("two concurrent Algorithms save-and-continue commands share one durable sav
   assert.equal(second.position.current, 2);
   assert.equal(draft?.revision, 2);
   assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
+test("concurrent timer checkpoint and save-and-continue retain the draft revision and next position", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  await Promise.all([enterAlgorithmsSimulationForeground(), saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response })]);
+  const [draft, projection] = await Promise.all([getActiveTrainingSessionDraft(), getAlgorithmsSimulationProjection()]);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(projection.position.current, 2);
 });
 
 test("Algorithms save-and-continue verifies its durable response revision before publishing occurrence two", async () => {

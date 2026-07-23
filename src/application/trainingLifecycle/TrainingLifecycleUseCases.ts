@@ -24,6 +24,7 @@ import { OperationProjectionStore } from "./operationProjectionStore";
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
   private readonly finalizations = new Map<string, Promise<void>>();
+  private readonly simulationMutationLanes = new Map<string, Promise<unknown>>();
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
@@ -152,6 +153,8 @@ export class TrainingLifecycleUseCases {
 
   /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
   async moveSimulationSessionTo(index: number): Promise<TrainingSession> {
+    const initial = await this.requireActive();
+    return this.serializeSimulationMutation(initial.id, async () => {
     const session = await this.requireActive();
     if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
@@ -168,9 +171,12 @@ export class TrainingLifecycleUseCases {
       this.operationStates.set(session.id, simulation("navigation_failed", operationError("simulation_navigation", error instanceof MutationCommitFailure ? error.durableState : "not_durable", error instanceof MutationCommitFailure && error.durableState !== "not_durable" ? "recover" : "retry_same_command")));
       throw error;
     }
+    });
   }
 
   async checkpointSimulationForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
+    const initial = await this.requireActive();
+    return this.serializeSimulationMutation(initial.id, async () => {
     const session = await this.requireActive();
     if (session.configurationSnapshot.timer !== "countdownForeground" || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
       throw new TrainingApplicationFailure("invalid_response", "Simulation foreground timer checkpoint is invalid.");
@@ -182,6 +188,7 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("verification_failure", "Simulation foreground time was not durably verified.");
     }
     return verified;
+    });
   }
 
   async completeOrdinarySession(session: TrainingSession): Promise<void> {
@@ -204,6 +211,8 @@ export class TrainingLifecycleUseCases {
   }
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
+    const initial = await this.requireActive();
+    await this.serializeSimulationMutation(initial.id, async () => {
     const session = await this.requireActive();
     this.operationStates.set(session.id, simulation("saving"));
     if (session.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
@@ -219,6 +228,7 @@ export class TrainingLifecycleUseCases {
         : simulation("save_failed", operationError("simulation_save", "not_durable", "retry_same_command")));
       throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure(stale ? "stale_revision" : "persistence_failure", stale ? "The simulation draft revision is stale." : "Simulation draft save failed without changing the durable draft.", error);
     }
+    });
   }
 
   async finalizeSimulation(): Promise<void> { await this.finalizeSimulationFor(await this.requireActive()); }
@@ -376,6 +386,15 @@ export class TrainingLifecycleUseCases {
       if (error instanceof TrainingApplicationFailure) throw error;
       throw new TrainingApplicationFailure("unknown_family", `Unable to resolve family runtime ${registration.familyId}.`, error);
     }
+  }
+
+  private serializeSimulationMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
+    const previous = this.simulationMutationLanes.get(sessionId) ?? Promise.resolve();
+    const result = previous.catch(() => undefined).then(operation);
+    this.simulationMutationLanes.set(sessionId, result);
+    return result.finally(() => {
+      if (this.simulationMutationLanes.get(sessionId) === result) this.simulationMutationLanes.delete(sessionId);
+    });
   }
 
   private async run<T>(code: ApplicationFailureCode, operation: () => Promise<T>): Promise<T> { try { return await operation(); } catch (error) { if (error instanceof TrainingApplicationFailure) throw error; throw new TrainingApplicationFailure(code, "Canonical training operation failed.", error); } }

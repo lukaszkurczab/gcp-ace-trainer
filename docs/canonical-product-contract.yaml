@@ -44,6 +44,8 @@ requirements:
     statement: Leaving Algorithms Interview Simulation foreground durably checkpoints its active segment before background time begins, and background duration never reduces its countdown.
   - id: SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001
     statement: Manual Algorithms Interview Simulation finalization durably checkpoints the active foreground segment before it freezes the result, so finalization observes that verified elapsed time.
+  - id: SIMULATION-TIMER-MUTATION-SERIALIZATION-001
+    statement: Algorithms Interview Simulation timer checkpoints, draft saves, and navigation share one mutation lane and do not overwrite a durable draft revision or current position.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -133,6 +135,10 @@ requirementTestCoverage:
       testPath: tests/algorithmsSimulationTimerFacade.test.ts
       testName: manual finalization checkpoints the active foreground segment before it freezes the result
       requirementIds: [SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001]
+    - id: algorithms-simulation-timer-mutation-serialization
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: concurrent timer checkpoint and save-and-continue retain the draft revision and next position
+      requirementIds: [SIMULATION-TIMER-MUTATION-SERIALIZATION-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
