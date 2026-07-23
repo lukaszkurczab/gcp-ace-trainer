@@ -84,6 +84,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-ACTIVE-SCREEN-FIDELITY-001", ["simulation-active-screen-fidelity"]],
       ["SIMULATION-NAVIGATOR-FIDELITY-001", ["simulation-navigator-fidelity"]],
       ["SIMULATION-OPERATION-STATE-ACTIONS-001", ["simulation-operation-state-rendering", "simulation-operation-state-resume-editing"]],
+      ["SIMULATION-ACCESSIBILITY-001", ["simulation-accessibility"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],

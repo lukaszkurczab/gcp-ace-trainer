@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useEffect, useState } from "react";
+import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { Button, Icon } from "../../../components";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
@@ -25,6 +25,7 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
   const { colors: palette, t } = useAppPreferences();
   const [feedback, setFeedback] = useState<NavigatorFeedback>(null);
   const [savingOccurrenceId, setSavingOccurrenceId] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
   const columns = navigatorGridColumns(fontScale);
   const validPositions = hasCanonicalSimulationNavigator(positions) ? positions : [];
 
@@ -41,7 +42,7 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
   }
 
   return (
-    <Modal animationType="slide" onRequestClose={onDismiss} transparent visible={visible}>
+    <Modal animationType={reduceMotion ? "none" : "slide"} onRequestClose={onDismiss} transparent visible={visible}>
       <View style={styles.backdrop}>
         <Pressable accessibilityLabel={t("Close question navigator")} accessibilityRole="button" onPress={onDismiss} style={styles.dismissArea} />
         <View accessibilityViewIsModal style={styles.sheet}>
@@ -65,7 +66,18 @@ function NavigatorFeedbackBanner({ feedback, onRetry }: Readonly<{ feedback: Exc
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const saveFailed = feedback.kind === "save_failed";
-  return <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={[styles.feedback, saveFailed ? styles.feedbackError : styles.feedbackWarning]}><Text style={styles.feedbackText}>{t(saveFailed ? "Couldn't save this response." : "Complete the response before leaving this question.")}</Text>{saveFailed ? <Button onPress={onRetry} variant="secondary">{t("Try again")}</Button> : null}</View>;
+  return <View style={[styles.feedback, saveFailed ? styles.feedbackError : styles.feedbackWarning]}><View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.feedbackMessage}><Text style={styles.feedbackText}>{t(saveFailed ? "Couldn't save this response." : "Complete the response before leaving this question.")}</Text></View>{saveFailed ? <Button onPress={onRetry} variant="secondary">{t("Try again")}</Button> : null}</View>;
+}
+
+function useReducedMotion(): boolean {
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    let subscribed = true;
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => { if (subscribed) setReduceMotion(enabled); });
+    const subscription = AccessibilityInfo.addEventListener("reduceMotionChanged", setReduceMotion);
+    return () => { subscribed = false; subscription.remove(); };
+  }, []);
+  return reduceMotion;
 }
 
 function NavigatorCell({ columns, disabled, index, onPress, position }: Readonly<{ columns: number; disabled: boolean; index: number; onPress: () => void; position: SimulationNavigatorPosition }>) {
@@ -88,6 +100,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   feedback: { alignItems: "center", borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.sm, justifyContent: "space-between", padding: spacing.sm },
   feedbackError: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   feedbackText: { ...typography.small, color: palette.textPrimary, flex: 1 },
+  feedbackMessage: { flex: 1 },
   feedbackWarning: { backgroundColor: palette.warningSoft, borderColor: palette.warning },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   handle: { alignSelf: "center", backgroundColor: palette.borderStrong, borderRadius: radius.pill, height: 4, width: 48 },

@@ -19,14 +19,27 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   const button = source("src/components/Button.tsx");
   const practiceControls = source("src/features/practice/PracticeResponseControls.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
+  const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const surfaces = `${practiceControls}\n${feedback}`;
 
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
+  assert.match(simulation, /heading:\s*\{[^}]*minHeight:\s*48/);
   assert.doesNotMatch(surfaces, /hitSlop/);
   assert.doesNotMatch(surfaces, /(?:moveButton|valueOption|detailsToggle|position):\s*\{[^}]*(?:height|width):\s*(?:32|36|40)\b/);
+});
+
+test("simulation accessibility respects motion, focus, and touch-target constraints", () => {
+  const navigator = source("src/features/simulation/navigator/SimulationQuestionNavigator.tsx");
+
+  assert.match(navigator, /AccessibilityInfo\.isReduceMotionEnabled\(\)/);
+  assert.match(navigator, /AccessibilityInfo\.addEventListener\("reduceMotionChanged", setReduceMotion\)/);
+  assert.match(navigator, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
+  assert.match(navigator, /<View accessibilityViewIsModal style=\{styles\.sheet\}>/);
+  assert.match(navigator, /<View accessible accessibilityLiveRegion="polite" accessibilityRole="alert" style=\{styles\.feedbackMessage\}>/);
+  assert.doesNotMatch(navigator, /<View accessibilityLiveRegion="polite" accessibilityRole="alert" style=\{\[styles\.feedback[\s\S]*?<Button/);
 });
 
 test("canonical session surfaces expose deterministic state and do not group interactive descendants", () => {

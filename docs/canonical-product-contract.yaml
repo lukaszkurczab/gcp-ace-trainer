@@ -54,6 +54,8 @@ requirements:
     statement: The approved Algorithms Interview Simulation question navigator exposes exactly forty positions in reading order with current, answered-and-saved, and unanswered states, adapts to four columns at larger text sizes, and labels every position without showing correctness.
   - id: SIMULATION-OPERATION-STATE-ACTIONS-001
     statement: The approved Algorithms Interview Simulation operation states render only the state and CTA actions returned by the application layer; a save failure may explicitly resume local editing only when no response was durably saved, and no generic retry is rendered.
+  - id: SIMULATION-ACCESSIBILITY-001
+    statement: Interactive Algorithms Interview Simulation controls provide a 48-point target, navigator errors retain their retry CTA as a separate focusable element, and the navigator removes its transition when the operating system enables Reduce Motion.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -167,6 +169,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: a non-durable simulation save failure can explicitly resume local editing without a durable write
       requirementIds: [SIMULATION-OPERATION-STATE-ACTIONS-001]
+    - id: simulation-accessibility
+      testPath: tests/algorithmsSessionAccessibility.test.ts
+      testName: simulation accessibility respects motion, focus, and touch-target constraints
+      requirementIds: [SIMULATION-ACCESSIBILITY-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

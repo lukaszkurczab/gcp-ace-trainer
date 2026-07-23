@@ -138,7 +138,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimension: { gap: spacing.xs },
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
-  heading: { gap: spacing.xs },
+  heading: { gap: spacing.xs, justifyContent: "center", minHeight: 48 },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   noticeText: { ...typography.small, color: palette.textPrimary },
   neutral: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
