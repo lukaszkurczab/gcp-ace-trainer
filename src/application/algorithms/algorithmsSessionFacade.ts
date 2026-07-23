@@ -22,6 +22,8 @@ import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePort
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 
+const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
+
 export type AlgorithmsSessionPosition = Readonly<{ current: number; total: number }>;
 export type AlgorithmsPracticeProjection = Readonly<{
   kind: "practice";
@@ -299,6 +301,16 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
 /** One application command owns the non-final simulation action: save, verify, advance, then publish the next projection. */
 export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<AlgorithmsSimulationProjection> {
   const session = await requireAlgorithmsSession();
+  const commandKey = `${session.id}:${input.occurrenceId}:${JSON.stringify(input.response)}`;
+  const inFlight = saveAndContinueInFlight.get(commandKey);
+  if (inFlight) return inFlight;
+  const operation = saveAlgorithmsSimulationResponseAndContinueForSession(session, input);
+  saveAndContinueInFlight.set(commandKey, operation);
+  try { return await operation; }
+  finally { if (saveAndContinueInFlight.get(commandKey) === operation) saveAndContinueInFlight.delete(commandKey); }
+}
+
+async function saveAlgorithmsSimulationResponseAndContinueForSession(session: TrainingSession, input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<AlgorithmsSimulationProjection> {
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and continue.");
   const current = session.itemOrder[session.currentItemIndex];
   if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and continue requires the active Interview Simulation occurrence.");

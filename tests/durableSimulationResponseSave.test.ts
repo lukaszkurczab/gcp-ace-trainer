@@ -85,6 +85,32 @@ test("Algorithms save-and-continue is one application command for the active non
   assert.equal((await getActiveTrainingSessionDraft())?.responsesByOccurrenceId[occurrence.occurrenceId] !== undefined, true);
 });
 
+test("two concurrent Algorithms save-and-continue commands share one durable save and one advance", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  const [first, second] = await Promise.all([
+    saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }),
+    saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }),
+  ]);
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(first.position.current, 2);
+  assert.equal(second.position.current, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+});
+
 test("Algorithms save-and-continue verifies its durable response revision before publishing occurrence two", async () => {
   await validateBundledContent();
   installMemoryStorage();
