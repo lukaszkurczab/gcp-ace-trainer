@@ -83,6 +83,7 @@ export const runtimeSelectors = Object.freeze({
   summary: Object.freeze({
     root: (sessionId: string) => selector("summary", "root", sessionId),
     backToPractice: (sessionId: string) => selector("summary", "back-to-practice", sessionId),
+    reviewAnswers: (sessionId: string) => selector("summary", "review-answers", sessionId),
     configuration: (sessionId: string, length: number, feedbackTiming: AlgorithmFeedbackMode) => selector("summary", "configuration", sessionId, String(length), feedbackTimingSegment(feedbackTiming)),
     feedbackItem: (sessionId: string, occurrenceId: string) => selector("summary", "feedback-item", sessionId, occurrenceId),
   }),
@@ -96,6 +97,10 @@ export const runtimeSelectors = Object.freeze({
     option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId.toLowerCase()),
     action: (sessionId: string, actionId: string) => selector("simulation", "action", sessionId, actionId),
     navigator: (occurrenceId: string) => selector("simulation", "navigator", occurrenceId),
+  }),
+  examReview: Object.freeze({
+    root: (sessionId: string) => selector("exam-review", "root", sessionId),
+    backToPractice: (sessionId: string) => selector("exam-review", "back-to-practice", sessionId),
   }),
 });
 

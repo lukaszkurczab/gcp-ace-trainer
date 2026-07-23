@@ -113,7 +113,7 @@ export function renderCloudExamFlow(exam: GeneratedCloudExam, recoveryAfter?: nu
       }
     }
   }
-  lines.push('- tapOn:', `    id: "patternly:simulation:action:${session}:finish"`, '- assertVisible: "Session complete"', '- tapOn: "Review answers"', '- assertVisible: "Back to practice"');
+  lines.push('- tapOn:', `    id: "patternly:simulation:action:${session}:finish"`, '- assertVisible: "Session complete"', '- tapOn:', `    id: "patternly:summary:review-answers:${session}"`, '- scrollUntilVisible:', '    element:', `      id: "patternly:exam-review:back-to-practice:${session}"`, '    direction: DOWN', '    centerElement: true', '- assertVisible:', `    id: "patternly:exam-review:back-to-practice:${session}"`);
   return `${lines.join("\n")}\n`;
 }
 
