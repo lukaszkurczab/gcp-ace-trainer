@@ -97,6 +97,18 @@ export type CanonicalDesignReference = Readonly<{
   owner: string;
 }>;
 
+export type CanonicalRequirementTest = Readonly<{
+  id: string;
+  testPath: string;
+  testName: string;
+  requirementIds: readonly string[];
+}>;
+
+export type CanonicalRequirementTestCoverage = Readonly<{
+  requirementId: string;
+  tests: readonly CanonicalRequirementTest[];
+}>;
+
 export type CanonicalUserFacingTaskReadinessInput = Readonly<{
   status: "ready" | "not-ready";
   designReferenceId?: string;
@@ -193,6 +205,10 @@ export type CanonicalProductContract = Readonly<{
     id: string;
     statement: string;
   }>[];
+  requirementTestCoverage: Readonly<{
+    version: 1;
+    tests: readonly CanonicalRequirementTest[];
+  }>;
   userCommands: Readonly<{
     commands: readonly Readonly<{ id: CanonicalUserCommandId }>[];
     sessionCtaMappings: readonly Readonly<{
@@ -380,6 +396,59 @@ export function resolveCanonicalUserFacingTaskDesignReference(
   return reference;
 }
 
+/** Returns the complete, closed requirement-to-test index derived from canonical test declarations. */
+export function getCanonicalRequirementTestCoverage(contract: CanonicalProductContract): readonly CanonicalRequirementTestCoverage[] {
+  return contract.requirements.map((requirement) => ({
+    requirementId: requirement.id,
+    tests: contract.requirementTestCoverage.tests.filter((test) => test.requirementIds.includes(requirement.id)),
+  }));
+}
+
+/** Validates that every declared requirement is covered by real, uniquely identified tests. */
+export function validateCanonicalRequirementTestCoverage(contract: CanonicalProductContract): void {
+  const requirementIds = new Set(contract.requirements.map((requirement) => requirement.id));
+  const tests = contract.requirementTestCoverage.tests;
+  const duplicateTestId = tests.find((test, index) => tests.findIndex((candidate) => candidate.id === test.id) !== index);
+  if (duplicateTestId) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical requirement test identifier: ${duplicateTestId.id}`);
+  }
+
+  const testWithUnknownRequirement = tests.find((test) => test.requirementIds.find((requirementId) => !requirementIds.has(requirementId)) !== undefined);
+  if (testWithUnknownRequirement) {
+    const requirementId = testWithUnknownRequirement.requirementIds.find((candidate) => !requirementIds.has(candidate));
+    throw new CanonicalProductContractValidationError(`Canonical requirement test references an unknown requirement: ${testWithUnknownRequirement.id} -> ${requirementId}`);
+  }
+
+  const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const testRoot = resolve(repositoryRoot, "tests");
+  const testWithEscapedPath = tests.find((test) => {
+    const path = resolve(repositoryRoot, test.testPath);
+    const relativePath = relative(testRoot, path);
+    return relativePath === "" || relativePath === ".." || relativePath.startsWith("../") || relativePath.startsWith("..\\") || isAbsolute(relativePath);
+  });
+  if (testWithEscapedPath) {
+    throw new CanonicalProductContractValidationError(`Canonical requirement test path must resolve within tests: ${testWithEscapedPath.testPath}`);
+  }
+
+  const testWithMissingSource = tests.find((test) => {
+    const path = resolve(repositoryRoot, test.testPath);
+    return !existsSync(path) || !statSync(path).isFile();
+  });
+  if (testWithMissingSource) {
+    throw new CanonicalProductContractValidationError(`Canonical requirement test path does not resolve to a file: ${testWithMissingSource.testPath}`);
+  }
+
+  const testWithMissingName = tests.find((test) => !readFileSync(resolve(repositoryRoot, test.testPath), "utf8").includes(`test(${JSON.stringify(test.testName)}`));
+  if (testWithMissingName) {
+    throw new CanonicalProductContractValidationError(`Canonical requirement test name does not resolve in its test path: ${testWithMissingName.id}`);
+  }
+
+  const uncoveredRequirement = getCanonicalRequirementTestCoverage(contract).find((coverage) => coverage.tests.length === 0);
+  if (uncoveredRequirement) {
+    throw new CanonicalProductContractValidationError(`Canonical requirement has no mapped test: ${uncoveredRequirement.requirementId}`);
+  }
+}
+
 export function parseCanonicalProductContract(source: string): CanonicalProductContract {
   const document = parseDocument(source, { uniqueKeys: true });
   if (document.errors.length > 0) {
@@ -396,6 +465,8 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   if (duplicateIds.length > 0) {
     throw new CanonicalProductContractValidationError(`Duplicate canonical product contract requirement identifier: ${duplicateIds[0]}`);
   }
+
+  validateCanonicalRequirementTestCoverage(contract as CanonicalProductContract);
 
   const userCommandIds = (contract as CanonicalProductContract).userCommands.commands.map((command) => command.id);
   const duplicateUserCommandIds = userCommandIds.filter((id, index) => userCommandIds.indexOf(id) !== index);

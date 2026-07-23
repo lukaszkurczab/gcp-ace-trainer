@@ -24,6 +24,45 @@ requirements:
     statement: "Simulation timer projections refresh every second without a durable write; durable checkpoints occur every 15 seconds with at most one second of drift and at every declared lifecycle checkpoint."
   - id: DESIGN-REFERENCE-REGISTRY-001
     statement: User-facing work may be ready only when it names a registered APPROVED design reference.
+requirementTestCoverage:
+  version: 1
+  tests:
+    - id: canonical-contract-authority
+      testPath: tests/canonicalProductContract.test.ts
+      testName: parses the canonical product contract
+      requirementIds: [CONTRACT-AUTHORITY-001]
+    - id: canonical-algorithms-mode-matrix
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines exactly the complete canonical Algorithms mode matrix
+      requirementIds: [ALGORITHMS-MODE-MATRIX-001]
+    - id: canonical-custom-practice-contract
+      testPath: tests/canonicalProductContract.test.ts
+      testName: locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-001
+      requirementIds: [ALGORITHMS-CUSTOM-PRACTICE-001]
+    - id: canonical-certification-mode-matrix
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines exactly the complete declared Certification mode matrix
+      requirementIds: [CERTIFICATION-MODE-MATRIX-001]
+    - id: canonical-session-command-model
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines canonical user commands and maps every session CTA to its one application command
+      requirementIds: [USER-COMMAND-MODEL-001, USER-COMMAND-RESUME-001]
+    - id: canonical-session-state-machine
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines the closed durable session state machines and accepts only declared triggered transitions
+      requirementIds: [SESSION-STATE-MACHINE-001]
+    - id: canonical-simulation-concurrency
+      testPath: tests/canonicalProductContract.test.ts
+      testName: locks FIFO serialization for every simulation mutation of one active session
+      requirementIds: [SIMULATION-CONCURRENCY-001]
+    - id: canonical-simulation-timer-cadence
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines the versioned simulation timer cadence without per-refresh durable writes
+      requirementIds: [SIMULATION-TIMER-CADENCE-001]
+    - id: canonical-design-reference-readiness
+      testPath: tests/canonicalProductContract.test.ts
+      testName: requires a registered APPROVED design reference before a user-facing task is ready
+      requirementIds: [DESIGN-REFERENCE-REGISTRY-001]
 userCommands:
   commands:
     - id: submit

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, CanonicalUserFacingTaskReadinessError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract, resolveCanonicalUserFacingTaskDesignReference } from "../scripts/validateCanonicalProductContract";
+import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, CanonicalUserFacingTaskReadinessError, getCanonicalRequirementTestCoverage, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract, resolveCanonicalUserFacingTaskDesignReference } from "../scripts/validateCanonicalProductContract";
 
 const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
 
@@ -11,6 +11,37 @@ test("parses the canonical product contract", () => {
   assert.equal(contract.version, 1);
   assert.equal(contract.authority.normativeSource, "canonical-product-contract");
   assert.equal(contract.authority.narrativeDocuments, "non-normative");
+});
+
+test("maps every canonical requirement to real tests and rejects incomplete or invalid mappings", () => {
+  const contract = loadCanonicalProductContract();
+  assert.deepEqual(
+    getCanonicalRequirementTestCoverage(contract).map(({ requirementId, tests }) => [requirementId, tests.map((test) => test.id)]),
+    [
+      ["CONTRACT-AUTHORITY-001", ["canonical-contract-authority"]],
+      ["ALGORITHMS-MODE-MATRIX-001", ["canonical-algorithms-mode-matrix"]],
+      ["ALGORITHMS-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
+      ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
+      ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
+      ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
+      ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
+      ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
+      ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
+      ["DESIGN-REFERENCE-REGISTRY-001", ["canonical-design-reference-readiness"]],
+    ],
+  );
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("id: canonical-algorithms-mode-matrix", "id: canonical-contract-authority")),
+    /Duplicate canonical requirement test identifier: canonical-contract-authority/,
+  );
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("requirementIds: [CONTRACT-AUTHORITY-001]", "requirementIds: [UNKNOWN-REQUIREMENT-001]")),
+    /Canonical requirement test references an unknown requirement: canonical-contract-authority -> UNKNOWN-REQUIREMENT-001/,
+  );
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("requirementIds: [CONTRACT-AUTHORITY-001]", "requirementIds: [USER-COMMAND-MODEL-001]")),
+    /Canonical requirement has no mapped test: CONTRACT-AUTHORITY-001/,
+  );
 });
 
 test("defines canonical user commands and maps every session CTA to its one application command", () => {
