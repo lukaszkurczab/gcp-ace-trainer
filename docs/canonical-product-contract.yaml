@@ -42,6 +42,8 @@ requirements:
     statement: Algorithms Interview Simulation periodic durable checkpoints use the declared fifteen-second interval and one-second maximum drift, producing one durable write per due interval.
   - id: SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001
     statement: Leaving Algorithms Interview Simulation foreground durably checkpoints its active segment before background time begins, and background duration never reduces its countdown.
+  - id: SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001
+    statement: Manual Algorithms Interview Simulation finalization durably checkpoints the active foreground segment before it freezes the result, so finalization observes that verified elapsed time.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -127,6 +129,10 @@ requirementTestCoverage:
       testPath: tests/algorithmsSimulationTimerFacade.test.ts
       testName: AppState foreground transitions and force-close recovery never count background or closed-app time
       requirementIds: [SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001]
+    - id: algorithms-simulation-timer-finalization-checkpoint
+      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testName: manual finalization checkpoints the active foreground segment before it freezes the result
+      requirementIds: [SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

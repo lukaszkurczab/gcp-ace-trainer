@@ -193,6 +193,19 @@ test("manual and expiry use the same injected finalization operation", async () 
   assert.equal(expiry.getFinalizations(), 1);
 });
 
+test("manual finalization checkpoints the active foreground segment before it freezes the result", async () => {
+  const f = fixture();
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(1_250);
+
+  await f.timer.finalizeManually(f.session);
+
+  assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+  assert.equal(f.getDurableAtFinalization()?.accumulatedForegroundMs, 1_250);
+  assert.equal(f.getFinalizations(), 1);
+});
+
 test("missing persisted timer on resume is a typed application recovery failure", async () => {
   const f = fixture();
   await assert.rejects(() => f.timer.restoreForResume(f.session), (error: unknown) => {
