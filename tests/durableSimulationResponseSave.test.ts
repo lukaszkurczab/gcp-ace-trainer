@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   getAlgorithmsInterviewSimulationEntry,
   getAlgorithmsSimulationProjection,
+  finalizeAlgorithmsSimulation,
   recoverAlgorithmsSimulationSaveAndContinue,
   saveAlgorithmsSimulationResponse,
   saveAlgorithmsSimulationResponseAndContinue,
@@ -13,7 +14,7 @@ import {
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { getActiveForegroundTimer, getActiveTrainingSession, getActiveTrainingSessionDraft, getTrainingSessions } from "../src/storage/repositories";
+import { getActiveForegroundTimer, getActiveTrainingSession, getActiveTrainingSessionDraft, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import {
   isAlgorithmChoiceQuestion,
@@ -190,6 +191,42 @@ test("Algorithms simulation relaunch after its first answer preserves draft, pos
   assert.equal(timerAfterRelaunch?.checkpointRevision, timerBeforeRelaunch?.checkpointRevision);
   assert.equal(active?.id, started.session.id);
   assert.deepEqual(sessions.value.filter((session) => session.status === "active").map((session) => session.id), [started.session.id]);
+});
+
+test("Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  for (const occurrence of started.session.itemOrder.slice(0, -1)) {
+    const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+    await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  }
+  const finalOccurrence = started.session.itemOrder.at(-1)!;
+  await saveAlgorithmsSimulationResponse({
+    occurrenceId: finalOccurrence.occurrenceId,
+    response: completeResponseFor(getAlgorithmContentCatalog().getItemById(finalOccurrence.item.itemId)),
+  });
+  await finalizeAlgorithmsSimulation();
+
+  const [attempts, result, active, draft] = await Promise.all([
+    getTrainingAttempts(), getTrainingSessionResult(started.session.id), getActiveTrainingSession(), getActiveTrainingSessionDraft(),
+  ]);
+  const sessionAttempts = attempts.value.filter((attempt) => attempt.sessionId === started.session.id);
+
+  assert.equal(started.session.itemOrder.length, 40);
+  assert.equal(sessionAttempts.length, 40);
+  assert.equal(new Set(sessionAttempts.map((attempt) => attempt.occurrenceId)).size, 40);
+  assert.deepEqual(result?.answeredOccurrenceIds, started.session.itemOrder.map((occurrence) => occurrence.occurrenceId));
+  assert.deepEqual(result?.unansweredOccurrenceIds, []);
+  assert.equal(active, null);
+  assert.equal(draft, null);
 });
 
 test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {

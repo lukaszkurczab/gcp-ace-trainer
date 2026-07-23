@@ -34,6 +34,8 @@ requirements:
     statement: After the first Algorithms Interview Simulation response saves and advances, a new composition root restores its durable response, second occurrence, timer checkpoint, and exactly one active session.
   - id: SIMULATION-SAVE-AND-CONTINUE-IDEMPOTENCY-001
     statement: Duplicate concurrent save-and-continue commands for the same active Algorithms Interview Simulation occurrence and response share one durable draft save and one verified advance.
+  - id: SIMULATION-FULL-LIFECYCLE-001
+    statement: The complete immutable forty-occurrence Algorithms Interview Simulation plan finalizes into one result with forty distinct answered occurrences and no active session or durable draft.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -103,6 +105,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: two concurrent Algorithms save-and-continue commands share one durable save and one advance
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-IDEMPOTENCY-001]
+    - id: algorithms-simulation-full-lifecycle
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan
+      requirementIds: [SIMULATION-FULL-LIFECYCLE-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
