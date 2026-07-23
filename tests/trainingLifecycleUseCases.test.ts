@@ -162,3 +162,54 @@ test("dashboard receives the active session only when it belongs to the queried 
   await f.useCases.queryDashboard("test-track");
   assert.equal(f.dashboardActiveSession()?.id, current.id);
 });
+
+test("an expired absolute-deadline simulation finalizes once before it can be resumed", async () => {
+  const f = fixture();
+  const expired = createTrainingSession({
+    ...session(),
+    modeId: "cloud-exam-simulation",
+    configurationSnapshot: {
+      kind: "certificationSimulation",
+      navigation: "free",
+      submission: "manualOrForegroundTimeout",
+      feedbackMode: "atSessionEnd",
+      answerChanges: "untilFinalSubmission",
+      timer: "absoluteDeadline",
+      timerDeadlineAt: "2026-07-16T11:59:59.999Z",
+      timerDurationMs: 120 * 60 * 1000,
+    },
+  });
+  f.setActive(expired);
+  f.ports.repositories.getDraft = async () => ({
+    schemaVersion: 1,
+    familyId: "certification",
+    draftVersion: 1,
+    revision: 1,
+    sessionId: expired.id,
+    trackId: expired.trackId,
+    responsesByOccurrenceId: {},
+    updatedAt: "2026-07-16T11:00:00.000Z",
+  });
+
+  assert.equal(await f.useCases.finalizeExpiredSimulationIfDue(), expired.id);
+  assert.equal(f.calls.filter((call) => call === "commit-finalize").length, 1);
+  assert.equal(await f.useCases.finalizeExpiredSimulationIfDue(), null);
+  await assert.rejects(() => f.useCases.resumeActiveSession(), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "no_active_session");
+});
+
+test("manual finalization and expiry share one durable simulation finalization", async () => {
+  const f = fixture();
+  const expired = createTrainingSession({
+    ...session(),
+    modeId: "cloud-exam-simulation",
+    configurationSnapshot: {
+      kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
+      timer: "absoluteDeadline", timerDeadlineAt: "2026-07-16T11:59:59.999Z", timerDurationMs: 120 * 60 * 1000,
+    },
+  });
+  f.setActive(expired);
+  f.ports.repositories.getDraft = async () => ({ schemaVersion: 1, familyId: "certification", draftVersion: 1, revision: 1, sessionId: expired.id, trackId: expired.trackId, responsesByOccurrenceId: {}, updatedAt: "2026-07-16T11:00:00.000Z" });
+
+  await Promise.all([f.useCases.finalizeExpiredSimulationIfDue(), f.useCases.finalizeSimulation()]);
+  assert.equal(f.calls.filter((call) => call === "commit-finalize").length, 1);
+});
