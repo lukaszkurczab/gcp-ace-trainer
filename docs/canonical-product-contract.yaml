@@ -38,6 +38,8 @@ requirements:
     statement: The complete immutable forty-occurrence Algorithms Interview Simulation plan finalizes into one result with forty distinct answered occurrences and no active session or durable draft.
   - id: SIMULATION-TIMER-UI-REFRESH-001
     statement: The visible Algorithms Interview Simulation timer formats the runtime remaining-foreground projection every second without a durable write for each UI refresh.
+  - id: SIMULATION-TIMER-CHECKPOINT-INTERVAL-001
+    statement: Algorithms Interview Simulation periodic durable checkpoints use the declared fifteen-second interval and one-second maximum drift, producing one durable write per due interval.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -115,6 +117,10 @@ requirementTestCoverage:
       testPath: tests/algorithmsSimulationTimerFacade.test.ts
       testName: controlled timer refreshes consecutive visible labels without a durable write each second
       requirementIds: [SIMULATION-TIMER-UI-REFRESH-001]
+    - id: algorithms-simulation-timer-checkpoint-interval
+      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testName: periodic checkpoint uses the declared durable interval with an exact write count
+      requirementIds: [SIMULATION-TIMER-CHECKPOINT-INTERVAL-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

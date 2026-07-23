@@ -126,6 +126,27 @@ test("controlled timer refreshes consecutive visible labels without a durable wr
   assert.equal(f.getState()?.checkpointRevision, checkpointRevision);
 });
 
+test("periodic checkpoint uses the declared durable interval with an exact write count", async () => {
+  const f = fixture();
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+
+  f.setNow(13_999);
+  await f.tick();
+  assert.equal(f.getState()?.checkpointRevision, 2);
+  f.setNow(14_000);
+  await f.tick();
+  assert.equal(f.getState()?.checkpointRevision, 3);
+  f.setNow(27_999);
+  await f.tick();
+  assert.equal(f.getState()?.checkpointRevision, 3);
+  f.setNow(28_000);
+  await f.tick();
+
+  assert.equal(f.getState()?.checkpointRevision, 4);
+  assert.deepEqual(f.checkpoints, [0, 14_000, 28_000]);
+});
+
 test("force-close before and after a checkpoint resumes only the last verified checkpoint", async () => {
   const before = fixture();
   await before.timer.initialize(before.session);
