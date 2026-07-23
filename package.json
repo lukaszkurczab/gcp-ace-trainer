@@ -16,6 +16,7 @@
     "audit:algorithms-ui:fixtures": "node --import tsx --test tests/algorithmsVisualHarness.test.ts",
     "audit:algorithms-ui:start": "cd audit/algorithms-ui && expo start --dev-client --port 8082",
     "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary",
+    "gate:contract-change": "node --import tsx scripts/enforceContractChangeGate.ts",
     "recovery:check": "node scripts/checkRecoveryBaseline.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
     "inventory:algorithms": "node --import tsx scripts/inventoryAlgorithmsSchema.mjs",

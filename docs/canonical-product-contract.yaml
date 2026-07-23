@@ -192,6 +192,7 @@ simulationTimerCadence:
 designReferences:
   version: 1
   references: []
+  uiOwnership: []
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

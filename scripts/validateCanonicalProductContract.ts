@@ -97,6 +97,11 @@ export type CanonicalDesignReference = Readonly<{
   owner: string;
 }>;
 
+export type CanonicalDesignReferenceUiOwnership = Readonly<{
+  sourcePathPrefix: string;
+  designReferenceId: string;
+}>;
+
 export type CanonicalRequirementTest = Readonly<{
   id: string;
   testPath: string;
@@ -255,6 +260,7 @@ export type CanonicalProductContract = Readonly<{
   designReferences: Readonly<{
     version: 1;
     references: readonly CanonicalDesignReference[];
+    uiOwnership: readonly CanonicalDesignReferenceUiOwnership[];
   }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
@@ -540,6 +546,17 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     .filter((id, index, ids) => ids.indexOf(id) !== index);
   if (duplicateDesignReferenceIds.length > 0) {
     throw new CanonicalProductContractValidationError(`Duplicate canonical design reference identifier: ${duplicateDesignReferenceIds[0]}`);
+  }
+  const uiOwnership = (contract as CanonicalProductContract).designReferences.uiOwnership;
+  const duplicateUiOwnershipPrefixes = uiOwnership
+    .map((ownership) => ownership.sourcePathPrefix)
+    .filter((prefix, index, prefixes) => prefixes.indexOf(prefix) !== index);
+  if (duplicateUiOwnershipPrefixes.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical design reference UI ownership prefix: ${duplicateUiOwnershipPrefixes[0]}`);
+  }
+  const ownershipWithUnknownReference = uiOwnership.find((ownership) => !designReferences.some((reference) => reference.id === ownership.designReferenceId));
+  if (ownershipWithUnknownReference) {
+    throw new CanonicalProductContractValidationError(`Canonical design reference UI ownership names an unknown reference: ${ownershipWithUnknownReference.designReferenceId}`);
   }
 
   const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");

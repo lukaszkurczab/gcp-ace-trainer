@@ -189,12 +189,16 @@
     "designReferences": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "references"],
+      "required": ["version", "references", "uiOwnership"],
       "properties": {
         "version": { "const": 1 },
         "references": {
           "type": "array",
           "items": { "$ref": "#/$defs/designReference" }
+        },
+        "uiOwnership": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/designReferenceUiOwnership" }
         }
       }
     },
@@ -209,6 +213,15 @@
         "version": { "type": "integer", "minimum": 1 },
         "approvalStatus": { "type": "string", "enum": ["APPROVED", "PENDING", "REJECTED"] },
         "owner": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" }
+      }
+    },
+    "designReferenceUiOwnership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePathPrefix", "designReferenceId"],
+      "properties": {
+        "sourcePathPrefix": { "type": "string", "pattern": "^src/(?:assets|components|content/application|features|navigation|preferences|theme)(?:/[A-Za-z0-9_-]+)*/$" },
+        "designReferenceId": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" }
       }
     },
     "practiceSessionStateMachine": {
