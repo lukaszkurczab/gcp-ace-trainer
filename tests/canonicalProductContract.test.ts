@@ -70,6 +70,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001", ["algorithms-save-and-continue-verification"]],
       ["SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001", ["algorithms-save-and-continue-recovery"]],
       ["SIMULATION-SAVE-AND-CONTINUE-CTA-001", ["simulation-save-and-continue-cta"]],
+      ["SIMULATION-FINAL-OCCURRENCE-001", ["simulation-final-occurrence"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],

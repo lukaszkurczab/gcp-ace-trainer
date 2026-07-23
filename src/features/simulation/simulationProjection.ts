@@ -52,8 +52,9 @@ export type SimulationAction = Readonly<{
   variant?: "primary" | "secondary" | "destructive";
 }>;
 
-/** Keeps the approved non-final CTA bound to one application command. */
-export function simulationSaveAndContinueAction(input: Readonly<{ complete: boolean; finalOccurrence: boolean; onSave: () => void; onSaveAndContinue: () => void }>): SimulationAction {
+/** Keeps response submission and final review/finish transitions in one screen action model. */
+export function simulationPrimaryAction(input: Readonly<{ complete: boolean; finalOccurrence: boolean; responseChanged: boolean; onSave: () => void; onSaveAndContinue: () => void; onFinish: () => void }>): SimulationAction {
+  if (!input.responseChanged) return { id: "finish-simulation", label: "Finish simulation", disabled: false, onPress: input.onFinish };
   return input.finalOccurrence
     ? { id: "save-response", label: "Save response", disabled: !input.complete, onPress: input.onSave }
     : { id: "save-and-continue", label: "Save and continue", disabled: !input.complete, onPress: input.onSaveAndContinue };

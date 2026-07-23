@@ -13,7 +13,7 @@ import {
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { simulationSaveAndContinueAction, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
+import { simulationPrimaryAction, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
@@ -95,7 +95,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
       onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
       onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
-      actions: changed ? { primary: simulationSaveAndContinueAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); } }), secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { id: "finish-simulation", label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
+      actions: { primary: simulationPrimaryAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, responseChanged: changed, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); }, onFinish: () => setOverlay("finish") }), secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps

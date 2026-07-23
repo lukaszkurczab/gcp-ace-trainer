@@ -26,6 +26,8 @@ requirements:
     statement: If save-and-continue persists a response but does not verify its advance, it exposes explicit recovery that advances only from the durable response without creating another draft revision.
   - id: SIMULATION-SAVE-AND-CONTINUE-CTA-001
     statement: Every non-final Algorithms Interview Simulation response CTA is labelled Save and continue, is disabled until complete, and invokes only the save-and-continue application command.
+  - id: SIMULATION-FINAL-OCCURRENCE-001
+    statement: At the final Algorithms Interview Simulation occurrence, a changed complete response is saved as a durable draft before the canonical finish confirmation is exposed; an unchanged unanswered final occurrence exposes that same finish confirmation.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -79,6 +81,10 @@ requirementTestCoverage:
       testPath: tests/simulationSaveAndContinueAction.test.ts
       testName: non-final simulation CTA labels, disables, and invokes only save-and-continue
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-CTA-001]
+    - id: simulation-final-occurrence
+      testPath: tests/simulationFinalQuestionAction.test.ts
+      testName: final simulation action saves an answered response before finish and lets an unanswered final occurrence finish
+      requirementIds: [SIMULATION-FINAL-OCCURRENCE-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
