@@ -17,6 +17,7 @@ import { scoreCertificationQuestion } from "../../tracks/cloud-certification";
 import { spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
@@ -61,21 +62,23 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   };
   const next = async () => {
     try {
-      if (projection.ordinal === projection.total) { await completeCertificationPracticeSession(); navigation.navigate(ROUTES.PRACTICE_HUB); }
+      if (projection.ordinal === projection.total) { await completeCertificationPracticeSession(); navigation.replace(ROUTES.RESULT, { sessionId: projection.session.id }); }
       else { await advanceCertificationPracticeSession(); await refresh(); }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The next question could not be opened."); }
   };
-  return <Screen style={styles.screen}>
-    <Text style={styles.progress}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text>
+  return <Screen style={styles.screen}><View testID={runtimeSelectors.session.root(projection.session.id)}>
+    <Text style={styles.progress} testID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text>
+    <Text testID={runtimeSelectors.session.track(projection.session.trackId)} />
+    <Text testID={runtimeSelectors.session.mode(projection.session.modeId)} />
     <Card style={styles.card}>
       <Text style={styles.domain}>{t(projection.question.domain.replaceAll("_", " "))}</Text>
-      <Text style={styles.question}>{projection.question.question}</Text>
-      <View style={styles.options}>{projection.question.options.map((option) => <Pressable key={option.id} accessibilityRole={multiple ? "checkbox" : "radio"} accessibilityState={{ checked: selected.includes(option.id) }} disabled={submitted} onPress={() => toggle(option.id)} style={[styles.option, selected.includes(option.id) && styles.optionSelected]}><Text style={styles.optionText}>{option.text}</Text></Pressable>)}</View>
-      {feedback ? <View style={styles.feedback}><Text style={feedback.kind === "correct" ? styles.correct : styles.incorrect}>{t(feedback.kind === "correct" ? "Correct" : feedback.kind === "partial" ? "Partially correct" : "Incorrect")}</Text><Text style={styles.explanation}>{projection.question.explanation}</Text></View> : null}
+      <Text style={styles.question} testID={runtimeSelectors.session.question(projection.question.id)}>{projection.question.question}</Text>
+      <View style={styles.options}>{projection.question.options.map((option) => <Pressable key={option.id} accessibilityRole={multiple ? "checkbox" : "radio"} accessibilityState={{ checked: selected.includes(option.id) }} disabled={submitted} onPress={() => toggle(option.id)} style={[styles.option, selected.includes(option.id) && styles.optionSelected]} testID={runtimeSelectors.session.option(projection.question.id, option.id)}><Text style={styles.optionText}>{option.text}</Text></Pressable>)}</View>
+      {feedback ? <View style={styles.feedback} testID={runtimeSelectors.session.feedback(projection.question.id)}><Text style={feedback.kind === "correct" ? styles.correct : styles.incorrect} testID={runtimeSelectors.session.result(projection.question.id, feedback.kind)}>{t(feedback.kind === "correct" ? "Correct" : feedback.kind === "partial" ? "Partially correct" : "Incorrect")}</Text><Text style={styles.explanation} testID={runtimeSelectors.session.reason(projection.question.id)}>{t("Reason")}: {projection.question.explanation}</Text><Text style={styles.explanation} testID={runtimeSelectors.session.details(projection.question.id)}>{t("Details")}: {projection.question.watchOutFor}</Text></View> : null}
     </Card>
-    {submitted ? <Button onPress={() => void next()}>{t(projection.ordinal === projection.total ? "Finish session" : "Next question")}</Button> : <Button onPress={() => void submit()}>{t("Submit answer")}</Button>}
-    <Button onPress={() => void abandonCertificationSession().then(() => navigation.navigate(ROUTES.PRACTICE_HUB))} variant="secondary">{t("Leave session")}</Button>
-  </Screen>;
+    {submitted ? <Button onPress={() => void next()} testID={runtimeSelectors.session.continue(projection.question.id)}>{t(projection.ordinal === projection.total ? "Finish session" : "Next question")}</Button> : <Button onPress={() => void submit()} testID={runtimeSelectors.session.submit(projection.question.id)}>{t("Submit answer")}</Button>}
+    <Button onPress={() => void abandonCertificationSession().then(() => navigation.navigate(ROUTES.PRACTICE_HUB))} testID={runtimeSelectors.session.leave(projection.session.id)} variant="secondary">{t("Leave session")}</Button>
+  </View></Screen>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, loading: { ...typography.body, color: palette.textSecondary }, progress: { ...typography.small, color: palette.textMuted }, card: { gap: spacing.md }, domain: { ...typography.caption, color: palette.primary, textTransform: "uppercase" }, question: { ...typography.bodyStrong, color: palette.textPrimary }, options: { gap: spacing.sm }, option: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, padding: spacing.md }, optionSelected: { borderColor: palette.primary, backgroundColor: palette.primarySoft }, optionText: { ...typography.body, color: palette.textPrimary }, feedback: { gap: spacing.sm }, correct: { ...typography.bodyStrong, color: palette.success }, incorrect: { ...typography.bodyStrong, color: palette.danger }, explanation: { ...typography.body, color: palette.textSecondary } });

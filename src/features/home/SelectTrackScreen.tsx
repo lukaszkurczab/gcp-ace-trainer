@@ -34,6 +34,7 @@ import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 import {
   buildTrackProgressPercent,
@@ -204,6 +205,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                   <Button
                     disabled={track.status === "archived"}
                     onPress={() => void selectTrack(track, "home")}
+                    testID={runtimeSelectors.home.selectTrack(track.id)}
                   >
                     Start {track.shortTitle}
                   </Button>
@@ -222,6 +224,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                       disabled={track.status === "archived"}
                       onPress={() => void selectTrack(track, "home")}
                       style={styles.actionButton}
+                      testID={runtimeSelectors.home.selectTrack(track.id)}
                       variant={isActive ? "secondary" : "primary"}
                     >
                       {t(primaryLabel)}

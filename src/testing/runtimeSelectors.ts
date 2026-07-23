@@ -26,6 +26,8 @@ export const runtimeSelectors = Object.freeze({
   home: Object.freeze({
     root: () => selector("home", "root"),
     trackCard: (trackId: TrackId) => selector("home", "track-card", trackId),
+    changeTrack: () => selector("home", "change-track"),
+    selectTrack: (trackId: TrackId) => selector("home", "select-track", trackId),
   }),
   practice: Object.freeze({
     hubRoot: () => selector("practice", "hub", "root"),
@@ -45,7 +47,7 @@ export const runtimeSelectors = Object.freeze({
     mode: (modeId: string) => selector("session", "mode", modeId),
     roadmapNode: (roadmapNodeId: string) => selector("session", "roadmap-node", roadmapNodeId),
     question: (itemId: ItemId) => selector("session", "question", itemId),
-    option: (itemId: ItemId, optionId: string) => selector("session", "option", itemId, optionId),
+    option: (itemId: ItemId, optionId: string) => selector("session", "option", itemId, optionId.toLowerCase()),
     submit: (itemId: ItemId) => selector("session", "submit", itemId),
     continue: (itemId: ItemId) => selector("session", "continue", itemId),
     feedback: (itemId: ItemId) => selector("session", "feedback", itemId),
@@ -81,6 +83,7 @@ export const runtimeSelectors = Object.freeze({
   summary: Object.freeze({
     root: (sessionId: string) => selector("summary", "root", sessionId),
     backToPractice: (sessionId: string) => selector("summary", "back-to-practice", sessionId),
+    reviewAnswers: (sessionId: string) => selector("summary", "review-answers", sessionId),
     configuration: (sessionId: string, length: number, feedbackTiming: AlgorithmFeedbackMode) => selector("summary", "configuration", sessionId, String(length), feedbackTimingSegment(feedbackTiming)),
     feedbackItem: (sessionId: string, occurrenceId: string) => selector("summary", "feedback-item", sessionId, occurrenceId),
   }),
@@ -91,9 +94,13 @@ export const runtimeSelectors = Object.freeze({
   simulation: Object.freeze({
     root: (sessionId: string) => selector("simulation", "root", sessionId),
     question: (itemId: ItemId) => selector("simulation", "question", itemId),
-    option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId),
+    option: (itemId: ItemId, optionId: string) => selector("simulation", "option", itemId, optionId.toLowerCase()),
     action: (sessionId: string, actionId: string) => selector("simulation", "action", sessionId, actionId),
     navigator: (occurrenceId: string) => selector("simulation", "navigator", occurrenceId),
+  }),
+  examReview: Object.freeze({
+    root: (sessionId: string) => selector("exam-review", "root", sessionId),
+    backToPractice: (sessionId: string) => selector("exam-review", "back-to-practice", sessionId),
   }),
 });
 

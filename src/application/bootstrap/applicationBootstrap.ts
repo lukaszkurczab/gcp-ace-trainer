@@ -34,6 +34,10 @@ export async function bootstrapApplication(
       await recoverPendingMutation();
     }
     await validateBundledContent();
+    // A Cloud Exam may pass its absolute deadline while the process is not
+    // running. Resolve that terminal state before deciding whether there is a
+    // resumable active session.
+    if (prepareLifecycle) await getTrainingLifecycleUseCases().finalizeExpiredSimulationIfDue();
     const activeSession = await getActiveTrainingSession();
     const sessions = (await getTrainingSessions()).value;
     const activeRecords = sessions.filter((session) => session.status === "active");

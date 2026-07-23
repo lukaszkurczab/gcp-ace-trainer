@@ -23,11 +23,13 @@ import { OperationProjectionStore } from "./operationProjectionStore";
 
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
+  private readonly finalizations = new Map<string, Promise<void>>();
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
   subscribeOperationProjection(sessionId: string, listener: (value: DurableOperationState) => void) { return this.operationStates.subscribeOperationProjection(sessionId, listener); }
   async getPendingMutationProjection(sessionId: string): Promise<PendingMutationProjection | null> { return this.pendingFor(sessionId); }
+  currentTime(): string { return this.ports.clock.now(); }
 
   /** Rebuilds the observable state from canonical records before any recovery retry. */
   async reconstructOperationProjection(session: TrainingSession): Promise<DurableOperationState> {
@@ -213,8 +215,36 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  async finalizeSimulation(): Promise<void> {
-    const session = await this.requireActive();
+  async finalizeSimulation(): Promise<void> { await this.finalizeSimulationFor(await this.requireActive()); }
+
+  /**
+   * Absolute-deadline simulations own expiry in the lifecycle, so foreground
+   * rendering, relaunch, and a manual Finish tap all converge on one durable
+   * finalization command.
+   */
+  async finalizeExpiredSimulationIfDue(): Promise<string | null> {
+    const session = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
+    if (!session || session.configurationSnapshot.timer !== "absoluteDeadline") return null;
+    await this.run("resume_unavailable", () => this.ports.content.assertActiveSession(session));
+    const deadline = session.configurationSnapshot.timerDeadlineAt;
+    if (typeof deadline !== "string" || Number.isNaN(Date.parse(deadline))) {
+      throw new TrainingApplicationFailure("resume_unavailable", "An absolute-deadline simulation has no valid immutable deadline.");
+    }
+    if (Date.parse(this.ports.clock.now()) < Date.parse(deadline)) return null;
+    await this.finalizeSimulationFor(session);
+    return session.id;
+  }
+
+  private async finalizeSimulationFor(session: TrainingSession): Promise<void> {
+    const inFlight = this.finalizations.get(session.id);
+    if (inFlight) return inFlight;
+    const operation = this.finalizeSimulationSnapshot(session);
+    this.finalizations.set(session.id, operation);
+    try { await operation; }
+    finally { this.finalizations.delete(session.id); }
+  }
+
+  private async finalizeSimulationSnapshot(session: TrainingSession): Promise<void> {
     this.operationStates.set(session.id, simulation("frozen"));
     const runtime = this.resolveRuntime(session.trackId);
     const draft = await this.run("resume_unavailable", () => this.ports.repositories.getDraft(session.id));

@@ -1,0 +1,17 @@
+appId: com.lkurczab.gcpacetrainer
+---
+- tapOn:
+    id: "main-tab-bar-practice"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:cloud-exam-simulation"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:mode-card:cloud-exam-simulation"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:simulation:root:certification:cloud-exam-simulation:[0-9]+"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:session:timer:certification:cloud-exam-simulation:[0-9]+"

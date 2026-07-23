@@ -30,6 +30,7 @@ export type CertificationPreparationRequest = Readonly<{
   requestedLength?: number;
   domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations";
 }>;
+const CERTIFICATION_EXAM_DURATION_MS = 120 * 60 * 1000;
 
 /**
  * Canonical Cloud Certification semantics. It consumes only the installed,
@@ -52,8 +53,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (questions.length !== requestedLength) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
     if (mode.id === "cloud-exam-simulation" && questions.length !== 50) throw new Error("Cloud exam simulation requires exactly 50 immutable occurrences.");
     const simulation = mode.id === "cloud-exam-simulation";
-    const configurationSnapshot = simulation
-      ? { kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", timer: "absoluteDeadline" }
+    const configurationSnapshot: TrainingSession["configurationSnapshot"] = simulation
+      ? { kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", timer: "absoluteDeadline", timerDeadlineAt: new Date(Date.parse(input.now) + CERTIFICATION_EXAM_DURATION_MS).toISOString(), timerDurationMs: CERTIFICATION_EXAM_DURATION_MS }
       : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
     const base = {
       id: request.sessionId,
@@ -177,6 +178,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
 
   private assertSession(session: TrainingSession): void {
     if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
   }
 }
 
