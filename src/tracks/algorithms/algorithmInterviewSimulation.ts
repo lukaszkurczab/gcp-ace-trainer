@@ -102,6 +102,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
       simulationBlueprintVersion: blueprint.blueprintVersion,
       simulationProfileId: profile.profileId,
       simulationProfileVersion: profile.profileVersion,
+      navigation: "free",
       submission: "manualOrForegroundTimeout",
       timer: "countdownForeground",
       timerDurationMs: profile.foregroundDurationMs,

@@ -5,6 +5,7 @@ import {
   getAlgorithmsInterviewSimulationEntry,
   getAlgorithmsSimulationProjection,
   saveAlgorithmsSimulationResponse,
+  saveAlgorithmsSimulationResponseAndContinue,
   startAlgorithmsSession,
 } from "../src/application/algorithms";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
@@ -60,4 +61,23 @@ test("Algorithms Interview Simulation saves one response durably across lifecycl
   assert.deepEqual(reloadedDraft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
   assert.equal(reloadedProjection.durableDraftRevision, 2);
   assert.equal(reloadedProjection.navigator[0]?.answered, true);
+});
+
+test("Algorithms save-and-continue is one application command for the active non-final occurrence", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  const continued = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  assert.equal(continued.currentItemIndex, 1);
+  assert.equal((await getActiveTrainingSessionDraft())?.responsesByOccurrenceId[occurrence.occurrenceId] !== undefined, true);
 });

@@ -66,6 +66,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
       ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
+      ["SIMULATION-SAVE-AND-CONTINUE-001", ["algorithms-save-and-continue-command"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
@@ -92,11 +93,15 @@ test("defines canonical user commands and maps every session CTA to its one appl
 
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-MODEL-001"), {
     id: "USER-COMMAND-MODEL-001",
-    statement: "Every canonical session CTA maps to exactly one declared application command; save-and-continue is declared only as the atomic save-and-advance intent and has no CTA or implementation in this contract change.",
+    statement: "Every canonical session CTA maps to exactly one declared application command; save-and-continue is one atomic application command and no simulation CTA maps to it until that CTA is explicitly introduced.",
   });
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-RESUME-001"), {
     id: "USER-COMMAND-RESUME-001",
     statement: "Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.",
+  });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-001"), {
+    id: "SIMULATION-SAVE-AND-CONTINUE-001",
+    statement: "The save-and-continue user action for a non-final Algorithms Interview Simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.",
   });
   assert.deepEqual(contract.userCommands, {
     commands: [

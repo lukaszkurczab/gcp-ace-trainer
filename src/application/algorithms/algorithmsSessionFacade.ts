@@ -269,6 +269,17 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
 }
 
+/** One application command owns the non-final simulation action: save the current response, then advance once. */
+export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<TrainingSession> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and continue.");
+  const current = session.itemOrder[session.currentItemIndex];
+  if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and continue requires the active Interview Simulation occurrence.");
+  if (session.currentItemIndex >= session.itemOrder.length - 1) throw new TrainingApplicationFailure("invalid_response", "The final Interview Simulation occurrence cannot save and continue.");
+  await saveAlgorithmsSimulationResponse(input);
+  return navigateAlgorithmsSimulationTo(session.currentItemIndex + 1);
+}
+
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
   await getAlgorithmsSimulationTimerFacade().finalizeManually(session);
