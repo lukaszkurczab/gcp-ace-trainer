@@ -200,11 +200,7 @@ Timer language must reflect the actual timer contract.
 
 For ordinary practice, describe elapsed foreground activity as practice time, not total wall-clock session duration.
 
-For Algorithms `Interview Simulation`, use language such as:
-
-- “45 minutes of active work”
-- “Timer pauses outside the app”
-- “Active time remaining”
+For a foreground-countdown Algorithms simulation, use the resolved duration and behavior from the canonical contract. Suitable language includes “active work”, “Timer pauses outside the app”, and “Active time remaining”.
 
 Do not call this timer:
 
@@ -241,7 +237,7 @@ Prefer:
 - “The certification profile could not be resolved.”
 - “The response was not saved. Your last saved draft is unchanged.”
 - “Finalization did not complete. The frozen session can be retried safely.”
-- “The required 40 simulation items could not be prepared.”
+- “The required simulation plan could not be prepared.”
 - “Storage is unavailable. No substitute result was created.”
 
 Avoid:

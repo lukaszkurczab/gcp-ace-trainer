@@ -14,10 +14,7 @@ type TrackDescriptor = {
   enabledModeIds: readonly string[];
 };
 
-type AlgorithmsMode =
-  | 'Learn Approach' | 'Guided Practice' | 'Recognize Patterns'
-  | 'Contrast Practice' | 'Weak Area Review' | 'Independent Practice'
-  | 'Interview Simulation';
+type AlgorithmsModeId = string; // validated against canonical-product-contract.yaml at the family boundary
 
 type ReviewSource = 'due_queue' | 'session_misses';
 type ResultKind = 'correct' | 'partial' | 'incorrect';
@@ -80,7 +77,7 @@ Complexity content declares its checked dimensions, available values, accepted v
 
 ## Review and reinsert
 
-Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert is enabled only for `Guided Practice`, `Custom Practice`, and Algorithms `Weak Area Review`, is maximum once, has at least three other submitted items between attempts, prefers a reviewed variant of the same mechanism, and preserves both diagnostic attempts.
+Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert availability and placement resolve from the canonical mode configuration and family policy; it preserves both diagnostic attempts when selected.
 
 ## Durable storage model
 

@@ -74,57 +74,11 @@ The runtime never substitutes:
 - a generic explanation;
 - a newer content or profile version.
 
-## 2. Algorithms mode configuration
+## 2. Mode configuration
 
-Algorithms supports exactly these modes:
+The runtime resolves Algorithms and Certification modes exclusively from `canonical-product-contract.yaml`. It does not maintain mode matrices, entry mappings, session lengths, feedback timing, reinsert behavior, shortening policy, or timer behavior in this specification.
 
-| Mode                                          | Default length | Supported requested lengths | Feedback                    | Timer                          | Reinsert | Shortening           |
-| --------------------------------------------- | -------------: | --------------------------- | --------------------------- | ------------------------------ | -------- | -------------------- |
-| `Learn Approach`                              |             10 | 10                          | after each durable submit   | elapsed foreground             | no       | allowed              |
-| `Guided Practice`                             |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | yes      | allowed              |
-| `Custom Practice`                             |             20 | 10, 20, 40                  | after each or session end   | elapsed foreground             | yes      | allowed              |
-| `Recognize Patterns`                          |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
-| `Contrast Practice`                           |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | allowed              |
-| `Weak Area Review`, `source = due_queue`      |             10 | 10, 20                      | after each durable submit   | elapsed foreground             | yes      | allowed              |
-| `Weak Area Review`, `source = session_misses` |             10 | 10, 20                      | after each durable submit   | elapsed foreground             | yes      | allowed              |
-| `Independent Practice`                        |             20 | 10, 20, 40                  | after each durable submit   | elapsed foreground             | no       | blueprint-controlled |
-| `Interview Simulation`                        |             40 | fixed 40                    | after verified finalization | 45-minute foreground countdown | no       | prohibited           |
-
-Entry mappings are:
-
-| Entry intent                                  | Runtime configuration                         |
-| --------------------------------------------- | --------------------------------------------- |
-| Approach primer or newly selected mental unit | `Learn Approach`                              |
-| Topic or default practice                     | `Guided Practice`                             |
-| `Custom Practice` setup                       | `Custom Practice`, Guided Practice blueprint  |
-| Pattern recognition                           | `Recognize Patterns`                          |
-| Strategy or pattern contrast                  | `Contrast Practice`                           |
-| Due review                                    | `Weak Area Review`, `source = due_queue`      |
-| Completed-session misses                      | `Weak Area Review`, `source = session_misses` |
-| Mixed strategy practice                       | `Independent Practice`                        |
-| Timed validation                              | `Interview Simulation`                        |
-
-`due_queue` and `session_misses` are review sources, not mode IDs.
-
-`Custom Practice` resolves through the existing setup route with its own Algorithms mode ID. Its content blueprint and mental-unit selection boundary are fixed to Guided Practice; it must not introduce a second taxonomy or content policy. Its runtime accepts only lengths 10, 20, or 40 and explicit feedback timing `afterEachAnswer` or `atSessionEnd`; it rejects an omitted or unsupported feedback timing. Reinsert remains profile-owned. `afterEachAnswer` reveals feedback after durable submit; `atSessionEnd` withholds correctness and authored feedback until the verified session summary.
-
-## 3. Certification mode configuration
-
-Certification supports exactly these modes:
-
-| Mode                  |  Default length | Supported requested lengths | Feedback                    | Timer              | Reinsert | Shortening                |
-| --------------------- | --------------: | --------------------------- | --------------------------- | ------------------ | -------- | ------------------------- |
-| `Diagnostic Baseline` |              40 | fixed 40                    | after each durable submit   | elapsed foreground | no       | prohibited                |
-| `Focus Practice`      |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | allowed within topic      |
-| `Scenario Practice`   |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | allowed within competency |
-| `Weak Area Review`    |              10 | 10, 20                      | after each durable submit   | elapsed foreground | no       | allowed                   |
-| `Mixed Practice`      |              20 | 10, 20, 40                  | after each durable submit   | elapsed foreground | no       | blueprint-controlled      |
-| `Quick Review`        |              10 | maximum 10                  | after each durable submit   | elapsed foreground | no       | uses eligible due count   |
-| `Exam Simulation`     | profile-defined | profile-defined             | after verified finalization | absolute countdown | no       | prohibited                |
-
-The Certification family learning-system contract defines exact selection semantics.
-
-The runtime must not infer those semantics from mode names.
+An entry intent or review source is validated by the resolved family configuration. Unknown or unsupported values fail preparation explicitly; the runtime never infers behavior from a mode label.
 
 ## 4. Session preparation
 
@@ -531,21 +485,7 @@ Other Certification practice and simulation modes may create or increase review 
 
 ## 11. Reinsert
 
-Reinsert is enabled only in:
-
-- Algorithms `Guided Practice`;
-- Algorithms `Custom Practice`;
-- Algorithms `Weak Area Review`, `source = due_queue`;
-- Algorithms `Weak Area Review`, `source = session_misses`.
-
-It is disabled in every other Algorithms and Certification mode.
-
-A source attempt is eligible only when:
-
-- its result is `incorrect` or `partial`;
-- its reinsert allowance is unused;
-- the prepared plan contains a valid conditional reinsert slot;
-- the slot occurs after at least three other durable submitted attempts.
+The resolved canonical mode configuration determines whether reinsert is available. Its eligibility and placement policy are family-owned and must be consumed through that resolved configuration, not inferred from a mode label or duplicated in this runtime narrative.
 
 ### Conditional plan-slot contract
 
@@ -558,8 +498,7 @@ Each conditional slot persists before session start:
 - stable slot ID;
 - source occurrence ID;
 - ordinary-content branch;
-- reviewed-variant branch where available;
-- exact-source branch only when no compatible reviewed variant exists;
+- policy-selected reinsert branch;
 - occurrence and option order for every possible branch;
 - deterministic resolution rule.
 
@@ -586,15 +525,13 @@ source attempt result
          │
          └─ yes
               ↓
-              at least three other durable submitted attempts
-              occur between source and slot?
+              resolved family placement rule
+              satisfied?
                 ├─ no
                 │    → ordinary branch
                 │
                 └─ yes
-                     → reviewed-variant branch
-                     → exact-source branch only when no
-                       reviewed compatible variant exists
+                     → policy-selected reinsert branch
 ```
 
 A conditional slot:
@@ -614,18 +551,6 @@ A correct reinsert does not:
 - remove the original error;
 - resolve persistent review in the same session;
 - alter historical evidence.
-
-At least three **other materialized submitted attempts** must separate the source and reinsert attempts.
-
-The following do not count:
-
-- displayed items;
-- unsubmitted items;
-- failed journal persistence;
-- preparation failures;
-- abandoned items;
-- the source occurrence;
-- the reinsert occurrence.
 
 If no valid conditional slot is available, reinsert is skipped as a normal outcome.
 
@@ -754,93 +679,13 @@ If materialization or verification fails:
 
 ## 14. Timers
 
-### Practice timer
+Timer kind, duration, cadence, durable checkpointing, drift, and lifecycle checkpoints resolve exclusively from `canonical-product-contract.yaml` and the applicable track profile. The runtime persists only canonical timer state; UI renders its projection and never owns an independent authoritative clock.
 
-All non-simulation sessions use elapsed foreground time.
-
-The timer:
-
-- increases only while the application and session are in the foreground;
-- uses the canonical checkpointed timer state;
-- does not infer activity from closed-app wall-clock time;
-- resumes from the last verified durable checkpoint.
-
-### Algorithms Interview Simulation timer
-
-Algorithms simulation uses:
-
-```txt
-remainingMs =
-  max(0, 45 minutes - canonicalActiveForegroundMs)
-```
-
-It is a foreground countdown.
-
-Background and closed-app time do not consume it.
-
-It has no wall-clock deadline.
-
-The setup and runner disclose that the timer measures active work and pauses outside the app.
-
-When remaining time reaches zero:
-
-- editing is disabled;
-- the latest verified durable draft revision is frozen;
-- exactly one finalization command begins.
-
-Repeated zero notifications must not create repeated finalization commands.
-
-### Certification Exam Simulation timer
-
-Certification simulation uses the absolute deadline in the exact session-snapshotted `ExamExperienceProfile`.
-
-Background and closed-app time continue to consume the deadline.
-
-Returning before the deadline resumes the editable durable draft.
-
-Returning after the deadline:
-
-- freezes the latest verified durable draft;
-- starts idempotent automatic finalization;
-- does not reopen editable state.
-
-### Timer recovery
-
-The runtime defines and tests:
-
-- foreground entry;
-- foreground exit;
-- periodic checkpoint;
-- manual-finalization checkpoint;
-- expiry checkpoint;
-- force-close recovery;
-- maximum permitted foreground-timer drift.
-
-UI never owns an independent authoritative timer.
+Expiry freezes the verified durable draft and begins the declared idempotent finalization path. Recovery resumes only from canonical durable state.
 
 ## 15. Algorithms Interview Simulation
 
-Algorithms `Interview Simulation` has:
-
-- exactly 40 unique content identities;
-- one versioned simulation blueprint;
-- free navigation;
-- editable responses until finalization;
-- persisted current position;
-- no flagging unless a later approved profile explicitly introduces it;
-- no reinsert;
-- no per-item feedback;
-- 45 minutes of foreground active time.
-
-Preparation fails if exactly 40 valid unique items cannot be selected.
-
-The session does not:
-
-- shorten;
-- duplicate content;
-- widen scope;
-- insert unrelated content;
-- use a generic substitute.
+Algorithms simulation resolves its product-defined configuration from the canonical contract. Preparation validates the resolved blueprint without silently changing its content scope, item plan, feedback, reinsert, or timer behavior.
 
 ### Answered outcomes
 
@@ -887,61 +732,7 @@ No pass/fail, readiness, retention, mastery, or predicted interview outcome is s
 
 ## 16. Certification non-simulation runtime
 
-All six non-simulation Certification modes:
-
-- use immediate authored feedback;
-- use elapsed foreground time;
-- persist no unsubmitted selection;
-- use no reinsert;
-- fix the selected session plan before the first item;
-- may create or increase review;
-- produce a canonical family-specific summary.
-
-### Diagnostic Baseline
-
-- exactly 40 unique items;
-- no shortening;
-- preparation fails if the blueprint cannot be satisfied;
-- feedback appears after each durable submit;
-- attempts may create review;
-- attempts do not resolve persistent review.
-
-### Focus Practice
-
-- remains within one selected topic;
-- supports configured lengths 10, 20, and 40;
-- may shorten within that topic;
-- does not fill from sibling topics.
-
-### Scenario Practice
-
-- remains within one selected competency area;
-- uses only scenario-valid content;
-- supports configured lengths 10, 20, and 40;
-- may shorten within the selected competency;
-- does not widen into another competency.
-
-### Weak Area Review
-
-- uses eligible error-based review evidence;
-- supports 10 or 20 requested items;
-- may shorten to compatible eligible content;
-- may advance persistent-review resolution.
-
-### Mixed Practice
-
-- follows the versioned mixed-practice blueprint;
-- supports configured lengths 10, 20, and 40;
-- uses unique interleaved content;
-- shortening is allowed only when declared by the blueprint.
-
-### Quick Review
-
-- selects due maintenance retrieval;
-- includes at most 10 items;
-- uses the eligible due count;
-- does not fill from unrelated or not-yet-due content;
-- may advance persistent-review resolution.
+Certification non-simulation behavior is resolved from the canonical contract and owning family runtime. This document does not duplicate per-mode selection, length, feedback, timer, reinsert, shortening, review, or completion definitions.
 
 ## 17. Certification Exam Simulation
 

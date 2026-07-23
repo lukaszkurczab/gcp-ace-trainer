@@ -31,28 +31,7 @@ These are architecture examples and future candidates, not committed release sco
 
 ## Canonical session modes
 
-Algorithms has exactly these user-facing modes:
-
-1. `Learn Approach`
-2. `Guided Practice`
-3. `Custom Practice`
-4. `Recognize Patterns`
-5. `Contrast Practice`
-6. `Weak Area Review`
-7. `Independent Practice`
-8. `Interview Simulation`
-
-Certification has exactly these user-facing modes:
-
-1. `Diagnostic Baseline`
-2. `Focus Practice`
-3. `Scenario Practice`
-4. `Weak Area Review`
-5. `Mixed Practice`
-6. `Quick Review`
-7. `Exam Simulation`
-
-`due_queue` and `session_misses` are sources for Algorithms `Weak Area Review`, not modes. Progress never locks a mode; it supplies an evidence-based recommendation and the learner may choose another mode.
+`canonical-product-contract.yaml` supplies all user-facing modes and their configuration. Progress never locks a mode; it supplies an evidence-based recommendation and the learner may choose another supported configuration.
 
 ## Product loop
 

@@ -212,32 +212,9 @@ Tests must fail if an interaction is registered without its complete handler.
 
 ## Algorithms mode tests
 
-Test exactly these Algorithms modes:
+The canonical-product-contract suite validates the complete Algorithms mode matrix and entry resolution from the contract data. Application tests consume the resolved configuration rather than restating a mode list, session lengths, feedback timing, timer, or reinsert policy in this strategy.
 
-1. `Learn Approach`
-2. `Guided Practice`
-3. `Custom Practice`
-4. `Recognize Patterns`
-5. `Contrast Practice`
-6. `Weak Area Review`
-7. `Independent Practice`
-8. `Interview Simulation`
-
-Test entry mappings:
-
-- approach primer or new mental unit → `Learn Approach`;
-- topic/default practice → `Guided Practice`;
-- `Custom Practice` setup → `Custom Practice`, using only the Guided Practice content blueprint for its selected mental unit;
-- pattern recognition → `Recognize Patterns`;
-- contrast → `Contrast Practice`;
-- due review → `Weak Area Review`, `source = due_queue`;
-- session misses → `Weak Area Review`, `source = session_misses`;
-- mixed practice → `Independent Practice`;
-- timed validation → `Interview Simulation`.
-
-`due_queue` and `session_misses` must never be accepted as mode IDs.
-
-For `Custom Practice`, test all declared lengths (10, 20, and 40), both declared feedback timings (`afterEachAnswer` and `atSessionEnd`), the resolved Custom Practice mode ID, and the normal one-active-session lifecycle. Test that it can consume only the Guided Practice content blueprint for its selected mental unit, does not accept an unsupported feedback value or reinsert override, and does not create a second active session. With `atSessionEnd`, test that per-item correctness and authored feedback remain withheld until the verified summary, where persisted feedback is available. A real-device evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree.
+For Custom Practice, exercise every configuration declared by the contract, its required blueprint and explicit mental-unit boundary, unsupported-value rejection, the one-active-session lifecycle, and the specified feedback-disclosure boundary. A real-device evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree.
 
 ## Review selection tests
 
@@ -300,43 +277,15 @@ Test that hint evidence is impossible for an interaction without an explicitly s
 
 ## Reinsert tests
 
-Reinsert is permitted only in:
+Load reinsert enablement, eligibility, placement, and content choice from the canonical resolved configuration. For one eligible source attempt, test:
 
-- `Guided Practice`;
-- `Weak Area Review`, `source = due_queue`;
-- `Weak Area Review`, `source = session_misses`.
-
-Every other Algorithms mode must reject or ignore reinsert configuration as invalid.
-
-For one eligible incorrect or partial source attempt, test:
-
-- maximum one reinsert;
-- reviewed compatible variant is preferred;
-- exact source item is used only when no compatible reviewed variant exists;
 - the reinsert has a new `occurrenceId`;
 - the second submission creates a separate immutable attempt;
 - both attempts remain in diagnostics;
 - the original error remains recorded;
 - same-session correction does not resolve persistent review.
 
-At least three other submitted items must occur between attempts.
-
-Test:
-
-- zero intervening submitted items → skip;
-- one intervening submitted item → skip;
-- two intervening submitted items → skip;
-- three intervening submitted items → eligible;
-- more than three intervening submitted items → eligible if all other rules hold.
-
-The following do not count toward the gap:
-
-- displayed but unsubmitted items;
-- preparation failures;
-- abandoned occurrences;
-- the original source occurrence;
-- the reinsert occurrence itself;
-- non-durable submissions.
+Exercise the resolved family placement rule with both eligible and ineligible plan fixtures. The fixture must distinguish durable submitted attempts from unsubmitted, failed, and abandoned states.
 
 When reinsert is skipped, assert that the application does not:
 
@@ -381,32 +330,9 @@ Test the commit-pending state where feedback is visible but materialization is i
 
 ## Algorithms Interview Simulation tests
 
-Test the fixed profile:
-
-- exactly 40 unique content identities;
-- correct profile identity and version;
-- valid selection blueprint;
-- preparation fails if 40 valid unique items cannot be selected;
-- the simulation never shortens;
-- content is never duplicated;
-- taxonomy is never widened silently;
-- no generic substitute is inserted;
-- free navigation;
-- response add;
-- response overwrite;
-- response removal;
-- current-position persistence;
-- no reinsert;
-- no per-item correctness or authored feedback before finalization.
+Test the resolved canonical simulation configuration: identity and version, valid blueprint, explicit preparation failure, plan integrity, draft response operations, current-position persistence, and the declared feedback boundary.
 
 ### Algorithms timer tests
-
-Assert:
-
-```txt
-remainingMs =
-  max(0, 45 minutes - canonicalActiveForegroundMs)
-```
 
 Test:
 
@@ -429,9 +355,7 @@ Test checkpoint behaviour:
 - expiry checkpoint;
 - force-close immediately before checkpoint;
 - force-close immediately after checkpoint;
-- maximum permitted timer drift.
-
-The accepted drift bound must be explicitly configured and asserted.
+- the contract-declared checkpoint cadence and maximum drift.
 
 ### Algorithms draft tests
 
@@ -518,16 +442,7 @@ Finalization failure must not reopen editable draft state or create a second out
 
 ## Certification non-simulation tests
 
-Test all six non-simulation Certification modes:
-
-1. `Diagnostic Baseline`
-2. `Focus Practice`
-3. `Scenario Practice`
-4. `Weak Area Review`
-5. `Mixed Practice`
-6. `Quick Review`
-
-For each mode, test its approved:
+For each Certification configuration declared by the canonical contract, test its resolved:
 
 - entry intent;
 - item-selection policy;
@@ -540,7 +455,7 @@ For each mode, test its approved:
 - completion result;
 - recommendation effect.
 
-Until these contracts are explicitly defined in the Certification learning-system and runtime documents, the corresponding implementation remains blocked rather than inferred from mode names.
+The corresponding implementation remains blocked until its contract and source-backed track profile are available; behavior is never inferred from mode names.
 
 Test competency-first and then topic-level remediation where required.
 
@@ -916,7 +831,7 @@ Assert that UI does not expose:
 
 Algorithms navigator tests include:
 
-- exactly 40 occurrences;
+- the canonical resolved occurrence plan;
 - current;
 - answered and durably saved;
 - unanswered;

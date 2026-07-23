@@ -13,6 +13,47 @@ test("parses the canonical product contract", () => {
   assert.equal(contract.authority.narrativeDocuments, "non-normative");
 });
 
+test("keeps mode matrices and fixed configuration values out of narrative docs", () => {
+  const narrativeDocs = [
+    "docs/03-navigation-and-flows.md",
+    "docs/00-overview.md",
+    "docs/04-data-model.md",
+    "docs/05-design-system.md",
+    "docs/06-branding-and-style-direction.md",
+    "docs/08-storage-and-offline.md",
+    "docs/11-implementation-guidelines.md",
+    "docs/12-testing-strategy.md",
+    "docs/15-certification-track-learning-system.md",
+    "docs/16-leetcode-like-learning-system.md",
+    "docs/17-training-runtime-and-interaction-spec.md",
+    "docs/designs/README.md",
+    "docs/designs/algorithms_stage3_ui/DESIGN.md",
+  ];
+  const removedMatrixConstructs = [
+    /\|\s*Mode\s*\|\s*Default length\s*\|/,
+    /Supported requested lengths/,
+    /Algorithms supports exactly these modes:/,
+    /Certification supports exactly these modes:/,
+    /Algorithms has exactly these user-facing modes:/,
+    /Reinsert is enabled only (?:for|in):/,
+    /at least three other (?:durable )?submitted items/,
+    /three-item gap/,
+    /maximum-one (?:rule|reinsert)/,
+    /prefer a reviewed variant of the same mechanism/,
+    /exact source item is used only when no compatible reviewed variant exists/,
+    /45-minute (?:foreground|active-foreground) countdown/,
+    /exactly 40 (?:unique )?(?:items|occurrences)/,
+    /max\(0, 45 minutes - canonicalActiveForegroundMs\)/,
+  ];
+
+  for (const path of narrativeDocs) {
+    const source = readFileSync(path, "utf8");
+    for (const construct of removedMatrixConstructs) {
+      assert.doesNotMatch(source, construct, `${path} must not maintain ${construct}`);
+    }
+  }
+});
+
 test("maps every canonical requirement to real tests and rejects incomplete or invalid mappings", () => {
   const contract = loadCanonicalProductContract();
   assert.deepEqual(
@@ -21,12 +62,14 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTRACT-AUTHORITY-001", ["canonical-contract-authority"]],
       ["ALGORITHMS-MODE-MATRIX-001", ["canonical-algorithms-mode-matrix"]],
       ["ALGORITHMS-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
+      ["ALGORITHMS-REINSERT-POLICY-001", ["canonical-algorithms-reinsert-policy"]],
       ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
       ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
+      ["NARRATIVE-DOCS-CANONICALIZATION-001", ["canonical-narrative-docs"]],
       ["DESIGN-REFERENCE-REGISTRY-001", ["canonical-design-reference-readiness"]],
     ],
   );
@@ -262,6 +305,31 @@ test("locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-
     reinsertOwnership: "profile",
     lifecycle: "sharedOneActiveSession",
   });
+});
+
+test("locks the versioned Algorithms reinsert placement policy", () => {
+  const contract = loadCanonicalProductContract();
+
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "ALGORITHMS-REINSERT-POLICY-001"), {
+    id: "ALGORITHMS-REINSERT-POLICY-001",
+    statement: "Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.",
+  });
+  assert.deepEqual(contract.algorithms.reinsertPolicy, {
+    version: 1,
+    eligibleResultKinds: ["incorrect", "partial"],
+    maxReinsertsPerSource: 1,
+    minInterveningDurableSubmissions: 3,
+    variantSelectionOrder: ["compatibleReviewedVariant", "exactSourceFallback"],
+    missingValidSlot: "skip",
+  });
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("minInterveningDurableSubmissions: 3", "minInterveningDurableSubmissions: 2")),
+    /must be equal to constant/,
+  );
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("variantSelectionOrder: [compatibleReviewedVariant, exactSourceFallback]", "variantSelectionOrder: [exactSourceFallback, compatibleReviewedVariant]")),
+    /must be equal to constant/,
+  );
 });
 
 test("defines exactly the complete declared Certification mode matrix", () => {

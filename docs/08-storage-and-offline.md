@@ -202,16 +202,7 @@ A failed draft save preserves the last verified durable revision. It creates no 
 
 ## Algorithms Interview Simulation persistence
 
-Algorithms `Interview Simulation` has exactly 40 unique occurrences and a Patternly-defined 45-minute active-foreground countdown.
-
-It has no wall-clock deadline:
-
-```txt
-remainingMs =
-  max(0, 45 minutes - canonicalActiveForegroundMs)
-```
-
-Background and closed-app time do not consume the timer.
+Algorithms simulation persists the occurrence plan and timer behavior resolved from the canonical product contract. This storage document does not restate its count, duration, formula, checkpoint cadence, or foreground policy.
 
 The Algorithms draft persists:
 

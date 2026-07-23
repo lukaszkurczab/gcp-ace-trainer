@@ -21,66 +21,11 @@ Home shows deterministic, family-specific, explained recommendations. It priorit
 
 Home does not display confidence, readiness, retention, or mastery percentages. A valid learner choice among currently supported configurations overrides the recommendation for the current session.
 
-## Algorithms modes and setup
+## Mode setup
 
-The only user-facing Algorithms mode labels are:
+Routes resolve the requested Algorithms or Certification mode through `canonical-product-contract.yaml`. This navigation document does not enumerate modes or define their lengths, feedback timing, reinsert, shortening, or timer behavior.
 
-1. `Learn Approach`
-2. `Guided Practice`
-3. `Custom Practice`
-4. `Recognize Patterns`
-5. `Contrast Practice`
-6. `Weak Area Review`
-7. `Independent Practice`
-8. `Interview Simulation`
-
-Algorithms entry intents map as follows:
-
-| Entry intent                       | Canonical mode                                |
-| ---------------------------------- | --------------------------------------------- |
-| Approach primer or new mental unit | `Learn Approach`                              |
-| Topic or default practice          | `Guided Practice`                             |
-| `Custom Practice` setup            | `Custom Practice`, Guided Practice blueprint  |
-| Pattern recognition                | `Recognize Patterns`                          |
-| Contrast                           | `Contrast Practice`                           |
-| Due review                         | `Weak Area Review`, `source = due_queue`      |
-| Current-session misses             | `Weak Area Review`, `source = session_misses` |
-| Mixed practice                     | `Independent Practice`                        |
-| Timed validation                   | `Interview Simulation`                        |
-
-`due_queue` and `session_misses` are sources for `Weak Area Review`, not separate modes.
-
-`Custom Practice` uses the existing setup route and non-simulation lifecycle, but it resolves to its own Algorithms mode ID. It must consume the Guided Practice content blueprint and selected mental-unit boundary; it must not create a second content taxonomy or selection policy. It may choose length 10, 20, or 40 and feedback timing `afterEachAnswer` or `atSessionEnd`. Reinsert remains profile-owned and cannot be overridden by the learner.
-
-For `Weak Area Review`, selection takes eligible source items first. It may then add only reviewed items compatible under the Algorithms family review policy, using the same mental unit, mechanism, pattern relationship, or approved repair boundary.
-
-It must not silently widen taxonomy, add unrelated content, duplicate an item, or use a generic substitute.
-
-If the compatible review pool is smaller than the requested length:
-
-- the session is shortened;
-- `actualLength` reflects the selected pool;
-- the actual length and reason are shown before start.
-
-This shortening rule applies only where the mode contract permits it. It does not apply to fixed-length `Interview Simulation`.
-
-## Certification modes and setup
-
-The only user-facing Certification mode labels are:
-
-1. `Diagnostic Baseline`
-2. `Focus Practice`
-3. `Scenario Practice`
-4. `Weak Area Review`
-5. `Mixed Practice`
-6. `Quick Review`
-7. `Exam Simulation`
-
-Certification entry routes resolve their exact mode configuration through the owning `CertificationFamilyRuntime` and track instance.
-
-The mode contract must define selection, requested and actual length, feedback timing, timer behaviour, review behaviour, and completion rules before implementation. A mode label alone is not sufficient configuration.
-
-`Exam Simulation` is available only when the selected certification track supplies a valid, official-source-backed `ExamExperienceProfile`.
+The resolved configuration is shown before start. A route may carry an entry intent or review source, but the application resolves it against the contract and owning family runtime rather than this document. Unknown, unsupported, or incomplete configurations remain explicit preparation failures.
 
 ## Practice session flow
 
@@ -145,182 +90,13 @@ Draft changes create no immutable `TrainingAttempt`, score, instructional feedba
 
 A draft response, navigation change, flag change, or section transition must not be represented as safely saved until its canonical draft update is durable. Persistence failure remains explicit and preserves the last verified durable state.
 
-## Algorithms Interview Simulation
+## Simulation navigation context
 
-`Interview Simulation` is a Patternly-defined timed Algorithms validation session. It does not claim to reproduce an official assessment or every real-world interview condition.
+Simulation routes render the configuration resolved from the canonical contract and, for Certification, the selected track profile. The shared shell may present draft, persistence, freeze, finalization, summary, and recovery states, but it does not define their timing, feedback, reinsert, item-count, or timer policy.
 
-It has exactly 40 unique items selected under the Algorithms simulation blueprint.
+Algorithms simulation remains Patternly-defined rather than an official assessment. Certification simulation makes fidelity claims only when its resolved profile has the required official support. In both families, a UI timer is a projection of canonical runtime state, never a second source of truth.
 
-Preparation fails explicitly when the runtime cannot select 40 valid and compatible items. The runtime must not:
-
-- shorten the simulation;
-- repeat an item;
-- widen the configured taxonomy silently;
-- add unrelated content;
-- use a default or generic substitute.
-
-The simulation permits:
-
-- free navigation;
-- answer changes until finalization begins;
-- persisted draft responses;
-- persisted current position;
-- resume of the one active simulation;
-- no reinsert;
-- no per-item correctness or instructional feedback before finalization.
-
-### Timer
-
-Algorithms `Interview Simulation` uses a 45-minute foreground countdown:
-
-```txt
-remainingMs = max(
-  0,
-  45 minutes - canonicalActiveForegroundMs
-)
-```
-
-Background and closed-app time do not consume the Algorithms simulation timer.
-
-The setup and runner must disclose that the timer measures active foreground work and pauses outside the app. Patternly must not describe this behaviour as an exact reproduction of an uninterrupted real interview.
-
-The canonical timer-state model, foreground-segment transitions, persistence checkpoints, force-close recovery, and expiry transition are defined in the data model, storage contract, and training-runtime specification. UI must not implement an independent timer source.
-
-### Draft persistence
-
-The canonical Algorithms simulation draft persists:
-
-- response by item ID;
-- current position;
-- canonical foreground-timer state.
-
-Changing a draft response does not submit that item. No attempt, score, feedback, or review mutation exists before finalization.
-
-### Finalization
-
-Manual final submission or exhaustion of the 45 minutes of canonical foreground time invokes the same idempotent finalization command.
-
-Finalization follows this order:
-
-```txt
-freeze the complete durable draft snapshot
-→ reject further response and navigation changes
-→ build deterministic attempts, score, session result, evidence, and review mutations
-→ persist a durable complete-simulation journal
-→ expose finalized results
-→ materialize canonical records
-→ verify materialization
-→ remove completed draft state
-→ clear the journal
-```
-
-If journal durability or materialization fails:
-
-- the simulation remains frozen;
-- its durable draft snapshot remains recoverable;
-- no editable state is restored;
-- no second finalization outcome is created;
-- retry completes the same deterministic operation.
-
-Answered draft responses create immutable attempts during finalization.
-
-Applicable incorrect, partial, repeated-mistake, complexity, strategy, pattern, or other documented outcomes may create or update review only during finalization.
-
-### Unanswered items
-
-Unanswered items are permitted.
-
-They:
-
-- receive zero points;
-- remain a distinct summary category;
-- do not create an ordinary item-level attempt;
-- do not automatically create content-specific review;
-- are persisted on the completed session as unanswered item references and count;
-- may contribute to a family-defined session-level completion or time-management performance signal.
-
-They must not disappear from the persistent simulation result.
-
-### Results
-
-Algorithms simulation results show at least:
-
-- total item count;
-- answered item count;
-- unanswered item count;
-- correct item count;
-- partial item count;
-- incorrect item count;
-- points earned;
-- maximum available points;
-- an evidence-based breakdown defined by the Algorithms family;
-- post-session access to authored feedback.
-
-Any percentage is derived from real earned and maximum points. It is not readiness, retention, mastery, or an official outcome.
-
-No pass/fail result is shown.
-
-Post-session review defaults to non-correct answered items and separately exposes unanswered items. An all-items view may be available.
-
-## Certification Exam Simulation
-
-Each certification `Exam Simulation` reads the selected track instance’s versioned `ExamExperienceProfile`.
-
-The profile controls:
-
-- question count or range;
-- absolute deadline;
-- navigation;
-- answer changes;
-- flagging;
-- navigator;
-- section behaviour;
-- section-return behaviour;
-- automatic final submission.
-
-No global certification-exam defaults are used.
-
-If required official behaviour is unclear or unsupported, the track cannot claim faithful simulation and preparation fails explicitly.
-
-The canonical certification simulation draft persists all profile-permitted state needed for deterministic resume, including as applicable:
-
-- answers;
-- current position;
-- flags;
-- navigator state;
-- section state;
-- absolute deadline.
-
-No per-item correctness, `Reason`, `Details`, or distractor explanation appears before finalization.
-
-System exit requests confirmation. The available actions must distinguish continuing the simulation, leaving it resumable, and deliberate abandonment where the product permits abandonment.
-
-Manual finish permits unanswered items but warns with their count.
-
-Timeout:
-
-```txt
-absolute deadline reached
-→ freeze all durable answers
-→ start the idempotent final commit
-```
-
-If the application returns before the deadline, the learner resumes the canonical draft. If it returns after the deadline, the application auto-finalizes the frozen durable state.
-
-A failed finalization preserves the frozen recoverable state and retries the same deterministic operation.
-
-Results show:
-
-- raw correct count;
-- percentage;
-- competency breakdown;
-- unanswered as a separate incorrect diagnostic category.
-
-Partial results never increase the correct count.
-
-No official-looking pass/fail result is shown. Any internal practice threshold is clearly labelled as Patternly-defined.
-
-Answer review defaults to missed items and may expose all items.
+Draft changes remain separate from immutable attempts and results. Finalization freezes the verified durable draft, materializes one deterministic result, and exposes the summary only after verification; a failure keeps the recoverable state explicit rather than reopening an apparently saved draft.
 
 ## Summary and review navigation
 

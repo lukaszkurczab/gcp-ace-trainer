@@ -10,6 +10,8 @@ requirements:
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: ALGORITHMS-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
+  - id: ALGORITHMS-REINSERT-POLICY-001
+    statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
     statement: Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.
   - id: USER-COMMAND-MODEL-001
@@ -22,6 +24,8 @@ requirements:
     statement: "A simulation has one active session mutation lane: save, navigation, timer checkpoint, foreground transition, finalization, and abandonment are FIFO-serialized with at most one in flight, and revalidate the active session immediately before execution."
   - id: SIMULATION-TIMER-CADENCE-001
     statement: "Simulation timer projections refresh every second without a durable write; durable checkpoints occur every 15 seconds with at most one second of drift and at every declared lifecycle checkpoint."
+  - id: NARRATIVE-DOCS-CANONICALIZATION-001
+    statement: Narrative documents reference the canonical contract and do not maintain competing mode matrices or fixed configuration values.
   - id: DESIGN-REFERENCE-REGISTRY-001
     statement: User-facing work may be ready only when it names a registered APPROVED design reference.
 requirementTestCoverage:
@@ -39,6 +43,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-001
       requirementIds: [ALGORITHMS-CUSTOM-PRACTICE-001]
+    - id: canonical-algorithms-reinsert-policy
+      testPath: tests/canonicalProductContract.test.ts
+      testName: locks the versioned Algorithms reinsert placement policy
+      requirementIds: [ALGORITHMS-REINSERT-POLICY-001]
     - id: canonical-certification-mode-matrix
       testPath: tests/canonicalProductContract.test.ts
       testName: defines exactly the complete declared Certification mode matrix
@@ -59,6 +67,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the versioned simulation timer cadence without per-refresh durable writes
       requirementIds: [SIMULATION-TIMER-CADENCE-001]
+    - id: canonical-narrative-docs
+      testPath: tests/canonicalProductContract.test.ts
+      testName: keeps mode matrices and fixed configuration values out of narrative docs
+      requirementIds: [NARRATIVE-DOCS-CANONICALIZATION-001]
     - id: canonical-design-reference-readiness
       testPath: tests/canonicalProductContract.test.ts
       testName: requires a registered APPROVED design reference before a user-facing task is ready
@@ -187,6 +199,13 @@ algorithms:
     mentalUnitSelection: explicit
     reinsertOwnership: profile
     lifecycle: sharedOneActiveSession
+  reinsertPolicy:
+    version: 1
+    eligibleResultKinds: [incorrect, partial]
+    maxReinsertsPerSource: 1
+    minInterveningDurableSubmissions: 3
+    variantSelectionOrder: [compatibleReviewedVariant, exactSourceFallback]
+    missingValidSlot: skip
   modes:
     - id: algorithms-learn-approach
       label: Learn Approach

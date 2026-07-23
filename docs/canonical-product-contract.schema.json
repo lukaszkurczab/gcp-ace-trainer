@@ -58,9 +58,10 @@
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["customPractice", "modes"],
+      "required": ["customPractice", "reinsertPolicy", "modes"],
       "properties": {
         "customPractice": { "$ref": "#/$defs/customPractice" },
+        "reinsertPolicy": { "$ref": "#/$defs/algorithmsReinsertPolicy" },
         "modes": {
           "type": "array",
           "minItems": 8,
@@ -349,6 +350,27 @@
         "mentalUnitSelection": { "const": "explicit" },
         "reinsertOwnership": { "const": "profile" },
         "lifecycle": { "const": "sharedOneActiveSession" }
+      }
+    },
+    "algorithmsReinsertPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "eligibleResultKinds", "maxReinsertsPerSource", "minInterveningDurableSubmissions", "variantSelectionOrder", "missingValidSlot"],
+      "properties": {
+        "version": { "const": 1 },
+        "eligibleResultKinds": {
+          "type": "array",
+          "const": ["incorrect", "partial"],
+          "uniqueItems": true
+        },
+        "maxReinsertsPerSource": { "const": 1 },
+        "minInterveningDurableSubmissions": { "const": 3 },
+        "variantSelectionOrder": {
+          "type": "array",
+          "const": ["compatibleReviewedVariant", "exactSourceFallback"],
+          "uniqueItems": true
+        },
+        "missingValidSlot": { "const": "skip" }
       }
     },
     "algorithmMode": {

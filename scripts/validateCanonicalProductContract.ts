@@ -163,6 +163,15 @@ export type CanonicalCustomPracticeContract = Readonly<{
   lifecycle: "sharedOneActiveSession";
 }>;
 
+export type CanonicalAlgorithmsReinsertPolicy = Readonly<{
+  version: 1;
+  eligibleResultKinds: readonly ["incorrect", "partial"];
+  maxReinsertsPerSource: 1;
+  minInterveningDurableSubmissions: 3;
+  variantSelectionOrder: readonly ["compatibleReviewedVariant", "exactSourceFallback"];
+  missingValidSlot: "skip";
+}>;
+
 export type CanonicalAlgorithmMode = Readonly<{
   id: CanonicalAlgorithmModeId;
   label: CanonicalAlgorithmModeLabel;
@@ -249,6 +258,7 @@ export type CanonicalProductContract = Readonly<{
   }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
+    reinsertPolicy: CanonicalAlgorithmsReinsertPolicy;
     modes: readonly CanonicalAlgorithmMode[];
   }>;
   certification: Readonly<{

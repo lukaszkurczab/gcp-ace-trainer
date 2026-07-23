@@ -157,12 +157,8 @@ It does not infer readiness, retention, or mastery from a recent percentage.
 
 Research supports the learning mechanisms above. It does not prescribe:
 
-- Patternly’s eight mode names;
-- exact session lengths;
-- a 40-item simulation;
-- a 45-minute timer;
-- the exact review schedule;
-- three intervening items before reinsert;
+- Patternly’s declared mode configuration;
+- session sizing, timing, review, or reinsert policy;
 - the exact taxonomy;
 - recommendation thresholds;
 - the proportion of item types within a session.
@@ -323,58 +319,11 @@ Runtime validates these declarations.
 
 It does not infer missing stages, distributions, thresholds, or mode support from filenames or current item counts.
 
-## Canonical modes
+## Canonical mode configuration
 
-Algorithms has exactly these user-facing modes:
+`canonical-product-contract.yaml` is the only Algorithms mode matrix. It supplies the mode IDs and labels together with selection boundary, session length, feedback, timer, shortening, and reinsert configuration. This learning document does not repeat those values or map entry intents.
 
-1. `Learn Approach`
-2. `Guided Practice`
-3. `Custom Practice`
-4. `Recognize Patterns`
-5. `Contrast Practice`
-6. `Weak Area Review`
-7. `Independent Practice`
-8. `Interview Simulation`
-
-No second Algorithms mode taxonomy exists.
-
-## Mode configuration summary
-
-| Mode                                 | Default length | Selection boundary                | Feedback                  | Timer                          | Reinsert | May shorten |
-| ------------------------------------ | -------------: | --------------------------------- | ------------------------- | ------------------------------ | -------- | ----------- |
-| `Learn Approach`                     |             10 | one mental unit                   | after each durable submit | elapsed foreground             | no       | yes         |
-| `Guided Practice`                    |             20 | one mental unit                   | after each durable submit | elapsed foreground             | yes      | yes         |
-| `Custom Practice`                    |             20 | one mental unit, Guided blueprint | after each or session end | elapsed foreground             | yes      | yes         |
-| `Recognize Patterns`                 |             20 | declared recognition set          | after each durable submit | elapsed foreground             | no       | yes         |
-| `Contrast Practice`                  |             20 | declared contrast set             | after each durable submit | elapsed foreground             | no       | yes         |
-| `Weak Area Review`, `due_queue`      |             10 | eligible due review evidence      | after each durable submit | elapsed foreground             | yes      | yes         |
-| `Weak Area Review`, `session_misses` |             10 | misses from one completed session | after each durable submit | elapsed foreground             | yes      | yes         |
-| `Independent Practice`               |             20 | declared interleaved scope        | after each durable submit | elapsed foreground             | no       | yes         |
-| `Interview Simulation`               |             40 | fixed simulation blueprint        | session end               | 45-minute foreground countdown | no       | no          |
-
-The exact session plan is selected, ordered, and persisted before the first item appears.
-
-Selection does not adapt silently in response to answers during the active session.
-
-## Entry mappings
-
-Algorithms entry intents map as follows:
-
-| Entry intent                                  | Canonical configuration                       |
-| --------------------------------------------- | --------------------------------------------- |
-| Approach primer or newly selected mental unit | `Learn Approach`                              |
-| Topic or default practice                     | `Guided Practice`                             |
-| `Custom Practice` setup                       | `Custom Practice`, Guided Practice blueprint  |
-| Pattern recognition                           | `Recognize Patterns`                          |
-| Strategy or pattern contrast                  | `Contrast Practice`                           |
-| Due review                                    | `Weak Area Review`, `source = due_queue`      |
-| Review current-session misses                 | `Weak Area Review`, `source = session_misses` |
-| Mixed strategy practice                       | `Independent Practice`                        |
-| Timed validation                              | `Interview Simulation`                        |
-
-`due_queue` and `session_misses` are sources for `Weak Area Review`, not modes.
-
-`Custom Practice` is the third Algorithms mode. It has its own runtime mode ID but is content-bound to the immutable Guided Practice blueprint and the chosen mental unit; it is not a second content taxonomy. Its valid learner choices are session lengths 10, 20, and 40, plus `afterEachAnswer` or `atSessionEnd` feedback. It shares the regular one-active-session lifecycle and profile-owned reinsert policy.
+The exact session plan is selected, ordered, and persisted before the first item appears. Selection does not adapt silently in response to answers during the active session.
 
 ## Shared non-simulation contract
 
@@ -383,10 +332,10 @@ All seven non-simulation modes:
 - use one canonical active session;
 - use unique content identities except an explicitly scheduled exact-item reinsert;
 - persist the session before the first item appears;
-- use elapsed foreground count-up;
+- render the timer behavior resolved from the canonical configuration;
 - keep an unsubmitted response in UI state only;
 - create an immutable attempt after durable submission;
-- reveal authored feedback after durable submission, except `Custom Practice` with `atSessionEnd`, which reveals it only after verified completion;
+- disclose authored feedback only at the boundary resolved from the canonical configuration;
 - may create or update review;
 - produce a family-specific completed-session result;
 - show no confidence, readiness, retention, or mastery measure.
@@ -412,7 +361,7 @@ It is not a passive article or a list of facts.
 
 ### Length
 
-Default requested length is 10.
+The resolved canonical configuration supplies the requested length.
 
 The session may shorten when the active mental unit does not contain enough valid unique instructional items for the declared approach-stage blueprint.
 
@@ -469,7 +418,7 @@ The learner must still make a meaningful decision before feedback.
 
 ### Feedback
 
-Feedback appears after each durable submission.
+Feedback follows the resolved canonical disclosure boundary.
 
 `Details` connects the current decision to the complete mental-unit model.
 
@@ -505,9 +454,7 @@ It is the default topic-practice mode.
 
 ### Length
 
-Default requested length is 20.
-
-Supported user-selectable lengths follow the active product configuration, including the canonical session-length options where enabled.
+Supported user-selectable lengths follow the resolved canonical product configuration.
 
 If the selected mental unit contains fewer valid compatible unique items than requested, the session shortens and shows its actual length before start.
 
@@ -551,7 +498,7 @@ Guidance is encoded by authored content, not generated dynamically by runtime.
 
 ### Feedback
 
-Every item provides feedback after durable submission.
+Each item follows the resolved feedback-disclosure boundary.
 
 Feedback explains:
 
@@ -596,7 +543,7 @@ It does not train recognition from topic labels or remembered prompt wording.
 
 ### Length
 
-Default requested length is 20.
+The resolved canonical configuration supplies the requested length.
 
 The mode may shorten when the declared recognition set lacks enough valid unique items.
 
@@ -686,7 +633,7 @@ It targets:
 
 ### Length
 
-Default requested length is 20.
+The resolved canonical configuration supplies the requested length.
 
 The mode may shorten when the declared contrast set cannot supply enough valid unique items.
 
@@ -807,7 +754,7 @@ The mode must not imply that reviewing session misses removes the need for later
 
 ### Length
 
-Default requested length is 10.
+The resolved canonical configuration supplies the requested length.
 
 A review session uses the valid compatible pool and may shorten.
 
@@ -815,13 +762,13 @@ If no eligible source item exists, preparation fails or the entry action is unav
 
 ### Feedback
 
-Every item receives feedback after durable submission.
+Each item follows the resolved feedback-disclosure boundary.
 
 Feedback should connect the new response to the recorded misconception without relying on a generic “review” explanation.
 
 ### Reinsert
 
-Reinsert is permitted under the exact Algorithms reinsert contract.
+Reinsert follows the resolved Algorithms reinsert configuration.
 
 ### Summary
 
@@ -846,7 +793,7 @@ It is the closest non-simulation mode to independent problem analysis.
 
 ### Length
 
-Default requested length is 20.
+The resolved canonical configuration supplies the requested length.
 
 The mode may support the canonical user-selectable session lengths defined by the product configuration.
 
@@ -934,17 +881,7 @@ It does not reproduce:
 
 ### Product-defined configuration
 
-The fixed configuration is:
-
-- exactly 40 unique items;
-- 45 minutes of active foreground time;
-- free navigation;
-- editable draft responses;
-- finalization-only attempts;
-- session-end feedback;
-- no reinsert.
-
-The values `40` and `45 minutes` are product decisions. They are not prescribed by learning-science research and must be evaluated through product evidence.
+The canonical product contract supplies the simulation configuration. Its values are product decisions, not prescriptions of learning-science research, and must be evaluated through product evidence.
 
 ### Preparation
 
@@ -960,7 +897,7 @@ The blueprint declares:
 - complexity coverage;
 - review-exclusion or recency rules where applicable.
 
-Preparation fails explicitly when 40 valid unique items cannot be selected.
+Preparation fails explicitly when the resolved blueprint cannot be satisfied.
 
 The simulation must not:
 
@@ -972,18 +909,7 @@ The simulation must not:
 
 ### Timer
 
-Remaining time is:
-
-```txt
-remainingMs =
-  max(0, 45 minutes - canonicalActiveForegroundMs)
-```
-
-Background and closed-app time do not consume the timer.
-
-This is an active-work countdown, not an absolute deadline.
-
-The interface must disclose that the timer pauses outside the app.
+The simulation timer is resolved from the canonical contract. The interface discloses the resolved active-work behavior and never presents it as an unsupported absolute deadline.
 
 ### Draft state
 
@@ -1195,33 +1121,14 @@ Ordinary correct practice does not silently resolve persistent review.
 
 ## Reinsert
 
-Reinsert is enabled only in:
+Reinsert enablement, eligibility, placement, and content choice resolve from the canonical mode configuration and family policy. For each eligible source attempt:
 
-- `Guided Practice`;
-- `Custom Practice`;
-- `Weak Area Review`, `source = due_queue`;
-- `Weak Area Review`, `source = session_misses`.
-
-It is disabled in:
-
-- `Learn Approach`;
-- `Recognize Patterns`;
-- `Contrast Practice`;
-- `Independent Practice`;
-- `Interview Simulation`.
-
-For each eligible incorrect or partial source attempt:
-
-- maximum reinserts: one;
-- at least three other durable submitted items must separate the attempts;
-- prefer a reviewed variant of the same mechanism;
-- use the exact source item only when no compatible reviewed variant exists;
 - create a new occurrence;
 - create a separate immutable attempt;
 - preserve both diagnostic outcomes;
 - do not resolve persistent review merely because the second attempt is correct.
 
-If the fixed session plan cannot provide three intervening submitted items, skip the reinsert.
+If the fixed session plan cannot provide the resolved placement, skip the reinsert.
 
 Skipping must not:
 
@@ -1233,7 +1140,7 @@ Skipping must not:
 - modify persistent review scheduling;
 - resolve the review entry.
 
-The three-item gap and maximum-one rule are Patternly product decisions. They must be tested and evaluated; they are not represented as universal findings from learning science.
+The resolved reinsert policy is a Patternly product decision. It must be tested and evaluated; it is not represented as a universal finding from learning science.
 
 ## Algorithms evidence model
 
@@ -1412,15 +1319,7 @@ Structural validation does not replace this review.
 
 A mode is available only when the active content bank can satisfy its declared selection contract.
 
-Behaviour by mode:
-
-- `Learn Approach` → shorten within the selected mental unit;
-- `Guided Practice` → shorten within the selected mental unit;
-- `Recognize Patterns` → shorten within the declared recognition set;
-- `Contrast Practice` → shorten within the declared contrast set;
-- `Weak Area Review` → shorten to eligible compatible review content;
-- `Independent Practice` → shorten only when its declared blueprint permits it;
-- `Interview Simulation` → fail explicitly unless exactly 40 valid unique items can be prepared.
+Shortening and fixed-plan preparation behavior resolve from the canonical mode configuration. The runtime does not redefine it by mode in this document.
 
 Runtime must not:
 
@@ -1466,10 +1365,10 @@ Relevant product questions include:
 - whether `Learn Approach` produces better later independent transfer than immediate Guided Practice;
 - whether contrast clusters reduce specific strategy-confusion errors;
 - whether the fixed session lengths create fatigue or repetition;
-- whether the three-item reinsert gap improves later performance rather than only same-session correction;
+- whether the resolved reinsert placement improves later performance rather than only same-session correction;
 - whether session-miss review adds value beyond authored immediate feedback;
 - whether foreground-paused simulation timing predicts useful independent performance;
-- whether 40 items produce sufficient breadth without excessive speed pressure;
+- whether the declared simulation plan provides sufficient breadth without excessive speed pressure;
 - whether recommendations move learners toward stronger delayed and transfer performance.
 
 Product evaluation must use delayed and transfer outcomes where possible, not only immediate session accuracy.

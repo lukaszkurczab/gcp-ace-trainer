@@ -36,28 +36,7 @@ Track accents remain stable across navigation, setup, session, summary, and prog
 
 ## Track and mode cards
 
-Track and mode cards use only canonical user-facing labels.
-
-Algorithms modes are:
-
-- `Learn Approach`
-- `Guided Practice`
-- `Custom Practice`
-- `Recognize Patterns`
-- `Contrast Practice`
-- `Weak Area Review`
-- `Independent Practice`
-- `Interview Simulation`
-
-Certification modes are:
-
-- `Diagnostic Baseline`
-- `Focus Practice`
-- `Scenario Practice`
-- `Weak Area Review`
-- `Mixed Practice`
-- `Quick Review`
-- `Exam Simulation`
+Track and mode cards render only the labels and configuration resolved from `canonical-product-contract.yaml`; this document does not maintain a mode list or configuration matrix.
 
 Cards may show an explained recommendation, evidence limitation, due-review state, or relevant session configuration. They must not display confidence, synthetic readiness, retention, or mastery percentages.
 
@@ -82,7 +61,7 @@ A fixed-length simulation does not shorten. Failure to prepare its required cont
 Setup discloses timer semantics before start:
 
 - practice uses elapsed foreground time;
-- Algorithms `Interview Simulation` uses a 45-minute active-foreground countdown that pauses outside the app;
+- an Algorithms foreground-countdown simulation uses the canonical contract's resolved duration and pause behavior;
 - certification `Exam Simulation` uses the absolute deadline defined by its profile.
 
 The Algorithms timer is labelled as active work time, not as a deadline or exact reproduction of an uninterrupted external interview.
@@ -295,7 +274,7 @@ For choice items, the selected wrong-option explanation may be composed into `De
 
 ## Algorithms Interview Simulation navigator
 
-Algorithms `Interview Simulation` requires an approved free-navigation component for exactly 40 occurrences.
+Algorithms simulation requires an approved navigator for the occurrence plan resolved from the canonical contract.
 
 The navigator distinguishes at least:
 

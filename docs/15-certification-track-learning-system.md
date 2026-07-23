@@ -6,7 +6,7 @@ This document provides Certification-family context for the behavior defined by 
 
 Certification content is organized by exam domain, competency area, topic, and skill atom. Competency area drives remediation; topic gives the learner understandable focus; skill atom makes evidence and feedback precise. Remediation batches by competency area and then topic.
 
-The described modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`. Recommendations are deterministic and explained; learner choice always wins for the current session.
+Certification modes, their availability, and all session configuration are resolved from `canonical-product-contract.yaml`. Recommendations are deterministic and explained; learner choice always wins for the current session.
 
 
 ## Certification track instances
@@ -33,9 +33,9 @@ Review stores source item reference and competency/topic/skill evidence. It may 
 
 ## Exam Simulation
 
-Each track instance owns a versioned `ExamExperienceProfile` with `sourceUrl`, `sourceCheckedAt`, optional guide version, duration, question count or range, navigation policy, answer-change policy, flagging policy, navigator policy, section policy, and automatic-final-submit timeout policy. The source must be official and public. A missing or unclear official rule prevents a faithful-simulation claim; it is never inferred from memory or another exam.
+Each track instance owns a versioned, official-source-backed `ExamExperienceProfile`. It supplies the track-specific exam behavior consumed by the canonical product contract and runtime; this document does not define global timing, feedback, navigation, item-count, reinsert, or finalization rules.
 
-The profile controls every allowed navigator, answer change, flag, section, question count, and deadline behavior. There is no global duration. Simulation supplies no feedback before final submit. System exit confirms; manual finish warns but permits unanswered questions; unanswered are incorrect and separately diagnosed. Timeout freezes answers and starts an idempotent final commit. One exam per track is active, resume is allowed while its absolute deadline remains, and expiry outside the app auto-finalizes. Results show raw correct count, percentage, and competency breakdown; partial never increments correct. Answer review defaults to missed and can show all. No official-looking pass/fail exists; an internal threshold is clearly Patternly-defined.
+A missing or unclear official rule prevents a faithful-simulation claim and is never inferred from memory or another exam. UI copy must distinguish a Patternly practice result from any official outcome.
 
 ## Provenance and boundaries
 

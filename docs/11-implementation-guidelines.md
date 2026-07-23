@@ -408,29 +408,9 @@ After finalization freezes a draft revision, all later draft mutations are rejec
 
 ## Algorithms Interview Simulation
 
-Algorithms `Interview Simulation` uses its Patternly-defined profile:
+Algorithms simulation consumes its Patternly-defined profile from the canonical contract. Preparation validates the declared plan rather than changing its size, scope, feedback, reinsert, or timer behavior.
 
-- exactly 40 unique occurrences;
-- 45 minutes of active foreground work;
-- free navigation;
-- editable responses until finalization;
-- persisted canonical draft;
-- no reinsert;
-- no per-item correctness or instructional feedback before finalization;
-- finalization-only attempts and review mutation.
-
-Preparation fails if 40 valid unique items cannot be selected.
-
-The timer is:
-
-```txt
-remainingMs =
-  max(0, 45 minutes - canonicalActiveForegroundMs)
-```
-
-It is a foreground countdown, not an absolute deadline.
-
-Background and closed-app time do not consume it.
+The resolved foreground-timer behavior is not an absolute deadline. Background and closed-app time are handled only as declared by the canonical timer contract.
 
 Implementation must use the canonical checkpointed timer contract. It must not create an independent UI clock or infer foreground work from closed-app wall time.
 
@@ -572,25 +552,13 @@ Do not merge review entries in a way that:
 
 ## Reinsert
 
-Reinsert is enabled only for:
+Reinsert enablement, placement, and content choice are resolved from the canonical mode configuration and family policy. For each eligible source attempt:
 
-- Algorithms `Guided Practice`;
-- Algorithms `Custom Practice`;
-- Algorithms `Weak Area Review`, `source = due_queue`;
-- Algorithms `Weak Area Review`, `source = session_misses`.
-
-For each eligible source attempt:
-
-- result must be incorrect or partial;
-- maximum reinserts: one;
-- at least three other submitted items must separate the attempts;
-- prefer a reviewed variant of the same mechanism;
-- use the exact source item only when no compatible reviewed variant exists;
 - create a new occurrence and immutable attempt;
 - preserve the original failure in diagnostics;
 - do not resolve persistent review merely because of same-session correction.
 
-If the fixed session plan cannot provide the required gap, skip the reinsert.
+If the prepared session plan cannot provide the resolved placement, skip the reinsert.
 
 Do not:
 
