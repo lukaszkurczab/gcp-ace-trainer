@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "userCommands", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -50,6 +50,7 @@
       }
     },
     "userCommands": { "$ref": "#/$defs/userCommands" },
+    "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -95,6 +96,95 @@
           "minItems": 1,
           "items": { "$ref": "#/$defs/sessionCtaMapping" }
         }
+      }
+    },
+    "sessionStateMachine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["practice", "simulation"],
+      "properties": {
+        "practice": { "$ref": "#/$defs/practiceSessionStateMachine" },
+        "simulation": { "$ref": "#/$defs/simulationSessionStateMachine" }
+      }
+    },
+    "practiceSessionStateMachine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["initialState", "states", "transitions"],
+      "properties": {
+        "initialState": { "const": "unanswered" },
+        "states": {
+          "type": "array",
+          "minItems": 18,
+          "maxItems": 18,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/practiceSessionState" }
+        },
+        "transitions": {
+          "type": "array",
+          "minItems": 22,
+          "maxItems": 22,
+          "items": { "$ref": "#/$defs/practiceSessionTransition" }
+        }
+      }
+    },
+    "simulationSessionStateMachine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["initialState", "states", "transitions"],
+      "properties": {
+        "initialState": { "const": "editable" },
+        "states": {
+          "type": "array",
+          "minItems": 24,
+          "maxItems": 24,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/simulationSessionState" }
+        },
+        "transitions": {
+          "type": "array",
+          "minItems": 31,
+          "maxItems": 31,
+          "items": { "$ref": "#/$defs/simulationSessionTransition" }
+        }
+      }
+    },
+    "practiceSessionState": {
+      "type": "string",
+      "enum": ["unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "verified_pending_clear", "recovery_required", "feedback", "advancing", "advance_failed", "completing", "completion_failed", "completed", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned"]
+    },
+    "simulationSessionState": {
+      "type": "string",
+      "enum": ["editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed"]
+    },
+    "sessionStateMachineTrigger": {
+      "type": "string",
+      "enum": ["submit", "next", "save", "navigator_jump", "finish", "abandon", "recover", "validation_rejected", "journal_write_failed", "submit_verified", "advance_verified", "advance_failed", "completion_verified", "completion_failed", "abandonment_verified", "abandonment_before_journal_failed", "abandonment_recovery_required", "save_verified", "save_failed", "stale_revision", "navigation_verified", "navigation_failed", "reconstruct", "finalization_started", "finalization_verified", "materialization_failed", "materialization_verified", "verification_failed", "verification_verified"]
+    },
+    "sessionStateMachineTransitionCondition": {
+      "type": "string",
+      "enum": ["durable_state_not_durable", "journal_status_durable", "journal_status_materialized", "journal_status_verified_pending_clear", "recovered_active_session"]
+    },
+    "practiceSessionTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "trigger", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/practiceSessionState" },
+        "trigger": { "$ref": "#/$defs/sessionStateMachineTrigger" },
+        "condition": { "$ref": "#/$defs/sessionStateMachineTransitionCondition" },
+        "to": { "$ref": "#/$defs/practiceSessionState" }
+      }
+    },
+    "simulationSessionTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "trigger", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/simulationSessionState" },
+        "trigger": { "$ref": "#/$defs/sessionStateMachineTrigger" },
+        "condition": { "$ref": "#/$defs/sessionStateMachineTransitionCondition" },
+        "to": { "$ref": "#/$defs/simulationSessionState" }
       }
     },
     "userCommand": {

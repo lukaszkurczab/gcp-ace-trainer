@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { CanonicalProductContractValidationError, loadCanonicalProductContract, parseCanonicalProductContract } from "../scripts/validateCanonicalProductContract";
+import { CanonicalProductContractValidationError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract } from "../scripts/validateCanonicalProductContract";
 
 const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
 
@@ -45,6 +45,50 @@ test("defines canonical user commands and maps every session CTA to its one appl
       { ctaId: "session-resume", commandId: "resume" },
     ],
   });
+});
+
+test("defines the closed durable session state machines and accepts only declared triggered transitions", () => {
+  const contract = loadCanonicalProductContract();
+  const lifecycleSource = readFileSync("src/application/trainingLifecycle/TrainingLifecycleUseCases.ts", "utf8");
+
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SESSION-STATE-MACHINE-001"), {
+    id: "SESSION-STATE-MACHINE-001",
+    statement: "Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.",
+  });
+  assert.deepEqual(contract.sessionStateMachine.practice.states, [
+    "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "verified_pending_clear", "recovery_required", "feedback", "advancing", "advance_failed", "completing", "completion_failed", "completed", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned",
+  ]);
+  assert.deepEqual(contract.sessionStateMachine.simulation.states, [
+    "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
+  ]);
+
+  const machines = [
+    { family: "practice" as const, machine: contract.sessionStateMachine.practice },
+    { family: "simulation" as const, machine: contract.sessionStateMachine.simulation },
+  ];
+  for (const { family, machine } of machines) {
+    const declared = new Set(machine.transitions.map((transition) => `${transition.from}:${transition.trigger}:${transition.condition ?? "none"}:${transition.to}`));
+    const triggers = [...new Set(machine.transitions.map((transition) => transition.trigger))];
+    for (const from of machine.states) for (const trigger of triggers) for (const condition of [undefined, "durable_state_not_durable", "journal_status_durable", "journal_status_materialized", "journal_status_verified_pending_clear", "recovered_active_session"] as const) for (const to of machine.states) {
+      const input = { family, from, trigger, condition, to } as Parameters<typeof isDeclaredCanonicalSessionTransition>[1];
+      assert.equal(isDeclaredCanonicalSessionTransition(contract, input), declared.has(`${from}:${trigger}:${condition ?? "none"}:${to}`), `${family} ${from} --${trigger}/${condition ?? "none"}--> ${to}`);
+    }
+    for (const transition of machine.transitions) {
+      assert.equal(isDeclaredCanonicalSessionTransition(contract, { family, ...transition } as Parameters<typeof isDeclaredCanonicalSessionTransition>[1]), true);
+    }
+  }
+  assert.equal(isDeclaredCanonicalSessionTransition(contract, { family: "practice", from: "unanswered", trigger: "unknown" as never, to: "feedback" }), false);
+  assert.equal(isDeclaredCanonicalSessionTransition(contract, { family: "simulation", from: "editable", trigger: "unknown" as never, to: "completed" }), false);
+
+  assert.match(lifecycleSource, /pending\?\.operation === "submit_training_outcome" \? practice\("feedback"\) : practice\("unanswered"\)/);
+  assert.match(lifecycleSource, /simulation\("navigation_failed", operationError\("simulation_navigation", error instanceof MutationCommitFailure \? error\.durableState : "not_durable", error instanceof MutationCommitFailure && error\.durableState !== "not_durable" \? "recover" : "retry_same_command"\)\)/);
+  assert.match(lifecycleSource, /const state = pending\s+\? simulationSession \? simulationPendingFor\(pending\.status\)/);
+  assert.match(lifecycleSource, /if \(status === "journal_durable"\) return simulation\("materializing"\);\s+if \(status === "materialized"\) return simulation\("verifying"\);\s+return simulation\("verified_pending_clear"/);
+  assert.match(lifecycleSource, /if \(!verified\) \{\s+this\.operationStates\.clear\(active\.id\);\s+return;\s+}\s+const simulationSession = verified\.configurationSnapshot\.submission === "manualOrForegroundTimeout";\s+this\.operationStates\.publish\(verified\.id, simulationSession \? simulation\("editable"\)/);
+  assert.equal(contract.sessionStateMachine.simulation.transitions.some((transition) => transition.from === "navigation_failed" && transition.trigger === "recover"), false);
+  assert.equal(contract.sessionStateMachine.simulation.transitions.some((transition) => transition.from === "abandonment_recovery_required" && transition.trigger === "recover"), false);
+  assert.doesNotMatch(lifecycleSource, /practice\("(?:completing|completion_failed)"\)/);
+  assert.doesNotMatch(lifecycleSource, /this\.operationStates\.set\(session\.id, simulation\("(?:materializing|verifying)"\)/);
 });
 
 test("defines exactly the complete canonical Algorithms mode matrix", () => {
@@ -137,13 +181,20 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["missing version", validContract.replace("version: 1\n", ""), /must have required property 'version'/],
     ["empty requirements", validContract.replace(/requirements:\n(?:  - .*\n    .*\n)+/, "requirements: []\n"), /must NOT have fewer than 1 items/],
     ["duplicate identifier", validContract.replace("    statement: Product behavior is normative only when defined by this contract.\n", "    statement: Product behavior is normative only when defined by this contract.\n  - id: CONTRACT-AUTHORITY-001\n    statement: A second requirement with the same identifier.\n"), /Duplicate canonical product contract requirement identifier/],
-    ["missing user commands", validContract.replace(/userCommands:\n(?:  .*\n|    .*\n)+(?=algorithms:)/, ""), /must have required property 'userCommands'/],
+    ["missing user commands", validContract.replace(/userCommands:[\s\S]*?\nsessionStateMachine:/, "sessionStateMachine:"), /must have required property 'userCommands'/],
     ["unknown user command field", validContract.replace("    - id: submit\n", "    - id: submit\n      extra: value\n"), /must NOT have additional properties/],
     ["duplicate user command identifier", validContract.replace("    - id: next\n", "    - id: submit\n"), /Duplicate canonical product contract user command identifier/],
     ["duplicate session CTA identifier", validContract.replace("    - ctaId: practice-next\n", "    - ctaId: practice-submit\n"), /Duplicate canonical product contract session CTA identifier/],
     ["session CTA with undeclared command", validContract.replace("    - ctaId: practice-recover\n      commandId: recover\n", "    - ctaId: practice-recover\n      commandId: submit-recovery\n"), /Canonical session CTA must reference a declared user command: practice-recover/],
     ["missing canonical session CTA", validContract.replace("    - ctaId: simulation-recover\n      commandId: recover\n", ""), /Canonical session CTA is missing exactly one command mapping: simulation-recover/],
     ["session CTA mapped to the wrong command", validContract.replace("    - ctaId: session-resume\n      commandId: resume\n", "    - ctaId: session-resume\n      commandId: recover\n"), /Canonical session CTA command mapping does not match its intent: session-resume/],
+    ["missing session state machine", validContract.replace(/sessionStateMachine:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'sessionStateMachine'/],
+    ["unknown session state machine field", validContract.replace("    initialState: unanswered\n", "    initialState: unanswered\n    extra: value\n"), /must NOT have additional properties/],
+    ["unknown practice state", validContract.replace("states: [unanswered,", "states: [unknown_state,"), /must be equal to one of the allowed values/],
+    ["missing durable practice state", validContract.replace(", abandoned]\n    transitions:", "]\n    transitions:"), /must NOT have fewer than 18 items/],
+    ["undeclared practice transition", validContract.replace("- { from: unanswered, trigger: abandon, to: abandoning }", "- { from: unanswered, trigger: abandon, to: completed }"), /Canonical Practice session state machine must declare exactly its allowed triggered transitions/],
+    ["undeclared simulation transition", validContract.replace("- { from: editable, trigger: finish, to: frozen }", "- { from: editable, trigger: finish, to: completed }"), /Canonical Simulation session state machine must declare exactly its allowed triggered transitions/],
+    ["navigation retry without durability condition", validContract.replace("condition: durable_state_not_durable, to: navigating", "to: navigating"), /Canonical Simulation session state machine must declare exactly its allowed triggered transitions/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

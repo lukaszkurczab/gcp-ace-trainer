@@ -71,6 +71,34 @@ export type CanonicalSessionCtaId =
   | "simulation-recover"
   | "session-resume";
 
+export type CanonicalPracticeSessionState =
+  | "unanswered" | "submitting_before_journal" | "submit_journal_failed" | "commit_pending"
+  | "commit_materialization_failed" | "commit_verification_failed" | "verified_pending_clear" | "recovery_required"
+  | "feedback" | "advancing" | "advance_failed" | "completing" | "completion_failed" | "completed"
+  | "abandoning" | "abandonment_failed_before_journal" | "abandonment_recovery_required" | "abandoned";
+
+export type CanonicalSimulationSessionState =
+  | "editable" | "saving" | "save_failed" | "stale_revision" | "navigating" | "navigation_failed"
+  | "frozen" | "finalization_journal_pending" | "finalization_journal_failed" | "materializing"
+  | "materialization_failed" | "verifying" | "verification_failed" | "verified_pending_clear"
+  | "recovery_required" | "timer_recovery_failed" | "missing_draft" | "version_mismatch" | "corrupt_state"
+  | "abandoning" | "abandonment_failed_before_journal" | "abandonment_recovery_required" | "abandoned" | "completed";
+
+export type CanonicalSessionStateMachineTrigger =
+  | "submit" | "next" | "save" | "navigator_jump" | "finish" | "abandon" | "recover"
+  | "validation_rejected" | "journal_write_failed" | "submit_verified" | "advance_verified" | "advance_failed"
+  | "completion_verified" | "completion_failed" | "abandonment_verified" | "abandonment_before_journal_failed"
+  | "abandonment_recovery_required" | "save_verified" | "save_failed" | "stale_revision" | "navigation_verified"
+  | "navigation_failed" | "reconstruct" | "finalization_started" | "finalization_verified" | "materialization_failed"
+  | "materialization_verified" | "verification_failed" | "verification_verified";
+
+export type CanonicalSessionTransition<State extends string> = Readonly<{
+  from: State;
+  trigger: CanonicalSessionStateMachineTrigger;
+  condition?: "durable_state_not_durable" | "journal_status_durable" | "journal_status_materialized" | "journal_status_verified_pending_clear" | "recovered_active_session";
+  to: State;
+}>;
+
 export type CanonicalAlgorithmScope =
   | "oneMentalUnit"
   | "guidedPracticeBlueprintForSelectedMentalUnit"
@@ -141,6 +169,18 @@ export type CanonicalProductContract = Readonly<{
       commandId: CanonicalUserCommandId;
     }>[];
   }>;
+  sessionStateMachine: Readonly<{
+    practice: Readonly<{
+      initialState: "unanswered";
+      states: readonly CanonicalPracticeSessionState[];
+      transitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[];
+    }>;
+    simulation: Readonly<{
+      initialState: "editable";
+      states: readonly CanonicalSimulationSessionState[];
+      transitions: readonly CanonicalSessionTransition<CanonicalSimulationSessionState>[];
+    }>;
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
@@ -193,8 +233,51 @@ const canonicalSessionCtaCommands: Readonly<Record<CanonicalSessionCtaId, Canoni
   "session-resume": "resume",
 };
 
+const canonicalPracticeSessionStates: readonly CanonicalPracticeSessionState[] = [
+  "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "verified_pending_clear", "recovery_required", "feedback", "advancing", "advance_failed", "completing", "completion_failed", "completed", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned",
+];
+
+const canonicalSimulationSessionStates: readonly CanonicalSimulationSessionState[] = [
+  "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
+];
+
+const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[] = [
+  { from: "unanswered", trigger: "submit", to: "submitting_before_journal" }, { from: "unanswered", trigger: "abandon", to: "abandoning" },
+  { from: "submitting_before_journal", trigger: "validation_rejected", to: "unanswered" }, { from: "submitting_before_journal", trigger: "journal_write_failed", to: "submit_journal_failed" }, { from: "submitting_before_journal", trigger: "materialization_failed", to: "commit_materialization_failed" }, { from: "submitting_before_journal", trigger: "verification_failed", to: "commit_verification_failed" }, { from: "submitting_before_journal", trigger: "submit_verified", to: "feedback" },
+  { from: "submit_journal_failed", trigger: "submit", to: "submitting_before_journal" },
+  { from: "commit_pending", trigger: "recover", to: "unanswered" }, { from: "commit_materialization_failed", trigger: "recover", to: "feedback" }, { from: "commit_verification_failed", trigger: "recover", to: "feedback" }, { from: "verified_pending_clear", trigger: "recover", to: "feedback" }, { from: "recovery_required", trigger: "recover", to: "unanswered" },
+  { from: "feedback", trigger: "next", to: "advancing" }, { from: "feedback", trigger: "abandon", to: "abandoning" },
+  { from: "advancing", trigger: "advance_verified", to: "unanswered" }, { from: "advancing", trigger: "advance_failed", to: "advance_failed" }, { from: "advance_failed", trigger: "next", to: "advancing" },
+  { from: "abandoning", trigger: "abandonment_verified", to: "abandoned" }, { from: "abandoning", trigger: "abandonment_before_journal_failed", to: "abandonment_failed_before_journal" }, { from: "abandoning", trigger: "abandonment_recovery_required", to: "abandonment_recovery_required" }, { from: "abandonment_failed_before_journal", trigger: "abandon", to: "abandoning" },
+];
+
+const canonicalSimulationSessionTransitions: readonly CanonicalSessionTransition<CanonicalSimulationSessionState>[] = [
+  { from: "editable", trigger: "save", to: "saving" }, { from: "editable", trigger: "navigator_jump", to: "navigating" }, { from: "editable", trigger: "finish", to: "frozen" }, { from: "editable", trigger: "abandon", to: "abandoning" },
+  { from: "saving", trigger: "save_verified", to: "editable" }, { from: "saving", trigger: "save_failed", to: "save_failed" }, { from: "saving", trigger: "stale_revision", to: "stale_revision" }, { from: "save_failed", trigger: "save", to: "saving" }, { from: "stale_revision", trigger: "save", to: "saving" },
+  { from: "navigating", trigger: "navigation_verified", to: "editable" }, { from: "navigating", trigger: "navigation_failed", to: "navigation_failed" }, { from: "navigation_failed", trigger: "navigator_jump", condition: "durable_state_not_durable", to: "navigating" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_durable", to: "materializing" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_materialized", to: "verifying" }, { from: "navigation_failed", trigger: "reconstruct", condition: "journal_status_verified_pending_clear", to: "verified_pending_clear" },
+  { from: "frozen", trigger: "finalization_started", to: "finalization_journal_pending" }, { from: "finalization_journal_pending", trigger: "finalization_verified", to: "completed" }, { from: "finalization_journal_pending", trigger: "journal_write_failed", to: "finalization_journal_failed" }, { from: "finalization_journal_pending", trigger: "materialization_failed", to: "materialization_failed" }, { from: "finalization_journal_pending", trigger: "verification_failed", to: "verification_failed" }, { from: "finalization_journal_failed", trigger: "finish", to: "frozen" }, { from: "materializing", trigger: "recover", condition: "recovered_active_session", to: "editable" }, { from: "verifying", trigger: "recover", condition: "recovered_active_session", to: "editable" }, { from: "verified_pending_clear", trigger: "recover", condition: "recovered_active_session", to: "editable" },
+  { from: "abandoning", trigger: "abandonment_verified", to: "abandoned" }, { from: "abandoning", trigger: "abandonment_before_journal_failed", to: "abandonment_failed_before_journal" }, { from: "abandoning", trigger: "abandonment_recovery_required", to: "abandonment_recovery_required" }, { from: "abandonment_failed_before_journal", trigger: "abandon", to: "abandoning" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_durable", to: "materializing" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_materialized", to: "verifying" }, { from: "abandonment_recovery_required", trigger: "reconstruct", condition: "journal_status_verified_pending_clear", to: "verified_pending_clear" },
+];
+
 function hasExactValues<T>(actual: readonly T[], expected: readonly T[]): boolean {
   return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+}
+
+function hasExactTransitions<State extends string>(actual: readonly CanonicalSessionTransition<State>[], expected: readonly CanonicalSessionTransition<State>[]): boolean {
+  return actual.length === expected.length && actual.every((transition, index) => {
+    const expectedTransition = expected[index];
+    return expectedTransition !== undefined && transition.from === expectedTransition.from && transition.trigger === expectedTransition.trigger && transition.condition === expectedTransition.condition && transition.to === expectedTransition.to;
+  });
+}
+
+export type CanonicalSessionTransitionInput =
+  | Readonly<{ family: "practice"; from: CanonicalPracticeSessionState; trigger: CanonicalSessionStateMachineTrigger; condition?: CanonicalSessionTransition<string>["condition"]; to: CanonicalPracticeSessionState }>
+  | Readonly<{ family: "simulation"; from: CanonicalSimulationSessionState; trigger: CanonicalSessionStateMachineTrigger; condition?: CanonicalSessionTransition<string>["condition"]; to: CanonicalSimulationSessionState }>;
+
+/** A transition is valid only when the closed contract declares its complete edge. */
+export function isDeclaredCanonicalSessionTransition(contract: CanonicalProductContract, input: CanonicalSessionTransitionInput): boolean {
+  const transitions = input.family === "practice" ? contract.sessionStateMachine.practice.transitions : contract.sessionStateMachine.simulation.transitions;
+  return transitions.some((transition) => transition.from === input.from && transition.trigger === input.trigger && transition.condition === input.condition && transition.to === input.to);
 }
 
 export function parseCanonicalProductContract(source: string): CanonicalProductContract {
@@ -244,6 +327,20 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   );
   if (sessionCtaWithWrongCommand) {
     throw new CanonicalProductContractValidationError(`Canonical session CTA command mapping does not match its intent: ${sessionCtaWithWrongCommand.ctaId}`);
+  }
+
+  const stateMachine = (contract as CanonicalProductContract).sessionStateMachine;
+  if (!hasExactValues(stateMachine.practice.states, canonicalPracticeSessionStates)) {
+    throw new CanonicalProductContractValidationError("Canonical Practice session state machine must declare exactly the durable operation states in canonical order");
+  }
+  if (!hasExactValues(stateMachine.simulation.states, canonicalSimulationSessionStates)) {
+    throw new CanonicalProductContractValidationError("Canonical Simulation session state machine must declare exactly the durable operation states in canonical order");
+  }
+  if (!hasExactTransitions(stateMachine.practice.transitions, canonicalPracticeSessionTransitions)) {
+    throw new CanonicalProductContractValidationError("Canonical Practice session state machine must declare exactly its allowed triggered transitions");
+  }
+  if (!hasExactTransitions(stateMachine.simulation.transitions, canonicalSimulationSessionTransitions)) {
+    throw new CanonicalProductContractValidationError("Canonical Simulation session state machine must declare exactly its allowed triggered transitions");
   }
 
   const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);
