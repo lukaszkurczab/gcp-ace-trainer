@@ -30,6 +30,8 @@ requirements:
     statement: At the final Algorithms Interview Simulation occurrence, a changed complete response is saved as a durable draft before the canonical finish confirmation is exposed; an unchanged unanswered final occurrence exposes that same finish confirmation.
   - id: SIMULATION-SAVE-AND-JUMP-001
     statement: The Algorithms Interview Simulation navigator-jump command saves a changed local response as a verified durable draft before it publishes the requested occurrence; a navigator interaction never silently discards that response.
+  - id: SIMULATION-RELAUNCH-001
+    statement: After the first Algorithms Interview Simulation response saves and advances, a new composition root restores its durable response, second occurrence, timer checkpoint, and exactly one active session.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -91,6 +93,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-jump durably saves a changed response before publishing the requested occurrence
       requirementIds: [SIMULATION-SAVE-AND-JUMP-001]
+    - id: algorithms-simulation-relaunch
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session
+      requirementIds: [SIMULATION-RELAUNCH-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

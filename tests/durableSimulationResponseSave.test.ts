@@ -13,7 +13,7 @@ import {
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { getActiveTrainingSessionDraft } from "../src/storage/repositories";
+import { getActiveForegroundTimer, getActiveTrainingSession, getActiveTrainingSessionDraft, getTrainingSessions } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import {
   isAlgorithmChoiceQuestion,
@@ -131,6 +131,39 @@ test("Algorithms save-and-jump durably saves a changed response before publishin
 
   await assert.rejects(() => saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: started.session.itemOrder.length }));
   assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
+});
+
+test("Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  const timerBeforeRelaunch = await getActiveForegroundTimer();
+
+  const relaunchedLifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const resumed = await relaunchedLifecycle.resumeActiveSession();
+  const projection = await getAlgorithmsSimulationProjection();
+  const [draft, timerAfterRelaunch, active, sessions] = await Promise.all([
+    getActiveTrainingSessionDraft(), getActiveForegroundTimer(), getActiveTrainingSession(), getTrainingSessions(),
+  ]);
+
+  assert.equal(resumed.id, started.session.id);
+  assert.equal(projection.position.current, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(timerAfterRelaunch?.sessionId, started.session.id);
+  assert.equal(timerAfterRelaunch?.checkpointRevision, timerBeforeRelaunch?.checkpointRevision);
+  assert.equal(active?.id, started.session.id);
+  assert.deepEqual(sessions.value.filter((session) => session.status === "active").map((session) => session.id), [started.session.id]);
 });
 
 test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {
