@@ -26,6 +26,24 @@ export type CanonicalAlgorithmModeLabel =
   | "Independent Practice"
   | "Interview Simulation";
 
+export type CanonicalCertificationModeId =
+  | "certification-diagnostic-baseline"
+  | "certification-focus-practice"
+  | "certification-scenario-practice"
+  | "certification-weak-area-review"
+  | "certification-mixed-practice"
+  | "certification-quick-review"
+  | "certification-exam-simulation";
+
+export type CanonicalCertificationModeLabel =
+  | "Diagnostic Baseline"
+  | "Focus Practice"
+  | "Scenario Practice"
+  | "Weak Area Review"
+  | "Mixed Practice"
+  | "Quick Review"
+  | "Exam Simulation";
+
 export type CanonicalAlgorithmScope =
   | "oneMentalUnit"
   | "guidedPracticeBlueprintForSelectedMentalUnit"
@@ -64,6 +82,20 @@ export type CanonicalAlgorithmMode = Readonly<{
   reinsert: boolean;
 }>;
 
+export type CanonicalCertificationMode = Readonly<{
+  id: CanonicalCertificationModeId;
+  label: CanonicalCertificationModeLabel;
+  owner: Readonly<{
+    familyId: "certification";
+    trackId: "cloud-certification";
+  }>;
+  status: Readonly<{
+    contract: "declared";
+    implementation: "unavailable";
+    verification: "unverified";
+  }>;
+}>;
+
 export type CanonicalProductContract = Readonly<{
   version: number;
   contractId: "patternly-product-contract";
@@ -78,6 +110,9 @@ export type CanonicalProductContract = Readonly<{
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
+  }>;
+  certification: Readonly<{
+    modes: readonly CanonicalCertificationMode[];
   }>;
 }>;
 
@@ -96,6 +131,16 @@ const algorithmModeLabels: Readonly<Record<CanonicalAlgorithmModeId, CanonicalAl
   "algorithms-weak-area-review": "Weak Area Review",
   "algorithms-independent-practice": "Independent Practice",
   "algorithms-interview-simulation": "Interview Simulation",
+};
+
+const certificationModeLabels: Readonly<Record<CanonicalCertificationModeId, CanonicalCertificationModeLabel>> = {
+  "certification-diagnostic-baseline": "Diagnostic Baseline",
+  "certification-focus-practice": "Focus Practice",
+  "certification-scenario-practice": "Scenario Practice",
+  "certification-weak-area-review": "Weak Area Review",
+  "certification-mixed-practice": "Mixed Practice",
+  "certification-quick-review": "Quick Review",
+  "certification-exam-simulation": "Exam Simulation",
 };
 
 function hasExactValues<T>(actual: readonly T[], expected: readonly T[]): boolean {
@@ -130,6 +175,19 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   );
   if (modeWithMismatchedLabel) {
     throw new CanonicalProductContractValidationError(`Algorithms mode label does not match its identifier: ${modeWithMismatchedLabel.id}`);
+  }
+
+  const certificationModeIds = (contract as CanonicalProductContract).certification.modes.map((mode) => mode.id);
+  const duplicateCertificationModeIds = certificationModeIds.filter((id, index) => certificationModeIds.indexOf(id) !== index);
+  if (duplicateCertificationModeIds.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical product contract Certification mode identifier: ${duplicateCertificationModeIds[0]}`);
+  }
+
+  const certificationModeWithMismatchedLabel = (contract as CanonicalProductContract).certification.modes.find(
+    (mode) => certificationModeLabels[mode.id] !== mode.label,
+  );
+  if (certificationModeWithMismatchedLabel) {
+    throw new CanonicalProductContractValidationError(`Certification mode label does not match its identifier: ${certificationModeWithMismatchedLabel.id}`);
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

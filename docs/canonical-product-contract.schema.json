@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "algorithms"],
+  "required": ["version", "contractId", "authority", "requirements", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -60,6 +60,19 @@
           "minItems": 8,
           "maxItems": 8,
           "items": { "$ref": "#/$defs/algorithmMode" }
+        }
+      }
+    },
+    "certification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modes"],
+      "properties": {
+        "modes": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": { "$ref": "#/$defs/certificationMode" }
         }
       }
     }
@@ -169,6 +182,56 @@
           ]
         },
         "reinsert": { "type": "boolean" }
+      }
+    },
+    "certificationMode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "owner", "status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "certification-diagnostic-baseline",
+            "certification-focus-practice",
+            "certification-scenario-practice",
+            "certification-weak-area-review",
+            "certification-mixed-practice",
+            "certification-quick-review",
+            "certification-exam-simulation"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "enum": [
+            "Diagnostic Baseline",
+            "Focus Practice",
+            "Scenario Practice",
+            "Weak Area Review",
+            "Mixed Practice",
+            "Quick Review",
+            "Exam Simulation"
+          ]
+        },
+        "owner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["familyId", "trackId"],
+          "properties": {
+            "familyId": { "const": "certification" },
+            "trackId": { "const": "cloud-certification" }
+          }
+        },
+        "status": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contract", "implementation", "verification"],
+          "properties": {
+            "contract": { "const": "declared" },
+            "implementation": { "const": "unavailable" },
+            "verification": { "const": "unverified" }
+          }
+        }
       }
     }
   }

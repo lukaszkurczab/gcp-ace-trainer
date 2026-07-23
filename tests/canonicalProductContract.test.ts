@@ -76,6 +76,27 @@ test("locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-
   });
 });
 
+test("defines exactly the complete declared Certification mode matrix", () => {
+  const contract = loadCanonicalProductContract();
+
+  assert.deepEqual(
+    contract.requirements.find((requirement) => requirement.id === "CERTIFICATION-MODE-MATRIX-001"),
+    {
+      id: "CERTIFICATION-MODE-MATRIX-001",
+      statement: "Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.",
+    },
+  );
+  assert.deepEqual(contract.certification.modes, [
+    { id: "certification-diagnostic-baseline", label: "Diagnostic Baseline", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-focus-practice", label: "Focus Practice", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-scenario-practice", label: "Scenario Practice", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-weak-area-review", label: "Weak Area Review", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-mixed-practice", label: "Mixed Practice", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-quick-review", label: "Quick Review", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-exam-simulation", label: "Exam Simulation", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+  ]);
+});
+
 test("rejects canonical product contracts with unknown fields, missing version, empty requirements, or duplicate requirement identifiers", () => {
   const cases: readonly [string, string, RegExp][] = [
     ["unknown field", `${validContract}unexpected: value\n`, /must NOT have additional properties/],
@@ -93,6 +114,11 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["unknown Custom Practice contract field", validContract.replace("    lifecycle: sharedOneActiveSession\n", "    lifecycle: sharedOneActiveSession\n    extra: value\n"), /must NOT have additional properties/],
     ["changed Custom Practice mental-unit selection", validContract.replace("mentalUnitSelection: explicit", "mentalUnitSelection: inferred"), /must be equal to constant/],
     ["changed Custom Practice feedback options", validContract.replace("supported: [afterEachAnswer, atSessionEnd]", "supported: [afterEachAnswer]"), /Custom Practice mode must preserve its declared lengths, feedback, Guided Practice mental-unit blueprint, and reinsert profile/],
+    ["missing Certification contract", validContract.replace(/certification:\n(?:  .*\n|    .*\n|      .*\n|        .*\n)+$/, ""), /must have required property 'certification'/],
+    ["duplicate Certification mode identifier", validContract.replace("    - id: certification-focus-practice", "    - id: certification-diagnostic-baseline"), /Duplicate canonical product contract Certification mode identifier/],
+    ["mismatched Certification mode label", validContract.replace("label: Diagnostic Baseline", "label: Exam Simulation"), /Certification mode label does not match its identifier/],
+    ["missing Certification mode owner", validContract.replace("      owner:\n        familyId: certification\n        trackId: cloud-certification\n", ""), /must have required property 'owner'/],
+    ["changed Certification implementation status", validContract.replace("        implementation: unavailable", "        implementation: available"), /must be equal to constant/],
   ];
 
   for (const [label, source, message] of cases) {

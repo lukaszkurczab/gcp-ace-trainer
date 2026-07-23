@@ -10,6 +10,8 @@ requirements:
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: ALGORITHMS-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
+  - id: CERTIFICATION-MODE-MATRIX-001
+    statement: Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice
@@ -123,3 +125,68 @@ algorithms:
         kind: countdownForeground
         durationMs: 2700000
       reinsert: false
+certification:
+  modes:
+    - id: certification-diagnostic-baseline
+      label: Diagnostic Baseline
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-focus-practice
+      label: Focus Practice
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-scenario-practice
+      label: Scenario Practice
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-weak-area-review
+      label: Weak Area Review
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-mixed-practice
+      label: Mixed Practice
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-quick-review
+      label: Quick Review
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
+    - id: certification-exam-simulation
+      label: Exam Simulation
+      owner:
+        familyId: certification
+        trackId: cloud-certification
+      status:
+        contract: declared
+        implementation: unavailable
+        verification: unverified
