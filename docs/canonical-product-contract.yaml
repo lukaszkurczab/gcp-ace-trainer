@@ -310,11 +310,37 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: algorithms-simulation-operational-states
+      screenStateTarget: algorithms-interview-simulation-operational-states
+      patternPath: docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
     - sourcePathPrefix: src/features/simulation/
       designReferenceId: algorithms-active-simulation-screen
     - sourcePathPrefix: src/features/simulation/navigator/
       designReferenceId: algorithms-simulation-question-navigator
+    - sourcePathPrefix: src/features/simulation/operation/
+      designReferenceId: algorithms-simulation-operational-states
+simulationOperationStateCtas:
+  version: 1
+  policies:
+    - id: saving-response
+      operationStates: [saving]
+      allowedCtaIds: []
+    - id: save-failed
+      operationStates: [save_failed, stale_revision]
+      allowedCtaIds: [simulation-save, simulation-leave-resumable]
+    - id: response-saved-navigation-failed
+      operationStates: [navigation_failed, save_and_continue_advance_recovery]
+      allowedCtaIds: [simulation-navigator-jump, simulation-leave-resumable]
+    - id: finalizing
+      operationStates: [frozen, finalization_journal_pending, materializing, verifying, verified_pending_clear]
+      allowedCtaIds: []
+    - id: finalization-recovery-required
+      operationStates: [finalization_journal_failed, materialization_failed, verification_failed, recovery_required]
+      allowedCtaIds: [simulation-recover]
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

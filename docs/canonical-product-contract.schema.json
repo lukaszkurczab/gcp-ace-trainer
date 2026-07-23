@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "simulationOperationStateCtas", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -55,6 +55,7 @@
     "simulationConcurrency": { "$ref": "#/$defs/simulationConcurrency" },
     "simulationTimerCadence": { "$ref": "#/$defs/simulationTimerCadence" },
     "designReferences": { "$ref": "#/$defs/designReferences" },
+    "simulationOperationStateCtas": { "$ref": "#/$defs/simulationOperationStateCtas" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -199,6 +200,39 @@
         "uiOwnership": {
           "type": "array",
           "items": { "$ref": "#/$defs/designReferenceUiOwnership" }
+        }
+      }
+    },
+    "simulationOperationStateCtas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "policies"],
+      "properties": {
+        "version": { "const": 1 },
+        "policies": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": { "$ref": "#/$defs/simulationOperationStateCtaPolicy" }
+        }
+      }
+    },
+    "simulationOperationStateCtaPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "operationStates", "allowedCtaIds"],
+      "properties": {
+        "id": { "type": "string", "enum": ["saving-response", "save-failed", "response-saved-navigation-failed", "finalizing", "finalization-recovery-required"] },
+        "operationStates": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/simulationSessionState" }
+        },
+        "allowedCtaIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/sessionCtaMapping/properties/ctaId" }
         }
       }
     },

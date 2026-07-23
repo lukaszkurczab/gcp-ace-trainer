@@ -219,6 +219,9 @@ test("requires a registered APPROVED design reference before a user-facing task 
   }, {
     sourcePathPrefix: "src/features/simulation/navigator/",
     designReferenceId: "algorithms-simulation-question-navigator",
+  }, {
+    sourcePathPrefix: "src/features/simulation/operation/",
+    designReferenceId: "algorithms-simulation-operational-states",
   }]);
   assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
     status: "ready",
@@ -227,6 +230,17 @@ test("requires a registered APPROVED design reference before a user-facing task 
     id: "algorithms-simulation-question-navigator",
     screenStateTarget: "algorithms-interview-simulation-question-navigator",
     patternPath: "docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "algorithms-simulation-operational-states",
+  }), {
+    id: "algorithms-simulation-operational-states",
+    screenStateTarget: "algorithms-interview-simulation-operational-states",
+    patternPath: "docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png",
     version: 1,
     approvalStatus: "APPROVED",
     owner: "product-owner",
@@ -245,6 +259,24 @@ test("requires a registered APPROVED design reference before a user-facing task 
   assert.throws(
     () => resolveCanonicalUserFacingTaskDesignReference(pendingContract, { status: "ready", designReferenceId: "algorithms-active-simulation-screen" }),
     (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /requires an APPROVED design reference/.test(error.message),
+  );
+});
+
+test("locks the approved Simulation operational-state CTA policy", () => {
+  const contract = loadCanonicalProductContract();
+  assert.deepEqual(contract.simulationOperationStateCtas, {
+    version: 1,
+    policies: [
+      { id: "saving-response", operationStates: ["saving"], allowedCtaIds: [] },
+      { id: "save-failed", operationStates: ["save_failed", "stale_revision"], allowedCtaIds: ["simulation-save", "simulation-leave-resumable"] },
+      { id: "response-saved-navigation-failed", operationStates: ["navigation_failed", "save_and_continue_advance_recovery"], allowedCtaIds: ["simulation-navigator-jump", "simulation-leave-resumable"] },
+      { id: "finalizing", operationStates: ["frozen", "finalization_journal_pending", "materializing", "verifying", "verified_pending_clear"], allowedCtaIds: [] },
+      { id: "finalization-recovery-required", operationStates: ["finalization_journal_failed", "materialization_failed", "verification_failed", "recovery_required"], allowedCtaIds: ["simulation-recover"] },
+    ],
+  });
+  assert.throws(
+    () => parseCanonicalProductContract(validContract.replace("id: saving-response", "id: save-failed")),
+    /approved presentation states in canonical order/,
   );
 });
 

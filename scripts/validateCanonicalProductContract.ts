@@ -103,6 +103,19 @@ export type CanonicalDesignReferenceUiOwnership = Readonly<{
   designReferenceId: string;
 }>;
 
+export type CanonicalSimulationOperationStatePresentationId =
+  | "saving-response"
+  | "save-failed"
+  | "response-saved-navigation-failed"
+  | "finalizing"
+  | "finalization-recovery-required";
+
+export type CanonicalSimulationOperationStateCtaPolicy = Readonly<{
+  id: CanonicalSimulationOperationStatePresentationId;
+  operationStates: readonly CanonicalSimulationSessionState[];
+  allowedCtaIds: readonly CanonicalSessionCtaId[];
+}>;
+
 export type CanonicalRequirementTest = Readonly<{
   id: string;
   testPath: string;
@@ -264,6 +277,10 @@ export type CanonicalProductContract = Readonly<{
     references: readonly CanonicalDesignReference[];
     uiOwnership: readonly CanonicalDesignReferenceUiOwnership[];
   }>;
+  simulationOperationStateCtas: Readonly<{
+    version: 1;
+    policies: readonly CanonicalSimulationOperationStateCtaPolicy[];
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     reinsertPolicy: CanonicalAlgorithmsReinsertPolicy;
@@ -336,6 +353,10 @@ const canonicalSimulationMutationKinds: readonly CanonicalSimulationMutationKind
 
 const canonicalSimulationTimerLifecycleCheckpoints: readonly CanonicalSimulationTimerLifecycleCheckpoint[] = [
   "foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry",
+];
+
+const canonicalSimulationOperationStatePresentationIds: readonly CanonicalSimulationOperationStatePresentationId[] = [
+  "saving-response", "save-failed", "response-saved-navigation-failed", "finalizing", "finalization-recovery-required",
 ];
 
 const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[] = [
@@ -541,6 +562,19 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const simulationTimerCadence = (contract as CanonicalProductContract).simulationTimerCadence;
   if (!hasExactValues(simulationTimerCadence.lifecycleCheckpoints, canonicalSimulationTimerLifecycleCheckpoints)) {
     throw new CanonicalProductContractValidationError("Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order");
+  }
+
+  const operationStateCtas = (contract as CanonicalProductContract).simulationOperationStateCtas;
+  if (!hasExactValues(operationStateCtas.policies.map((policy) => policy.id), canonicalSimulationOperationStatePresentationIds)) {
+    throw new CanonicalProductContractValidationError("Canonical Simulation operation-state CTA policies must declare exactly the approved presentation states in canonical order");
+  }
+  const policyWithDuplicateOperationState = operationStateCtas.policies.find((policy) => new Set(policy.operationStates).size !== policy.operationStates.length);
+  if (policyWithDuplicateOperationState) {
+    throw new CanonicalProductContractValidationError(`Canonical Simulation operation-state CTA policy duplicates an operation state: ${policyWithDuplicateOperationState.id}`);
+  }
+  const policyWithDuplicateCta = operationStateCtas.policies.find((policy) => new Set(policy.allowedCtaIds).size !== policy.allowedCtaIds.length);
+  if (policyWithDuplicateCta) {
+    throw new CanonicalProductContractValidationError(`Canonical Simulation operation-state CTA policy duplicates a CTA: ${policyWithDuplicateCta.id}`);
   }
 
   const designReferences = (contract as CanonicalProductContract).designReferences.references;
