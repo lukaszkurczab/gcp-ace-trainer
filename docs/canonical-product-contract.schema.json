@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "simulationConcurrency", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -51,6 +51,7 @@
     },
     "userCommands": { "$ref": "#/$defs/userCommands" },
     "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
+    "simulationConcurrency": { "$ref": "#/$defs/simulationConcurrency" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -106,6 +107,28 @@
         "practice": { "$ref": "#/$defs/practiceSessionStateMachine" },
         "simulation": { "$ref": "#/$defs/simulationSessionStateMachine" }
       }
+    },
+    "simulationConcurrency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "queueDiscipline", "maxInFlight", "revalidateActiveSessionAtExecution", "mutationKinds"],
+      "properties": {
+        "scope": { "const": "oneActiveSession" },
+        "queueDiscipline": { "const": "fifo" },
+        "maxInFlight": { "const": 1 },
+        "revalidateActiveSessionAtExecution": { "const": true },
+        "mutationKinds": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/simulationMutationKind" }
+        }
+      }
+    },
+    "simulationMutationKind": {
+      "type": "string",
+      "enum": ["save", "navigation", "timer-checkpoint", "foreground-transition", "finalization", "abandonment"]
     },
     "practiceSessionStateMachine": {
       "type": "object",

@@ -71,6 +71,14 @@ export type CanonicalSessionCtaId =
   | "simulation-recover"
   | "session-resume";
 
+export type CanonicalSimulationMutationKind =
+  | "save"
+  | "navigation"
+  | "timer-checkpoint"
+  | "foreground-transition"
+  | "finalization"
+  | "abandonment";
+
 export type CanonicalPracticeSessionState =
   | "unanswered" | "submitting_before_journal" | "submit_journal_failed" | "commit_pending"
   | "commit_materialization_failed" | "commit_verification_failed" | "verified_pending_clear" | "recovery_required"
@@ -181,6 +189,13 @@ export type CanonicalProductContract = Readonly<{
       transitions: readonly CanonicalSessionTransition<CanonicalSimulationSessionState>[];
     }>;
   }>;
+  simulationConcurrency: Readonly<{
+    scope: "oneActiveSession";
+    queueDiscipline: "fifo";
+    maxInFlight: 1;
+    revalidateActiveSessionAtExecution: true;
+    mutationKinds: readonly CanonicalSimulationMutationKind[];
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
@@ -241,6 +256,10 @@ const canonicalSimulationSessionStates: readonly CanonicalSimulationSessionState
   "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
 ];
 
+const canonicalSimulationMutationKinds: readonly CanonicalSimulationMutationKind[] = [
+  "save", "navigation", "timer-checkpoint", "foreground-transition", "finalization", "abandonment",
+];
+
 const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[] = [
   { from: "unanswered", trigger: "submit", to: "submitting_before_journal" }, { from: "unanswered", trigger: "abandon", to: "abandoning" },
   { from: "submitting_before_journal", trigger: "validation_rejected", to: "unanswered" }, { from: "submitting_before_journal", trigger: "journal_write_failed", to: "submit_journal_failed" }, { from: "submitting_before_journal", trigger: "materialization_failed", to: "commit_materialization_failed" }, { from: "submitting_before_journal", trigger: "verification_failed", to: "commit_verification_failed" }, { from: "submitting_before_journal", trigger: "submit_verified", to: "feedback" },
@@ -274,10 +293,28 @@ export type CanonicalSessionTransitionInput =
   | Readonly<{ family: "practice"; from: CanonicalPracticeSessionState; trigger: CanonicalSessionStateMachineTrigger; condition?: CanonicalSessionTransition<string>["condition"]; to: CanonicalPracticeSessionState }>
   | Readonly<{ family: "simulation"; from: CanonicalSimulationSessionState; trigger: CanonicalSessionStateMachineTrigger; condition?: CanonicalSessionTransition<string>["condition"]; to: CanonicalSimulationSessionState }>;
 
+export type CanonicalSimulationMutationAdmissionInput = Readonly<{
+  kind: string;
+  inFlightKinds: readonly string[];
+}>;
+
 /** A transition is valid only when the closed contract declares its complete edge. */
 export function isDeclaredCanonicalSessionTransition(contract: CanonicalProductContract, input: CanonicalSessionTransitionInput): boolean {
   const transitions = input.family === "practice" ? contract.sessionStateMachine.practice.transitions : contract.sessionStateMachine.simulation.transitions;
   return transitions.some((transition) => transition.from === input.from && transition.trigger === input.trigger && transition.condition === input.condition && transition.to === input.to);
+}
+
+/** A simulation mutation may start only when its one active-session lane is empty. */
+export function canStartCanonicalSimulationMutation(contract: CanonicalProductContract, input: CanonicalSimulationMutationAdmissionInput): boolean {
+  const concurrency = contract.simulationConcurrency;
+  const isKnownKind = (kind: string): kind is CanonicalSimulationMutationKind => concurrency.mutationKinds.includes(kind as CanonicalSimulationMutationKind);
+  return concurrency.scope === "oneActiveSession"
+    && concurrency.queueDiscipline === "fifo"
+    && concurrency.maxInFlight === 1
+    && concurrency.revalidateActiveSessionAtExecution
+    && isKnownKind(input.kind)
+    && input.inFlightKinds.every(isKnownKind)
+    && input.inFlightKinds.length < concurrency.maxInFlight;
 }
 
 export function parseCanonicalProductContract(source: string): CanonicalProductContract {
@@ -341,6 +378,11 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   }
   if (!hasExactTransitions(stateMachine.simulation.transitions, canonicalSimulationSessionTransitions)) {
     throw new CanonicalProductContractValidationError("Canonical Simulation session state machine must declare exactly its allowed triggered transitions");
+  }
+
+  const simulationConcurrency = (contract as CanonicalProductContract).simulationConcurrency;
+  if (!hasExactValues(simulationConcurrency.mutationKinds, canonicalSimulationMutationKinds)) {
+    throw new CanonicalProductContractValidationError("Canonical Simulation concurrency contract must declare exactly its serialized mutation kinds in canonical order");
   }
 
   const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);

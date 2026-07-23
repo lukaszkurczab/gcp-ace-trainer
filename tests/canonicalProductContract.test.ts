@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { CanonicalProductContractValidationError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract } from "../scripts/validateCanonicalProductContract";
+import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract } from "../scripts/validateCanonicalProductContract";
 
 const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
 
@@ -45,6 +45,33 @@ test("defines canonical user commands and maps every session CTA to its one appl
       { ctaId: "session-resume", commandId: "resume" },
     ],
   });
+});
+
+test("locks FIFO serialization for every simulation mutation of one active session", () => {
+  const contract = loadCanonicalProductContract();
+  assert.deepEqual(contract.simulationConcurrency, {
+    scope: "oneActiveSession", queueDiscipline: "fifo", maxInFlight: 1, revalidateActiveSessionAtExecution: true,
+    mutationKinds: ["save", "navigation", "timer-checkpoint", "foreground-transition", "finalization", "abandonment"],
+  });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-CONCURRENCY-001"), {
+    id: "SIMULATION-CONCURRENCY-001",
+    statement: "A simulation has one active session mutation lane: save, navigation, timer checkpoint, foreground transition, finalization, and abandonment are FIFO-serialized with at most one in flight, and revalidate the active session immediately before execution.",
+  });
+  assert.throws(() => parseCanonicalProductContract(validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, save, timer-checkpoint, foreground-transition, finalization, abandonment]")), CanonicalProductContractValidationError);
+
+  const table = [
+    ...contract.simulationConcurrency.mutationKinds.map((kind) => ({ label: `${kind} starts when the lane is empty`, input: { kind, inFlightKinds: [] }, expected: true })),
+    ...contract.simulationConcurrency.mutationKinds.flatMap((kind) => contract.simulationConcurrency.mutationKinds.map((inFlightKind) => ({
+      label: `${kind} cannot run concurrently with ${inFlightKind}`,
+      input: { kind, inFlightKinds: [inFlightKind] },
+      expected: false,
+    }))),
+    { label: "unknown mutations cannot enter the lane", input: { kind: "unknown", inFlightKinds: [] }, expected: false },
+    { label: "a known mutation cannot enter behind an unknown in-flight mutation", input: { kind: "save", inFlightKinds: ["unknown"] }, expected: false },
+  ] as const;
+  for (const { label, input, expected } of table) {
+    assert.equal(canStartCanonicalSimulationMutation(contract, input), expected, label);
+  }
 });
 
 test("defines the closed durable session state machines and accepts only declared triggered transitions", () => {
@@ -195,6 +222,13 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["undeclared practice transition", validContract.replace("- { from: unanswered, trigger: abandon, to: abandoning }", "- { from: unanswered, trigger: abandon, to: completed }"), /Canonical Practice session state machine must declare exactly its allowed triggered transitions/],
     ["undeclared simulation transition", validContract.replace("- { from: editable, trigger: finish, to: frozen }", "- { from: editable, trigger: finish, to: completed }"), /Canonical Simulation session state machine must declare exactly its allowed triggered transitions/],
     ["navigation retry without durability condition", validContract.replace("condition: durable_state_not_durable, to: navigating", "to: navigating"), /Canonical Simulation session state machine must declare exactly its allowed triggered transitions/],
+    ["missing simulation concurrency contract", validContract.replace(/simulationConcurrency:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'simulationConcurrency'/],
+    ["unknown simulation concurrency field", validContract.replace("  maxInFlight: 1\n", "  maxInFlight: 1\n  extra: value\n"), /must NOT have additional properties/],
+    ["changed simulation queue discipline", validContract.replace("  queueDiscipline: fifo\n", "  queueDiscipline: lifo\n"), /must be equal to constant/],
+    ["missing serialized simulation mutation", validContract.replace(", abandonment]\nalgorithms:", "]\nalgorithms:"), /must NOT have fewer than 6 items/],
+    ["duplicate serialized simulation mutation", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, save, timer-checkpoint, foreground-transition, finalization, abandonment]"), /must NOT have duplicate items/],
+    ["unknown serialized simulation mutation", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, unknown]"), /must be equal to one of the allowed values/],
+    ["reordered serialized simulation mutations", validContract.replace("mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]", "mutationKinds: [navigation, save, timer-checkpoint, foreground-transition, finalization, abandonment]"), /Canonical Simulation concurrency contract must declare exactly its serialized mutation kinds in canonical order/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

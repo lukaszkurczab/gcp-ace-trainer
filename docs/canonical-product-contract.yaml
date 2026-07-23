@@ -18,6 +18,8 @@ requirements:
     statement: Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
+  - id: SIMULATION-CONCURRENCY-001
+    statement: "A simulation has one active session mutation lane: save, navigation, timer checkpoint, foreground transition, finalization, and abandonment are FIFO-serialized with at most one in flight, and revalidate the active session immediately before execution."
 userCommands:
   commands:
     - id: submit
@@ -119,6 +121,12 @@ sessionStateMachine:
       - { from: abandonment_recovery_required, trigger: reconstruct, condition: journal_status_durable, to: materializing }
       - { from: abandonment_recovery_required, trigger: reconstruct, condition: journal_status_materialized, to: verifying }
       - { from: abandonment_recovery_required, trigger: reconstruct, condition: journal_status_verified_pending_clear, to: verified_pending_clear }
+simulationConcurrency:
+  scope: oneActiveSession
+  queueDiscipline: fifo
+  maxInFlight: 1
+  revalidateActiveSessionAtExecution: true
+  mutationKinds: [save, navigation, timer-checkpoint, foreground-transition, finalization, abandonment]
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice
