@@ -147,11 +147,11 @@ test("periodic checkpoint uses the declared durable interval with an exact write
   assert.deepEqual(f.checkpoints, [0, 14_000, 28_000]);
 });
 
-test("force-close before and after a checkpoint resumes only the last verified checkpoint", async () => {
+test("force-close immediately before and after the checkpoint boundary resumes within the declared drift", async () => {
   const before = fixture();
   await before.timer.initialize(before.session);
   await before.timer.enterForeground(before.session);
-  before.setNow(9_000);
+  before.setNow(13_999);
   const closedBeforeCheckpoint = before.create();
   await closedBeforeCheckpoint.restoreForResume(before.getActiveSession());
   assert.equal((await closedBeforeCheckpoint.projection(before.getActiveSession())).elapsedForegroundMs, 0);

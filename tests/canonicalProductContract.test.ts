@@ -80,6 +80,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001", ["algorithms-simulation-timer-background-checkpoint"]],
       ["SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001", ["algorithms-simulation-timer-finalization-checkpoint"]],
       ["SIMULATION-TIMER-MUTATION-SERIALIZATION-001", ["algorithms-simulation-timer-mutation-serialization"]],
+      ["SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001", ["algorithms-simulation-timer-force-close-boundary"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],

@@ -46,6 +46,8 @@ requirements:
     statement: Manual Algorithms Interview Simulation finalization durably checkpoints the active foreground segment before it freezes the result, so finalization observes that verified elapsed time.
   - id: SIMULATION-TIMER-MUTATION-SERIALIZATION-001
     statement: Algorithms Interview Simulation timer checkpoints, draft saves, and navigation share one mutation lane and do not overwrite a durable draft revision or current position.
+  - id: SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001
+    statement: Algorithms Interview Simulation force-close immediately before and after the periodic checkpoint boundary restores only its last verified foreground time within the declared one-second drift bound.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -139,6 +141,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: concurrent timer checkpoint and save-and-continue retain the draft revision and next position
       requirementIds: [SIMULATION-TIMER-MUTATION-SERIALIZATION-001]
+    - id: algorithms-simulation-timer-force-close-boundary
+      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testName: force-close immediately before and after the checkpoint boundary resumes within the declared drift
+      requirementIds: [SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
