@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -53,6 +53,7 @@
     "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
     "simulationConcurrency": { "$ref": "#/$defs/simulationConcurrency" },
     "simulationTimerCadence": { "$ref": "#/$defs/simulationTimerCadence" },
+    "designReferences": { "$ref": "#/$defs/designReferences" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -153,6 +154,31 @@
     "simulationTimerLifecycleCheckpoint": {
       "type": "string",
       "enum": ["foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry"]
+    },
+    "designReferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "references"],
+      "properties": {
+        "version": { "const": 1 },
+        "references": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/designReference" }
+        }
+      }
+    },
+    "designReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "screenStateTarget", "patternPath", "version", "approvalStatus", "owner"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" },
+        "screenStateTarget": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" },
+        "patternPath": { "type": "string", "pattern": "^docs/designs/[^/\\\\]+(?:/[^/\\\\]+)*$" },
+        "version": { "type": "integer", "minimum": 1 },
+        "approvalStatus": { "type": "string", "enum": ["APPROVED", "PENDING", "REJECTED"] },
+        "owner": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" }
+      }
     },
     "practiceSessionStateMachine": {
       "type": "object",

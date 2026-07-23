@@ -22,6 +22,8 @@ requirements:
     statement: "A simulation has one active session mutation lane: save, navigation, timer checkpoint, foreground transition, finalization, and abandonment are FIFO-serialized with at most one in flight, and revalidate the active session immediately before execution."
   - id: SIMULATION-TIMER-CADENCE-001
     statement: "Simulation timer projections refresh every second without a durable write; durable checkpoints occur every 15 seconds with at most one second of drift and at every declared lifecycle checkpoint."
+  - id: DESIGN-REFERENCE-REGISTRY-001
+    statement: User-facing work may be ready only when it names a registered APPROVED design reference.
 userCommands:
   commands:
     - id: submit
@@ -136,6 +138,9 @@ simulationTimerCadence:
   durableCheckpointIntervalMs: 15000
   maxDurableCheckpointDriftMs: 1000
   lifecycleCheckpoints: [foreground-enter, foreground-leave, draft-save, finalization, expiry]
+designReferences:
+  version: 1
+  references: []
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

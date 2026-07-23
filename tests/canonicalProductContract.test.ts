@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract } from "../scripts/validateCanonicalProductContract";
+import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, CanonicalUserFacingTaskReadinessError, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract, resolveCanonicalUserFacingTaskDesignReference } from "../scripts/validateCanonicalProductContract";
 
 const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
 
@@ -88,6 +88,42 @@ test("defines the versioned simulation timer cadence without per-refresh durable
     maxDurableCheckpointDriftMs: 1_000,
     lifecycleCheckpoints: ["foreground-enter", "foreground-leave", "draft-save", "finalization", "expiry"],
   });
+});
+
+test("requires a registered APPROVED design reference before a user-facing task is ready", () => {
+  const sourceWithApprovedReference = validContract.replace(
+    "  references: []\n",
+    "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n",
+  );
+  const approvedContract = parseCanonicalProductContract(sourceWithApprovedReference);
+  const approvedReference = resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "algorithms-stage3-ui-reference-packet",
+  });
+
+  assert.deepEqual(approvedReference, {
+    id: "algorithms-stage3-ui-reference-packet",
+    screenStateTarget: "algorithms-practice-and-interview-simulation",
+    patternPath: "docs/designs/algorithms_stage3_ui/DESIGN.md",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.equal(resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "not-ready" }), undefined);
+  assert.throws(
+    () => resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "ready" }),
+    (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /must name a design reference/.test(error.message),
+  );
+  assert.throws(
+    () => resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "ready", designReferenceId: "unknown-reference" }),
+    (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /unknown design reference/.test(error.message),
+  );
+
+  const pendingContract = parseCanonicalProductContract(sourceWithApprovedReference.replace("approvalStatus: APPROVED", "approvalStatus: PENDING"));
+  assert.throws(
+    () => resolveCanonicalUserFacingTaskDesignReference(pendingContract, { status: "ready", designReferenceId: "algorithms-stage3-ui-reference-packet" }),
+    (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /requires an APPROVED design reference/.test(error.message),
+  );
 });
 
 test("defines the closed durable session state machines and accepts only declared triggered transitions", () => {
@@ -256,6 +292,12 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["changed durable checkpoint drift", validContract.replace("  maxDurableCheckpointDriftMs: 1000\n", "  maxDurableCheckpointDriftMs: 2000\n"), /must be equal to constant/],
     ["missing lifecycle checkpoint", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-enter, foreground-leave, draft-save, finalization]"), /must NOT have fewer than 5 items/],
     ["reordered lifecycle checkpoints", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-leave, foreground-enter, draft-save, finalization, expiry]"), /Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order/],
+    ["missing design reference registry", validContract.replace(/designReferences:[\s\S]*?\nalgorithms:/, "algorithms:"), /must have required property 'designReferences'/],
+    ["unknown design reference field", validContract.replace("  references: []\n", "  references: []\n  extra: value\n"), /must NOT have additional properties/],
+    ["missing design reference approval status", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      owner: product-owner\n"), /must have required property 'approvalStatus'/],
+    ["missing design reference pattern", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/missing.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /pattern path does not resolve to a file/],
+    ["design reference pattern escapes design registry", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/../plan.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /must resolve within docs\/designs/],
+    ["duplicate design reference identifier", validContract.replace("  references: []\n", "  references:\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n    - id: algorithms-stage3-ui-reference-packet\n      screenStateTarget: algorithms-practice-and-interview-simulation\n      patternPath: docs/designs/algorithms_stage3_ui/DESIGN.md\n      version: 1\n      approvalStatus: APPROVED\n      owner: product-owner\n"), /Duplicate canonical design reference identifier/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

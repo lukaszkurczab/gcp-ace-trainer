@@ -1,6 +1,6 @@
 import Ajv2020 from "ajv/dist/2020";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseDocument } from "yaml";
 
@@ -85,6 +85,22 @@ export type CanonicalSimulationTimerLifecycleCheckpoint =
   | "draft-save"
   | "finalization"
   | "expiry";
+
+export type CanonicalDesignReferenceApprovalStatus = "APPROVED" | "PENDING" | "REJECTED";
+
+export type CanonicalDesignReference = Readonly<{
+  id: string;
+  screenStateTarget: string;
+  patternPath: string;
+  version: number;
+  approvalStatus: CanonicalDesignReferenceApprovalStatus;
+  owner: string;
+}>;
+
+export type CanonicalUserFacingTaskReadinessInput = Readonly<{
+  status: "ready" | "not-ready";
+  designReferenceId?: string;
+}>;
 
 export type CanonicalPracticeSessionState =
   | "unanswered" | "submitting_before_journal" | "submit_journal_failed" | "commit_pending"
@@ -211,6 +227,10 @@ export type CanonicalProductContract = Readonly<{
     maxDurableCheckpointDriftMs: 1_000;
     lifecycleCheckpoints: readonly CanonicalSimulationTimerLifecycleCheckpoint[];
   }>;
+  designReferences: Readonly<{
+    version: 1;
+    references: readonly CanonicalDesignReference[];
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
@@ -222,6 +242,10 @@ export type CanonicalProductContract = Readonly<{
 
 export class CanonicalProductContractValidationError extends Error {
   override name = "CanonicalProductContractValidationError";
+}
+
+export class CanonicalUserFacingTaskReadinessError extends Error {
+  override name = "CanonicalUserFacingTaskReadinessError";
 }
 
 const validateSchema = new Ajv2020({ allErrors: true, strict: true }).compile(schema);
@@ -336,6 +360,26 @@ export function canStartCanonicalSimulationMutation(contract: CanonicalProductCo
     && input.inFlightKinds.length < concurrency.maxInFlight;
 }
 
+/** A ready user-facing task must identify a registered reference that is explicitly approved. */
+export function resolveCanonicalUserFacingTaskDesignReference(
+  contract: CanonicalProductContract,
+  input: CanonicalUserFacingTaskReadinessInput,
+): CanonicalDesignReference | undefined {
+  if (input.status !== "ready") return undefined;
+  if (!input.designReferenceId) {
+    throw new CanonicalUserFacingTaskReadinessError("A ready user-facing task must name a design reference.");
+  }
+
+  const reference = contract.designReferences.references.find((candidate) => candidate.id === input.designReferenceId);
+  if (!reference) {
+    throw new CanonicalUserFacingTaskReadinessError(`A ready user-facing task names an unknown design reference: ${input.designReferenceId}`);
+  }
+  if (reference.approvalStatus !== "APPROVED") {
+    throw new CanonicalUserFacingTaskReadinessError(`A ready user-facing task requires an APPROVED design reference: ${input.designReferenceId}`);
+  }
+  return reference;
+}
+
 export function parseCanonicalProductContract(source: string): CanonicalProductContract {
   const document = parseDocument(source, { uniqueKeys: true });
   if (document.errors.length > 0) {
@@ -407,6 +451,33 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const simulationTimerCadence = (contract as CanonicalProductContract).simulationTimerCadence;
   if (!hasExactValues(simulationTimerCadence.lifecycleCheckpoints, canonicalSimulationTimerLifecycleCheckpoints)) {
     throw new CanonicalProductContractValidationError("Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order");
+  }
+
+  const designReferences = (contract as CanonicalProductContract).designReferences.references;
+  const duplicateDesignReferenceIds = designReferences
+    .map((reference) => reference.id)
+    .filter((id, index, ids) => ids.indexOf(id) !== index);
+  if (duplicateDesignReferenceIds.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical design reference identifier: ${duplicateDesignReferenceIds[0]}`);
+  }
+
+  const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const designRoot = resolve(repositoryRoot, "docs/designs");
+  const escapedPattern = designReferences.find((reference) => {
+    const path = resolve(repositoryRoot, reference.patternPath);
+    const relativePath = relative(designRoot, path);
+    return relativePath === "" || relativePath === ".." || relativePath.startsWith("../") || relativePath.startsWith("..\\") || isAbsolute(relativePath);
+  });
+  if (escapedPattern) {
+    throw new CanonicalProductContractValidationError(`Canonical design reference pattern path must resolve within docs/designs: ${escapedPattern.patternPath}`);
+  }
+
+  const missingPattern = designReferences.find((reference) => {
+    const path = resolve(repositoryRoot, reference.patternPath);
+    return !existsSync(path) || !statSync(path).isFile();
+  });
+  if (missingPattern) {
+    throw new CanonicalProductContractValidationError(`Canonical design reference pattern path does not resolve to a file: ${missingPattern.patternPath}`);
   }
 
   const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);
