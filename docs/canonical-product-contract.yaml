@@ -1,0 +1,8 @@
+version: 1
+contractId: patternly-product-contract
+authority:
+  normativeSource: canonical-product-contract
+  narrativeDocuments: non-normative
+requirements:
+  - id: CONTRACT-AUTHORITY-001
+    statement: Product behavior is normative only when defined by this contract.

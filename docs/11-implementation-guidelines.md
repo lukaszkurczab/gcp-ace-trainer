@@ -2,30 +2,30 @@
 
 ## Purpose
 
-This document defines how the canonical Patternly contracts are implemented.
+This document provides implementation guidance for the canonical Patternly product contract.
 
 It does not redefine product behaviour, scoring, review, persistence semantics, content quality, or visual interaction.
 
-Implementation must reproduce the approved contracts from documents `00`–`13` and `15`–`17`. Current repository behaviour is evidence of the existing state, not evidence of correct target behaviour.
+Implementation must reproduce the approved behavior from `canonical-product-contract.yaml`. Documents `00`–`13` and `15`–`17` provide context but cannot override that contract. Current repository behaviour is evidence of the existing state, not evidence of correct target behaviour.
 
-When required behaviour is missing or contradictory, implementation stops at that boundary. The responsible canonical document and its contract tests must be corrected before code chooses an interpretation.
+When required behaviour is missing or contradictory, implementation stops at that boundary. The canonical product contract and its contract tests must be corrected before code chooses an interpretation.
 
 ## Source-of-truth hierarchy
 
-Use the following ownership when resolving implementation questions:
+For implementation detail, use the following supporting references only after resolving product behavior from `canonical-product-contract.yaml`:
 
-- `02-architecture.md` defines module ownership and dependency direction;
-- `04-data-model.md` defines canonical persisted and domain records;
-- `17-training-runtime-and-interaction-spec.md` defines session behaviour and state transitions;
-- `08-storage-and-offline.md` defines persistence, journal, recovery, reset, and resume;
+- `02-architecture.md` provides module-ownership and dependency-direction context;
+- `04-data-model.md` provides persisted and domain-record context;
+- `17-training-runtime-and-interaction-spec.md` provides session-lifecycle implementation context;
+- `08-storage-and-offline.md` provides persistence, journal, recovery, reset, and resume implementation context;
 - `05-design-system.md` and approved visual references define presentation;
-- `07-content-guidelines.md` defines authored content and activation quality;
-- `12-testing-strategy.md` defines required verification;
-- family learning-system documents define family-specific semantics.
+- `07-content-guidelines.md` provides authored-content and activation-quality context;
+- `12-testing-strategy.md` provides required-verification context;
+- family learning-system documents provide family-specific context.
 
 An implementation prompt, current screen, existing service, obsolete test, or repository convention does not override these sources.
 
-A conflict is resolved by updating the responsible contract and test, not by adding a compatibility branch.
+A conflict is resolved by updating the canonical product contract and test, not by adding a compatibility branch.
 
 ## Mandatory recovery rule
 

@@ -23,8 +23,8 @@
     "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
     "test:algorithms-cross-repo": "node --import tsx --test tests/algorithmsCrossRepoContract.test.ts",
     "e2e:runtime-audit:maestro": "node scripts/runRuntimeAuditMaestro.mjs",
-    "validate:content-boundary": "node scripts/validateContentBoundary.mjs"
-    ,"sync:content-release": "node scripts/syncBundledContentRelease.mjs"
+    "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
+    "sync:content-release": "node scripts/syncBundledContentRelease.mjs"
   },
   "dependencies": {
     "@react-navigation/native": "^7.2.4",
@@ -45,7 +45,9 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "ajv": "^8.20.0",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "yaml": "^2.9.0"
   }
 }

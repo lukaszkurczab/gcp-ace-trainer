@@ -1,5 +1,7 @@
 # 05 — Design System
 
+This document provides design-system context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
+
 ## Purpose
 
 Patternly uses a calm, accessible focus-lab interface.

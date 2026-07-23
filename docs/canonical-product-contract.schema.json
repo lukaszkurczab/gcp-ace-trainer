@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://patternly.app/schemas/canonical-product-contract.schema.json",
+  "title": "Patternly canonical product contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "contractId", "authority", "requirements"],
+  "properties": {
+    "version": {
+      "description": "The version of this contract format.",
+      "type": "integer",
+      "const": 1
+    },
+    "contractId": {
+      "type": "string",
+      "const": "patternly-product-contract"
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["normativeSource", "narrativeDocuments"],
+      "properties": {
+        "normativeSource": {
+          "type": "string",
+          "const": "canonical-product-contract"
+        },
+        "narrativeDocuments": {
+          "type": "string",
+          "const": "non-normative"
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9-]*[A-Z0-9]$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@
 
 Files in this directory are visual reference material for future UI implementation. They are not a pixel-perfect implementation contract and should not be copied 1:1.
 
-The current canonical product direction is defined by:
+The current product direction is defined normatively by `docs/canonical-product-contract.yaml`. The following documents provide supporting context:
 
 - `docs/03-navigation-and-flows.md`,
 - `docs/05-design-system.md`,
@@ -13,7 +13,7 @@ The current canonical product direction is defined by:
 - `docs/16-leetcode-like-learning-system.md`,
 - `docs/17-training-runtime-and-interaction-spec.md`.
 
-If an individual design conflicts with those documents, with current repository behavior, or with verified product constraints, the canonical docs and repository evidence win.
+If an individual design conflicts with the canonical product contract, verified product constraints, or repository evidence, the contract and verified constraints win.
 
 ## Implementation Rule
 

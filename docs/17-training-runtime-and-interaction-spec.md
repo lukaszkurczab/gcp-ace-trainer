@@ -2,7 +2,7 @@
 
 ## Purpose and ownership
 
-This document defines the canonical runtime behaviour for:
+This document provides runtime context for the behavior defined by `canonical-product-contract.yaml`:
 
 - session preparation;
 - active-session lifecycle;
@@ -27,7 +27,7 @@ It does not redefine:
 - visual styling;
 - security and privacy policy.
 
-No screen, implementation prompt, legacy runtime, or mode name may supply behaviour missing from this specification.
+No screen, implementation prompt, legacy runtime, or mode name may supply behavior missing from the canonical product contract.
 
 ## 1. Preconditions
 

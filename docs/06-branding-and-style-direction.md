@@ -378,7 +378,7 @@ Avoid celebratory, punitive, or repetitive announcements.
 
 ## Brand consistency rule
 
-A new screen, component, mode, metric, or message must use the same vocabulary and evidence rules as the canonical product contracts.
+A new screen, component, mode, metric, or message must use the same vocabulary and evidence rules as the canonical product contract.
 
 Implementation must not introduce:
 

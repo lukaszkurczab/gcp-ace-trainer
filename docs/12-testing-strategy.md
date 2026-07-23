@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Patternly testing verifies the canonical product contract, ownership boundaries, deterministic learning behaviour, persistence recovery, active-content validity, accessibility, and explicit failure states.
+Patternly testing verifies the canonical product contract, ownership boundaries, deterministic learning behaviour, persistence recovery, active-content validity, accessibility, and explicit failure states. This document provides verification context and cannot override `canonical-product-contract.yaml`.
 
-Tests assert target behaviour from documents `00`–`13` and `15`–`17`.
+Tests assert target behaviour from `canonical-product-contract.yaml`; documents `00`–`13` and `15`–`17` provide supporting context only.
 
 They do not preserve:
 

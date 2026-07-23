@@ -2,9 +2,9 @@
 
 ## Purpose and scope
 
-This document defines Algorithms-family-specific learning behaviour.
+This document provides Algorithms-family context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
 
-It owns:
+It describes:
 
 - the Algorithms taxonomy;
 - Algorithms practice blueprints;
@@ -29,7 +29,7 @@ It does not redefine:
 - shared UI components;
 - security and privacy boundaries.
 
-Those contracts remain owned by the applicable shared documents.
+Those shared concerns remain defined by the canonical product contract.
 
 ## Product boundary
 

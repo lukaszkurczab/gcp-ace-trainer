@@ -1,12 +1,12 @@
 # Patternly — dokumentacja
 
-Status: **canonical documentation index**
+Status: **narrative documentation index**
 Zakres: **cała aplikacja**  
 Kontekst: **Patternly** jest wielotrackowym narzędziem treningowym do technicznej nauki, focused practice, rozpoznawania wzorców i review błędów. Starszy kontekst GCP ACE pozostaje historią pierwszego tracka certyfikacyjnego, ale nie jest już zakresem całego produktu.
 
 ## Cel dokumentacji
 
-Ten folder jest głównym miejscem decyzji produktowych, architektonicznych i projektowych dla aplikacji **Patternly**.
+Ten folder zawiera kontekst decyzji produktowych, architektonicznych i projektowych dla aplikacji **Patternly**. Normatywne zachowanie produktu definiuje wyłącznie `canonical-product-contract.yaml`.
 
 Dokumentacja ma służyć jako:
 
@@ -48,7 +48,7 @@ docs/
 
 ## Authority
 
-Dokumenty `00`–`13` oraz `15`–`17` są jedynym kanonicznym zestawem kontraktów produktu, architektury i runtime. `docs/plan.md` jest jedynym źródłem kolejności wykonania i statusu etapów.
+`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/plan.md` jest jedynym źródłem kolejności wykonania i statusu etapów.
 
 ADR-y zachowują historyczne decyzje techniczne, ale nie tworzą drugiego planu wykonawczego i nie zastępują kanonicznych kontraktów. Artefakty audytowe oraz materiały projektowe są dowodami lub referencjami wizualnymi, nie źródłami kontraktu ani kolejności wykonania.
 

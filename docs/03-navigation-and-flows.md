@@ -1,5 +1,7 @@
 # 03 — Navigation and Flows
 
+This document provides navigation context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
+
 ## Navigation
 
 The primary tab navigation exposes:

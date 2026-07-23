@@ -1,10 +1,12 @@
 # 15 — Certification Track Learning System
 
+This document provides Certification-family context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
+
 ## Learning model
 
 Certification content is organized by exam domain, competency area, topic, and skill atom. Competency area drives remediation; topic gives the learner understandable focus; skill atom makes evidence and feedback precise. Remediation batches by competency area and then topic.
 
-The canonical modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`. Recommendations are deterministic and explained; learner choice always wins for the current session.
+The described modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`. Recommendations are deterministic and explained; learner choice always wins for the current session.
 
 
 ## Certification track instances
