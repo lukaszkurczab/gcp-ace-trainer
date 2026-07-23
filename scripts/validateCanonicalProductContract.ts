@@ -44,6 +44,33 @@ export type CanonicalCertificationModeLabel =
   | "Quick Review"
   | "Exam Simulation";
 
+export type CanonicalUserCommandId =
+  | "submit"
+  | "next"
+  | "save"
+  | "save-and-continue"
+  | "navigator-jump"
+  | "finish"
+  | "leave-resumable"
+  | "abandon"
+  | "recover"
+  | "resume";
+
+export type CanonicalSessionCtaId =
+  | "practice-submit"
+  | "practice-next"
+  | "practice-finish"
+  | "practice-leave-resumable"
+  | "practice-abandon"
+  | "practice-recover"
+  | "simulation-save"
+  | "simulation-navigator-jump"
+  | "simulation-finish"
+  | "simulation-leave-resumable"
+  | "simulation-abandon"
+  | "simulation-recover"
+  | "session-resume";
+
 export type CanonicalAlgorithmScope =
   | "oneMentalUnit"
   | "guidedPracticeBlueprintForSelectedMentalUnit"
@@ -107,6 +134,13 @@ export type CanonicalProductContract = Readonly<{
     id: string;
     statement: string;
   }>[];
+  userCommands: Readonly<{
+    commands: readonly Readonly<{ id: CanonicalUserCommandId }>[];
+    sessionCtaMappings: readonly Readonly<{
+      ctaId: CanonicalSessionCtaId;
+      commandId: CanonicalUserCommandId;
+    }>[];
+  }>;
   algorithms: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
     modes: readonly CanonicalAlgorithmMode[];
@@ -143,6 +177,22 @@ const certificationModeLabels: Readonly<Record<CanonicalCertificationModeId, Can
   "certification-exam-simulation": "Exam Simulation",
 };
 
+const canonicalSessionCtaCommands: Readonly<Record<CanonicalSessionCtaId, CanonicalUserCommandId>> = {
+  "practice-submit": "submit",
+  "practice-next": "next",
+  "practice-finish": "finish",
+  "practice-leave-resumable": "leave-resumable",
+  "practice-abandon": "abandon",
+  "practice-recover": "recover",
+  "simulation-save": "save",
+  "simulation-navigator-jump": "navigator-jump",
+  "simulation-finish": "finish",
+  "simulation-leave-resumable": "leave-resumable",
+  "simulation-abandon": "abandon",
+  "simulation-recover": "recover",
+  "session-resume": "resume",
+};
+
 function hasExactValues<T>(actual: readonly T[], expected: readonly T[]): boolean {
   return actual.length === expected.length && actual.every((value, index) => value === expected[index]);
 }
@@ -162,6 +212,38 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const duplicateIds = requirementIds.filter((id, index) => requirementIds.indexOf(id) !== index);
   if (duplicateIds.length > 0) {
     throw new CanonicalProductContractValidationError(`Duplicate canonical product contract requirement identifier: ${duplicateIds[0]}`);
+  }
+
+  const userCommandIds = (contract as CanonicalProductContract).userCommands.commands.map((command) => command.id);
+  const duplicateUserCommandIds = userCommandIds.filter((id, index) => userCommandIds.indexOf(id) !== index);
+  if (duplicateUserCommandIds.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical product contract user command identifier: ${duplicateUserCommandIds[0]}`);
+  }
+
+  const sessionCtaMappings = (contract as CanonicalProductContract).userCommands.sessionCtaMappings;
+  const sessionCtaIds = sessionCtaMappings.map((mapping) => mapping.ctaId);
+  const duplicateSessionCtaIds = sessionCtaIds.filter((id, index) => sessionCtaIds.indexOf(id) !== index);
+  if (duplicateSessionCtaIds.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical product contract session CTA identifier: ${duplicateSessionCtaIds[0]}`);
+  }
+
+  const mappingWithUnknownCommand = sessionCtaMappings.find((mapping) => !userCommandIds.includes(mapping.commandId));
+  if (mappingWithUnknownCommand) {
+    throw new CanonicalProductContractValidationError(`Canonical session CTA must reference a declared user command: ${mappingWithUnknownCommand.ctaId}`);
+  }
+
+  const missingSessionCta = (Object.keys(canonicalSessionCtaCommands) as CanonicalSessionCtaId[]).find(
+    (ctaId) => !sessionCtaIds.includes(ctaId),
+  );
+  if (missingSessionCta) {
+    throw new CanonicalProductContractValidationError(`Canonical session CTA is missing exactly one command mapping: ${missingSessionCta}`);
+  }
+
+  const sessionCtaWithWrongCommand = sessionCtaMappings.find(
+    (mapping) => canonicalSessionCtaCommands[mapping.ctaId] !== mapping.commandId,
+  );
+  if (sessionCtaWithWrongCommand) {
+    throw new CanonicalProductContractValidationError(`Canonical session CTA command mapping does not match its intent: ${sessionCtaWithWrongCommand.ctaId}`);
   }
 
   const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);

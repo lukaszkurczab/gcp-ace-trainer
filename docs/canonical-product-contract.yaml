@@ -12,6 +12,49 @@ requirements:
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
   - id: CERTIFICATION-MODE-MATRIX-001
     statement: Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.
+  - id: USER-COMMAND-MODEL-001
+    statement: Every canonical session CTA maps to exactly one declared application command; save-and-continue is declared only as the atomic save-and-advance intent and has no CTA or implementation in this contract change.
+  - id: USER-COMMAND-RESUME-001
+    statement: Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.
+userCommands:
+  commands:
+    - id: submit
+    - id: next
+    - id: save
+    - id: save-and-continue
+    - id: navigator-jump
+    - id: finish
+    - id: leave-resumable
+    - id: abandon
+    - id: recover
+    - id: resume
+  sessionCtaMappings:
+    - ctaId: practice-submit
+      commandId: submit
+    - ctaId: practice-next
+      commandId: next
+    - ctaId: practice-finish
+      commandId: finish
+    - ctaId: practice-leave-resumable
+      commandId: leave-resumable
+    - ctaId: practice-abandon
+      commandId: abandon
+    - ctaId: practice-recover
+      commandId: recover
+    - ctaId: simulation-save
+      commandId: save
+    - ctaId: simulation-navigator-jump
+      commandId: navigator-jump
+    - ctaId: simulation-finish
+      commandId: finish
+    - ctaId: simulation-leave-resumable
+      commandId: leave-resumable
+    - ctaId: simulation-abandon
+      commandId: abandon
+    - ctaId: simulation-recover
+      commandId: recover
+    - ctaId: session-resume
+      commandId: resume
 algorithms:
   customPractice:
     modeId: algorithms-custom-practice

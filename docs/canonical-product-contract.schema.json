@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "userCommands", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -49,6 +49,7 @@
         }
       }
     },
+    "userCommands": { "$ref": "#/$defs/userCommands" },
     "algorithms": {
       "type": "object",
       "additionalProperties": false,
@@ -78,6 +79,73 @@
     }
   },
   "$defs": {
+    "userCommands": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commands", "sessionCtaMappings"],
+      "properties": {
+        "commands": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/userCommand" }
+        },
+        "sessionCtaMappings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sessionCtaMapping" }
+        }
+      }
+    },
+    "userCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/userCommandId" }
+      }
+    },
+    "userCommandId": {
+      "type": "string",
+      "enum": [
+        "submit",
+        "next",
+        "save",
+        "save-and-continue",
+        "navigator-jump",
+        "finish",
+        "leave-resumable",
+        "abandon",
+        "recover",
+        "resume"
+      ]
+    },
+    "sessionCtaMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ctaId", "commandId"],
+      "properties": {
+        "ctaId": {
+          "type": "string",
+          "enum": [
+            "practice-submit",
+            "practice-next",
+            "practice-finish",
+            "practice-leave-resumable",
+            "practice-abandon",
+            "practice-recover",
+            "simulation-save",
+            "simulation-navigator-jump",
+            "simulation-finish",
+            "simulation-leave-resumable",
+            "simulation-abandon",
+            "simulation-recover",
+            "session-resume"
+          ]
+        },
+        "commandId": { "type": "string", "minLength": 1 }
+      }
+    },
     "customPractice": {
       "type": "object",
       "additionalProperties": false,

@@ -13,6 +13,40 @@ test("parses the canonical product contract", () => {
   assert.equal(contract.authority.narrativeDocuments, "non-normative");
 });
 
+test("defines canonical user commands and maps every session CTA to its one application command", () => {
+  const contract = loadCanonicalProductContract();
+
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-MODEL-001"), {
+    id: "USER-COMMAND-MODEL-001",
+    statement: "Every canonical session CTA maps to exactly one declared application command; save-and-continue is declared only as the atomic save-and-advance intent and has no CTA or implementation in this contract change.",
+  });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-RESUME-001"), {
+    id: "USER-COMMAND-RESUME-001",
+    statement: "Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.",
+  });
+  assert.deepEqual(contract.userCommands, {
+    commands: [
+      { id: "submit" }, { id: "next" }, { id: "save" }, { id: "save-and-continue" }, { id: "navigator-jump" },
+      { id: "finish" }, { id: "leave-resumable" }, { id: "abandon" }, { id: "recover" }, { id: "resume" },
+    ],
+    sessionCtaMappings: [
+      { ctaId: "practice-submit", commandId: "submit" },
+      { ctaId: "practice-next", commandId: "next" },
+      { ctaId: "practice-finish", commandId: "finish" },
+      { ctaId: "practice-leave-resumable", commandId: "leave-resumable" },
+      { ctaId: "practice-abandon", commandId: "abandon" },
+      { ctaId: "practice-recover", commandId: "recover" },
+      { ctaId: "simulation-save", commandId: "save" },
+      { ctaId: "simulation-navigator-jump", commandId: "navigator-jump" },
+      { ctaId: "simulation-finish", commandId: "finish" },
+      { ctaId: "simulation-leave-resumable", commandId: "leave-resumable" },
+      { ctaId: "simulation-abandon", commandId: "abandon" },
+      { ctaId: "simulation-recover", commandId: "recover" },
+      { ctaId: "session-resume", commandId: "resume" },
+    ],
+  });
+});
+
 test("defines exactly the complete canonical Algorithms mode matrix", () => {
   const contract = loadCanonicalProductContract();
 
@@ -103,6 +137,13 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["missing version", validContract.replace("version: 1\n", ""), /must have required property 'version'/],
     ["empty requirements", validContract.replace(/requirements:\n(?:  - .*\n    .*\n)+/, "requirements: []\n"), /must NOT have fewer than 1 items/],
     ["duplicate identifier", validContract.replace("    statement: Product behavior is normative only when defined by this contract.\n", "    statement: Product behavior is normative only when defined by this contract.\n  - id: CONTRACT-AUTHORITY-001\n    statement: A second requirement with the same identifier.\n"), /Duplicate canonical product contract requirement identifier/],
+    ["missing user commands", validContract.replace(/userCommands:\n(?:  .*\n|    .*\n)+(?=algorithms:)/, ""), /must have required property 'userCommands'/],
+    ["unknown user command field", validContract.replace("    - id: submit\n", "    - id: submit\n      extra: value\n"), /must NOT have additional properties/],
+    ["duplicate user command identifier", validContract.replace("    - id: next\n", "    - id: submit\n"), /Duplicate canonical product contract user command identifier/],
+    ["duplicate session CTA identifier", validContract.replace("    - ctaId: practice-next\n", "    - ctaId: practice-submit\n"), /Duplicate canonical product contract session CTA identifier/],
+    ["session CTA with undeclared command", validContract.replace("    - ctaId: practice-recover\n      commandId: recover\n", "    - ctaId: practice-recover\n      commandId: submit-recovery\n"), /Canonical session CTA must reference a declared user command: practice-recover/],
+    ["missing canonical session CTA", validContract.replace("    - ctaId: simulation-recover\n      commandId: recover\n", ""), /Canonical session CTA is missing exactly one command mapping: simulation-recover/],
+    ["session CTA mapped to the wrong command", validContract.replace("    - ctaId: session-resume\n      commandId: resume\n", "    - ctaId: session-resume\n      commandId: recover\n"), /Canonical session CTA command mapping does not match its intent: session-resume/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],
