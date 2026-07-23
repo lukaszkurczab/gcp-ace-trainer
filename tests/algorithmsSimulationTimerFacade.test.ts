@@ -10,6 +10,7 @@ import {
 } from "../src/application/algorithms";
 import { createForegroundTimerState, createTrainingSession, type ForegroundTimerState } from "../src/domain";
 import type { TrainingLifecycleUseCases } from "../src/application/trainingLifecycle";
+import { simulationTimer } from "../src/features/simulation/simulationProjection";
 
 const startedAt = "2026-07-19T10:00:00.000Z";
 
@@ -106,6 +107,23 @@ test("periodic checkpoint publishes a live projection refresh", async () => {
   await f.tick();
   assert.equal(f.getState()?.accumulatedForegroundMs, 14_000);
   assert.ok(refreshes >= 2);
+});
+
+test("controlled timer refreshes consecutive visible labels without a durable write each second", async () => {
+  const f = fixture();
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  const checkpointRevision = f.getState()?.checkpointRevision;
+
+  f.setNow(1_000);
+  await f.tick();
+  const first = simulationTimer((await f.timer.projection(f.getActiveSession())).remainingForegroundMs);
+  f.setNow(2_000);
+  await f.tick();
+  const second = simulationTimer((await f.timer.projection(f.getActiveSession())).remainingForegroundMs);
+
+  assert.deepEqual([first.label, second.label], ["44:59", "44:58"]);
+  assert.equal(f.getState()?.checkpointRevision, checkpointRevision);
 });
 
 test("force-close before and after a checkpoint resumes only the last verified checkpoint", async () => {

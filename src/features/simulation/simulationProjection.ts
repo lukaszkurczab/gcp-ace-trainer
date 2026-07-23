@@ -60,6 +60,13 @@ export function simulationPrimaryAction(input: Readonly<{ complete: boolean; fin
     : { id: "save-and-continue", label: "Save and continue", disabled: !input.complete, onPress: input.onSaveAndContinue };
 }
 
+/** Formats the application-owned remaining foreground duration for the visible timer. */
+export function simulationTimer(remainingMs: number) {
+  const seconds = Math.max(0, Math.floor(remainingMs / 1_000));
+  const label = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  return { accessibilityLabel: `Time remaining ${label}`, label };
+}
+
 export type SimulationChoiceControl = Readonly<{
   kind: "choice";
   options: readonly Readonly<{ id: string; label: string; selected: boolean }>[];

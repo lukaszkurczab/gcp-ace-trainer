@@ -36,6 +36,8 @@ requirements:
     statement: Duplicate concurrent save-and-continue commands for the same active Algorithms Interview Simulation occurrence and response share one durable draft save and one verified advance.
   - id: SIMULATION-FULL-LIFECYCLE-001
     statement: The complete immutable forty-occurrence Algorithms Interview Simulation plan finalizes into one result with forty distinct answered occurrences and no active session or durable draft.
+  - id: SIMULATION-TIMER-UI-REFRESH-001
+    statement: The visible Algorithms Interview Simulation timer formats the runtime remaining-foreground projection every second without a durable write for each UI refresh.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -109,6 +111,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan
       requirementIds: [SIMULATION-FULL-LIFECYCLE-001]
+    - id: algorithms-simulation-timer-ui-refresh
+      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testName: controlled timer refreshes consecutive visible labels without a durable write each second
+      requirementIds: [SIMULATION-TIMER-UI-REFRESH-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
