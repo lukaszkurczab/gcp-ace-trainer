@@ -48,6 +48,8 @@ requirements:
     statement: Algorithms Interview Simulation timer checkpoints, draft saves, and navigation share one mutation lane and do not overwrite a durable draft revision or current position.
   - id: SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001
     statement: Algorithms Interview Simulation force-close immediately before and after the periodic checkpoint boundary restores only its last verified foreground time within the declared one-second drift bound.
+  - id: SIMULATION-ACTIVE-SCREEN-FIDELITY-001
+    statement: The approved active Algorithms Interview Simulation screen fills its viewport and presents the timer, counter, active question, save state, and leave/save actions without an inline question navigator.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -145,6 +147,10 @@ requirementTestCoverage:
       testPath: tests/algorithmsSimulationTimerFacade.test.ts
       testName: force-close immediately before and after the checkpoint boundary resumes within the declared drift
       requirementIds: [SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001]
+    - id: simulation-active-screen-fidelity
+      testPath: tests/simulationSessionSurface.test.ts
+      testName: active simulation surface fills the viewport and keeps navigator presentation outside the approved active screen
+      requirementIds: [SIMULATION-ACTIVE-SCREEN-FIDELITY-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

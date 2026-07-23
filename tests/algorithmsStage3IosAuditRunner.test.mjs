@@ -169,7 +169,6 @@ test("audit source provenance covers the exact executable capture path", () => {
     "src/features/practice/PracticeResponseControls.tsx",
     "src/features/practice/PracticeFeedbackBlock.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
-    "src/features/simulation/SimulationNavigator.tsx",
     ...entries.map((entry) => entry.flowPath),
   ];
   assert.ok(required.every((sourcePath) => paths.includes(sourcePath)));

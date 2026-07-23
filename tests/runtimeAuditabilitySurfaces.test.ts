@@ -30,7 +30,6 @@ test("active-session resume has a non-interactive container and a separate conti
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {
   const progress = source("src/features/home/tabs/ProgressTab.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
-  const navigator = source("src/features/simulation/SimulationNavigator.tsx");
   const summary = source("src/features/simulation/AlgorithmsInterviewSimulationResultScreen.tsx");
 
   assert.match(progress, /testID=\{runtimeSelectors\.progress\.node\(node\.id\)\}/);
@@ -39,7 +38,5 @@ test("progress, simulation, and simulation summary selectors use canonical ident
   assert.match(simulation, /runtimeSelectors\.simulation\.option\(itemId, optionId\)/);
   assert.doesNotMatch(simulation, /value:\$\{index \+ 1\}/);
   assert.match(simulation, /runtimeSelectors\.simulation\.action\(sessionId, action\.id\)/);
-  assert.match(navigator, /runtimeSelectors\.simulation\.navigator\(position\.occurrenceId\)/);
-  assert.doesNotMatch(navigator, /simulation-navigator-position-/);
   assert.match(summary, /runtimeSelectors\.summary\.root\(sessionId\)/);
 });

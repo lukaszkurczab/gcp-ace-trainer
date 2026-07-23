@@ -117,7 +117,6 @@ test("source provenance covers every exact Android state flow and no retired har
     "src/features/practice/PracticeResponseControls.tsx",
     "src/features/practice/PracticeFeedbackBlock.tsx",
     "src/features/simulation/SimulationSessionSurface.tsx",
-    "src/features/simulation/SimulationNavigator.tsx",
   ]) assert.ok(paths.includes(required));
   assert.equal(paths.includes(".audit/ux-ui/maestro/flows/algorithms-stage3-harness.android.yaml"), false);
   assert.match(computeAndroidSourceSha256(root, config), /^[0-9a-f]{64}$/);

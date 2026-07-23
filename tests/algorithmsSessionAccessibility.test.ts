@@ -19,14 +19,12 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   const button = source("src/components/Button.tsx");
   const practiceControls = source("src/features/practice/PracticeResponseControls.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
-  const navigator = source("src/features/simulation/SimulationNavigator.tsx");
-  const surfaces = `${practiceControls}\n${feedback}\n${navigator}`;
+  const surfaces = `${practiceControls}\n${feedback}`;
 
   assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
-  assert.match(navigator, /position:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.doesNotMatch(surfaces, /hitSlop/);
   assert.doesNotMatch(surfaces, /(?:moveButton|valueOption|detailsToggle|position):\s*\{[^}]*(?:height|width):\s*(?:32|36|40)\b/);
 });
@@ -37,7 +35,6 @@ test("canonical session surfaces expose deterministic state and do not group int
   const practice = source("src/features/practice/PracticeResponseControls.tsx");
   const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
-  const navigator = source("src/features/simulation/SimulationNavigator.tsx");
 
   assert.match(button, /accessibilityState=\{\{ \.\.\.accessibilityState, busy: loading, disabled: isDisabled \}\}/);
   assert.match(practice, /orderingMoveAccessibilityLabel\(elementLabel, index, total, direction\)/);
@@ -52,11 +49,8 @@ test("canonical session surfaces expose deterministic state and do not group int
   assert.match(shell, /accessibilityLabel=\{position\?\.accessibilityLabel\}/);
   assert.match(shell, /accessibilityLabel=\{verifiedProgress === null \? undefined : "Session progress"\}/);
   assert.match(shell, /accessibilityRole=\{verifiedProgress === null \? undefined : "progressbar"\}/);
-  assert.doesNotMatch(navigator, /accessibilityRole="summary"|Interview Simulation navigator/);
-  assert.match(navigator, /accessibilityState=\{\{ disabled, selected: position\.state === "current" \}\}/);
   assert.doesNotMatch(practice, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.stack\}/);
   assert.doesNotMatch(simulation, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.controls\}/);
-  assert.doesNotMatch(navigator, /<View[^>]*(?:accessible|accessibilityRole|accessibilityLabel)[^>]*style=\{styles\.grid\}/);
 });
 
 test("practice exit makes abandonment a single explicit decision in a modal", () => {

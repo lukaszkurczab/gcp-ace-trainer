@@ -5,7 +5,6 @@ import { radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../algorithms/session/sessionAccessibility";
 import { SessionShell } from "../algorithms/session/SessionShell";
 import type { SimulationAction, SimulationResponseChange, SimulationResponseControl, SimulationSurfaceProjection } from "./simulationProjection";
-import { SimulationNavigator } from "./SimulationNavigator";
 import { mayRenderSimulationCompletion } from "./simulationViewModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
@@ -28,7 +27,7 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   const interactionLocked = projection.state !== "editable";
 
   return (
-    <View testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
+    <View style={styles.root} testID={runtimeIdentity ? runtimeSelectors.simulation.root(runtimeIdentity.sessionId) : undefined}>
       <SessionShell
         actionBar={actionBar}
         modeLabel={projection.modeLabel}
@@ -37,11 +36,12 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         timer={projection.timer}
       >
         <View accessible accessibilityRole="header" style={styles.heading}>
-          <Text style={styles.title}>{projection.title}</Text>
+          <Text style={projection.state === "editable" ? styles.questionLabel : styles.title}>
+            {projection.state === "editable" ? activeQuestionLabel(projection.position?.label) : projection.title}
+          </Text>
         </View>
         {projection.notice ? <Notice notice={projection.notice} /> : null}
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} /> : null}
-        {projection.navigator ? <SimulationNavigator onOccurrencePress={interactionLocked ? undefined : projection.onOccurrencePress} positions={projection.navigator} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
         {mayRenderSimulationCompletion(projection) ? <Completion completion={projection.completion!} sessionId={runtimeIdentity?.sessionId} /> : null}
       </SessionShell>
@@ -49,12 +49,17 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   );
 }
 
+function activeQuestionLabel(position: string | undefined): string {
+  const current = position?.match(/^(\d+) of \d+$/)?.[1];
+  return current ? `Question ${current}` : "Question";
+}
+
 function ActionBar({ primary, secondary, sessionId }: NonNullable<SimulationSurfaceProjection["actions"]> & Readonly<{ sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   return (
     <View style={styles.actionBar}>
-      {secondary ? <Action action={secondary} sessionId={sessionId} /> : null}
-      {primary ? <Action action={primary} sessionId={sessionId} /> : null}
+      {secondary ? <View style={styles.actionSlot}><Action action={secondary} sessionId={sessionId} /></View> : null}
+      {primary ? <View style={styles.actionSlot}><Action action={primary} sessionId={sessionId} /></View> : null}
     </View>
   );
 }
@@ -73,7 +78,7 @@ function Question({ itemId, locked, onChange, question, sessionId }: Readonly<{ 
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   return (
-    <Card testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
+    <Card style={styles.questionCard} testID={itemId ? runtimeSelectors.simulation.question(itemId) : undefined}>
       <Text style={styles.prompt}>{question.prompt}</Text>
       {question.code ? <Text accessibilityLabel={t("Code sample")} style={styles.code}>{question.code}</Text> : null}
       <ResponseControl control={question.control} disabled={locked || !onChange} itemId={itemId} onChange={onChange} sessionId={sessionId} />
@@ -118,7 +123,8 @@ function Completion({ completion, sessionId }: Readonly<{ completion: NonNullabl
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  actionBar: { gap: spacing.sm },
+  actionBar: { flexDirection: "row", gap: spacing.sm },
+  actionSlot: { flex: 1 },
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
@@ -127,13 +133,16 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   error: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   heading: { gap: spacing.xs },
-  notice: { borderRadius: radius.md, borderWidth: 1, padding: spacing.md },
+  notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   noticeText: { ...typography.small, color: palette.textPrimary },
   neutral: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
   orderLabel: { ...typography.small, color: palette.textPrimary, flex: 1 },
   orderRow: { alignItems: "flex-start", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   prompt: { ...typography.body, color: palette.textPrimary },
+  questionCard: { backgroundColor: "transparent", borderWidth: 0, padding: 0 },
+  questionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
+  root: { flex: 1 },
   success: { backgroundColor: palette.successSoft, borderColor: palette.success },
   title: { ...typography.title, color: palette.textPrimary },
   valueRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
