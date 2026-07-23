@@ -4,7 +4,6 @@ import test from "node:test";
 import {
   hasCanonicalSimulationNavigator,
   mayRenderSimulationCompletion,
-  navigatorAccessibilityLabel,
   SIMULATION_OCCURRENCE_COUNT,
 } from "../src/features/simulation/simulationViewModel";
 import type { SimulationNavigatorPosition, SimulationSurfaceProjection } from "../src/features/simulation/simulationProjection";
@@ -21,11 +20,6 @@ test("Simulation navigator accepts only exactly forty unique occurrence identiti
   assert.equal(hasCanonicalSimulationNavigator(navigator()), true);
   assert.equal(hasCanonicalSimulationNavigator(navigator().slice(0, 39)), false);
   assert.equal(hasCanonicalSimulationNavigator([...navigator().slice(0, 39), navigator()[0]!]), false);
-});
-
-test("Simulation navigator announces durable state without correctness", () => {
-  assert.equal(navigatorAccessibilityLabel({ occurrenceId: "occurrence-1", state: "answered" }, 0), "Position 1 of 40, saved response");
-  assert.equal(navigatorAccessibilityLabel({ occurrenceId: "occurrence-2", state: "unanswered" }, 1), "Position 2 of 40, no saved response");
 });
 
 test("Simulation completion metrics are withheld before the verified completed projection", () => {

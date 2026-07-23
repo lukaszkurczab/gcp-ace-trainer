@@ -1,0 +1,34 @@
+appId: com.lkurczab.gcpacetrainer
+name: T32 simulation navigator reference capture
+tags:
+  - screenshot
+  - uiux-evidence
+  - algorithms-stage3
+---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn:
+    id: "patternly:home:change-track"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn:
+    point: "70%,85%"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn: "Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:algorithms-interview-simulation"
+    direction: DOWN
+- tapOn:
+    id: "patternly:practice:mode-card:algorithms-interview-simulation"
+- waitForAnimationToEnd:
+    timeout: 20000
+- takeScreenshot: "t32__010__active-simulation"
+- tapOn: "Open question navigator, Question 1"
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: "t32__020__question-navigator"

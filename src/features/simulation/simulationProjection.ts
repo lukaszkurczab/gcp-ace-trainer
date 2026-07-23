@@ -37,6 +37,8 @@ export type SimulationNavigatorPosition = Readonly<{
   state: "current" | "answered" | "unanswered" | "frozen";
 }>;
 
+export type SimulationNavigatorSelectionResult = "navigated" | "incomplete_response" | "save_failed";
+
 export type SimulationNotice = Readonly<{
   message: string;
   tone: "neutral" | "error" | "success";
@@ -119,7 +121,7 @@ export type SimulationSurfaceProjection = Readonly<{
   modeLabel?: string;
   navigator?: readonly SimulationNavigatorPosition[];
   notice?: SimulationNotice;
-  onOccurrencePress?: (occurrenceId: string) => void;
+  onOccurrencePress?: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
   onResponseChange?: (change: SimulationResponseChange) => void;
   position?: SessionMetricPresentation;
   progress?: number;

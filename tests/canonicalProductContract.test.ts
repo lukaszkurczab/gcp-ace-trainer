@@ -82,6 +82,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-TIMER-MUTATION-SERIALIZATION-001", ["algorithms-simulation-timer-mutation-serialization"]],
       ["SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001", ["algorithms-simulation-timer-force-close-boundary"]],
       ["SIMULATION-ACTIVE-SCREEN-FIDELITY-001", ["simulation-active-screen-fidelity"]],
+      ["SIMULATION-NAVIGATOR-FIDELITY-001", ["simulation-navigator-fidelity"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],

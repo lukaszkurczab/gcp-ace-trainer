@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
 import { radius, spacing, typography } from "../../theme";
@@ -9,6 +10,7 @@ import { mayRenderSimulationCompletion } from "./simulationViewModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { isRuntimeSelectorId, runtimeSelectors } from "../../testing/runtimeSelectors";
+import { SimulationQuestionNavigator } from "./navigator/SimulationQuestionNavigator";
 
 
 type SimulationSessionSurfaceProps = Readonly<{ projection: SimulationSurfaceProjection }>;
@@ -20,6 +22,7 @@ type SimulationSessionSurfaceProps = Readonly<{ projection: SimulationSurfacePro
  */
 export function SimulationSessionSurface({ projection }: SimulationSessionSurfaceProps) {
   const styles = useThemedStyles(createStyles);
+  const [navigatorVisible, setNavigatorVisible] = useState(false);
   const runtimeIdentity = projection.runtimeIdentity;
   const actionBar = projection.confirmation
     ? <ConfirmationActionBar confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} />
@@ -35,16 +38,17 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         progress={projection.progress}
         timer={projection.timer}
       >
-        <View accessible accessibilityRole="header" style={styles.heading}>
+        <Pressable accessibilityLabel={projection.state === "editable" ? `Open question navigator, ${activeQuestionLabel(projection.position?.label)}` : undefined} accessibilityRole={projection.state === "editable" ? "button" : "header"} disabled={projection.state !== "editable"} onPress={() => setNavigatorVisible(true)} style={styles.heading}>
           <Text style={projection.state === "editable" ? styles.questionLabel : styles.title}>
             {projection.state === "editable" ? activeQuestionLabel(projection.position?.label) : projection.title}
           </Text>
-        </View>
+        </Pressable>
         {projection.notice ? <Notice notice={projection.notice} /> : null}
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
         {mayRenderSimulationCompletion(projection) ? <Completion completion={projection.completion!} sessionId={runtimeIdentity?.sessionId} /> : null}
       </SessionShell>
+      {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
     </View>
   );
 }

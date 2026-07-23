@@ -70,18 +70,24 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     try { await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId, response: localResponse }); setLocalResponse(null); } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
-  async function goTo(index: number) {
-    if (screen?.kind !== "ready") return;
+  async function goTo(index: number): Promise<"navigated" | "incomplete_response" | "save_failed"> {
+    if (screen?.kind !== "ready") return "save_failed";
     const projection = screen.projection;
     const occurrenceId = projection.session.itemOrder[projection.position.current - 1]?.occurrenceId;
     const response = localResponse ?? responseFromProjection(projection);
-    if (!occurrenceId) return;
+    if (!occurrenceId) return "save_failed";
+    const changed = !sameResponse(response, responseFromProjection(projection));
+    if (changed && !isComplete(response, projection)) return "incomplete_response";
     try {
       if (sameResponse(response, responseFromProjection(projection))) await navigateAlgorithmsSimulationTo(index);
       else await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId, response, targetIndex: index });
       setLocalResponse(null);
-    } catch { /* The durable projection retains the saved response or navigation recovery state. */ }
+    } catch {
+      await load();
+      return "save_failed";
+    }
     await load();
+    return "navigated";
   }
   async function finish() {
     if (screen?.kind !== "ready") return;
@@ -105,7 +111,10 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
       notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
-      onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
+      onOccurrencePress: async (occurrenceId) => {
+        const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId);
+        return target ? goTo(target.index) : "save_failed";
+      },
       onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
       actions: { primary: simulationPrimaryAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, responseChanged: changed, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); }, onFinish: () => setOverlay("finish") }), secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
     };

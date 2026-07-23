@@ -10,5 +10,6 @@ test("active simulation surface fills the viewport and keeps navigator presentat
   assert.match(source, /projection\.state === "editable" \? activeQuestionLabel\(projection\.position\?\.label\) : projection\.title/);
   assert.match(source, /actionBar: \{ flexDirection: "row", gap: spacing\.sm \}/);
   assert.match(source, /questionCard: \{ backgroundColor: "transparent", borderWidth: 0, padding: 0 \}/);
-  assert.doesNotMatch(source, /SimulationNavigator/);
+  assert.match(source, /<SimulationQuestionNavigator onDismiss=/);
+  assert.match(source, /visible=\{navigatorVisible\}/);
 });

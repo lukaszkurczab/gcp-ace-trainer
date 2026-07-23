@@ -50,6 +50,8 @@ requirements:
     statement: Algorithms Interview Simulation force-close immediately before and after the periodic checkpoint boundary restores only its last verified foreground time within the declared one-second drift bound.
   - id: SIMULATION-ACTIVE-SCREEN-FIDELITY-001
     statement: The approved active Algorithms Interview Simulation screen fills its viewport and presents the timer, counter, active question, save state, and leave/save actions without an inline question navigator.
+  - id: SIMULATION-NAVIGATOR-FIDELITY-001
+    statement: The approved Algorithms Interview Simulation question navigator exposes exactly forty positions in reading order with current, answered-and-saved, and unanswered states, adapts to four columns at larger text sizes, and labels every position without showing correctness.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -151,6 +153,10 @@ requirementTestCoverage:
       testPath: tests/simulationSessionSurface.test.ts
       testName: active simulation surface fills the viewport and keeps navigator presentation outside the approved active screen
       requirementIds: [SIMULATION-ACTIVE-SCREEN-FIDELITY-001]
+    - id: simulation-navigator-fidelity
+      testPath: tests/simulationNavigator.test.ts
+      testName: simulation question navigator has the approved states, accessible labels, and large-text grid adaptation
+      requirementIds: [SIMULATION-NAVIGATOR-FIDELITY-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions
