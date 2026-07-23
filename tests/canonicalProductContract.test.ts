@@ -65,6 +65,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001", ["custom-practice-immediate-feedback-flow"]],
       ["ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001", ["custom-practice-deferred-feedback-withholding"]],
       ["ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001", ["custom-practice-deferred-summary-relaunch"]],
+      ["ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001", ["custom-practice-reinsert-ownership", "custom-practice-reinsert-override-rejection"]],
       ["ALGORITHMS-REINSERT-POLICY-001", ["canonical-algorithms-reinsert-policy"]],
       ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],

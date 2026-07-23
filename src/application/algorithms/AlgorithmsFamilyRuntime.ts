@@ -429,6 +429,9 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
     (value.requestedLength !== 10 && value.requestedLength !== 20 && value.requestedLength !== 40)) {
     throw new Error("Algorithms session preparation requires a sessionId and a supported requestedLength.");
   }
+  if (value.reinsertEnabled !== undefined) {
+    throw new Error("Algorithms reinsert behavior is profile-owned and cannot be overridden by the learner.");
+  }
   if (value.feedbackMode !== undefined && value.feedbackMode !== "afterEachAnswer" && value.feedbackMode !== "atSessionEnd") {
     throw new Error("Algorithms feedback mode must be afterEachAnswer or atSessionEnd.");
   }

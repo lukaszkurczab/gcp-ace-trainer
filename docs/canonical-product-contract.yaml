@@ -16,6 +16,8 @@ requirements:
     statement: Custom Practice with atSessionEnd keeps correctness, Reason, Details, and distractor explanations unavailable after every durable per-item submission until its canonical completed result is loaded.
   - id: ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001
     statement: A completed Custom Practice atSessionEnd session reloads its complete feedback only from the durable canonical result after application relaunch.
+  - id: ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001
+    statement: Custom Practice resolves its eligible and skipped conditional reinsert slots only from the profile-owned policy and rejects every learner reinsert override before session preparation.
   - id: ALGORITHMS-REINSERT-POLICY-001
     statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
@@ -99,6 +101,14 @@ requirementTestCoverage:
       testPath: tests/customPracticeDeferredFeedback.test.ts
       testName: Custom Practice atSessionEnd reloads its complete feedback from the canonical result after relaunch
       requirementIds: [ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001]
+    - id: custom-practice-reinsert-ownership
+      testPath: tests/customPracticeReinsert.test.ts
+      testName: Custom Practice resolves eligible and skipped reinserts only from its profile-owned immutable slots
+      requirementIds: [ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001]
+    - id: custom-practice-reinsert-override-rejection
+      testPath: tests/customPracticeReinsert.test.ts
+      testName: Custom Practice rejects learner reinsert overrides before it prepares a session
+      requirementIds: [ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001]
     - id: canonical-algorithms-reinsert-policy
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the versioned Algorithms reinsert placement policy
