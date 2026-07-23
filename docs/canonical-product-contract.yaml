@@ -20,6 +20,8 @@ requirements:
     statement: Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.
   - id: SIMULATION-SAVE-AND-CONTINUE-001
     statement: The save-and-continue user action for a non-final Algorithms Interview Simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.
+  - id: SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001
+    statement: Save-and-continue verifies the durable draft revision and persisted response before it advances exactly one occurrence and publishes the verified next simulation projection.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -61,6 +63,10 @@ requirementTestCoverage:
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-continue is one application command for the active non-final occurrence
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-001]
+    - id: algorithms-save-and-continue-verification
+      testPath: tests/durableSimulationResponseSave.test.ts
+      testName: Algorithms save-and-continue verifies its durable response revision before publishing occurrence two
+      requirementIds: [SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001]
     - id: canonical-session-state-machine
       testPath: tests/canonicalProductContract.test.ts
       testName: defines the closed durable session state machines and accepts only declared triggered transitions

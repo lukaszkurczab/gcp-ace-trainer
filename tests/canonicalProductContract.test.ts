@@ -67,6 +67,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
       ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
       ["SIMULATION-SAVE-AND-CONTINUE-001", ["algorithms-save-and-continue-command"]],
+      ["SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001", ["algorithms-save-and-continue-verification"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
@@ -102,6 +103,10 @@ test("defines canonical user commands and maps every session CTA to its one appl
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-001"), {
     id: "SIMULATION-SAVE-AND-CONTINUE-001",
     statement: "The save-and-continue user action for a non-final Algorithms Interview Simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.",
+  });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001"), {
+    id: "SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001",
+    statement: "Save-and-continue verifies the durable draft revision and persisted response before it advances exactly one occurrence and publishes the verified next simulation projection.",
   });
   assert.deepEqual(contract.userCommands, {
     commands: [

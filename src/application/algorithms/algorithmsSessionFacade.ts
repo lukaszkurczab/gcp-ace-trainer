@@ -269,15 +269,28 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
 }
 
-/** One application command owns the non-final simulation action: save the current response, then advance once. */
-export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<TrainingSession> {
+/** One application command owns the non-final simulation action: save, verify, advance, then publish the next projection. */
+export async function saveAlgorithmsSimulationResponseAndContinue(input: Readonly<{ occurrenceId: string; response: AlgorithmResponse }>): Promise<AlgorithmsSimulationProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation can save and continue.");
   const current = session.itemOrder[session.currentItemIndex];
   if (!current || current.occurrenceId !== input.occurrenceId) throw new TrainingApplicationFailure("invalid_response", "Save and continue requires the active Interview Simulation occurrence.");
   if (session.currentItemIndex >= session.itemOrder.length - 1) throw new TrainingApplicationFailure("invalid_response", "The final Interview Simulation occurrence cannot save and continue.");
+  const previousRevision = (await requireSimulationDraft(session.id)).revision;
   await saveAlgorithmsSimulationResponse(input);
-  return navigateAlgorithmsSimulationTo(session.currentItemIndex + 1);
+  const saved = await requireSimulationDraft(session.id);
+  if (saved.revision !== previousRevision + 1 || saved.responsesByOccurrenceId[input.occurrenceId] === undefined) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation response revision.");
+  }
+  const advanced = await navigateAlgorithmsSimulationTo(session.currentItemIndex + 1);
+  if (advanced.currentItemIndex !== session.currentItemIndex + 1) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and continue could not verify the durable simulation position.");
+  }
+  const projection = await getAlgorithmsSimulationProjection();
+  if (projection.session.id !== session.id || projection.position.current !== advanced.currentItemIndex + 1 || projection.durableDraftRevision !== saved.revision) {
+    throw new TrainingApplicationFailure("verification_failure", "Save and continue could not publish the verified next simulation projection.");
+  }
+  return projection;
 }
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {

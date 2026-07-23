@@ -78,6 +78,29 @@ test("Algorithms save-and-continue is one application command for the active non
   const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
 
   const continued = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
-  assert.equal(continued.currentItemIndex, 1);
+  assert.equal(continued.position.current, 2);
   assert.equal((await getActiveTrainingSessionDraft())?.responsesByOccurrenceId[occurrence.occurrenceId] !== undefined, true);
+});
+
+test("Algorithms save-and-continue verifies its durable response revision before publishing occurrence two", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  const projection = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
+  const draft = await getActiveTrainingSessionDraft();
+
+  assert.equal(projection.position.current, 2);
+  assert.equal(projection.durableDraftRevision, 2);
+  assert.equal(draft?.revision, 2);
+  assert.deepEqual(draft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
 });
