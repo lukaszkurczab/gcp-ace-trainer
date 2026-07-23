@@ -51,6 +51,17 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
   );
   assert.throws(
     () => buildPracticeSessionConfig({
+      feedbackMode: "afterReview" as never,
+      mode: "algorithms-custom-practice",
+      sessionLength: 20,
+      source: "practiceSetup",
+      topicId: "binary_search",
+      trackId: "algorithms",
+    }),
+    /does not support feedback mode afterReview/,
+  );
+  assert.throws(
+    () => buildPracticeSessionConfig({
       feedbackMode: "atSessionEnd",
       mode: "algorithms-guided-practice",
       sessionLength: 40,
