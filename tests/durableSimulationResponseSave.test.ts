@@ -1,0 +1,63 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {
+  getAlgorithmsInterviewSimulationEntry,
+  getAlgorithmsSimulationProjection,
+  saveAlgorithmsSimulationResponse,
+  startAlgorithmsSession,
+} from "../src/application/algorithms";
+import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
+import { validateBundledContent } from "../src/content/application";
+import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { getActiveTrainingSessionDraft } from "../src/storage/repositories";
+import {
+  isAlgorithmChoiceQuestion,
+  isAlgorithmComplexityQuestion,
+  isAlgorithmOrderingQuestion,
+  type AlgorithmResponse,
+} from "../src/tracks/algorithms";
+import { installMemoryStorage } from "./journalTestSupport";
+
+const NOW = "2026-07-23T10:00:00.000Z";
+
+function completeResponseFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+  if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
+  if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
+  if (isAlgorithmComplexityQuestion(item)) {
+    return {
+      kind: "complexity",
+      selectedValuesByDimension: Object.fromEntries(item.interaction.checkedDimensions.map((dimension) => [dimension, item.interaction.acceptedValuesByDimension[dimension]![0]!])),
+    };
+  }
+  throw new Error("Unsupported Algorithms simulation item.");
+}
+
+test("Algorithms Interview Simulation saves one response durably across lifecycle reload", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  const clock = { now: () => NOW };
+  composeTrainingLifecycleUseCases({ wallClock: clock });
+
+  const entry = getAlgorithmsInterviewSimulationEntry();
+  const started = await startAlgorithmsSession({
+    modeId: entry.modeId,
+    requestedLength: entry.requestedLength,
+    scope: { simulationProfileId: entry.profileId },
+  });
+  const occurrence = started.session.itemOrder[0]!;
+  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+
+  await saveAlgorithmsSimulationResponse({ occurrenceId: occurrence.occurrenceId, response });
+  assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
+
+  const reloadedLifecycle = composeTrainingLifecycleUseCases({ wallClock: clock });
+  assert.equal((await reloadedLifecycle.resumeActiveSession()).id, started.session.id);
+  const reloadedDraft = await getActiveTrainingSessionDraft();
+  const reloadedProjection = await getAlgorithmsSimulationProjection();
+
+  assert.equal(reloadedDraft?.revision, 2);
+  assert.deepEqual(reloadedDraft?.responsesByOccurrenceId[occurrence.occurrenceId], response);
+  assert.equal(reloadedProjection.durableDraftRevision, 2);
+  assert.equal(reloadedProjection.navigator[0]?.answered, true);
+});
