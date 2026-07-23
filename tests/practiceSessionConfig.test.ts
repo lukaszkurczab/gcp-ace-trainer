@@ -22,6 +22,22 @@ test("Custom Practice accepts every declared length and persists its selected fe
   }
 });
 
+test("Custom Practice setup rejects every unsupported session length", () => {
+  for (const sessionLength of [0, 1, 9, 11, 15, 21, 39, 41] as const) {
+    assert.throws(
+      () => buildPracticeSessionConfig({
+        feedbackMode: "afterEachAnswer",
+        mode: "algorithms-custom-practice",
+        sessionLength: sessionLength as never,
+        source: "practiceSetup",
+        topicId: "binary_search",
+        trackId: "algorithms",
+      }),
+      /does not support session length/,
+    );
+  }
+});
+
 test("Custom Practice requires a selected timing while predefined Algorithms modes retain fixed timings", () => {
   assert.throws(
     () => buildPracticeSessionConfig({
