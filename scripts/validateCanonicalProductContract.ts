@@ -64,6 +64,7 @@ export type CanonicalSessionCtaId =
   | "practice-abandon"
   | "practice-recover"
   | "simulation-save"
+  | "simulation-save-and-continue"
   | "simulation-navigator-jump"
   | "simulation-finish"
   | "simulation-leave-resumable"
@@ -312,6 +313,7 @@ const canonicalSessionCtaCommands: Readonly<Record<CanonicalSessionCtaId, Canoni
   "practice-abandon": "abandon",
   "practice-recover": "recover",
   "simulation-save": "save",
+  "simulation-save-and-continue": "save-and-continue",
   "simulation-navigator-jump": "navigator-jump",
   "simulation-finish": "finish",
   "simulation-leave-resumable": "leave-resumable",

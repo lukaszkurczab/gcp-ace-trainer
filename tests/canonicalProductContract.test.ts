@@ -69,6 +69,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["SIMULATION-SAVE-AND-CONTINUE-001", ["algorithms-save-and-continue-command"]],
       ["SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001", ["algorithms-save-and-continue-verification"]],
       ["SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001", ["algorithms-save-and-continue-recovery"]],
+      ["SIMULATION-SAVE-AND-CONTINUE-CTA-001", ["simulation-save-and-continue-cta"]],
       ["SESSION-STATE-MACHINE-001", ["canonical-session-state-machine"]],
       ["SIMULATION-CONCURRENCY-001", ["canonical-simulation-concurrency"]],
       ["SIMULATION-TIMER-CADENCE-001", ["canonical-simulation-timer-cadence"]],
@@ -95,7 +96,7 @@ test("defines canonical user commands and maps every session CTA to its one appl
 
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-MODEL-001"), {
     id: "USER-COMMAND-MODEL-001",
-    statement: "Every canonical session CTA maps to exactly one declared application command; save-and-continue is one atomic application command and no simulation CTA maps to it until that CTA is explicitly introduced.",
+    statement: "Every canonical session CTA maps to exactly one declared application command; a non-final simulation CTA maps only to the atomic save-and-continue application command.",
   });
   assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "USER-COMMAND-RESUME-001"), {
     id: "USER-COMMAND-RESUME-001",
@@ -113,6 +114,10 @@ test("defines canonical user commands and maps every session CTA to its one appl
     id: "SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001",
     statement: "If save-and-continue persists a response but does not verify its advance, it exposes explicit recovery that advances only from the durable response without creating another draft revision.",
   });
+  assert.deepEqual(contract.requirements.find((requirement) => requirement.id === "SIMULATION-SAVE-AND-CONTINUE-CTA-001"), {
+    id: "SIMULATION-SAVE-AND-CONTINUE-CTA-001",
+    statement: "Every non-final Algorithms Interview Simulation response CTA is labelled Save and continue, is disabled until complete, and invokes only the save-and-continue application command.",
+  });
   assert.deepEqual(contract.userCommands, {
     commands: [
       { id: "submit" }, { id: "next" }, { id: "save" }, { id: "save-and-continue" }, { id: "navigator-jump" },
@@ -126,6 +131,7 @@ test("defines canonical user commands and maps every session CTA to its one appl
       { ctaId: "practice-abandon", commandId: "abandon" },
       { ctaId: "practice-recover", commandId: "recover" },
       { ctaId: "simulation-save", commandId: "save" },
+      { ctaId: "simulation-save-and-continue", commandId: "save-and-continue" },
       { ctaId: "simulation-navigator-jump", commandId: "navigator-jump" },
       { ctaId: "simulation-finish", commandId: "finish" },
       { ctaId: "simulation-leave-resumable", commandId: "leave-resumable" },

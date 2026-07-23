@@ -6,14 +6,14 @@ import { AppState } from "react-native";
 import {
   abandonAlgorithmsSession, enterAlgorithmsSimulationForeground, finalizeAlgorithmsSimulation,
   getAlgorithmsSimulationScreenProjection, leaveAlgorithmsSimulationForeground,
-  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, startAlgorithmsSession,
+  navigateAlgorithmsSimulationTo, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, startAlgorithmsSession,
   subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
   type AlgorithmsSimulationScreenProjection,
 } from "../../application/algorithms";
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import type { SimulationQuestionProjection, SimulationResponseChange, SimulationSurfaceProjection } from "./simulationProjection";
+import { simulationSaveAndContinueAction, type SimulationQuestionProjection, type SimulationResponseChange, type SimulationSurfaceProjection } from "./simulationProjection";
 import { SimulationSessionSurface } from "./SimulationSessionSurface";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_INTERVIEW_SIMULATION>;
@@ -63,6 +63,13 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
     try { await saveAlgorithmsSimulationResponse({ occurrenceId, response: localResponse }); } catch { /* Durable state is published by lifecycle. */ }
     await load();
   }
+  async function saveAndContinue() {
+    if (screen?.kind !== "ready" || !localResponse) return;
+    const occurrenceId = screen.projection.session.itemOrder[screen.projection.position.current - 1]?.occurrenceId;
+    if (!occurrenceId) return;
+    try { await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId, response: localResponse }); setLocalResponse(null); } catch { /* Durable state is published by lifecycle. */ }
+    await load();
+  }
   async function goTo(index: number) { try { await navigateAlgorithmsSimulationTo(index); setLocalResponse(null); } catch { /* projection retains recovery state */ } await load(); }
   async function finish() {
     if (screen?.kind !== "ready") return;
@@ -88,7 +95,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
       onOccurrencePress: (occurrenceId) => { const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId); if (target) void goTo(target.index); },
       onResponseChange: (change) => setLocalResponse(applyResponseChange(response, projection, change)),
-      actions: changed ? { primary: { id: "save-response", label: "Save response", disabled: !isComplete(response, projection), onPress: () => { void save(); } }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { id: "finish-simulation", label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
+      actions: changed ? { primary: simulationSaveAndContinueAction({ complete: isComplete(response, projection), finalOccurrence: projection.position.current === projection.position.total, onSave: () => { void save(); }, onSaveAndContinue: () => { void saveAndContinue(); } }), secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } } : { primary: { id: "finish-simulation", label: "Finish simulation", onPress: () => setOverlay("finish") }, secondary: { id: "leave-session", label: "Leave and resume later", onPress: () => setOverlay("leave"), variant: "secondary" } },
     };
   // UI callbacks intentionally refresh with the current application projection.
   // eslint-disable-next-line react-hooks/exhaustive-deps

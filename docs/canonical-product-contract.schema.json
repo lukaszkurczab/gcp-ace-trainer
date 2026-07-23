@@ -342,6 +342,7 @@
             "practice-abandon",
             "practice-recover",
             "simulation-save",
+            "simulation-save-and-continue",
             "simulation-navigator-jump",
             "simulation-finish",
             "simulation-leave-resumable",
