@@ -10,6 +10,8 @@ requirements:
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: ALGORITHMS-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
+  - id: ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001
+    statement: Custom Practice with afterEachAnswer journals and materializes each submitted response before exposing that item's feedback, advances only after the durable response, and finalizes one canonical session result.
   - id: ALGORITHMS-REINSERT-POLICY-001
     statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
@@ -81,6 +83,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-001
       requirementIds: [ALGORITHMS-CUSTOM-PRACTICE-001]
+    - id: custom-practice-immediate-feedback-flow
+      testPath: tests/customPracticeImmediateFeedback.test.ts
+      testName: Custom Practice afterEachAnswer journals each submitted response, exposes immediate feedback, advances, and finalizes one summary
+      requirementIds: [ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001]
     - id: canonical-algorithms-reinsert-policy
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the versioned Algorithms reinsert placement policy

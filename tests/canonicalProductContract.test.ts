@@ -62,6 +62,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTRACT-AUTHORITY-001", ["canonical-contract-authority"]],
       ["ALGORITHMS-MODE-MATRIX-001", ["canonical-algorithms-mode-matrix"]],
       ["ALGORITHMS-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
+      ["ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001", ["custom-practice-immediate-feedback-flow"]],
       ["ALGORITHMS-REINSERT-POLICY-001", ["canonical-algorithms-reinsert-policy"]],
       ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
