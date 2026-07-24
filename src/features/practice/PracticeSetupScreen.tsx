@@ -82,6 +82,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const resolvedTrackId = route.params?.trackId ?? activeTrackId;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
+  const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
   const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
@@ -99,7 +100,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     const mode = route.params?.mode ?? (
       activeTrack.id === ALGORITHMS_TRACK_ID
         ? ALGORITHM_MODE_IDS.guidedPractice
-        : "cloud-practice"
+        : "certification-diagnostic-baseline"
     );
     if (activeTrack.id === ALGORITHMS_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
@@ -116,7 +117,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-          : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+          : diagnosticBaseline ? {} : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
         topicId: topic.id,
@@ -146,7 +147,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </Text>
         </View>
 
-        <View style={styles.section}>
+        {!diagnosticBaseline ? <View style={styles.section}>
           <SectionHeader title={t("Session length")} tight />
           <View style={styles.lengthGrid}>
             {(algorithmMode?.profile.supportedLengths ?? sessionLengths).map((length) => (
@@ -160,9 +161,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               />
             ))}
           </View>
-        </View>
+        </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
-        {(!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {!diagnosticBaseline && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={styles.section}>
             <SectionHeader title={t("Feedback mode")} tight />
             <SelectablePanel
@@ -182,7 +183,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!algorithmMode ? (
+        {!diagnosticBaseline && !algorithmMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
               <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>

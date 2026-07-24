@@ -120,11 +120,27 @@ export type PublishedCertificationExamExperienceProfile = Readonly<{
   timeout: "absolute_deadline" | "not_documented";
 }>;
 
+export type PublishedCertificationDiagnosticBaseline = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-diagnostic-baseline";
+  requestedLength: 40;
+  actualLength: 40;
+  shortening: "prohibited";
+  uniqueItemsRequired: 40;
+  timerKind: "elapsed_foreground";
+  feedbackTiming: "after_each_durable_submit";
+  reinsertPolicy: "disabled";
+  itemIds: readonly string[];
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
   familyId: "certification";
   contentVersion: string;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Diagnostic Baseline. */
+  diagnosticBaseline?: PublishedCertificationDiagnosticBaseline;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

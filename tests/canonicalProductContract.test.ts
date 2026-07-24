@@ -68,6 +68,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001", ["custom-practice-reinsert-ownership", "custom-practice-reinsert-override-rejection"]],
       ["ALGORITHMS-REINSERT-POLICY-001", ["canonical-algorithms-reinsert-policy"]],
       ["CERTIFICATION-MODE-MATRIX-001", ["canonical-certification-mode-matrix"]],
+      ["CERTIFICATION-DIAGNOSTIC-BASELINE-001", ["certification-diagnostic-baseline"]],
       ["USER-COMMAND-MODEL-001", ["canonical-session-command-model"]],
       ["USER-COMMAND-RESUME-001", ["canonical-session-command-model"]],
       ["SIMULATION-SAVE-AND-CONTINUE-001", ["algorithms-save-and-continue-command"]],
@@ -231,7 +232,7 @@ test("requires a registered APPROVED design reference before a user-facing task 
     designReferenceId: "algorithms-simulation-operational-states",
   }, {
     sourcePathPrefix: "src/features/practice/",
-    designReferenceId: "algorithms-custom-practice-flow",
+    designReferenceId: "shared-practice-flow-001",
   }]);
   assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
     status: "ready",
@@ -257,10 +258,10 @@ test("requires a registered APPROVED design reference before a user-facing task 
   });
   assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
     status: "ready",
-    designReferenceId: "algorithms-custom-practice-flow",
+    designReferenceId: "shared-practice-flow-001",
   }), {
-    id: "algorithms-custom-practice-flow",
-    screenStateTarget: "algorithms-custom-practice-setup-runner-summary",
+    id: "shared-practice-flow-001",
+    screenStateTarget: "non-simulation-practice-setup-runner-summary",
     patternPath: "docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png",
     version: 1,
     approvalStatus: "APPROVED",
@@ -444,7 +445,7 @@ test("defines exactly the complete declared Certification mode matrix", () => {
     },
   );
   assert.deepEqual(contract.certification.modes, [
-    { id: "certification-diagnostic-baseline", label: "Diagnostic Baseline", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
+    { id: "certification-diagnostic-baseline", label: "Diagnostic Baseline", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "available", verification: "verified" }, configuration: { setupControls: [], sessionLength: 40, selectionScope: "fixedDiagnosticBlueprint", feedbackTiming: "afterEachDurableSubmit", timer: "elapsedForeground", shortening: "prohibited", reinsert: false, reviewBehavior: "domainBreakdown", summaryMetrics: ["score", "correct", "partial", "incorrect", "domainBreakdown", "elapsedForeground"], permittedActions: ["submit", "next", "leaveResumable", "abandon"] } },
     { id: "certification-focus-practice", label: "Focus Practice", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
     { id: "certification-scenario-practice", label: "Scenario Practice", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
     { id: "certification-weak-area-review", label: "Weak Area Review", owner: { familyId: "certification", trackId: "cloud-certification" }, status: { contract: "declared", implementation: "unavailable", verification: "unverified" } },
@@ -517,7 +518,7 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["duplicate Certification mode identifier", validContract.replace("    - id: certification-focus-practice", "    - id: certification-diagnostic-baseline"), /Duplicate canonical product contract Certification mode identifier/],
     ["mismatched Certification mode label", validContract.replace("label: Diagnostic Baseline", "label: Exam Simulation"), /Certification mode label does not match its identifier/],
     ["missing Certification mode owner", validContract.replace("      owner:\n        familyId: certification\n        trackId: cloud-certification\n", ""), /must have required property 'owner'/],
-    ["changed Certification implementation status", validContract.replace("        implementation: unavailable", "        implementation: available"), /must be equal to constant/],
+    ["changed Certification Diagnostic Baseline implementation status", validContract.replace("        implementation: available", "        implementation: unavailable"), /Certification Diagnostic Baseline must preserve/],
   ];
 
   for (const [label, source, message] of cases) {

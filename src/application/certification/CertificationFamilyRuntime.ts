@@ -17,7 +17,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { CertificationContentCatalog } from "../../tracks/cloud-certification/certificationContentCatalog";
-import type { PublishedCertificationExamExperienceProfile } from "../../content/contracts";
+import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
   createCertificationReviewEntry,
@@ -46,15 +46,19 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (input.trackId !== CLOUD_CERTIFICATION_TRACK_ID) throw new Error(`Certification runtime cannot prepare ${input.trackId}.`);
     const mode = getCertificationMode(input.modeId);
     const request = preparationRequest(input.request);
+    const diagnosticBaseline = mode.id === "certification-diagnostic-baseline" ? this.catalog.getDiagnosticBaseline() : null;
     const simulation = mode.id === "cloud-exam-simulation";
     const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
-    const declaredLength = request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
+    if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
+    const declaredLength = diagnosticBaseline ? diagnosticBaseline.requestedLength : request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
     if (declaredLength !== undefined && (!Number.isInteger(declaredLength) || declaredLength <= 0)) throw new Error("Certification requested length is invalid.");
     if (profile && (declaredLength! < profile.questionCount.minimum || declaredLength! > profile.questionCount.maximum)) throw new Error("Cloud exam requested length is outside its installed exam experience profile.");
-    const configurationSnapshot: TrainingSession["configurationSnapshot"] = simulation
+    const configurationSnapshot: TrainingSession["configurationSnapshot"] = diagnosticBaseline
+      ? diagnosticConfiguration(diagnosticBaseline)
+      : simulation
       ? simulationConfiguration(profile!, input.now)
       : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
-    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile);
+    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile, diagnosticBaseline);
     const requestedLength = declaredLength ?? pool.length;
     if (!Number.isInteger(requestedLength) || requestedLength <= 0) throw new Error("Certification requested length is invalid.");
     const questions = pool.slice(0, requestedLength);
@@ -165,8 +169,15 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
-  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null) {
+  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null) {
     const all = [...this.catalog.getItems()].sort((left, right) => left.id.localeCompare(right.id));
+    if (diagnosticBaseline) {
+      if (requestedLength !== 40) throw new Error("Certification Diagnostic Baseline must remain exactly 40 items.");
+      const byId = new Map(all.map((question) => [question.id, question]));
+      const selected = diagnosticBaseline.itemIds.map((itemId) => byId.get(itemId));
+      if (selected.some((question) => !question) || new Set(diagnosticBaseline.itemIds).size !== 40) throw new Error("Certification Diagnostic Baseline cannot satisfy its immutable 40-item blueprint.");
+      return selected as readonly (typeof all)[number][];
+    }
     if (modeId === "cloud-review") {
       const due = new Set(reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((review) => review.sourceItem.itemId));
       const selected = all.filter((question) => due.has(question.id));
@@ -185,9 +196,15 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
+    if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
   }
+}
+
+function diagnosticConfiguration(baseline: PublishedCertificationDiagnosticBaseline): TrainingSession["configurationSnapshot"] {
+  if (baseline.requestedLength !== 40 || baseline.actualLength !== 40 || baseline.shortening !== "prohibited" || baseline.uniqueItemsRequired !== 40 || baseline.timerKind !== "elapsed_foreground" || baseline.feedbackTiming !== "after_each_durable_submit" || baseline.reinsertPolicy !== "disabled") throw new Error("Certification Diagnostic Baseline content configuration is invalid.");
+  return { kind: "certificationDiagnosticBaseline", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
 }
 
 function simulationConfiguration(profile: PublishedCertificationExamExperienceProfile, now: string): TrainingSession["configurationSnapshot"] {

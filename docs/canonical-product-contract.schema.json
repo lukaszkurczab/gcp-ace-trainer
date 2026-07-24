@@ -561,8 +561,25 @@
           "required": ["contract", "implementation", "verification"],
           "properties": {
             "contract": { "const": "declared" },
-            "implementation": { "const": "unavailable" },
-            "verification": { "const": "unverified" }
+            "implementation": { "enum": ["available", "unavailable"] },
+            "verification": { "enum": ["verified", "unverified"] }
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["setupControls", "sessionLength", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
+          "properties": {
+            "setupControls": { "type": "array", "items": { "type": "string" } },
+            "sessionLength": { "const": 40 },
+            "selectionScope": { "const": "fixedDiagnosticBlueprint" },
+            "feedbackTiming": { "const": "afterEachDurableSubmit" },
+            "timer": { "const": "elapsedForeground" },
+            "shortening": { "const": "prohibited" },
+            "reinsert": { "const": false },
+            "reviewBehavior": { "const": "domainBreakdown" },
+            "summaryMetrics": { "type": "array", "items": { "type": "string" } },
+            "permittedActions": { "type": "array", "items": { "type": "string" } }
           }
         }
       }

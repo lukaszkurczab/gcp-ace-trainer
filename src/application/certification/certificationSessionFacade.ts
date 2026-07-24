@@ -34,7 +34,7 @@ export class CertificationExamExpiredError extends Error {
   }
 }
 
-export async function startCertificationSession(input: Readonly<{ modeId: "cloud-practice" | "cloud-review"; requestedLength?: number; domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations"; source?: string }>): Promise<PreparedSession> {
+export async function startCertificationSession(input: Readonly<{ modeId: "certification-diagnostic-baseline" | "cloud-practice" | "cloud-review"; requestedLength?: number; domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations"; source?: string }>): Promise<PreparedSession> {
   return startTrainingSession({ trackId: "cloud-certification", modeId: input.modeId, source: input.source, request: { ...input, sessionId: nextSessionId(input.modeId) } });
 }
 export async function startCertificationExam(source = "practiceHub"): Promise<PreparedSession> {

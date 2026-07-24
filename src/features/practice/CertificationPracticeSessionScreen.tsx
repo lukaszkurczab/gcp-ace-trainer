@@ -30,7 +30,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mode = route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
+  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
 
   const refresh = async () => {
     const next = await getCertificationPracticeProjection();
@@ -43,7 +43,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     void (async () => {
       try {
         const active = await getCertificationPracticeProjection().catch(() => null);
-        if (!active) await startCertificationSession({ modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source });
+        if (!active) await startCertificationSession(mode === "certification-diagnostic-baseline" ? { modeId: mode, source: route.params.source } : { modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source });
         if (live) await refresh();
       } catch (cause) { if (live) setError(cause instanceof Error ? cause.message : "Cloud practice is unavailable."); }
     })();
@@ -67,7 +67,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The next question could not be opened."); }
   };
   return <Screen style={styles.screen}><View testID={runtimeSelectors.session.root(projection.session.id)}>
-    <Text style={styles.progress} testID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text>
+    <View style={styles.sessionHeader}><Text style={styles.progress}>{t("Active time")} {formatElapsed(projection.session.activeForegroundMs)}</Text><Text style={styles.progress} testID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text></View>
     <Text testID={runtimeSelectors.session.track(projection.session.trackId)} />
     <Text testID={runtimeSelectors.session.mode(projection.session.modeId)} />
     <Card style={styles.card}>
@@ -81,4 +81,5 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   </View></Screen>;
 }
 
-const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, loading: { ...typography.body, color: palette.textSecondary }, progress: { ...typography.small, color: palette.textMuted }, card: { gap: spacing.md }, domain: { ...typography.caption, color: palette.primary, textTransform: "uppercase" }, question: { ...typography.bodyStrong, color: palette.textPrimary }, options: { gap: spacing.sm }, option: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, padding: spacing.md }, optionSelected: { borderColor: palette.primary, backgroundColor: palette.primarySoft }, optionText: { ...typography.body, color: palette.textPrimary }, feedback: { gap: spacing.sm }, correct: { ...typography.bodyStrong, color: palette.success }, incorrect: { ...typography.bodyStrong, color: palette.danger }, explanation: { ...typography.body, color: palette.textSecondary } });
+function formatElapsed(milliseconds: number): string { const seconds = Math.floor(milliseconds / 1_000); return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, loading: { ...typography.body, color: palette.textSecondary }, sessionHeader: { flexDirection: "row", justifyContent: "space-between" }, progress: { ...typography.small, color: palette.textMuted }, card: { gap: spacing.md }, domain: { ...typography.caption, color: palette.primary, textTransform: "uppercase" }, question: { ...typography.bodyStrong, color: palette.textPrimary }, options: { gap: spacing.sm }, option: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, padding: spacing.md }, optionSelected: { borderColor: palette.primary, backgroundColor: palette.primarySoft }, optionText: { ...typography.body, color: palette.textPrimary }, feedback: { gap: spacing.sm }, correct: { ...typography.bodyStrong, color: palette.success }, incorrect: { ...typography.bodyStrong, color: palette.danger }, explanation: { ...typography.body, color: palette.textSecondary } });

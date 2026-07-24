@@ -15,7 +15,7 @@ export type PracticeSessionSource =
   | "practiceSetup"
   | "modeShortcut";
 
-export type CertificationPracticeSessionMode = "cloud-practice" | "cloud-review" | "cloud-exam-simulation";
+export type CertificationPracticeSessionMode = "certification-diagnostic-baseline" | "cloud-practice" | "cloud-review" | "cloud-exam-simulation";
 export type PracticeSessionMode = AlgorithmModeId | CertificationPracticeSessionMode;
 
 export type PracticeSessionLength = 10 | 20 | 40;
@@ -51,7 +51,7 @@ const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "operations",
   "access_security",
 ];
-const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = ["cloud-practice", "cloud-review", "cloud-exam-simulation"];
+const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = ["certification-diagnostic-baseline", "cloud-practice", "cloud-review", "cloud-exam-simulation"];
 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
@@ -102,13 +102,17 @@ export function buildPracticeSessionConfig(
     };
   }
 
-  const mode = input.mode ?? "cloud-practice";
+  const mode = input.mode ?? "certification-diagnostic-baseline";
   if (!certificationPracticeModes.some((candidate) => candidate === mode)) {
     throw new Error(`Unknown Certification practice mode id: ${mode}`);
   }
 
   const definition = getCertificationMode(mode);
   if (mode === "cloud-exam-simulation") throw new Error("Cloud Exam Simulation starts only from the canonical exam entry.");
+  if (mode === "certification-diagnostic-baseline") {
+    if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
+    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 40, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
+  }
   const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined) ?? DEFAULT_PRACTICE_SESSION_LENGTH;
   if (![10, 20, 40].includes(sessionLength)) throw new Error("Cloud practice supports 10, 20, or 40 questions.");
   if (mode === "cloud-review" && input.topicId && !isCloudTopicId(input.topicId)) throw new Error("Cloud Review requires a canonical Cloud domain topic.");

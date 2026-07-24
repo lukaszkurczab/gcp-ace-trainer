@@ -220,8 +220,20 @@ export type CanonicalCertificationMode = Readonly<{
   }>;
   status: Readonly<{
     contract: "declared";
-    implementation: "unavailable";
-    verification: "unverified";
+    implementation: "available" | "unavailable";
+    verification: "verified" | "unverified";
+  }>;
+  configuration?: Readonly<{
+    setupControls: readonly string[];
+    sessionLength: 40;
+    selectionScope: "fixedDiagnosticBlueprint";
+    feedbackTiming: "afterEachDurableSubmit";
+    timer: "elapsedForeground";
+    shortening: "prohibited";
+    reinsert: false;
+    reviewBehavior: "domainBreakdown";
+    summaryMetrics: readonly string[];
+    permittedActions: readonly string[];
   }>;
 }>;
 
@@ -642,6 +654,10 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   );
   if (certificationModeWithMismatchedLabel) {
     throw new CanonicalProductContractValidationError(`Certification mode label does not match its identifier: ${certificationModeWithMismatchedLabel.id}`);
+  }
+  const diagnosticBaseline = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-diagnostic-baseline");
+  if (!diagnosticBaseline || diagnosticBaseline.status.implementation !== "available" || diagnosticBaseline.status.verification !== "verified" || !diagnosticBaseline.configuration || diagnosticBaseline.configuration.sessionLength !== 40 || diagnosticBaseline.configuration.shortening !== "prohibited" || diagnosticBaseline.configuration.reinsert || diagnosticBaseline.configuration.timer !== "elapsedForeground" || diagnosticBaseline.configuration.feedbackTiming !== "afterEachDurableSubmit" || diagnosticBaseline.configuration.setupControls.length !== 0) {
+    throw new CanonicalProductContractValidationError("Certification Diagnostic Baseline must preserve its approved fixed 40-item shared-practice configuration.");
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

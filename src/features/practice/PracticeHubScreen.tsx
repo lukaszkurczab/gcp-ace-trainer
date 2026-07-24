@@ -139,7 +139,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     const resolvedMode = mode ?? (
       activeTrack.id === "algorithms"
         ? ALGORITHM_MODE_IDS.guidedPractice
-        : "cloud-practice"
+        : "certification-diagnostic-baseline"
     );
     if (activeTrack.id === "cloud-certification" && resolvedMode === "cloud-exam-simulation") {
       navigation.navigate(ROUTES.EXAM);
@@ -215,7 +215,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "cloud-practice" as const }),
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "certification-diagnostic-baseline" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -232,7 +232,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "cloud-practice" as const }),
+                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-diagnostic-baseline" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

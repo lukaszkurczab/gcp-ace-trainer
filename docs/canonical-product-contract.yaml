@@ -22,6 +22,8 @@ requirements:
     statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
     statement: Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.
+  - id: CERTIFICATION-DIAGNOSTIC-BASELINE-001
+    statement: Certification Diagnostic Baseline uses its approved shared practice flow with exactly forty unique blueprint items, no selectors, shortening, or reinsert, elapsed foreground time, feedback after each durable response, and a domain breakdown summary.
   - id: USER-COMMAND-MODEL-001
     statement: Every canonical session CTA maps to exactly one declared application command; a non-final simulation CTA maps only to the atomic save-and-continue application command.
   - id: USER-COMMAND-RESUME-001
@@ -117,6 +119,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines exactly the complete declared Certification mode matrix
       requirementIds: [CERTIFICATION-MODE-MATRIX-001]
+    - id: certification-diagnostic-baseline
+      testPath: tests/cloudExamLifecycle.test.ts
+      testName: Certification Diagnostic Baseline uses its immutable 40-item blueprint and rejects selectors
+      requirementIds: [CERTIFICATION-DIAGNOSTIC-BASELINE-001]
     - id: canonical-session-command-model
       testPath: tests/canonicalProductContract.test.ts
       testName: defines canonical user commands and maps every session CTA to its one application command
@@ -363,8 +369,8 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
-    - id: algorithms-custom-practice-flow
-      screenStateTarget: algorithms-custom-practice-setup-runner-summary
+    - id: shared-practice-flow-001
+      screenStateTarget: non-simulation-practice-setup-runner-summary
       patternPath: docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png
       version: 1
       approvalStatus: APPROVED
@@ -377,7 +383,7 @@ designReferences:
     - sourcePathPrefix: src/features/simulation/operation/
       designReferenceId: algorithms-simulation-operational-states
     - sourcePathPrefix: src/features/practice/
-      designReferenceId: algorithms-custom-practice-flow
+      designReferenceId: shared-practice-flow-001
 simulationOperationStateCtas:
   version: 1
   policies:
@@ -525,8 +531,19 @@ certification:
         trackId: cloud-certification
       status:
         contract: declared
-        implementation: unavailable
-        verification: unverified
+        implementation: available
+        verification: verified
+      configuration:
+        setupControls: []
+        sessionLength: 40
+        selectionScope: fixedDiagnosticBlueprint
+        feedbackTiming: afterEachDurableSubmit
+        timer: elapsedForeground
+        shortening: prohibited
+        reinsert: false
+        reviewBehavior: domainBreakdown
+        summaryMetrics: [score, correct, partial, incorrect, domainBreakdown, elapsedForeground]
+        permittedActions: [submit, next, leaveResumable, abandon]
     - id: certification-focus-practice
       label: Focus Practice
       owner:
