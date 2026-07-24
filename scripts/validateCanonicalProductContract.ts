@@ -250,6 +250,19 @@ export type CanonicalCertificationScenarioConfiguration = Readonly<{
   permittedActions: readonly string[];
 }>;
 
+export type CanonicalCertificationWeakAreaReviewConfiguration = Readonly<{
+  setupControls: readonly ["sessionLength"];
+  sessionLengths: readonly [10, 20];
+  selectionScope: "eligibleDueReviewEvidence";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "allowedWithinEligibleReviewEvidence";
+  reinsert: false;
+  reviewBehavior: "resolveAfterTwoConsecutiveDueReviewSuccesses";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
 export type CanonicalCertificationMode = Readonly<{
   id: CanonicalCertificationModeId;
   label: CanonicalCertificationModeLabel;
@@ -262,7 +275,7 @@ export type CanonicalCertificationMode = Readonly<{
     implementation: "available" | "unavailable";
     verification: "verified" | "unverified";
   }>;
-  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration;
+  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration;
 }>;
 
 export type CanonicalProductContract = Readonly<{
@@ -694,6 +707,10 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const scenarioPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-scenario-practice");
   if (!scenarioPractice || scenarioPractice.status.implementation !== "available" || scenarioPractice.status.verification !== "verified" || !scenarioPractice.configuration || !("sessionLengths" in scenarioPractice.configuration) || !hasExactValues(scenarioPractice.configuration.setupControls, ["competency", "sessionLength"]) || !hasExactValues(scenarioPractice.configuration.sessionLengths, [10, 20, 40]) || scenarioPractice.configuration.selectionScope !== "explicitApprovedScenarioCompetency" || scenarioPractice.configuration.shortening !== "allowedWithinSelectedCompetency" || scenarioPractice.configuration.reinsert || scenarioPractice.configuration.timer !== "elapsedForeground" || scenarioPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
     throw new CanonicalProductContractValidationError("Certification Scenario Practice must preserve its explicit approved-competency shared-practice configuration.");
+  }
+  const weakAreaReview = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-weak-area-review");
+  if (!weakAreaReview || weakAreaReview.status.implementation !== "available" || weakAreaReview.status.verification !== "verified" || !weakAreaReview.configuration || !("sessionLengths" in weakAreaReview.configuration) || !hasExactValues(weakAreaReview.configuration.setupControls, ["sessionLength"]) || !hasExactValues(weakAreaReview.configuration.sessionLengths, [10, 20]) || weakAreaReview.configuration.selectionScope !== "eligibleDueReviewEvidence" || weakAreaReview.configuration.shortening !== "allowedWithinEligibleReviewEvidence" || weakAreaReview.configuration.reinsert || weakAreaReview.configuration.timer !== "elapsedForeground" || weakAreaReview.configuration.feedbackTiming !== "afterEachDurableSubmit" || weakAreaReview.configuration.reviewBehavior !== "resolveAfterTwoConsecutiveDueReviewSuccesses") {
+    throw new CanonicalProductContractValidationError("Certification Weak Area Review must preserve its due-evidence shared-practice configuration.");
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

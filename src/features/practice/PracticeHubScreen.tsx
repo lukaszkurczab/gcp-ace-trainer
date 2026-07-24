@@ -145,7 +145,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       navigation.navigate(ROUTES.EXAM);
       return;
     }
-    if (activeTrack.id === "cloud-certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice")) {
+    if (activeTrack.id === "cloud-certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review")) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", trackId: activeTrack.id });
       return;
     }

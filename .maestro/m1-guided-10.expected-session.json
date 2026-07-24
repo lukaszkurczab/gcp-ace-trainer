@@ -1,7 +1,7 @@
 {
   "kind": "maestro-real-content-session-v1",
   "release": {
-    "releaseId": "patternly-core-0005",
+    "releaseId": "patternly-core-0007",
     "sourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc",
     "checksumSha256": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c"
   },

@@ -90,6 +90,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
   const focusPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-focus-practice";
   const scenarioPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-scenario-practice";
+  const weakAreaReview = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-weak-area-review";
   const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
@@ -136,11 +137,11 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-          : diagnosticBaseline || focusPractice || scenarioPractice ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+            : diagnosticBaseline || focusPractice || scenarioPractice || weakAreaReview ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
         mode,
         source: "practiceSetup",
-        topicId: focusPractice ? focusTopicId! : topic.id,
+        topicId: focusPractice ? focusTopicId! : weakAreaReview ? "" : topic.id,
         trackId: activeTrack.id,
       }),
     );
@@ -163,7 +164,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
           </Text>
           <Text style={styles.subtitle}>
-            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
+            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
         </View>
 
@@ -180,7 +181,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         {!diagnosticBaseline ? <View style={styles.section}>
           <SectionHeader title={t("Session length")} tight />
           <View style={styles.lengthGrid}>
-            {(algorithmMode?.profile.supportedLengths ?? sessionLengths).map((length) => (
+            {(algorithmMode?.profile.supportedLengths ?? (weakAreaReview ? [10, 20] : sessionLengths)).map((length) => (
               <SelectableOption
                 key={length}
                 label={String(length)}
@@ -193,7 +194,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={styles.section}>
             <SectionHeader title={t("Feedback mode")} tight />
             <SelectablePanel
@@ -213,7 +214,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !algorithmMode ? (
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !algorithmMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
               <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>

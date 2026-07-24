@@ -28,6 +28,8 @@ requirements:
     statement: Certification Focus Practice requires one explicitly selected Cloud domain, accepts only ten, twenty, or forty requested items, never fills from a sibling domain, and may shorten only within the selected domain.
   - id: CERTIFICATION-SCENARIO-PRACTICE-001
     statement: Certification Scenario Practice requires one explicitly selected competency, accepts only ten, twenty, or forty requested items, selects only its approved scenario items, and may shorten only within that competency.
+  - id: CERTIFICATION-WEAK-AREA-REVIEW-001
+    statement: Certification Weak Area Review accepts only ten or twenty requested items, selects only current-content due review evidence, may shorten only within that eligible evidence, never substitutes ordinary practice when the queue is empty, and resolves an entry only after two consecutive successful due review sessions.
   - id: USER-COMMAND-MODEL-001
     statement: Every canonical session CTA maps to exactly one declared application command; a non-final simulation CTA maps only to the atomic save-and-continue application command.
   - id: USER-COMMAND-RESUME-001
@@ -135,6 +137,10 @@ requirementTestCoverage:
       testPath: tests/cloudExamLifecycle.test.ts
       testName: Certification Scenario Practice requires a competency and never widens its approved scenario scope
       requirementIds: [CERTIFICATION-SCENARIO-PRACTICE-001]
+    - id: certification-weak-area-review
+      testPath: tests/cloudExamLifecycle.test.ts
+      testName: Certification Weak Area Review uses only eligible due evidence and resolves it after two due successes
+      requirementIds: [CERTIFICATION-WEAK-AREA-REVIEW-001]
     - id: canonical-session-command-model
       testPath: tests/canonicalProductContract.test.ts
       testName: defines canonical user commands and maps every session CTA to its one application command
@@ -603,8 +609,19 @@ certification:
         trackId: cloud-certification
       status:
         contract: declared
-        implementation: unavailable
-        verification: unverified
+        implementation: available
+        verification: verified
+      configuration:
+        setupControls: [sessionLength]
+        sessionLengths: [10, 20]
+        selectionScope: eligibleDueReviewEvidence
+        feedbackTiming: afterEachDurableSubmit
+        timer: elapsedForeground
+        shortening: allowedWithinEligibleReviewEvidence
+        reinsert: false
+        reviewBehavior: resolveAfterTwoConsecutiveDueReviewSuccesses
+        summaryMetrics: [score, correct, partial, incorrect, domainBreakdown, elapsedForeground]
+        permittedActions: [submit, next, leaveResumable, abandon]
     - id: certification-mixed-practice
       label: Mixed Practice
       owner:

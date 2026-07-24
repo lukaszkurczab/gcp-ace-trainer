@@ -15,7 +15,7 @@ export type PracticeSessionSource =
   | "practiceSetup"
   | "modeShortcut";
 
-export type CertificationPracticeSessionMode = "certification-diagnostic-baseline" | "certification-focus-practice" | "certification-scenario-practice" | "cloud-practice" | "cloud-review" | "cloud-exam-simulation";
+export type CertificationPracticeSessionMode = "certification-diagnostic-baseline" | "certification-focus-practice" | "certification-scenario-practice" | "certification-weak-area-review" | "cloud-practice" | "cloud-review" | "cloud-exam-simulation";
 export type PracticeSessionMode = AlgorithmModeId | CertificationPracticeSessionMode;
 
 export type PracticeSessionLength = 10 | 20 | 40;
@@ -52,7 +52,7 @@ const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "operations",
   "access_security",
 ];
-const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = ["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "cloud-practice", "cloud-review", "cloud-exam-simulation"];
+const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = ["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "cloud-practice", "cloud-review", "cloud-exam-simulation"];
 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
@@ -127,6 +127,12 @@ export function buildPracticeSessionConfig(
     const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
     if (!sessionLength || ![10, 20, 40].includes(sessionLength)) throw new Error("Certification Scenario Practice supports 10, 20, or 40 questions.");
     return { competencyId: input.competencyId, feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
+  }
+  if (mode === "certification-weak-area-review") {
+    if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Weak Area Review does not render or accept undeclared setup controls.");
+    const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
+    if (!sessionLength || ![10, 20].includes(sessionLength)) throw new Error("Certification Weak Area Review supports 10 or 20 questions.");
+    return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined) ?? DEFAULT_PRACTICE_SESSION_LENGTH;
   if (![10, 20, 40].includes(sessionLength)) throw new Error("Cloud practice supports 10, 20, or 40 questions.");

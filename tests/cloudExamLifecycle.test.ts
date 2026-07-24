@@ -9,6 +9,7 @@ import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getCertificationContentCatalog } from "../src/content/catalogRepository";
 import type { PublishedCertificationExamExperienceProfile } from "../src/content/contracts";
+import type { ReviewQueueEntry } from "../src/domain";
 import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
 import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
 import { getActiveTrainingSession } from "../src/storage/repositories";
@@ -151,6 +152,60 @@ test("Certification Scenario Practice requires a competency and never widens its
   assert.equal(shortened.session.requestedLength, 40);
   assert.equal(shortened.session.actualLength, 12);
   assert.ok(shortened.session.itemOrder.every((occurrence) => shortenedIds.includes(occurrence.item.itemId)));
+});
+
+test("Certification Weak Area Review uses only eligible due evidence and resolves it after two due successes", async () => {
+  await validateBundledContent();
+  const catalog = getCertificationContentCatalog();
+  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const now = "2026-07-24T10:00:00.000Z";
+  const review = (itemId: string, id: string, dueAt: string): ReviewQueueEntry => {
+    const question = catalog.getItemById(itemId);
+    return {
+      id,
+      trackId: "cloud-certification",
+      sourceAttemptId: `${id}:attempt`,
+      sourceSessionId: `${id}:source-session`,
+      reasons: ["incorrect"],
+      dueAt,
+      createdAt: "2026-07-20T10:00:00.000Z",
+      consecutiveAfterDueSuccesses: 0,
+      persistent: true,
+      sourceItem: catalog.toContentItemRef(question),
+      taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }],
+    };
+  };
+  const prepareWeakReview = (sessionId: string, reviews: readonly ReviewQueueEntry[], requestedLength = 10, currentNow = now) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-weak-area-review", request: { sessionId, requestedLength }, attempts: [], reviews, now: currentNow });
+
+  await assert.rejects(() => prepareWeakReview("weak-empty", []), /no eligible due items; no substitute practice session was created/);
+  await assert.rejects(() => prepareWeakReview("weak-future", [review("ace-q-0001", "future", "2026-07-25T10:00:00.000Z")]), /no eligible due items; no substitute practice session was created/);
+  await assert.rejects(() => prepareWeakReview("weak-invalid-length", [review("ace-q-0001", "due", "2026-07-24T09:00:00.000Z")], 40), /supports only its installed 10 or 20 item lengths/);
+  await assert.rejects(
+    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-weak-area-review", request: { sessionId: "weak-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [review("ace-q-0001", "selector", "2026-07-24T09:00:00.000Z")], now }),
+    /does not accept selectors/,
+  );
+
+  const earliest = review("ace-q-0003", "earliest", "2026-07-24T08:00:00.000Z");
+  const later = review("ace-q-0001", "later", "2026-07-24T09:00:00.000Z");
+  const stale = { ...review("ace-q-0002", "stale", "2026-07-24T07:00:00.000Z"), sourceItem: { ...catalog.toContentItemRef(catalog.getItemById("ace-q-0002")), contentVersion: "gcp-ace-0005" } } satisfies ReviewQueueEntry;
+  const shortened = await prepareWeakReview("weak-shortened", [later, stale, earliest], 20);
+  assert.equal(shortened.session.requestedLength, 20);
+  assert.equal(shortened.session.actualLength, 2);
+  assert.deepEqual(shortened.session.itemOrder.map((occurrence) => occurrence.item.itemId), ["ace-q-0003", "ace-q-0001"]);
+  assert.equal(shortened.session.configurationSnapshot.kind, "certificationWeakAreaReview");
+  assert.equal(shortened.session.configurationSnapshot.timer, "elapsedForeground");
+
+  const firstEntry = review("ace-q-0004", "resolve", "2026-07-24T09:00:00.000Z");
+  const first = await prepareWeakReview("weak-success-one", [firstEntry]);
+  const firstQuestion = catalog.getItemById(first.firstOccurrence.itemId);
+  const firstSubmission = await runtime.submitPractice({ session: first.session, response: { kind: "option_selection", selectedOptionIds: firstQuestion.correctOptionIds }, attempts: [], reviews: [firstEntry], now });
+  assert.equal(firstSubmission.reviewMutations[0]?.kind, "upsert");
+  const afterFirst = firstSubmission.reviewMutations[0]!.entry;
+  assert.equal(afterFirst.consecutiveAfterDueSuccesses, 1);
+  const second = await prepareWeakReview("weak-success-two", [afterFirst], 10, "2026-07-24T11:00:00.000Z");
+  const secondQuestion = catalog.getItemById(second.firstOccurrence.itemId);
+  const secondSubmission = await runtime.submitPractice({ session: second.session, response: { kind: "option_selection", selectedOptionIds: secondQuestion.correctOptionIds }, attempts: [firstSubmission.attempt], reviews: [afterFirst], now: "2026-07-24T11:00:00.000Z" });
+  assert.equal(secondSubmission.reviewMutations[0]?.kind, "remove");
 });
 
 test("Certification Scenario Practice is routed to the Certification runner", () => {

@@ -154,6 +154,16 @@ export type PublishedCertificationScenarioPractice = Readonly<{
   competencies: readonly Readonly<{ id: string; label: string; scenarioItemIds: readonly string[] }>[];
 }>;
 
+export type PublishedCertificationWeakAreaReview = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-weak-area-review";
+  requestedLengths: readonly (10 | 20)[];
+  shortening: "allowed_within_eligible_review_evidence";
+  selectionScope: "eligible_due_review_evidence";
+  persistentResolutionPolicy: "two_consecutive_due_review_successes";
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
@@ -165,6 +175,8 @@ export type PublishedCertificationBank = {
   focusPractice?: PublishedCertificationFocusPractice;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Scenario Practice. */
   scenarioPractice?: PublishedCertificationScenarioPractice;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Weak Area Review. */
+  weakAreaReview?: PublishedCertificationWeakAreaReview;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

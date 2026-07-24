@@ -17,7 +17,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { CertificationContentCatalog } from "../../tracks/cloud-certification/certificationContentCatalog";
-import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationScenarioPractice } from "../../content/contracts";
+import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
   createCertificationReviewEntry,
@@ -50,16 +50,19 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const diagnosticBaseline = mode.id === "certification-diagnostic-baseline" ? this.catalog.getDiagnosticBaseline() : null;
     const focusPractice = mode.id === "certification-focus-practice" ? this.catalog.getFocusPractice() : null;
     const scenarioPractice = mode.id === "certification-scenario-practice" ? this.catalog.getScenarioPractice() : null;
+    const weakAreaReview = mode.id === "certification-weak-area-review" ? this.catalog.getWeakAreaReview() : null;
     const simulation = mode.id === "cloud-exam-simulation";
     const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
     if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
     if (focusPractice && !request.domain) throw new Error("Certification Focus Practice requires an explicit topic.");
     if (focusPractice && request.competency !== undefined) throw new Error("Certification Focus Practice does not accept a competency selector.");
     if (scenarioPractice && (!request.competency || request.domain !== undefined)) throw new Error("Certification Scenario Practice requires exactly one explicit competency.");
+    if (weakAreaReview && (request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Weak Area Review does not accept selectors.");
     const declaredLength = diagnosticBaseline ? diagnosticBaseline.requestedLength : request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
     if (declaredLength !== undefined && (!Number.isInteger(declaredLength) || declaredLength <= 0)) throw new Error("Certification requested length is invalid.");
     if (focusPractice && !focusPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Focus Practice supports only its installed 10, 20, or 40 item lengths.");
     if (scenarioPractice && !scenarioPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Scenario Practice supports only its installed 10, 20, or 40 item lengths.");
+    if (weakAreaReview && !weakAreaReview.requestedLengths.includes(declaredLength as 10 | 20)) throw new Error("Certification Weak Area Review supports only its installed 10 or 20 item lengths.");
     if (profile && (declaredLength! < profile.questionCount.minimum || declaredLength! > profile.questionCount.maximum)) throw new Error("Cloud exam requested length is outside its installed exam experience profile.");
     const configurationSnapshot: TrainingSession["configurationSnapshot"] = diagnosticBaseline
       ? diagnosticConfiguration(diagnosticBaseline)
@@ -67,14 +70,16 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       ? focusConfiguration(focusPractice)
       : scenarioPractice
       ? scenarioConfiguration(scenarioPractice, request.competency!)
+      : weakAreaReview
+      ? weakAreaReviewConfiguration(weakAreaReview)
       : simulation
       ? simulationConfiguration(profile!, input.now)
       : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
-    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice, scenarioPractice);
+    const pool = this.poolFor(mode.id, request, input.reviews, input.now, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice, scenarioPractice, weakAreaReview);
     const requestedLength = declaredLength ?? pool.length;
     if (!Number.isInteger(requestedLength) || requestedLength <= 0) throw new Error("Certification requested length is invalid.");
-    const questions = focusPractice || scenarioPractice ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
-    if (!questions.length || (!focusPractice && !scenarioPractice && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
+    const questions = focusPractice || scenarioPractice || weakAreaReview ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
+    if (!questions.length || (!focusPractice && !scenarioPractice && !weakAreaReview && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
     const base = {
       id: request.sessionId,
       trackId: CLOUD_CERTIFICATION_TRACK_ID,
@@ -117,8 +122,10 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result: scoreCertificationQuestion(question, response),
       reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((nodeId) => ({ axisId: "tag", nodeId }))] }, answeredAt: input.now, committedAt: input.now,
     });
-    const candidate = createCertificationReviewEntry(attempt);
     const prior = input.reviews.find((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID && sameItem(review.sourceItem, occurrence.item));
+    const candidate = input.session.modeId === "certification-weak-area-review" && prior
+      ? updateCertificationReviewEntry(prior, attempt)
+      : createCertificationReviewEntry(attempt);
     const reviewMutations: readonly ReviewMutationCommand[] = candidate
       ? [Object.freeze({ kind: "upsert", entry: prior ? retainReviewQueueEntryIdentity(prior, candidate) : candidate, transitionAttemptId: attempt.id })]
       : prior ? [Object.freeze({ kind: "remove", entry: prior, transitionAttemptId: attempt.id })] : [];
@@ -181,7 +188,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
-  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null, scenarioPractice: PublishedCertificationScenarioPractice | null) {
+  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], now: string, requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null, scenarioPractice: PublishedCertificationScenarioPractice | null, weakAreaReview: PublishedCertificationWeakAreaReview | null) {
     const all = [...this.catalog.getItems()].sort((left, right) => left.id.localeCompare(right.id));
     if (diagnosticBaseline) {
       if (requestedLength !== 40) throw new Error("Certification Diagnostic Baseline must remain exactly 40 items.");
@@ -189,6 +196,17 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       const selected = diagnosticBaseline.itemIds.map((itemId) => byId.get(itemId));
       if (selected.some((question) => !question) || new Set(diagnosticBaseline.itemIds).size !== 40) throw new Error("Certification Diagnostic Baseline cannot satisfy its immutable 40-item blueprint.");
       return selected as readonly (typeof all)[number][];
+    }
+    if (weakAreaReview) {
+      const due = reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && review.dueAt <= now).sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.sourceItem.itemId.localeCompare(right.sourceItem.itemId));
+      const byId = new Map(all.map((question) => [question.id, question]));
+      const selected = due.reduce<(typeof all)[number][]>((questions, review) => {
+        const question = byId.get(review.sourceItem.itemId);
+        if (question && !questions.some((candidate) => candidate.id === question.id)) questions.push(question);
+        return questions;
+      }, []);
+      if (!selected.length) throw new Error("Certification Weak Area Review has no eligible due items; no substitute practice session was created.");
+      return selected;
     }
     if (modeId === "cloud-review") {
       const due = new Set(reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((review) => review.sourceItem.itemId));
@@ -222,7 +240,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
@@ -237,7 +255,15 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       const itemIds = new Set(competency?.scenarioItemIds ?? []);
       if (!competency || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || session.itemOrder.some((occurrence) => !itemIds.has(occurrence.item.itemId))) throw new Error("Certification Scenario Practice does not match its explicit immutable competency scope.");
     }
+    if (session.modeId === "certification-weak-area-review" && (session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20].includes(session.requestedLength) || session.actualLength > session.requestedLength || new Set(session.itemOrder.map((occurrence) => occurrence.item.itemId)).size !== session.actualLength)) {
+      throw new Error("Certification Weak Area Review does not match its eligible-review immutable contract.");
+    }
   }
+}
+
+function weakAreaReviewConfiguration(review: PublishedCertificationWeakAreaReview): TrainingSession["configurationSnapshot"] {
+  if (review.modeId !== "certification-weak-area-review" || review.shortening !== "allowed_within_eligible_review_evidence" || review.selectionScope !== "eligible_due_review_evidence" || review.persistentResolutionPolicy !== "two_consecutive_due_review_successes" || review.requestedLengths.length !== 2 || review.requestedLengths.some((length, index) => length !== [10, 20][index])) throw new Error("Certification Weak Area Review content configuration is invalid.");
+  return { kind: "certificationWeakAreaReview", reviewSource: "due_queue", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
 }
 
 function diagnosticConfiguration(baseline: PublishedCertificationDiagnosticBaseline): TrainingSession["configurationSnapshot"] {
@@ -303,6 +329,13 @@ function validateResponseForQuestion(response: CertificationResponse, optionIds:
   if (!response.selectedOptionIds.length || new Set(response.selectedOptionIds).size !== response.selectedOptionIds.length || response.selectedOptionIds.some((id) => !optionIds.includes(id))) throw new Error("Cloud response must select unique declared options.");
 }
 function sameItem(left: { trackId: string; itemId: string; contentVersion: string }, right: { trackId: string; itemId: string; contentVersion: string }) { return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion; }
+function updateCertificationReviewEntry(entry: ReviewQueueEntry, attempt: TrainingAttempt<CertificationResponse>): ReviewQueueEntry | undefined {
+  if (attempt.id === entry.sourceAttemptId || attempt.committedAt < entry.dueAt) return entry;
+  if (attempt.result.kind !== "correct") return { ...entry, consecutiveAfterDueSuccesses: 0, lastReviewedAt: attempt.committedAt, persistent: true, reasons: [attempt.result.kind] };
+  const sameSessionCorrection = entry.persistent && entry.sourceSessionId === attempt.sessionId;
+  const consecutiveAfterDueSuccesses = sameSessionCorrection ? entry.consecutiveAfterDueSuccesses : entry.consecutiveAfterDueSuccesses + 1;
+  return consecutiveAfterDueSuccesses >= 2 ? undefined : { ...entry, consecutiveAfterDueSuccesses, lastReviewedAt: attempt.committedAt };
+}
 function resultFor(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[], completedAt: string) {
   const pointsEarned = attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0);
   const maxPoints = attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0);
