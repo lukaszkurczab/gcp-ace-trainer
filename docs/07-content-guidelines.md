@@ -419,6 +419,12 @@ Validators must reject:
 
 Passing structural validation does not constitute human editorial approval.
 
+## Canonical content-approval authority
+
+Patternly uses recorded human editorial approval as its only content-approval authority. A product or content owner may supply source material, taxonomy, or a manual activation record, but cannot replace the reviewer’s editorial disposition with owner activation.
+
+Activation is a coverage operation after approval: it binds the exact approved item fingerprints to one active artifact. It never approves educational quality, factual accuracy, or learner-facing feedback by itself.
+
 ## Human editorial review
 
 Every batch requires recorded human sign-off before activation.
