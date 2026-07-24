@@ -68,7 +68,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
       else { await advanceCertificationPracticeSession(); await refresh(); }
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The next question could not be opened."); }
   };
-  return <Screen style={styles.screen}><View testID={runtimeSelectors.session.root(projection.session.id)}>
+  return <Screen edges={["top", "bottom"]} style={styles.screen}><View testID={runtimeSelectors.session.root(projection.session.id)}>
     <View style={styles.sessionHeader}><Text style={styles.progress}>{t("Active time")} {formatElapsed(projection.session.activeForegroundMs)}</Text><Text style={styles.progress} testID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text></View>
     <Text testID={runtimeSelectors.session.track(projection.session.trackId)} />
     <Text testID={runtimeSelectors.session.mode(projection.session.modeId)} />

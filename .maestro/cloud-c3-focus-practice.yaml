@@ -1,11 +1,37 @@
 appId: com.lkurczab.gcpacetrainer
 ---
+- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- waitForAnimationToEnd:
+    timeout: 30000
+- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
 - tapOn:
     id: "main-tab-bar-home"
-- tapOn: "Change track"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn:
+    id: "patternly:home:change-track"
+- waitForAnimationToEnd:
+    timeout: 12000
 - tapOn:
     id: "patternly:home:select-track:cloud-certification"
-- tapOn: "Practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- tapOn:
+    id: "main-tab-bar-practice"
+- waitForAnimationToEnd:
+    timeout: 12000
+- assertVisible:
+    id: "patternly:practice:hub:root"
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- assertVisible:
+    id: "patternly:practice:mode-card:certification-focus-practice"
 - tapOn:
     id: "patternly:practice:mode-card:certification-focus-practice"
 - assertVisible:
@@ -20,6 +46,16 @@ appId: com.lkurczab.gcpacetrainer
 - tapOn:
     id: "patternly:practice:focus-topic:setup_environment"
 - takeScreenshot: "cloud-focus-practice-setup-topic-selected"
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- swipe:
+    start: 50%, 70%
+    end: 50%, 25%
+    duration: 600
+- assertVisible:
+    id: "patternly:practice:start-session"
 - tapOn:
     id: "patternly:practice:start-session"
 - assertVisible:

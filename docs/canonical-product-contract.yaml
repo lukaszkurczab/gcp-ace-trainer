@@ -399,6 +399,24 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: certification-exam-active-screen
+      screenStateTarget: certification-exam-active-question
+      patternPath: docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
+    - id: certification-exam-question-navigator
+      screenStateTarget: certification-exam-question-navigator
+      patternPath: docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
+    - id: certification-exam-operational-states
+      screenStateTarget: certification-exam-operational-states
+      patternPath: docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
     - id: shared-practice-flow-001
       screenStateTarget: non-simulation-practice-setup-runner-summary
       patternPath: docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png
@@ -412,6 +430,8 @@ designReferences:
       designReferenceId: algorithms-simulation-question-navigator
     - sourcePathPrefix: src/features/simulation/operation/
       designReferenceId: algorithms-simulation-operational-states
+    - sourcePathPrefix: src/features/exam/
+      designReferenceId: certification-exam-active-screen
     - sourcePathPrefix: src/features/practice/
       designReferenceId: shared-practice-flow-001
 simulationOperationStateCtas:

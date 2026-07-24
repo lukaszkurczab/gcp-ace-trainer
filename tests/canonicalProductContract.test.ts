@@ -236,6 +236,9 @@ test("requires a registered APPROVED design reference before a user-facing task 
     sourcePathPrefix: "src/features/simulation/operation/",
     designReferenceId: "algorithms-simulation-operational-states",
   }, {
+    sourcePathPrefix: "src/features/exam/",
+    designReferenceId: "certification-exam-active-screen",
+  }, {
     sourcePathPrefix: "src/features/practice/",
     designReferenceId: "shared-practice-flow-001",
   }]);
@@ -256,6 +259,39 @@ test("requires a registered APPROVED design reference before a user-facing task 
   }), {
     id: "algorithms-simulation-operational-states",
     screenStateTarget: "algorithms-interview-simulation-operational-states",
+    patternPath: "docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "certification-exam-active-screen",
+  }), {
+    id: "certification-exam-active-screen",
+    screenStateTarget: "certification-exam-active-question",
+    patternPath: "docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "certification-exam-question-navigator",
+  }), {
+    id: "certification-exam-question-navigator",
+    screenStateTarget: "certification-exam-question-navigator",
+    patternPath: "docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "certification-exam-operational-states",
+  }), {
+    id: "certification-exam-operational-states",
+    screenStateTarget: "certification-exam-operational-states",
     patternPath: "docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png",
     version: 1,
     approvalStatus: "APPROVED",
