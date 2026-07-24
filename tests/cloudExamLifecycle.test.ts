@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -150,4 +151,10 @@ test("Certification Scenario Practice requires a competency and never widens its
   assert.equal(shortened.session.requestedLength, 40);
   assert.equal(shortened.session.actualLength, 12);
   assert.ok(shortened.session.itemOrder.every((occurrence) => shortenedIds.includes(occurrence.item.itemId)));
+});
+
+test("Certification Scenario Practice is routed to the Certification runner", () => {
+  const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
+  assert.match(screen, /route\.params\.mode === "certification-scenario-practice"/);
+  assert.match(screen, /certification-scenario-practice[\s\S]*?return <CertificationPracticeSessionScreen/);
 });
