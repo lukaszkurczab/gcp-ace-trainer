@@ -164,6 +164,16 @@ export type PublishedCertificationWeakAreaReview = Readonly<{
   persistentResolutionPolicy: "two_consecutive_due_review_successes";
 }>;
 
+export type PublishedCertificationMixedPractice = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-mixed-practice";
+  requestedLengths: readonly (10 | 20 | 40)[];
+  shortening: "allowed_within_interleaved_blueprint";
+  selectionScope: "unique_interleaved_blueprint";
+  itemIds: readonly string[];
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
@@ -177,6 +187,8 @@ export type PublishedCertificationBank = {
   scenarioPractice?: PublishedCertificationScenarioPractice;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Weak Area Review. */
   weakAreaReview?: PublishedCertificationWeakAreaReview;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Mixed Practice. */
+  mixedPractice?: PublishedCertificationMixedPractice;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

@@ -43,7 +43,7 @@ type ViewState =
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
-  if (route.params.trackId === "cloud-certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "cloud-practice" || route.params.mode === "cloud-review")) {
+  if (route.params.trackId === "cloud-certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "cloud-practice" || route.params.mode === "cloud-review")) {
     return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
   }
   const styles = useThemedStyles(createStyles);

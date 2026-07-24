@@ -634,6 +634,23 @@
                 "summaryMetrics": { "type": "array", "items": { "type": "string" } },
                 "permittedActions": { "type": "array", "items": { "type": "string" } }
               }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["setupControls", "sessionLengths", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
+              "properties": {
+                "setupControls": { "const": ["sessionLength"] },
+                "sessionLengths": { "const": [10, 20, 40] },
+                "selectionScope": { "const": "explicitUniqueInterleavedBlueprint" },
+                "feedbackTiming": { "const": "afterEachDurableSubmit" },
+                "timer": { "const": "elapsedForeground" },
+                "shortening": { "const": "allowedWithinInterleavedBlueprint" },
+                "reinsert": { "const": false },
+                "reviewBehavior": { "const": "domainBreakdown" },
+                "summaryMetrics": { "type": "array", "items": { "type": "string" } },
+                "permittedActions": { "type": "array", "items": { "type": "string" } }
+              }
             }
           ]
         }

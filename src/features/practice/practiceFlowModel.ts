@@ -146,6 +146,7 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
     { detail: "Choose one Cloud domain and practice 10, 20, or 40 questions without mixing domains.", enabled: true, icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
     { detail: "Choose one competency and practice only its approved scenario questions.", enabled: true, icon: "practice", mode: "certification-scenario-practice", title: "Scenario Practice", tone: "warning" },
     { detail: "Review only saved weak areas whose review time has arrived.", enabled: true, icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
+    { detail: "Practice the approved interleaved Cloud question set.", enabled: true, icon: "practice", mode: "certification-mixed-practice", title: "Mixed Practice", tone: "success" },
   ];
 }
 

@@ -30,6 +30,8 @@ requirements:
     statement: Certification Scenario Practice requires one explicitly selected competency, accepts only ten, twenty, or forty requested items, selects only its approved scenario items, and may shorten only within that competency.
   - id: CERTIFICATION-WEAK-AREA-REVIEW-001
     statement: Certification Weak Area Review accepts only ten or twenty requested items, selects only current-content due review evidence, may shorten only within that eligible evidence, never substitutes ordinary practice when the queue is empty, and resolves an entry only after two consecutive successful due review sessions.
+  - id: CERTIFICATION-MIXED-PRACTICE-001
+    statement: Certification Mixed Practice accepts only ten, twenty, or forty requested items, uses its versioned unique interleaved blueprint in declared order, and may shorten only within that blueprint.
   - id: USER-COMMAND-MODEL-001
     statement: Every canonical session CTA maps to exactly one declared application command; a non-final simulation CTA maps only to the atomic save-and-continue application command.
   - id: USER-COMMAND-RESUME-001
@@ -141,6 +143,10 @@ requirementTestCoverage:
       testPath: tests/cloudExamLifecycle.test.ts
       testName: Certification Weak Area Review uses only eligible due evidence and resolves it after two due successes
       requirementIds: [CERTIFICATION-WEAK-AREA-REVIEW-001]
+    - id: certification-mixed-practice
+      testPath: tests/cloudExamLifecycle.test.ts
+      testName: Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it
+      requirementIds: [CERTIFICATION-MIXED-PRACTICE-001]
     - id: canonical-session-command-model
       testPath: tests/canonicalProductContract.test.ts
       testName: defines canonical user commands and maps every session CTA to its one application command
@@ -629,8 +635,19 @@ certification:
         trackId: cloud-certification
       status:
         contract: declared
-        implementation: unavailable
-        verification: unverified
+        implementation: available
+        verification: verified
+      configuration:
+        setupControls: [sessionLength]
+        sessionLengths: [10, 20, 40]
+        selectionScope: explicitUniqueInterleavedBlueprint
+        feedbackTiming: afterEachDurableSubmit
+        timer: elapsedForeground
+        shortening: allowedWithinInterleavedBlueprint
+        reinsert: false
+        reviewBehavior: domainBreakdown
+        summaryMetrics: [score, correct, partial, incorrect, domainBreakdown, elapsedForeground]
+        permittedActions: [submit, next, leaveResumable, abandon]
     - id: certification-quick-review
       label: Quick Review
       owner:

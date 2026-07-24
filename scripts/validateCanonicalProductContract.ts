@@ -263,6 +263,19 @@ export type CanonicalCertificationWeakAreaReviewConfiguration = Readonly<{
   permittedActions: readonly string[];
 }>;
 
+export type CanonicalCertificationMixedPracticeConfiguration = Readonly<{
+  setupControls: readonly ["sessionLength"];
+  sessionLengths: readonly [10, 20, 40];
+  selectionScope: "explicitUniqueInterleavedBlueprint";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "allowedWithinInterleavedBlueprint";
+  reinsert: false;
+  reviewBehavior: "domainBreakdown";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
 export type CanonicalCertificationMode = Readonly<{
   id: CanonicalCertificationModeId;
   label: CanonicalCertificationModeLabel;
@@ -275,7 +288,7 @@ export type CanonicalCertificationMode = Readonly<{
     implementation: "available" | "unavailable";
     verification: "verified" | "unverified";
   }>;
-  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration;
+  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration;
 }>;
 
 export type CanonicalProductContract = Readonly<{
@@ -711,6 +724,10 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const weakAreaReview = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-weak-area-review");
   if (!weakAreaReview || weakAreaReview.status.implementation !== "available" || weakAreaReview.status.verification !== "verified" || !weakAreaReview.configuration || !("sessionLengths" in weakAreaReview.configuration) || !hasExactValues(weakAreaReview.configuration.setupControls, ["sessionLength"]) || !hasExactValues(weakAreaReview.configuration.sessionLengths, [10, 20]) || weakAreaReview.configuration.selectionScope !== "eligibleDueReviewEvidence" || weakAreaReview.configuration.shortening !== "allowedWithinEligibleReviewEvidence" || weakAreaReview.configuration.reinsert || weakAreaReview.configuration.timer !== "elapsedForeground" || weakAreaReview.configuration.feedbackTiming !== "afterEachDurableSubmit" || weakAreaReview.configuration.reviewBehavior !== "resolveAfterTwoConsecutiveDueReviewSuccesses") {
     throw new CanonicalProductContractValidationError("Certification Weak Area Review must preserve its due-evidence shared-practice configuration.");
+  }
+  const mixedPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-mixed-practice");
+  if (!mixedPractice || mixedPractice.status.implementation !== "available" || mixedPractice.status.verification !== "verified" || !mixedPractice.configuration || !("sessionLengths" in mixedPractice.configuration) || !hasExactValues(mixedPractice.configuration.setupControls, ["sessionLength"]) || !hasExactValues(mixedPractice.configuration.sessionLengths, [10, 20, 40]) || mixedPractice.configuration.selectionScope !== "explicitUniqueInterleavedBlueprint" || mixedPractice.configuration.shortening !== "allowedWithinInterleavedBlueprint" || mixedPractice.configuration.reinsert || mixedPractice.configuration.timer !== "elapsedForeground" || mixedPractice.configuration.feedbackTiming !== "afterEachDurableSubmit" || mixedPractice.configuration.reviewBehavior !== "domainBreakdown") {
+    throw new CanonicalProductContractValidationError("Certification Mixed Practice must preserve its unique interleaved shared-practice configuration.");
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

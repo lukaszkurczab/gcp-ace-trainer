@@ -3,12 +3,12 @@ import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
-const source = resolve(root, "../patternly-content/artifacts/releases/patternly-core-0007/generated-bundled-content.mjs");
+const source = resolve(root, "../patternly-content/artifacts/releases/patternly-core-0008/generated-bundled-content.mjs");
 const target = resolve(root, "src/content/bundled/generatedArtifacts.ts");
 const module = await import(pathToFileURL(source).href);
 const release = module.GENERATED_BUNDLED_CONTENT_RELEASE;
 
-if (!release || release.manifest?.releaseId !== "patternly-core-0007" || !Array.isArray(release.artifacts)) {
+if (!release || release.manifest?.releaseId !== "patternly-core-0008" || !Array.isArray(release.artifacts)) {
   throw new Error("The canonical Patternly release is not a readable immutable release envelope.");
 }
 const tracks = [...release.artifacts].map((artifact) => artifact.trackId).sort();

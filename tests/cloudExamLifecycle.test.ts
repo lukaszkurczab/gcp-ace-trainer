@@ -208,8 +208,46 @@ test("Certification Weak Area Review uses only eligible due evidence and resolve
   assert.equal(secondSubmission.reviewMutations[0]?.kind, "remove");
 });
 
+test("Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it", async () => {
+  await validateBundledContent();
+  const catalog = getCertificationContentCatalog();
+  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const prepare = (sessionId: string, requestedLength = 20) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const [first, second] = await Promise.all([prepare("mixed-first"), prepare("mixed-second")]);
+  const blueprint = catalog.getMixedPractice();
+  assert.equal(first.session.actualLength, 20);
+  assert.equal(first.session.configurationSnapshot.kind, "certificationMixedPractice");
+  assert.deepEqual(first.session.itemOrder.map((occurrence) => occurrence.item.itemId), blueprint.itemIds.slice(0, 20));
+  assert.deepEqual(second.session.itemOrder.map((occurrence) => occurrence.item.itemId), first.session.itemOrder.map((occurrence) => occurrence.item.itemId));
+  assert.equal(new Set(first.session.itemOrder.map((occurrence) => occurrence.item.itemId)).size, first.session.actualLength);
+  await assert.rejects(() => prepare("mixed-invalid-length", 5), /supports only its installed 10, 20, or 40 item lengths/);
+  await assert.rejects(() => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId: "mixed-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }), /does not accept selectors/);
+
+  const shortenedIds = blueprint.itemIds.slice(0, 12);
+  const shortenedCatalog = new CertificationContentCatalog(
+    shortenedIds.map((itemId) => catalog.getItemById(itemId)),
+    "mixed-shortening-fixture",
+    catalog.getDiagnosticBaseline(),
+    catalog.getFocusPractice(),
+    catalog.getExamExperienceProfile(),
+    catalog.getScenarioPractice(),
+    catalog.getWeakAreaReview(),
+    { ...blueprint, itemIds: shortenedIds },
+  );
+  const shortened = await new CertificationFamilyRuntime(shortenedCatalog, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId: "mixed-shortened", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  assert.equal(shortened.session.requestedLength, 40);
+  assert.equal(shortened.session.actualLength, 12);
+  assert.deepEqual(shortened.session.itemOrder.map((occurrence) => occurrence.item.itemId), shortenedIds);
+});
+
 test("Certification Scenario Practice is routed to the Certification runner", () => {
   const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
   assert.match(screen, /route\.params\.mode === "certification-scenario-practice"/);
   assert.match(screen, /certification-scenario-practice[\s\S]*?return <CertificationPracticeSessionScreen/);
+});
+
+test("Certification Mixed Practice is routed to the Certification runner", () => {
+  const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
+  assert.match(screen, /route\.params\.mode === "certification-mixed-practice"/);
+  assert.match(screen, /certification-mixed-practice[\s\S]*?return <CertificationPracticeSessionScreen/);
 });
