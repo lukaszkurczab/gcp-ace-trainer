@@ -13,7 +13,7 @@ import {
 import { Button, Card, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { scoreCertificationQuestion } from "../../tracks/cloud-certification";
+import { isCertificationPracticeModeId, scoreCertificationQuestion } from "../../tracks/cloud-certification";
 import { spacing, typography } from "../../theme";
 import type { AppColors } from "../../theme";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -22,7 +22,7 @@ import type { PracticeSessionRouteParams } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 
-/** Cloud Practice and due-review runner backed solely by the generic lifecycle facade. */
+/** Certification practice runner backed solely by the generic lifecycle facade. */
 export function CertificationPracticeSessionScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
@@ -30,7 +30,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "certification-focus-practice" ? "certification-focus-practice" : route.params.mode === "certification-scenario-practice" ? "certification-scenario-practice" : route.params.mode === "certification-weak-area-review" ? "certification-weak-area-review" : route.params.mode === "certification-mixed-practice" ? "certification-mixed-practice" : route.params.mode === "certification-quick-review" ? "certification-quick-review" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
+  const mode = isCertificationPracticeModeId(route.params.mode) ? route.params.mode : null;
 
   const refresh = async () => {
     const next = await getCertificationPracticeProjection();
@@ -39,6 +39,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setSelected(next.committedResponse ? [...next.committedResponse.selectedOptionIds] : []);
   };
   useEffect(() => {
+    if (!mode) return;
     let live = true;
     void (async () => {
       try {
@@ -50,6 +51,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     return () => { live = false; };
   }, [mode, route.params]);
 
+  if (!mode) return <Screen><EmptyState title={t("Certification Practice unavailable")} description={t("This route is not a canonical Certification practice mode.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (error) return <Screen><EmptyState title={t("Cloud Practice unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (!projection) return <Screen><Text style={styles.loading}>{t("Preparing immutable Cloud session…")}</Text></Screen>;
   const multiple = projection.question.type === "multiple";

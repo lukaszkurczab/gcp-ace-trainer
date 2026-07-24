@@ -1,7 +1,7 @@
 import type { TrainingAttempt, TrainingSession } from "../../domain";
 import { calculatePercent } from "../../utils";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
-import type { CertificationAnswerViewModel, CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel, CertificationResponse } from "./domain";
+import { isCertificationPracticeModeId, type CertificationAnswerViewModel, type CertificationDomain, type CertificationExamSummaryViewModel, type CertificationPracticeAnswerViewModel, type CertificationResponse } from "./domain";
 
 export function buildCertificationExamSummaries(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): CertificationExamSummaryViewModel[] {
   return sessions.filter((session) => session.modeId === "cloud-exam-simulation" && session.status === "completed").map<CertificationExamSummaryViewModel>((session) => {
@@ -21,7 +21,7 @@ export function buildCertificationExamSummaries(sessions: readonly TrainingSessi
 
 export function buildCertificationPracticeHistory(attempts: readonly TrainingAttempt<unknown>[]): CertificationPracticeAnswerViewModel[] {
   return attempts.flatMap((attempt) => {
-    if (attempt.modeId !== "cloud-practice" || !isCertificationResponse(attempt.response)) return [];
+    if (!isCertificationPracticeModeId(attempt.modeId) || !isCertificationResponse(attempt.response)) return [];
     const question = getCertificationContentCatalog().getItemById(attempt.item.itemId);
     return [{ id: attempt.id, questionId: question.id, questionSnapshot: question, domain: question.domain, tags: question.tags, selectedOptionIds: attempt.response.selectedOptionIds, correctOptionIds: question.correctOptionIds, isCorrect: attempt.result.kind === "correct", answeredAt: attempt.answeredAt }];
   });

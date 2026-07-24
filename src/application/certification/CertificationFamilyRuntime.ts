@@ -236,12 +236,6 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       if (!selected.length) throw new Error("Certification Quick Review has no eligible due items; no substitute practice session was created.");
       return selected.slice(0, quickReview.maximumLength);
     }
-    if (modeId === "cloud-review") {
-      const due = new Set(reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((review) => review.sourceItem.itemId));
-      const selected = all.filter((question) => due.has(question.id));
-      if (!selected.length) throw new Error("Cloud Review has no due items; no substitute practice session was created.");
-      return selected;
-    }
     if (focusPractice) {
       if (!request.domain || !focusPractice.topicIds.includes(request.domain)) throw new Error("Certification Focus Practice requires one domain declared by its installed blueprint.");
       const selected = all.filter((question) => question.domain === request.domain);
@@ -268,7 +262,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "certification-quick-review", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "certification-quick-review", "cloud-exam-simulation"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
