@@ -104,10 +104,27 @@ export type PublishedAlgorithmsBank = Readonly<{
 /** The validator requires this identity in a published artifact; catalog fixtures may omit it because they do not cross the artifact boundary. */
 export type PublishedCertificationQuestion = CertificationQuestion & Readonly<{ itemFingerprint?: string }>;
 
+export type PublishedCertificationExamExperienceProfile = Readonly<{
+  schemaVersion: "exam-experience-profile-v1";
+  profileId: string;
+  profileVersion: string;
+  source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
+  durationMinutes: number;
+  questionCount: Readonly<{ kind: "range"; minimum: number; maximum: number }>;
+  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; weightPercent: number }>[] }>;
+  navigation: "free" | "not_documented";
+  answerChanges: "until_final_submission" | "not_documented";
+  flagging: "available" | "not_documented";
+  navigator: "available" | "not_documented";
+  sections: "available" | "not_documented";
+  timeout: "absolute_deadline" | "not_documented";
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
   familyId: "certification";
   contentVersion: string;
+  examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

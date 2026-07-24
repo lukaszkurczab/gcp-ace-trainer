@@ -17,6 +17,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { CertificationContentCatalog } from "../../tracks/cloud-certification/certificationContentCatalog";
+import type { PublishedCertificationExamExperienceProfile } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
   createCertificationReviewEntry,
@@ -30,7 +31,6 @@ export type CertificationPreparationRequest = Readonly<{
   requestedLength?: number;
   domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations";
 }>;
-const CERTIFICATION_EXAM_DURATION_MS = 120 * 60 * 1000;
 
 /**
  * Canonical Cloud Certification semantics. It consumes only the installed,
@@ -46,16 +46,19 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (input.trackId !== CLOUD_CERTIFICATION_TRACK_ID) throw new Error(`Certification runtime cannot prepare ${input.trackId}.`);
     const mode = getCertificationMode(input.modeId);
     const request = preparationRequest(input.request);
-    const pool = this.poolFor(mode.id, request, input.reviews);
-    const requestedLength = request.requestedLength ?? mode.defaultQuestionCount ?? pool.length;
+    const simulation = mode.id === "cloud-exam-simulation";
+    const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
+    const declaredLength = request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
+    if (declaredLength !== undefined && (!Number.isInteger(declaredLength) || declaredLength <= 0)) throw new Error("Certification requested length is invalid.");
+    if (profile && (declaredLength! < profile.questionCount.minimum || declaredLength! > profile.questionCount.maximum)) throw new Error("Cloud exam requested length is outside its installed exam experience profile.");
+    const configurationSnapshot: TrainingSession["configurationSnapshot"] = simulation
+      ? simulationConfiguration(profile!, input.now)
+      : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
+    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile);
+    const requestedLength = declaredLength ?? pool.length;
     if (!Number.isInteger(requestedLength) || requestedLength <= 0) throw new Error("Certification requested length is invalid.");
     const questions = pool.slice(0, requestedLength);
     if (questions.length !== requestedLength) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
-    if (mode.id === "cloud-exam-simulation" && questions.length !== 50) throw new Error("Cloud exam simulation requires exactly 50 immutable occurrences.");
-    const simulation = mode.id === "cloud-exam-simulation";
-    const configurationSnapshot: TrainingSession["configurationSnapshot"] = simulation
-      ? { kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", timer: "absoluteDeadline", timerDeadlineAt: new Date(Date.parse(input.now) + CERTIFICATION_EXAM_DURATION_MS).toISOString(), timerDurationMs: CERTIFICATION_EXAM_DURATION_MS }
-      : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
     const base = {
       id: request.sessionId,
       trackId: CLOUD_CERTIFICATION_TRACK_ID,
@@ -162,7 +165,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
-  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[]) {
+  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null) {
     const all = [...this.catalog.getItems()].sort((left, right) => left.id.localeCompare(right.id));
     if (modeId === "cloud-review") {
       const due = new Set(reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((review) => review.sourceItem.itemId));
@@ -172,14 +175,50 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     }
     const scoped = request.domain ? all.filter((question) => question.domain === request.domain) : all;
     if (modeId !== "cloud-exam-simulation") return scoped;
-    const blueprint: Readonly<Record<string, number>> = { setup_environment: 12, planning_implementation: 15, access_security: 13, operations: 10 };
-    return Object.entries(blueprint).flatMap(([domain, count]) => all.filter((question) => question.domain === domain).slice(0, count));
+    if (!profile) throw new Error("Cloud exam simulation requires an installed exam experience profile.");
+    return allocateBlueprintOccurrences(profile.blueprint.sections, requestedLength).flatMap(({ id, count }) => {
+      const questions = all.filter((question) => question.domain === id);
+      if (!questions.length) throw new Error(`Cloud exam profile section ${id} cannot be mapped to the installed Cloud content domains.`);
+      if (questions.length < count) throw new Error(`Cloud exam profile section ${id} cannot satisfy its required occurrence count.`);
+      return questions.slice(0, count);
+    });
   }
 
   private assertSession(session: TrainingSession): void {
     if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
   }
+}
+
+function simulationConfiguration(profile: PublishedCertificationExamExperienceProfile, now: string): TrainingSession["configurationSnapshot"] {
+  if (profile.navigation !== "free" || profile.answerChanges !== "until_final_submission" || profile.timeout !== "absolute_deadline") {
+    throw new Error("Cloud exam simulation is unavailable because the installed exam experience profile does not document every required interaction rule.");
+  }
+  const timerDurationMs = profile.durationMinutes * 60 * 1000;
+  return {
+    kind: "certificationSimulation",
+    navigation: profile.navigation,
+    submission: "manualOrForegroundTimeout",
+    feedbackMode: "atSessionEnd",
+    answerChanges: "untilFinalSubmission",
+    timer: "absoluteDeadline",
+    timerDeadlineAt: new Date(Date.parse(now) + timerDurationMs).toISOString(),
+    timerDurationMs,
+  };
+}
+
+function allocateBlueprintOccurrences(sections: PublishedCertificationExamExperienceProfile["blueprint"]["sections"], requestedLength: number): readonly Readonly<{ id: string; count: number }>[] {
+  const allocations = sections.map((section, index) => {
+    const exact = (section.weightPercent / 100) * requestedLength;
+    return { id: section.id, count: Math.floor(exact), remainder: exact % 1, index };
+  });
+  let remaining = requestedLength - allocations.reduce((sum, allocation) => sum + allocation.count, 0);
+  for (const allocation of [...allocations].sort((left, right) => right.remainder - left.remainder || left.index - right.index)) {
+    if (remaining === 0) break;
+    allocation.count += 1;
+    remaining -= 1;
+  }
+  return allocations.map(({ id, count }) => Object.freeze({ id, count }));
 }
 
 function preparationRequest(value: unknown): CertificationPreparationRequest {

@@ -23,5 +23,3 @@ export type CertificationQuestion = Readonly<{
   tags: readonly string[];
   examSignals?: readonly string[];
 }>;
-
-export type CertificationExamBlueprint = Readonly<Record<CertificationDomain, number>>;

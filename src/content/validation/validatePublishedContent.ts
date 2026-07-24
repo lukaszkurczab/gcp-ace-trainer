@@ -99,11 +99,12 @@ function validateItemFeedback(value: unknown): void { const feedback = record(va
 function validateItemProvenance(value: unknown): void { const provenance = record(value, "Algorithms item provenance"); exact(provenance, ["author", "createdAt", "contentBatchId", "authoringMethod", "externalSources"], "Algorithms item provenance"); for (const key of ["author", "createdAt", "contentBatchId", "authoringMethod"]) text(provenance[key], `provenance.${key}`); if (Number.isNaN(Date.parse(provenance.createdAt as string)) || provenance.authoringMethod !== "independently_authored") throw new ContentValidationError("Algorithms provenance is invalid."); for (const source of values(provenance.externalSources, "provenance.externalSources")) { const declared = record(source, "Algorithms provenance source"); exact(declared, ["sourceId", "publisher", "title", "locator", "retrievedAt", "publicationOrRevisionDate", "versionOrScope"].filter((key) => declared[key] !== undefined), "Algorithms provenance source"); for (const key of ["sourceId", "publisher", "title", "locator", "retrievedAt"]) text(declared[key], `Algorithms provenance source.${key}`); if (Number.isNaN(Date.parse(declared.retrievedAt as string))) throw new ContentValidationError("Algorithms provenance source retrieval date is invalid."); } }
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
-  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "items"], "Certification bank");
+  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "examExperienceProfile", "items"], "Certification bank");
   if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
   const items = values(bank.items, "Certification items");
+  validateCertificationExamExperienceProfile(bank.examExperienceProfile);
   if (items.length !== manifest.itemCount || items.length === 0) throw new ContentValidationError("Certification bank item count does not match manifest.");
   const ids = new Set<string>();
   const fingerprints = new Set<string>();
@@ -149,4 +150,35 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
     if (item.examSignals !== undefined) stringValues(item.examSignals, "Certification exam signals");
   }
   return bank as PublishedCertificationBank;
+}
+
+function validateCertificationExamExperienceProfile(value: unknown): void {
+  const profile = record(value, "Certification exam experience profile");
+  exact(profile, ["schemaVersion", "profileId", "profileVersion", "source", "durationMinutes", "questionCount", "blueprint", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout"], "Certification exam experience profile");
+  if (profile.schemaVersion !== "exam-experience-profile-v1") throw new ContentValidationError("Certification exam experience profile schema is invalid.");
+  text(profile.profileId, "Certification exam experience profile ID");
+  text(profile.profileVersion, "Certification exam experience profile version");
+  const source = record(profile.source, "Certification exam experience profile source");
+  exact(source, ["url", "checkedDate", "guideVersion"], "Certification exam experience profile source");
+  const sourceUrl = text(source.url, "Certification exam experience profile source URL");
+  if (!/^https:\/\//.test(sourceUrl) || Number.isNaN(Date.parse(text(source.checkedDate, "Certification exam experience profile checked date")))) throw new ContentValidationError("Certification exam experience profile source is invalid.");
+  text(source.guideVersion, "Certification exam experience profile guide version");
+  if (!Number.isInteger(profile.durationMinutes) || (profile.durationMinutes as number) <= 0) throw new ContentValidationError("Certification exam experience profile duration is invalid.");
+  const questionCount = record(profile.questionCount, "Certification exam experience profile question count");
+  exact(questionCount, ["kind", "minimum", "maximum"], "Certification exam experience profile question count");
+  if (questionCount.kind !== "range" || !Number.isInteger(questionCount.minimum) || !Number.isInteger(questionCount.maximum) || (questionCount.minimum as number) <= 0 || (questionCount.maximum as number) < (questionCount.minimum as number)) throw new ContentValidationError("Certification exam experience profile question count is invalid.");
+  const blueprint = record(profile.blueprint, "Certification exam experience profile blueprint");
+  exact(blueprint, ["kind", "sections"], "Certification exam experience profile blueprint");
+  if (blueprint.kind !== "weighted_sections") throw new ContentValidationError("Certification exam experience profile blueprint is invalid.");
+  const ids = new Set<string>();
+  const total = values(blueprint.sections, "Certification exam experience profile blueprint sections").reduce<number>((sum, sectionValue) => {
+    const section = record(sectionValue, "Certification exam experience profile blueprint section");
+    exact(section, ["id", "weightPercent"], "Certification exam experience profile blueprint section");
+    const id = text(section.id, "Certification exam experience profile blueprint section ID");
+    if (ids.has(id) || typeof section.weightPercent !== "number" || !Number.isFinite(section.weightPercent) || section.weightPercent <= 0) throw new ContentValidationError("Certification exam experience profile blueprint section is invalid.");
+    ids.add(id);
+    return sum + section.weightPercent;
+  }, 0);
+  if (ids.size === 0 || Math.abs(total - 100) > 0.000001) throw new ContentValidationError("Certification exam experience profile blueprint must total 100 percent.");
+  if (!(["free", "not_documented"] as const).includes(profile.navigation as never) || !(["until_final_submission", "not_documented"] as const).includes(profile.answerChanges as never) || !(["available", "not_documented"] as const).includes(profile.flagging as never) || !(["available", "not_documented"] as const).includes(profile.navigator as never) || !(["available", "not_documented"] as const).includes(profile.sections as never) || !(["absolute_deadline", "not_documented"] as const).includes(profile.timeout as never)) throw new ContentValidationError("Certification exam experience profile policies are invalid.");
 }

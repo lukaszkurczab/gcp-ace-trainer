@@ -1,14 +1,4 @@
-import type { CertificationDomain, CertificationExamBlueprint } from "../tracks/cloud-certification/domain";
-
-export const EXAM_BLUEPRINT: CertificationExamBlueprint = {
-  setup_environment: 12,
-  planning_implementation: 15,
-  operations: 13,
-  access_security: 10
-};
-
-export const EXAM_QUESTION_COUNT = 50;
-export const EXAM_DURATION_MINUTES = 120;
+import type { CertificationDomain } from "../tracks/cloud-certification/domain";
 
 export const EXAM_DOMAIN_LABELS: Record<CertificationDomain, string> = {
   setup_environment: "Setting up a cloud solution environment",

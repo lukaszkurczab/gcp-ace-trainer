@@ -38,7 +38,7 @@ export async function startCertificationSession(input: Readonly<{ modeId: "cloud
   return startTrainingSession({ trackId: "cloud-certification", modeId: input.modeId, source: input.source, request: { ...input, sessionId: nextSessionId(input.modeId) } });
 }
 export async function startCertificationExam(source = "practiceHub"): Promise<PreparedSession> {
-  return startTrainingSession({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", source, request: { sessionId: nextSessionId("cloud-exam-simulation"), requestedLength: 50 } });
+  return startTrainingSession({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", source, request: { sessionId: nextSessionId("cloud-exam-simulation") } });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
   const [session, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);

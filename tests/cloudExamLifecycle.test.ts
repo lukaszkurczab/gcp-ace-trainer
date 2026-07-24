@@ -3,11 +3,7 @@ import test from "node:test";
 
 import {
   completeCertificationPracticeSession,
-  finalizeCertificationExam,
-  getCertificationExamProjection,
   getCertificationPracticeProjection,
-  navigateCertificationExamTo,
-  saveCertificationExamResponse,
   startCertificationExam,
   startCertificationSession,
   submitCertificationPracticeResponse,
@@ -15,7 +11,11 @@ import {
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getCertificationContentCatalog } from "../src/content/catalogRepository";
-import { getActiveTrainingSession, getActiveTrainingSessionDraft, getReviewQueueItems, getTrainingAttempts, getTrainingSessionResult } from "../src/storage/repositories";
+import type { PublishedCertificationExamExperienceProfile } from "../src/content/contracts";
+import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
+import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
+import type { CertificationQuestion } from "../src/tracks/cloud-certification";
+import { getActiveTrainingSession, getReviewQueueItems } from "../src/storage/repositories";
 import { installMemoryStorage } from "./journalTestSupport";
 
 class MutableClock {
@@ -24,7 +24,7 @@ class MutableClock {
   set(value: string) { this.value = value; }
 }
 
-function response(question: Awaited<ReturnType<typeof getCertificationExamProjection>>["question"], correct: boolean) {
+function response(question: CertificationQuestion, correct: boolean) {
   const selectedOptionIds = correct
     ? question.correctOptionIds
     : [question.options.find((option) => !question.correctOptionIds.includes(option.id))?.id ?? (() => { throw new Error(`No explicitly incorrect option exists for ${question.id}.`); })()];
@@ -38,84 +38,52 @@ async function prepare(clock = new MutableClock("2026-07-23T10:00:00.000Z")) {
   return { clock, lifecycle };
 }
 
-async function answerExamThrough(lastOrdinal: number, expectedCorrect: (ordinal: number) => boolean, firstOrdinal = 1) {
-  for (let ordinal = firstOrdinal; ordinal <= lastOrdinal; ordinal += 1) {
-    const projection = await getCertificationExamProjection();
-    assert.equal(projection.ordinal, ordinal);
-    await saveCertificationExamResponse({ occurrenceId: projection.occurrenceId, response: response(projection.question, expectedCorrect(ordinal)) });
-    if (ordinal < lastOrdinal) await navigateCertificationExamTo(ordinal);
-  }
-}
-
-test("Cloud Exam uses the pinned 360-item artifact for a durable exact 50-item mixed-score finalization", async () => {
+test("Cloud Exam refuses the installed GCP profile instead of inventing undocumented interaction rules", async () => {
   await prepare();
-  const started = await startCertificationExam("cloud-exam-lifecycle-test");
-  const catalog = getCertificationContentCatalog();
-  const expected = ["setup_environment", "planning_implementation", "access_security", "operations"].flatMap((domain) =>
-    [...catalog.getItems()].filter((question) => question.domain === domain).sort((left, right) => left.id.localeCompare(right.id)).slice(0, ({ setup_environment: 12, planning_implementation: 15, access_security: 13, operations: 10 } as const)[domain as "setup_environment" | "planning_implementation" | "access_security" | "operations"]),
-  ).map((question) => question.id);
-
-  assert.equal(started.session.actualLength, 50);
-  assert.deepEqual(started.session.itemOrder.map((occurrence) => occurrence.item.itemId), expected);
-  assert.equal(new Set(expected).size, 50);
-  assert.equal(started.session.configurationSnapshot.timerDurationMs, 120 * 60 * 1000);
-  const deadline = started.session.configurationSnapshot.timerDeadlineAt;
-  assert.equal(typeof deadline, "string");
-
-  await answerExamThrough(50, (ordinal) => ordinal <= 25);
-  assert.equal((await getCertificationExamProjection()).session.configurationSnapshot.timerDeadlineAt, deadline);
-  const sessionId = await finalizeCertificationExam();
-  assert.equal(sessionId, started.session.id);
-
-  const attempts = (await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === sessionId);
-  const result = await getTrainingSessionResult(sessionId);
+  await assert.rejects(
+    () => startCertificationExam("undocumented-profile"),
+    (error: unknown) => error instanceof Error && (error as Error & { cause?: unknown }).cause instanceof Error && /does not document every required interaction rule/.test(String((error as Error & { cause: Error }).cause.message)),
+  );
   assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(attempts.length, 50);
-  assert.equal(new Set(attempts.map((attempt) => attempt.occurrenceId)).size, 50);
-  assert.equal(attempts.filter((attempt) => attempt.result.kind === "correct").length, 25);
-  assert.equal(attempts.filter((attempt) => attempt.result.kind === "incorrect").length, 25);
-  assert.deepEqual(result?.answeredOccurrenceIds, started.session.itemOrder.map((occurrence) => occurrence.occurrenceId));
-  assert.deepEqual(result?.unansweredOccurrenceIds, []);
-  assert.equal((await getReviewQueueItems()).value.filter((entry) => entry.sourceSessionId === sessionId).length, 25);
 });
 
-test("Cloud Exam early, mid, and late recovery preserves immutable selection, deadline, draft, and ordinal", async () => {
-  for (const checkpoint of [4, 25, 48]) {
-    const { clock } = await prepare();
-    const started = await startCertificationExam(`recovery-${checkpoint}`);
-    await answerExamThrough(checkpoint, () => true);
-    const before = await getCertificationExamProjection();
-    const beforeDraft = await getActiveTrainingSessionDraft();
+test("Cloud Exam runtime derives duration, length, and domain selection from a changed profile fixture", async () => {
+  await validateBundledContent();
+  const sourceCatalog = getCertificationContentCatalog();
+  const profile = (durationMinutes: number, requestedMaximum: number) => ({
+    schemaVersion: "exam-experience-profile-v1",
+    profileId: "fixture-profile",
+    profileVersion: "1",
+    source: { url: "https://example.test/exam-guide", checkedDate: "2026-07-24", guideVersion: "fixture" },
+    durationMinutes,
+    questionCount: { kind: "range", minimum: 4, maximum: requestedMaximum },
+    blueprint: { kind: "weighted_sections", sections: [
+      { id: "setup_environment", weightPercent: 25 },
+      { id: "planning_implementation", weightPercent: 25 },
+      { id: "access_security", weightPercent: 25 },
+      { id: "operations", weightPercent: 25 },
+    ] },
+    navigation: "free",
+    answerChanges: "until_final_submission",
+    flagging: "available",
+    navigator: "available",
+    sections: "available",
+    timeout: "absolute_deadline",
+  } satisfies PublishedCertificationExamExperienceProfile);
+  const prepareFrom = async (examProfile: PublishedCertificationExamExperienceProfile, requestedLength: number) => new CertificationFamilyRuntime(
+    new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), examProfile),
+    "fixture-taxonomy",
+  ).prepare({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
 
-    const resumedLifecycle = composeTrainingLifecycleUseCases({ wallClock: clock });
-    const resumed = await resumedLifecycle.resumeActiveSession();
-    const after = await getCertificationExamProjection();
-    const afterDraft = await getActiveTrainingSessionDraft();
-    assert.equal(resumed.id, started.session.id);
-    assert.equal(after.ordinal, checkpoint);
-    assert.equal(after.session.configurationSnapshot.timerDeadlineAt, before.session.configurationSnapshot.timerDeadlineAt);
-    assert.deepEqual(after.session.itemOrder, before.session.itemOrder);
-    assert.deepEqual(afterDraft?.responsesByOccurrenceId, beforeDraft?.responsesByOccurrenceId);
+  const first = await prepareFrom(profile(30, 4), 4);
+  assert.equal(first.session.actualLength, 4);
+  assert.equal(first.session.configurationSnapshot.timerDurationMs, 30 * 60 * 1000);
+  assert.deepEqual(first.session.itemOrder.map((occurrence) => occurrence.item.itemId).map((id) => sourceCatalog.getItemById(id).domain), ["setup_environment", "planning_implementation", "access_security", "operations"]);
 
-    await answerExamThrough(50, () => true, checkpoint);
-    assert.equal(await finalizeCertificationExam(), started.session.id);
-  }
-});
-
-test("Cloud Exam expiry finalizes persisted answers once and never leaves an active resume", async () => {
-  const { clock, lifecycle } = await prepare();
-  const started = await startCertificationExam("expiry-test");
-  await answerExamThrough(3, () => true);
-  const deadline = String(started.session.configurationSnapshot.timerDeadlineAt);
-  clock.set(new Date(Date.parse(deadline) + 1).toISOString());
-
-  assert.equal(await lifecycle.finalizeExpiredSimulationIfDue(), started.session.id);
-  assert.equal(await lifecycle.finalizeExpiredSimulationIfDue(), null);
-  const result = await getTrainingSessionResult(started.session.id);
-  const attempts = (await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === started.session.id);
-  assert.equal(await getActiveTrainingSession(), null);
-  assert.equal(attempts.length, 3);
-  assert.equal(result?.unansweredOccurrenceIds.length, 47);
+  const changed = await prepareFrom(profile(45, 8), 8);
+  assert.equal(changed.session.actualLength, 8);
+  assert.equal(changed.session.configurationSnapshot.timerDurationMs, 45 * 60 * 1000);
+  assert.deepEqual(changed.session.itemOrder.map((occurrence) => sourceCatalog.getItemById(occurrence.item.itemId).domain), ["setup_environment", "setup_environment", "planning_implementation", "planning_implementation", "access_security", "access_security", "operations", "operations"]);
 });
 
 test("Cloud Due Review removes a due entry only after a correct due response and retains it after failure", async () => {

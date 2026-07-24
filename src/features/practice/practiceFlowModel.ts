@@ -144,7 +144,7 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
   return [
     { detail: "Ten scenario-based questions with immediate explanation.", enabled: true, icon: "clipboard", mode: "cloud-practice", title: "Cloud Practice", tone: "success" },
     { detail: "Due items only. It is unavailable until a Cloud mistake is due for review.", enabled: true, icon: "rotate-ccw", mode: "cloud-review", title: "Due review", tone: "warning" },
-    { detail: "A fixed 50-question simulation: 12 setup, 15 planning, 13 access, 10 operations.", enabled: true, icon: "shield-check", mode: "cloud-exam-simulation", title: "Exam Simulation", tone: "primary" },
+    { detail: "Uses the installed official exam experience profile when its required rules are documented.", enabled: true, icon: "shield-check", mode: "cloud-exam-simulation", title: "Exam Simulation", tone: "primary" },
   ];
 }
 

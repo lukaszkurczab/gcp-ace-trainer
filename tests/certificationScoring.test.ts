@@ -10,6 +10,22 @@ import { scoreExamSession } from "../src/features/exam/scoringService";
 import { scoreCertificationQuestion } from "../src/tracks/cloud-certification";
 import { makeQuestion, makeSession } from "./fixtures";
 
+const practiceOnlyExamProfile = {
+  schemaVersion: "exam-experience-profile-v1",
+  profileId: "fixture-profile",
+  profileVersion: "1",
+  source: { url: "https://example.test/exam-guide", checkedDate: "2026-07-24", guideVersion: "fixture" },
+  durationMinutes: 30,
+  questionCount: { kind: "range", minimum: 1, maximum: 1 },
+  blueprint: { kind: "weighted_sections", sections: [{ id: "setup_environment", weightPercent: 100 }] },
+  navigation: "not_documented",
+  answerChanges: "not_documented",
+  flagging: "not_documented",
+  navigator: "not_documented",
+  sections: "not_documented",
+  timeout: "not_documented",
+} as const;
+
 test("Certification single-choice scores correct, incorrect, and unanswered responses", () => {
   const question = makeQuestion();
   assert.equal(scoreCertificationQuestion(question, { kind: "option_selection", selectedOptionIds: ["a"] }).kind, "correct");
@@ -37,7 +53,7 @@ test("exam scoring reports raw count and percentage with unanswered diagnostics 
 test("Certification practice submission writes one canonical typed attempt and remediation review directly", async (context) => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const question = makeQuestion({ id: "fixture-practice" });
-  const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: [question] });
+  const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", examExperienceProfile: practiceOnlyExamProfile, items: [question] });
   const ref = catalog.toContentItemRef(question);
   const session = createTrainingSession({ id: "practice-session", trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   const wrongOption = question.options.find((option) => !question.correctOptionIds.includes(option.id));
@@ -52,7 +68,7 @@ test("Certification practice submission writes one canonical typed attempt and r
 test("repeated Certification remediation retains one durable review identity", async () => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
   const question = makeQuestion({ id: "fixture-repeat" });
-  const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", items: [question] });
+  const catalog = installCertificationCatalog({ formatVersion: 1, trackId: "cloud-certification", familyId: "certification", contentVersion: "fixture", examExperienceProfile: practiceOnlyExamProfile, items: [question] });
   const ref = catalog.toContentItemRef(question);
   const makePracticeSession = (id: string) => createTrainingSession({ id, trackId: "cloud-certification", modeId: "cloud-practice", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: ref }], optionOrderByOccurrence: { "occurrence-1": question.options.map((option) => option.id) }, activeForegroundMs: 0, contentVersion: ref.contentVersion, status: "active", startedAt: "2026-01-01T00:00:00.000Z" });
   const wrongOption = question.options.find((option) => !question.correctOptionIds.includes(option.id));
