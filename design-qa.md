@@ -40,3 +40,31 @@ No actionable P0, P1, or P2 fidelity differences. The light-mode capture and 4-c
 - Capture the answered/saving/failure variants with a deterministic failure fixture when such a product-owned fixture exists; this is evidence breadth only, not an implementation gap.
 
 final result: passed
+
+---
+
+# T42 — Custom Practice design QA
+
+## Comparison target
+
+- Source visual truth: `docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png` (SHA-256 `c1e07903190b93ceafbd231bcef803911aa9f03fbd723b9e47eb48ff7be27e73`).
+- Native implementation: iPhone 17 simulator, iOS 26.4, dark appearance, regular text size.
+- Captures: `artifacts/maestro-screen-capture/custom-practice-t42/2026-07-24-1020/screenshots/screenshots/custom-practice__t42__010__setup__dark__ios-regular.png`, `artifacts/maestro-screen-capture/custom-practice-t42/2026-07-24-1020/screenshots/screenshots/custom-practice__t42__020__runner__dark__ios-regular.png`, and `artifacts/maestro-screen-capture/custom-practice-t42/2026-07-24-1020/summary/screenshots/custom-practice__t42__030__summary__dark__ios-regular.png`.
+- Interaction evidence: the capture selected the 10-item at-session-end configuration, submitted all ten durable responses, and reached the canonical completed result with feedback review.
+
+## Fidelity review
+
+- The approved dark visual language is applied through the existing app theme: near-black background, elevated charcoal cards, muted secondary text, violet selection borders, and a single violet primary action.
+- Setup preserves the reference's hierarchy of title, bounded configuration controls, and a clear start action. The selected values remain legible with a non-color border and radio state.
+- Runner preserves the high-contrast timer/progress/question/answer/action sequence. Answer controls are full-width, touch-safe cards; the primary action remains fixed at the bottom.
+- Summary presents score, answered/unanswered totals, and a readable review stack on the same card and action vocabulary as the reference.
+
+## Canonical constraints applied
+
+The reference's multi-topic chips, difficulty selector, timer toggle, free navigator, and in-run correctness are not copied because they conflict with the already approved Custom Practice contract: one explicit mental unit, profile-owned reinsert, sequential lifecycle, and the selected `atSessionEnd` feedback withholding. These are deliberate behavior boundaries, not visual defects.
+
+## Findings
+
+No actionable P0, P1, or P2 visual defects were found in the setup, runner, or summary comparison. No UI source change was required: the owned `src/features/practice/` implementation already uses the approved dark tokens, rounded card surfaces, text hierarchy, and action placement. The reference registration and ownership mapping make this review the authoritative visual target for future changes.
+
+final result: passed

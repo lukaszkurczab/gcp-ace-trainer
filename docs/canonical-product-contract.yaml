@@ -363,6 +363,12 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: algorithms-custom-practice-flow
+      screenStateTarget: algorithms-custom-practice-setup-runner-summary
+      patternPath: docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
     - sourcePathPrefix: src/features/simulation/
       designReferenceId: algorithms-active-simulation-screen
@@ -370,6 +376,8 @@ designReferences:
       designReferenceId: algorithms-simulation-question-navigator
     - sourcePathPrefix: src/features/simulation/operation/
       designReferenceId: algorithms-simulation-operational-states
+    - sourcePathPrefix: src/features/practice/
+      designReferenceId: algorithms-custom-practice-flow
 simulationOperationStateCtas:
   version: 1
   policies:
