@@ -10,6 +10,7 @@ import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
+import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";
@@ -55,6 +56,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     route.params?.reviewBehaviorEnabled ?? false,
   );
   const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+  const [scenarioCompetencyId, setScenarioCompetencyId] = useState<string | null>(route.params?.competencyId ?? null);
   const [setupError, setSetupError] = useState<string | null>(null);
 
   useFocusEffect(
@@ -87,6 +89,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const activeTrack = getTrackDisplay(resolvedTrackId);
   const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
   const focusPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-focus-practice";
+  const scenarioPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-scenario-practice";
   const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
@@ -102,6 +105,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const focusTopics = focusPractice
     ? buildTopicRoadmapNodes({ activeTrackId: CLOUD_CERTIFICATION_TRACK_ID, trainingAttempts })
     : [];
+  const scenarioCompetencies = scenarioPractice ? getCertificationContentCatalog().getScenarioPractice().competencies : [];
 
   function startSession() {
     const mode = route.params?.mode ?? (
@@ -118,6 +122,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       setSetupError("Choose a Cloud domain before starting Focus Practice.");
       return;
     }
+    if (scenarioPractice && !scenarioCompetencyId) {
+      setSetupError("Choose a competency before starting Scenario Practice.");
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
@@ -128,7 +136,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-          : diagnosticBaseline || focusPractice ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+          : diagnosticBaseline || focusPractice || scenarioPractice ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+        competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
         mode,
         source: "practiceSetup",
         topicId: focusPractice ? focusTopicId! : topic.id,
@@ -154,13 +163,18 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
           </Text>
           <Text style={styles.subtitle}>
-            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
+            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
         </View>
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
           {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={t(focusTopic.detail)} label={t(focusTopic.title)} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={focusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+        </View> : null}
+
+        {scenarioPractice ? <View style={styles.section}>
+          <SectionHeader title={t("Competency")} subtitle={t("Required for Scenario Practice")} tight />
+          {scenarioCompetencies.map((competency) => <SelectablePanel key={competency.id} detail={t(`${competency.scenarioItemIds.length} approved scenario questions`)} label={t(competency.label)} onPress={() => { setScenarioCompetencyId(competency.id); setSetupError(null); }} selected={scenarioCompetencyId === competency.id} testID={runtimeSelectors.practice.scenarioCompetency(competency.id)} />)}
         </View> : null}
 
         {!diagnosticBaseline ? <View style={styles.section}>
@@ -179,7 +193,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
-        {!diagnosticBaseline && !focusPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={styles.section}>
             <SectionHeader title={t("Feedback mode")} tight />
             <SelectablePanel
@@ -199,7 +213,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!diagnosticBaseline && !focusPractice && !algorithmMode ? (
+        {!diagnosticBaseline && !focusPractice && !scenarioPractice && !algorithmMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
               <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>

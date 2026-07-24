@@ -99,7 +99,7 @@ function validateItemFeedback(value: unknown): void { const feedback = record(va
 function validateItemProvenance(value: unknown): void { const provenance = record(value, "Algorithms item provenance"); exact(provenance, ["author", "createdAt", "contentBatchId", "authoringMethod", "externalSources"], "Algorithms item provenance"); for (const key of ["author", "createdAt", "contentBatchId", "authoringMethod"]) text(provenance[key], `provenance.${key}`); if (Number.isNaN(Date.parse(provenance.createdAt as string)) || provenance.authoringMethod !== "independently_authored") throw new ContentValidationError("Algorithms provenance is invalid."); for (const source of values(provenance.externalSources, "provenance.externalSources")) { const declared = record(source, "Algorithms provenance source"); exact(declared, ["sourceId", "publisher", "title", "locator", "retrievedAt", "publicationOrRevisionDate", "versionOrScope"].filter((key) => declared[key] !== undefined), "Algorithms provenance source"); for (const key of ["sourceId", "publisher", "title", "locator", "retrievedAt"]) text(declared[key], `Algorithms provenance source.${key}`); if (Number.isNaN(Date.parse(declared.retrievedAt as string))) throw new ContentValidationError("Algorithms provenance source retrieval date is invalid."); } }
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
-  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "examExperienceProfile", "items"], "Certification bank");
+  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "scenarioPractice", "examExperienceProfile", "items"], "Certification bank");
   if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
@@ -107,6 +107,7 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
   validateCertificationExamExperienceProfile(bank.examExperienceProfile);
   if (items.length !== manifest.itemCount || items.length === 0) throw new ContentValidationError("Certification bank item count does not match manifest.");
   const ids = new Set<string>();
+  const tagsByItemId = new Map<string, readonly string[]>();
   const fingerprints = new Set<string>();
   const domains = new Set(["setup_environment", "planning_implementation", "access_security", "operations"]);
   for (const unknown of items) {
@@ -146,11 +147,12 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
       if (typeof item.watchOutFor === "string") text(item.watchOutFor, "Certification watch-out");
       else stringValues(item.watchOutFor, "Certification watch-outs");
     }
-    stringValues(item.tags, "Certification tags");
+    tagsByItemId.set(id, stringValues(item.tags, "Certification tags"));
     if (item.examSignals !== undefined) stringValues(item.examSignals, "Certification exam signals");
   }
   validateCertificationDiagnosticBaseline(bank.diagnosticBaseline, ids);
   validateCertificationFocusPractice(bank.focusPractice, domains);
+  validateCertificationScenarioPractice(bank.scenarioPractice, ids, tagsByItemId);
   return bank as PublishedCertificationBank;
 }
 
@@ -164,6 +166,28 @@ function validateCertificationFocusPractice(value: unknown, knownDomains: Readon
   if (lengths.length !== 3 || lengths.some((length, index) => length !== [10, 20, 40][index])) throw new ContentValidationError("Certification Focus Practice must expose exactly 10, 20, and 40 item lengths.");
   const topics = stringValues(focus.topicIds, "Certification Focus Practice topic IDs");
   if (!topics.length || topics.some((topicId) => !knownDomains.has(topicId))) throw new ContentValidationError("Certification Focus Practice references an unknown Cloud domain.");
+}
+
+function validateCertificationScenarioPractice(value: unknown, itemIds: ReadonlySet<string>, tagsByItemId: ReadonlyMap<string, readonly string[]>): void {
+  const scenario = record(value, "Certification Scenario Practice");
+  exact(scenario, ["blueprintId", "blueprintVersion", "modeId", "requestedLengths", "shortening", "selectionScope", "competencies"], "Certification Scenario Practice");
+  text(scenario.blueprintId, "Certification Scenario Practice blueprint ID");
+  text(scenario.blueprintVersion, "Certification Scenario Practice blueprint version");
+  if (scenario.modeId !== "certification-scenario-practice" || scenario.shortening !== "allowed_within_competency" || scenario.selectionScope !== "explicit_tag_competency") throw new ContentValidationError("Certification Scenario Practice contract is invalid.");
+  const lengths = values(scenario.requestedLengths, "Certification Scenario Practice requested lengths");
+  if (lengths.length !== 3 || lengths.some((length, index) => length !== [10, 20, 40][index])) throw new ContentValidationError("Certification Scenario Practice must expose exactly 10, 20, and 40 item lengths.");
+  const competencyIds = new Set<string>();
+  for (const value of values(scenario.competencies, "Certification Scenario Practice competencies")) {
+    const competency = record(value, "Certification Scenario Practice competency");
+    exact(competency, ["id", "label", "scenarioItemIds"], "Certification Scenario Practice competency");
+    const id = text(competency.id, "Certification Scenario Practice competency ID");
+    text(competency.label, "Certification Scenario Practice competency label");
+    if (competencyIds.has(id)) throw new ContentValidationError("Certification Scenario Practice competency IDs must be unique.");
+    competencyIds.add(id);
+    const scopedItems = stringValues(competency.scenarioItemIds, "Certification Scenario Practice item IDs");
+    if (scopedItems.length < 10 || scopedItems.some((itemId) => !itemIds.has(itemId) || !tagsByItemId.get(itemId)?.includes(id))) throw new ContentValidationError("Certification Scenario Practice contains an item outside its explicit competency scope.");
+  }
+  if (!competencyIds.size) throw new ContentValidationError("Certification Scenario Practice requires an explicit competency.");
 }
 
 function validateCertificationDiagnosticBaseline(value: unknown, itemIds: ReadonlySet<string>): void {

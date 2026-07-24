@@ -237,6 +237,19 @@ export type CanonicalCertificationFocusConfiguration = Readonly<{
   permittedActions: readonly string[];
 }>;
 
+export type CanonicalCertificationScenarioConfiguration = Readonly<{
+  setupControls: readonly ["competency", "sessionLength"];
+  sessionLengths: readonly [10, 20, 40];
+  selectionScope: "explicitApprovedScenarioCompetency";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "allowedWithinSelectedCompetency";
+  reinsert: false;
+  reviewBehavior: "domainBreakdown";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
 export type CanonicalCertificationMode = Readonly<{
   id: CanonicalCertificationModeId;
   label: CanonicalCertificationModeLabel;
@@ -249,7 +262,7 @@ export type CanonicalCertificationMode = Readonly<{
     implementation: "available" | "unavailable";
     verification: "verified" | "unverified";
   }>;
-  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration;
+  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration;
 }>;
 
 export type CanonicalProductContract = Readonly<{
@@ -677,6 +690,10 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const focusPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-focus-practice");
   if (!focusPractice || focusPractice.status.implementation !== "available" || focusPractice.status.verification !== "verified" || !focusPractice.configuration || !("sessionLengths" in focusPractice.configuration) || !hasExactValues(focusPractice.configuration.setupControls, ["topic", "sessionLength"]) || !hasExactValues(focusPractice.configuration.sessionLengths, [10, 20, 40]) || focusPractice.configuration.selectionScope !== "explicitCloudDomain" || focusPractice.configuration.shortening !== "allowedWithinSelectedTopic" || focusPractice.configuration.reinsert || focusPractice.configuration.timer !== "elapsedForeground" || focusPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
     throw new CanonicalProductContractValidationError("Certification Focus Practice must preserve its explicit single-domain shared-practice configuration.");
+  }
+  const scenarioPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-scenario-practice");
+  if (!scenarioPractice || scenarioPractice.status.implementation !== "available" || scenarioPractice.status.verification !== "verified" || !scenarioPractice.configuration || !("sessionLengths" in scenarioPractice.configuration) || !hasExactValues(scenarioPractice.configuration.setupControls, ["competency", "sessionLength"]) || !hasExactValues(scenarioPractice.configuration.sessionLengths, [10, 20, 40]) || scenarioPractice.configuration.selectionScope !== "explicitApprovedScenarioCompetency" || scenarioPractice.configuration.shortening !== "allowedWithinSelectedCompetency" || scenarioPractice.configuration.reinsert || scenarioPractice.configuration.timer !== "elapsedForeground" || scenarioPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
+    throw new CanonicalProductContractValidationError("Certification Scenario Practice must preserve its explicit approved-competency shared-practice configuration.");
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

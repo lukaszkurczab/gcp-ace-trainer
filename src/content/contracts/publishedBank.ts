@@ -144,6 +144,16 @@ export type PublishedCertificationFocusPractice = Readonly<{
   topicIds: readonly string[];
 }>;
 
+export type PublishedCertificationScenarioPractice = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-scenario-practice";
+  requestedLengths: readonly (10 | 20 | 40)[];
+  shortening: "allowed_within_competency";
+  selectionScope: "explicit_tag_competency";
+  competencies: readonly Readonly<{ id: string; label: string; scenarioItemIds: readonly string[] }>[];
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
@@ -153,6 +163,8 @@ export type PublishedCertificationBank = {
   diagnosticBaseline?: PublishedCertificationDiagnosticBaseline;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Focus Practice. */
   focusPractice?: PublishedCertificationFocusPractice;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Scenario Practice. */
+  scenarioPractice?: PublishedCertificationScenarioPractice;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

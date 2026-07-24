@@ -116,3 +116,38 @@ test("Certification Focus Practice requires a selected domain and never fills fr
   assert.equal(shortened.session.actualLength, 12);
   assert.deepEqual(new Set(shortened.session.itemOrder.map((occurrence) => withinTopicOnly.getItemById(occurrence.item.itemId).domain)), new Set(["setup_environment"]));
 });
+
+test("Certification Scenario Practice requires a competency and never widens its approved scenario scope", async () => {
+  await validateBundledContent();
+  const sourceCatalog = getCertificationContentCatalog();
+  const runtime = new CertificationFamilyRuntime(sourceCatalog, "cloud-certification-taxonomy-v1");
+  await assert.rejects(
+    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-without-competency", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    /requires exactly one explicit competency/,
+  );
+  await assert.rejects(
+    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-with-domain", requestedLength: 10, competency: "iam", domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    /requires exactly one explicit competency/,
+  );
+  const competency = sourceCatalog.getScenarioPractice().competencies.find((entry) => entry.id === "cloud-storage")!;
+  const selected = await runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-storage", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  assert.equal(selected.session.requestedLength, 40);
+  assert.equal(selected.session.actualLength, competency.scenarioItemIds.length);
+  assert.equal(selected.session.configurationSnapshot.competencyId, competency.id);
+  assert.ok(selected.session.itemOrder.every((occurrence) => competency.scenarioItemIds.includes(occurrence.item.itemId)));
+  assert.ok(selected.session.itemOrder.every((occurrence) => sourceCatalog.getItemById(occurrence.item.itemId).tags.includes(competency.id)));
+
+  const shortenedIds = competency.scenarioItemIds.slice(0, 12);
+  const withinCompetencyOnly = new CertificationContentCatalog(
+    shortenedIds.map((itemId) => sourceCatalog.getItemById(itemId)),
+    "scenario-shortening-fixture",
+    sourceCatalog.getDiagnosticBaseline(),
+    sourceCatalog.getFocusPractice(),
+    sourceCatalog.getExamExperienceProfile(),
+    { ...sourceCatalog.getScenarioPractice(), competencies: [{ ...competency, scenarioItemIds: shortenedIds }] },
+  );
+  const shortened = await new CertificationFamilyRuntime(withinCompetencyOnly, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-shortened", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  assert.equal(shortened.session.requestedLength, 40);
+  assert.equal(shortened.session.actualLength, 12);
+  assert.ok(shortened.session.itemOrder.every((occurrence) => shortenedIds.includes(occurrence.item.itemId)));
+});

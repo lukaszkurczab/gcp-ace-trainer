@@ -17,7 +17,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { CertificationContentCatalog } from "../../tracks/cloud-certification/certificationContentCatalog";
-import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice } from "../../content/contracts";
+import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationScenarioPractice } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
   createCertificationReviewEntry,
@@ -30,6 +30,7 @@ export type CertificationPreparationRequest = Readonly<{
   sessionId: string;
   requestedLength?: number;
   domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations";
+  competency?: string;
 }>;
 
 /**
@@ -48,26 +49,32 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const request = preparationRequest(input.request);
     const diagnosticBaseline = mode.id === "certification-diagnostic-baseline" ? this.catalog.getDiagnosticBaseline() : null;
     const focusPractice = mode.id === "certification-focus-practice" ? this.catalog.getFocusPractice() : null;
+    const scenarioPractice = mode.id === "certification-scenario-practice" ? this.catalog.getScenarioPractice() : null;
     const simulation = mode.id === "cloud-exam-simulation";
     const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
-    if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
+    if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
     if (focusPractice && !request.domain) throw new Error("Certification Focus Practice requires an explicit topic.");
+    if (focusPractice && request.competency !== undefined) throw new Error("Certification Focus Practice does not accept a competency selector.");
+    if (scenarioPractice && (!request.competency || request.domain !== undefined)) throw new Error("Certification Scenario Practice requires exactly one explicit competency.");
     const declaredLength = diagnosticBaseline ? diagnosticBaseline.requestedLength : request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
     if (declaredLength !== undefined && (!Number.isInteger(declaredLength) || declaredLength <= 0)) throw new Error("Certification requested length is invalid.");
     if (focusPractice && !focusPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Focus Practice supports only its installed 10, 20, or 40 item lengths.");
+    if (scenarioPractice && !scenarioPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Scenario Practice supports only its installed 10, 20, or 40 item lengths.");
     if (profile && (declaredLength! < profile.questionCount.minimum || declaredLength! > profile.questionCount.maximum)) throw new Error("Cloud exam requested length is outside its installed exam experience profile.");
     const configurationSnapshot: TrainingSession["configurationSnapshot"] = diagnosticBaseline
       ? diagnosticConfiguration(diagnosticBaseline)
       : focusPractice
       ? focusConfiguration(focusPractice)
+      : scenarioPractice
+      ? scenarioConfiguration(scenarioPractice, request.competency!)
       : simulation
       ? simulationConfiguration(profile!, input.now)
       : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
-    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice);
+    const pool = this.poolFor(mode.id, request, input.reviews, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice, scenarioPractice);
     const requestedLength = declaredLength ?? pool.length;
     if (!Number.isInteger(requestedLength) || requestedLength <= 0) throw new Error("Certification requested length is invalid.");
-    const questions = focusPractice ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
-    if (!questions.length || (!focusPractice && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
+    const questions = focusPractice || scenarioPractice ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
+    if (!questions.length || (!focusPractice && !scenarioPractice && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
     const base = {
       id: request.sessionId,
       trackId: CLOUD_CERTIFICATION_TRACK_ID,
@@ -174,7 +181,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
-  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null) {
+  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null, scenarioPractice: PublishedCertificationScenarioPractice | null) {
     const all = [...this.catalog.getItems()].sort((left, right) => left.id.localeCompare(right.id));
     if (diagnosticBaseline) {
       if (requestedLength !== 40) throw new Error("Certification Diagnostic Baseline must remain exactly 40 items.");
@@ -195,6 +202,14 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       if (!selected.length) throw new Error("Certification Focus Practice has no installed questions for the selected domain.");
       return selected;
     }
+    if (scenarioPractice) {
+      const competency = scenarioPractice.competencies.find((entry) => entry.id === request.competency);
+      if (!competency) throw new Error("Certification Scenario Practice requires one competency declared by its installed blueprint.");
+      const byId = new Map(all.map((question) => [question.id, question]));
+      const selected = competency.scenarioItemIds.map((itemId) => byId.get(itemId));
+      if (selected.some((question) => !question)) throw new Error("Certification Scenario Practice has an unresolved item in its explicit competency scope.");
+      return selected as readonly (typeof all)[number][];
+    }
     const scoped = request.domain ? all.filter((question) => question.domain === request.domain) : all;
     if (modeId !== "cloud-exam-simulation") return scoped;
     if (!profile) throw new Error("Cloud exam simulation requires an installed exam experience profile.");
@@ -207,13 +222,20 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
       const focusPractice = this.catalog.getFocusPractice();
       const domains = new Set(session.itemOrder.map((occurrence) => this.catalog.getItemById(occurrence.item.itemId).domain));
       if (session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || domains.size !== 1 || !focusPractice.topicIds.includes([...domains][0]!)) throw new Error("Certification Focus Practice does not match its single-domain immutable contract.");
+    }
+    if (session.modeId === "certification-scenario-practice") {
+      const scenario = this.catalog.getScenarioPractice();
+      const competencyId = session.configurationSnapshot.competencyId;
+      const competency = typeof competencyId === "string" ? scenario.competencies.find((entry) => entry.id === competencyId) : undefined;
+      const itemIds = new Set(competency?.scenarioItemIds ?? []);
+      if (!competency || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || session.itemOrder.some((occurrence) => !itemIds.has(occurrence.item.itemId))) throw new Error("Certification Scenario Practice does not match its explicit immutable competency scope.");
     }
   }
 }
@@ -226,6 +248,11 @@ function diagnosticConfiguration(baseline: PublishedCertificationDiagnosticBasel
 function focusConfiguration(focus: PublishedCertificationFocusPractice): TrainingSession["configurationSnapshot"] {
   if (focus.modeId !== "certification-focus-practice" || focus.shortening !== "allowed_within_topic" || focus.selectionScope !== "cloud_domain" || focus.requestedLengths.length !== 3 || focus.requestedLengths.some((length, index) => length !== [10, 20, 40][index]) || !focus.topicIds.length) throw new Error("Certification Focus Practice content configuration is invalid.");
   return { kind: "certificationFocusPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
+}
+
+function scenarioConfiguration(scenario: PublishedCertificationScenarioPractice, competencyId: string): TrainingSession["configurationSnapshot"] {
+  if (scenario.modeId !== "certification-scenario-practice" || scenario.shortening !== "allowed_within_competency" || scenario.selectionScope !== "explicit_tag_competency" || scenario.requestedLengths.length !== 3 || scenario.requestedLengths.some((length, index) => length !== [10, 20, 40][index]) || !scenario.competencies.some((competency) => competency.id === competencyId && competency.scenarioItemIds.length >= 10)) throw new Error("Certification Scenario Practice content configuration is invalid.");
+  return { kind: "certificationScenarioPractice", competencyId, navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
 }
 
 function simulationConfiguration(profile: PublishedCertificationExamExperienceProfile, now: string): TrainingSession["configurationSnapshot"] {
@@ -265,6 +292,7 @@ function preparationRequest(value: unknown): CertificationPreparationRequest {
   if (typeof request.sessionId !== "string" || !request.sessionId.trim()) throw new Error("Cloud session request requires an immutable session ID.");
   if (request.requestedLength !== undefined && (!Number.isInteger(request.requestedLength) || (request.requestedLength as number) <= 0)) throw new Error("Cloud session requested length is invalid.");
   if (request.domain !== undefined && !["setup_environment", "planning_implementation", "access_security", "operations"].includes(request.domain as string)) throw new Error("Cloud session domain is invalid.");
+  if (request.competency !== undefined && (typeof request.competency !== "string" || !request.competency.trim())) throw new Error("Cloud session competency is invalid.");
   return request as CertificationPreparationRequest;
 }
 function certificationResponse(value: unknown): CertificationResponse {
