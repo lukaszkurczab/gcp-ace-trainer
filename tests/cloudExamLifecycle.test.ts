@@ -12,6 +12,7 @@ import type { PublishedCertificationExamExperienceProfile } from "../src/content
 import type { ReviewQueueEntry } from "../src/domain";
 import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
 import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
+import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
 import { getActiveTrainingSession } from "../src/storage/repositories";
 import { installMemoryStorage } from "./journalTestSupport";
 
@@ -208,6 +209,52 @@ test("Certification Weak Area Review uses only eligible due evidence and resolve
   assert.equal(secondSubmission.reviewMutations[0]?.kind, "remove");
 });
 
+test("Certification Quick Review selects only up to ten current due items and never substitutes content", async () => {
+  await validateBundledContent();
+  const catalog = getCertificationContentCatalog();
+  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const now = "2026-07-24T10:00:00.000Z";
+  const review = (itemId: string, id: string, dueAt: string): ReviewQueueEntry => {
+    const question = catalog.getItemById(itemId);
+    return {
+      id,
+      trackId: "cloud-certification",
+      sourceAttemptId: `${id}:attempt`,
+      sourceSessionId: `${id}:source-session`,
+      reasons: ["incorrect"],
+      dueAt,
+      createdAt: "2026-07-20T10:00:00.000Z",
+      consecutiveAfterDueSuccesses: 0,
+      persistent: true,
+      sourceItem: catalog.toContentItemRef(question),
+      taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }],
+    };
+  };
+  const prepareQuickReview = (sessionId: string, reviews: readonly ReviewQueueEntry[]) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-quick-review", request: { sessionId }, attempts: [], reviews, now });
+
+  assert.deepEqual(buildPracticeSessionConfig({ mode: "certification-quick-review", topicId: "", trackId: "cloud-certification" }), { feedbackMode: "afterEachAnswer", mode: "certification-quick-review", reviewBehaviorEnabled: false, sessionLength: 10, source: "practiceHub", topicId: "", trackId: "cloud-certification" });
+  assert.throws(() => buildPracticeSessionConfig({ mode: "certification-quick-review", sessionLength: 10, topicId: "", trackId: "cloud-certification" }), /does not render or accept optional setup controls/);
+
+  await assert.rejects(() => prepareQuickReview("quick-empty", []), /no eligible due items; no substitute practice session was created/);
+  await assert.rejects(() => prepareQuickReview("quick-future", [review("ace-q-0001", "future", "2026-07-25T10:00:00.000Z")]), /no eligible due items; no substitute practice session was created/);
+  await assert.rejects(() => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-quick-review", request: { sessionId: "quick-selector", requestedLength: 10 }, attempts: [], reviews: [review("ace-q-0001", "due", "2026-07-24T09:00:00.000Z")], now }), /fixed maximum of ten due items and does not accept selectors/);
+
+  const earliest = review("ace-q-0003", "earliest", "2026-07-24T08:00:00.000Z");
+  const later = review("ace-q-0001", "later", "2026-07-24T09:00:00.000Z");
+  const stale = { ...review("ace-q-0002", "stale", "2026-07-24T07:00:00.000Z"), sourceItem: { ...catalog.toContentItemRef(catalog.getItemById("ace-q-0002")), contentVersion: "gcp-ace-obsolete" } } satisfies ReviewQueueEntry;
+  const partial = await prepareQuickReview("quick-partial", [later, stale, earliest]);
+  assert.equal(partial.session.requestedLength, 10);
+  assert.equal(partial.session.actualLength, 2);
+  assert.equal(partial.session.configurationSnapshot.kind, "certificationQuickReview");
+  assert.deepEqual(partial.session.itemOrder.map((occurrence) => occurrence.item.itemId), ["ace-q-0003", "ace-q-0001"]);
+
+  const dueItemIds = Array.from({ length: 12 }, (_, index) => `ace-q-${String(index + 1).padStart(4, "0")}`);
+  const fullDueQueue = dueItemIds.map((itemId, index) => review(itemId, `full-${index}`, `2026-07-24T09:${String(index).padStart(2, "0")}:00.000Z`));
+  const full = await prepareQuickReview("quick-full", [...fullDueQueue, review("ace-q-0020", "future-not-fill", "2026-07-25T10:00:00.000Z")]);
+  assert.equal(full.session.actualLength, 10);
+  assert.deepEqual(full.session.itemOrder.map((occurrence) => occurrence.item.itemId), dueItemIds.slice(0, 10));
+});
+
 test("Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it", async () => {
   await validateBundledContent();
   const catalog = getCertificationContentCatalog();
@@ -250,4 +297,10 @@ test("Certification Mixed Practice is routed to the Certification runner", () =>
   const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
   assert.match(screen, /route\.params\.mode === "certification-mixed-practice"/);
   assert.match(screen, /certification-mixed-practice[\s\S]*?return <CertificationPracticeSessionScreen/);
+});
+
+test("Certification Quick Review is routed to the Certification runner", () => {
+  const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
+  assert.match(screen, /route\.params\.mode === "certification-quick-review"/);
+  assert.match(screen, /certification-quick-review[\s\S]*?return <CertificationPracticeSessionScreen/);
 });

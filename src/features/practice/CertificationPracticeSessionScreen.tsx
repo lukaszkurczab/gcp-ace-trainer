@@ -30,7 +30,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "certification-focus-practice" ? "certification-focus-practice" : route.params.mode === "certification-scenario-practice" ? "certification-scenario-practice" : route.params.mode === "certification-weak-area-review" ? "certification-weak-area-review" : route.params.mode === "certification-mixed-practice" ? "certification-mixed-practice" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
+  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "certification-focus-practice" ? "certification-focus-practice" : route.params.mode === "certification-scenario-practice" ? "certification-scenario-practice" : route.params.mode === "certification-weak-area-review" ? "certification-weak-area-review" : route.params.mode === "certification-mixed-practice" ? "certification-mixed-practice" : route.params.mode === "certification-quick-review" ? "certification-quick-review" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
 
   const refresh = async () => {
     const next = await getCertificationPracticeProjection();
@@ -43,7 +43,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     void (async () => {
       try {
         const active = await getCertificationPracticeProjection().catch(() => null);
-        if (!active) await startCertificationSession(mode === "certification-diagnostic-baseline" ? { modeId: mode, source: route.params.source } : mode === "certification-scenario-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, source: route.params.source } : { modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source });
+        if (!active) await startCertificationSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, source: route.params.source } : mode === "certification-scenario-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, source: route.params.source } : { modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source });
         if (live) await refresh();
       } catch (cause) { if (live) setError(cause instanceof Error ? cause.message : "Cloud practice is unavailable."); }
     })();

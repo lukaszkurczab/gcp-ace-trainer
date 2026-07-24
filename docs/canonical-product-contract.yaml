@@ -32,6 +32,8 @@ requirements:
     statement: Certification Weak Area Review accepts only ten or twenty requested items, selects only current-content due review evidence, may shorten only within that eligible evidence, never substitutes ordinary practice when the queue is empty, and resolves an entry only after two consecutive successful due review sessions.
   - id: CERTIFICATION-MIXED-PRACTICE-001
     statement: Certification Mixed Practice accepts only ten, twenty, or forty requested items, uses its versioned unique interleaved blueprint in declared order, and may shorten only within that blueprint.
+  - id: CERTIFICATION-QUICK-REVIEW-001
+    statement: Certification Quick Review selects at most ten current-content due review items in deterministic due order, may shorten only within that eligible evidence, never fills from future or unrelated content, and resolves an entry only after two consecutive successful due review sessions.
   - id: USER-COMMAND-MODEL-001
     statement: Every canonical session CTA maps to exactly one declared application command; a non-final simulation CTA maps only to the atomic save-and-continue application command.
   - id: USER-COMMAND-RESUME-001
@@ -147,6 +149,10 @@ requirementTestCoverage:
       testPath: tests/cloudExamLifecycle.test.ts
       testName: Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it
       requirementIds: [CERTIFICATION-MIXED-PRACTICE-001]
+    - id: certification-quick-review
+      testPath: tests/cloudExamLifecycle.test.ts
+      testName: Certification Quick Review selects only up to ten current due items and never substitutes content
+      requirementIds: [CERTIFICATION-QUICK-REVIEW-001]
     - id: canonical-session-command-model
       testPath: tests/canonicalProductContract.test.ts
       testName: defines canonical user commands and maps every session CTA to its one application command
@@ -655,8 +661,19 @@ certification:
         trackId: cloud-certification
       status:
         contract: declared
-        implementation: unavailable
-        verification: unverified
+        implementation: available
+        verification: verified
+      configuration:
+        setupControls: []
+        sessionLength: 10
+        selectionScope: earliestTenEligibleDueReviewEvidence
+        feedbackTiming: afterEachDurableSubmit
+        timer: elapsedForeground
+        shortening: allowedWithinEligibleReviewEvidence
+        reinsert: false
+        reviewBehavior: resolveAfterTwoConsecutiveDueReviewSuccesses
+        summaryMetrics: [score, correct, partial, incorrect, domainBreakdown, elapsedForeground]
+        permittedActions: [submit, next, leaveResumable, abandon]
     - id: certification-exam-simulation
       label: Exam Simulation
       owner:

@@ -276,6 +276,19 @@ export type CanonicalCertificationMixedPracticeConfiguration = Readonly<{
   permittedActions: readonly string[];
 }>;
 
+export type CanonicalCertificationQuickReviewConfiguration = Readonly<{
+  setupControls: readonly [];
+  sessionLength: 10;
+  selectionScope: "earliestTenEligibleDueReviewEvidence";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "allowedWithinEligibleReviewEvidence";
+  reinsert: false;
+  reviewBehavior: "resolveAfterTwoConsecutiveDueReviewSuccesses";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
 export type CanonicalCertificationMode = Readonly<{
   id: CanonicalCertificationModeId;
   label: CanonicalCertificationModeLabel;
@@ -288,7 +301,7 @@ export type CanonicalCertificationMode = Readonly<{
     implementation: "available" | "unavailable";
     verification: "verified" | "unverified";
   }>;
-  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration;
+  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration | CanonicalCertificationQuickReviewConfiguration;
 }>;
 
 export type CanonicalProductContract = Readonly<{

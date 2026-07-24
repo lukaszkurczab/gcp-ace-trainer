@@ -99,7 +99,7 @@ function validateItemFeedback(value: unknown): void { const feedback = record(va
 function validateItemProvenance(value: unknown): void { const provenance = record(value, "Algorithms item provenance"); exact(provenance, ["author", "createdAt", "contentBatchId", "authoringMethod", "externalSources"], "Algorithms item provenance"); for (const key of ["author", "createdAt", "contentBatchId", "authoringMethod"]) text(provenance[key], `provenance.${key}`); if (Number.isNaN(Date.parse(provenance.createdAt as string)) || provenance.authoringMethod !== "independently_authored") throw new ContentValidationError("Algorithms provenance is invalid."); for (const source of values(provenance.externalSources, "provenance.externalSources")) { const declared = record(source, "Algorithms provenance source"); exact(declared, ["sourceId", "publisher", "title", "locator", "retrievedAt", "publicationOrRevisionDate", "versionOrScope"].filter((key) => declared[key] !== undefined), "Algorithms provenance source"); for (const key of ["sourceId", "publisher", "title", "locator", "retrievedAt"]) text(declared[key], `Algorithms provenance source.${key}`); if (Number.isNaN(Date.parse(declared.retrievedAt as string))) throw new ContentValidationError("Algorithms provenance source retrieval date is invalid."); } }
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
-  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "scenarioPractice", "weakAreaReview", "mixedPractice", "examExperienceProfile", "items"], "Certification bank");
+  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "scenarioPractice", "weakAreaReview", "mixedPractice", "quickReview", "examExperienceProfile", "items"], "Certification bank");
   if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
@@ -155,6 +155,7 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
   validateCertificationScenarioPractice(bank.scenarioPractice, ids, tagsByItemId);
   validateCertificationWeakAreaReview(bank.weakAreaReview);
   validateCertificationMixedPractice(bank.mixedPractice, ids);
+  validateCertificationQuickReview(bank.quickReview);
   return bank as PublishedCertificationBank;
 }
 
@@ -212,6 +213,14 @@ function validateCertificationMixedPractice(value: unknown, knownItemIds: Readon
   if (lengths.length !== 3 || lengths.some((length, index) => length !== [10, 20, 40][index])) throw new ContentValidationError("Certification Mixed Practice must expose exactly 10, 20, and 40 item lengths.");
   const itemIds = stringValues(mixed.itemIds, "Certification Mixed Practice item IDs");
   if (itemIds.length < 10 || itemIds.some((itemId) => !knownItemIds.has(itemId))) throw new ContentValidationError("Certification Mixed Practice must name unique installed interleaved items.");
+}
+
+function validateCertificationQuickReview(value: unknown): void {
+  const review = record(value, "Certification Quick Review");
+  exact(review, ["blueprintId", "blueprintVersion", "modeId", "maximumLength", "shortening", "selectionScope", "persistentResolutionPolicy"], "Certification Quick Review");
+  text(review.blueprintId, "Certification Quick Review blueprint ID");
+  text(review.blueprintVersion, "Certification Quick Review blueprint version");
+  if (review.modeId !== "certification-quick-review" || review.maximumLength !== 10 || review.shortening !== "allowed_within_eligible_review_evidence" || review.selectionScope !== "eligible_due_review_evidence" || review.persistentResolutionPolicy !== "two_consecutive_due_review_successes") throw new ContentValidationError("Certification Quick Review contract is invalid.");
 }
 
 function validateCertificationDiagnosticBaseline(value: unknown, itemIds: ReadonlySet<string>): void {

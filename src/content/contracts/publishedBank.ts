@@ -174,6 +174,16 @@ export type PublishedCertificationMixedPractice = Readonly<{
   itemIds: readonly string[];
 }>;
 
+export type PublishedCertificationQuickReview = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-quick-review";
+  maximumLength: 10;
+  shortening: "allowed_within_eligible_review_evidence";
+  selectionScope: "eligible_due_review_evidence";
+  persistentResolutionPolicy: "two_consecutive_due_review_successes";
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
@@ -189,6 +199,8 @@ export type PublishedCertificationBank = {
   weakAreaReview?: PublishedCertificationWeakAreaReview;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Mixed Practice. */
   mixedPractice?: PublishedCertificationMixedPractice;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Quick Review. */
+  quickReview?: PublishedCertificationQuickReview;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

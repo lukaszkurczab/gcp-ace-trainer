@@ -651,6 +651,23 @@
                 "summaryMetrics": { "type": "array", "items": { "type": "string" } },
                 "permittedActions": { "type": "array", "items": { "type": "string" } }
               }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["setupControls", "sessionLength", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
+              "properties": {
+                "setupControls": { "const": [] },
+                "sessionLength": { "const": 10 },
+                "selectionScope": { "const": "earliestTenEligibleDueReviewEvidence" },
+                "feedbackTiming": { "const": "afterEachDurableSubmit" },
+                "timer": { "const": "elapsedForeground" },
+                "shortening": { "const": "allowedWithinEligibleReviewEvidence" },
+                "reinsert": { "const": false },
+                "reviewBehavior": { "const": "resolveAfterTwoConsecutiveDueReviewSuccesses" },
+                "summaryMetrics": { "type": "array", "items": { "type": "string" } },
+                "permittedActions": { "type": "array", "items": { "type": "string" } }
+              }
             }
           ]
         }

@@ -17,7 +17,7 @@ import { createContentSessionPlanFingerprint } from "../../content/application/c
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { CertificationContentCatalog } from "../../tracks/cloud-certification/certificationContentCatalog";
-import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
+import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationQuickReview, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
   createCertificationReviewEntry,
@@ -52,6 +52,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const scenarioPractice = mode.id === "certification-scenario-practice" ? this.catalog.getScenarioPractice() : null;
     const weakAreaReview = mode.id === "certification-weak-area-review" ? this.catalog.getWeakAreaReview() : null;
     const mixedPractice = mode.id === "certification-mixed-practice" ? this.catalog.getMixedPractice() : null;
+    const quickReview = mode.id === "certification-quick-review" ? this.catalog.getQuickReview() : null;
     const simulation = mode.id === "cloud-exam-simulation";
     const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
     if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
@@ -60,7 +61,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (scenarioPractice && (!request.competency || request.domain !== undefined)) throw new Error("Certification Scenario Practice requires exactly one explicit competency.");
     if (weakAreaReview && (request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Weak Area Review does not accept selectors.");
     if (mixedPractice && (request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Mixed Practice does not accept selectors.");
-    const declaredLength = diagnosticBaseline ? diagnosticBaseline.requestedLength : request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
+    if (quickReview && (request.requestedLength !== undefined || request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Quick Review has a fixed maximum of ten due items and does not accept selectors.");
+    const declaredLength = diagnosticBaseline ? diagnosticBaseline.requestedLength : quickReview ? quickReview.maximumLength : request.requestedLength ?? (profile ? profile.questionCount.minimum : mode.defaultQuestionCount);
     if (declaredLength !== undefined && (!Number.isInteger(declaredLength) || declaredLength <= 0)) throw new Error("Certification requested length is invalid.");
     if (focusPractice && !focusPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Focus Practice supports only its installed 10, 20, or 40 item lengths.");
     if (scenarioPractice && !scenarioPractice.requestedLengths.includes(declaredLength as 10 | 20 | 40)) throw new Error("Certification Scenario Practice supports only its installed 10, 20, or 40 item lengths.");
@@ -77,14 +79,16 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       ? weakAreaReviewConfiguration(weakAreaReview)
       : mixedPractice
       ? mixedPracticeConfiguration(mixedPractice)
+      : quickReview
+      ? quickReviewConfiguration(quickReview)
       : simulation
       ? simulationConfiguration(profile!, input.now)
       : { kind: "certificationPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "none" };
-    const pool = this.poolFor(mode.id, request, input.reviews, input.now, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice, scenarioPractice, weakAreaReview, mixedPractice);
+    const pool = this.poolFor(mode.id, request, input.reviews, input.now, declaredLength ?? 0, profile, diagnosticBaseline, focusPractice, scenarioPractice, weakAreaReview, mixedPractice, quickReview);
     const requestedLength = declaredLength ?? pool.length;
     if (!Number.isInteger(requestedLength) || requestedLength <= 0) throw new Error("Certification requested length is invalid.");
-    const questions = focusPractice || scenarioPractice || weakAreaReview || mixedPractice ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
-    if (!questions.length || (!focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
+    const questions = focusPractice || scenarioPractice || weakAreaReview || mixedPractice || quickReview ? pool.slice(0, Math.min(requestedLength, pool.length)) : pool.slice(0, requestedLength);
+    if (!questions.length || (!focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && !quickReview && questions.length !== requestedLength)) throw new Error(`Certification mode ${mode.id} cannot satisfy its declared question count.`);
     const base = {
       id: request.sessionId,
       trackId: CLOUD_CERTIFICATION_TRACK_ID,
@@ -128,7 +132,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((nodeId) => ({ axisId: "tag", nodeId }))] }, answeredAt: input.now, committedAt: input.now,
     });
     const prior = input.reviews.find((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID && sameItem(review.sourceItem, occurrence.item));
-    const candidate = input.session.modeId === "certification-weak-area-review" && prior
+    const candidate = (input.session.modeId === "certification-weak-area-review" || input.session.modeId === "certification-quick-review") && prior
       ? updateCertificationReviewEntry(prior, attempt)
       : createCertificationReviewEntry(attempt);
     const reviewMutations: readonly ReviewMutationCommand[] = candidate
@@ -193,7 +197,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
-  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], now: string, requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null, scenarioPractice: PublishedCertificationScenarioPractice | null, weakAreaReview: PublishedCertificationWeakAreaReview | null, mixedPractice: PublishedCertificationMixedPractice | null) {
+  private poolFor(modeId: string, request: CertificationPreparationRequest, reviews: readonly ReviewQueueEntry[], now: string, requestedLength: number, profile: PublishedCertificationExamExperienceProfile | null, diagnosticBaseline: PublishedCertificationDiagnosticBaseline | null, focusPractice: PublishedCertificationFocusPractice | null, scenarioPractice: PublishedCertificationScenarioPractice | null, weakAreaReview: PublishedCertificationWeakAreaReview | null, mixedPractice: PublishedCertificationMixedPractice | null, quickReview: PublishedCertificationQuickReview | null) {
     const all = [...this.catalog.getItems()].sort((left, right) => left.id.localeCompare(right.id));
     if (diagnosticBaseline) {
       if (requestedLength !== 40) throw new Error("Certification Diagnostic Baseline must remain exactly 40 items.");
@@ -218,6 +222,19 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       const selected = mixedPractice.itemIds.map((itemId) => byId.get(itemId));
       if (selected.some((question) => !question) || new Set(mixedPractice.itemIds).size !== mixedPractice.itemIds.length) throw new Error("Certification Mixed Practice has an invalid immutable interleaved blueprint.");
       return selected as readonly (typeof all)[number][];
+    }
+    if (quickReview) {
+      const due = reviews
+        .filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && review.dueAt <= now)
+        .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.sourceItem.itemId.localeCompare(right.sourceItem.itemId));
+      const byId = new Map(all.map((question) => [question.id, question]));
+      const selected = due.reduce<(typeof all)[number][]>((questions, review) => {
+        const question = byId.get(review.sourceItem.itemId);
+        if (question && !questions.some((candidate) => candidate.id === question.id)) questions.push(question);
+        return questions;
+      }, []);
+      if (!selected.length) throw new Error("Certification Quick Review has no eligible due items; no substitute practice session was created.");
+      return selected.slice(0, quickReview.maximumLength);
     }
     if (modeId === "cloud-review") {
       const due = new Set(reviews.filter((review) => review.trackId === CLOUD_CERTIFICATION_TRACK_ID).map((review) => review.sourceItem.itemId));
@@ -251,7 +268,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "certification-quick-review", "cloud-practice", "cloud-exam-simulation", "cloud-review"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
@@ -274,6 +291,11 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       const itemIds = session.itemOrder.map((occurrence) => occurrence.item.itemId);
       if (session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || session.actualLength > session.requestedLength || new Set(itemIds).size !== session.actualLength || itemIds.some((itemId, index) => itemId !== mixed.itemIds[index])) throw new Error("Certification Mixed Practice does not match its immutable interleaved contract.");
     }
+    if (session.modeId === "certification-quick-review") {
+      const quickReview = this.catalog.getQuickReview();
+      const itemIds = session.itemOrder.map((occurrence) => occurrence.item.itemId);
+      if (session.configurationSnapshot.kind !== "certificationQuickReview" || session.configurationSnapshot.reviewSource !== "due_queue" || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || session.requestedLength !== quickReview.maximumLength || session.actualLength > quickReview.maximumLength || new Set(itemIds).size !== session.actualLength) throw new Error("Certification Quick Review does not match its eligible due-review immutable contract.");
+    }
   }
 }
 
@@ -285,6 +307,11 @@ function weakAreaReviewConfiguration(review: PublishedCertificationWeakAreaRevie
 function mixedPracticeConfiguration(mixed: PublishedCertificationMixedPractice): TrainingSession["configurationSnapshot"] {
   if (mixed.modeId !== "certification-mixed-practice" || mixed.shortening !== "allowed_within_interleaved_blueprint" || mixed.selectionScope !== "unique_interleaved_blueprint" || mixed.requestedLengths.length !== 3 || mixed.requestedLengths.some((length, index) => length !== [10, 20, 40][index]) || mixed.itemIds.length < 10 || new Set(mixed.itemIds).size !== mixed.itemIds.length) throw new Error("Certification Mixed Practice content configuration is invalid.");
   return { kind: "certificationMixedPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
+}
+
+function quickReviewConfiguration(review: PublishedCertificationQuickReview): TrainingSession["configurationSnapshot"] {
+  if (review.modeId !== "certification-quick-review" || review.maximumLength !== 10 || review.shortening !== "allowed_within_eligible_review_evidence" || review.selectionScope !== "eligible_due_review_evidence" || review.persistentResolutionPolicy !== "two_consecutive_due_review_successes") throw new Error("Certification Quick Review content configuration is invalid.");
+  return { kind: "certificationQuickReview", reviewSource: "due_queue", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground", maximumLength: review.maximumLength, shortening: review.shortening, resolutionPolicy: review.persistentResolutionPolicy };
 }
 
 function diagnosticConfiguration(baseline: PublishedCertificationDiagnosticBaseline): TrainingSession["configurationSnapshot"] {
