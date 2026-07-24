@@ -134,6 +134,16 @@ export type PublishedCertificationDiagnosticBaseline = Readonly<{
   itemIds: readonly string[];
 }>;
 
+export type PublishedCertificationFocusPractice = Readonly<{
+  blueprintId: string;
+  blueprintVersion: string;
+  modeId: "certification-focus-practice";
+  requestedLengths: readonly (10 | 20 | 40)[];
+  shortening: "allowed_within_topic";
+  selectionScope: "cloud_domain";
+  topicIds: readonly string[];
+}>;
+
 export type PublishedCertificationBank = {
   formatVersion: 1;
   trackId: "cloud-certification";
@@ -141,6 +151,8 @@ export type PublishedCertificationBank = {
   contentVersion: string;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Diagnostic Baseline. */
   diagnosticBaseline?: PublishedCertificationDiagnosticBaseline;
+  /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Focus Practice. */
+  focusPractice?: PublishedCertificationFocusPractice;
   examExperienceProfile: PublishedCertificationExamExperienceProfile;
   items: readonly PublishedCertificationQuestion[];
 };

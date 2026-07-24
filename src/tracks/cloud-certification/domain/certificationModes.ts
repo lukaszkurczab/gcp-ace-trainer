@@ -8,9 +8,10 @@ export type CertificationModeDefinition = Readonly<{
 
 export const CERTIFICATION_MODES: readonly CertificationModeDefinition[] = [
   { id: "certification-diagnostic-baseline", title: "Diagnostic Baseline", enabled: true, order: 0, defaultQuestionCount: 40 },
-  { id: "cloud-practice", title: "Practice", enabled: true, order: 1, defaultQuestionCount: 10 },
-  { id: "cloud-exam-simulation", title: "Exam simulation", enabled: true, order: 2 },
-  { id: "cloud-review", title: "Review", enabled: true, order: 3 },
+  { id: "certification-focus-practice", title: "Focus Practice", enabled: true, order: 1, defaultQuestionCount: 10 },
+  { id: "cloud-practice", title: "Practice", enabled: true, order: 2, defaultQuestionCount: 10 },
+  { id: "cloud-exam-simulation", title: "Exam simulation", enabled: true, order: 3 },
+  { id: "cloud-review", title: "Review", enabled: true, order: 4 },
 ];
 
 export function getCertificationMode(modeId: string): CertificationModeDefinition {

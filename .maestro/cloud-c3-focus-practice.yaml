@@ -1,0 +1,28 @@
+appId: com.lkurczab.gcpacetrainer
+---
+- tapOn:
+    id: "main-tab-bar-home"
+- tapOn: "Change track"
+- tapOn:
+    id: "patternly:home:select-track:cloud-certification"
+- tapOn: "Practice"
+- tapOn:
+    id: "patternly:practice:mode-card:certification-focus-practice"
+- assertVisible:
+    id: "patternly:practice:focus-topic:setup_environment"
+- assertVisible:
+    id: "patternly:practice:focus-topic:planning_implementation"
+- assertVisible:
+    id: "patternly:practice:focus-topic:operations"
+- assertVisible:
+    id: "patternly:practice:focus-topic:access_security"
+- takeScreenshot: "cloud-focus-practice-setup-no-topic"
+- tapOn:
+    id: "patternly:practice:focus-topic:setup_environment"
+- takeScreenshot: "cloud-focus-practice-setup-topic-selected"
+- tapOn:
+    id: "patternly:practice:start-session"
+- assertVisible:
+    id: "patternly:session:mode:certification-focus-practice"
+- assertVisible: "setup environment"
+- takeScreenshot: "cloud-focus-practice-runner-single-domain"

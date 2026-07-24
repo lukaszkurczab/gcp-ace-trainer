@@ -99,7 +99,7 @@ function validateItemFeedback(value: unknown): void { const feedback = record(va
 function validateItemProvenance(value: unknown): void { const provenance = record(value, "Algorithms item provenance"); exact(provenance, ["author", "createdAt", "contentBatchId", "authoringMethod", "externalSources"], "Algorithms item provenance"); for (const key of ["author", "createdAt", "contentBatchId", "authoringMethod"]) text(provenance[key], `provenance.${key}`); if (Number.isNaN(Date.parse(provenance.createdAt as string)) || provenance.authoringMethod !== "independently_authored") throw new ContentValidationError("Algorithms provenance is invalid."); for (const source of values(provenance.externalSources, "provenance.externalSources")) { const declared = record(source, "Algorithms provenance source"); exact(declared, ["sourceId", "publisher", "title", "locator", "retrievedAt", "publicationOrRevisionDate", "versionOrScope"].filter((key) => declared[key] !== undefined), "Algorithms provenance source"); for (const key of ["sourceId", "publisher", "title", "locator", "retrievedAt"]) text(declared[key], `Algorithms provenance source.${key}`); if (Number.isNaN(Date.parse(declared.retrievedAt as string))) throw new ContentValidationError("Algorithms provenance source retrieval date is invalid."); } }
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
-  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "examExperienceProfile", "items"], "Certification bank");
+  exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "examExperienceProfile", "items"], "Certification bank");
   if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
@@ -150,7 +150,20 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
     if (item.examSignals !== undefined) stringValues(item.examSignals, "Certification exam signals");
   }
   validateCertificationDiagnosticBaseline(bank.diagnosticBaseline, ids);
+  validateCertificationFocusPractice(bank.focusPractice, domains);
   return bank as PublishedCertificationBank;
+}
+
+function validateCertificationFocusPractice(value: unknown, knownDomains: ReadonlySet<string>): void {
+  const focus = record(value, "Certification Focus Practice");
+  exact(focus, ["blueprintId", "blueprintVersion", "modeId", "requestedLengths", "shortening", "selectionScope", "topicIds"], "Certification Focus Practice");
+  text(focus.blueprintId, "Certification Focus Practice blueprint ID");
+  text(focus.blueprintVersion, "Certification Focus Practice blueprint version");
+  if (focus.modeId !== "certification-focus-practice" || focus.shortening !== "allowed_within_topic" || focus.selectionScope !== "cloud_domain") throw new ContentValidationError("Certification Focus Practice contract is invalid.");
+  const lengths = values(focus.requestedLengths, "Certification Focus Practice requested lengths");
+  if (lengths.length !== 3 || lengths.some((length, index) => length !== [10, 20, 40][index])) throw new ContentValidationError("Certification Focus Practice must expose exactly 10, 20, and 40 item lengths.");
+  const topics = stringValues(focus.topicIds, "Certification Focus Practice topic IDs");
+  if (!topics.length || topics.some((topicId) => !knownDomains.has(topicId))) throw new ContentValidationError("Certification Focus Practice references an unknown Cloud domain.");
 }
 
 function validateCertificationDiagnosticBaseline(value: unknown, itemIds: ReadonlySet<string>): void {

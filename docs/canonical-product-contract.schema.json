@@ -566,21 +566,42 @@
           }
         },
         "configuration": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["setupControls", "sessionLength", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
-          "properties": {
-            "setupControls": { "type": "array", "items": { "type": "string" } },
-            "sessionLength": { "const": 40 },
-            "selectionScope": { "const": "fixedDiagnosticBlueprint" },
-            "feedbackTiming": { "const": "afterEachDurableSubmit" },
-            "timer": { "const": "elapsedForeground" },
-            "shortening": { "const": "prohibited" },
-            "reinsert": { "const": false },
-            "reviewBehavior": { "const": "domainBreakdown" },
-            "summaryMetrics": { "type": "array", "items": { "type": "string" } },
-            "permittedActions": { "type": "array", "items": { "type": "string" } }
-          }
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["setupControls", "sessionLength", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
+              "properties": {
+                "setupControls": { "type": "array", "items": { "type": "string" } },
+                "sessionLength": { "const": 40 },
+                "selectionScope": { "const": "fixedDiagnosticBlueprint" },
+                "feedbackTiming": { "const": "afterEachDurableSubmit" },
+                "timer": { "const": "elapsedForeground" },
+                "shortening": { "const": "prohibited" },
+                "reinsert": { "const": false },
+                "reviewBehavior": { "const": "domainBreakdown" },
+                "summaryMetrics": { "type": "array", "items": { "type": "string" } },
+                "permittedActions": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["setupControls", "sessionLengths", "selectionScope", "feedbackTiming", "timer", "shortening", "reinsert", "reviewBehavior", "summaryMetrics", "permittedActions"],
+              "properties": {
+                "setupControls": { "const": ["topic", "sessionLength"] },
+                "sessionLengths": { "const": [10, 20, 40] },
+                "selectionScope": { "const": "explicitCloudDomain" },
+                "feedbackTiming": { "const": "afterEachDurableSubmit" },
+                "timer": { "const": "elapsedForeground" },
+                "shortening": { "const": "allowedWithinSelectedTopic" },
+                "reinsert": { "const": false },
+                "reviewBehavior": { "const": "domainBreakdown" },
+                "summaryMetrics": { "type": "array", "items": { "type": "string" } },
+                "permittedActions": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          ]
         }
       }
     }

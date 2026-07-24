@@ -143,6 +143,7 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
 
   return [
     { detail: "A fixed 40-question baseline across Cloud domains, with feedback after each saved answer.", enabled: true, icon: "clipboard", mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline", tone: "success" },
+    { detail: "Choose one Cloud domain and practice 10, 20, or 40 questions without mixing domains.", enabled: true, icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
   ];
 }
 

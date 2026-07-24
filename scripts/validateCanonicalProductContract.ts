@@ -211,6 +211,32 @@ export type CanonicalAlgorithmMode = Readonly<{
   reinsert: boolean;
 }>;
 
+export type CanonicalCertificationDiagnosticConfiguration = Readonly<{
+  setupControls: readonly string[];
+  sessionLength: 40;
+  selectionScope: "fixedDiagnosticBlueprint";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "prohibited";
+  reinsert: false;
+  reviewBehavior: "domainBreakdown";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
+export type CanonicalCertificationFocusConfiguration = Readonly<{
+  setupControls: readonly ["topic", "sessionLength"];
+  sessionLengths: readonly [10, 20, 40];
+  selectionScope: "explicitCloudDomain";
+  feedbackTiming: "afterEachDurableSubmit";
+  timer: "elapsedForeground";
+  shortening: "allowedWithinSelectedTopic";
+  reinsert: false;
+  reviewBehavior: "domainBreakdown";
+  summaryMetrics: readonly string[];
+  permittedActions: readonly string[];
+}>;
+
 export type CanonicalCertificationMode = Readonly<{
   id: CanonicalCertificationModeId;
   label: CanonicalCertificationModeLabel;
@@ -223,18 +249,7 @@ export type CanonicalCertificationMode = Readonly<{
     implementation: "available" | "unavailable";
     verification: "verified" | "unverified";
   }>;
-  configuration?: Readonly<{
-    setupControls: readonly string[];
-    sessionLength: 40;
-    selectionScope: "fixedDiagnosticBlueprint";
-    feedbackTiming: "afterEachDurableSubmit";
-    timer: "elapsedForeground";
-    shortening: "prohibited";
-    reinsert: false;
-    reviewBehavior: "domainBreakdown";
-    summaryMetrics: readonly string[];
-    permittedActions: readonly string[];
-  }>;
+  configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration;
 }>;
 
 export type CanonicalProductContract = Readonly<{
@@ -656,8 +671,12 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     throw new CanonicalProductContractValidationError(`Certification mode label does not match its identifier: ${certificationModeWithMismatchedLabel.id}`);
   }
   const diagnosticBaseline = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-diagnostic-baseline");
-  if (!diagnosticBaseline || diagnosticBaseline.status.implementation !== "available" || diagnosticBaseline.status.verification !== "verified" || !diagnosticBaseline.configuration || diagnosticBaseline.configuration.sessionLength !== 40 || diagnosticBaseline.configuration.shortening !== "prohibited" || diagnosticBaseline.configuration.reinsert || diagnosticBaseline.configuration.timer !== "elapsedForeground" || diagnosticBaseline.configuration.feedbackTiming !== "afterEachDurableSubmit" || diagnosticBaseline.configuration.setupControls.length !== 0) {
+  if (!diagnosticBaseline || diagnosticBaseline.status.implementation !== "available" || diagnosticBaseline.status.verification !== "verified" || !diagnosticBaseline.configuration || !("sessionLength" in diagnosticBaseline.configuration) || diagnosticBaseline.configuration.sessionLength !== 40 || diagnosticBaseline.configuration.shortening !== "prohibited" || diagnosticBaseline.configuration.reinsert || diagnosticBaseline.configuration.timer !== "elapsedForeground" || diagnosticBaseline.configuration.feedbackTiming !== "afterEachDurableSubmit" || diagnosticBaseline.configuration.setupControls.length !== 0) {
     throw new CanonicalProductContractValidationError("Certification Diagnostic Baseline must preserve its approved fixed 40-item shared-practice configuration.");
+  }
+  const focusPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-focus-practice");
+  if (!focusPractice || focusPractice.status.implementation !== "available" || focusPractice.status.verification !== "verified" || !focusPractice.configuration || !("sessionLengths" in focusPractice.configuration) || !hasExactValues(focusPractice.configuration.setupControls, ["topic", "sessionLength"]) || !hasExactValues(focusPractice.configuration.sessionLengths, [10, 20, 40]) || focusPractice.configuration.selectionScope !== "explicitCloudDomain" || focusPractice.configuration.shortening !== "allowedWithinSelectedTopic" || focusPractice.configuration.reinsert || focusPractice.configuration.timer !== "elapsedForeground" || focusPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
+    throw new CanonicalProductContractValidationError("Certification Focus Practice must preserve its explicit single-domain shared-practice configuration.");
   }
 
   const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(

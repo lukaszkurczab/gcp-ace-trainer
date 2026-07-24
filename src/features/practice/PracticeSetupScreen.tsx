@@ -23,6 +23,7 @@ import {
   buildPracticeSessionConfig,
   DEFAULT_FEEDBACK_MODE,
   DEFAULT_PRACTICE_SESSION_LENGTH,
+  isCloudTopicId,
   type PracticeFeedbackMode,
   type PracticeSessionLength,
 } from "./sessionConfig";
@@ -53,6 +54,8 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const [reviewBehaviorEnabled, setReviewBehaviorEnabled] = useState(
     route.params?.reviewBehaviorEnabled ?? false,
   );
+  const [focusTopicId, setFocusTopicId] = useState<string | null>(() => isCloudTopicId(route.params?.topicId ?? "") ? route.params!.topicId! : null);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -83,6 +86,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
   const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
+  const focusPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-focus-practice";
   const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
@@ -95,6 +99,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     routeTopicId: route.params?.topicId,
     trainingAttempts,
   });
+  const focusTopics = focusPractice
+    ? buildTopicRoadmapNodes({ activeTrackId: CLOUD_CERTIFICATION_TRACK_ID, trainingAttempts })
+    : [];
 
   function startSession() {
     const mode = route.params?.mode ?? (
@@ -107,6 +114,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
       return;
     }
+    if (focusPractice && !focusTopicId) {
+      setSetupError("Choose a Cloud domain before starting Focus Practice.");
+      return;
+    }
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
@@ -117,10 +128,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               reviewSource: route.params?.reviewSource,
               sessionLength: configuredSessionLength,
             }
-          : diagnosticBaseline ? {} : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
+          : diagnosticBaseline || focusPractice ? { sessionLength: configuredSessionLength } : { feedbackMode, reviewBehaviorEnabled, sessionLength: configuredSessionLength }),
         mode,
         source: "practiceSetup",
-        topicId: topic.id,
+        topicId: focusPractice ? focusTopicId! : topic.id,
         trackId: activeTrack.id,
       }),
     );
@@ -143,9 +154,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
           </Text>
           <Text style={styles.subtitle}>
-            {`${t("Configure the next session for")} ${t(topic.title)}.`}
+            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
           </Text>
         </View>
+
+        {focusPractice ? <View style={styles.section}>
+          <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
+          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={t(focusTopic.detail)} label={t(focusTopic.title)} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={focusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+        </View> : null}
 
         {!diagnosticBaseline ? <View style={styles.section}>
           <SectionHeader title={t("Session length")} tight />
@@ -163,7 +179,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
-        {!diagnosticBaseline && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
+        {!diagnosticBaseline && !focusPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
           <View style={styles.section}>
             <SectionHeader title={t("Feedback mode")} tight />
             <SelectablePanel
@@ -183,7 +199,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           </View>
         ) : null}
 
-        {!diagnosticBaseline && !algorithmMode ? (
+        {!diagnosticBaseline && !focusPractice && !algorithmMode ? (
           <Card style={styles.reviewCard}>
             <View style={styles.reviewCopy}>
               <Text style={styles.reviewTitle}>{t(reviewBehaviorCopy.title)}</Text>
@@ -203,6 +219,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         ) : null}
 
         <View style={styles.actions}>
+          {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
           <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
           <Button onPress={() => navigation.goBack()} variant="secondary">
             {t("Back")}
@@ -314,6 +331,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   subtitle: {
     ...typography.small,
     color: palette.textSecondary,
+  },
+  error: {
+    ...typography.small,
+    color: palette.danger,
   },
   section: {
     gap: spacing.md,

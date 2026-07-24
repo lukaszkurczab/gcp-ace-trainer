@@ -30,7 +30,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const [selected, setSelected] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
+  const mode = route.params.mode === "certification-diagnostic-baseline" ? "certification-diagnostic-baseline" : route.params.mode === "certification-focus-practice" ? "certification-focus-practice" : route.params.mode === "cloud-review" ? "cloud-review" : "cloud-practice";
 
   const refresh = async () => {
     const next = await getCertificationPracticeProjection();

@@ -145,6 +145,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       navigation.navigate(ROUTES.EXAM);
       return;
     }
+    if (activeTrack.id === "cloud-certification" && resolvedMode === "certification-focus-practice") {
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", trackId: activeTrack.id });
+      return;
+    }
     if (activeTrack.id === "algorithms" && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });

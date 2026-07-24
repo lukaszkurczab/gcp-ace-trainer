@@ -59,7 +59,7 @@ test("Cloud Exam runtime derives duration, length, and domain selection from a c
     timeout: "absolute_deadline",
   } satisfies PublishedCertificationExamExperienceProfile);
   const prepareFrom = async (examProfile: PublishedCertificationExamExperienceProfile, requestedLength: number) => new CertificationFamilyRuntime(
-    new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), sourceCatalog.getDiagnosticBaseline(), examProfile),
+    new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), sourceCatalog.getDiagnosticBaseline(), sourceCatalog.getFocusPractice(), examProfile),
     "fixture-taxonomy",
   ).prepare({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
 
@@ -89,4 +89,30 @@ test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and
     () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-with-selector", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
     /does not accept selectors/,
   );
+});
+
+test("Certification Focus Practice requires a selected domain and never fills from a sibling domain", async () => {
+  await validateBundledContent();
+  const sourceCatalog = getCertificationContentCatalog();
+  const runtime = new CertificationFamilyRuntime(sourceCatalog, "cloud-certification-taxonomy-v1");
+  await assert.rejects(
+    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-without-domain", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    /requires an explicit topic/,
+  );
+  const selected = await runtime.prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-operations", requestedLength: 40, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  assert.equal(selected.session.requestedLength, 40);
+  assert.equal(selected.session.actualLength, 40);
+  assert.deepEqual(new Set(selected.session.itemOrder.map((occurrence) => sourceCatalog.getItemById(occurrence.item.itemId).domain)), new Set(["operations"]));
+
+  const withinTopicOnly = new CertificationContentCatalog(
+    sourceCatalog.getItems().filter((question) => question.domain === "setup_environment").slice(0, 12),
+    "focus-shortening-fixture",
+    sourceCatalog.getDiagnosticBaseline(),
+    { ...sourceCatalog.getFocusPractice(), topicIds: ["setup_environment"] },
+    sourceCatalog.getExamExperienceProfile(),
+  );
+  const shortened = await new CertificationFamilyRuntime(withinTopicOnly, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-shortened", requestedLength: 40, domain: "setup_environment" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  assert.equal(shortened.session.requestedLength, 40);
+  assert.equal(shortened.session.actualLength, 12);
+  assert.deepEqual(new Set(shortened.session.itemOrder.map((occurrence) => withinTopicOnly.getItemById(occurrence.item.itemId).domain)), new Set(["setup_environment"]));
 });

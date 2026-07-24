@@ -37,6 +37,7 @@ export const runtimeSelectors = Object.freeze({
     setup: () => selector("practice", "setup"),
     setupRoot: () => selector("practice", "setup", "root"),
     customSetupTitle: () => selector("practice", "custom-setup-title"),
+    focusTopic: (topicId: string) => selector("practice", "focus-topic", topicId),
     sessionLength: (length: number) => selector("practice", "session-length", positiveInteger(length, "session length")),
     feedbackTiming: (timing: AlgorithmFeedbackMode) => selector("practice", "feedback-timing", feedbackTimingSegment(timing)),
     startSession: () => selector("practice", "start-session"),
