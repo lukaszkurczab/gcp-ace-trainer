@@ -297,7 +297,7 @@ Active content must be:
 - original or lawfully used;
 - structurally validated;
 - factually reviewed;
-- human-approved before activation;
+- audited in canonical source and released with technical evidence;
 - identified by a stable manifest and content version.
 
 The active content version identifies one complete active bank. Runtime does not reconstruct obsolete explanations or map inactive content into a current session.

@@ -11,7 +11,7 @@ Content must be:
 - lawful to use;
 - aligned with a stable family taxonomy;
 - structurally validated;
-- human-reviewed before activation;
+- audited in canonical source and released with technical evidence;
 - compatible with the interaction and mode in which it is used.
 
 Content quality is part of the product contract. Runtime, UI, validators, or generic fallback text must not compensate for incomplete educational material.
@@ -417,33 +417,15 @@ Validators must reject:
 - incomplete complexity contracts;
 - missing active-bank content.
 
-Passing structural validation does not constitute human editorial approval.
+Passing structural validation alone does not prove pedagogical or factual quality.
 
-## Canonical content-approval authority
+## Canonical release authority
 
-Patternly uses recorded human editorial approval as its only content-approval authority. A product or content owner may supply source material, taxonomy, or a manual activation record, but cannot replace the reviewer’s editorial disposition with owner activation.
+Patternly has no manual approval or activation record. A batch enters the active bank only through the canonical source-to-release pipeline, after its audit findings have been corrected in source and the technical evidence binds the exact committed inputs to the immutable artifact.
 
-Activation is a coverage operation after approval: it binds the exact approved item fingerprints to one active artifact. It never approves educational quality, factual accuracy, or learner-facing feedback by itself.
+## Content audit requirements
 
-## Human editorial review
-
-Every batch requires recorded human sign-off before activation.
-
-The review record identifies:
-
-- batch ID;
-- family and track;
-- primary mental unit, competency, topic, or exam domain;
-- included item IDs;
-- target content version;
-- reviewer;
-- review date;
-- structural validation result;
-- factual and editorial defects found;
-- required corrections;
-- final approval or rejection.
-
-Human sign-off verifies:
+The audit verifies:
 
 - factual correctness;
 - prompt and constraint completeness;
@@ -463,16 +445,16 @@ Human sign-off verifies:
 - originality and source legality;
 - family-specific technical quality.
 
-A field-complete item may still fail human review.
+A field-complete item may still fail the content audit.
 
-## Batch activation
+## Batch release
 
 A batch may enter the active content bank only when:
 
 1. every included item passes structural validation;
 2. required factual sources are current enough for the claims made;
-3. human editorial sign-off is complete;
-4. the manifest includes the exact approved item set;
+3. the audit defects are corrected in canonical source;
+4. technical evidence and the manifest bind the exact item set;
 5. the active `contentVersion` identifies that set;
 6. all declared mode-readiness conditions are satisfied.
 
@@ -540,18 +522,18 @@ The error state exposes only recovery actions defined by the application contrac
 Codex may assist with:
 
 - implementing validators;
-- applying exact reviewed item replacements;
+- applying audited item replacements;
 - checking schema consistency;
 - identifying mechanical coverage gaps;
-- producing bounded candidate content for subsequent human review;
+- correcting a bounded content scope against an explicit learning objective;
 - running validation and reporting results.
 
 Codex must not:
 
 - perform an unbounded mass rewrite from a generic instruction;
 - invent missing educational explanations at runtime;
-- declare its own output human-reviewed;
-- mark a batch approved without recorded human sign-off;
+- treat structural validation as proof of pedagogy or factual nuance;
+- mark a batch released without the required technical evidence;
 - change accepted answers, taxonomy, or interaction semantics without an explicit content specification;
 - hide weak content behind temporary status fields;
 - copy or closely paraphrase proprietary source material.

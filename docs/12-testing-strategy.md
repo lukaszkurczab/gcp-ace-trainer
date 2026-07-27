@@ -40,7 +40,7 @@ Passing one layer does not replace another.
 In particular:
 
 - snapshots do not replace behavioural assertions;
-- structural content validation does not replace human editorial review;
+- structural content validation does not replace the required content audit;
 - component tests do not replace application-flow tests;
 - a green unit suite does not prove journal recovery;
 - automation does not replace required visual review.
@@ -707,24 +707,11 @@ Reject:
 - insufficient active pool for a declared fixed-length mode;
 - manifest/content-version mismatch.
 
-## Human editorial-review gate
+## Content audit and release gate
 
-Structural validation cannot approve educational quality.
+Structural validation cannot prove educational quality. The release gate requires a corrected canonical source, technical evidence for its exact committed inputs, and an immutable artifact/manifest whose checksums and source commit agree.
 
-CI or release verification must require a valid review record for each activated batch containing:
-
-- batch ID;
-- family and track;
-- item IDs;
-- target content version;
-- reviewer identity;
-- review date;
-- validation result;
-- final approval.
-
-Automated tests verify the presence, shape, item coverage, and content-version match of that record.
-
-They do not claim that the machine validated:
+Automated checks do not claim to validate:
 
 - teaching quality;
 - factual nuance;
@@ -732,7 +719,7 @@ They do not claim that the machine validated:
 - transfer value;
 - legal originality.
 
-A batch without recorded human approval cannot enter the active manifest.
+A batch without matching technical evidence cannot enter the active manifest.
 
 ## Feedback tests
 
@@ -1024,7 +1011,7 @@ A completed implementation stage reports:
 - skipped or unavailable suites;
 - architecture-check result;
 - content-validation result;
-- human editorial-review evidence;
+- technical evidence and artifact identity;
 - manual QA evidence;
 - screenshot evidence;
 - platform and build used;

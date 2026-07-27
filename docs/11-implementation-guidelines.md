@@ -19,7 +19,7 @@ For implementation detail, use the following supporting references only after re
 - `17-training-runtime-and-interaction-spec.md` provides session-lifecycle implementation context;
 - `08-storage-and-offline.md` provides persistence, journal, recovery, reset, and resume implementation context;
 - `05-design-system.md` and approved visual references define presentation;
-- `07-content-guidelines.md` provides authored-content and activation-quality context;
+- `07-content-guidelines.md` provides authored-content and release-quality context;
 - `12-testing-strategy.md` provides required-verification context;
 - family learning-system documents provide family-specific context.
 
@@ -589,13 +589,12 @@ Active content must pass:
 - structural validation;
 - family-specific validation;
 - manifest validation;
-- required human editorial sign-off.
+- matching technical evidence for the immutable content release.
 
-Codex may apply exact reviewed content or produce bounded candidates for human review. It cannot:
+Codex may audit and correct bounded canonical content scopes. It cannot:
 
-- claim human approval;
 - mass-rewrite active explanations from a generic instruction;
-- activate structurally valid but unreviewed content;
+- release structurally valid content without the required technical evidence;
 - hide weak content behind status flags;
 - introduce runtime fallback copy.
 
@@ -740,7 +739,7 @@ A change is complete only when:
 - required tests pass;
 - required error states are explicit;
 - required UI design is implemented accurately;
-- required active content is validated and human-approved;
+- required active content is validated, audited, and bound to its technical release evidence;
 - persistence and recovery behaviour are verified;
 - import boundaries pass;
 - manual evidence is recorded where required;

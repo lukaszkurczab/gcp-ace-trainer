@@ -95,7 +95,7 @@ async function commitFixture(root, message) { await git(root, "add", "-A"); awai
 export async function buildCrossRepositoryAlgorithmsRelease() {
   const verifiedInputs = await verifyCrossRepositoryInputs(); const { producer, producerFixtures } = verifiedInputs;
   const root = await mkdtemp(join(tmpdir(), "algorithms-cross-repo-"));
-  await producerFixtures.fixtureRoot(root, { approvals: false });
+  await producerFixtures.fixtureRoot(root);
   try {
     await writeJson(root, "config/taxonomy/algorithms.json", JSON.parse(await readFile(join(CONTENT_ROOT, "config/taxonomy/algorithms.json"), "utf8")));
     const ids = Array.from({ length: 40 }, (_, index) => `cross-repo-item-${index + 1}`); const modeStructures = structures(ids);

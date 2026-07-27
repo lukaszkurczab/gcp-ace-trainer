@@ -46,7 +46,7 @@ The product shows only metrics that answer a training question, change a trainin
 
 Every instructional item has concise immediate `Reason` and collapsed, complete `Details`, available after correct, partial, and incorrect attempts. Choice-item wrong options have authored explanations keyed by stable option ID. Patternly corrects content in place: it does not retain obsolete explanations to reconstruct local history.
 
-Algorithms batches teach one mental unit at a time: active roadmap units, then highest false-heuristic risk, then contrasts and mistake diagnosis, then remaining foundations and mechanics. Certification remediation batches by competency area and then topic. All active content receives human editorial review.
+Algorithms batches teach one mental unit at a time: active roadmap units, then highest false-heuristic risk, then contrasts and mistake diagnosis, then remaining foundations and mechanics. Certification remediation batches by competency area and then topic. All active content is audited in canonical source and released with matching technical evidence.
 
 ## Persistence and recovery rule
 

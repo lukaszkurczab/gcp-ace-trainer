@@ -1254,7 +1254,7 @@ Every active Algorithms instructional item has:
 - stable-ID wrong-option explanations where applicable;
 - valid taxonomy references;
 - content-stage metadata;
-- required human editorial approval.
+- completed content audit and matching technical release evidence.
 
 ### Mechanism requirements
 
@@ -1296,9 +1296,9 @@ The remediation and authoring priority is:
 
 This is an authoring priority, not a runtime session-selection algorithm.
 
-### Human review
+### Content audit
 
-Human sign-off verifies:
+The content audit verifies:
 
 - factual correctness;
 - algorithmic correctness;
@@ -1313,7 +1313,7 @@ Human sign-off verifies:
 - absence of copied platform wording;
 - absence of unnecessary complete-solution dumps.
 
-Structural validation does not replace this review.
+Structural validation does not replace this audit.
 
 ## Pool readiness
 

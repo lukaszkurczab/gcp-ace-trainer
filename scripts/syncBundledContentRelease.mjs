@@ -1,14 +1,21 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const root = process.cwd();
-const source = resolve(root, "../patternly-content/artifacts/releases/patternly-core-0009/generated-bundled-content.mjs");
+const releasesRoot = resolve(root, "../patternly-content/artifacts/releases");
+const releaseId = readdirSync(releasesRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && /^patternly-core-\d{4}$/.test(entry.name))
+  .map((entry) => entry.name)
+  .sort()
+  .at(-1);
+if (!releaseId) throw new Error("No canonical Patternly multi-track release is available to sync.");
+const source = resolve(releasesRoot, releaseId, "generated-bundled-content.mjs");
 const target = resolve(root, "src/content/bundled/generatedArtifacts.ts");
 const module = await import(pathToFileURL(source).href);
 const release = module.GENERATED_BUNDLED_CONTENT_RELEASE;
 
-if (!release || release.manifest?.releaseId !== "patternly-core-0009" || !Array.isArray(release.artifacts)) {
+if (!release || release.manifest?.releaseId !== releaseId || !Array.isArray(release.artifacts)) {
   throw new Error("The canonical Patternly release is not a readable immutable release envelope.");
 }
 const tracks = [...release.artifacts].map((artifact) => artifact.trackId).sort();

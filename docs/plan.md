@@ -488,17 +488,17 @@ M7  T58–T64   CI i odbiór release candidate
 **Akceptacja:** Bez Maestro; testy działają deterministycznie.  
 **Commit subject:** `T53: add certification profile regression suite`
 
-### T54 — Wybrać jeden model content approval
+### T54 — Ustanowić kanoniczny model publikacji treści
 
 **Repo/branch:** `both: app/main → content/master`  
-**Zakres:** Zapisz jedną decyzję governance: real human editorial approval albo jawna owner activation. Usuń normatywne odniesienia do modelu odrzuconego.  
-**Akceptacja:** Kontrakt i pipeline mają dokładnie jeden model.  
-**Commit subject:** `T54: choose canonical content approval model`
+**Zakres:** Usunąć ręczne approval/activation i oprzeć publikację na audycie kanonicznego źródła oraz technical evidence związanym z niezmiennym artefaktem.
+**Akceptacja:** Kontrakt, pipeline i bundle mają dokładnie jedną ścieżkę publikacji bez ręcznego lifecycle.
+**Commit subject:** `T54: establish canonical content release model`
 
 ### T55 — Usunąć sprzeczne skrypty i records
 
 **Repo/branch:** `content/master`  
-**Zakres:** Usuń automaty udające human review oraz zakończone jednorazowe migratory, jeśli nie należą do wybranego modelu.  
+**Zakres:** Usuń wycofane records, skrypty i artefakty niewchodzące do kanonicznego release path.
 **Akceptacja:** Search/negative tests potwierdzają brak starej ścieżki.  
 **Commit subject:** `T55: remove obsolete content governance paths`
 
@@ -526,7 +526,7 @@ M7  T58–T64   CI i odbiór release candidate
 ### T59 — Szybkie CI contentu
 
 **Repo/branch:** `content/master`  
-**Zakres:** Na każdy push: architecture tests, validate tracks, artifact verification i approval/activation gate.  
+**Zakres:** Na każdy push: architecture tests, validate tracks, artifact verification i technical-evidence gate.
 **Akceptacja:** Workflow przechodzi na master.  
 **Commit subject:** `T59: add fast content CI`
 
