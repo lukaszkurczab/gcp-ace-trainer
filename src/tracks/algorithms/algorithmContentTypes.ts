@@ -260,16 +260,6 @@ export const ALGORITHM_FEEDBACK_RESULTS = [
   "diagnostic",
 ] as const satisfies readonly AlgorithmFeedbackResult[];
 
-export type AlgorithmFeedbackModel = {
-  decisionSignal: string;
-  details?: string;
-  distractorExplanations?: Readonly<Record<string, string>>;
-  mentalModelCorrection: string;
-  mistakeTypes: readonly AlgorithmMistakeType[];
-  nextAction: string;
-  result: AlgorithmFeedbackResult;
-};
-
 export type AlgorithmSubgoal = {
   description: string;
   id: string;

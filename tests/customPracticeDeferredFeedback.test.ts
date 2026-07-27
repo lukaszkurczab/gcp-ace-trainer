@@ -81,5 +81,5 @@ test("Custom Practice atSessionEnd reloads its complete feedback from the canoni
   assert.equal(reloaded.answeredOccurrenceIds.length, 10);
   assert.equal(reloaded.unansweredOccurrenceIds.length, 0);
   assert.equal(reloaded.feedbackItems.length, 10);
-  assert.ok(reloaded.feedbackItems.every((item) => item.reason.length > 0 && item.details.length > 0));
+  assert.ok(reloaded.feedbackItems.every((item) => item.reason.length > 0 && item.details.blocks.length > 0));
 });

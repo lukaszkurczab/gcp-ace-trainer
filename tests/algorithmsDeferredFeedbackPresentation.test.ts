@@ -128,5 +128,5 @@ test("deferred-feedback summary reads timing, length, and authored feedback from
   assert.equal(projection.feedbackItems.length, 1);
   assert.equal(projection.feedbackItems[0]?.correctness, "correct");
   assert.ok(projection.feedbackItems[0]?.reason.length);
-  assert.ok(projection.feedbackItems[0]?.details.length);
+  assert.ok(projection.feedbackItems[0]?.details.blocks.length);
 });

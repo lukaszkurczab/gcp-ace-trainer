@@ -21,6 +21,7 @@ import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjec
 import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
+import type { AlgorithmFeedbackDocument } from "../../content/contracts";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -38,7 +39,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
   feedback: Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     reason: string;
-    details: string;
+    details: AlgorithmFeedbackDocument;
     wrongOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     omittedCorrectOptionExplanations: readonly Readonly<{ optionId: string; text: string }>[];
     controls: readonly Readonly<{ id: string; state: "selected" | "correct" | "incorrect" | "omitted_correct" | "neutral" }> [];
@@ -77,7 +78,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   }>;
   feedbackItems: readonly Readonly<{
     correctness: "correct" | "partial" | "incorrect";
-    details: string;
+    details: AlgorithmFeedbackDocument;
     itemId: string;
     occurrenceId: string;
     ordinal: number;

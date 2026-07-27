@@ -23,7 +23,7 @@ function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "un
   const items = Array.from({ length: count }, (_, index) => ({
     id: input.duplicateId && index === 1 ? "contract-item-1" : `contract-item-${index + 1}`,
     prompt: `Mechanical contract assertion ${index + 1}`,
-    feedback: { reason: "Declared evidence supports the answer.", details: "This payload exists only to exercise the consumer contract.", wrongOptionExplanationsByOptionId: { wrong: "It contradicts the declared evidence." } },
+    feedback: { reason: "Declared evidence supports the answer.", details: { blocks: [{ type: "paragraph", text: "This payload exists only to exercise the consumer contract." }] }, wrongOptionExplanationsByOptionId: { wrong: "It contradicts the declared evidence." } },
     taxonomy: { roadmapNodeId: input.taxonomyId ?? "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings", primarySkillAtomId: "track_index_boundary", secondarySkillAtomIds: [], learningStage: "foundations", ...input.taxonomy },
     provenance: { author: "contract-test", createdAt: "2026-07-17T00:00:00.000Z", contentBatchId: "contract-test", authoringMethod: "independently_authored" as const, externalSources: [] },
     compatibilityMemberships: [],
@@ -34,7 +34,7 @@ function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "un
   const resolvedItemIds = items.map((item) => item.id);
   const poolItemIds = resolvedItemIds.slice(0, input.poolCount ?? count);
   return {
-    formatVersion: 1, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", items: items as PublishedAlgorithmsBank["items"],
+    formatVersion: 1, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", feedbackAssets: [], items: items as PublishedAlgorithmsBank["items"],
     practiceBlueprints: [{ blueprintId: "interview", blueprintVersion: "1", modeId: "algorithms-interview-simulation", requestedLengths: [40], defaultRequestedLength: 40, shortening: "prohibited", minimumActualLength: 40, composition: { kind: "simulation_pool", ids: ["interview-pool"] }, resolvedItemIds }],
     recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [],
     simulationPools: [{ poolId: "interview-pool", poolVersion: "1", itemIds: poolItemIds }],
@@ -60,6 +60,22 @@ test("validates explicit Algorithms hierarchy links and rejects every broken chi
   assert.doesNotThrow(() => validateAlgorithmsBank(legalContrast, taxonomyManifest));
   const illegalContrast = { ...legalContrast, contrastSets: [{ ...legalContrast.contrastSets[0]!, primaryMentalUnitId: "reason_about_indexed_scans" }] };
   assert.throws(() => validateAlgorithmsBank(illegalContrast, taxonomyManifest), /illegal_contrast_mapping/);
+});
+
+test("rejects former string Details, unsupported rich blocks, and unregistered image assets", () => {
+  const details = bank().items[0]!.feedback.details;
+  const cases: readonly [string, unknown][] = [
+    ["former string", "Details as a plain string"],
+    ["raw HTML", { blocks: [{ type: "html", html: "<p>Unsafe</p>" }] }],
+    ["unknown code language", { blocks: [{ type: "code", language: "javascript", code: "return 1" }] }],
+    ["external image", { blocks: [{ type: "image", assetId: "https://example.test/image.png", alt: "Remote" }] }],
+    ["unregistered local image", { blocks: [{ type: "image", assetId: "algorithms/example", alt: "Missing local asset" }] }],
+  ];
+  for (const [label, invalid] of cases) {
+    const candidate = bank();
+    const item = candidate.items[0]!;
+    assert.throws(() => validateAlgorithmsBank({ ...candidate, items: [{ ...item, feedback: { ...item.feedback, details: invalid as typeof details } }, ...candidate.items.slice(1)] }, taxonomyManifest), /feedback|unsupported|asset/i, label);
+  }
 });
 
 test("uses mandatory Details when a single-choice response omits the correct option without an optional specific explanation", () => {

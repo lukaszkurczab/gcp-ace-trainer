@@ -53,16 +53,16 @@ function choice(index, multiple = false) {
     id: `cross-repo-item-${index}`, prompt: multiple ? "Choose all valid fixture invariants." : "Choose the valid fixture invariant.",
     interaction: { type: "choice", selectionMode: multiple ? "multiple" : "single", options: multiple ? [{ id: "keep", text: "Keep invariant" }, { id: "also-keep", text: "Keep supporting invariant" }, { id: "discard", text: "Discard invariant" }] : [{ id: "keep", text: "Keep invariant" }, { id: "discard", text: "Discard invariant" }], acceptedOptionIds },
     scoringContract: { type: "choice", resultSemantics: "exact_selected_set_with_partial_v1" },
-    feedback: { reason: "Fixture reason.", details: "Fixture details.", wrongOptionExplanationsByOptionId: { discard: "The invariant must be preserved." }, ...(multiple ? { omittedCorrectExplanationsByOptionId: { keep: "Keep the primary invariant.", "also-keep": "Keep the supporting invariant." } } : {}) },
+    feedback: { reason: "Fixture reason.", details: { blocks: [{ type: "paragraph", text: "Fixture details." }] }, wrongOptionExplanationsByOptionId: { discard: "The invariant must be preserved." }, ...(multiple ? { omittedCorrectExplanationsByOptionId: { keep: "Keep the primary invariant.", "also-keep": "Keep the supporting invariant." } } : {}) },
   };
 }
 
 function ordering(index) {
-  return { id: `cross-repo-item-${index}`, prompt: "Order the fixture steps.", interaction: { type: "ordering", elements: [{ id: "first", text: "First" }, { id: "second", text: "Second" }], canonicalOrder: ["first", "second"], scoringMethod: "adjacent_relations" }, scoringContract: { type: "ordering", maxPoints: 1 }, feedback: { reason: "Fixture reason.", details: "Fixture details." } };
+  return { id: `cross-repo-item-${index}`, prompt: "Order the fixture steps.", interaction: { type: "ordering", elements: [{ id: "first", text: "First" }, { id: "second", text: "Second" }], canonicalOrder: ["first", "second"], scoringMethod: "adjacent_relations" }, scoringContract: { type: "ordering", maxPoints: 1 }, feedback: { reason: "Fixture reason.", details: { blocks: [{ type: "paragraph", text: "Fixture details." }] } } };
 }
 
 function complexity(index) {
-  return { id: `cross-repo-item-${index}`, prompt: "Select the fixture time complexity.", interaction: { type: "complexity", checkedDimensions: ["time"], availableValuesByDimension: { time: ["O(n)", "O(n2)"] }, acceptedValuesByDimension: { time: ["O(n)"] }, normalizedAliasesByDimension: { time: {} }, maxPoints: 1 }, scoringContract: { type: "complexity", maxPoints: 1 }, feedback: { reason: "Fixture reason.", details: "Fixture details." } };
+  return { id: `cross-repo-item-${index}`, prompt: "Select the fixture time complexity.", interaction: { type: "complexity", checkedDimensions: ["time"], availableValuesByDimension: { time: ["O(n)", "O(n2)"] }, acceptedValuesByDimension: { time: ["O(n)"] }, normalizedAliasesByDimension: { time: {} }, maxPoints: 1 }, scoringContract: { type: "complexity", maxPoints: 1 }, feedback: { reason: "Fixture reason.", details: { blocks: [{ type: "paragraph", text: "Fixture details." }] } } };
 }
 
 function item(index) {

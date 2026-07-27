@@ -115,3 +115,16 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Verified answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);
 });
+
+test("rich feedback renders semantic blocks with accessible code, headings, lists, callouts, and local images", () => {
+  const document = source("src/features/practice/AlgorithmFeedbackDocumentBlock.tsx");
+  const assets = source("src/content/algorithmsFeedbackAssets.ts");
+
+  assert.match(document, /accessibilityRole="header"/);
+  assert.match(document, /accessibilityLabel=\{`Code sample in \$\{block\.language\}`\}/);
+  assert.match(document, /<Text selectable style=\{styles\.code\}>/);
+  assert.match(document, /accessibilityLabel=\{block\.alt\}/);
+  assert.match(document, /CALLOUT_LABEL\[block\.kind\]/);
+  assert.match(assets, /Unknown local Algorithms feedback asset/);
+  assert.doesNotMatch(document, /dangerouslySetInnerHTML|WebView|HTML/);
+});

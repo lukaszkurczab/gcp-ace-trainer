@@ -6,6 +6,7 @@ import type { PracticeFeedback } from "./practiceSessionPresentation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { AlgorithmFeedbackDocumentBlock } from "./AlgorithmFeedbackDocumentBlock";
 
 
 export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback: PracticeFeedback; itemId: string }>) {
@@ -29,14 +30,14 @@ export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback:
         <Text style={styles.detailsLabel}>{t("Details")}</Text>
         <Text style={styles.detailsIndicator}>{detailsOpen ? "−" : "+"}</Text>
       </Pressable>
-      {detailsOpen ? <Text style={styles.details} testID={runtimeSelectors.session.details(itemId)}>{feedback.details}</Text> : null}
+      {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} /></View> : null}
     </View>
   );
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
-  details: { ...typography.small, color: palette.textSecondary },
+  details: { gap: spacing.md },
   detailsIndicator: { ...typography.bodyStrong, color: palette.accentPurple },
   detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },

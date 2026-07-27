@@ -1,4 +1,5 @@
 import type { CertificationQuestion } from "../../tracks/cloud-certification/domain";
+import type { AlgorithmFeedbackDocument } from "./feedbackDocument";
 
 export type PublishedAlgorithmChoiceInteraction = Readonly<{
   type: "choice";
@@ -26,10 +27,11 @@ export type PublishedAlgorithmOrderingScoringContract = Readonly<{ type: "orderi
 export type PublishedAlgorithmComplexityScoringContract = Readonly<{ type: "complexity"; maxPoints: number }>;
 export type PublishedAlgorithmFeedback = Readonly<{
   reason: string;
-  details: string;
+  details: AlgorithmFeedbackDocument;
   wrongOptionExplanationsByOptionId?: Readonly<Record<string, string>>;
   omittedCorrectExplanationsByOptionId?: Readonly<Record<string, string>>;
 }>;
+export type PublishedAlgorithmFeedbackAsset = Readonly<{ id: string; sourcePath: string; sha256: string }>;
 export type ResolvedPublishedAlgorithmTaxonomy = Readonly<{
   roadmapNodeId: string;
   primaryMentalUnitId: string;
@@ -90,6 +92,7 @@ export type PublishedAlgorithmsBank = Readonly<{
   trackId: "algorithms";
   familyId: "algorithms";
   contentVersion: string;
+  feedbackAssets: readonly PublishedAlgorithmFeedbackAsset[];
   items: readonly PublishedAlgorithmItem[];
   practiceBlueprints: readonly PublishedAlgorithmsPracticeBlueprint[];
   recognitionSets: readonly PublishedAlgorithmsRecognitionSet[];
