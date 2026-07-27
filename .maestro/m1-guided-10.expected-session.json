@@ -1,9 +1,9 @@
 {
   "kind": "maestro-real-content-session-v1",
   "release": {
-    "releaseId": "patternly-core-0009",
-    "sourceRepositoryCommit": "b424faa6d8c7209acb51ac23af812d08c31842dc",
-    "checksumSha256": "fccc4c8564c61b1941d398712a2836ca980ce4fc1df1d1d02a12136112d41f0c"
+    "releaseId": "patternly-core-0013",
+    "sourceRepositoryCommit": "b4a7e46527e03b03d1ccd1cec5ea260f5d772569",
+    "checksumSha256": "ff2869f43d52e690c8eb85a4bfbc1741e83e25e838d9e0c238f47b73eda5388e"
   },
   "session": {
     "sessionId": "algorithms:algorithms-guided-practice:1",
