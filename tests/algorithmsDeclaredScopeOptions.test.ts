@@ -14,7 +14,7 @@ test("Algorithms declared-scope options expose only validated structures with on
   assert.ok(recognition.length > 0);
   assert.ok(contrast.length > 0);
   assert.ok(independent.length > 0);
-  assert.ok(recognition.every((option) => typeof option.scope.recognitionSetId === "string" && !option.scope.contrastSetId && !option.scope.interleavedScopeId && option.topicId.length > 0 && option.title.length > 0));
-  assert.ok(contrast.every((option) => typeof option.scope.contrastSetId === "string" && !option.scope.recognitionSetId && !option.scope.interleavedScopeId && option.detail.length > 0));
-  assert.ok(independent.every((option) => typeof option.scope.interleavedScopeId === "string" && !option.scope.recognitionSetId && !option.scope.contrastSetId && option.topicId.length > 0));
+  assert.ok(recognition.every((option) => typeof option.scope.recognitionSetId === "string" && !option.scope.contrastRoadmapNodeId && !option.scope.interleavedScopeId && option.topicId.length > 0 && option.title.length > 0));
+  assert.ok(contrast.every((option) => typeof option.scope.contrastRoadmapNodeId === "string" && !option.scope.recognitionSetId && !option.scope.interleavedScopeId && option.detail.length > 0));
+  assert.ok(independent.every((option) => typeof option.scope.interleavedScopeId === "string" && !option.scope.recognitionSetId && !option.scope.contrastRoadmapNodeId && option.topicId.length > 0));
 });

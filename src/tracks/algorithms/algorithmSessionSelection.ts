@@ -9,7 +9,7 @@ import { selectAlgorithmReviewItems, type AlgorithmReviewSource } from "./algori
 export type { AlgorithmReviewSource } from "./algorithmReviewSelection";
 export type AlgorithmSessionEntryPoint = "approach_primer" | "topic_default" | "pattern_recognition" | "contrast" | "due_queue" | "session_misses" | "mixed_practice" | "timed_validation";
 export const ALGORITHM_ENTRY_MODE_IDS = Object.freeze({ approach_primer: ALGORITHM_MODE_IDS.learnApproach, topic_default: ALGORITHM_MODE_IDS.guidedPractice, pattern_recognition: ALGORITHM_MODE_IDS.recognizePatterns, contrast: ALGORITHM_MODE_IDS.contrastPractice, due_queue: ALGORITHM_MODE_IDS.weakAreaReview, session_misses: ALGORITHM_MODE_IDS.weakAreaReview, mixed_practice: ALGORITHM_MODE_IDS.independentPractice, timed_validation: ALGORITHM_MODE_IDS.interviewSimulation } as const satisfies Record<AlgorithmSessionEntryPoint, AlgorithmModeId>);
-export type AlgorithmSelectionScope = Readonly<{ mentalUnitId?: string; roadmapNodeId?: string; recognitionSetId?: string; contrastSetId?: string; interleavedScopeId?: string; simulationProfileId?: string }>;
+export type AlgorithmSelectionScope = Readonly<{ mentalUnitId?: string; roadmapNodeId?: string; recognitionSetId?: string; contrastRoadmapNodeId?: string; interleavedScopeId?: string; simulationProfileId?: string }>;
 export type AlgorithmShorteningReason = "insufficient_compatible_content";
 export type AlgorithmSessionSelection = Readonly<{ actualLength: number; items: readonly AlgorithmQuestion[]; requestedLength: number; shorteningReason?: AlgorithmShorteningReason }>;
 export type SelectAlgorithmSessionItemsInput = Readonly<{ attempts?: readonly TrainingAttempt[]; contentCatalog?: AlgorithmContentCatalog; mode: AlgorithmModeId; now?: string; reviewItemRefs?: readonly ContentItemRef[]; reviewQueueItems?: readonly ReviewQueueEntry[]; reviewSource?: AlgorithmReviewSource; scope?: AlgorithmSelectionScope; sessionLength: number }>;
@@ -33,11 +33,29 @@ export function selectAlgorithmSessionItems(input: SelectAlgorithmSessionItemsIn
 function takeDeclaredItems(items: readonly AlgorithmQuestion[], requestedLength: number): readonly AlgorithmQuestion[] { const selected: AlgorithmQuestion[] = []; for (const item of items) { if (selected.length === requestedLength) break; selected.push(item); } return Object.freeze(selected); }
 function applyExplicitScope(mode: AlgorithmModeId, scope: AlgorithmSelectionScope | undefined, catalog: AlgorithmContentCatalog, items: readonly AlgorithmQuestion[]): readonly AlgorithmQuestion[] {
   if (mode === ALGORITHM_MODE_IDS.learnApproach || mode === ALGORITHM_MODE_IDS.guidedPractice || mode === ALGORITHM_MODE_IDS.customPractice) { const mentalUnitId = scope?.mentalUnitId; const roadmapNodeId = scope?.roadmapNodeId; if (!!mentalUnitId === !!roadmapNodeId) throw new Error(`Algorithms ${mode} requires exactly one explicit mental unit or roadmap node.`); return mentalUnitId ? items.filter((item) => item.taxonomy.primaryMentalUnitId === mentalUnitId) : items.filter((item) => item.taxonomy.roadmapNodeId === roadmapNodeId); }
-  const structureId = mode === ALGORITHM_MODE_IDS.recognizePatterns ? scope?.recognitionSetId : mode === ALGORITHM_MODE_IDS.contrastPractice ? scope?.contrastSetId : mode === ALGORITHM_MODE_IDS.independentPractice ? scope?.interleavedScopeId : mode === ALGORITHM_MODE_IDS.interviewSimulation ? scope?.simulationProfileId : undefined;
+  const structureId = mode === ALGORITHM_MODE_IDS.recognizePatterns ? scope?.recognitionSetId : mode === ALGORITHM_MODE_IDS.independentPractice ? scope?.interleavedScopeId : mode === ALGORITHM_MODE_IDS.interviewSimulation ? scope?.simulationProfileId : undefined;
+  if (mode === ALGORITHM_MODE_IDS.contrastPractice) {
+    const roadmapNodeId = scope?.contrastRoadmapNodeId;
+    if (!roadmapNodeId) throw new Error("Algorithms Contrast Practice requires one declared contrast roadmap topic.");
+    const contrastItemIds = new Set(catalog.bank.contrastSets.flatMap((set) => {
+      const topicIds = new Set(set.itemIds.map((itemId) => catalog.getItemById(itemId).taxonomy.roadmapNodeId));
+      if (topicIds.size !== 1) throw new Error("Algorithms contrast set crosses roadmap topics.");
+      return topicIds.has(roadmapNodeId) ? set.itemIds : [];
+    }));
+    if (!contrastItemIds.size) throw new Error("Unknown Algorithms contrast roadmap topic.");
+    return items.filter((item) => contrastItemIds.has(item.id));
+  }
   if (!structureId) throw new Error(`Algorithms ${mode} requires an explicit declared structure identity.`);
-  if (mode === ALGORITHM_MODE_IDS.recognizePatterns && !catalog.bank.recognitionSets.some((entry) => entry.setId === structureId)) throw new Error("Unknown Algorithms recognition set.");
-  if (mode === ALGORITHM_MODE_IDS.contrastPractice && !catalog.bank.contrastSets.some((entry) => entry.setId === structureId)) throw new Error("Unknown Algorithms contrast set.");
-  if (mode === ALGORITHM_MODE_IDS.independentPractice && !catalog.bank.interleavedScopes.some((entry) => entry.scopeId === structureId)) throw new Error("Unknown Algorithms interleaved scope.");
+  if (mode === ALGORITHM_MODE_IDS.recognizePatterns) {
+    const set = catalog.bank.recognitionSets.find((entry) => entry.setId === structureId);
+    if (!set) throw new Error("Unknown Algorithms recognition set.");
+    return items.filter((item) => set.itemIds.includes(item.id));
+  }
+  if (mode === ALGORITHM_MODE_IDS.independentPractice) {
+    const set = catalog.bank.interleavedScopes.find((entry) => entry.scopeId === structureId);
+    if (!set) throw new Error("Unknown Algorithms interleaved scope.");
+    return items.filter((item) => set.itemIds.includes(item.id));
+  }
   if (mode === ALGORITHM_MODE_IDS.interviewSimulation) { const profile = catalog.getSimulationProfile(structureId); if (!profile || profile.totalOccurrences !== 40 || profile.foregroundDurationMs !== 2_700_000 || profile.selectionPolicy.uniqueItems !== true || profile.selectionPolicy.replacement !== false || profile.selectionPolicy.deterministic !== true) throw new Error("Unknown Algorithms simulation profile."); }
   return items;
 }

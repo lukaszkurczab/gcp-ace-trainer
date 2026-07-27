@@ -32,7 +32,7 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
 
     const result = await validateBundledContent(built.release); const availability = result.tracks.find((track) => track.trackId === "algorithms");
     assert.equal(availability?.kind, "available"); assert.equal(result.tracks.find((track) => track.trackId === "cloud-certification")?.kind, "unavailable");
-    const catalog = getAlgorithmContentCatalog(); assert.equal(catalog.getItems().length, 40);
+    const catalog = getAlgorithmContentCatalog(); assert.equal(catalog.getItems().length, 80);
     for (const mode of harness.CROSS_REPOSITORY_ALGORITHMS_MODES) assert.equal(requireBundledTrackMode("algorithms", mode).trackId, "algorithms");
     assert.equal(requireBundledTrackMode("algorithms", ALGORITHM_MODE_IDS.customPractice).trackId, "algorithms");
 
@@ -41,7 +41,7 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-guided-practice", sessionLength: 20, scope: { mentalUnitId: "recognize_binary_search_signal" } }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: ALGORITHM_MODE_IDS.customPractice, sessionLength: 10, scope: { mentalUnitId: "recognize_binary_search_signal" } }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-recognize-patterns", sessionLength: 20, scope: { recognitionSetId: "cross-recognition" } }),
-      selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-contrast-practice", sessionLength: 20, scope: { contrastSetId: "cross-contrast" } }),
+      selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-contrast-practice", sessionLength: 20, scope: { contrastRoadmapNodeId: "binary_search" } }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-weak-area-review", sessionLength: 10, reviewSource: "session_misses", reviewItemRefs: catalog.getItems().slice(0, 10).map((item) => catalog.toContentItemRef(item)) }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-independent-practice", sessionLength: 20, scope: { interleavedScopeId: "cross-interleaved" } }),
       selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-interview-simulation", sessionLength: 40, scope: { simulationProfileId: "algorithms-interview-simulation-v1" } }),

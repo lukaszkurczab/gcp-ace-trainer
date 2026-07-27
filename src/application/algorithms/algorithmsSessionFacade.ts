@@ -157,9 +157,16 @@ export function getAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: Algo
       .map((set) => option(set.itemIds, { recognitionSetId: set.setId }, "Identify the pattern from its declared signals and constraints.")));
   }
   if (input.modeId === ALGORITHM_MODE_IDS.contrastPractice) {
-    return Object.freeze(catalog.bank.contrastSets
-      .filter((set) => !input.targetMentalUnitId || set.primaryMentalUnitId === input.targetMentalUnitId || set.contrastedMentalUnitIds.includes(input.targetMentalUnitId))
-      .map((set) => option(set.itemIds, { contrastSetId: set.setId }, set.transferBoundary)));
+    const scopes = new Map<string, Set<string>>();
+    for (const set of catalog.bank.contrastSets.filter((entry) => !input.targetMentalUnitId || entry.primaryMentalUnitId === input.targetMentalUnitId || entry.contrastedMentalUnitIds.includes(input.targetMentalUnitId))) {
+      const topicIds = new Set(set.itemIds.map((itemId) => catalog.getItemById(itemId).taxonomy.roadmapNodeId));
+      if (topicIds.size !== 1) throw new Error("A declared Algorithms contrast set must belong to exactly one roadmap topic.");
+      const topicId = [...topicIds][0]!;
+      const itemIds = scopes.get(topicId) ?? new Set<string>();
+      set.itemIds.forEach((itemId) => itemIds.add(itemId));
+      scopes.set(topicId, itemIds);
+    }
+    return Object.freeze([...scopes.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([topicId, itemIds]) => option([...itemIds].sort(), { contrastRoadmapNodeId: topicId }, "Compare the declared decision rules, counterexamples, and transfer boundaries for this topic.")));
   }
   return Object.freeze(catalog.bank.interleavedScopes
     .map((scope) => option(scope.itemIds, { interleavedScopeId: scope.scopeId }, "Interleave the declared mental units without hints or reinsert.")));

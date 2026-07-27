@@ -67,22 +67,22 @@ function complexity(index) {
 
 function item(index) {
   const base = index === 3 ? ordering(index) : index === 4 ? complexity(index) : choice(index, index === 2);
-  const binarySearch = index <= 20;
+  const binarySearch = index <= 40;
   return { ...base, taxonomy: { primarySkillAtomId: binarySearch ? "identify_legal_half_discard_rule" : "track_index_boundary", secondarySkillAtomIds: [], learningStage: binarySearch ? "pattern_mechanics" : "foundations" } };
 }
 
 function structures(ids) {
-  const binarySearch = ids.slice(0, 20); const arrays = ids.slice(20); const all = [...ids];
+  const binarySearch = ids.slice(0, 40); const arrays = ids.slice(40); const simulationItems = [...binarySearch.slice(0, 20), ...arrays.slice(0, 20)]; const all = [...ids];
   return {
-    recognitionSets: [{ setId: "cross-recognition", setVersion: "v1", taxonomyScope: { roadmapNodeIds: ["binary_search"] }, legalLearningStages: ["pattern_mechanics"], itemIds: binarySearch }],
-    contrastSets: [{ setId: "cross-contrast", setVersion: "v1", primaryMentalUnitId: "legal_half_discard_rule", contrastedMentalUnitIds: ["recognize_binary_search_signal", "reason_about_indexed_scans"], falseHeuristicId: "sorted_input_always_requires_binary_search", transferBoundary: "cross-fixture-boundary", itemIds: all }],
+    recognitionSets: [{ setId: "cross-recognition", setVersion: "v1", taxonomyScope: { roadmapNodeIds: ["binary_search"] }, legalLearningStages: ["pattern_mechanics"], itemIds: binarySearch.slice(0, 20) }],
+    contrastSets: [{ setId: "cross-contrast", setVersion: "v1", primaryMentalUnitId: "legal_half_discard_rule", contrastedMentalUnitIds: ["recognize_binary_search_signal"], falseHeuristicId: "sorted_input_always_requires_binary_search", transferBoundary: "cross-fixture-boundary", itemIds: binarySearch.slice(0, 20) }],
     interleavedScopes: [{ scopeId: "cross-interleaved", scopeVersion: "v1", mentalUnitIds: ["recognize_binary_search_signal", "reason_about_indexed_scans"], itemIds: all, legalLearningStages: ["foundations", "pattern_mechanics"], minimumDiversity: 2 }],
     compatibilitySets: [
       { id: "cross-symmetric", version: "v1", relation: "same_mechanism", direction: "symmetric", sourceItemIds: [ids[0], ids[1]], targetItemIds: [ids[1], ids[0]], relationMetadata: { mechanismBoundary: "binary_search" } },
       { id: "cross-directed", version: "v1", relation: "reviewed_variant", direction: "directed", sourceItemIds: [ids[2]], targetItemIds: [ids[3]], relationMetadata: { mechanismBoundary: "binary_search" } },
-      { id: "cross-compatible-contrast", version: "v1", relation: "compatible_contrast", direction: "directed", sourceItemIds: [ids[0]], targetItemIds: [ids[20]], relationMetadata: { contrastSetId: "cross-contrast" } },
+      { id: "cross-compatible-contrast", version: "v1", relation: "compatible_contrast", direction: "directed", sourceItemIds: [ids[0]], targetItemIds: [ids[1]], relationMetadata: { contrastSetId: "cross-contrast" } },
     ],
-    simulationPools: [{ poolId: "cross-simulation-pool", poolVersion: "v1", itemIds: all }],
+    simulationPools: [{ poolId: "cross-simulation-pool", poolVersion: "v1", itemIds: simulationItems }],
     simulationProfiles: [{ profileId: "algorithms-interview-simulation-v1", profileVersion: "1", profileKind: "internal_learning_profile", totalOccurrences: 40, foregroundDurationMs: 2700000, poolId: "cross-simulation-pool", distributions: [{ dimension: "primaryMentalUnitId", buckets: [{ valueId: "recognize_binary_search_signal", minimum: 20, target: 20, maximum: 20 }, { valueId: "reason_about_indexed_scans", minimum: 20, target: 20, maximum: 20 }] }, { dimension: "interactionType", buckets: [{ valueId: "choice", minimum: 38, target: 38, maximum: 38 }, { valueId: "ordering", minimum: 1, target: 1, maximum: 1 }, { valueId: "complexity", minimum: 1, target: 1, maximum: 1 }] }], selectionPolicy: { uniqueItems: true, replacement: false, deterministic: true, algorithmVersion: "sha256-ranked-constraints-v1" }, provenance: { authority: "patternly_product", approvedBy: "cross-repo-test", approvedAt: "2026-07-17T00:00:00.000Z", rationale: "Test-only contract fixture." } }],
   };
 }
@@ -98,9 +98,9 @@ export async function buildCrossRepositoryAlgorithmsRelease() {
   await producerFixtures.fixtureRoot(root);
   try {
     await writeJson(root, "config/taxonomy/algorithms.json", JSON.parse(await readFile(join(CONTENT_ROOT, "config/taxonomy/algorithms.json"), "utf8")));
-    const ids = Array.from({ length: 40 }, (_, index) => `cross-repo-item-${index + 1}`); const modeStructures = structures(ids);
-    await writeJson(root, "manual/source/algorithms/binary-search.json", batch("cross-binary-search", Array.from({ length: 20 }, (_, index) => index + 1), { roadmapNodeId: "binary_search", primaryMentalUnitId: "recognize_binary_search_signal", patternFamilyId: "binary_search" }, modeStructures));
-    await writeJson(root, "manual/source/algorithms/arrays.json", batch("cross-arrays", Array.from({ length: 20 }, (_, index) => index + 21), { roadmapNodeId: "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings" }, { recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [], simulationPools: [], simulationProfiles: [] }));
+    const ids = Array.from({ length: 80 }, (_, index) => `cross-repo-item-${index + 1}`); const modeStructures = structures(ids);
+    await writeJson(root, "manual/source/algorithms/binary-search.json", batch("cross-binary-search", Array.from({ length: 40 }, (_, index) => index + 1), { roadmapNodeId: "binary_search", primaryMentalUnitId: "recognize_binary_search_signal", patternFamilyId: "binary_search" }, modeStructures));
+    await writeJson(root, "manual/source/algorithms/arrays.json", batch("cross-arrays", Array.from({ length: 40 }, (_, index) => index + 41), { roadmapNodeId: "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings" }, { recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [], simulationPools: [], simulationProfiles: [] }));
     await git(root, "init"); await git(root, "config", "user.email", "cross-repo@example.test"); await git(root, "config", "user.name", "Cross Repository Fixture");
     const technicalInputCommit = await commitFixture(root, "technical inputs"); const inspection = await producer.inspectTrack({ root, trackId: "algorithms" }); const evidence = await producer.emitTechnicalEvidence({ root, trackId: "algorithms" }); const technicalEvidenceCommit = await commitFixture(root, "technical evidence");
     const validated = await producer.validateTrack({ root, trackId: "algorithms" }); const built = await producer.buildTrack({ root, trackId: "algorithms", outputRoot: join(root, "out") }); const verified = await producer.verifyArtifact(built.path); const finalReleaseCommit = await gitHead(root, "CROSS_REPO_ROUND_TRIP_FAILED");

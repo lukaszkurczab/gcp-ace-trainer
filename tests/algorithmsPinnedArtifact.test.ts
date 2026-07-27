@@ -26,13 +26,14 @@ test("prepares every Algorithms mode from the active pinned artifact without sub
   );
   const recognition = required(catalog.bank.recognitionSets.find((set) => set.itemIds.length >= 20), "a 20-item recognition set");
   const contrast = required(catalog.bank.contrastSets.find((set) => set.itemIds.length >= 20), "a 20-item contrast set");
+  const contrastRoadmapNodeId = catalog.getItemById(contrast.itemIds[0]!).taxonomy.roadmapNodeId;
   const interleaved = required(catalog.bank.interleavedScopes.find((scope) => scope.itemIds.length >= 20), "a 20-item interleaved scope");
 
   const selections = [
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-learn-approach", sessionLength: 10, scope: { mentalUnitId } }),
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-guided-practice", sessionLength: 20, scope: { mentalUnitId } }),
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-recognize-patterns", sessionLength: 20, scope: { recognitionSetId: recognition.setId } }),
-    selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-contrast-practice", sessionLength: 20, scope: { contrastSetId: contrast.setId } }),
+    selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-contrast-practice", sessionLength: 20, scope: { contrastRoadmapNodeId } }),
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-weak-area-review", sessionLength: 10, reviewSource: "session_misses", reviewItemRefs: catalog.getItems().slice(0, 10).map((item) => catalog.toContentItemRef(item)) }),
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-independent-practice", sessionLength: 20, scope: { interleavedScopeId: interleaved.scopeId } }),
     selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: "algorithms-interview-simulation", sessionLength: 40, scope: { simulationProfileId: "algorithms-interview-simulation-v1" } }),

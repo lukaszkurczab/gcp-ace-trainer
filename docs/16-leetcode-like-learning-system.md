@@ -348,7 +348,7 @@ Later sessions and recommendations may use newly committed evidence.
 
 ### Purpose
 
-`Learn Approach` introduces one mental unit as a reusable reasoning structure.
+`Learn Approach` introduces one roadmap unit as a reusable reasoning structure. Its items may cover the unit's closely related mental units without widening into another roadmap unit.
 
 It is intended for:
 
@@ -363,15 +363,11 @@ It is not a passive article or a list of facts.
 
 The resolved canonical configuration supplies the requested length.
 
-The session may shorten when the active mental unit does not contain enough valid unique instructional items for the declared approach-stage blueprint.
-
-The actual length and reason are shown before start.
-
-It must not fill from another mental unit automatically.
+The publisher verifies that every selectable roadmap unit has the declared length before release. It must not fill from another roadmap unit automatically.
 
 ### Selection
 
-All selected items share one primary mental unit.
+All selected items share one roadmap unit.
 
 The session blueprint should cover, where applicable:
 
@@ -448,7 +444,7 @@ A successful primer does not prove independent application.
 
 ### Purpose
 
-`Guided Practice` stabilizes one mental unit through varied application with progressively reduced cues.
+`Guided Practice` stabilizes one roadmap unit through varied application with progressively reduced cues.
 
 It is the default topic-practice mode.
 
@@ -456,13 +452,11 @@ It is the default topic-practice mode.
 
 Supported user-selectable lengths follow the resolved canonical product configuration.
 
-If the selected mental unit contains fewer valid compatible unique items than requested, the session shortens and shows its actual length before start.
-
-It does not fill from sibling mental units merely to reach the requested count.
+Every selectable roadmap unit must satisfy the declared 10, 20, or 40-question length at publish time. It does not fill from another roadmap unit merely to reach the requested count.
 
 ### Selection
 
-All initial session items share one primary mental unit.
+All initial session items share one roadmap unit.
 
 Selection varies:
 
@@ -545,7 +539,7 @@ It does not train recognition from topic labels or remembered prompt wording.
 
 The resolved canonical configuration supplies the requested length.
 
-The mode may shorten when the declared recognition set lacks enough valid unique items.
+The mode offers 10 or 20 questions. The publisher rejects a release if any declared recognition scope cannot supply the selected length.
 
 ### Selection scope
 
@@ -635,11 +629,11 @@ It targets:
 
 The resolved canonical configuration supplies the requested length.
 
-The mode may shorten when the declared contrast set cannot supply enough valid unique items.
+The mode offers 10 or 20 questions. The publisher rejects a release if any declared contrast roadmap topic cannot supply the selected length.
 
 ### Contrast set
 
-Every session declares one or more explicit contrast relationships, such as:
+Every session selects one contrast roadmap topic composed from explicit contrast relationships, such as:
 
 - binary search versus linear scan;
 - hash lookup versus sorting and two pointers;
@@ -659,7 +653,7 @@ A contrast set must identify:
 
 ### Selection
 
-Items are arranged into small contrast clusters where the content supports meaningful juxtaposition.
+Items are arranged into small contrast clusters within the selected roadmap topic where the content supports meaningful juxtaposition.
 
 A cluster should vary one or a small number of decisive properties while keeping other surface characteristics comparable.
 
@@ -795,9 +789,7 @@ It is the closest non-simulation mode to independent problem analysis.
 
 The resolved canonical configuration supplies the requested length.
 
-The mode may support the canonical user-selectable session lengths defined by the product configuration.
-
-It may shorten only when the declared scope cannot provide enough valid unique items and the active blueprint permits shortening.
+The mode offers 10 or 20 questions. The publisher rejects a release if any declared interleaved scope cannot provide the selected length.
 
 ### Selection scope
 
