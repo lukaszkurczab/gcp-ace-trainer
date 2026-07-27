@@ -10,7 +10,7 @@ function required<T>(value: T | undefined, label: string): T {
   return value;
 }
 
-test("prepares every Algorithms mode from the pinned core 0003 artifact without substitutions or shortening", async () => {
+test("prepares every Algorithms mode from the active pinned artifact without substitutions or shortening", async () => {
   const validation = await validateBundledContent();
   const algorithms = required(validation.tracks.find((track) => track.trackId === "algorithms"), "Algorithms availability");
   const certification = required(validation.tracks.find((track) => track.trackId === "cloud-certification"), "Certification availability");
