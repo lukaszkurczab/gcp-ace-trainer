@@ -10,7 +10,7 @@ function required<T>(value: T | undefined, label: string): T {
   return value;
 }
 
-test("prepares every Algorithms mode from the pinned core 0002 artifact without substitutions or shortening", async () => {
+test("prepares every Algorithms mode from the pinned core 0003 artifact without substitutions or shortening", async () => {
   const validation = await validateBundledContent();
   const algorithms = required(validation.tracks.find((track) => track.trackId === "algorithms"), "Algorithms availability");
   const certification = required(validation.tracks.find((track) => track.trackId === "cloud-certification"), "Certification availability");
@@ -18,7 +18,7 @@ test("prepares every Algorithms mode from the pinned core 0002 artifact without 
   assert.equal(certification.kind, "available");
 
   const catalog = getAlgorithmContentCatalog();
-  assert.equal(catalog.getContentVersion(), "algorithms-core-0002");
+  assert.equal(catalog.getContentVersion(), "algorithms-core-0003");
   const mentalUnitId = required(
     [...new Map(catalog.getItems().map((item) => [item.taxonomy.primaryMentalUnitId, catalog.getItems().filter((candidate) => candidate.taxonomy.primaryMentalUnitId === item.taxonomy.primaryMentalUnitId).length])).entries()].find(([, count]) => count >= 20)?.[0],
     "a 20-item mental unit",
@@ -42,9 +42,9 @@ test("prepares every Algorithms mode from the pinned core 0002 artifact without 
     assert.equal(new Set(selection.items.map((item) => item.id)).size, selection.actualLength);
   }
 
-  const simulation = await prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: "algorithms-core-0002", taxonomyVersion: "algorithms-taxonomy-v2", profileId: "algorithms-interview-simulation-v1", sessionId: "pinned-core-0002-simulation", startedAt: "2026-07-18T00:00:00.000Z" });
+  const simulation = await prepareAlgorithmsInterviewSimulation({ catalog, contentVersion: "algorithms-core-0003", taxonomyVersion: "algorithms-taxonomy-v2", profileId: "algorithms-interview-simulation-v1", sessionId: "pinned-core-0003-simulation", startedAt: "2026-07-18T00:00:00.000Z" });
   assert.equal(simulation.session.actualLength, 40);
   assert.equal(new Set(simulation.session.itemOrder.map((occurrence) => occurrence.item.itemId)).size, 40);
-  assert.ok(simulation.session.itemOrder.every((occurrence) => occurrence.item.contentVersion === "algorithms-core-0002"));
+  assert.ok(simulation.session.itemOrder.every((occurrence) => occurrence.item.contentVersion === "algorithms-core-0003"));
   assert.match(simulation.session.planFingerprint ?? "", /^[a-f0-9]{64}$/);
 });

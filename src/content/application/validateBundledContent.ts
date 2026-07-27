@@ -19,7 +19,6 @@ export const CONTENT_UNAVAILABLE_REASONS = [
   "checksum_mismatch",
   "schema_mismatch",
   "version_mismatch",
-  "missing_approval_coverage",
   "insufficient_fixed_pool",
   "unsupported_interaction",
   "invalid_taxonomy_reference",
@@ -36,7 +35,6 @@ export type AvailableBundledTrack = Readonly<{
   schemaVersion: "published-bank-v1";
   checksumSha256: string;
   sourceRepositoryCommit: string;
-  approvalCoverageIdentity: string;
   declaredModes: readonly string[];
   itemIds: readonly string[];
 }>;
@@ -82,7 +80,7 @@ export async function validateBundledContent(
       unavailableTracks.push(unavailable(track, "missing_artifact", `No pinned artifact is bundled for ${track.id}.`));
       continue;
     }
-    const outcome = await validateTrackArtifact(track, reference);
+    const outcome = await validateTrackArtifact(track, reference, typedRelease.manifest.sourceRepositoryCommit);
     if (outcome.kind === "unavailable") unavailableTracks.push(outcome);
     else validated.push(outcome);
   }
@@ -117,9 +115,13 @@ function validateReleaseEnvelope(value: unknown): string | null {
 async function validateTrackArtifact(
   track: TrackRegistration,
   reference: BundledTrackArtifactReference,
+  releaseSourceRepositoryCommit: string,
 ): Promise<UnavailableBundledTrack | Readonly<{ kind: "available"; availability: AvailableBundledTrack; payload: unknown; reference: BundledTrackArtifactReference }>> {
   const invalid = validateReference(track, reference);
   if (invalid) return unavailable(track, "invalid_envelope", invalid);
+  if (reference.sourceRepositoryCommit !== releaseSourceRepositoryCommit) {
+    return unavailable(track, "invalid_envelope", "Artifact source commit does not match the pinned release manifest.");
+  }
   if (reference.trackId !== track.id || reference.familyId !== track.familyId) {
     return unavailable(track, "invalid_taxonomy_reference", "Artifact track/family identity does not match the canonical registry.");
   }
@@ -140,28 +142,24 @@ async function validateTrackArtifact(
     return unavailable(track, "version_mismatch", "Artifact versions do not match the pinned track reference.");
   }
   const itemIds = getItemIds(artifact.bank);
-  if (!itemIds || !hasExactCoverage(reference.approvalCoverage.itemIds, itemIds) || !nonEmpty(reference.approvalCoverage.identity)) {
-    return unavailable(track, "missing_approval_coverage", "Artifact lacks approval coverage for every item identity.");
-  }
+  if (!itemIds) return unavailable(track, "invalid_envelope", "Artifact has no unique item identities.");
   try {
     const handler = getContentFamilyHandler(track.familyId);
     handler.validate(artifact.bank, { formatVersion: 1, trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, itemCount: itemIds.length, bankPath: "bundled:immutable", sha256: reference.checksumSha256 });
     if (track.familyId === "algorithms") {
-      if (!isRecord(artifact.bank) || artifact.bank.approvalActivationIdentity !== reference.approvalCoverage.identity) {
-        return unavailable(track, "missing_approval_coverage", "Algorithms artifact approval activation identity does not match pinned approval coverage.");
-      }
-      const blueprintModes = Array.isArray(artifact.bank.practiceBlueprints) ? new Set(artifact.bank.practiceBlueprints.filter(isRecord).map((blueprint) => blueprint.modeId).filter(nonEmpty)) : new Set<string>();
+      const algorithmBank = isRecord(artifact.bank) ? artifact.bank : null;
+      const blueprintModes = algorithmBank && Array.isArray(algorithmBank.practiceBlueprints) ? new Set(algorithmBank.practiceBlueprints.filter(isRecord).map((blueprint) => blueprint.modeId).filter(nonEmpty)) : new Set<string>();
       if (reference.declaredModes.some((mode) => !blueprintModes.has(mode))) {
         return unavailable(track, "declared_mode_unsupported", "Algorithms artifact declares a mode without a validated practice blueprint.");
       }
     }
   } catch (error) {
     const detail = error instanceof Error ? error.message : "Artifact payload is invalid.";
-    return unavailable(track, /approval/i.test(detail) ? "missing_approval_coverage" : /simulation.*(40|pool|profile)|pool.*40/i.test(detail) ? "insufficient_fixed_pool" : /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
+    return unavailable(track, /simulation.*(40|pool|profile)|pool.*40/i.test(detail) ? "insufficient_fixed_pool" : /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
   }
   return Object.freeze({
     kind: "available",
-    availability: Object.freeze({ kind: "available", trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, taxonomyVersion: reference.taxonomyVersion, schemaVersion: reference.schemaVersion, checksumSha256: reference.checksumSha256, sourceRepositoryCommit: reference.sourceRepositoryCommit, approvalCoverageIdentity: reference.approvalCoverage.identity, declaredModes: Object.freeze([...reference.declaredModes]), itemIds: Object.freeze([...itemIds]) }),
+    availability: Object.freeze({ kind: "available", trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, taxonomyVersion: reference.taxonomyVersion, schemaVersion: reference.schemaVersion, checksumSha256: reference.checksumSha256, sourceRepositoryCommit: reference.sourceRepositoryCommit, declaredModes: Object.freeze([...reference.declaredModes]), itemIds: Object.freeze([...itemIds]) }),
     payload: artifact.bank,
     reference,
   });
@@ -180,8 +178,8 @@ function publish(
 }
 
 function validateReference(track: TrackRegistration, reference: unknown): string | null {
-  if (!isRecord(reference) || !hasExactKeys(reference, ["trackId", "familyId", "contentVersion", "taxonomyVersion", "schemaVersion", "checksumSha256", "sourceRepositoryCommit", "approvalCoverage", "declaredModes", "artifactBytes"]) ||
-    !nonEmpty(reference.trackId) || !nonEmpty(reference.familyId) || !nonEmpty(reference.contentVersion) || !nonEmpty(reference.taxonomyVersion) || reference.schemaVersion !== "published-bank-v1" || !sha256(reference.checksumSha256) || !commit(reference.sourceRepositoryCommit) || !isRecord(reference.approvalCoverage) || !hasExactKeys(reference.approvalCoverage, ["identity", "itemIds"]) || typeof reference.approvalCoverage.identity !== "string" || !Array.isArray(reference.approvalCoverage.itemIds) || !reference.approvalCoverage.itemIds.every(nonEmpty) || !Array.isArray(reference.declaredModes) || reference.declaredModes.length === 0 || !reference.declaredModes.every(nonEmpty) || new Set(reference.declaredModes).size !== reference.declaredModes.length || typeof reference.artifactBytes !== "string") {
+  if (!isRecord(reference) || !hasExactKeys(reference, ["trackId", "familyId", "contentVersion", "taxonomyVersion", "schemaVersion", "checksumSha256", "sourceRepositoryCommit", "declaredModes", "artifactBytes"]) ||
+    !nonEmpty(reference.trackId) || !nonEmpty(reference.familyId) || !nonEmpty(reference.contentVersion) || !nonEmpty(reference.taxonomyVersion) || reference.schemaVersion !== "published-bank-v1" || !sha256(reference.checksumSha256) || !commit(reference.sourceRepositoryCommit) || !Array.isArray(reference.declaredModes) || reference.declaredModes.length === 0 || !reference.declaredModes.every(nonEmpty) || new Set(reference.declaredModes).size !== reference.declaredModes.length || typeof reference.artifactBytes !== "string") {
     return `Artifact reference for ${track.id} is malformed.`;
   }
   return null;
@@ -214,4 +212,3 @@ function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): 
 function nonEmpty(value: unknown): value is string { return typeof value === "string" && value.trim().length > 0; }
 function sha256(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{64}$/.test(value); }
 function commit(value: unknown): value is string { return typeof value === "string" && /^[a-f0-9]{40}$/.test(value); }
-function hasExactCoverage(approved: readonly string[], itemIds: readonly string[]): boolean { return approved.length === itemIds.length && new Set(approved).size === approved.length && approved.every((id) => itemIds.includes(id)); }

@@ -26,9 +26,9 @@ test("round-trips a production-pipeline test artifact through the exact Algorith
     assert.equal(built.evidence.evidence[0]!.validatedAtSourceCommit, built.integration.technicalInputCommit);
     assert.equal(built.evidence.evidence[0]!.technicalInputFingerprint, built.inspection.source.technicalInputFingerprint);
     assert.notEqual(built.integration.technicalInputCommit, built.integration.technicalEvidenceCommit);
-    assert.notEqual(built.integration.technicalEvidenceCommit, built.integration.approvalsActivationCommit);
-    assert.deepEqual(Object.keys(JSON.parse(built.artifact.artifactBytes).bank).sort(), ["approvalActivationIdentity", "compatibilitySets", "contentVersion", "contrastSets", "familyId", "formatVersion", "interleavedScopes", "items", "practiceBlueprints", "recognitionSets", "simulationPools", "simulationProfiles", "trackId"].sort());
-    assert.doesNotMatch(built.artifact.artifactBytes, /relationMetadata|authoringProvenance|sourceOverrides|technicalValidationEvidence|resolvedModeDeclarations/);
+    assert.equal(built.integration.technicalEvidenceCommit, built.integration.finalReleaseCommit);
+    assert.deepEqual(Object.keys(JSON.parse(built.artifact.artifactBytes).bank).sort(), ["compatibilitySets", "contentVersion", "contrastSets", "familyId", "formatVersion", "interleavedScopes", "items", "practiceBlueprints", "recognitionSets", "simulationPools", "simulationProfiles", "trackId"].sort());
+    assert.doesNotMatch(built.artifact.artifactBytes, /approvalActivationIdentity|approvalCoverage|relationMetadata|authoringProvenance|sourceOverrides|technicalValidationEvidence|resolvedModeDeclarations/);
 
     const result = await validateBundledContent(built.release); const availability = result.tracks.find((track) => track.trackId === "algorithms");
     assert.equal(availability?.kind, "available"); assert.equal(result.tracks.find((track) => track.trackId === "cloud-certification")?.kind, "unavailable");

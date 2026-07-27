@@ -98,10 +98,8 @@ export type PublishedAlgorithmsBank = Readonly<{
   compatibilitySets: readonly PublishedAlgorithmsCompatibilitySet[];
   simulationPools: readonly PublishedAlgorithmsSimulationPool[];
   simulationProfiles: readonly PublishedAlgorithmsSimulationProfile[];
-  approvalActivationIdentity: string;
 }>;
 
-/** The validator requires this identity in a published artifact; catalog fixtures may omit it because they do not cross the artifact boundary. */
 export type PublishedCertificationQuestion = CertificationQuestion & Readonly<{ itemFingerprint?: string }>;
 
 export type PublishedCertificationExamExperienceProfile = Readonly<{

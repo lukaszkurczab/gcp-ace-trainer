@@ -5,11 +5,6 @@ export type BundledReleaseManifest = Readonly<{
   sourceRepositoryCommit: string;
 }>;
 
-export type ApprovalCoverageReference = Readonly<{
-  identity: string;
-  itemIds: readonly string[];
-}>;
-
 /**
  * The checksum covers `artifactBytes` exactly.  It is deliberately a string
  * rather than an imported object so validation cannot be bypassed by a build
@@ -23,7 +18,6 @@ export type BundledTrackArtifactReference = Readonly<{
   schemaVersion: "published-bank-v1";
   checksumSha256: string;
   sourceRepositoryCommit: string;
-  approvalCoverage: ApprovalCoverageReference;
   declaredModes: readonly string[];
   artifactBytes: string;
 }>;

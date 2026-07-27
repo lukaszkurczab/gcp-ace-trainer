@@ -91,19 +91,6 @@ function batch(batchId, indexes, taxonomy, modeStructures) {
   return { schemaVersion: "algorithms-manual-source-v2", batchId, trackId: "algorithms", familyId: "algorithms", contentVersion: "cross-repo-fixture-v1", taxonomyVersion: "algorithms-taxonomy-v2", declaredModes: MODES, taxonomy, batchKind: "standard", authoringProvenance: { author: "cross-repo-test", createdAt: "2026-07-17T00:00:00.000Z", contentBatchId: batchId, authoringMethod: "independently_authored" }, items: indexes.map(item), modeStructures };
 }
 
-async function writeApprovalsAndActivation(root, inspected) {
-  const approvalsByBatch = new Map();
-  for (const evidence of inspected.source.technicalEvidence) {
-    const approvalId = `cross-approval-${evidence.batchId}`; approvalsByBatch.set(evidence.batchId, approvalId);
-    await writeJson(root, `manual/approvals/algorithms/${evidence.batchId}.json`, { approvalSchemaVersion: 1, approvalId, reviewKind: "editorial", batchId: evidence.batchId, familyId: "algorithms", trackId: "algorithms", primaryTaxonomyReference: "cross-repo", includedItems: Object.entries(evidence.itemFingerprints).sort(([a], [b]) => a === b ? 0 : a < b ? -1 : 1).map(([itemId, itemFingerprint]) => ({ itemId, itemFingerprint })), reviewer: "cross-repo-test", reviewDate: "2026-07-17", technicalValidationEvidenceId: evidence.evidenceId, factualAndEditorialDefectsFound: [], requiredCorrections: [], finalDisposition: "approved" });
-  }
-  const itemCoverage = inspected.source.items.map((entry) => {
-    const owner = inspected.source.batches.find((candidate) => candidate.items.some((item) => item.id === entry.id));
-    return { itemId: entry.id, itemFingerprint: entry.itemFingerprint, approvalId: approvalsByBatch.get(owner.batchId) };
-  });
-  await writeJson(root, "manual/activations/algorithms/cross-activation.json", { activationSchemaVersion: 1, activationId: "cross-activation", trackId: "algorithms", familyId: "algorithms", contentVersion: inspected.source.contentVersion, taxonomyVersion: inspected.source.taxonomyVersion, itemCoverage });
-}
-
 async function commitFixture(root, message) { await git(root, "add", "-A"); await git(root, "commit", "-m", message); return (await git(root, "rev-parse", "HEAD")).stdout.trim(); }
 export async function buildCrossRepositoryAlgorithmsRelease() {
   const verifiedInputs = await verifyCrossRepositoryInputs(); const { producer, producerFixtures } = verifiedInputs;
@@ -116,10 +103,9 @@ export async function buildCrossRepositoryAlgorithmsRelease() {
     await writeJson(root, "manual/source/algorithms/arrays.json", batch("cross-arrays", Array.from({ length: 20 }, (_, index) => index + 21), { roadmapNodeId: "arrays_and_strings", primaryMentalUnitId: "reason_about_indexed_scans", patternFamilyId: "arrays_and_strings" }, { recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [], simulationPools: [], simulationProfiles: [] }));
     await git(root, "init"); await git(root, "config", "user.email", "cross-repo@example.test"); await git(root, "config", "user.name", "Cross Repository Fixture");
     const technicalInputCommit = await commitFixture(root, "technical inputs"); const inspection = await producer.inspectTrack({ root, trackId: "algorithms" }); const evidence = await producer.emitTechnicalEvidence({ root, trackId: "algorithms" }); const technicalEvidenceCommit = await commitFixture(root, "technical evidence");
-    const approvedInspection = await producer.inspectTrack({ root, trackId: "algorithms" }); await writeApprovalsAndActivation(root, approvedInspection); const approvalsActivationCommit = await commitFixture(root, "approvals and activation");
     const validated = await producer.validateTrack({ root, trackId: "algorithms" }); const built = await producer.buildTrack({ root, trackId: "algorithms", outputRoot: join(root, "out") }); const verified = await producer.verifyArtifact(built.path); const finalReleaseCommit = await gitHead(root, "CROSS_REPO_ROUND_TRIP_FAILED");
     if (verified.sourceRepositoryCommit !== finalReleaseCommit) throw new CrossRepositoryContractError("CROSS_REPO_ROUND_TRIP_FAILED", "Artifact does not bind the final clean fixture commit.");
-    return { root, inspection, evidence, validated, artifact: verified, release: { manifest: { envelopeVersion: 1, releaseId: "cross-repo-fixture-release", sourceRepositoryCommit: finalReleaseCommit }, artifacts: [verified] }, integration: { ...verifiedInputs, technicalInputCommit, technicalEvidenceCommit, approvalsActivationCommit, finalReleaseCommit, fixtureSourceCommit: finalReleaseCommit }, cleanup: () => rm(root, { recursive: true, force: true }) };
+    return { root, inspection, evidence, validated, artifact: verified, release: { manifest: { envelopeVersion: 1, releaseId: "cross-repo-fixture-release", sourceRepositoryCommit: finalReleaseCommit }, artifacts: [verified] }, integration: { ...verifiedInputs, technicalInputCommit, technicalEvidenceCommit, finalReleaseCommit, fixtureSourceCommit: finalReleaseCommit }, cleanup: () => rm(root, { recursive: true, force: true }) };
   } catch (error) { await rm(root, { recursive: true, force: true }); throw error; }
 }
 

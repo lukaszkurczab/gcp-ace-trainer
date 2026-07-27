@@ -18,7 +18,7 @@ import { prepareAlgorithmsInterviewSimulation, submitAlgorithmInteraction } from
 const commit = "1".repeat(40);
 const itemIds = Array.from({ length: 40 }, (_, index) => `contract-item-${index + 1}`);
 
-function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; taxonomy?: Readonly<Record<string, unknown>>; approval?: string; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
+function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; taxonomy?: Readonly<Record<string, unknown>>; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
   const count = input.itemCount ?? 40;
   const items = Array.from({ length: count }, (_, index) => ({
     id: input.duplicateId && index === 1 ? "contract-item-1" : `contract-item-${index + 1}`,
@@ -34,7 +34,7 @@ function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "un
   const resolvedItemIds = items.map((item) => item.id);
   const poolItemIds = resolvedItemIds.slice(0, input.poolCount ?? count);
   return {
-    formatVersion: 1, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", items: items as PublishedAlgorithmsBank["items"], approvalActivationIdentity: input.approval ?? "approval:contract-v1",
+    formatVersion: 1, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", items: items as PublishedAlgorithmsBank["items"],
     practiceBlueprints: [{ blueprintId: "interview", blueprintVersion: "1", modeId: "algorithms-interview-simulation", requestedLengths: [40], defaultRequestedLength: 40, shortening: "prohibited", minimumActualLength: 40, composition: { kind: "simulation_pool", ids: ["interview-pool"] }, resolvedItemIds }],
     recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [],
     simulationPools: [{ poolId: "interview-pool", poolVersion: "1", itemIds: poolItemIds }],
@@ -68,14 +68,13 @@ test("uses mandatory Details when a single-choice response omits the correct opt
   assert.deepEqual(submitted.feedback.omittedCorrectOptionExplanations, [{ optionId: "correct", text: "This payload exists only to exercise the consumer contract." }]);
 });
 
-async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?: readonly string[]; checksum?: string; schemaVersion?: string; contentVersion?: string; taxonomyVersion?: string; approvalItemIds?: readonly string[] }> = {}): Promise<BundledContentRelease> {
+async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?: readonly string[]; checksum?: string; schemaVersion?: string; contentVersion?: string; taxonomyVersion?: string; sourceRepositoryCommit?: string; referenceExtras?: Readonly<Record<string, unknown>> }> = {}): Promise<BundledContentRelease> {
   const payload = input.artifactBank ?? bank();
   const bytes = JSON.stringify({ envelopeVersion: 1, schemaVersion: input.schemaVersion ?? "published-bank-v1", contentVersion: input.contentVersion ?? "algorithms-contract-v1", taxonomyVersion: input.taxonomyVersion ?? "algorithms-taxonomy-v1", bank: payload });
   const actualChecksum = await contentHasher.sha256(bytes);
-  const ids = (payload as PublishedAlgorithmsBank).items?.map((item) => item.id) ?? [];
   return {
     manifest: { envelopeVersion: 1, releaseId: "contract-cutover", sourceRepositoryCommit: commit },
-    artifacts: [{ trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", schemaVersion: "published-bank-v1", checksumSha256: input.checksum ?? actualChecksum, sourceRepositoryCommit: commit, approvalCoverage: { identity: "approval:contract-v1", itemIds: input.approvalItemIds ?? ids }, declaredModes: input.declaredModes ?? ["algorithms-interview-simulation"], artifactBytes: bytes }],
+    artifacts: [{ trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", schemaVersion: "published-bank-v1", checksumSha256: input.checksum ?? actualChecksum, sourceRepositoryCommit: input.sourceRepositoryCommit ?? commit, declaredModes: input.declaredModes ?? ["algorithms-interview-simulation"], artifactBytes: bytes, ...input.referenceExtras }],
   };
 }
 
@@ -97,7 +96,7 @@ test("consumes a canonical, track-scoped Algorithms artifact while Certification
   assert.match(prepared.session.planFingerprint ?? "", /^[a-f0-9]{64}$/);
 });
 
-test("projects missing, malformed, checksum, schema/version, approval, pool, interaction, and taxonomy failures per track", async () => {
+test("projects missing, malformed, checksum, schema/version, fixed-pool, interaction, taxonomy, and retired-field failures per track", async () => {
   const missing = await validateBundledContent({ manifest: { envelopeVersion: 1, releaseId: "missing", sourceRepositoryCommit: commit }, artifacts: [] });
   assert.equal(track(missing, "algorithms").kind, "unavailable");
   const malformed = await validateBundledContent({ manifest: { envelopeVersion: 2, releaseId: "malformed", sourceRepositoryCommit: commit }, artifacts: [] });
@@ -107,8 +106,9 @@ test("projects missing, malformed, checksum, schema/version, approval, pool, int
     ["checksum", release({ checksum: "0".repeat(64) }), "checksum_mismatch"],
     ["schema", release({ schemaVersion: "published-bank-v2" }), "schema_mismatch"],
     ["version", release({ contentVersion: "algorithms-contract-v2" }), "version_mismatch"],
-    ["approval", release({ approvalItemIds: [] }), "missing_approval_coverage"],
-    ["activation", release({ artifactBank: bank({ approval: "approval:other" }) }), "missing_approval_coverage"],
+    ["source commit", release({ sourceRepositoryCommit: "2".repeat(40) }), "invalid_envelope"],
+    ["retired reference field", release({ referenceExtras: { approvalCoverage: { identity: "retired", itemIds: itemIds } } }), "invalid_envelope"],
+    ["retired bank field", release({ artifactBank: { ...bank(), approvalActivationIdentity: "retired" } }), "invalid_taxonomy_reference"],
     ["pool", release({ artifactBank: bank({ poolCount: 39 }) }), "insufficient_fixed_pool"],
     ["interaction", release({ artifactBank: bank({ interaction: "unsupported" }) }), "unsupported_interaction"],
     ["taxonomy", release({ artifactBank: bank({ taxonomyId: "unknown-node" }) }), "invalid_taxonomy_reference"],
