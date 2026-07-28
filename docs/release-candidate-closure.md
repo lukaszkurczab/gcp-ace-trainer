@@ -688,7 +688,7 @@ tasks:
 | Task | Status | app SHA | content SHA | Verification | Evidence | Blocker |
 | --- | --- | --- | --- | --- | --- | --- |
 | RC-002 | VERIFIED | aab43eb6727f4223db09dec25b134bacdf65a954 | d3a44041b923eae01ccabd6d9d5e5fa6c9ffe975 | `npm run typecheck`; targeted Certification suite 34/34; `npm test` 374/374 | `origin/main` confirmed at `aab43eb6727f4223db09dec25b134bacdf65a954`; legacy-ID production search empty | — |
-| RC-003 | PENDING | — | — | — | — | — |
+| RC-003 | BLOCKED | 3827a0a9c6f4fed89762a3d25e4518577b7e44f8 | d3a44041b923eae01ccabd6d9d5e5fa6c9ffe975 | Official-source review 2026-07-28 | [PO decision](po-questions/rc-003-certification-exam-interaction-policy.md) required: official sources omit interaction policy | PO decision on product-owned simulation policy |
 | RC-004 | PENDING | — | — | — | — | — |
 | RC-005 | PENDING | — | — | — | — | — |
 | RC-006 | PENDING | — | — | — | — | — |
