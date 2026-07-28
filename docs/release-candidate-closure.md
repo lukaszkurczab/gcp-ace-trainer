@@ -21,12 +21,12 @@ w tym dokumencie przed następną implementacją.
 | Obszar | Potwierdzony stan |
 | --- | --- |
 | app | `https://github.com/lukaszkurczab/gcp-ace-trainer.git`, `main`, `25d79f832760add1a37aa7e2e79b3d4b1b4c711d`; worktree czysty po implementacji RC-017 2026-07-28 |
-| content | `https://github.com/lukaszkurczab/patternly-content.git`, `master`, `228a869feea1cfbdd700fc868ab050e1d8380233`; worktree czysty i `origin/master` potwierdzony po RC-011 2026-07-28 |
+| content | `https://github.com/lukaszkurczab/patternly-content.git`, `master`, `9c6f594f4817602123f710124b4969b373d6eaa8`; worktree czysty i `origin/master` potwierdzony po RC-012 2026-07-28 |
 | bundle aplikacji | `patternly-core-0013`, release source `b4a7e46527e03b03d1ccd1cec5ea260f5d772569`, z `algorithms-core-0006` (2,375 items) oraz `gcp-ace-0012` (360 items) |
 | content lock | `integration/contracts/algorithms-content/content.lock.json` nadal wskazuje `b424faa6d8c7209acb51ac23af812d08c31842dc`, czyli inny commit niż bundle i bieżący head contentu |
 | Algorithms | osiem user-facing trybów w kontrakcie; aktywny artefakt ma siedem content blueprintów, ponieważ `Custom Practice` jawnie używa blueprintu `Guided Practice` |
 | Certification | sześć trybów practice jest zadeklarowanych jako available/verified w kontrakcie; `certification-exam-simulation` jest declared/unavailable/unverified |
-| stare Certification | `src/tracks/cloud-certification/domain/certificationModes.ts` nadal eksponuje enabled `cloud-exam-simulation`; `RootNavigator` nadal prowadzi do odrębnych `src/features/exam/*` |
+| Certification runtime | canonical `certification-exam-simulation` jest jedyną nazwą symulacji i pozostaje explicitly unavailable; nie ma produkcyjnego `cloud-exam-simulation`, a obecny `src/features/exam/*` jest ścieżką do zastąpienia dopiero po RC-004–RC-007 |
 | feedback contentu | Algorithms publikuje strukturalne `feedback`; Certification publikuje jeszcze `explanation`, `watchOutFor` i `whyOthersAreWrong`, bez ujednoliconego `Reason` + strukturalnego `Details` |
 | CI app | `.github/workflows/qa.yml` uruchamia static gate i Algorithms-only pinned cross-repo round trip |
 | CI content | zwykły workflow uruchamia architekturę i probe, ale nie wymusza validate/build obu realnych tracków; real release gate jest tylko manualny |
@@ -361,11 +361,11 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `content/master`.
 
-**Zależności:**  RC-010, RC-011.
+**Zależności:**  brak. Usunięcie nieosiągalnego ingressu nie zależy od polityki Certification simulation ani readiness innego tracku.
 
 **Kanoniczny owner:**  `manual/source/`, `config/`, `schemas/publishing/` i `artifacts/releases/`.
 
-**Potwierdzony stan obecny:**  `README.md` mówi, że `tracks/` nie jest ingress, lecz root `manifest.json` i `tracks/*/manifest.json` nadal deklarują `algorithms-core-0001`/`gcp-ace-0001`.
+**Potwierdzony stan obecny:**  VERIFIED 2026-07-28. Root `manifest.json` oraz oba `tracks/*/manifest.json` zostały usunięte po import-graph proof. `manual/source/` jest jedynym content ingress; test odrzuca ponowne dodanie usuniętych manifestów. Certification otrzymał także jawnie wywoływalną i przechodzącą technical evidence dla aktualnego sześciomode’owego kontraktu, bez aktywowania Simulation.
 
 **Dokładny zakres:**  Usunąć unreachable 0001 manifests/banks and tests that treat them as active; zachować wyłącznie canonical manual source, immutable artifacts i explicit test fixtures.
 
@@ -375,7 +375,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Design reference:**  brak.
 
-**Kryteria akceptacji:**  Żaden publishing/runtime command nie czyta legacy root/track manifests; no active content identity points at 0001; architecture tests cover absence.
+**Kryteria akceptacji:**  Żaden publishing/runtime command nie czyta root/track manifests; żadna aktywna artifact identity nie wskazuje 0001; architecture tests cover absence.
 
 **Weryfikacja:**  `rg -n 'tracks/.*manifest|algorithms-core-0001|gcp-ace-0001'`; `npm test`; real validate/build commands.
 
@@ -649,7 +649,7 @@ tasks:
   RC-009: { dependsOn: [RC-003] }
   RC-010: { dependsOn: [RC-003, RC-009] }
   RC-011: { dependsOn: [] }
-  RC-012: { dependsOn: [RC-010, RC-011] }
+  RC-012: { dependsOn: [] }
   RC-013: { dependsOn: [RC-009, RC-010, RC-011, RC-012] }
   RC-014: { dependsOn: [RC-010, RC-011, RC-012] }
   RC-015: { dependsOn: [RC-013, RC-014] }
@@ -697,7 +697,7 @@ tasks:
 | RC-009 | PENDING | — | — | — | — | — |
 | RC-010 | PENDING | — | — | — | — | — |
 | RC-011 | VERIFIED | 728e5d421aea6f889209eb1da56dfed31bb556f4 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm test` 37/37; `npm run validate:real:algorithms` PASS; `npm run build:real:algorithms` correctly rejects overwrite of `algorithms-core-0006` | Producer source `a4d384f01d14fb1a69b8e3dc0d1f9e7b61f2e405`; immutable evidence `228a869feea1cfbdd700fc868ab050e1d8380233`; `origin/master` confirmed | New immutable build/checksum intentionally deferred to RC-013 |
-| RC-012 | PENDING | — | — | — | — | — |
+| RC-012 | VERIFIED | 976042c15e6ab76a2e9b1c4b1a3154dead16fb10 | 9c6f594f4817602123f710124b4969b373d6eaa8 | content `npm test` 38/38; `npm run validate:real:algorithms`; `npm run validate:real:certification` PASS | `origin/master` confirmed at `9c6f594f4817602123f710124b4969b373d6eaa8`; deleted three unreachable manifests; certification evidence `65f360f…json` is tracked | New multi-track immutable build remains RC-013 after simulation and feedback contract work |
 | RC-013 | PENDING | — | — | — | — | — |
 | RC-014 | PENDING | — | — | — | — | — |
 | RC-015 | PENDING | — | — | — | — | — |
