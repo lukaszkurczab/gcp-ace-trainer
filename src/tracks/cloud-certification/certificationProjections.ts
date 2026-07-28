@@ -4,7 +4,7 @@ import { getCertificationContentCatalog } from "../../content/catalogRepository"
 import { isCertificationPracticeModeId, type CertificationAnswerViewModel, type CertificationDomain, type CertificationExamSummaryViewModel, type CertificationPracticeAnswerViewModel, type CertificationResponse } from "./domain";
 
 export function buildCertificationExamSummaries(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): CertificationExamSummaryViewModel[] {
-  return sessions.filter((session) => session.modeId === "cloud-exam-simulation" && session.status === "completed").map<CertificationExamSummaryViewModel>((session) => {
+  return sessions.filter((session) => session.modeId === "certification-exam-simulation" && session.status === "completed").map<CertificationExamSummaryViewModel>((session) => {
     const byOccurrence = new Map(attempts.filter((attempt) => attempt.sessionId === session.id).map((attempt) => [attempt.occurrenceId, attempt]));
     const answeredAt = session.completedAt ?? session.startedAt;
     const answers: CertificationAnswerViewModel[] = session.itemOrder.map((occurrence, index) => {

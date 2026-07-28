@@ -167,7 +167,7 @@ test("an expired absolute-deadline simulation finalizes once before it can be re
   const f = fixture();
   const expired = createTrainingSession({
     ...session(),
-    modeId: "cloud-exam-simulation",
+    modeId: "certification-exam-simulation",
     configurationSnapshot: {
       kind: "certificationSimulation",
       navigation: "free",
@@ -201,7 +201,7 @@ test("manual finalization and expiry share one durable simulation finalization",
   const f = fixture();
   const expired = createTrainingSession({
     ...session(),
-    modeId: "cloud-exam-simulation",
+    modeId: "certification-exam-simulation",
     configurationSnapshot: {
       kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
       timer: "absoluteDeadline", timerDeadlineAt: "2026-07-16T11:59:59.999Z", timerDurationMs: 120 * 60 * 1000,

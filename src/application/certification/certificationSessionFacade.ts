@@ -38,11 +38,11 @@ export async function startCertificationSession(input: Readonly<{ modeId: Certif
   return startTrainingSession({ trackId: "cloud-certification", modeId: input.modeId, source: input.source, request: { ...input, sessionId: nextSessionId(input.modeId) } });
 }
 export async function startCertificationExam(source = "practiceHub"): Promise<PreparedSession> {
-  return startTrainingSession({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", source, request: { sessionId: nextSessionId("cloud-exam-simulation") } });
+  return startTrainingSession({ trackId: "cloud-certification", modeId: "certification-exam-simulation", source, request: { sessionId: nextSessionId("certification-exam-simulation") } });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
   const [session, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
-  if (session.modeId === "cloud-exam-simulation") throw new Error("The active Cloud session is an exam simulation.");
+  if (session.modeId === "certification-exam-simulation") throw new Error("The active Cloud session is an exam simulation.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud practice occurrence is unavailable.");
   const committed = attempts.value.find((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === occurrence.occurrenceId)?.response ?? null;
@@ -56,7 +56,7 @@ export async function abandonCertificationSession(): Promise<TrainingSession> { 
 export async function getCertificationExamProjection(): Promise<CertificationExamProjection> {
   await assertCertificationExamIsActive();
   const [session, draft] = await Promise.all([requireActive(), loadActiveTrainingSessionDraft()]);
-  if (session.modeId !== "cloud-exam-simulation" || !draft || draft.sessionId !== session.id) throw new Error("The active Cloud exam draft is unavailable.");
+  if (session.modeId !== "certification-exam-simulation" || !draft || draft.sessionId !== session.id) throw new Error("The active Cloud exam draft is unavailable.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;

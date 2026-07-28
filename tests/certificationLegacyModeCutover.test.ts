@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
-import { CERTIFICATION_MODES, CERTIFICATION_PRACTICE_MODE_IDS } from "../src/tracks/cloud-certification";
+import { CERTIFICATION_MODE_IDS, CERTIFICATION_MODES, CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode } from "../src/tracks/cloud-certification";
 
-const legacyModeIds = ["cloud" + "-practice", "cloud" + "-review"];
+const legacyModeIds = ["cloud" + "-practice", "cloud" + "-review", "cloud" + "-exam-simulation"];
 const expectedPracticeModeIds = [
   "certification-diagnostic-baseline",
   "certification-focus-practice",
@@ -14,9 +14,12 @@ const expectedPracticeModeIds = [
   "certification-quick-review",
 ];
 
-test("Certification cutover exposes only canonical practice mode ids and has no legacy route references", async () => {
+test("Certification cutover exposes exactly seven canonical modes and rejects the retired exam id", async () => {
   assert.deepEqual(CERTIFICATION_PRACTICE_MODE_IDS, expectedPracticeModeIds);
-  assert.deepEqual(CERTIFICATION_MODES.map((mode) => mode.id), [...expectedPracticeModeIds, "cloud-exam-simulation"]);
+  assert.deepEqual(CERTIFICATION_MODE_IDS, [...expectedPracticeModeIds, "certification-exam-simulation"]);
+  assert.deepEqual(CERTIFICATION_MODES.map((mode) => mode.id), CERTIFICATION_MODE_IDS);
+  assert.equal(getCertificationMode("certification-exam-simulation").enabled, false);
+  assert.throws(() => getCertificationMode("cloud-exam-simulation"), /Unknown Certification mode id/);
 
   for (const file of await sourceFiles(["src", ".maestro"])) {
     const source = await readFile(file, "utf8");

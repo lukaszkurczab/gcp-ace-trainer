@@ -40,11 +40,6 @@ export const PRACTICE_PRIMARY_CTA: VisibleCta = {
   route: ROUTES.PRACTICE_HUB,
 };
 
-export const PRACTICE_EXAM_CTA: VisibleCta = {
-  label: "Exam simulation",
-  route: ROUTES.EXAM,
-};
-
 export const PRACTICE_REVIEW_CTA = {
   label: "Review weak items",
   route: ROUTES.MISTAKES_REVIEW,

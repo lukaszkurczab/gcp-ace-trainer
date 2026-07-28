@@ -10,7 +10,7 @@ function attempt(kind: "correct" | "partial" | "incorrect", id: string, modeId =
 function review(): ReviewQueueEntry { return { id: "review", trackId: "cloud-certification", sourceAttemptId: "bad", sourceSessionId: "bad", reasons: ["repeated_mistake"], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2025-12-31T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }; }
 
 test("Certification progress derives practice, exam, outcome, taxonomy, review, and repeated-mistake signals", () => {
-  const progress = buildCloudCertificationProgressViewModel({ attempts: [attempt("correct", "one"), attempt("incorrect", "three", "cloud-exam-simulation")], reviewQueueItems: [review()], now: "2026-01-02T00:00:00.000Z" });
+  const progress = buildCloudCertificationProgressViewModel({ attempts: [attempt("correct", "one"), attempt("incorrect", "three", "certification-exam-simulation")], reviewQueueItems: [review()], now: "2026-01-02T00:00:00.000Z" });
   assert.equal(progress.totalAttempts, 2);
   assert.equal(progress.practiceAttemptCount, 1);
   assert.equal(progress.examAttemptCount, 1);

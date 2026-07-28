@@ -64,7 +64,7 @@ test("Cloud Exam runtime derives duration, length, and domain selection from a c
   const prepareFrom = async (examProfile: PublishedCertificationExamExperienceProfile, requestedLength: number) => new CertificationFamilyRuntime(
     new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), sourceCatalog.getDiagnosticBaseline(), sourceCatalog.getFocusPractice(), examProfile),
     "fixture-taxonomy",
-  ).prepare({ trackId: "cloud-certification", modeId: "cloud-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  ).prepare({ trackId: "cloud-certification", modeId: "certification-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
 
   const first = await prepareFrom(profile(30, 4), 4);
   assert.equal(first.session.actualLength, 4);

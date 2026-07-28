@@ -71,7 +71,7 @@ function createProfileRegressionHarness(clock: MutableClock) {
   let finalizationCount = 0;
 
   const assertProfileSession = (session: TrainingSession) => {
-    if (session.trackId !== "cloud-certification" || session.modeId !== "cloud-exam-simulation" || session.contentVersion !== catalog.getContentVersion()) {
+    if (session.trackId !== "cloud-certification" || session.modeId !== "certification-exam-simulation" || session.contentVersion !== catalog.getContentVersion()) {
       throw new Error("Certification profile regression accepted a session outside its installed profile.");
     }
   };
@@ -104,7 +104,7 @@ function createProfileRegressionHarness(clock: MutableClock) {
     },
     content: {
       async requireAvailable(trackId, modeId) {
-        if (trackId !== "cloud-certification" || modeId !== "cloud-exam-simulation") {
+        if (trackId !== "cloud-certification" || modeId !== "certification-exam-simulation") {
           throw new Error("Certification profile regression exposes only its declared exam mode.");
         }
       },
@@ -160,7 +160,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
   const lifecycle = harness.createLifecycle();
   const started = await lifecycle.startSession({
     trackId: "cloud-certification",
-    modeId: "cloud-exam-simulation",
+    modeId: "certification-exam-simulation",
     request: { sessionId: "certification-profile-regression-session", requestedLength: 4 },
   });
   const sessionId = started.session.id;

@@ -20,6 +20,7 @@ import { CertificationContentCatalog } from "../../tracks/cloud-certification/ce
 import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationQuickReview, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
+  CERTIFICATION_MODE_IDS,
   createCertificationReviewEntry,
   getCertificationMode,
   scoreCertificationQuestion,
@@ -53,7 +54,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const weakAreaReview = mode.id === "certification-weak-area-review" ? this.catalog.getWeakAreaReview() : null;
     const mixedPractice = mode.id === "certification-mixed-practice" ? this.catalog.getMixedPractice() : null;
     const quickReview = mode.id === "certification-quick-review" ? this.catalog.getQuickReview() : null;
-    const simulation = mode.id === "cloud-exam-simulation";
+    const simulation = mode.id === "certification-exam-simulation";
     const profile = simulation ? this.catalog.getExamExperienceProfile() : null;
     if (diagnosticBaseline && (request.requestedLength !== undefined || request.domain !== undefined || request.competency !== undefined)) throw new Error("Certification Diagnostic Baseline has a fixed 40-item scope and does not accept selectors.");
     if (focusPractice && !request.domain) throw new Error("Certification Focus Practice requires an explicit topic.");
@@ -113,14 +114,14 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
 
   async validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void> {
     this.assertSession(input.session);
-    const simulation = input.session.modeId === "cloud-exam-simulation";
+    const simulation = input.session.modeId === "certification-exam-simulation";
     if (simulation && (!input.draft || input.draft.familyId !== this.familyId || input.draft.trackId !== CLOUD_CERTIFICATION_TRACK_ID || input.draft.sessionId !== input.session.id)) throw new Error("Cloud exam simulation requires its exact persisted draft.");
     if (!simulation && input.draft) throw new Error("Cloud practice cannot resume with an exam draft.");
   }
 
   async submitPractice(input: Readonly<{ session: TrainingSession; response: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PracticeSubmission> {
     this.assertSession(input.session);
-    if (input.session.modeId === "cloud-exam-simulation") throw new Error("Cloud exam simulation accepts responses only in its persisted draft.");
+    if (input.session.modeId === "certification-exam-simulation") throw new Error("Cloud exam simulation accepts responses only in its persisted draft.");
     const occurrence = input.session.itemOrder[input.session.currentItemIndex];
     if (!occurrence) throw new Error("Cloud practice has no current occurrence.");
     const response = certificationResponse(input.response);
@@ -143,7 +144,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
 
   async finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>): Promise<PracticeFinalization> {
     this.assertSession(input.session);
-    if (input.session.modeId === "cloud-exam-simulation") throw new Error("Cloud exam simulation uses simulation finalization.");
+    if (input.session.modeId === "certification-exam-simulation") throw new Error("Cloud exam simulation uses simulation finalization.");
     const sessionAttempts = input.attempts.filter((attempt) => attempt.sessionId === input.session.id);
     if (sessionAttempts.length !== input.session.actualLength || new Set(sessionAttempts.map((attempt) => attempt.occurrenceId)).size !== input.session.actualLength) throw new Error("Cloud practice finalization requires one durable attempt per occurrence.");
     return Object.freeze({ session: completeTrainingSession(input.session, input.now), result: resultFor(input.session, sessionAttempts, input.now) });
@@ -251,7 +252,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       return selected as readonly (typeof all)[number][];
     }
     const scoped = request.domain ? all.filter((question) => question.domain === request.domain) : all;
-    if (modeId !== "cloud-exam-simulation") return scoped;
+    if (modeId !== "certification-exam-simulation") return scoped;
     if (!profile) throw new Error("Cloud exam simulation requires an installed exam experience profile.");
     return allocateBlueprintOccurrences(profile.blueprint.sections, requestedLength).flatMap(({ id, count }) => {
       const questions = all.filter((question) => question.domain === id);
@@ -262,8 +263,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !["certification-diagnostic-baseline", "certification-focus-practice", "certification-scenario-practice", "certification-weak-area-review", "certification-mixed-practice", "certification-quick-review", "cloud-exam-simulation"].includes(session.modeId)) throw new Error("Cloud session does not match its validated immutable artifact.");
-    if (session.modeId === "cloud-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
+    if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !CERTIFICATION_MODE_IDS.includes(session.modeId as typeof CERTIFICATION_MODE_IDS[number])) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.modeId === "certification-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
       const focusPractice = this.catalog.getFocusPractice();

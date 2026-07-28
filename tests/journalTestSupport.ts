@@ -66,7 +66,7 @@ export function exam(id = "session-1"): CertificationExamViewModel {
   const examSession = createTrainingSession({
     id,
     trackId: "cloud-certification",
-    modeId: "cloud-exam-simulation",
+    modeId: "certification-exam-simulation",
     configurationSnapshot: { kind: "certificationSimulation", mode: "exam" },
     requestedLength: 1,
     actualLength: 1,

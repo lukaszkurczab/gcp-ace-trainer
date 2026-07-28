@@ -15,7 +15,7 @@ export type PracticeSessionSource =
   | "practiceSetup"
   | "modeShortcut";
 
-export type CertificationPracticeSessionMode = CertificationPracticeModeId | "cloud-exam-simulation";
+export type CertificationPracticeSessionMode = CertificationPracticeModeId;
 export type PracticeSessionMode = AlgorithmModeId | CertificationPracticeSessionMode;
 
 export type PracticeSessionLength = 10 | 20 | 40;
@@ -52,7 +52,7 @@ const cloudDomainTopicIds: readonly CertificationDomain[] = [
   "operations",
   "access_security",
 ];
-const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = [...CERTIFICATION_PRACTICE_MODE_IDS, "cloud-exam-simulation"];
+const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = CERTIFICATION_PRACTICE_MODE_IDS;
 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
@@ -109,7 +109,6 @@ export function buildPracticeSessionConfig(
   }
 
   const definition = getCertificationMode(mode);
-  if (mode === "cloud-exam-simulation") throw new Error("Cloud Exam Simulation starts only from the canonical exam entry.");
   if (mode === "certification-diagnostic-baseline") {
     if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 40, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };

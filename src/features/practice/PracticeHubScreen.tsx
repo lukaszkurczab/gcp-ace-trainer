@@ -141,10 +141,6 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         ? ALGORITHM_MODE_IDS.guidedPractice
         : "certification-diagnostic-baseline"
     );
-    if (activeTrack.id === "cloud-certification" && resolvedMode === "cloud-exam-simulation") {
-      navigation.navigate(ROUTES.EXAM);
-      return;
-    }
     if (activeTrack.id === "cloud-certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", trackId: activeTrack.id });
       return;
