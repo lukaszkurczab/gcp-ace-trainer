@@ -26,7 +26,7 @@ their immutable history remains in Git.
 | iOS acceptance (RC-018) | done | iPhone 17 completed Algorithms M1–M7 and Certification Exam Simulation on the explicit reset path. The final Certification run also completed at the iOS accessibility-large Dynamic Type size. |
 | Android acceptance (RC-019) | done | `emulator-5554` completed Algorithms M1–M7 and Certification Exam Simulation from deterministic clean dev-client state. The final Certification run also completed at font scale `1.3`. |
 | Accessibility and visual review (RC-020) | partial | No P0–P3 issue remains in reviewed current Certification captures. TalkBack was enabled on Android and the runtime hierarchy exposed labelled controls, roles and selected state. iOS semantic, reduced-motion and large-text checks pass; physical-device VoiceOver remains required. |
-| Final RC evidence pack (RC-021) | blocking | Requires the current application commit to be pushed and one physical-iPhone VoiceOver traversal; Apple documents that VoiceOver itself is unavailable on Simulator. |
+| Final RC evidence pack (RC-021) | blocking | Requires one physical-iPhone VoiceOver traversal; Apple documents that VoiceOver itself is unavailable on Simulator. |
 
 ## Current release identity
 
