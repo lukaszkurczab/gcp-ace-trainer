@@ -11,6 +11,11 @@ purchases, model English/Polish i kolejny Certification track.
 
 Ten dokument jest jedynym źródłem kolejności prac RC.
 
+Wykonanie jest prowadzone jako ciągły loop do `RC_VERIFIED`, a nie jako
+mechaniczne odhaczanie tasków. Gdy bieżące source/test/evidence wykażą, że
+task nie prowadzi do celu, jego zakres, zależności albo podział są zmieniane
+w tym dokumencie przed następną implementacją.
+
 ## 2. Potwierdzony baseline
 
 | Obszar | Potwierdzony stan |
@@ -658,11 +663,14 @@ tasks:
 
 ## 7. Loop execution rules
 
-1. Wybierz pierwszy `PENDING` task, którego wszystkie zależności są
-   `VERIFIED`; wykonaj tylko ten task.
+1. Wybierz najwęższy task prowadzący do `RC_VERIFIED`, którego zależności są
+   `VERIFIED`; jeśli source/test/evidence ujawnią błędny plan, najpierw
+   napraw zakres, zależności lub podział tasków.
 2. Potwierdź remote URL, branch, clean worktree i starting SHA właściwego
    repozytorium przed zmianą.
-3. Nie przechodź do następnego taska w tym samym uruchomieniu.
+3. Po zakończeniu i zapisaniu evidence kontynuuj następny gotowy task w tym
+   samym loopie, aż do `RC_VERIFIED` albo konkretnego blokera wymagającego
+   decyzji PO.
 4. Dla `cross-repo` zawsze wykonaj: content/master → validation → commit/push
    → remote SHA → bundle/lock → app/main → validation → commit/push → remote
    SHA → release identity check.
