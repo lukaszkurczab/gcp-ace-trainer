@@ -23,10 +23,10 @@ their immutable history remains in Git.
 | Algorithms readiness and content ingress cleanup (RC-011–RC-012) | done | Previous verified evidence remains valid for the current content source. |
 | Immutable multi-track release (RC-013) | done | Content `e18fc73` and the app bundle/lock commit are pushed; the cross-repo release test verifies the exact manifest and both checksums. |
 | Content gate and local privacy boundaries (RC-014–RC-017) | done | Existing source, tests and CI configuration remain the canonical implementation. |
-| iOS acceptance (RC-018) | planned | Requires a current, provenance-bound capture packet. |
-| Android acceptance (RC-019) | planned | Requires a current, provenance-bound capture packet. |
-| Accessibility and visual review (RC-020) | planned | Runs only against the current iOS and Android capture packets. |
-| Final RC evidence pack (RC-021) | planned | Requires all prior rows to be done and exact pushed heads. |
+| iOS acceptance (RC-018) | partial | A booted iPhone 17 Simulator is available, but the installed runner covers only the prior Algorithms audit and has no Certification capture inventory or manifest. |
+| Android acceptance (RC-019) | blocking | `adb devices` reports no online device or emulator; the installed runner also lacks Certification capture inventory. |
+| Accessibility and visual review (RC-020) | blocking | Requires current, complete iOS and Android capture packets. |
+| Final RC evidence pack (RC-021) | blocking | Requires RC-018 through RC-020. |
 
 ## Current release identity
 
@@ -69,6 +69,12 @@ their immutable history remains in Git.
 - Verification: platform capture scripts, manifest validation and manual real-flow check.
 - Evidence: device metadata, app/content/release SHA, screenshots and runner output.
 - Risk: unavailable device or native build is an operational blocker, not a skipped state.
+
+Before capture, the active audit inventory must be replaced with one that covers
+the implemented Certification routes and lifecycle states. The existing
+Algorithms-only runner is not RC evidence for Certification and must not be
+extended by copying static screenshots or by treating a partial packet as a
+successful release gate.
 
 ### RC-020 and RC-021 — independent quality gate and final decision
 
