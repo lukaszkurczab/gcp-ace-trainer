@@ -21,7 +21,7 @@ their immutable history remains in Git.
 | Parallel exam runtime removal (RC-008) | done | Active UI surfaces use the shared lifecycle and durable projections; duplicate state and scoring paths are removed. |
 | Certification feedback and pool readiness (RC-009–RC-010) | done | Every published Certification item has `Reason`, structured `Details` and exact option explanations; publication requires all seven declared modes and profile-compatible capacity. |
 | Algorithms readiness and content ingress cleanup (RC-011–RC-012) | done | Previous verified evidence remains valid for the current content source. |
-| Immutable multi-track release (RC-013) | partial | `patternly-core-0014` is built locally and synchronized into the app. The content and app commits still require final verification, commit and push. |
+| Immutable multi-track release (RC-013) | done | Content `e18fc73` and the app bundle/lock commit are pushed; the cross-repo release test verifies the exact manifest and both checksums. |
 | Content gate and local privacy boundaries (RC-014–RC-017) | done | Existing source, tests and CI configuration remain the canonical implementation. |
 | iOS acceptance (RC-018) | planned | Requires a current, provenance-bound capture packet. |
 | Android acceptance (RC-019) | planned | Requires a current, provenance-bound capture packet. |
