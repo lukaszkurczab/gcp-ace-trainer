@@ -14,6 +14,7 @@ import {
   submitAlgorithmsPracticeResponse,
 } from "../../application/algorithms";
 import { TrainingApplicationFailure } from "../../application/trainingLifecycle";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
@@ -347,15 +348,11 @@ function noticeForPracticeOperation(operation: AlgorithmsPracticeProjection["ope
 }
 
 function describePreparationFailure(error: unknown): string {
-  const detail = error instanceof TrainingApplicationFailure && error.cause instanceof Error
-    ? error.cause.message
-    : error instanceof Error ? error.message : "The session could not be prepared.";
-  return `${detail} No substitute topic, item, or shortened fixed session was created.`;
+  return `${describeOperationalFailure(error, "The session could not be prepared.")} No substitute topic, item, or shortened fixed session was created.`;
 }
 
 function describePracticeSubmissionFailure(error: unknown): string {
-  if (error instanceof TrainingApplicationFailure && error.code === "invalid_response" && error.cause instanceof Error) return error.cause.message;
-  return "Your answer could not be submitted. Select an answer and try again.";
+  return describeOperationalFailure(error, "Your answer could not be submitted. Select an answer and try again.");
 }
 
 function formatElapsed(milliseconds: number): string {

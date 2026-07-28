@@ -7,6 +7,7 @@ import {
   getAlgorithmsPracticeResultProjection,
   type AlgorithmsSessionResultProjection,
 } from "../../application/algorithms";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -31,7 +32,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
     try {
       setState({ kind: "ready", result: await getAlgorithmsPracticeResultProjection(sessionId) });
     } catch (error) {
-      setState({ kind: "unavailable", reason: error instanceof Error ? error.message : "The completed session result is unavailable." });
+      setState({ kind: "unavailable", reason: describeOperationalFailure(error, "The completed session result is unavailable.") });
     }
   }, [sessionId]);
 

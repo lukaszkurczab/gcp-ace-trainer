@@ -1,6 +1,7 @@
 import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { recoverPendingMutation } from "../learningMutations";
 import { canPersistTrainingSessionDraft } from "../../domain";
+import { describeOperationalFailure } from "../operationalDiagnostics";
 import {
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
@@ -54,6 +55,6 @@ export async function bootstrapApplication(
     await resolveActiveSession(activeSession.id);
     return { kind: "ready", activeSessionId: activeSession.id };
   } catch (error) {
-    return { kind: "blocking", reason: error instanceof Error ? error.message : "Application bootstrap failed." };
+    return { kind: "blocking", reason: describeOperationalFailure(error, "Application bootstrap failed.") };
   }
 }

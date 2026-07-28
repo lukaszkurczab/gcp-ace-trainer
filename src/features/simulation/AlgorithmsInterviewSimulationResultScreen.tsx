@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { View } from "react-native";
 
 import { getAlgorithmsPracticeResultProjection, type AlgorithmsSessionResultProjection } from "../../application/algorithms";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import type { SimulationSurfaceProjection } from "./simulationProjection";
@@ -55,4 +56,4 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, review, sessio
   return <View testID={runtimeSelectors.summary.root(sessionId)}><SimulationSessionSurface projection={projection} /></View>;
 }
 
-function messageFor(error: unknown): string { return error instanceof Error && error.message.trim() ? error.message : "The session result is not available because verification did not complete."; }
+function messageFor(error: unknown): string { return describeOperationalFailure(error, "The session result is not available because verification did not complete."); }

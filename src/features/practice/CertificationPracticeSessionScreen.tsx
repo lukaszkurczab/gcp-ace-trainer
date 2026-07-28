@@ -10,6 +10,7 @@ import {
   submitCertificationPracticeResponse,
   type CertificationPracticeProjection,
 } from "../../application/certification";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { Button, Card, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -46,7 +47,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
         const active = await getCertificationPracticeProjection().catch(() => null);
         if (!active) await startCertificationSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, source: route.params.source } : mode === "certification-scenario-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, source: route.params.source } : { modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source });
         if (live) await refresh();
-      } catch (cause) { if (live) setError(cause instanceof Error ? cause.message : "Cloud practice is unavailable."); }
+      } catch (cause) { if (live) setError(describeOperationalFailure(cause, "Cloud practice is unavailable.")); }
     })();
     return () => { live = false; };
   }, [mode, route.params]);
@@ -60,13 +61,13 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
   const submit = async () => {
     if (!selected.length) { setError("Select an answer before submitting."); return; }
     try { await submitCertificationPracticeResponse({ kind: "option_selection", selectedOptionIds: selected }); await refresh(); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "The answer was not saved."); }
+    catch (cause) { setError(describeOperationalFailure(cause, "The answer was not saved.")); }
   };
   const next = async () => {
     try {
       if (projection.ordinal === projection.total) { await completeCertificationPracticeSession(); navigation.replace(ROUTES.RESULT, { sessionId: projection.session.id }); }
       else { await advanceCertificationPracticeSession(); await refresh(); }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "The next question could not be opened."); }
+    } catch (cause) { setError(describeOperationalFailure(cause, "The next question could not be opened.")); }
   };
   return <Screen edges={["top", "bottom"]} style={styles.screen}><View testID={runtimeSelectors.session.root(projection.session.id)}>
     <View style={styles.sessionHeader}><Text style={styles.progress}>{t("Active time")} {formatElapsed(projection.session.activeForegroundMs)}</Text><Text style={styles.progress} testID={runtimeSelectors.session.counter(projection.session.id, projection.ordinal, projection.total)}>{t("Question")} {projection.ordinal} {t("of")} {projection.total}</Text></View>

@@ -153,9 +153,8 @@ async function validateTrackArtifact(
         return unavailable(track, "declared_mode_unsupported", "Algorithms artifact declares a mode without a validated practice blueprint.");
       }
     }
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : "Artifact payload is invalid.";
-    return unavailable(track, /simulation.*(40|pool|profile)|pool.*40/i.test(detail) ? "insufficient_fixed_pool" : /interaction|choice|ordering|complexity/i.test(detail) ? "unsupported_interaction" : "invalid_taxonomy_reference", detail);
+  } catch {
+    return unavailable(track, contentValidationFailureReason(track, artifact.bank), "Artifact payload is invalid.");
   }
   return Object.freeze({
     kind: "available",
@@ -206,6 +205,18 @@ function modesFor(familyId: string): ReadonlySet<string> | null {
 }
 function unavailable(track: Pick<TrackRegistration, "id" | "familyId">, reason: ContentUnavailableReason, detail: string): UnavailableBundledTrack {
   return Object.freeze({ kind: "unavailable", trackId: track.id, familyId: track.familyId, reason, detail });
+}
+function contentValidationFailureReason(track: TrackRegistration, bank: unknown): ContentUnavailableReason {
+  if (track.familyId !== "algorithms" || !isRecord(bank)) return "invalid_taxonomy_reference";
+  const items = Array.isArray(bank.items) ? bank.items : [];
+  if (items.some((item) => !isRecord(item) || !isRecord(item.interaction) || !["choice", "ordering", "complexity"].includes(item.interaction.type as string))) return "unsupported_interaction";
+  const blueprints = Array.isArray(bank.practiceBlueprints) ? bank.practiceBlueprints : [];
+  const simulation = blueprints.find((entry) => isRecord(entry) && entry.modeId === "algorithms-interview-simulation");
+  const poolId = isRecord(simulation) && isRecord(simulation.composition) && Array.isArray(simulation.composition.ids) ? simulation.composition.ids[0] : null;
+  const pools = Array.isArray(bank.simulationPools) ? bank.simulationPools : [];
+  const pool = pools.find((entry) => isRecord(entry) && entry.poolId === poolId);
+  if (isRecord(pool) && Array.isArray(pool.itemIds) && pool.itemIds.length < 40) return "insufficient_fixed_pool";
+  return "invalid_taxonomy_reference";
 }
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean { return Object.keys(value).length === keys.length && Object.keys(value).every((key) => keys.includes(key)); }

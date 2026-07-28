@@ -15,7 +15,7 @@
     "audit:ux-ui:runner:test": "node --test tests/algorithmsStage3IosAuditRunner.test.mjs",
     "audit:algorithms-ui:fixtures": "node --import tsx --test tests/algorithmsVisualHarness.test.ts",
     "audit:algorithms-ui:start": "cd audit/algorithms-ui && expo start --dev-client --port 8082",
-    "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary",
+    "qa:static": "npm run recovery:check && npm run typecheck && npm test && npm run validate:content-boundary && npm run validate:runtime-privacy-boundary",
     "gate:contract-change": "node --import tsx scripts/enforceContractChangeGate.ts",
     "recovery:check": "node scripts/checkRecoveryBaseline.mjs",
     "baseline:report": "node scripts/recoveryBaselineReport.mjs",
@@ -25,6 +25,7 @@
     "test:algorithms-cross-repo": "node --import tsx --test tests/algorithmsCrossRepoContract.test.ts",
     "e2e:runtime-audit:maestro": "node scripts/runRuntimeAuditMaestro.mjs",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
+    "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
     "sync:content-release": "node scripts/syncBundledContentRelease.mjs"
   },
   "dependencies": {

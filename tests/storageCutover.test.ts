@@ -62,7 +62,7 @@ test("bootstrap runs resolution only after recovery/content validation and expos
   await saveTrainingSession(session);
   await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: session.startedAt }, null);
   const mismatch = await bootstrapApplication(async () => undefined, async () => { throw new Error("content/profile mismatch"); });
-  assert.deepEqual(mismatch, { kind: "blocking", reason: "content/profile mismatch" });
+  assert.deepEqual(mismatch, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
 });
 
 test("one MMKV import is infrastructure-owned and only repositories access it", () => {

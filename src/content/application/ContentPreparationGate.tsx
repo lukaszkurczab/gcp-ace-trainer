@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Linking, Text, View } from "react-native";
 import { EmptyState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getAlgorithmsSimulationTimerFacade } from "../../application/algorithms";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
@@ -76,7 +77,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         setState({ kind: "loading" });
         setBootstrapRevision((revision) => revision + 1);
       } catch (error) {
-        if (live) setState({ kind: "blocking", reason: error instanceof Error ? error.message : "Development reset failed." });
+        if (live) setState({ kind: "blocking", reason: describeOperationalFailure(error, "Development reset failed.") });
       } finally {
         resetInFlight.current = false;
       }

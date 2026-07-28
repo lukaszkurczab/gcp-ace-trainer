@@ -29,6 +29,7 @@ import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerView
 import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../application/algorithms";
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "./SelectTrackScreen";
@@ -110,7 +111,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         let algorithmsDashboardError: string | null = null;
         if (savedTrackId === ALGORITHMS_TRACK_ID) {
           try { algorithmsDashboard = await loadAlgorithmsDashboard(); }
-          catch (error) { algorithmsDashboardError = error instanceof Error ? error.message : "Algorithms recommendation is unavailable."; }
+          catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Algorithms recommendation is unavailable."); }
         }
 
         if (isActive) {
@@ -209,7 +210,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
         }),
       );
     } catch (error) {
-      Alert.alert("Recommendation unavailable", error instanceof Error ? error.message : "The recommended session could not be opened.");
+      Alert.alert("Recommendation unavailable", describeOperationalFailure(error, "The recommended session could not be opened."));
     }
   }
 

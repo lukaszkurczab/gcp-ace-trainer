@@ -197,8 +197,8 @@ function DeferredSettingsRow({ detail, feature, icon, title }: Readonly<{
 
 function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
   const action = { parse: "read", read: "read", remove: "clear", write: "save" }[issue.operation];
-  if (locale === "pl") return `Nie udało się wykonać operacji „${action}” na danych lokalnych: ${issue.message}`;
-  return `Could not ${action} local data: ${issue.message}`;
+  if (locale === "pl") return `Nie udało się wykonać operacji „${action}” na danych lokalnych [LOCAL_OPERATION_FAILED].`;
+  return `Could not ${action} local data [LOCAL_OPERATION_FAILED].`;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({

@@ -207,6 +207,8 @@ Identifiers should be included only when necessary for local diagnosis and must 
 
 Developer-only diagnostics must be disabled or redacted in production builds.
 
+The canonical learner-visible diagnostic projection is `src/application/operationalDiagnostics.ts`. It emits only an action-specific sentence and a finite operational code; it never carries a caught error message, session ID, storage key, answer, draft, or content payload. `npm run validate:runtime-privacy-boundary` rejects production source that introduces raw operational messages, console diagnostics, or a network client, and `qa:static` runs that gate.
+
 ## Device permissions
 
 Patternly requests no device permission unless an approved, implemented feature requires it.

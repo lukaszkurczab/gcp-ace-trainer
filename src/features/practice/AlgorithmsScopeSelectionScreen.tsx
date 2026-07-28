@@ -4,6 +4,7 @@ import { View } from "react-native";
 
 import { EmptyState, Icon, IconTile, ListRow, Screen, SectionHeader } from "../../components";
 import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningReadModels";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -30,7 +31,7 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
         if (!active) return;
         setState(options.length > 0 ? { kind: "ready", options } : { kind: "unavailable", reason: "No declared practice scope is available for this recommendation." });
       })
-      .catch((error) => { if (active) setState({ kind: "unavailable", reason: error instanceof Error ? error.message : "Declared practice scopes are unavailable." }); });
+      .catch((error) => { if (active) setState({ kind: "unavailable", reason: describeOperationalFailure(error, "Declared practice scopes are unavailable.") }); });
     return () => { active = false; };
   }, [route.params.modeId, route.params.targetMentalUnitId]);
 
