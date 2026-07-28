@@ -445,13 +445,13 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `app/main`.
 
-**Zależności:**  RC-013, RC-014.
+**Zależności:**  RC-014. Canonical lock i consumer verification działają dla aktywnego immutable release; RC-013 aktualizuje wyłącznie jego dane po publikacji finalnego release'u.
 
 **Kanoniczny owner:**  `.github/workflows/qa.yml` i integration contract tests.
 
-**Potwierdzony stan obecny:**  `qa.yml` checkoutuje content według old Algorithms `content.lock.json` i uruchamia job nazwany `Algorithms cross-repository contract`.
+**Potwierdzony stan obecny:**  VERIFIED 2026-07-28. `content-release/release.lock.json` przypina producer commit, release ID, release source commit i checksums obu tracków. `qa.yml` checkoutuje ten producer commit dla recovery gate i dedicated multi-track job; aplikacja porównuje lock, producer `release.json`, SHA-256 artifact bytes i swój generated bundle.
 
-**Dokładny zakres:**  Checkoutować one pinned producer SHA from release lock, verify release manifest/checksums obu tracków i uruchamiać consumer round trips dla Algorithms oraz Certification.
+**Dokładny zakres:**  Checkoutować one pinned producer SHA from release lock, verify release manifest/checksums obu tracków i uruchamiać consumer round trip dla całego generated bundle.
 
 **Poza zakresem:**  Device tests w GitHub Actions.
 
@@ -461,11 +461,11 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Kryteria akceptacji:**  CI fails for stale producer SHA, release ID mismatch, one-track omission, checksum mismatch or unsupported declared mode.
 
-**Weryfikacja:**  Unit tests of lock parser plus CI workflow run on pushed SHA.
+**Weryfikacja:**  `npm run test:content-release-cross-repo`; `npm run qa:static` PASS (recovery, typecheck, 168 tests, content boundary i runtime privacy boundary).
 
-**Evidence:**  CI URL, run SHA, locked content SHA and artifact checksums.
+**Evidence:**  App `f3733a63ebc1dcae157fabf89ea95f4cf304d6e8`; immutable producer commit `d3a44041b923eae01ccabd6d9d5e5fa6c9ffe975`; release `patternly-core-0013`; checksums Algorithms `ff2869f43d52e690c8eb85a4bfbc1741e83e25e838d9e0c238f47b73eda5388e`, Certification `036b9bc371a339cba31383b7ed39eed8233b0fc72cd48b14b5b81bcf8a33e90d`.
 
-**Ryzyka:**  Task cannot be VERIFIED before both repositories are pushed and remote heads match evidence.
+**Ryzyka:**  Lock musi wskazywać exact immutable producer commit zawierający `release.json`; nie może używać bieżącego remote head jako substytutu historycznej release identity.
 
 ## RC-016 — Zamknąć privacy boundary local storage
 
@@ -652,7 +652,7 @@ tasks:
   RC-012: { dependsOn: [] }
   RC-013: { dependsOn: [RC-009, RC-010, RC-011, RC-012] }
   RC-014: { dependsOn: [] }
-  RC-015: { dependsOn: [RC-013, RC-014] }
+  RC-015: { dependsOn: [RC-014] }
   RC-016: { dependsOn: [] }
   RC-017: { dependsOn: [RC-016] }
   RC-018: { dependsOn: [RC-008, RC-013, RC-015, RC-016, RC-017] }
@@ -700,7 +700,7 @@ tasks:
 | RC-012 | VERIFIED | 976042c15e6ab76a2e9b1c4b1a3154dead16fb10 | 9c6f594f4817602123f710124b4969b373d6eaa8 | content `npm test` 38/38; `npm run validate:real:algorithms`; `npm run validate:real:certification` PASS | `origin/master` confirmed at `9c6f594f4817602123f710124b4969b373d6eaa8`; deleted three unreachable manifests; certification evidence `65f360f…json` is tracked | New multi-track immutable build remains RC-013 after simulation and feedback contract work |
 | RC-013 | PENDING | — | — | — | — | — |
 | RC-014 | VERIFIED | — | d84ece0aa0e7a2a72c143b94215509b045c17075 | content `npm test` 39/39; clean `ci-release-gate.mjs` built and verified both isolated artifacts | `origin/master` confirmed at `d84ece0…`; workflow replaces `ARTIFACT_STATUS=NOT_BUILT` with deterministic two-track gate | Await GitHub Actions completion for the run URL; this does not block the implemented gate |
-| RC-015 | PENDING | — | — | — | — | — |
+| RC-015 | VERIFIED | f3733a63ebc1dcae157fabf89ea95f4cf304d6e8 | d3a44041b923eae01ccabd6d9d5e5fa6c9ffe975 | `test:content-release-cross-repo`; `qa:static` PASS | One multi-track lock replaces the Algorithms-only lock and harness; validates release manifest, both artifact bytes/checksums and bundle availability | New final release will update lock data in RC-013 |
 | RC-016 | VERIFIED | c10cbd80a607148233a98e48c7762e01ce65d700 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run typecheck`; `npm test` 375/375; Expo prebuild; Android release manifest merge PASS | Release manifest: only `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` and signature-internal permission; Android root excluded for cloud/D2D; iOS MMKV directory marked before startup | Physical iOS/Android install and device evidence remain RC-018/RC-019 scope |
 | RC-017 | VERIFIED | 25d79f832760add1a37aa7e2e79b3d4b1b4c711d | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run qa:static`: recovery, typecheck, 376/376 tests, cross-repo contract, content boundary i runtime privacy boundary PASS | `origin/main` confirmed at `25d79f832760add1a37aa7e2e79b3d4b1b4c711d`; injected answer/draft/session payload is reduced to a finite operational code | Fresh device evidence remains RC-018/RC-019 scope |
 | RC-018 | PENDING | — | — | — | — | — |
