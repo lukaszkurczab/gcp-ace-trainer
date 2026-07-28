@@ -227,20 +227,9 @@ test("post-commit Android backup cleanup failure keeps the new pair and reports 
   }
 });
 
-test("historical Android packet maps all 44 exact flows but is explicitly stale", () => {
+test("does not retain a stale Android acceptance packet", () => {
   const config = readAndroidConfig(root);
-  const manifest = JSON.parse(readFileSync(path.join(root, config.manifestPath), "utf8"));
-  assert.equal(manifest.status, "stale_recapture_required");
-  assert.deepEqual(manifest.visualReview, { approvedPacketComparison: "not_comparable", accepted: false });
-  assert.equal(manifest.capture.serialProcessCount, 44);
-  assert.equal(manifest.screenshots.length, 44);
-  assert.deepEqual(manifest.screenshots.map((entry) => entry.stateId), config.states.map((entry) => entry.stateId));
-  assert.deepEqual(manifest.screenshots.map((entry) => entry.flowPath), config.states.map((entry) => entry.flowPath));
-  assert.equal(new Set(manifest.screenshots.map((entry) => entry.sha256)).size, 44);
-  assert.ok(manifest.screenshots.every((entry) => entry.width === 1080 && entry.height === 2400));
-  assert.match(manifest.source.androidAuditSourceSha256, /^[0-9a-f]{64}$/);
-  assert.notEqual(manifest.source.androidAuditSourceSha256, computeAndroidSourceSha256(root, config));
-  assert.ok(manifest.screenshots.every((entry) => entry.screenshotPath.startsWith(`${config.outputDirectory}/screenshots/`)));
+  assert.throws(() => readFileSync(path.join(root, config.manifestPath), "utf8"), /ENOENT/);
 });
 
 function makeConfigFixture() {

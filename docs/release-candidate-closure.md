@@ -9,8 +9,7 @@ Po `RC_VERIFIED` rozpoczynamy kolejno: entitlement domain, subskrypcje,
 enforcement darmowego pierwszego node’a, limity aktywnych tracków, restore
 purchases, model English/Polish i kolejny Certification track.
 
-Ten dokument jest jedynym aktywnym źródłem kolejności prac RC. `docs/plan.md`
-pozostaje wyłącznie historycznym zapisem poprzedniego loopa T01–T64.
+Ten dokument jest jedynym źródłem kolejności prac RC.
 
 ## 2. Potwierdzony baseline
 
@@ -62,7 +61,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 | Faza | Taski | Efekt |
 | --- | --- | --- |
-| Authority | RC-001–RC-002 | jeden plan i jeden Certification mode vocabulary |
+| Authority | RC-002 | jeden Certification mode vocabulary |
 | Certification | RC-003–RC-008 | profile-driven Exam Simulation w canonical lifecycle |
 | Content & release | RC-009–RC-014 | kompletne feedback, pool gates, jedna release identity i CI |
 | Privacy & trust | RC-015–RC-016 | minimalne permissions, jawna polityka backupu i redaction |
@@ -71,41 +70,13 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 ## 5. Kolejka atomowych tasków
 
-## RC-001 — Ustanowić jeden aktywny plan RC
-
-**Cel:**  Wycofać T01–T64 jako kolejkę wykonawczą i wskazać ten dokument jako jedyną aktywną kolejność RC.
-
-**Repozytorium:**  `app/main`.
-
-**Zależności:**  brak.
-
-**Kanoniczny owner:**  `docs/release-candidate-closure.md`.
-
-**Potwierdzony stan obecny:**  `docs/plan.md`, `docs/00-overview.md`, `docs/README.md` i `docs/10-roadmap.md` wskazują `docs/plan.md` jako aktywną kolejkę; zawiera ona markery commit subject `T01–T64`.
-
-**Dokładny zakres:**  Zastąpić aktywną treść `docs/plan.md` zwięzłym historical record, przekierować referencje dokumentacyjne na ten plan i zachować stare taski wyłącznie w historii Gita.
-
-**Poza zakresem:**  Żadna zmiana kontraktu produktu ani kodu.
-
-**Stare ścieżki do usunięcia:**  Aktywne reguły completion markerów `Txx:` oraz aktywna kolejka T01–T64 w `docs/plan.md`.
-
-**Design reference:**  brak.
-
-**Kryteria akceptacji:**  Żaden aktywny dokument ani skrypt nie instruuje wykonawcy, aby wybierał task po prefiksie commitu; nowy plan jest jedynym wskazanym execution source.
-
-**Weryfikacja:**  `rg -n 'completion marker|Atomic Work Loop|docs/plan.md' docs README.md .github scripts tests` oraz ręczny przegląd referencji.
-
-**Evidence:**  Commit SHA, wynik wyszukiwania i link do tego dokumentu.
-
-**Ryzyka:**  Historyczne raporty mogą cytować T-ID; są dowodem historycznym, nie aktywną instrukcją.
-
 ## RC-002 — Ujednolicić Certification mode ID
 
 **Cel:**  Zostawić tylko `certification-exam-simulation` jako siódmy Certification mode ID we wszystkich runtime boundaries.
 
 **Repozytorium:**  `app/main`.
 
-**Zależności:**  RC-001.
+**Zależności:**  brak.
 
 **Kanoniczny owner:**  `docs/canonical-product-contract.yaml` i `src/tracks/cloud-certification/domain/certificationModes.ts`.
 
@@ -133,7 +104,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `content/master`.
 
-**Zależności:**  RC-001.
+**Zależności:**  brak.
 
 **Kanoniczny owner:**  `config/tracks/cloud-certification.json`, `schemas/publishing/` i `scripts/publishing/pipeline.mjs`.
 
@@ -357,7 +328,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `content/master`.
 
-**Zależności:**  RC-001.
+**Zależności:**  brak.
 
 **Kanoniczny owner:**  `config/tracks/algorithms.json` i Algorithms publishing validation.
 
@@ -497,7 +468,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `app/main`.
 
-**Zależności:**  RC-001.
+**Zależności:**  brak.
 
 **Kanoniczny owner:**  `docs/08-storage-and-offline.md`, `docs/09-security-and-privacy.md`, Android manifest i iOS native configuration.
 
@@ -663,9 +634,8 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 ```yaml
 tasks:
-  RC-001: { dependsOn: [] }
-  RC-002: { dependsOn: [RC-001] }
-  RC-003: { dependsOn: [RC-001] }
+  RC-002: { dependsOn: [] }
+  RC-003: { dependsOn: [] }
   RC-004: { dependsOn: [RC-002, RC-003] }
   RC-005: { dependsOn: [RC-004] }
   RC-006: { dependsOn: [RC-004] }
@@ -673,12 +643,12 @@ tasks:
   RC-008: { dependsOn: [RC-007] }
   RC-009: { dependsOn: [RC-003] }
   RC-010: { dependsOn: [RC-003, RC-009] }
-  RC-011: { dependsOn: [RC-001] }
+  RC-011: { dependsOn: [] }
   RC-012: { dependsOn: [RC-010, RC-011] }
   RC-013: { dependsOn: [RC-009, RC-010, RC-011, RC-012] }
   RC-014: { dependsOn: [RC-010, RC-011, RC-012] }
   RC-015: { dependsOn: [RC-013, RC-014] }
-  RC-016: { dependsOn: [RC-001] }
+  RC-016: { dependsOn: [] }
   RC-017: { dependsOn: [RC-016] }
   RC-018: { dependsOn: [RC-008, RC-013, RC-015, RC-016, RC-017] }
   RC-019: { dependsOn: [RC-008, RC-013, RC-015, RC-016, RC-017] }
@@ -709,7 +679,6 @@ tasks:
 
 | Task | Status | app SHA | content SHA | Verification | Evidence | Blocker |
 | --- | --- | --- | --- | --- | --- | --- |
-| RC-001 | VERIFIED | 5b289fe | d3a4404 | doc references reviewed | this document | — |
 | RC-002 | PENDING | — | — | — | — | — |
 | RC-003 | PENDING | — | — | — | — | — |
 | RC-004 | PENDING | — | — | — | — | — |

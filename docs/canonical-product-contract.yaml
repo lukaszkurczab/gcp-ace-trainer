@@ -383,43 +383,43 @@ designReferences:
   references:
     - id: algorithms-active-simulation-screen
       screenStateTarget: algorithms-interview-simulation-active-question
-      patternPath: docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png
+      patternPath: docs/designs/algorithms_active_simulation/active-simulation-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: algorithms-simulation-question-navigator
       screenStateTarget: algorithms-interview-simulation-question-navigator
-      patternPath: docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png
+      patternPath: docs/designs/algorithms_simulation_navigator/simulation-navigator-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: algorithms-simulation-operational-states
       screenStateTarget: algorithms-interview-simulation-operational-states
-      patternPath: docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png
+      patternPath: docs/designs/algorithms_simulation_operational_states/simulation-operational-states-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: certification-exam-active-screen
       screenStateTarget: certification-exam-active-question
-      patternPath: docs/designs/algorithms_active_simulation/t29-active-simulation-reference.png
+      patternPath: docs/designs/algorithms_active_simulation/active-simulation-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: certification-exam-question-navigator
       screenStateTarget: certification-exam-question-navigator
-      patternPath: docs/designs/algorithms_simulation_navigator/t31-simulation-navigator-reference.png
+      patternPath: docs/designs/algorithms_simulation_navigator/simulation-navigator-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: certification-exam-operational-states
       screenStateTarget: certification-exam-operational-states
-      patternPath: docs/designs/algorithms_simulation_operational_states/t33-simulation-operational-states-reference.png
+      patternPath: docs/designs/algorithms_simulation_operational_states/simulation-operational-states-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
     - id: shared-practice-flow-001
       screenStateTarget: non-simulation-practice-setup-runner-summary
-      patternPath: docs/designs/algorithms_custom_practice/t42-custom-practice-flow-reference.png
+      patternPath: docs/designs/algorithms_custom_practice/custom-practice-flow-reference.png
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
