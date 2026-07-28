@@ -417,13 +417,13 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `content/master`.
 
-**Zależności:**  RC-010, RC-011, RC-012.
+**Zależności:**  brak. Gate buduje izolowane kandydaty z canonical source i automatycznie obejmie późniejszy kontrakt RC-010; nie publikuje ani nie zastępuje immutable release'u.
 
 **Kanoniczny owner:**  `.github/workflows/content-publishing.yml`.
 
-**Potwierdzony stan obecny:**  Automatyczny workflow uruchamia `npm test` i probe, kończy `ARTIFACT_STATUS=NOT_BUILT`; real build gates są wyłącznie `workflow_dispatch`.
+**Potwierdzony stan obecny:**  VERIFIED 2026-07-28. Workflow uruchamia `npm ci`, pełny `npm test` oraz `ci-release-gate.mjs`. Gate waliduje, buduje do izolowanego katalogu i weryfikuje oba canonical track artifacts bez publikowania ani nadpisywania immutable wersji.
 
-**Dokładny zakres:**  Zastąpić status-only probe realnymi validate/build/verify steps dla Algorithms i Certification, cache dependencies oraz fail-fast artifacts.
+**Dokładny zakres:**  Zastąpić status-only probe realnymi validate/build/verify steps dla Algorithms i Certification oraz fail-fast artifacts w izolowanym katalogu CI.
 
 **Poza zakresem:**  Nie publikować immutable release w każdym CI runie.
 
@@ -433,9 +433,9 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Kryteria akceptacji:**  Pull request i push nie przechodzą, gdy real track validation/build artifact fails; workflow output nazwie track, checksum i failing rule.
 
-**Weryfikacja:**  Workflow syntax test oraz controlled failing fixture/workflow test; `npm test`.
+**Weryfikacja:**  `npm test` 39/39 oraz `node scripts/publishing/ci-release-gate.mjs`: Algorithms `ff2869f43d52e690c8eb85a4bfbc1741e83e25e838d9e0c238f47b73eda5388e`, Certification `036b9bc371a339cba31383b7ed39eed8233b0fc72cd48b14b5b81bcf8a33e90d`.
 
-**Evidence:**  Workflow run URL, logs i built artifact metadata.
+**Evidence:**  Pushed producer commits `bb2bc89e4648bf2079a29cdeac63e1655bd36195` i `d84ece0aa0e7a2a72c143b94215509b045c17075`; workflow source and deterministic gate output name both tracks and their checksums. Zdalny workflow run pozostaje do potwierdzenia po zakończeniu GitHub Actions.
 
 **Ryzyka:**  CI runtime rośnie, ale jest jedynym uczciwym gate’em dla active content.
 
@@ -651,7 +651,7 @@ tasks:
   RC-011: { dependsOn: [] }
   RC-012: { dependsOn: [] }
   RC-013: { dependsOn: [RC-009, RC-010, RC-011, RC-012] }
-  RC-014: { dependsOn: [RC-010, RC-011, RC-012] }
+  RC-014: { dependsOn: [] }
   RC-015: { dependsOn: [RC-013, RC-014] }
   RC-016: { dependsOn: [] }
   RC-017: { dependsOn: [RC-016] }
@@ -699,7 +699,7 @@ tasks:
 | RC-011 | VERIFIED | 728e5d421aea6f889209eb1da56dfed31bb556f4 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm test` 37/37; `npm run validate:real:algorithms` PASS; `npm run build:real:algorithms` correctly rejects overwrite of `algorithms-core-0006` | Producer source `a4d384f01d14fb1a69b8e3dc0d1f9e7b61f2e405`; immutable evidence `228a869feea1cfbdd700fc868ab050e1d8380233`; `origin/master` confirmed | New immutable build/checksum intentionally deferred to RC-013 |
 | RC-012 | VERIFIED | 976042c15e6ab76a2e9b1c4b1a3154dead16fb10 | 9c6f594f4817602123f710124b4969b373d6eaa8 | content `npm test` 38/38; `npm run validate:real:algorithms`; `npm run validate:real:certification` PASS | `origin/master` confirmed at `9c6f594f4817602123f710124b4969b373d6eaa8`; deleted three unreachable manifests; certification evidence `65f360f…json` is tracked | New multi-track immutable build remains RC-013 after simulation and feedback contract work |
 | RC-013 | PENDING | — | — | — | — | — |
-| RC-014 | PENDING | — | — | — | — | — |
+| RC-014 | VERIFIED | — | d84ece0aa0e7a2a72c143b94215509b045c17075 | content `npm test` 39/39; clean `ci-release-gate.mjs` built and verified both isolated artifacts | `origin/master` confirmed at `d84ece0…`; workflow replaces `ARTIFACT_STATUS=NOT_BUILT` with deterministic two-track gate | Await GitHub Actions completion for the run URL; this does not block the implemented gate |
 | RC-015 | PENDING | — | — | — | — | — |
 | RC-016 | VERIFIED | c10cbd80a607148233a98e48c7762e01ce65d700 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run typecheck`; `npm test` 375/375; Expo prebuild; Android release manifest merge PASS | Release manifest: only `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` and signature-internal permission; Android root excluded for cloud/D2D; iOS MMKV directory marked before startup | Physical iOS/Android install and device evidence remain RC-018/RC-019 scope |
 | RC-017 | VERIFIED | 25d79f832760add1a37aa7e2e79b3d4b1b4c711d | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run qa:static`: recovery, typecheck, 376/376 tests, cross-repo contract, content boundary i runtime privacy boundary PASS | `origin/main` confirmed at `25d79f832760add1a37aa7e2e79b3d4b1b4c711d`; injected answer/draft/session payload is reduced to a finite operational code | Fresh device evidence remains RC-018/RC-019 scope |
