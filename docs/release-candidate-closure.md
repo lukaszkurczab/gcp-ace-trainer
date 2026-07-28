@@ -21,12 +21,12 @@ their immutable history remains in Git.
 | Parallel exam runtime removal (RC-008) | done | Active UI surfaces use the shared lifecycle and durable projections; duplicate state and scoring paths are removed. |
 | Certification feedback and pool readiness (RC-009–RC-010) | done | Every published Certification item has `Reason`, structured `Details` and exact option explanations; publication requires all seven declared modes and profile-compatible capacity. |
 | Algorithms readiness and content ingress cleanup (RC-011–RC-012) | done | Previous verified evidence remains valid for the current content source. |
-| Immutable multi-track release (RC-013) | done | Content `e18fc73` and the app bundle/lock commit are pushed; the cross-repo release test verifies the exact manifest and both checksums. |
+| Immutable multi-track content release (RC-013) | done | `patternly-core-0014` remains pinned by the application lock; the cross-repo release test verifies the manifest and both checksums. |
 | Content gate and local privacy boundaries (RC-014–RC-017) | done | Existing source, tests and CI configuration remain the canonical implementation. |
-| iOS acceptance (RC-018) | partial | A booted iPhone 17 Simulator is available, but the installed runner covers only the prior Algorithms audit and has no Certification capture inventory or manifest. |
-| Android acceptance (RC-019) | blocking | `adb devices` reports no online device or emulator; the installed runner also lacks Certification capture inventory. |
-| Accessibility and visual review (RC-020) | blocking | Requires current, complete iOS and Android capture packets. |
-| Final RC evidence pack (RC-021) | blocking | Requires RC-018 through RC-020. |
+| iOS acceptance (RC-018) | done | iPhone 17 completed Algorithms M1–M7 and Certification Exam Simulation on the explicit reset path. The final Certification run also completed at the iOS accessibility-large Dynamic Type size. |
+| Android acceptance (RC-019) | done | `emulator-5554` completed Algorithms M1–M7 and Certification Exam Simulation from deterministic clean dev-client state. The final Certification run also completed at font scale `1.3`. |
+| Accessibility and visual review (RC-020) | partial | No P0–P3 issue remains in reviewed current Certification captures. TalkBack was enabled on Android and the runtime hierarchy exposed labelled controls, roles and selected state. iOS semantic, reduced-motion and large-text checks pass; physical-device VoiceOver remains required. |
+| Final RC evidence pack (RC-021) | blocking | Requires the current application commit to be pushed and one physical-iPhone VoiceOver traversal; Apple documents that VoiceOver itself is unavailable on Simulator. |
 
 ## Current release identity
 
@@ -38,58 +38,10 @@ their immutable history remains in Git.
 | Algorithms artifact | `algorithms-core-0007`, `89462b2e0f6f47b5b5c3c62652937609fa8be37d0d399b02b6629c58cdbcec54` |
 | Certification artifact | `gcp-ace-0013`, `55dff7ce486cbd1c21b2a8094d60c5ab47d48635256c28c2b2bf83088dc274a2` |
 
-## Active implementation packets
+## Current evidence
 
-### RC-008 completion — prove and remove any remaining parallel exam ownership
-
-- Goal: retain one Certification session lifecycle and one durable projection path.
-- Scope: active routes, `src/features/exam/`, route imports, summary/review queries and their tests.
-- Non-goals: unrelated Certification practice changes or visual redesign.
-- Acceptance: no duplicate session state, scoring owner, route or selector; every remaining screen uses the shared lifecycle and durable projection.
-- Verification: reachability search, typecheck, focused lifecycle/projection tests and full suite.
-- Evidence: deleted-path diff plus passing commands.
-- Risk: a UI component may be canonical even though its former filename mentions exam; delete only after its reachability and ownership are proved.
-
-### RC-013 completion — publish the verified release pair
-
-- Goal: make the app and content remotes identify exactly the release above.
-- Scope: clean worktrees, content push, app bundle/lock push and remote-head confirmation.
-- Non-goals: a new release build or artifact rewrite.
-- Acceptance: both remote heads contain the verified source; bundle, lock, manifest and checksums agree; neither track becomes available through another artifact.
-- Verification: release cross-repo test, typecheck, full suite, clean status and `git ls-remote`.
-- Evidence: pushed SHA pair and command output.
-- Risk: any source change after verification invalidates its SHA-bound evidence.
-
-### RC-018 and RC-019 — capture current platform acceptance
-
-- Goal: record all supported Algorithms and Certification paths on one explicit iOS simulator/device and one explicit Android emulator/device.
-- Scope: current app/release identity, happy paths, resume, finalization, review and explicit unavailable/error states.
-- Non-goals: changing behavior solely to obtain screenshots.
-- Acceptance: every supported mode has a provenance-bound screenshot/runner manifest; missing or failed state blocks its packet.
-- Verification: platform capture scripts, manifest validation and manual real-flow check.
-- Evidence: device metadata, app/content/release SHA, screenshots and runner output.
-- Risk: unavailable device or native build is an operational blocker, not a skipped state.
-
-Before capture, the active audit inventory must be replaced with one that covers
-the implemented Certification routes and lifecycle states. The existing
-Algorithms-only runner is not RC evidence for Certification and must not be
-extended by copying static screenshots or by treating a partial packet as a
-successful release gate.
-
-### RC-020 and RC-021 — independent quality gate and final decision
-
-- Goal: assess the current capture packets for accessibility/visual defects and issue a binary RC decision.
-- Scope: VoiceOver/TalkBack, text scaling, reduced motion, focus order, touch targets, contrast, remote heads, release lock and CI evidence.
-- Non-goals: silent acceptance of an open high-severity finding.
-- Acceptance: no Critical or High finding remains; every final-gate item is bound to the exact pushed SHA pair.
-- Verification: native assistive-technology checks, capture review, release-lock inspection and all prior task commands.
-- Evidence: signed audit report and final evidence packet.
-- Risk: a post-acceptance commit requires targeted recapture and review.
-
-## Execution rules
-
-1. Continue with the narrowest unblocked packet that advances `RC_VERIFIED`.
-2. Do not add fallbacks, compatibility paths, temporary content or synthetic evidence.
-3. A product decision belongs in `docs/po-questions/` only when repository and approved policy do not determine one safe answer.
-4. Do not mark a packet done before its exact changes are committed, pushed and verified where the packet requires it.
-5. Current source, current tests and current captures override older reports.
+- `npm run qa:static`: 354 tests passed; type, content-boundary, runtime-privacy and recovery checks passed.
+- `npm run test:content-release-cross-repo`: the pinned multi-track release passed.
+- The current Certification Exam flow completed on iPhone 17 and `emulator-5554`, at normal scale and at the largest tested text setting. Current large-text screenshots are under `docs/audits/rc-verification-2026-07-28/{ios,android}-accessibility-large-text/screenshots/`.
+- Android TalkBack was enabled for hierarchy inspection. Buttons and tabs exposed their accessible labels and selected state; the emulator was then restored to its ordinary settings.
+- iOS dynamic type was restored after capture. The product already listens to the native reduce-motion setting and suppresses the navigator transition when it is enabled; that behavior is statically covered. Apple’s accessibility guidance requires a physical iPhone for a real VoiceOver traversal, so this is the one remaining non-simulated acceptance check.

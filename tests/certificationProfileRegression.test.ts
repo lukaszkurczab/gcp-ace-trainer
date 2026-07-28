@@ -230,6 +230,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
   const result = await late.loadSummary(sessionId);
   assert.deepEqual(result.answeredOccurrenceIds, [first.occurrenceId, last.occurrenceId]);
   assert.deepEqual(result.unansweredOccurrenceIds, started.session.itemOrder.slice(1, 3).map((occurrence) => occurrence.occurrenceId));
+  assert.equal((result.evidence.details as { maxPoints: number }).maxPoints, started.session.actualLength);
   const attempts = (await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === sessionId);
   assert.equal(attempts.length, 2);
   assert.equal(attempts.find((attempt) => attempt.occurrenceId === first.occurrenceId)?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged"), true);

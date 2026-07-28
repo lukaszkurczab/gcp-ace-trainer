@@ -12,7 +12,9 @@ const weakReviewSessionId = "algorithms:algorithms-weak-area-review:2";
 const nodeId = "complexity_and_constraints";
 const m6 = readFileSync(".maestro/m6-due-smoke.yaml", "utf8");
 const m7 = readFileSync(".maestro/m7-remediation-smoke.yaml", "utf8");
-const runner = readFileSync("scripts/runRuntimeAuditMaestro.mjs", "utf8");
+const bootstrap = readFileSync(".maestro/rc-algorithms-bootstrap.yaml", "utf8");
+const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "utf8");
+const iosRunner = readFileSync("scripts/runRcAlgorithmsIos.mjs", "utf8");
 
 test("M6 and M7 seed their real first Custom Practice item from the pinned Guided blueprint", () => {
   const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
@@ -53,9 +55,9 @@ test("M7 materializes remediation through the canonical weak-area review session
 
 function assertCanonicalPreparation(flow: string, tag: string): void {
   assert.match(flow, new RegExp(`- ${escapeForRegExp(tag)}`));
-  assert.match(runner, new RegExp(escapeForRegExp("com.lkurczab.gcpacetrainer://audit/reset-learning-state")));
-  assert.match(runner, new RegExp(escapeForRegExp("patternly:content:audit-command-listener:ready")));
-  assert.match(runner, new RegExp(escapeForRegExp("patternly:content:ready:1")));
+  assert.match(iosRunner, new RegExp(escapeForRegExp("com.lkurczab.gcpacetrainer://audit/reset-learning-state")));
+  assert.match(listener, new RegExp(escapeForRegExp("patternly:content:audit-command-listener:ready")));
+  assert.match(bootstrap, new RegExp(escapeForRegExp(runtimeSelectors.home.selectTrack("algorithms"))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.openSetup())));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.sessionLength(10))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.startSession())));

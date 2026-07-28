@@ -90,6 +90,30 @@ test("large text can grow session chrome and controls without fixed interactive 
   assert.match(simulation, /orderRow:\s*\{[^}]*flexWrap:\s*"wrap"/);
 });
 
+test("bottom navigation preserves one-line visual labels while keeping every tab semantically named", () => {
+  const bottomNavigation = source("src/components/BottomTabBar.tsx");
+  assert.match(bottomNavigation, /accessibilityRole="tab"/);
+  assert.match(bottomNavigation, /accessibilityLabel=\{item\.label\}/);
+  assert.match(bottomNavigation, /numberOfLines=\{1\}/);
+  assert.match(bottomNavigation, /adjustsFontSizeToFit/);
+  assert.match(bottomNavigation, /maxFontSizeMultiplier=\{1\.2\}/);
+});
+
+test("practice statistics keep the title and metric in separate full-width rows for large text", () => {
+  const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
+
+  assert.match(practiceHub, /statsHeader:\s*\{[^}]*alignItems:\s*"stretch"[^}]*flexDirection:\s*"column"/);
+  assert.match(practiceHub, /statsMetric:\s*\{[^}]*alignSelf:\s*"stretch"/);
+});
+
+test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
+  const exam = source("src/features/exam/ExamScreen.tsx");
+
+  assert.match(exam, /<View style=\{styles\.examActions\}>[\s\S]*Question navigator[\s\S]*Flag question/);
+  assert.match(exam, /examActions:\s*\{\s*gap:\s*spacing\.sm\s*\}/);
+  assert.match(exam, /navigationActions:\s*\{\s*flexDirection:\s*"row"/);
+});
+
 test("practice runtime selectors are derived from the canonical session projection without entering speech labels", () => {
   const screen = source("src/features/practice/PracticeSessionScreen.tsx");
   const surface = source("src/features/practice/PracticeSessionSurface.tsx");

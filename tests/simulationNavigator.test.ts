@@ -19,6 +19,8 @@ test("simulation question navigator has the approved states, accessible labels, 
   assert.equal(navigatorCellLabel(position("unanswered"), 17), "Question 18, unanswered");
   assert.equal(navigatorStateLabel(position("answered")), "Saved");
   assert.match(source, /<Modal animationType=\{reduceMotion \? "none" : "slide"\}/);
+  assert.match(source, /<ScrollView contentContainerStyle=\{styles\.grid\} style=\{styles\.gridScroll\}>/);
+  assert.match(source, /position\.state !== "answered"/);
   assert.match(source, /minHeight: 48/);
   assert.match(source, /accessibilityLiveRegion="polite"/);
   assert.match(source, /Complete the response before leaving this question\./);

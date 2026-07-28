@@ -7,6 +7,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 test("release-native configuration excludes canonical learning storage from backup and unneeded ingress", () => {
   const appConfig = read("app.json");
   const plugin = read("plugins/withPrivacyBoundary.js");
+  const debugManifest = read("android/app/src/debug/AndroidManifest.xml");
 
   assert.match(appConfig, /"\.\/plugins\/withPrivacyBoundary"/);
   assert.match(plugin, /"android:allowBackup": "false"/);
@@ -30,4 +31,8 @@ test("release-native configuration excludes canonical learning storage from back
   assert.match(plugin, /appendingPathComponent\("mmkv", isDirectory: true\)/);
   assert.match(plugin, /values\.isExcludedFromBackup = true/);
   assert.match(plugin, /fatalError\("Patternly cannot establish its local-storage backup policy\./);
+  assert.match(plugin, /function injectAndroidDebugMetroPermission/);
+  assert.match(plugin, /android\.permission\.INTERNET/);
+  assert.match(debugManifest, /android\.permission\.INTERNET" tools:node="replace"/);
+  assert.doesNotMatch(read("android/app/src/main/AndroidManifest.xml"), /android\.permission\.INTERNET"\/>/);
 });

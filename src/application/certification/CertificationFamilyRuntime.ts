@@ -391,6 +391,6 @@ function updateCertificationReviewEntry(entry: ReviewQueueEntry, attempt: Traini
 }
 function resultFor(session: TrainingSession, attempts: readonly TrainingAttempt<unknown>[], completedAt: string) {
   const pointsEarned = attempts.reduce((sum, attempt) => sum + attempt.result.earnedPoints, 0);
-  const maxPoints = attempts.reduce((sum, attempt) => sum + attempt.result.maxPoints, 0);
+  const maxPoints = session.actualLength;
   return createTrainingSessionResult({ id: `${session.id}:result`, sessionId: session.id, trackId: session.trackId, totalOccurrences: session.actualLength, answeredOccurrenceIds: attempts.map((attempt) => attempt.occurrenceId), unansweredOccurrenceIds: session.itemOrder.filter((occurrence) => !attempts.some((attempt) => attempt.occurrenceId === occurrence.occurrenceId)).map((occurrence) => occurrence.occurrenceId), completedAt, evidence: createFamilyEnvelope({ familyId: "certification", details: { pointsEarned, maxPoints, correctCount: attempts.filter((attempt) => attempt.result.kind === "correct").length, partialCount: attempts.filter((attempt) => attempt.result.kind === "partial").length, incorrectCount: attempts.filter((attempt) => attempt.result.kind === "incorrect").length } }) });
 }

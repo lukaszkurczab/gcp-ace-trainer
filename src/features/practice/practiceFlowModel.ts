@@ -14,7 +14,7 @@ import {
   isRoadmapPrerequisiteSatisfied,
 } from "../../tracks/algorithms";
 import type { CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
-import type { CertificationDomain } from "../../tracks/cloud-certification";
+import type { CertificationDomain, CertificationModeId } from "../../tracks/cloud-certification";
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
@@ -29,7 +29,7 @@ export type PracticeModeModel = {
   detail: string;
   enabled: boolean;
   icon: IconName;
-  mode: PracticeSessionMode;
+  mode: PracticeSessionMode | CertificationModeId;
   title: string;
   tone: "danger" | "info" | "muted" | "primary" | "success" | "warning";
   unavailableReason?: string;
@@ -148,6 +148,7 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
     { detail: "Review only saved weak areas whose review time has arrived.", enabled: true, icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
     { detail: "Practice the approved interleaved Cloud question set.", enabled: true, icon: "practice", mode: "certification-mixed-practice", title: "Mixed Practice", tone: "success" },
     { detail: "Review up to 10 saved weak areas whose review time has arrived.", enabled: true, icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
+    { detail: "A freely navigable exam simulation with final feedback after verified submission.", enabled: true, icon: "shield-check", mode: "certification-exam-simulation", title: "Exam Simulation", tone: "warning" },
   ];
 }
 

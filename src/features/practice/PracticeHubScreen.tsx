@@ -30,7 +30,7 @@ import { spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
 } from "../../tracks/algorithms";
-import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
+import { type CertificationModeId, type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
@@ -135,7 +135,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     trainingAttempts: data.trainingAttempts,
   });
 
-  function startSession(mode?: PracticeSessionMode) {
+  function startSession(mode?: PracticeSessionMode | CertificationModeId) {
     const resolvedMode = mode ?? (
       activeTrack.id === "algorithms"
         ? ALGORITHM_MODE_IDS.guidedPractice
@@ -147,6 +147,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     }
     if (activeTrack.id === "cloud-certification" && resolvedMode === "certification-quick-review") {
       navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source: "modeShortcut", topicId: "", trackId: activeTrack.id }));
+      return;
+    }
+    if (activeTrack.id === "cloud-certification" && resolvedMode === "certification-exam-simulation") {
+      navigation.navigate(ROUTES.EXAM);
       return;
     }
     if (activeTrack.id === "algorithms" && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
@@ -165,11 +169,12 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       });
       return;
     }
+    const practiceMode = resolvedMode as PracticeSessionMode;
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
-        mode: resolvedMode,
-        reviewSource: getGeneralPracticeReviewSource(resolvedMode),
+        mode: practiceMode,
+        reviewSource: getGeneralPracticeReviewSource(practiceMode),
         source: mode === undefined ? "practiceHub" : "modeShortcut",
         topicId: topic.id,
         trackId: activeTrack.id,
@@ -399,8 +404,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.lg,
   },
   statsHeader: {
-    alignItems: "center",
-    flexDirection: "row",
+    alignItems: "stretch",
+    flexDirection: "column",
     gap: spacing.md,
   },
   statsCopy: {
@@ -412,6 +417,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textPrimary,
   },
   statsMetric: {
-    minWidth: 112,
+    alignSelf: "stretch",
   },
 });

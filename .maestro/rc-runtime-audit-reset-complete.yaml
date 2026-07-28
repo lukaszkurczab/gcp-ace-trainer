@@ -1,0 +1,9 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly RC — audit reset complete
+tags:
+  - rc-evidence
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready-after-audit-reset"
+    timeout: 30000

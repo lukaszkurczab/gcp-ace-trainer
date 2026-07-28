@@ -1,0 +1,10 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly RC — development menu continue
+tags:
+  - rc-evidence
+---
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"

@@ -17,12 +17,13 @@ export type ContentPreparationState =
 export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContentPreparationState>({ kind: "loading" });
   const [bootstrapRevision, setBootstrapRevision] = useState(0);
-  const [auditResetRevision, setAuditResetRevision] = useState(0);
+  const [auditResetReady, setAuditResetReady] = useState(false);
   const [auditCommandListenerReady, setAuditCommandListenerReady] = useState(false);
   const initialUrlHandled = useRef(false);
   const resetInFlight = useRef(false);
   const lifecycleReady = useRef(false);
   const pendingRuntimeAuditabilityUrl = useRef<string | null>(null);
+  const auditResetAwaitingBootstrap = useRef(false);
 
   useEffect(() => {
     let live = true;
@@ -46,12 +47,16 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
           const queuedUrl = pendingRuntimeAuditabilityUrl.current;
           pendingRuntimeAuditabilityUrl.current = null;
           const handling = await handleRuntimeAuditabilityUrl(queuedUrl ?? initialUrl);
-          if (handling.kind === "reset_learning_state") setAuditResetRevision((revision) => revision + 1);
+          if (handling.kind === "reset_learning_state") auditResetAwaitingBootstrap.current = true;
         },
       );
     })().then((result) => {
       if (!live) return;
       setState(result.kind === "ready" ? { kind: "ready" } : { kind: "blocking", reason: result.reason });
+      if (result.kind === "ready" && auditResetAwaitingBootstrap.current) {
+        auditResetAwaitingBootstrap.current = false;
+        setAuditResetReady(true);
+      }
     });
     return () => { live = false; };
   }, [bootstrapRevision]);
@@ -70,10 +75,11 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       }
       if (resetInFlight.current) return;
       resetInFlight.current = true;
+      setAuditResetReady(false);
       try {
         const result = await handleRuntimeAuditabilityUrl(url);
         if (!live || result.kind !== "reset_learning_state") return;
-        setAuditResetRevision((revision) => revision + 1);
+        auditResetAwaitingBootstrap.current = true;
         setState({ kind: "loading" });
         setBootstrapRevision((revision) => revision + 1);
       } catch (error) {
@@ -88,7 +94,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   }, [state.kind]);
 
   const body = state.kind === "ready"
-    ? <View style={{ flex: 1 }} testID={runtimeSelectors.content.ready(auditResetRevision)}>{children}</View>
+    ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
       ? <Screen><View><Text>Preparing content…</Text></View></Screen>
       : <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;

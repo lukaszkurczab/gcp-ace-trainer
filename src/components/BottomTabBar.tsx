@@ -60,7 +60,12 @@ export function BottomTabBar<TId extends string>({
               name={item.icon}
               size={22}
             />
-            <Text style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}>
+            <Text
+              adjustsFontSizeToFit
+              maxFontSizeMultiplier={1.2}
+              numberOfLines={1}
+              style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}
+            >
               {item.label}
             </Text>
           </Pressable>

@@ -17,3 +17,20 @@ test("Algorithms practice hub exposes only the three deliberate alternatives to 
     ],
   );
 });
+
+test("Certification practice hub exposes every declared mode, including the canonical Exam Simulation", () => {
+  const modes = buildPracticeModes(getTrackDisplay("cloud-certification"));
+
+  assert.deepEqual(
+    modes.map(({ mode, title }) => ({ mode, title })),
+    [
+      { mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline" },
+      { mode: "certification-focus-practice", title: "Focus Practice" },
+      { mode: "certification-scenario-practice", title: "Scenario Practice" },
+      { mode: "certification-weak-area-review", title: "Weak Area Review" },
+      { mode: "certification-mixed-practice", title: "Mixed Practice" },
+      { mode: "certification-quick-review", title: "Quick Review" },
+      { mode: "certification-exam-simulation", title: "Exam Simulation" },
+    ],
+  );
+});

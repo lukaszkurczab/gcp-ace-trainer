@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AccessibilityInfo, Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { AccessibilityInfo, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import { Button, Icon } from "../../../components";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
@@ -48,14 +48,14 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
         <View accessibilityViewIsModal style={styles.sheet}>
           <View style={styles.handle} />
           <View style={styles.header}>
-            <View><Text style={styles.title}>{t("Question navigator")}</Text><Text style={styles.summary}>{`${validPositions.filter((position) => position.state === "answered").length} ${t("answered")} · ${validPositions.filter((position) => position.state === "unanswered").length} ${t("unanswered")}`}</Text></View>
+            <View><Text style={styles.title}>{t("Question navigator")}</Text><Text style={styles.summary}>{`${validPositions.filter((position) => position.state === "answered").length} ${t("answered")} · ${validPositions.filter((position) => position.state !== "answered").length} ${t("unanswered")}`}</Text></View>
             <Pressable accessibilityLabel={t("Close question navigator")} accessibilityRole="button" onPress={onDismiss} style={styles.close}><Icon color={palette.textPrimary} name="close" size={20} /></Pressable>
           </View>
           {feedback ? <NavigatorFeedbackBanner feedback={feedback} onRetry={() => void select(feedback.occurrenceId)} /> : null}
           {savingOccurrenceId ? <View accessibilityLiveRegion="polite" accessibilityRole="alert" style={styles.saving}><Text style={styles.savingText}>{t("Saving response…")}</Text></View> : null}
-          <View style={styles.grid}>
+          <ScrollView contentContainerStyle={styles.grid} style={styles.gridScroll}>
             {validPositions.map((position, index) => <NavigatorCell columns={columns} disabled={Boolean(savingOccurrenceId)} index={index} key={position.occurrenceId} onPress={() => void select(position.occurrenceId)} position={position} />)}
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -103,6 +103,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   feedbackMessage: { flex: 1 },
   feedbackWarning: { backgroundColor: palette.warningSoft, borderColor: palette.warning },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  gridScroll: { flexShrink: 1 },
   handle: { alignSelf: "center", backgroundColor: palette.borderStrong, borderRadius: radius.pill, height: 4, width: 48 },
   header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   pressedCell: { opacity: 0.78 },

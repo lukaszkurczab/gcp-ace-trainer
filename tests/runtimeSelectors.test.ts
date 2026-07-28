@@ -42,8 +42,8 @@ test("session metadata selectors expose validated lifecycle values without learn
 test("runtime selectors keep distinct runtime entities distinct", () => {
   const selectors = new Set([
     runtimeSelectors.home.trackCard("algorithms"),
-    runtimeSelectors.content.ready(0),
-    runtimeSelectors.content.ready(1),
+    runtimeSelectors.content.ready(),
+    runtimeSelectors.content.readyAfterAuditReset(),
     runtimeSelectors.practice.modeCard("algorithms-guided-practice"),
     runtimeSelectors.practice.openSetup(),
     runtimeSelectors.practice.customEntry(),
@@ -75,5 +75,4 @@ test("runtime selector factories reject values that cannot be represented in the
   assert.throws(() => runtimeSelectors.practice.sessionLength(1.5), /session length/);
   assert.throws(() => runtimeSelectors.session.counter("session-1", 0, 10), /session ordinal/);
   assert.throws(() => runtimeSelectors.session.counter("session-1", 11, 10), /cannot exceed/);
-  assert.throws(() => runtimeSelectors.content.ready(-1), /content bootstrap revision/);
 });

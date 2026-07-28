@@ -1,8 +1,0 @@
-appId: com.lkurczab.gcpacetrainer
-name: Algorithms Stage 3 iOS audit host bootstrap
-tags: [ux-ui-audit, algorithms-stage3, host-bootstrap]
----
-- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8082"
-- extendedWaitUntil:
-    visible: { id: "algorithms-audit-current-P-01" }
-    timeout: 30000

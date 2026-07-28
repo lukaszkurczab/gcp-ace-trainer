@@ -1,0 +1,9 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly RC — fresh content ready
+tags:
+  - rc-evidence
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:ready"
+    timeout: 30000

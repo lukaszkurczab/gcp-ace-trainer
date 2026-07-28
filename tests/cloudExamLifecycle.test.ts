@@ -38,6 +38,12 @@ test("Cloud Exam starts from the installed, validated simulation profile", async
   assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
 });
 
+test("Cloud Exam does not poll before its initial session projection exists", () => {
+  const source = readFileSync("src/features/exam/ExamScreen.tsx", "utf8");
+  assert.match(source, /useEffect\(\(\) => \{\n    if \(!projection\) return;/);
+  assert.match(source, /\}, \[projection\]\);/);
+});
+
 test("Cloud Exam runtime derives duration, length, and domain selection from a changed profile fixture", async () => {
   await validateBundledContent();
   const sourceCatalog = getCertificationContentCatalog();
@@ -317,4 +323,9 @@ test("Certification Quick Review is routed to the Certification runner", () => {
   const screen = readFileSync("src/features/practice/PracticeSessionScreen.tsx", "utf8");
   assert.match(screen, /route\.params\.mode === "certification-quick-review"/);
   assert.match(screen, /certification-quick-review[\s\S]*?return <CertificationPracticeSessionScreen/);
+});
+
+test("Certification Exam Simulation is reachable from Practice Hub through the canonical exam route", () => {
+  const hub = readFileSync("src/features/practice/PracticeHubScreen.tsx", "utf8");
+  assert.match(hub, /resolvedMode === "certification-exam-simulation"[\s\S]*?navigation\.navigate\(ROUTES\.EXAM\)/);
 });

@@ -1,0 +1,14 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly RC — runtime audit listener ready
+tags:
+  - rc-evidence
+---
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:content:audit-command-listener:ready"
+    timeout: 30000

@@ -1,11 +1,12 @@
 import type { SimulationNavigatorPosition, SimulationSurfaceProjection } from "./simulationProjection";
 
-export const SIMULATION_OCCURRENCE_COUNT = 40;
-
-/** A malformed projection must never turn into a shortened navigator. */
+/**
+ * The shared navigator accepts a complete session projection from more than one
+ * product flow. Its integrity is about identities, not a legacy fixed length.
+ */
 export function hasCanonicalSimulationNavigator(positions: readonly SimulationNavigatorPosition[] | undefined): positions is readonly SimulationNavigatorPosition[] {
   if (!positions) return false;
-  return positions.length === SIMULATION_OCCURRENCE_COUNT && new Set(positions.map((position) => position.occurrenceId)).size === SIMULATION_OCCURRENCE_COUNT;
+  return positions.length > 0 && new Set(positions.map((position) => position.occurrenceId)).size === positions.length;
 }
 
 /** Correctness is deliberately unavailable until the verified result projection. */

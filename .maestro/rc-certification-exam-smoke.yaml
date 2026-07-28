@@ -1,0 +1,92 @@
+appId: com.lkurczab.gcpacetrainer
+name: Patternly RC — Certification Exam Simulation
+tags:
+  - rc-evidence
+  - certification
+  - exam-simulation
+---
+- runFlow:
+    when:
+      visible: "Change track"
+    commands:
+      - tapOn: "Change track"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:cloud-certification"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:home:select-track:cloud-certification"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-practice"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:certification-exam-simulation"
+    direction: DOWN
+- swipe:
+    direction: UP
+    duration: 500
+- takeScreenshot: "rc-certification-practice-hub"
+- tapOn:
+    id: "patternly:practice:mode-card:certification-exam-simulation"
+- assertVisible: "Question 1 of 50"
+- scrollUntilVisible:
+    element:
+      text: "Finish exam"
+    direction: DOWN
+- takeScreenshot: "rc-certification-exam-initial"
+- tapOn: "Question navigator"
+- assertVisible: "Question navigator"
+- takeScreenshot: "rc-certification-exam-navigator"
+- scrollUntilVisible:
+    element:
+      text: "Question 50, unanswered"
+    direction: DOWN
+- tapOn:
+    text: "Question 50, unanswered"
+- scrollUntilVisible:
+    element:
+      text: "Question 50 of 50"
+    direction: UP
+- assertVisible: "Question 50 of 50"
+- scrollUntilVisible:
+    element:
+      text: "Flag question"
+    direction: DOWN
+- tapOn: "Flag question"
+- scrollUntilVisible:
+    element:
+      text: "Remove flag"
+    direction: DOWN
+- assertVisible: "Remove flag"
+- takeScreenshot: "rc-certification-exam-flagged"
+- scrollUntilVisible:
+    element:
+      text: "Finish exam"
+    direction: DOWN
+- tapOn: "Finish exam"
+- assertVisible: "Finish with unanswered questions?"
+- takeScreenshot: "rc-certification-exam-finalization-confirmation"
+- tapOn: "Finish exam"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "rc-certification-exam-result"
+- tapOn:
+    text: "Review answers"
+- extendedWaitUntil:
+    visible: "No submitted answers"
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 10000
+- takeScreenshot: "rc-certification-exam-empty-review"

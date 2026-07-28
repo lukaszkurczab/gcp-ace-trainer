@@ -1,9 +1,0 @@
-appId: com.lkurczab.gcpacetrainer
-name: Algorithms Stage 3 iOS audit state S-26
-tags: [ux-ui-audit, algorithms-stage3, manual-fixtures]
----
-- openLink: "com.lkurczab.gcpacetrainer://audit?auditState=S-26"
-- extendedWaitUntil:
-    visible: { id: "algorithms-audit-current-S-26" }
-    timeout: 20000
-- takeScreenshot: "algorithms-stage3__s-26__missing-draft__ios-regular"
