@@ -8,7 +8,8 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "plugins": [
-      "expo-notifications"
+      "expo-notifications",
+      "./plugins/withPrivacyBoundary"
     ],
     "assetBundlePatterns": [
       "**/*"

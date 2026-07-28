@@ -10,6 +10,8 @@ No UI module, screen, family runtime, track instance, content bank, or shared-do
 
 Static content is bundled with the application and identified by an active `contentVersion`. User learning data is stored as local canonical state.
 
+Canonical learning data is excluded from automatic platform backup and device-transfer restore. Android excludes the app data root in both legacy backup rules and Android 12+ cloud/D2D extraction rules. Before React Native initializes on iOS, the app creates the MMKV `Documents/mmkv` directory and marks it `isExcludedFromBackup`; failure to establish that policy stops startup. Patternly offers no backup or restore path for learning records.
+
 The target does not include:
 
 - remote content delivery;

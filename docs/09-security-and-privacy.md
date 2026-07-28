@@ -239,7 +239,7 @@ Before release, the implementation and privacy contract must state whether canon
 
 Backup behaviour must be consistent with encryption-key management and resume semantics.
 
-Until that policy is verified, the product must not promise that local records never leave the physical device.
+The current policy excludes the canonical storage root from Android cloud backup and device transfer, and marks the iOS MMKV directory as excluded from automatic backup before storage initialization. Patternly offers no backup or restore path for learning records. This is an application policy, not a claim that the operating system, a compromised device, or forensic tooling can never copy local data.
 
 ## Reset and deletion
 

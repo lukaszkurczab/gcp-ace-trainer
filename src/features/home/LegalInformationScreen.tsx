@@ -52,7 +52,7 @@ const copy = {
             title: "Reset limits",
             paragraphs: [
               "A learning-state reset logically removes supported canonical learning records such as sessions, attempts, review items, progress evidence, active drafts, and pending learning mutations where the storage contract permits it.",
-              "It is not forensic secure erasure and cannot promise deletion from operating-system backups or flash-memory remnants. Non-learning preferences may remain unless a separately defined full reset exists.",
+              "It is not forensic secure erasure and cannot promise deletion from copies created before the current no-backup policy, operating-system copies outside the app's control, or flash-memory remnants. Non-learning preferences may remain unless a separately defined full reset exists.",
             ],
           },
         ],
@@ -109,7 +109,7 @@ const copy = {
             title: "Granice resetu",
             paragraphs: [
               "Reset stanu nauki logicznie usuwa obsługiwane kanoniczne rekordy nauki, takie jak sesje, podejścia, elementy powtórek, dowody postępu, aktywne szkice i oczekujące mutacje nauki, gdy pozwala na to kontrakt zapisu.",
-              "Nie jest to bezpieczne usuwanie forensyczne i nie może obiecywać usunięcia z backupów systemu ani pozostałości w pamięci flash. Preferencje niezwiązane z nauką mogą pozostać, dopóki nie istnieje osobno zdefiniowany pełny reset.",
+              "Nie jest to bezpieczne usuwanie forensyczne i nie może obiecywać usunięcia z kopii utworzonych przed obecną polityką bez backupu, kopii systemowych poza kontrolą aplikacji ani pozostałości w pamięci flash. Preferencje niezwiązane z nauką mogą pozostać, dopóki nie istnieje osobno zdefiniowany pełny reset.",
             ],
           },
         ],

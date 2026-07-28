@@ -52,7 +52,7 @@ const copy = {
             title: "Local-only limits",
             paragraphs: [
               "Uninstalling the app, losing or replacing the device, or resetting learning state may remove local learning data. Patternly cannot restore it through an account or cloud history.",
-              "The app does not promise that local records never appear in operating-system backups, because that behaviour has not been verified as a product policy.",
+              "Patternly configures learning records to be excluded from automatic operating-system backups and device transfers. It offers no backup or restore path; copies outside the app's control cannot be guaranteed absent.",
             ],
           },
         ],
@@ -109,7 +109,7 @@ const copy = {
             title: "Granice lokalnego zapisu",
             paragraphs: [
               "Odinstalowanie aplikacji, utrata lub wymiana urządzenia albo reset stanu nauki mogą usunąć lokalne dane o nauce. Patternly nie może ich odtworzyć przez konto ani historię w chmurze.",
-              "Aplikacja nie obiecuje, że lokalne rekordy nigdy nie pojawią się w backupach systemu operacyjnego, ponieważ to zachowanie nie zostało zweryfikowane jako polityka produktu.",
+              "Patternly konfiguruje wykluczenie rekordów nauki z automatycznych backupów systemu i transferów między urządzeniami. Nie oferuje backupu ani przywracania; nie może zagwarantować braku kopii poza kontrolą aplikacji.",
             ],
           },
         ],
