@@ -20,7 +20,7 @@ w tym dokumencie przed następną implementacją.
 
 | Obszar | Potwierdzony stan |
 | --- | --- |
-| app | `https://github.com/lukaszkurczab/gcp-ace-trainer.git`, `main`, `c10cbd80a607148233a98e48c7762e01ce65d700`; worktree czysty po implementacji RC-016 2026-07-28 |
+| app | `https://github.com/lukaszkurczab/gcp-ace-trainer.git`, `main`, `25d79f832760add1a37aa7e2e79b3d4b1b4c711d`; worktree czysty po implementacji RC-017 2026-07-28 |
 | content | `https://github.com/lukaszkurczab/patternly-content.git`, `master`, `228a869feea1cfbdd700fc868ab050e1d8380233`; worktree czysty i `origin/master` potwierdzony po RC-011 2026-07-28 |
 | bundle aplikacji | `patternly-core-0013`, release source `b4a7e46527e03b03d1ccd1cec5ea260f5d772569`, z `algorithms-core-0006` (2,375 items) oraz `gcp-ace-0012` (360 items) |
 | content lock | `integration/contracts/algorithms-content/content.lock.json` nadal wskazuje `b424faa6d8c7209acb51ac23af812d08c31842dc`, czyli inny commit niż bundle i bieżący head contentu |
@@ -505,7 +505,7 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Kanoniczny owner:**  `docs/09-security-and-privacy.md`, `src/application/` and `scripts/checkRecoveryBaseline.mjs`.
 
-**Potwierdzony stan obecny:**  `validateContentBoundary` testuje brak network/fixture ingress, ale policy redaction nie ma named production boundary/gate.
+**Potwierdzony stan obecny:**  VERIFIED 2026-07-28. `src/application/operationalDiagnostics.ts` jest jedyną projekcją caught operational failures dla learner UI: przekazuje finite category, nigdy raw error message ani payload. `validateRuntimePrivacyBoundary.mjs` blokuje raw operational messages, console diagnostics i network clients w produkcyjnym source; `qa:static` uruchamia tę bramkę. Test z wstrzykniętym answer/draft/session payloadem potwierdza redaction.
 
 **Dokładny zakres:**  Centralnie zdefiniować dozwolone operational diagnostics, redaction of session IDs/answers/drafts/content payloads and static/runtime gate against console/network imports outside approved development audit code.
 
@@ -702,7 +702,7 @@ tasks:
 | RC-014 | PENDING | — | — | — | — | — |
 | RC-015 | PENDING | — | — | — | — | — |
 | RC-016 | VERIFIED | c10cbd80a607148233a98e48c7762e01ce65d700 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run typecheck`; `npm test` 375/375; Expo prebuild; Android release manifest merge PASS | Release manifest: only `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED` and signature-internal permission; Android root excluded for cloud/D2D; iOS MMKV directory marked before startup | Physical iOS/Android install and device evidence remain RC-018/RC-019 scope |
-| RC-017 | PENDING | — | — | — | — | — |
+| RC-017 | VERIFIED | 25d79f832760add1a37aa7e2e79b3d4b1b4c711d | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm run qa:static`: recovery, typecheck, 376/376 tests, cross-repo contract, content boundary i runtime privacy boundary PASS | `origin/main` confirmed at `25d79f832760add1a37aa7e2e79b3d4b1b4c711d`; injected answer/draft/session payload is reduced to a finite operational code | Fresh device evidence remains RC-018/RC-019 scope |
 | RC-018 | PENDING | — | — | — | — | — |
 | RC-019 | PENDING | — | — | — | — | — |
 | RC-020 | PENDING | — | — | — | — | — |
