@@ -305,13 +305,13 @@ PASS. `npm run verify:artifact` nie jest kompletną komendą bez wymaganego
 
 **Repozytorium:**  `content/master`.
 
-**Zależności:**  RC-003, RC-009.
+**Zależności:**  RC-003 wyłącznie dla siódmego, Simulation mode. Aktualnie zadeklarowane tryby mają niezależny, canonical readiness owner; kontrakt feedbacku RC-009 nie zmienia reguł doboru pooli.
 
 **Kanoniczny owner:**  Certification track config i `scripts/publishing/pipeline.mjs`.
 
-**Potwierdzony stan obecny:**  Aktualny artifact deklaruje sześć modes; `validate:real:certification` przechodzi, ale manualny release workflow nie publikuje mode-level readiness report dla Exam Simulation.
+**Potwierdzony stan obecny:**  W toku. Producer commit `ba66c458e7141cf8164dc556efa0eaac5ad12ebb` wprowadza machine-readable `modeReadiness` dla każdego z sześciu aktualnie zadeklarowanych trybów: exact scope, requested lengths, shortening i required/available unique count. Każdy nowy declared mode bez własnego readiness ownera zatrzymuje walidację (`MISSING_MODE_READINESS_OWNER`); nie może zostać niejawnie dopisany do raportu.
 
-**Dokładny zakres:**  Dodać deterministic readiness computation do validate/build report: required/available unique items, scope, shortening policy, profile constraints i result dla każdego mode.
+**Dokładny zakres:**  Dodać deterministic readiness computation do validate/build report: required/available unique items, scope, shortening policy, profile constraints i result dla każdego declared mode. Dodać Simulation owner dopiero razem z zatwierdzoną polityką interakcji z RC-003.
 
 **Poza zakresem:**  Nie tworzyć żadnego nowego pytania bez failing report wskazującego konkretny scope i exact deficit.
 
@@ -647,7 +647,7 @@ tasks:
   RC-007: { dependsOn: [RC-005, RC-006] }
   RC-008: { dependsOn: [RC-007] }
   RC-009: { dependsOn: [RC-003] }
-  RC-010: { dependsOn: [RC-003, RC-009] }
+  RC-010: { dependsOn: [RC-003] }
   RC-011: { dependsOn: [] }
   RC-012: { dependsOn: [] }
   RC-013: { dependsOn: [RC-009, RC-010, RC-011, RC-012] }
@@ -695,7 +695,7 @@ tasks:
 | RC-007 | PENDING | — | — | — | — | — |
 | RC-008 | PENDING | — | — | — | — | — |
 | RC-009 | PENDING | — | — | — | — | — |
-| RC-010 | PENDING | — | — | — | — | — |
+| RC-010 | IN_PROGRESS | — | 5ad33da60f3a650e855ff51551831492a4512a7e | content `npm test` 41/41; `npm run validate:real:certification`; clean two-track gate PASS | Six active Certification modes have deterministic scope-level readiness; unowned declared mode is rejected | Simulation readiness owner and seventh-mode evidence await RC-003 PO decision |
 | RC-011 | VERIFIED | 728e5d421aea6f889209eb1da56dfed31bb556f4 | 228a869feea1cfbdd700fc868ab050e1d8380233 | `npm test` 37/37; `npm run validate:real:algorithms` PASS; `npm run build:real:algorithms` correctly rejects overwrite of `algorithms-core-0006` | Producer source `a4d384f01d14fb1a69b8e3dc0d1f9e7b61f2e405`; immutable evidence `228a869feea1cfbdd700fc868ab050e1d8380233`; `origin/master` confirmed | New immutable build/checksum intentionally deferred to RC-013 |
 | RC-012 | VERIFIED | 976042c15e6ab76a2e9b1c4b1a3154dead16fb10 | 9c6f594f4817602123f710124b4969b373d6eaa8 | content `npm test` 38/38; `npm run validate:real:algorithms`; `npm run validate:real:certification` PASS | `origin/master` confirmed at `9c6f594f4817602123f710124b4969b373d6eaa8`; deleted three unreachable manifests; certification evidence `65f360f…json` is tracked | New multi-track immutable build remains RC-013 after simulation and feedback contract work |
 | RC-013 | PENDING | — | — | — | — | — |
