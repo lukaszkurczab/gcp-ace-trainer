@@ -13,9 +13,10 @@ export function navigatorCellLabel(position: SimulationNavigatorPosition, index:
     : position.state === "answered"
       ? "answered and saved"
       : "unanswered";
-  return `Question ${index + 1}, ${state}`;
+  return `Question ${index + 1}, ${state}${position.flagged ? ", flagged" : ""}`;
 }
 
 export function navigatorStateLabel(position: SimulationNavigatorPosition): string {
-  return position.state === "answered" ? "Saved" : position.state === "current" ? "Current" : "Unanswered";
+  const state = position.state === "answered" ? "Saved" : position.state === "current" ? "Current" : "Unanswered";
+  return position.flagged ? `${state}, flagged` : state;
 }

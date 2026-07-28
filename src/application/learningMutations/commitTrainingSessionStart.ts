@@ -11,7 +11,7 @@ export async function commitTrainingSessionStart(input: {
   if (input.session.status !== "active") throw new Error("Training session start requires an active session.");
   const draftExpected = canPersistTrainingSessionDraft(input.session);
   if (draftExpected !== Boolean(input.draft)) throw new Error("Training session start draft does not match the session configuration.");
-  if (input.draft && (input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId || Object.keys(input.draft.responsesByOccurrenceId).length !== 0)) {
+  if (input.draft && (input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId || Object.keys(input.draft.responsesByOccurrenceId).length !== 0 || input.draft.flaggedOccurrenceIds.length !== 0)) {
     throw new Error("Training session start requires an empty draft in the same session scope.");
   }
   const writes = [

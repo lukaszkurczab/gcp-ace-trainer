@@ -23,6 +23,7 @@ export type CertificationExamProjection = Readonly<{
   ordinal: number;
   total: number;
   response: CertificationResponse | null;
+  flaggedOccurrenceIds: readonly string[];
   now: string;
 }>;
 
@@ -60,13 +61,23 @@ export async function getCertificationExamProjection(): Promise<CertificationExa
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
-  return Object.freeze({ session, draft, question: getCertificationContentCatalog().getItemById(occurrence.item.itemId), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CertificationResponse | null, now: getTrainingLifecycleUseCases().currentTime() });
+  return Object.freeze({ session, draft, question: getCertificationContentCatalog().getItemById(occurrence.item.itemId), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CertificationResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
 }
 export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CertificationResponse }>): Promise<void> {
   await assertCertificationExamIsActive();
   const projection = await getCertificationExamProjection();
   if (projection.occurrenceId !== input.occurrenceId) throw new Error("Cloud exam response does not belong to the active occurrence.");
   const draft = { ...projection.draft, revision: projection.draft.revision + 1, updatedAt: getTrainingLifecycleUseCases().currentTime(), responsesByOccurrenceId: { ...projection.draft.responsesByOccurrenceId, [input.occurrenceId]: input.response } } as TrainingSessionDraft;
+  await getTrainingLifecycleUseCases().saveSimulationDraft({ draft, expectedPreviousRevision: projection.draft.revision });
+}
+export async function toggleCertificationExamFlag(occurrenceId: string): Promise<void> {
+  await assertCertificationExamIsActive();
+  const projection = await getCertificationExamProjection();
+  if (!projection.session.itemOrder.some((occurrence) => occurrence.occurrenceId === occurrenceId)) throw new Error("Cloud exam flag does not belong to the active session.");
+  const flaggedOccurrenceIds = projection.draft.flaggedOccurrenceIds.includes(occurrenceId)
+    ? projection.draft.flaggedOccurrenceIds.filter((id) => id !== occurrenceId)
+    : [...projection.draft.flaggedOccurrenceIds, occurrenceId];
+  const draft = { ...projection.draft, revision: projection.draft.revision + 1, updatedAt: getTrainingLifecycleUseCases().currentTime(), flaggedOccurrenceIds } as TrainingSessionDraft;
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft, expectedPreviousRevision: projection.draft.revision });
 }
 export async function navigateCertificationExamTo(index: number): Promise<TrainingSession> { await assertCertificationExamIsActive(); return getTrainingLifecycleUseCases().moveSimulationSessionTo(index); }

@@ -178,6 +178,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
       revision: initialDraft.revision + 1,
       updatedAt: clock.now(),
       responsesByOccurrenceId: { [first.occurrenceId]: responseFor(harness.catalog, first, true) },
+      flaggedOccurrenceIds: [first.occurrenceId],
     },
     expectedPreviousRevision: initialDraft.revision,
   });
@@ -236,6 +237,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
   assert.deepEqual(result.unansweredOccurrenceIds, started.session.itemOrder.slice(1, 3).map((occurrence) => occurrence.occurrenceId));
   const attempts = (await getTrainingAttempts()).value.filter((attempt) => attempt.sessionId === sessionId);
   assert.equal(attempts.length, 2);
+  assert.equal(attempts.find((attempt) => attempt.occurrenceId === first.occurrenceId)?.reviewEvidence.taxonomyOrSkillRefs.some((ref) => ref.axisId === "exam-state" && ref.nodeId === "flagged"), true);
   const reviews = (await getReviewQueueItems()).value.filter((review) => review.sourceSessionId === sessionId);
   assert.equal(reviews.length, 1);
   assert.equal(reviews[0]!.sourceAttemptId, attempts.find((attempt) => attempt.occurrenceId === last.occurrenceId)!.id);

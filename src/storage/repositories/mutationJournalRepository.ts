@@ -211,7 +211,7 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
   switch (record.operation) {
     case "start_training_session": {
       const draftExpected = Boolean(sessionWrite && getTrainingSessionFinalizationCleanupKind(sessionWrite.record) === "session_draft");
-      const draftMatches = !draftExpected || Boolean(draftPut && draftPut.record.sessionId === sessionWrite?.record.id && draftPut.record.trackId === sessionWrite.record.trackId && Object.keys(draftPut.record.responsesByOccurrenceId).length === 0);
+      const draftMatches = !draftExpected || Boolean(draftPut && draftPut.record.sessionId === sessionWrite?.record.id && draftPut.record.trackId === sessionWrite.record.trackId && Object.keys(draftPut.record.responsesByOccurrenceId).length === 0 && draftPut.record.flaggedOccurrenceIds.length === 0);
       return only("put_session", "put_active_session_draft") && count("put_session") === 1 && sessionWrite?.record.status === "active" && count("put_active_session_draft") === (draftExpected ? 1 : 0) && draftMatches;
     }
     case "advance_training_session":

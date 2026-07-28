@@ -34,10 +34,10 @@ export function isTrainingSessionResult(value: unknown): value is TrainingSessio
 }
 
 export function isTrainingSessionDraft(value: unknown): value is TrainingSessionDraft {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "familyId", "draftVersion", "revision", "sessionId", "trackId", "responsesByOccurrenceId", "updatedAt"])) return false;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["schemaVersion", "familyId", "draftVersion", "revision", "sessionId", "trackId", "responsesByOccurrenceId", "flaggedOccurrenceIds", "updatedAt"])) return false;
   if (value.schemaVersion !== 1 || value.draftVersion !== 1 || !isNonEmptyString(value.familyId) || !Number.isSafeInteger(value.revision) || Number(value.revision) < 0 ||
     !isNonEmptyString(value.sessionId) || typeof value.trackId !== "string" || !isRegisteredTrackId(value.trackId) ||
-    !isTimestamp(value.updatedAt) || !isDraftResponseRecord(value.responsesByOccurrenceId)) return false;
+    !isTimestamp(value.updatedAt) || !isDraftResponseRecord(value.responsesByOccurrenceId) || !Array.isArray(value.flaggedOccurrenceIds) || value.flaggedOccurrenceIds.some((occurrenceId) => !isNonEmptyString(occurrenceId)) || new Set(value.flaggedOccurrenceIds).size !== value.flaggedOccurrenceIds.length) return false;
   try {
     createTrainingSessionDraft({
       schemaVersion: value.schemaVersion,
@@ -47,6 +47,7 @@ export function isTrainingSessionDraft(value: unknown): value is TrainingSession
       sessionId: value.sessionId,
       trackId: value.trackId,
       responsesByOccurrenceId: value.responsesByOccurrenceId,
+      flaggedOccurrenceIds: value.flaggedOccurrenceIds,
       updatedAt: value.updatedAt,
     });
     return true;

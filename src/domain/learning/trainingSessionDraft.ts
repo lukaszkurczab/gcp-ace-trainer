@@ -17,12 +17,13 @@ export type TrainingSessionDraft = Readonly<{
   sessionId: string;
   trackId: TrackId;
   responsesByOccurrenceId: Readonly<Record<string, TrainingSessionDraftResponse>>;
+  flaggedOccurrenceIds: readonly string[];
   updatedAt: string;
 }>;
 
 export function createTrainingSessionDraft(
-  draft: Omit<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision"> &
-    Partial<Pick<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision">>,
+  draft: Omit<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision" | "flaggedOccurrenceIds"> &
+    Partial<Pick<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision" | "flaggedOccurrenceIds">>,
 ): TrainingSessionDraft {
   const schemaVersion = draft.schemaVersion ?? 1;
   const familyId = draft.familyId ?? "algorithms";
@@ -41,6 +42,10 @@ export function createTrainingSessionDraft(
   if (!Object.values(draft.responsesByOccurrenceId).every(isJsonValue)) {
     throw new Error("Training session draft responses must contain only canonical JSON values.");
   }
+  const flaggedOccurrenceIds = draft.flaggedOccurrenceIds ?? [];
+  if (!Array.isArray(flaggedOccurrenceIds) || flaggedOccurrenceIds.some((occurrenceId) => typeof occurrenceId !== "string" || !occurrenceId.trim()) || new Set(flaggedOccurrenceIds).size !== flaggedOccurrenceIds.length) {
+    throw new Error("Training session draft flags must be unique non-empty occurrence identities.");
+  }
   return Object.freeze({
     ...draft,
     schemaVersion,
@@ -50,6 +55,7 @@ export function createTrainingSessionDraft(
     responsesByOccurrenceId: Object.freeze(Object.fromEntries(
       Object.entries(draft.responsesByOccurrenceId).map(([occurrenceId, response]) => [occurrenceId, freezeJsonValue(response)]),
     )),
+    flaggedOccurrenceIds: Object.freeze([...flaggedOccurrenceIds]),
   });
 }
 

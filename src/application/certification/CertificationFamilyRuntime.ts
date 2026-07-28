@@ -108,7 +108,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       startedAt: input.now,
     };
     const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base) });
-    const draft = simulation ? createTrainingSessionDraft({ familyId: this.familyId, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, updatedAt: input.now }) : null;
+    const draft = simulation ? createTrainingSessionDraft({ familyId: this.familyId, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: input.now }) : null;
     return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft });
   }
 
@@ -116,6 +116,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     this.assertSession(input.session);
     const simulation = input.session.modeId === "certification-exam-simulation";
     if (simulation && (!input.draft || input.draft.familyId !== this.familyId || input.draft.trackId !== CLOUD_CERTIFICATION_TRACK_ID || input.draft.sessionId !== input.session.id)) throw new Error("Cloud exam simulation requires its exact persisted draft.");
+    if (simulation && input.draft?.flaggedOccurrenceIds.some((occurrenceId) => !input.session.itemOrder.some((occurrence) => occurrence.occurrenceId === occurrenceId))) throw new Error("Cloud exam draft flags an occurrence outside its immutable session.");
     if (!simulation && input.draft) throw new Error("Cloud practice cannot resume with an exam draft.");
   }
 
@@ -163,7 +164,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       const attempt = createTrainingAttempt({
         id: await createAttemptId(input.session.id, occurrence.occurrenceId, response), sessionId: input.session.id, trackId: input.session.trackId, modeId: input.session.modeId,
         occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result: scoreCertificationQuestion(question, response),
-        reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((nodeId) => ({ axisId: "tag", nodeId }))] }, answeredAt: input.now, committedAt: input.now,
+        reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, ...question.tags.map((nodeId) => ({ axisId: "tag", nodeId })), ...(input.draft.flaggedOccurrenceIds.includes(occurrence.occurrenceId) ? [{ axisId: "exam-state", nodeId: "flagged" }] : [])] }, answeredAt: input.now, committedAt: input.now,
       });
       attempts.push(attempt);
       const candidate = createCertificationReviewEntry(attempt);
@@ -183,6 +184,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       if (!occurrence) throw new Error(`Cloud exam draft response ${occurrenceId} is outside its immutable plan.`);
       validateResponseForQuestion(certificationResponse(raw), this.catalog.getItemById(occurrence.item.itemId).options.map((option) => option.id));
     }
+    if (input.draft.flaggedOccurrenceIds.some((occurrenceId) => !input.session.itemOrder.some((occurrence) => occurrence.occurrenceId === occurrenceId))) throw new Error("Cloud exam draft flags an occurrence outside its immutable session.");
   }
 
   async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {

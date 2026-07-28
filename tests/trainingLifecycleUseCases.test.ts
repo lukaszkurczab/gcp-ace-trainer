@@ -152,7 +152,7 @@ test("abandonment removes resumability and history excludes abandoned sessions w
 test("recovery, reset, family queries, resume, and draft commands remain application entry points", async () => {
   const f = fixture(); f.setActive(session());
   await f.useCases.recoverPendingJournal(); await f.useCases.resetLearningState(); await f.useCases.resumeActiveSession();
-  await f.useCases.saveSimulationDraft({ draft: { schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: "session-1", trackId: "test-track", responsesByOccurrenceId: {}, updatedAt: "2026-07-16T12:00:00.000Z" }, expectedPreviousRevision: 0 });
+  await f.useCases.saveSimulationDraft({ draft: { schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: "session-1", trackId: "test-track", responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: "2026-07-16T12:00:00.000Z" }, expectedPreviousRevision: 0 });
   assert.deepEqual(await f.useCases.queryDashboard("test-track"), { kind: "dashboard" }); assert.deepEqual(await f.useCases.queryProgress("test-track"), { kind: "progress" }); assert.deepEqual(await f.useCases.queryReview("test-track"), { kind: "review" });
   assert.ok(f.calls.includes("recover") && f.calls.includes("reset") && f.calls.includes("validate-draft") && f.calls.includes("save-draft"));
 });
@@ -188,6 +188,7 @@ test("an expired absolute-deadline simulation finalizes once before it can be re
     sessionId: expired.id,
     trackId: expired.trackId,
     responsesByOccurrenceId: {},
+    flaggedOccurrenceIds: [],
     updatedAt: "2026-07-16T11:00:00.000Z",
   });
 
@@ -208,7 +209,7 @@ test("manual finalization and expiry share one durable simulation finalization",
     },
   });
   f.setActive(expired);
-  f.ports.repositories.getDraft = async () => ({ schemaVersion: 1, familyId: "certification", draftVersion: 1, revision: 1, sessionId: expired.id, trackId: expired.trackId, responsesByOccurrenceId: {}, updatedAt: "2026-07-16T11:00:00.000Z" });
+  f.ports.repositories.getDraft = async () => ({ schemaVersion: 1, familyId: "certification", draftVersion: 1, revision: 1, sessionId: expired.id, trackId: expired.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: "2026-07-16T11:00:00.000Z" });
 
   await Promise.all([f.useCases.finalizeExpiredSimulationIfDue(), f.useCases.finalizeSimulation()]);
   assert.equal(f.calls.filter((call) => call === "commit-finalize").length, 1);
