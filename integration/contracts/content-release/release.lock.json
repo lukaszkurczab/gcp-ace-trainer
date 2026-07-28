@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "repository": "lukaszkurczab/patternly-content",
+  "producerCommit": "d3a44041b923eae01ccabd6d9d5e5fa6c9ffe975",
+  "releaseId": "patternly-core-0013",
+  "sourceRepositoryCommit": "b4a7e46527e03b03d1ccd1cec5ea260f5d772569",
+  "artifacts": [
+    { "trackId": "algorithms", "contentVersion": "algorithms-core-0006", "checksumSha256": "ff2869f43d52e690c8eb85a4bfbc1741e83e25e838d9e0c238f47b73eda5388e" },
+    { "trackId": "cloud-certification", "contentVersion": "gcp-ace-0012", "checksumSha256": "036b9bc371a339cba31383b7ed39eed8233b0fc72cd48b14b5b81bcf8a33e90d" }
+  ]
+}

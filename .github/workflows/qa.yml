@@ -25,9 +25,9 @@ jobs:
         shell: bash
         run: |
           node -e '
-            const lock = require("./integration/contracts/algorithms-content/content.lock.json");
-            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.commit)) process.exit(1);
-            process.stdout.write(`commit=${lock.commit}\n`);
+            const lock = require("./integration/contracts/content-release/release.lock.json");
+            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.producerCommit) || !/^[a-z][a-z0-9-]*$/.test(lock.releaseId) || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "algorithms,cloud-certification") process.exit(1);
+            process.stdout.write(`commit=${lock.producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
@@ -61,8 +61,8 @@ jobs:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
         run: npm run baseline:report
 
-  algorithms-cross-repository-contract:
-    name: Algorithms cross-repository contract
+  content-release-cross-repository-contract:
+    name: Multi-track content release contract
     runs-on: ubuntu-latest
     steps:
       - name: Checkout application
@@ -75,19 +75,9 @@ jobs:
         shell: bash
         run: |
           node -e '
-            const lock = require("./integration/contracts/algorithms-content/content.lock.json");
-
-            if (
-              lock.schemaVersion !== 1 ||
-              lock.repository !== "lukaszkurczab/patternly-content" ||
-              !/^[a-f0-9]{40}$/.test(lock.commit) ||
-              lock.taxonomyVersion !== "algorithms-taxonomy-v2" ||
-              !/^[a-f0-9]{64}$/.test(lock.taxonomyFingerprint)
-            ) {
-              process.exit(1);
-            }
-
-            process.stdout.write(`commit=${lock.commit}\n`);
+            const lock = require("./integration/contracts/content-release/release.lock.json");
+            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.producerCommit) || !/^[a-f0-9]{40}$/.test(lock.sourceRepositoryCommit) || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "algorithms,cloud-certification") process.exit(1);
+            process.stdout.write(`commit=${lock.producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
@@ -103,8 +93,8 @@ jobs:
       - name: Install application dependencies
         working-directory: app
         run: npm ci
-      - name: Run pinned cross-repository round-trip
+      - name: Run pinned multi-track release round-trip
         working-directory: app
         env:
           PATTERNLY_CONTENT_ROOT: ${{ github.workspace }}/patternly-content
-        run: npm run test:algorithms-cross-repo
+        run: npm run test:content-release-cross-repo
