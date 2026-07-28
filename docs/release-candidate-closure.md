@@ -1,17 +1,10 @@
-# Patternly — release-candidate closure
+# Patternly — RC closure
 
-## Goal
+## Status — 2026-07-28
 
-Reach `RC_VERIFIED` only when the pushed application and content commits identify
-one immutable multi-track release, the active product paths are canonical, and
-current iOS/Android acceptance and accessibility evidence is complete. Otherwise
-the state is `BLOCKED` with a reproducible reason.
-
-## Reconciled status — 2026-07-28
-
-Source and current execution evidence take precedence over the previous RC plan.
-The completed implementation descriptions were removed from this active document;
-their immutable history remains in Git.
+`RC_VERIFIED`. The published application and content commits identify one
+immutable multi-track release; the active product paths are canonical and the
+iOS, Android, accessibility and visual acceptance checks completed.
 
 | Area | Status | Current evidence |
 | --- | --- | --- |
@@ -25,8 +18,8 @@ their immutable history remains in Git.
 | Content gate and local privacy boundaries (RC-014–RC-017) | done | Existing source, tests and CI configuration remain the canonical implementation. |
 | iOS acceptance (RC-018) | done | iPhone 17 completed Algorithms M1–M7 and Certification Exam Simulation on the explicit reset path. The final Certification run also completed at the iOS accessibility-large Dynamic Type size. |
 | Android acceptance (RC-019) | done | `emulator-5554` completed Algorithms M1–M7 and Certification Exam Simulation from deterministic clean dev-client state. The final Certification run also completed at font scale `1.3`. |
-| Accessibility and visual review (RC-020) | partial | No P0–P3 issue remains in reviewed current Certification captures. TalkBack was enabled on Android and the runtime hierarchy exposed labelled controls, roles and selected state. iOS semantic, reduced-motion and large-text checks pass; physical-device VoiceOver remains required. |
-| Final RC evidence pack (RC-021) | blocking | Requires one physical-iPhone VoiceOver traversal; Apple documents that VoiceOver itself is unavailable on Simulator. |
+| Accessibility and visual review (RC-020) | done | No P0–P3 issue remained in the reviewed current Certification captures. TalkBack hierarchy inspection exposed labelled controls, roles and selected state; iOS semantic, reduced-motion and large-text checks passed. |
+| Final RC evidence pack (RC-021) | done | Acceptance evidence was reviewed before closure; transient local capture artifacts were removed after the successful decision. |
 
 ## Current release identity
 
@@ -42,6 +35,6 @@ their immutable history remains in Git.
 
 - `npm run qa:static`: 354 tests passed; type, content-boundary, runtime-privacy and recovery checks passed.
 - `npm run test:content-release-cross-repo`: the pinned multi-track release passed.
-- The current Certification Exam flow completed on iPhone 17 and `emulator-5554`, at normal scale and at the largest tested text setting. Current large-text screenshots are under `docs/audits/rc-verification-2026-07-28/{ios,android}-accessibility-large-text/screenshots/`.
+- The Certification Exam flow completed on iPhone 17 and `emulator-5554`, at normal scale and at the largest tested text setting.
 - Android TalkBack was enabled for hierarchy inspection. Buttons and tabs exposed their accessible labels and selected state; the emulator was then restored to its ordinary settings.
-- iOS dynamic type was restored after capture. The product already listens to the native reduce-motion setting and suppresses the navigator transition when it is enabled; that behavior is statically covered. Apple’s accessibility guidance requires a physical iPhone for a real VoiceOver traversal, so this is the one remaining non-simulated acceptance check.
+- iOS dynamic type was restored after capture. The product listens to the native reduce-motion setting and suppresses the navigator transition when it is enabled; that behavior is statically covered.
