@@ -60,4 +60,4 @@ Each certification track instance owns a versioned `ExamExperienceProfile` sourc
 
 ## Documentation authority
 
-`canonical-product-contract.yaml` is the sole normative product-behavior contract. Documents `00`–`13` and `15`–`17` provide narrative context and cannot override it. `docs/plan.md` is the sole repository execution-order source.
+`canonical-product-contract.yaml` is the sole normative product-behavior contract. Documents `00`–`13` and `15`–`17` provide narrative context and cannot override it. `docs/release-candidate-closure.md` is the sole repository execution-order source during RC closure.

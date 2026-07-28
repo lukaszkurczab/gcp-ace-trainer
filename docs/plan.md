@@ -1,4 +1,15 @@
-# Patternly — Atomic Work Loop
+# Patternly — historical execution record
+
+The T01–T64 Atomic Work Loop was superseded on 2026-07-28 by
+[`release-candidate-closure.md`](./release-candidate-closure.md). It is not an
+active task queue, and commit-subject markers are not completion evidence.
+
+This file is retained only for historical context until Git history is the sole
+needed record. Do not execute tasks from the content below.
+
+---
+
+# Patternly — Atomic Work Loop (historical)
 
 Ten plik służy do wielokrotnego uruchamiania Codexa w krótkim loopie. Jedna iteracja wykonuje **dokładnie jeden atomowy task**, tworzy osobny commit i bezpośrednio pushuje go do właściwego brancha głównego.
 
