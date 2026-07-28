@@ -1,5 +1,5 @@
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
-import type { AlgorithmFeedbackDocument } from "../../content/contracts";
+import type { FeedbackDocument } from "../../content/contracts";
 export type PracticeSurfacePhase = "preparing" | PracticeDurableOperationState["kind"];
 
 export type PracticeOptionState = "neutral" | "selected" | "correct" | "incorrect" | "omitted_correct";
@@ -30,7 +30,7 @@ export type PracticeResponseControl =
   | PracticeComplexityControl;
 
 export type PracticeFeedback = Readonly<{
-  details: AlgorithmFeedbackDocument;
+  details: FeedbackDocument;
   reason: string;
   result: "correct" | "partial" | "incorrect";
 }>;

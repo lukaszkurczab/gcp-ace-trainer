@@ -16,6 +16,9 @@ export type AlgorithmFeedbackBlock = AlgorithmFeedbackParagraphBlock | Algorithm
 /** Safe data-only rich feedback. Authored HTML is deliberately not part of this contract. */
 export type AlgorithmFeedbackDocument = Readonly<{ blocks: readonly AlgorithmFeedbackBlock[] }>;
 
+/** Shared safe data-only rich feedback contract for every training family. */
+export type FeedbackDocument = AlgorithmFeedbackDocument;
+
 /** Text equivalent for non-rich downstream diagnostics; it is never an HTML renderer. */
 export function feedbackDocumentToPlainText(document: AlgorithmFeedbackDocument): string {
   return document.blocks.map((block) => {

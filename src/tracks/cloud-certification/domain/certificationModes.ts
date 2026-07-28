@@ -31,7 +31,7 @@ export const CERTIFICATION_MODES: readonly CertificationModeDefinition[] = [
   { id: "certification-weak-area-review", title: "Weak Area Review", enabled: true, order: 3, defaultQuestionCount: 10 },
   { id: "certification-mixed-practice", title: "Mixed Practice", enabled: true, order: 4, defaultQuestionCount: 10 },
   { id: "certification-quick-review", title: "Quick Review", enabled: true, order: 5, defaultQuestionCount: 10 },
-  { id: "certification-exam-simulation", title: "Exam Simulation", enabled: false, order: 6 },
+  { id: "certification-exam-simulation", title: "Exam Simulation", enabled: true, order: 6, defaultQuestionCount: 50 },
 ];
 
 export function getCertificationMode(modeId: string): CertificationModeDefinition {

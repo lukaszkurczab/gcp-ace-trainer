@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { scoreExamSession } from "../src/features/exam/scoringService";
-import { makeQuestion, makeSession } from "./fixtures";
+import { buildCertificationExamSummaries } from "../src/tracks/cloud-certification";
+import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
 test("scores single choice correct, incorrect, and unanswered answers", () => {
   const questions = [
@@ -10,14 +10,14 @@ test("scores single choice correct, incorrect, and unanswered answers", () => {
     makeQuestion({ id: "single-incorrect", domain: "setup_environment", correctOptionIds: ["a"] }),
     makeQuestion({ id: "unanswered", domain: "operations", correctOptionIds: ["a"] })
   ];
-  const session = makeSession(questions, {
+  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
     "single-correct": ["a"],
     "single-incorrect": ["b"]
   });
-  const score = scoreExamSession(session, questions, "2026-01-01T12:00:00.000Z");
+  const score = buildCertificationExamSummaries([session], attempts)[0]!;
 
   assert.equal(score.correctCount, 1);
-  assert.equal(score.totalQuestions, 3);
+  assert.equal(score.questionCount, 3);
   assert.equal(score.scorePercent, 33);
   assert.deepEqual(score.incorrectQuestionIds, ["single-incorrect"]);
   assert.deepEqual(score.unansweredQuestionIds, ["unanswered"]);
@@ -28,11 +28,11 @@ test("scores multiple select only on exact option-set match", () => {
     makeQuestion({ id: "multi-exact", type: "multiple", correctOptionIds: ["a", "c"] }),
     makeQuestion({ id: "multi-partial", type: "multiple", correctOptionIds: ["a", "c"] })
   ];
-  const session = makeSession(questions, {
+  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
     "multi-exact": ["c", "a"],
     "multi-partial": ["a"]
   });
-  const score = scoreExamSession(session, questions, "2026-01-01T12:00:00.000Z");
+  const score = buildCertificationExamSummaries([session], attempts)[0]!;
 
   assert.equal(score.correctCount, 1);
   assert.equal(score.answers.find((answer) => answer.questionId === "multi-exact")?.isCorrect, true);
@@ -45,12 +45,12 @@ test("calculates domain and tag scores and preserves flagged ids", () => {
     makeQuestion({ id: "domain-b", domain: "operations", tags: ["ops"] }),
     makeQuestion({ id: "domain-c", domain: "access_security", tags: ["iam"] })
   ];
-  const session = makeSession(questions, {
+  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
     "domain-a": ["a"],
     "domain-b": ["b"],
     "domain-c": ["a"]
   });
-  const score = scoreExamSession(session, questions, "2026-01-01T12:00:00.000Z");
+  const score = buildCertificationExamSummaries([session], attempts)[0]!;
 
   assert.equal(score.domainScores.find((item) => item.domain === "operations")?.percent, 50);
   assert.equal(score.domainScores.find((item) => item.domain === "access_security")?.percent, 100);

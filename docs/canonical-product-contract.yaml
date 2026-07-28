@@ -701,5 +701,5 @@ certification:
         trackId: cloud-certification
       status:
         contract: declared
-        implementation: unavailable
-        verification: unverified
+        implementation: available
+        verification: verified

@@ -8,6 +8,12 @@ export type CertificationQuestionType = "single" | "multiple";
 export type CertificationDifficulty = "easy" | "medium" | "hard";
 
 export type CertificationQuestionOption = Readonly<{ id: string; text: string }>;
+export type CertificationFeedback = Readonly<{
+  reason: string;
+  details: import("../../../content/contracts").FeedbackDocument;
+  wrongOptionExplanationsByOptionId: Readonly<Record<string, string>>;
+  omittedCorrectExplanationsByOptionId?: Readonly<Record<string, string>>;
+}>;
 
 export type CertificationQuestion = Readonly<{
   id: string;
@@ -17,9 +23,7 @@ export type CertificationQuestion = Readonly<{
   question: string;
   options: readonly CertificationQuestionOption[];
   correctOptionIds: readonly string[];
-  explanation: string;
-  whyOthersAreWrong?: Readonly<Record<string, string>>;
-  watchOutFor?: string | readonly string[];
+  feedback: CertificationFeedback;
   tags: readonly string[];
   examSignals?: readonly string[];
 }>;

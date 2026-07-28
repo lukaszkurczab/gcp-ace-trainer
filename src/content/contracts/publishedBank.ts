@@ -106,19 +106,26 @@ export type PublishedAlgorithmsBank = Readonly<{
 export type PublishedCertificationQuestion = CertificationQuestion & Readonly<{ itemFingerprint?: string }>;
 
 export type PublishedCertificationExamExperienceProfile = Readonly<{
-  schemaVersion: "exam-experience-profile-v1";
+  schemaVersion: "exam-experience-profile-v2";
   profileId: string;
   profileVersion: string;
   source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
   durationMinutes: number;
   questionCount: Readonly<{ kind: "range"; minimum: number; maximum: number }>;
-  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; weightPercent: number }>[] }>;
-  navigation: "free" | "not_documented";
-  answerChanges: "until_final_submission" | "not_documented";
-  flagging: "available" | "not_documented";
-  navigator: "available" | "not_documented";
-  sections: "available" | "not_documented";
-  timeout: "absolute_deadline" | "not_documented";
+  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; contentDomainId: "setup_environment" | "planning_implementation" | "operations" | "access_security"; weightPercent: number }>[] }>;
+  interactionPolicy: Readonly<{
+    schemaVersion: "patternly-certification-simulation-policy-v1";
+    policyId: "patternly-certification-simulation-v1";
+    policyVersion: "1";
+    owner: "patternly_product";
+    navigation: "free";
+    answerChanges: "until_final_submission";
+    flagging: "available";
+    navigator: "available";
+    sections: "blueprint_visible";
+    timeout: "absolute_deadline";
+    feedbackTiming: "after_verified_finalization";
+  }>;
 }>;
 
 export type PublishedCertificationDiagnosticBaseline = Readonly<{

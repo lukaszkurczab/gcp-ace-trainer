@@ -37,24 +37,19 @@ class MutableClock {
 
 function profile(): PublishedCertificationExamExperienceProfile {
   return {
-    schemaVersion: "exam-experience-profile-v1",
+    schemaVersion: "exam-experience-profile-v2",
     profileId: "certification-profile-regression",
     profileVersion: "1",
     source: { url: "https://example.test/certification-profile", checkedDate: "2026-07-24", guideVersion: "1" },
     durationMinutes: 30,
     questionCount: { kind: "range", minimum: 4, maximum: 4 },
     blueprint: { kind: "weighted_sections", sections: [
-      { id: "setup_environment", weightPercent: 25 },
-      { id: "planning_implementation", weightPercent: 25 },
-      { id: "access_security", weightPercent: 25 },
-      { id: "operations", weightPercent: 25 },
+      { id: "setup_environment", contentDomainId: "setup_environment", weightPercent: 25 },
+      { id: "planning_implementation", contentDomainId: "planning_implementation", weightPercent: 25 },
+      { id: "access_security", contentDomainId: "access_security", weightPercent: 25 },
+      { id: "operations", contentDomainId: "operations", weightPercent: 25 },
     ] },
-    navigation: "free",
-    answerChanges: "until_final_submission",
-    flagging: "available",
-    navigator: "available",
-    sections: "available",
-    timeout: "absolute_deadline",
+    interactionPolicy: { schemaVersion: "patternly-certification-simulation-policy-v1", policyId: "patternly-certification-simulation-v1", policyVersion: "1", owner: "patternly_product", navigation: "free", answerChanges: "until_final_submission", flagging: "available", navigator: "available", sections: "blueprint_visible", timeout: "absolute_deadline", feedbackTiming: "after_verified_finalization" },
   };
 }
 

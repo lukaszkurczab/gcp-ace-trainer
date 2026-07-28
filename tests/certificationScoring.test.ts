@@ -6,24 +6,18 @@ import { commitSessionAbandonment } from "../src/application/learningMutations";
 import { savePracticeAnswer } from "../src/application/certificationPracticeUseCases";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
 import { getReviewQueueItems, getTrainingAttempts } from "../src/storage";
-import { scoreExamSession } from "../src/features/exam/scoringService";
-import { scoreCertificationQuestion } from "../src/tracks/cloud-certification";
-import { makeQuestion, makeSession } from "./fixtures";
+import { buildCertificationExamSummaries, scoreCertificationQuestion } from "../src/tracks/cloud-certification";
+import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
 const practiceOnlyExamProfile = {
-  schemaVersion: "exam-experience-profile-v1",
+  schemaVersion: "exam-experience-profile-v2",
   profileId: "fixture-profile",
   profileVersion: "1",
   source: { url: "https://example.test/exam-guide", checkedDate: "2026-07-24", guideVersion: "fixture" },
   durationMinutes: 30,
   questionCount: { kind: "range", minimum: 1, maximum: 1 },
-  blueprint: { kind: "weighted_sections", sections: [{ id: "setup_environment", weightPercent: 100 }] },
-  navigation: "not_documented",
-  answerChanges: "not_documented",
-  flagging: "not_documented",
-  navigator: "not_documented",
-  sections: "not_documented",
-  timeout: "not_documented",
+  blueprint: { kind: "weighted_sections", sections: [{ id: "setup_environment", contentDomainId: "setup_environment", weightPercent: 100 }] },
+  interactionPolicy: { schemaVersion: "patternly-certification-simulation-policy-v1", policyId: "patternly-certification-simulation-v1", policyVersion: "1", owner: "patternly_product", navigation: "free", answerChanges: "until_final_submission", flagging: "available", navigator: "available", sections: "blueprint_visible", timeout: "absolute_deadline", feedbackTiming: "after_verified_finalization" },
 } as const;
 
 test("Certification single-choice scores correct, incorrect, and unanswered responses", () => {
@@ -42,12 +36,13 @@ test("Certification multiple-choice distinguishes exact, proper subset, and wron
 
 test("exam scoring reports raw count and percentage with unanswered diagnostics and no pass inference", () => {
   const questions = [makeQuestion({ id: "one" }), makeQuestion({ id: "two" }), makeQuestion({ id: "three" })];
-  const score = scoreExamSession(makeSession(questions, { one: ["a"], two: ["b"] }), questions, "2026-01-01T01:00:00.000Z");
-  assert.equal(score.correctCount, 1);
-  assert.equal(score.totalQuestions, 3);
-  assert.equal(score.scorePercent, 33);
-  assert.deepEqual(score.unansweredQuestionIds, ["three"]);
-  assert.equal("passedTrainingThreshold" in score, false);
+  const { session, attempts } = makeCompletedExamProjectionInputs(questions, { one: ["a"], two: ["b"] });
+  const summary = buildCertificationExamSummaries([session], attempts)[0]!;
+  assert.equal(summary.correctCount, 1);
+  assert.equal(summary.questionCount, 3);
+  assert.equal(summary.scorePercent, 33);
+  assert.deepEqual(summary.unansweredQuestionIds, ["three"]);
+  assert.equal("passedTrainingThreshold" in summary, false);
 });
 
 test("Certification practice submission writes one canonical typed attempt and remediation review directly", async (context) => {

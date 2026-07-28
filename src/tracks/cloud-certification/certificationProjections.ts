@@ -1,7 +1,8 @@
 import type { TrainingAttempt, TrainingSession } from "../../domain";
 import { calculatePercent } from "../../utils";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
-import { isCertificationPracticeModeId, type CertificationAnswerViewModel, type CertificationDomain, type CertificationExamSummaryViewModel, type CertificationPracticeAnswerViewModel, type CertificationResponse } from "./domain";
+import { isCertificationPracticeModeId, type CertificationDomain, type CertificationResponse } from "./domain";
+import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "./certificationViewModels";
 
 export function buildCertificationExamSummaries(sessions: readonly TrainingSession[], attempts: readonly TrainingAttempt<unknown>[]): CertificationExamSummaryViewModel[] {
   return sessions.filter((session) => session.modeId === "certification-exam-simulation" && session.status === "completed").map<CertificationExamSummaryViewModel>((session) => {

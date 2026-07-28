@@ -29,37 +29,32 @@ async function prepare(clock = new MutableClock("2026-07-23T10:00:00.000Z")) {
   return { clock, lifecycle };
 }
 
-test("Cloud Exam remains explicitly unavailable when its mode is absent from the installed artifact", async () => {
+test("Cloud Exam starts from the installed, validated simulation profile", async () => {
   await prepare();
-  await assert.rejects(
-    () => startCertificationExam("undocumented-profile"),
-    (error: unknown) => error instanceof Error && (error as Error & { cause?: unknown }).cause instanceof Error && /declared_mode_unsupported/.test(String((error as Error & { cause: Error }).cause.message)),
-  );
-  assert.equal(await getActiveTrainingSession(), null);
+  const prepared = await startCertificationExam("installed-profile");
+  assert.equal(prepared.session.modeId, "certification-exam-simulation");
+  assert.equal(prepared.session.actualLength, 50);
+  assert.equal(prepared.session.configurationSnapshot.simulationPolicyId, "patternly-certification-simulation-v1");
+  assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
 });
 
 test("Cloud Exam runtime derives duration, length, and domain selection from a changed profile fixture", async () => {
   await validateBundledContent();
   const sourceCatalog = getCertificationContentCatalog();
   const profile = (durationMinutes: number, requestedMaximum: number) => ({
-    schemaVersion: "exam-experience-profile-v1",
+    schemaVersion: "exam-experience-profile-v2",
     profileId: "fixture-profile",
     profileVersion: "1",
     source: { url: "https://example.test/exam-guide", checkedDate: "2026-07-24", guideVersion: "fixture" },
     durationMinutes,
     questionCount: { kind: "range", minimum: 4, maximum: requestedMaximum },
     blueprint: { kind: "weighted_sections", sections: [
-      { id: "setup_environment", weightPercent: 25 },
-      { id: "planning_implementation", weightPercent: 25 },
-      { id: "access_security", weightPercent: 25 },
-      { id: "operations", weightPercent: 25 },
+      { id: "setup_environment", contentDomainId: "setup_environment", weightPercent: 25 },
+      { id: "planning_implementation", contentDomainId: "planning_implementation", weightPercent: 25 },
+      { id: "access_security", contentDomainId: "access_security", weightPercent: 25 },
+      { id: "operations", contentDomainId: "operations", weightPercent: 25 },
     ] },
-    navigation: "free",
-    answerChanges: "until_final_submission",
-    flagging: "available",
-    navigator: "available",
-    sections: "available",
-    timeout: "absolute_deadline",
+    interactionPolicy: { schemaVersion: "patternly-certification-simulation-policy-v1", policyId: "patternly-certification-simulation-v1", policyVersion: "1", owner: "patternly_product", navigation: "free", answerChanges: "until_final_submission", flagging: "available", navigator: "available", sections: "blueprint_visible", timeout: "absolute_deadline", feedbackTiming: "after_verified_finalization" },
   } satisfies PublishedCertificationExamExperienceProfile);
   const prepareFrom = async (examProfile: PublishedCertificationExamExperienceProfile, requestedLength: number) => new CertificationFamilyRuntime(
     new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), sourceCatalog.getDiagnosticBaseline(), sourceCatalog.getFocusPractice(), examProfile),
@@ -75,6 +70,25 @@ test("Cloud Exam runtime derives duration, length, and domain selection from a c
   assert.equal(changed.session.actualLength, 8);
   assert.equal(changed.session.configurationSnapshot.timerDurationMs, 45 * 60 * 1000);
   assert.deepEqual(changed.session.itemOrder.map((occurrence) => sourceCatalog.getItemById(occurrence.item.itemId).domain), ["setup_environment", "setup_environment", "planning_implementation", "planning_implementation", "access_security", "access_security", "operations", "operations"]);
+});
+
+test("Cloud Exam allocates the published 60-item blueprint without reusing planning questions", async () => {
+  await validateBundledContent();
+  const catalog = getCertificationContentCatalog();
+  const prepared = await new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1").prepare({
+    trackId: "cloud-certification",
+    modeId: "certification-exam-simulation",
+    request: { sessionId: "published-profile-60", requestedLength: 60 },
+    attempts: [],
+    reviews: [],
+    now: "2026-07-24T10:00:00.000Z",
+  });
+  const questions = prepared.session.itemOrder.map((occurrence) => catalog.getItemById(occurrence.item.itemId));
+  assert.equal(new Set(questions.map((question) => question.id)).size, 60);
+  assert.deepEqual(
+    questions.reduce<Record<string, number>>((counts, question) => ({ ...counts, [question.domain]: (counts[question.domain] ?? 0) + 1 }), {}),
+    { setup_environment: 12, planning_implementation: 26, operations: 12, access_security: 10 },
+  );
 });
 
 test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and rejects selectors", async () => {

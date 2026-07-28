@@ -1,7 +1,6 @@
 import { createTrainingAttempt, createTrainingSession, type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../src/domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { captureMutationExpectedRevisions, createMutationPlanFingerprint, type MutationJournalPlan, type MutationJournalRecord } from "../src/storage/repositories/mutationJournalRepository";
-import type { CertificationExamViewModel } from "../src/tracks/cloud-certification";
 
 export const timestamp = "2026-07-15T10:00:00.000Z";
 
@@ -60,25 +59,6 @@ export function review(id = "review-1", sourceAttemptId = "attempt-1"): ReviewQu
     consecutiveAfterDueSuccesses: 0,
     persistent: true,
   };
-}
-
-export function exam(id = "session-1"): CertificationExamViewModel {
-  const examSession = createTrainingSession({
-    id,
-    trackId: "cloud-certification",
-    modeId: "certification-exam-simulation",
-    configurationSnapshot: { kind: "certificationSimulation", mode: "exam" },
-    requestedLength: 1,
-    actualLength: 1,
-    currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "cloud-certification", itemId: "question-1", contentVersion: "v1" } }],
-    optionOrderByOccurrence: { "occurrence-1": ["a", "b"] },
-    activeForegroundMs: 0,
-    contentVersion: "v1",
-    status: "active",
-    startedAt: timestamp,
-  });
-  return { session: examSession, examState: { sessionId: id, deadlineAt: timestamp, responsesByItemId: {}, flaggedItemIds: [] } };
 }
 
 export function journal(writes: MutationJournalRecord["writes"], operation: MutationJournalRecord["operation"] = "submit_training_outcome"): MutationJournalRecord {

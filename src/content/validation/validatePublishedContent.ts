@@ -129,7 +129,7 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
   const domains = new Set(["setup_environment", "planning_implementation", "access_security", "operations"]);
   for (const unknown of items) {
     const item = record(unknown, "Certification item");
-    exact(item, ["id", "domain", "type", "difficulty", "question", "options", "correctOptionIds", "explanation", "whyOthersAreWrong", "watchOutFor", "tags", "examSignals", "itemFingerprint"].filter((key) => item[key] !== undefined), "Certification item");
+    exact(item, ["id", "domain", "type", "difficulty", "question", "options", "correctOptionIds", "feedback", "tags", "examSignals", "itemFingerprint"].filter((key) => item[key] !== undefined), "Certification item");
     const id = text(item.id, "Certification item id");
     if (ids.has(id)) throw new ContentValidationError("Certification bank contains duplicate item IDs.");
     ids.add(id);
@@ -137,7 +137,11 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
     if (item.type !== "single" && item.type !== "multiple") throw new ContentValidationError("Certification item type is invalid.");
     if (item.difficulty !== "easy" && item.difficulty !== "medium" && item.difficulty !== "hard") throw new ContentValidationError("Certification item difficulty is invalid.");
     text(item.question, "Certification question");
-    text(item.explanation, "Certification explanation");
+    const feedback = record(item.feedback, "Certification feedback");
+    const feedbackKeys = item.type === "multiple" ? ["reason", "details", "wrongOptionExplanationsByOptionId", "omittedCorrectExplanationsByOptionId"] : ["reason", "details", "wrongOptionExplanationsByOptionId"];
+    exact(feedback, feedbackKeys, "Certification feedback");
+    text(feedback.reason, "Certification feedback reason");
+    validateFeedbackDocument(feedback.details, new Set());
     const fingerprint = text(item.itemFingerprint, "Certification item fingerprint");
     if (!/^[a-f0-9]{64}$/.test(fingerprint) || fingerprints.has(fingerprint)) throw new ContentValidationError("Certification item fingerprints must be unique SHA-256 identities.");
     fingerprints.add(fingerprint);
@@ -155,14 +159,14 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
     if (correct.some((optionId) => !optionIds.has(optionId)) || (item.type === "single" && correct.length !== 1) || (item.type === "multiple" && correct.length < 2)) {
       throw new ContentValidationError("Certification correct answers do not match the question type or options.");
     }
-    const wrong = item.whyOthersAreWrong === undefined ? {} : record(item.whyOthersAreWrong, "Certification wrong-answer explanations");
-    for (const [optionId, explanation] of Object.entries(wrong)) {
-      if (!optionIds.has(optionId) || correct.includes(optionId)) throw new ContentValidationError("Certification wrong-answer explanation references an invalid option.");
-      text(explanation, "Certification wrong-answer explanation");
-    }
-    if (item.watchOutFor !== undefined) {
-      if (typeof item.watchOutFor === "string") text(item.watchOutFor, "Certification watch-out");
-      else stringValues(item.watchOutFor, "Certification watch-outs");
+    const wrong = record(feedback.wrongOptionExplanationsByOptionId, "Certification wrong-answer explanations");
+    const wrongIds = [...optionIds].filter((optionId) => !correct.includes(optionId));
+    if (Object.keys(wrong).length !== wrongIds.length) throw new ContentValidationError("Certification wrong-answer explanations must cover every wrong option exactly once.");
+    for (const [optionId, explanation] of Object.entries(wrong)) { if (!wrongIds.includes(optionId)) throw new ContentValidationError("Certification wrong-answer explanation references an invalid option."); text(explanation, "Certification wrong-answer explanation"); }
+    if (item.type === "multiple") {
+      const omitted = record(feedback.omittedCorrectExplanationsByOptionId, "Certification omitted-correct explanations");
+      if (Object.keys(omitted).length !== correct.length) throw new ContentValidationError("Certification omitted-correct explanations must cover every correct option exactly once.");
+      for (const [optionId, explanation] of Object.entries(omitted)) { if (!correct.includes(optionId)) throw new ContentValidationError("Certification omitted-correct explanation references an invalid option."); text(explanation, "Certification omitted-correct explanation"); }
     }
     tagsByItemId.set(id, stringValues(item.tags, "Certification tags"));
     if (item.examSignals !== undefined) stringValues(item.examSignals, "Certification exam signals");
@@ -252,8 +256,8 @@ function validateCertificationDiagnosticBaseline(value: unknown, itemIds: Readon
 
 function validateCertificationExamExperienceProfile(value: unknown): void {
   const profile = record(value, "Certification exam experience profile");
-  exact(profile, ["schemaVersion", "profileId", "profileVersion", "source", "durationMinutes", "questionCount", "blueprint", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout"], "Certification exam experience profile");
-  if (profile.schemaVersion !== "exam-experience-profile-v1") throw new ContentValidationError("Certification exam experience profile schema is invalid.");
+  exact(profile, ["schemaVersion", "profileId", "profileVersion", "source", "durationMinutes", "questionCount", "blueprint", "interactionPolicy"], "Certification exam experience profile");
+  if (profile.schemaVersion !== "exam-experience-profile-v2") throw new ContentValidationError("Certification exam experience profile schema is invalid.");
   text(profile.profileId, "Certification exam experience profile ID");
   text(profile.profileVersion, "Certification exam experience profile version");
   const source = record(profile.source, "Certification exam experience profile source");
@@ -271,12 +275,16 @@ function validateCertificationExamExperienceProfile(value: unknown): void {
   const ids = new Set<string>();
   const total = values(blueprint.sections, "Certification exam experience profile blueprint sections").reduce<number>((sum, sectionValue) => {
     const section = record(sectionValue, "Certification exam experience profile blueprint section");
-    exact(section, ["id", "weightPercent"], "Certification exam experience profile blueprint section");
+    exact(section, ["id", "contentDomainId", "weightPercent"], "Certification exam experience profile blueprint section");
     const id = text(section.id, "Certification exam experience profile blueprint section ID");
-    if (ids.has(id) || typeof section.weightPercent !== "number" || !Number.isFinite(section.weightPercent) || section.weightPercent <= 0) throw new ContentValidationError("Certification exam experience profile blueprint section is invalid.");
+    if (ids.has(id) || !["setup_environment", "planning_implementation", "operations", "access_security"].includes(text(section.contentDomainId, "Certification exam experience profile blueprint content domain")) || typeof section.weightPercent !== "number" || !Number.isFinite(section.weightPercent) || section.weightPercent <= 0) throw new ContentValidationError("Certification exam experience profile blueprint section is invalid.");
     ids.add(id);
     return sum + section.weightPercent;
   }, 0);
   if (ids.size === 0 || Math.abs(total - 100) > 0.000001) throw new ContentValidationError("Certification exam experience profile blueprint must total 100 percent.");
-  if (!(["free", "not_documented"] as const).includes(profile.navigation as never) || !(["until_final_submission", "not_documented"] as const).includes(profile.answerChanges as never) || !(["available", "not_documented"] as const).includes(profile.flagging as never) || !(["available", "not_documented"] as const).includes(profile.navigator as never) || !(["available", "not_documented"] as const).includes(profile.sections as never) || !(["absolute_deadline", "not_documented"] as const).includes(profile.timeout as never)) throw new ContentValidationError("Certification exam experience profile policies are invalid.");
+  const policy = record(profile.interactionPolicy, "Certification exam interaction policy");
+  exact(policy, ["schemaVersion", "policyId", "policyVersion", "owner", "navigation", "answerChanges", "flagging", "navigator", "sections", "timeout", "feedbackTiming"], "Certification exam interaction policy");
+  const requiredPolicy = { schemaVersion: "patternly-certification-simulation-policy-v1", policyId: "patternly-certification-simulation-v1", policyVersion: "1", owner: "patternly_product", navigation: "free", answerChanges: "until_final_submission", flagging: "available", navigator: "available", sections: "blueprint_visible", timeout: "absolute_deadline", feedbackTiming: "after_verified_finalization" } as const;
+  const invalidField = Object.entries(requiredPolicy).find(([field, expected]) => policy[field] !== expected)?.[0];
+  if (invalidField) throw new ContentValidationError(`Certification exam interaction policy is invalid at ${invalidField}.`);
 }

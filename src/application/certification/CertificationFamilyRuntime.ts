@@ -256,17 +256,19 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const scoped = request.domain ? all.filter((question) => question.domain === request.domain) : all;
     if (modeId !== "certification-exam-simulation") return scoped;
     if (!profile) throw new Error("Cloud exam simulation requires an installed exam experience profile.");
-    return allocateBlueprintOccurrences(profile.blueprint.sections, requestedLength).flatMap(({ id, count }) => {
-      const questions = all.filter((question) => question.domain === id);
-      if (!questions.length) throw new Error(`Cloud exam profile section ${id} cannot be mapped to the installed Cloud content domains.`);
-      if (questions.length < count) throw new Error(`Cloud exam profile section ${id} cannot satisfy its required occurrence count.`);
-      return questions.slice(0, count);
+    const usedItemIds = new Set<string>();
+    return allocateBlueprintOccurrences(profile.blueprint.sections, requestedLength).flatMap(({ id, contentDomainId, count }) => {
+      const questions = all.filter((question) => question.domain === contentDomainId && !usedItemIds.has(question.id));
+      if (questions.length < count) throw new Error(`Cloud exam profile section ${id} cannot satisfy its required unique occurrence count.`);
+      const selected = questions.slice(0, count);
+      selected.forEach((question) => usedItemIds.add(question.id));
+      return selected;
     });
   }
 
   private assertSession(session: TrainingSession): void {
     if (session.trackId !== CLOUD_CERTIFICATION_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !CERTIFICATION_MODE_IDS.includes(session.modeId as typeof CERTIFICATION_MODE_IDS[number])) throw new Error("Cloud session does not match its validated immutable artifact.");
-    if (session.modeId === "certification-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0)) throw new Error("Cloud exam simulation requires its immutable absolute deadline.");
+    if (session.modeId === "certification-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0 || session.configurationSnapshot.simulationPolicyId !== "patternly-certification-simulation-v1" || session.configurationSnapshot.simulationPolicyVersion !== "1" || session.configurationSnapshot.feedbackMode !== "atSessionEnd" || new Set(session.itemOrder.map((occurrence) => occurrence.item.itemId)).size !== session.actualLength)) throw new Error("Cloud exam simulation does not match its immutable Patternly interaction policy.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
       const focusPractice = this.catalog.getFocusPractice();
@@ -327,26 +329,32 @@ function scenarioConfiguration(scenario: PublishedCertificationScenarioPractice,
 }
 
 function simulationConfiguration(profile: PublishedCertificationExamExperienceProfile, now: string): TrainingSession["configurationSnapshot"] {
-  if (profile.navigation !== "free" || profile.answerChanges !== "until_final_submission" || profile.timeout !== "absolute_deadline") {
-    throw new Error("Cloud exam simulation is unavailable because the installed exam experience profile does not document every required interaction rule.");
+  const policy = profile.interactionPolicy;
+  if (policy.schemaVersion !== "patternly-certification-simulation-policy-v1" || policy.policyId !== "patternly-certification-simulation-v1" || policy.policyVersion !== "1" || policy.owner !== "patternly_product" || policy.navigation !== "free" || policy.answerChanges !== "until_final_submission" || policy.flagging !== "available" || policy.navigator !== "available" || policy.sections !== "blueprint_visible" || policy.timeout !== "absolute_deadline" || policy.feedbackTiming !== "after_verified_finalization") {
+    throw new Error("Cloud exam simulation is unavailable because the installed Patternly interaction policy is invalid.");
   }
   const timerDurationMs = profile.durationMinutes * 60 * 1000;
   return {
     kind: "certificationSimulation",
-    navigation: profile.navigation,
+    navigation: policy.navigation,
     submission: "manualOrForegroundTimeout",
     feedbackMode: "atSessionEnd",
     answerChanges: "untilFinalSubmission",
     timer: "absoluteDeadline",
     timerDeadlineAt: new Date(Date.parse(now) + timerDurationMs).toISOString(),
     timerDurationMs,
+    simulationProfileId: profile.profileId,
+    simulationProfileVersion: profile.profileVersion,
+    simulationPolicyId: policy.policyId,
+    simulationPolicyVersion: policy.policyVersion,
+    sectionPresentation: policy.sections,
   };
 }
 
-function allocateBlueprintOccurrences(sections: PublishedCertificationExamExperienceProfile["blueprint"]["sections"], requestedLength: number): readonly Readonly<{ id: string; count: number }>[] {
+function allocateBlueprintOccurrences(sections: PublishedCertificationExamExperienceProfile["blueprint"]["sections"], requestedLength: number): readonly Readonly<{ id: string; contentDomainId: string; count: number }>[] {
   const allocations = sections.map((section, index) => {
     const exact = (section.weightPercent / 100) * requestedLength;
-    return { id: section.id, count: Math.floor(exact), remainder: exact % 1, index };
+    return { id: section.id, contentDomainId: section.contentDomainId, count: Math.floor(exact), remainder: exact % 1, index };
   });
   let remaining = requestedLength - allocations.reduce((sum, allocation) => sum + allocation.count, 0);
   for (const allocation of [...allocations].sort((left, right) => right.remainder - left.remainder || left.index - right.index)) {
@@ -354,7 +362,7 @@ function allocateBlueprintOccurrences(sections: PublishedCertificationExamExperi
     allocation.count += 1;
     remaining -= 1;
   }
-  return allocations.map(({ id, count }) => Object.freeze({ id, count }));
+  return allocations.map(({ id, contentDomainId, count }) => Object.freeze({ id, contentDomainId, count }));
 }
 
 function preparationRequest(value: unknown): CertificationPreparationRequest {

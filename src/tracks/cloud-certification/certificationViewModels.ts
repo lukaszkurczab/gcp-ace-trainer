@@ -1,14 +1,4 @@
-import type { TrainingSession } from "../../../domain";
-import type { CertificationDomain, CertificationQuestion } from "./certificationQuestion";
-import type { CertificationResponse } from "./certificationResponse";
-
-export type CertificationExamState = Readonly<{
-  sessionId: string;
-  profileId?: string;
-  deadlineAt: string;
-  responsesByItemId: Readonly<Record<string, CertificationResponse>>;
-  flaggedItemIds: readonly string[];
-}>;
+import type { CertificationDomain, CertificationQuestion } from "./domain/certificationQuestion";
 
 export type CertificationAnswerViewModel = Readonly<{
   questionId: string;
@@ -50,9 +40,4 @@ export type CertificationPracticeAnswerViewModel = Readonly<{
   correctOptionIds: readonly string[];
   isCorrect: boolean;
   answeredAt: string;
-}>;
-
-export type CertificationExamViewModel = Readonly<{
-  session: TrainingSession;
-  examState: CertificationExamState;
 }>;
