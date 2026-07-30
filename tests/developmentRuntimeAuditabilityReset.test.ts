@@ -28,9 +28,12 @@ function setDevelopment(value: boolean | undefined) {
 }
 
 test("runtime-audit parser recognizes only documented reset and clock-advance commands", () => {
+  const obsoleteScheme = `com.lkurczab.${["gcp", "ace", "trainer"].join("")}`;
+
   assert.deepEqual(parseRuntimeAuditabilityCommand(DEVELOPMENT_RESET_LEARNING_STATE_URL), { kind: "reset_learning_state" });
   assert.deepEqual(parseRuntimeAuditabilityCommand(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=604800000`), { kind: "advance_clock", milliseconds: 604800000 });
-  assert.equal(parseRuntimeAuditabilityCommand("com.lkurczab.gcpacetrainer:/audit/reset-learning-state"), null);
+  assert.equal(parseRuntimeAuditabilityCommand("com.lkurczab.patternly:/audit/reset-learning-state"), null);
+  assert.equal(parseRuntimeAuditabilityCommand(`${obsoleteScheme}://audit/reset-learning-state`), null);
   assert.equal(parseRuntimeAuditabilityCommand(`${DEVELOPMENT_RESET_LEARNING_STATE_URL}?again=true`), null);
   assert.equal(parseRuntimeAuditabilityCommand(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=0`), null);
   assert.equal(parseRuntimeAuditabilityCommand(`${DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL}?milliseconds=604800000&again=true`), null);
@@ -44,8 +47,8 @@ test("unsupported and malformed runtime-audit URLs do not invoke reset", async (
   setDevelopment(true);
   try {
     const lifecycle = installLifecycleThatCountsResets();
-    assert.deepEqual(await handleRuntimeAuditabilityUrl("com.lkurczab.gcpacetrainer://audit/reset-learning-state#bad"), { kind: "ignored" });
-    assert.deepEqual(await handleRuntimeAuditabilityUrl("com.lkurczab.gcpacetrainer://audit/other"), { kind: "ignored" });
+    assert.deepEqual(await handleRuntimeAuditabilityUrl("com.lkurczab.patternly://audit/reset-learning-state#bad"), { kind: "ignored" });
+    assert.deepEqual(await handleRuntimeAuditabilityUrl("com.lkurczab.patternly://audit/other"), { kind: "ignored" });
     assert.equal(lifecycle.resetCalls(), 0);
     assert.equal(lifecycle.advancedMilliseconds(), 0);
   } finally {

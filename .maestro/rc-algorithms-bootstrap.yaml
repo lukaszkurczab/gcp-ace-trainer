@@ -1,4 +1,4 @@
-appId: com.lkurczab.gcpacetrainer
+appId: com.lkurczab.patternly
 name: Patternly RC — Algorithms bootstrap
 tags:
   - rc-evidence
@@ -6,21 +6,24 @@ tags:
 ---
 - runFlow:
     when:
-      visible: "Change track"
+      visible:
+        id: "patternly:home:change-track"
     commands:
-      - tapOn: "Change track"
-- extendedWaitUntil:
-    visible:
-      id: "patternly:home:select-track:algorithms"
-    timeout: 30000
+      - tapOn:
+          id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
       id: "patternly:home:select-track:algorithms"
     direction: DOWN
-    centerElement: true
+    centerElement: false
+    timeout: 30000
+    visibilityPercentage: 50
 - tapOn:
     id: "patternly:home:select-track:algorithms"
-- extendedWaitUntil:
-    visible:
+- scrollUntilVisible:
+    element:
       id: "patternly:home:track-card:algorithms"
+    direction: DOWN
+    centerElement: false
     timeout: 30000
+    visibilityPercentage: 20

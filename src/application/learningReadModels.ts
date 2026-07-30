@@ -1,6 +1,10 @@
 import type { TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
-import { getAlgorithmsDeclaredScopeOptions, type AlgorithmsDashboard, type AlgorithmsDeclaredScopeMode } from "./algorithms";
+import type { AlgorithmsDashboard } from "./algorithms/AlgorithmsFamilyRuntime";
+import {
+  getAlgorithmsDeclaredScopeOptions,
+  type AlgorithmsDeclaredScopeMode,
+} from "./algorithms/algorithmsDeclaredScope";
 import {
   getActiveTrackId,
   getActiveTrainingSession,

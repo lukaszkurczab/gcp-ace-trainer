@@ -97,3 +97,24 @@ test("rejects an Algorithms session length that the selected mode does not decla
     /does not support session length 40/,
   );
 });
+
+test("Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope", () => {
+  const config = buildPracticeSessionConfig({
+    algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
+    mode: "algorithms-independent-practice",
+    topicId: "hash_map_and_set",
+    trackId: "algorithms",
+  });
+
+  assert.equal(config.sessionLength, 10);
+  assert.throws(
+    () => buildPracticeSessionConfig({
+      algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
+      mode: "algorithms-independent-practice",
+      sessionLength: 40,
+      topicId: "hash_map_and_set",
+      trackId: "algorithms",
+    }),
+    /does not support session length 40/,
+  );
+});

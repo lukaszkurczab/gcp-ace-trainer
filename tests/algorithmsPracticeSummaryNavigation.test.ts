@@ -21,7 +21,7 @@ test("practice summary reloads the immutable canonical result and terminal recov
   const summary = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
 
-  assert.match(summary, /await getAlgorithmsPracticeResultProjection\(sessionId\)/);
+  assert.match(summary, /await getAlgorithmsPracticeSummaryProjection\(sessionId\)/);
   assert.match(summary, /<Text style=\{styles\.resultTitle\} testID=\{runtimeSelectors\.summary\.root\(result\.sessionId\)\}>/);
   assert.doesNotMatch(summary, /<View style=\{styles\.result\} testID=\{runtimeSelectors\.summary\.root/);
   assert.match(summary, /runtimeSelectors\.summary\.backToPractice\(result\.sessionId\)/);
@@ -34,4 +34,6 @@ test("practice summary reloads the immutable canonical result and terminal recov
   assert.doesNotMatch(summary, /result\.score\.partialCount\} \{t\("partial"\)\}|result\.score\.incorrectCount\} \{t\("incorrect"\)\}/);
   assert.match(session, /if \(!await loadActiveTrainingSession\(\)\) \{[\s\S]*navigation\.replace\(ROUTES\.ALGORITHMS_PRACTICE_SUMMARY, \{ sessionId: projection\.session\.id \}\)/);
   assert.match(session, /getAlgorithmsPracticeResultProjection\(projection\.session\.id\)\.catch\(\(\) => null\)/);
+  assert.match(session, /navigation\.replace\(ROUTES\.ALGORITHMS_PRACTICE_SUMMARY, \{ sessionId: abandoned\.id \}\)/);
+  assert.match(summary, /result\.completionKind === "completed" \? "Session complete" : "Session ended early"/);
 });

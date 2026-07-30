@@ -1,0 +1,101 @@
+appId: com.lkurczab.patternly
+name: Patternly screenshot evidence — Algorithms recovery and active-session conflict
+tags:
+  - screenshot
+  - uiux-evidence
+  - algorithms
+  - recovery
+---
+- openLink: "com.lkurczab.patternly://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+- extendedWaitUntil:
+    visible: "Pause or end this session?"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__010__session-exit__pause-or-end__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- tapOn:
+    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+
+- killApp
+- launchApp
+- scrollUntilVisible:
+    element:
+      id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+    direction: DOWN
+    visibilityPercentage: 20
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__020__resume-card__after-relaunch__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- scrollUntilVisible:
+    element:
+      id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 30000
+- tapOn:
+    id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__030__session__recovered-after-relaunch__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+- tapOn:
+    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-practice"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:algorithms-independent-practice"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:practice:mode-card:algorithms-independent-practice"
+- extendedWaitUntil:
+    visible: "Choose a scope for Independent Practice"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:declared-scope:hash_map_and_set"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:practice:declared-scope:hash_map_and_set"
+- extendedWaitUntil:
+    visible: "Finish or leave the active session first"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__040__active-session-conflict__recovery-choice__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- tapOn: "Abandon and start Independent Practice"
+- extendedWaitUntil:
+    visible: "Abandon active session?"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__050__active-session-conflict__destructive-confirmation__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- tapOn: "Keep session"

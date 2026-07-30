@@ -1,4 +1,4 @@
-appId: com.lkurczab.gcpacetrainer
+appId: com.lkurczab.patternly
 name: Patternly M6 — due retention smoke
 tags:
   - algorithms-completion-evidence
@@ -48,7 +48,7 @@ tags:
     visible:
       id: "patternly:practice:hub:root"
     timeout: 30000
-- openLink: "com.lkurczab.gcpacetrainer://audit/clock/advance?milliseconds=604800000"
+- openLink: "com.lkurczab.patternly://audit/clock/advance?milliseconds=604800000"
 - tapOn:
     id: "patternly:practice:mode-card:algorithms-weak-area-review"
 - extendedWaitUntil:

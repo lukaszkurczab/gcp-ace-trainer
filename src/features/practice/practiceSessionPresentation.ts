@@ -116,6 +116,19 @@ export function buildPracticeResponseControl(input: Readonly<{
   });
 }
 
+/** The visible ordering is itself a complete response, even before a move. */
+export function resolvePracticeLocalResponse(
+  localResponse: PracticeLocalResponse,
+  control: PracticeResponseControl,
+): PracticeLocalResponse {
+  if (localResponse) return localResponse;
+  if (control.kind !== "ordering") return null;
+  return Object.freeze({
+    kind: "ordering",
+    orderedSubgoalIds: Object.freeze(control.elements.map((element) => element.id)),
+  });
+}
+
 export function getPracticePrimaryAction(input: Readonly<{
   hasLocalResponse: boolean;
   isFinalPosition: boolean;

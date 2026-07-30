@@ -4,7 +4,7 @@ import { EmptyState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
-import { getAlgorithmsSimulationTimerFacade } from "../../application/algorithms";
+import { getAlgorithmsForegroundTimerFacade } from "../../application/algorithms";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { validateBundledContent } from "./validateBundledContent";
@@ -37,8 +37,8 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         async () => {
           if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
           const session = await lifecycle.resumeActiveSession();
-          if (session.trackId === "algorithms" && session.configurationSnapshot.timer === "countdownForeground") {
-            await getAlgorithmsSimulationTimerFacade().restoreForResume(session);
+          if (session.trackId === "algorithms" && (session.configurationSnapshot.timer === "countdownForeground" || session.configurationSnapshot.timer === "elapsedForeground")) {
+            await getAlgorithmsForegroundTimerFacade().restoreForResume(session);
           }
         },
         async () => {

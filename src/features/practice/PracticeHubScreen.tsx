@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useState } from "react";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import {
   Badge,
@@ -10,19 +10,15 @@ import {
   Icon,
   IconTile,
   ListRow,
-  MetricCard,
   Screen,
   SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { getTrackDisplay, type TrackDisplay, type TrackId } from "../../domain";
+import { getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
-  loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
-  loadExamSummaries as getAttempts,
-  loadPracticeHistory as getPracticeHistory,
   loadTrainingAttempts as getTrainingAttempts,
 } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
@@ -30,9 +26,7 @@ import { spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
 } from "../../tracks/algorithms";
-import { type CertificationModeId, type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
-import { buildAnalyticsData } from "../analytics/analyticsService";
+import { type CertificationModeId } from "../../tracks/cloud-certification";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
@@ -42,11 +36,12 @@ import { runtimeSelectors } from "../../testing/runtimeSelectors";
 
 import {
   buildPracticeModes,
-  buildPracticeStatsSummary,
-  buildTopicRoadmapNodes,
-  getCurrentPracticeTopic,
-  type PracticeTopic,
+  resolvePracticeTopic,
 } from "./practiceFlowModel";
+import {
+  formatPracticeTopicDetail,
+  formatPracticeTopicTitle,
+} from "./practiceFlowPresentation";
 import {
   buildPracticeSessionConfig,
   getGeneralPracticeReviewSource,
@@ -59,9 +54,6 @@ type PracticeHubScreenProps = NativeStackScreenProps<
 >;
 
 type PracticeHubData = {
-  attempts: CertificationExamSummaryViewModel[];
-  cloudProgress: CloudCertificationProgressViewModel | null;
-  practiceHistory: CertificationPracticeAnswerViewModel[];
   trainingAttempts: TrainingAttempt[];
 };
 
@@ -70,11 +62,10 @@ const TAB_BAR_RESERVED_HEIGHT = 128;
 export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, t } = useAppPreferences();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<PracticeHubData>({
-    attempts: [],
-    cloudProgress: null,
-    practiceHistory: [],
     trainingAttempts: [],
   });
 
@@ -83,26 +74,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
       let isActive = true;
 
       async function loadData() {
-        const [
-          savedTrackId,
-          savedAttempts,
-          savedPracticeHistory,
-          trainingAttemptsResult,
-          cloudProgress,
-        ] = await Promise.all([
+        const [savedTrackId, trainingAttemptsResult] = await Promise.all([
           getActiveTrackId(),
-          getAttempts(),
-          getPracticeHistory(),
           getTrainingAttempts(),
-          loadCloudCertificationProgressViewModel(),
         ]);
 
         if (isActive) {
           if (savedTrackId) setActiveTrackId(savedTrackId);
           setData({
-            attempts: savedAttempts,
-            cloudProgress,
-            practiceHistory: savedPracticeHistory,
             trainingAttempts: trainingAttemptsResult.value,
           });
         }
@@ -116,25 +95,14 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     }, []),
   );
 
-  const analytics = useMemo(
-    () => buildAnalyticsData(data.attempts, data.practiceHistory),
-    [data.attempts, data.practiceHistory],
-  );
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const topic = resolvePracticeTopic({
-    activeTrack,
+    activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
     trainingAttempts: data.trainingAttempts,
   });
   const modes = buildPracticeModes(activeTrack);
-  const stats = buildPracticeStatsSummary({
-    activeTrack,
-    analytics,
-    cloudProgress: data.cloudProgress,
-    trainingAttempts: data.trainingAttempts,
-  });
-
   function startSession(mode?: PracticeSessionMode | CertificationModeId) {
     const resolvedMode = mode ?? (
       activeTrack.id === "algorithms"
@@ -191,50 +159,41 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           subtitle={t(activeTrack.title)}
         />
 
-        <Card style={styles.topicStrip}>
-          <View style={styles.topicCopy}>
-            <Text style={styles.eyebrow}>{t("Next topic")}</Text>
-            <Text style={styles.topicTitle}>{topic.title}</Text>
-            <Text style={styles.mutedText}>{topic.detail}</Text>
-          </View>
-          <Button
-            onPress={() =>
-              navigation.navigate(ROUTES.TOPIC_ROADMAP, {
-                topicId: topic.id,
-                trackId: activeTrack.id,
-              })
-            }
-            style={styles.compactButton}
-            variant="ghost"
-          >
-            {t("Change topic")}
-          </Button>
-        </Card>
+        <View style={styles.pageIntro}>
+          <Text style={styles.pageTitle}>{t("Choose your practice")}</Text>
+          <Text style={styles.pageSubtitle}>
+            {t("Start with the recommended session or choose a different format.")}
+          </Text>
+        </View>
 
-        <Card variant="tonal" style={styles.heroCard}>
-          <Text style={styles.heroEyebrow}>{t("Continue practice")}</Text>
-          <SectionHeader
-            title={topic.title}
-            subtitle={`${t("Current track")}: ${t(activeTrack.title)}`}
-            tight
-          />
+        <Card variant="layered" style={styles.heroCard}>
+          <Text style={styles.heroEyebrow}>{t("Recommended session")}</Text>
+          <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
+            <IconTile
+              name={activeTrack.id === "algorithms" ? "route" : "cloud"}
+              size={48}
+              tone={activeTrack.id === "algorithms" ? "primary" : "info"}
+            />
+            <Text style={styles.heroTitle}>
+              {formatPracticeTopicTitle(topic.title, t)}
+            </Text>
+          </View>
+          <View style={styles.divider} />
+          <Text style={styles.heroDetail}>
+            {formatPracticeTopicDetail(topic.detail, t)}
+          </Text>
           <View style={styles.heroActions}>
             <Button
-              onPress={() =>
-                navigation.navigate(
-                  ROUTES.PRACTICE_SETUP,
-                  buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.guidedPractice } : { mode: "certification-diagnostic-baseline" as const }),
-                    source: "practiceHub",
-                    topicId: topic.id,
-                    trackId: activeTrack.id,
-                  }),
-                )
-              }
+              onPress={() => startSession()}
               testID={runtimeSelectors.practice.startSession()}
             >
               {t("Start session")}
             </Button>
+            <View style={styles.alternativeDivider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.orLabel}>{t("or")}</Text>
+              <View style={styles.dividerLine} />
+            </View>
             <Pressable
               accessibilityRole="button"
               onPress={() =>
@@ -263,7 +222,11 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         </Card>
 
         <View style={styles.section}>
-          <SectionHeader title={t("Practice options")} tight />
+          <SectionHeader
+            title={t("Other practice formats")}
+            subtitle={t("Choose a format when the recommendation does not fit your goal.")}
+            tight
+          />
           {modes.map((mode) => (
             <ListRow
               detail={t(mode.unavailableReason ?? mode.detail)}
@@ -284,53 +247,10 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           ))}
         </View>
 
-        <Card variant="tonal" style={styles.statsCard}>
-          <View style={styles.statsHeader}>
-            <View style={styles.statsCopy}>
-              <Text style={styles.statsTitle}>{t(stats.title)}</Text>
-              <Text style={styles.mutedText}>{t(stats.detail)}</Text>
-            </View>
-            <MetricCard
-              label={t(stats.metricLabel)}
-              style={styles.statsMetric}
-              tone="primary"
-              value={stats.metricValue}
-            />
-          </View>
-          <Button
-            onPress={() => navigation.navigate(ROUTES.HOME, { initialTab: "progress" })}
-            variant="secondary"
-          >
-            {t("More stats")}
-          </Button>
-        </Card>
       </Screen>
       <AppBottomNavigation activeId="practice" navigation={navigation} />
     </View>
   );
-}
-
-function resolvePracticeTopic(input: {
-  activeTrack: TrackDisplay;
-  routeTopicId?: string;
-  trainingAttempts: readonly TrainingAttempt[];
-}): PracticeTopic {
-  if (input.routeTopicId) {
-    const roadmapTopic = buildTopicRoadmapNodes({
-      activeTrackId: input.activeTrack.id,
-      trainingAttempts: input.trainingAttempts,
-    }).find((node) => node.id === input.routeTopicId);
-
-    if (roadmapTopic) {
-      return {
-        detail: roadmapTopic.detail,
-        id: roadmapTopic.id,
-        title: roadmapTopic.title,
-      };
-    }
-  }
-
-  return getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -341,45 +261,68 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   screenContent: {
     paddingBottom: TAB_BAR_RESERVED_HEIGHT,
   },
-  topicStrip: {
-    alignItems: "flex-start",
-    gap: spacing.md,
+  pageIntro: {
+    gap: spacing.sm,
   },
-  topicCopy: {
-    gap: spacing.xs,
-  },
-  eyebrow: {
-    ...typography.caption,
-    color: palette.textMuted,
-    textTransform: "uppercase",
-  },
-  topicTitle: {
-    ...typography.bodyStrong,
+  pageTitle: {
+    ...typography.title,
     color: palette.textPrimary,
   },
-  mutedText: {
-    ...typography.small,
+  pageSubtitle: {
+    ...typography.body,
     color: palette.textSecondary,
   },
-  compactButton: {
-    alignSelf: "flex-start",
-    minHeight: 40,
-    paddingHorizontal: spacing.md,
-  },
   heroCard: {
-    gap: spacing.lg,
+    gap: spacing.xl,
   },
   heroEyebrow: {
     ...typography.caption,
-    color: palette.primary,
+    color: palette.accentPurple,
+    letterSpacing: 0.7,
     textTransform: "uppercase",
   },
+  heroHeading: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.lg,
+  },
+  heroHeadingLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
+  heroTitle: {
+    ...typography.heading,
+    color: palette.textPrimary,
+    flex: 1,
+  },
+  heroDetail: {
+    ...typography.body,
+    color: palette.textSecondary,
+  },
+  divider: {
+    backgroundColor: palette.border,
+    height: StyleSheet.hairlineWidth,
+  },
   heroActions: {
-    gap: spacing.md,
+    gap: spacing.xl,
+  },
+  alternativeDivider: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    backgroundColor: palette.border,
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  orLabel: {
+    ...typography.caption,
+    color: palette.textMuted,
   },
   settingsAction: {
     alignItems: "center",
-    alignSelf: "flex-start",
+    alignSelf: "center",
     flexDirection: "row",
     gap: spacing.xs,
     minHeight: 36,
@@ -399,24 +342,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   disabledRow: {
     opacity: 0.62,
-  },
-  statsCard: {
-    gap: spacing.lg,
-  },
-  statsHeader: {
-    alignItems: "stretch",
-    flexDirection: "column",
-    gap: spacing.md,
-  },
-  statsCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  statsTitle: {
-    ...typography.bodyStrong,
-    color: palette.textPrimary,
-  },
-  statsMetric: {
-    alignSelf: "stretch",
   },
 });

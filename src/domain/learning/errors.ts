@@ -12,6 +12,13 @@ export class UnknownTrackFamilyError extends Error {
   }
 }
 
+export class UnsupportedTrackError extends Error {
+  constructor(trackId: string, capability: string) {
+    super(`Track ${trackId} does not support ${capability}.`);
+    this.name = "UnsupportedTrackError";
+  }
+}
+
 export class InvalidTrainingSessionError extends Error {
   constructor(message: string) {
     super(message);

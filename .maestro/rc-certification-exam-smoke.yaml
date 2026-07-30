@@ -1,4 +1,4 @@
-appId: com.lkurczab.gcpacetrainer
+appId: com.lkurczab.patternly
 name: Patternly RC — Certification Exam Simulation
 tags:
   - rc-evidence
@@ -7,9 +7,11 @@ tags:
 ---
 - runFlow:
     when:
-      visible: "Change track"
+      visible:
+        id: "patternly:home:change-track"
     commands:
-      - tapOn: "Change track"
+      - tapOn:
+          id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
       id: "patternly:home:select-track:cloud-certification"

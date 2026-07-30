@@ -45,15 +45,25 @@ test("Algorithms runtime composition has no persistence binding", () => {
   assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
 });
 
+test("Algorithms read projections do not create a barrel cycle through the session facade", () => {
+  const reads = read("src/application/learningReadModels.ts");
+  assert.doesNotMatch(reads, /from\s+["']\.\/algorithms["']/);
+  assert.match(reads, /from\s+["']\.\/algorithms\/algorithmsDeclaredScope["']/);
+  assert.doesNotMatch(
+    read("src/application/algorithms/algorithmsDeclaredScope.ts"),
+    /learningReadModels|algorithmsSessionFacade/,
+  );
+});
+
 test("Algorithms timer persistence is bound only in application composition, never in presentation", () => {
-  const timer = read("src/application/algorithms/AlgorithmsSimulationTimerFacade.ts");
+  const timer = read("src/application/algorithms/AlgorithmsForegroundTimerFacade.ts");
   const composition = read("src/application/bootstrap/trainingLifecycleComposition.ts");
   assert.doesNotMatch(timer, /storage\/repositories|getActiveForegroundTimer|saveActiveForegroundTimer/);
   assert.match(composition, /getActiveForegroundTimer/);
   assert.match(composition, /saveActiveForegroundTimer/);
   for (const path of files("src/features")) {
     const source = read(path);
-    assert.doesNotMatch(source, /getActiveForegroundTimer|saveActiveForegroundTimer|checkpointForExpiry|checkpointSimulationForegroundTime/,
+    assert.doesNotMatch(source, /getActiveForegroundTimer|saveActiveForegroundTimer|checkpointForExpiry|checkpointForegroundTime/,
       `presentation owns timer persistence or expiry in ${path}`);
   }
   const screen = read("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx");

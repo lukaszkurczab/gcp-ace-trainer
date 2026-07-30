@@ -27,7 +27,7 @@ function contractWithGateEvidence(approvedDesignReference = false, sourcePathPre
       references: approvedDesignReference ? [{
         id: "approved-gate-fixture",
         screenStateTarget: "gate-fixture-screen",
-        patternPath: "docs/designs/algorithms_stage3_ui/DESIGN.md",
+        patternPath: "docs/designs/product-direction-options/DESIGN.md",
         version: 1,
         approvalStatus: "APPROVED",
         owner: "product-owner",

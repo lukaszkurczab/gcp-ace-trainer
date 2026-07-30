@@ -17,9 +17,12 @@ import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
   buildTopicRoadmapNodes,
-  getCurrentPracticeTopic,
-  type PracticeTopic,
+  resolvePracticeTopic as resolvePracticeTopicModel,
 } from "./practiceFlowModel";
+import {
+  formatPracticeTopicDetail,
+  formatPracticeTopicTitle,
+} from "./practiceFlowPresentation";
 import {
   buildPracticeSessionConfig,
   DEFAULT_FEEDBACK_MODE,
@@ -99,7 +102,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     ? algorithmMode.profile.sessionLength
     : sessionLength;
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
-  const topic = resolvePracticeTopic({
+  const topic = resolvePracticeTopicModel({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
     trainingAttempts,
@@ -165,13 +168,13 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
             {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
           </Text>
           <Text style={styles.subtitle}>
-            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${t(topic.title)}.`}
+            {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${formatPracticeTopicTitle(topic.title, t)}.`}
           </Text>
         </View>
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
-          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={t(focusTopic.detail)} label={t(focusTopic.title)} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={focusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={focusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
         </View> : null}
 
         {scenarioPractice ? <View style={styles.section}>
@@ -304,31 +307,6 @@ function SelectablePanel({ detail, label, onPress, selected, testID }: Selectabl
         {selected ? <View style={styles.radioDot} /> : null}
       </View>
     </Pressable>
-  );
-}
-
-function resolvePracticeTopic(input: {
-  activeTrackId: TrackId;
-  routeTopicId?: string;
-  trainingAttempts: readonly TrainingAttempt[];
-}): PracticeTopic {
-  if (input.routeTopicId) {
-    const node = buildTopicRoadmapNodes(input).find(
-      (candidate) => candidate.id === input.routeTopicId,
-    );
-
-    if (node) {
-      return {
-        detail: node.detail,
-        id: node.id,
-        title: node.title,
-      };
-    }
-  }
-
-  return getCurrentPracticeTopic(
-    getTrackDisplay(input.activeTrackId),
-    input.trainingAttempts,
   );
 }
 

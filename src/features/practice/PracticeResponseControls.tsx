@@ -83,7 +83,7 @@ export function PracticeResponseControls({
                   key={value}
                   onPress={() => onComplexityValuePress(dimension.id, value)}
                   style={({ pressed }) => [styles.valueOption, selected ? styles.valueOptionSelected : null, pressed && editable ? styles.pressed : null, !editable ? styles.locked : null]}
-                  testID={itemId ? runtimeSelectors.session.option(itemId, `${dimension.id}:${value}`) : undefined}
+                  testID={itemId ? runtimeSelectors.session.complexityValue(itemId, dimension.id, value) : undefined}
                 >
                   <Text style={[styles.valueText, selected ? styles.selectedText : null]}>{value}</Text>
                 </Pressable>

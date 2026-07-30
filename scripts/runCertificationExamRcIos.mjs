@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-const APP_ID = "com.lkurczab.gcpacetrainer";
-const RESET_URL = "com.lkurczab.gcpacetrainer://audit/reset-learning-state";
+const APP_ID = "com.lkurczab.patternly";
+const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
 const LISTENER_FLOW = ".maestro/rc-runtime-audit-listener-ready.yaml";
 const RESET_COMPLETE_FLOW = ".maestro/rc-runtime-audit-reset-complete.yaml";
 const FLOW_PATH = ".maestro/rc-certification-exam-smoke.yaml";
@@ -39,7 +39,7 @@ function availableBootedSimulator(targetUdid) {
 function parseLocalMetroUrl(value) {
   let launchUrl;
   try { launchUrl = new URL(value); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must be an absolute dev-client URL."); }
-  if (launchUrl.protocol !== "exp+gcp-ace-trainer:" || launchUrl.host !== "expo-development-client") {
+  if (launchUrl.protocol !== "exp+patternly:" || launchUrl.host !== "expo-development-client") {
     throw new Error("PATTERNLY_DEV_CLIENT_URL must target the current Patternly Expo development client.");
   }
   const bundleUrl = launchUrl.searchParams.get("url");

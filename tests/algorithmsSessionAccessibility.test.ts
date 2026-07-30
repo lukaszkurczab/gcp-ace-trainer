@@ -22,7 +22,7 @@ test("interactive Algorithms session controls use real 48-point minimum geometry
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
   const surfaces = `${practiceControls}\n${feedback}`;
 
-  assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*48[\s\S]*?minWidth:\s*48/);
+  assert.match(button, /base:\s*\{[\s\S]*?minHeight:\s*52[\s\S]*?minWidth:\s*48/);
   assert.match(practiceControls, /moveButton:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(practiceControls, /valueOption:\s*\{[^}]*minHeight:\s*48[^}]*minWidth:\s*48/);
   assert.match(feedback, /detailsToggle:\s*\{[^}]*minHeight:\s*48/);
@@ -71,9 +71,20 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
 
   assert.match(practiceSurface, /<Modal animationType="fade" onRequestClose=\{onDismiss\} transparent visible>/);
   assert.match(practiceSurface, /<Pressable accessibilityLabel=\{t\("Keep learning"\)\} accessibilityRole="button" onPress=\{onDismiss\} style=\{styles\.modalDismissArea\} \/>/);
-  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("End this session\?"\)\}<\/Text>/);
-  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\("Abandon session"\)\}<\/Button>/);
+  assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
+  assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\}>\{t\("Pause and resume later"\)\}<\/Button>/);
+  assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\("End and view summary"\)\}<\/Button>/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
+});
+
+test("standalone practice conflict and unavailable states respect both safe-area edges", () => {
+  const screen = source("src/features/practice/PracticeSessionScreen.tsx");
+  const standaloneScreens = [...screen.matchAll(/<Screen\b([^>]*)>/g)].map((match) => match[1] ?? "");
+
+  assert.equal(standaloneScreens.length, 4);
+  for (const attributes of standaloneScreens) {
+    assert.match(attributes, /edges=\{\["top", "bottom"\]\}/);
+  }
 });
 
 test("large text can grow session chrome and controls without fixed interactive heights", () => {
@@ -99,11 +110,12 @@ test("bottom navigation preserves one-line visual labels while keeping every tab
   assert.match(bottomNavigation, /maxFontSizeMultiplier=\{1\.2\}/);
 });
 
-test("practice statistics keep the title and metric in separate full-width rows for large text", () => {
+test("Practice Hub keeps the quiet-layered recommendation readable at large text and removes the competing stats card", () => {
   const practiceHub = source("src/features/practice/PracticeHubScreen.tsx");
 
-  assert.match(practiceHub, /statsHeader:\s*\{[^}]*alignItems:\s*"stretch"[^}]*flexDirection:\s*"column"/);
-  assert.match(practiceHub, /statsMetric:\s*\{[^}]*alignSelf:\s*"stretch"/);
+  assert.match(practiceHub, /<Card variant="layered" style=\{styles\.heroCard\}>/);
+  assert.match(practiceHub, /heroHeadingLargeText:\s*\{[^}]*flexDirection:\s*"column"/);
+  assert.doesNotMatch(practiceHub, /MetricCard|statsHeader|statsMetric/);
 });
 
 test("certification exam stacks descriptive actions so large text cannot clip flagging or navigation", () => {
@@ -135,6 +147,7 @@ test("practice runtime selectors are derived from the canonical session projecti
   assert.match(surface, /runtimeSelectors\.session\.continue\(props\.runtimeIdentity\.itemId\)/);
   assert.match(surface, /runtimeSelectors\.session\.leaveAndResume\(sessionId\)/);
   assert.match(controls, /runtimeSelectors\.session\.option\(itemId, option\.id\)/);
+  assert.match(controls, /runtimeSelectors\.session\.complexityValue\(itemId, dimension\.id, value\)/);
   assert.match(feedback, /runtimeSelectors\.session\.result\(itemId, feedback\.result\)/);
   assert.match(feedback, /accessibilityLabel=\{`\$\{t\("Verified answer explanation\."\)\} \$\{feedback\.reason\}`\}/);
   assert.doesNotMatch(`${surface}\n${controls}\n${feedback}`, /accessibilityLabel=\{[^}]*runtimeSelectors/);

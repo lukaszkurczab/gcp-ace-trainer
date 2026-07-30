@@ -33,6 +33,7 @@ export const runtimeSelectors = Object.freeze({
   practice: Object.freeze({
     hubRoot: () => selector("practice", "hub", "root"),
     modeCard: (modeId: string) => selector("practice", "mode-card", modeId),
+    declaredScope: (topicId: string) => selector("practice", "declared-scope", topicId),
     openSetup: () => selector("practice", "open-setup"),
     customEntry: () => selector("practice", "custom-entry"),
     setup: () => selector("practice", "setup"),
@@ -51,6 +52,13 @@ export const runtimeSelectors = Object.freeze({
     roadmapNode: (roadmapNodeId: string) => selector("session", "roadmap-node", roadmapNodeId),
     question: (itemId: ItemId) => selector("session", "question", itemId),
     option: (itemId: ItemId, optionId: string) => selector("session", "option", itemId, optionId.toLowerCase()),
+    complexityValue: (itemId: ItemId, dimensionId: string, value: string) => selector(
+      "session",
+      "complexity-value",
+      itemId,
+      dimensionId,
+      encodedTextSegment(value, "complexity value"),
+    ),
     submit: (itemId: ItemId) => selector("session", "submit", itemId),
     continue: (itemId: ItemId) => selector("session", "continue", itemId),
     feedback: (itemId: ItemId) => selector("session", "feedback", itemId),
@@ -147,4 +155,9 @@ function sessionPosition(ordinal: number, length: number): Readonly<{ ordinal: s
 
 function feedbackTimingSegment(timing: AlgorithmFeedbackMode): string {
   return timing === "afterEachAnswer" ? "after-each-answer" : "at-session-end";
+}
+
+function encodedTextSegment(value: string, label: string): string {
+  if (!value.length) throw new Error(`Runtime selector ${label} cannot be empty.`);
+  return `v-${Array.from(value, (character) => character.codePointAt(0)!.toString(16)).join("_")}`;
 }

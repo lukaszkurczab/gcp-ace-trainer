@@ -1,9 +1,9 @@
 {
   "expo": {
     "name": "Patternly",
-    "slug": "gcp-ace-trainer",
+    "slug": "patternly",
     "version": "0.1.0",
-    "scheme": "com.lkurczab.gcpacetrainer",
+    "scheme": "com.lkurczab.patternly",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -16,11 +16,11 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lkurczab.gcpacetrainer"
+      "bundleIdentifier": "com.lkurczab.patternly"
     },
     "android": {
       "edgeToEdgeEnabled": true,
-      "package": "com.lkurczab.gcpacetrainer"
+      "package": "com.lkurczab.patternly"
     }
   }
 }

@@ -17,15 +17,16 @@ beforeEach(() => {
   installKeyValueStorageForTests(new MemoryKeyValueStorage());
 });
 
-test("app preferences default to device language and appearance", async () => {
+test("app preferences default to English content locale and device appearance", async () => {
   assert.deepEqual(await loadAppSettings(), DEFAULT_APP_SETTINGS);
+  assert.equal(DEFAULT_APP_SETTINGS.language, "en");
 });
 
-test("app preferences persist the selected language and appearance together", async () => {
+test("current study product normalizes an old Polish preference to the English content locale", async () => {
   await updateAppSettings({ appearance: "dark", language: "pl" });
 
   assert.deepEqual(await getSettings(), { appearance: "dark", language: "pl" });
-  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "pl" });
+  assert.deepEqual(await loadAppSettings(), { appearance: "dark", language: "en" });
 });
 
 test("translations use Polish chrome and preserve educational content without a UI translation", () => {

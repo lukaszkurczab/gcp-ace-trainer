@@ -1,0 +1,33 @@
+appId: com.lkurczab.patternly
+name: Patternly user testing — Independent Practice preflight
+tags:
+  - user-testing
+  - algorithms
+---
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:algorithms-independent-practice"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:mode-card:algorithms-independent-practice"
+- extendedWaitUntil:
+    visible: "Choose a scope for Independent Practice"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:practice:declared-scope:hash_map_and_set"
+- tapOn:
+    id: "patternly:practice:declared-scope:hash_map_and_set"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:mode:algorithms-independent-practice"
+    timeout: 30000
+- assertVisible: "Question 1 of 10"
+- assertVisible:
+    id: "patternly:session:question:alg-hms-complement-all-pairs-payload"

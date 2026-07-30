@@ -27,7 +27,7 @@ test("keeps mode matrices and fixed configuration values out of narrative docs",
     "docs/16-leetcode-like-learning-system.md",
     "docs/17-training-runtime-and-interaction-spec.md",
     "docs/designs/README.md",
-    "docs/designs/algorithms_stage3_ui/DESIGN.md",
+    "docs/designs/product-direction-options/DESIGN.md",
   ];
   const removedMatrixConstructs = [
     /\|\s*Mode\s*\|\s*Default length\s*\|/,
@@ -62,6 +62,12 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTRACT-AUTHORITY-001", ["canonical-contract-authority"]],
       ["ALGORITHMS-MODE-MATRIX-001", ["canonical-algorithms-mode-matrix"]],
       ["ALGORITHMS-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
+      ["ALGORITHMS-INDEPENDENT-PRACTICE-001", ["canonical-independent-practice-contract"]],
+      ["ALGORITHMS-PROGRESS-EVIDENCE-001", ["algorithms-progress-evidence-contract"]],
+      ["TRACK-PRESENTATION-001", ["track-presentation-contract"]],
+      ["RESEARCH-BUILD-SETTINGS-001", ["research-build-settings-contract"]],
+      ["APP-IDENTITY-001", ["patternly-build-identity-contract"]],
+      ["USER-TESTING-CORE-JOURNEY-001", ["user-testing-core-journey-contract"]],
       ["ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001", ["custom-practice-immediate-feedback-flow"]],
       ["ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001", ["custom-practice-deferred-feedback-withholding"]],
       ["ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001", ["custom-practice-deferred-summary-relaunch"]],
@@ -227,6 +233,9 @@ test("requires a registered APPROVED design reference before a user-facing task 
     owner: "product-owner",
   });
   assert.deepEqual(approvedContract.designReferences.uiOwnership, [{
+    sourcePathPrefix: "src/features/algorithms/session/",
+    designReferenceId: "focus-lab-core-shell-001",
+  }, {
     sourcePathPrefix: "src/features/simulation/",
     designReferenceId: "algorithms-active-simulation-screen",
   }, {
@@ -241,6 +250,21 @@ test("requires a registered APPROVED design reference before a user-facing task 
   }, {
     sourcePathPrefix: "src/features/practice/",
     designReferenceId: "shared-practice-flow-001",
+  }, {
+    sourcePathPrefix: "src/components/",
+    designReferenceId: "focus-lab-core-shell-001",
+  }, {
+    sourcePathPrefix: "src/features/home/",
+    designReferenceId: "focus-lab-core-shell-001",
+  }, {
+    sourcePathPrefix: "src/features/review/",
+    designReferenceId: "shared-practice-flow-001",
+  }, {
+    sourcePathPrefix: "src/navigation/",
+    designReferenceId: "focus-lab-core-shell-001",
+  }, {
+    sourcePathPrefix: "src/preferences/",
+    designReferenceId: "focus-lab-core-shell-001",
   }]);
   assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
     status: "ready",
@@ -304,6 +328,17 @@ test("requires a registered APPROVED design reference before a user-facing task 
     id: "shared-practice-flow-001",
     screenStateTarget: "non-simulation-practice-setup-runner-summary",
     patternPath: "docs/designs/algorithms_custom_practice/custom-practice-flow-reference.png",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "focus-lab-core-shell-001",
+  }), {
+    id: "focus-lab-core-shell-001",
+    screenStateTarget: "quiet-layered-core-journey-and-shared-shell",
+    patternPath: "docs/designs/product-direction-options/DESIGN.md",
     version: 1,
     approvalStatus: "APPROVED",
     owner: "product-owner",
@@ -416,7 +451,7 @@ test("defines exactly the complete canonical Algorithms mode matrix", () => {
       feedback: { default: "afterEachAnswer", supported: ["afterEachAnswer"] }, timer: { kind: "elapsedForeground" }, reinsert: true,
     },
     {
-      id: "algorithms-independent-practice", label: "Independent Practice", lengths: { default: 20, supported: [10, 20, 40] }, scope: "declaredInterleavedScope", shortening: "blueprintControlled",
+      id: "algorithms-independent-practice", label: "Independent Practice", lengths: { default: 10, supported: [10, 20] }, scope: "declaredInterleavedScope", shortening: "blueprintControlled",
       feedback: { default: "afterEachAnswer", supported: ["afterEachAnswer"] }, timer: { kind: "elapsedForeground" }, reinsert: false,
     },
     {

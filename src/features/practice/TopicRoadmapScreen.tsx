@@ -90,10 +90,6 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   const resolvedSelectedTopicId = selectedTopicId ?? getDefaultSelectedTopicId(topics);
 
   function selectTopic(topic: TopicRoadmapNodeModel) {
-    if (!topic.enabled) {
-      return;
-    }
-
     setSelectedTopicId(topic.id);
   }
 
@@ -211,7 +207,7 @@ function getDefaultSelectedTopicId(
   topics: readonly TopicRoadmapNodeModel[],
 ): string | undefined {
   return topics.find((topic) => topic.status === "current")?.id ??
-    topics.find((topic) => topic.enabled)?.id;
+    topics[0]?.id;
 }
 
 function isTopicSelected(topic: TopicRoadmapNodeModel, selectedTopicId?: string): boolean {
@@ -234,21 +230,18 @@ function RoadmapNode({
   topic,
 }: RoadmapNodeProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette } = useAppPreferences();
-  const locked = !topic.enabled;
+  const { colors: palette, t } = useAppPreferences();
   const iconName = getTopicIcon(topic, activeTrackId);
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled: locked, selected }}
-      disabled={locked}
+      accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => [
         styles.node,
         large ? styles.nodeLarge : null,
-        locked ? styles.nodeLocked : null,
-        pressed && !locked ? styles.pressed : null,
+        pressed ? styles.pressed : null,
       ]}
     >
       <View
@@ -264,11 +257,11 @@ function RoadmapNode({
           size={large ? 30 : 25}
         />
       </View>
-      <Text numberOfLines={2} style={[styles.nodeTitle, locked ? styles.nodeTitleLocked : null]}>
+      <Text numberOfLines={2} style={styles.nodeTitle}>
         {topic.title}
       </Text>
       <Text style={[styles.nodeLabel, getLabelStyle(topic, selected, styles)]}>
-        {formatNodeLabel(topic)}
+        {t(formatNodeLabel(topic))}
       </Text>
     </Pressable>
   );
@@ -321,10 +314,6 @@ function getTopicIcon(topic: TopicRoadmapNodeModel, activeTrackId: TrackId): Ico
 }
 
 function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: ReturnType<typeof createStyles>) {
-  if (!topic.enabled) {
-    return styles.nodeCircleLocked;
-  }
-
   if (selected) {
     return styles.nodeCircleActive;
   }
@@ -333,10 +322,6 @@ function getCircleStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles:
 }
 
 function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean, palette: AppColors): string {
-  if (!topic.enabled) {
-    return palette.textMuted;
-  }
-
   if (selected) {
     return palette.textPrimary;
   }
@@ -345,10 +330,6 @@ function getIconColor(topic: TopicRoadmapNodeModel, selected: boolean, palette: 
 }
 
 function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: ReturnType<typeof createStyles>) {
-  if (!topic.enabled) {
-    return styles.nodeLabelLocked;
-  }
-
   if (selected) {
     return styles.nodeLabelCurrent;
   }
@@ -357,22 +338,6 @@ function getLabelStyle(topic: TopicRoadmapNodeModel, selected: boolean, styles: 
 }
 
 function formatNodeLabel(topic: TopicRoadmapNodeModel): string {
-  if (topic.status === "completed") {
-    return topic.label;
-  }
-
-  if (topic.status === "current") {
-    return "Recommended";
-  }
-
-  if (topic.status === "available") {
-    return "Practicing";
-  }
-
-  if (topic.status === "later") {
-    return "Later";
-  }
-
   return topic.label;
 }
 
@@ -462,9 +427,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   nodeLarge: {
     maxWidth: 190,
   },
-  nodeLocked: {
-    opacity: 0.36,
-  },
   pressed: {
     opacity: 0.78,
     transform: [{ scale: 0.98 }],
@@ -493,17 +455,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     shadowOpacity: 0.36,
     shadowRadius: 20,
   },
-  nodeCircleLocked: {
-    backgroundColor: palette.surface,
-    borderColor: palette.borderStrong,
-  },
   nodeTitle: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
     textAlign: "center",
-  },
-  nodeTitleLocked: {
-    color: palette.textMuted,
   },
   nodeLabel: {
     ...typography.caption,
@@ -517,8 +472,5 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   nodeLabelCurrent: {
     color: palette.accentPurple,
-  },
-  nodeLabelLocked: {
-    color: palette.textMuted,
   },
 });

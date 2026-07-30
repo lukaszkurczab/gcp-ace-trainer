@@ -1,7 +1,7 @@
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
 import {
   Button,
@@ -41,6 +41,7 @@ import {
   getCurrentPracticeTopic,
   hasTrackProgress,
 } from "../practice/practiceFlowModel";
+import { formatPracticeTopicTitle } from "../practice/practiceFlowPresentation";
 
 type SelectTrackScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList>;
@@ -58,7 +59,9 @@ const TAB_BAR_RESERVED_HEIGHT = 128;
 
 export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelected }: SelectTrackScreenProps) {
   const styles = useThemedStyles(createStyles);
+  const { fontScale } = useWindowDimensions();
   const { t } = useAppPreferences();
+  const largeText = fontScale >= 1.3;
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [data, setData] = useState<SelectTrackData>({
     attempts: [],
@@ -132,31 +135,21 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
       <Screen edges={["top"]} style={styles.screenContent}>
         <AppStackHeader navigation={navigation} showBack={!onboarding} />
 
-        {onboarding ? (
-          <Card variant="tonal" style={styles.onboardingHero}>
-            <IconTile name="grid" size={56} tone="primary" />
-            <View style={styles.introCopy}>
-              <Text style={styles.eyebrow}>{t("Welcome to Patternly")}</Text>
-              <Text style={styles.onboardingTitle}>{t("Choose your learning path")}</Text>
-              <Text style={styles.subtitle}>
-                {t("Start with one path. You can switch whenever your goal changes.")}
-              </Text>
-            </View>
-          </Card>
-        ) : (
-          <View style={styles.intro}>
-            <Text style={styles.title}>{t("Choose track")}</Text>
-            <Text style={styles.subtitle}>
-              Select the context for your next focused practice session.
-            </Text>
-          </View>
-        )}
+        <View style={styles.intro}>
+          {onboarding ? <Text style={styles.eyebrow}>{t("Welcome to Patternly")}</Text> : null}
+          <Text style={styles.title}>{t("Choose a track")}</Text>
+          <Text style={styles.subtitle}>
+            {t(onboarding
+              ? "Start with one track. You can switch whenever your goal changes."
+              : "Choose a track for your next focused practice session.")}
+          </Text>
+        </View>
 
         <View style={styles.trackList}>
           {onboarding ? (
             <SectionHeader
-              title={t("Available paths")}
-              subtitle={t("Choose the kind of practice you want to begin with.")}
+              title={t("Available tracks")}
+              subtitle={t("Choose what you want to practice first.")}
               tight
             />
           ) : null}
@@ -176,26 +169,30 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             const primaryLabel = isActive ? "Continue" : started ? "Select" : "Start track";
 
             return (
-              <Card key={track.id} style={isActive ? styles.activeTrackCard : undefined}>
+              <Card
+                key={track.id}
+                style={isActive ? styles.activeTrackCard : undefined}
+                variant="layered"
+              >
                 <View style={styles.trackAccent} />
                 <SectionHeader
-                  title={track.title}
-                  subtitle={track.description}
+                  title={t(track.title)}
+                  subtitle={t(track.description)}
                 />
-                <View style={styles.trackMetaRow}>
+                <View style={[styles.trackMetaRow, largeText ? styles.trackMetaRowLargeText : null]}>
                   <IconTile
                     name={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}
                     tone={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "info" : "primary"}
                   />
                   <View style={styles.trackMetaCopy}>
-                    <Text style={styles.trackCategory}>{track.subtitle}</Text>
-                    <Text style={styles.nextTopic}>{onboarding ? "Start with" : "Next"}: {topic.title}</Text>
+                    <Text style={styles.trackCategory}>{t(track.categoryLabel)}</Text>
+                    <Text style={styles.nextTopic}>{t(onboarding ? "Start with" : "Next")}: {formatPracticeTopicTitle(topic.title, t)}</Text>
                   </View>
                 </View>
                 {!onboarding ? (
                   <View style={styles.progressBlock}>
-                    <View style={styles.progressHeader}>
-                      <Text style={styles.progressLabel}>{started ? "Progress" : "Not started"}</Text>
+                    <View style={[styles.progressHeader, largeText ? styles.progressHeaderLargeText : null]}>
+                      <Text style={styles.progressLabel}>{t(started ? "Progress" : "Not started")}</Text>
                       <Text style={styles.progressValue}>{progress}%</Text>
                     </View>
                     <ProgressBar progress={progress / 100} tone="primary" />
@@ -207,14 +204,14 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                     onPress={() => void selectTrack(track, "home")}
                     testID={runtimeSelectors.home.selectTrack(track.id)}
                   >
-                    Start {track.shortTitle}
+                    {t("Start")} {t(track.shortTitle)}
                   </Button>
                 ) : (
-                  <View style={styles.actions}>
+                  <View style={[styles.actions, largeText ? styles.actionsLargeText : null]}>
                     {!started ? (
                       <Button
                         onPress={() => void selectTrack(track, "roadmap")}
-                        style={styles.actionButton}
+                        style={[styles.actionButton, largeText ? styles.actionButtonLargeText : null]}
                         variant="secondary"
                       >
                         {t("View track")}
@@ -223,7 +220,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                     <Button
                       disabled={track.status === "archived"}
                       onPress={() => void selectTrack(track, "home")}
-                      style={styles.actionButton}
+                      style={[styles.actionButton, largeText ? styles.actionButtonLargeText : null]}
                       testID={runtimeSelectors.home.selectTrack(track.id)}
                       variant={isActive ? "secondary" : "primary"}
                     >
@@ -252,13 +249,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   intro: {
     gap: spacing.sm,
   },
-  onboardingHero: {
-    gap: spacing.lg,
-    padding: spacing.xxl,
-  },
-  introCopy: {
-    gap: spacing.sm,
-  },
   eyebrow: {
     ...typography.caption,
     color: palette.primary,
@@ -266,10 +256,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   title: {
     ...typography.title,
-    color: palette.textPrimary,
-  },
-  onboardingTitle: {
-    ...typography.display,
     color: palette.textPrimary,
   },
   subtitle: {
@@ -296,6 +282,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
   },
+  trackMetaRowLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
   trackMetaCopy: {
     flex: 1,
     gap: spacing.xs,
@@ -317,6 +307,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  progressHeaderLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+  },
   progressLabel: {
     ...typography.small,
     color: palette.textSecondary,
@@ -329,7 +324,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
   },
+  actionsLargeText: {
+    flexDirection: "column",
+  },
   actionButton: {
     flex: 1,
+  },
+  actionButtonLargeText: {
+    flex: 0,
+    width: "100%",
   },
 });

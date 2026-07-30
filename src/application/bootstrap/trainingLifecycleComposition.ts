@@ -1,8 +1,8 @@
 import {
-  AlgorithmsSimulationTimerFacade,
+  AlgorithmsForegroundTimerFacade,
   createAlgorithmsFamilyRuntime,
   installAlgorithmsSessionRuntimePorts,
-  installAlgorithmsSimulationTimerFacade,
+  installAlgorithmsForegroundTimerFacade,
 } from "../algorithms";
 import { createCertificationFamilyRuntime } from "../certification";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
@@ -147,7 +147,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     wallClock,
     sessionIds: { next(modeId) { sessionSequence += 1; return `algorithms:${modeId}:${sessionSequence}`; } },
   });
-  installAlgorithmsSimulationTimerFacade(new AlgorithmsSimulationTimerFacade({
+  installAlgorithmsForegroundTimerFacade(new AlgorithmsForegroundTimerFacade({
     repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
     lifecycle,
     monotonicClock: { now: () => globalThis.performance?.now?.() ?? Date.now() },

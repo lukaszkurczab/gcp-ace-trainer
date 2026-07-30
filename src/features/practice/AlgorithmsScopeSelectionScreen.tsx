@@ -8,8 +8,10 @@ import { describeOperationalFailure } from "../../application/operationalDiagnos
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
+import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing } from "../../theme";
 import { useAppPreferences } from "../../preferences";
+import { getAlgorithmMode } from "../../tracks/algorithms";
 import { AppStackHeader } from "../navigation/AppStackHeader";
 import { buildPracticeSessionConfig } from "./sessionConfig";
 
@@ -22,7 +24,7 @@ type State =
 export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   const { colors, t } = useAppPreferences();
   const [state, setState] = useState<State>({ kind: "loading" });
-  const modeTitle = route.params.modeId === "algorithms-contrast-practice" ? "Contrast Practice" : route.params.modeId === "algorithms-independent-practice" ? "Mixed Practice" : "Recognize Patterns";
+  const modeTitle = getAlgorithmMode(route.params.modeId).title;
 
   useEffect(() => {
     let active = true;
@@ -43,14 +45,15 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   return (
     <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
       <AppStackHeader navigation={navigation} showBack subtitle={t("Algorithms")} />
-      <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Each option is declared by the active Algorithms content artifact.")} />
+      <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (
           <ListRow
-            detail={option.detail}
+            detail={t(option.detail)}
             key={JSON.stringify(option.scope)}
             leading={<IconTile name="route" tone="primary" />}
             onPress={() => navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ algorithmScope: option.scope, mode: route.params.modeId, source: route.params.source, topicId: option.topicId, trackId: ALGORITHMS_TRACK_ID }))}
+            testID={runtimeSelectors.practice.declaredScope(option.topicId)}
             title={option.title}
             trailing={<Icon color={colors.textMuted} name="chevron-right" size={18} />}
           />

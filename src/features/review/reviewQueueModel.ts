@@ -8,6 +8,10 @@ import { getDomainLabel } from "../../utils";
 
 export type ReviewQueueRowStatus = "due" | "overdue" | "unavailable" | "upcoming";
 
+export type ReviewTaxonomyLabel =
+  | Readonly<{ kind: "authored"; value: string }>
+  | Readonly<{ kind: "translation-key"; value: string }>;
+
 export type ReviewQueueRow = {
   dueAt: string;
   id: string;
@@ -17,7 +21,7 @@ export type ReviewQueueRow = {
   reasonLabels: string[];
   sourceAttemptId: string;
   status: ReviewQueueRowStatus;
-  taxonomyLabel: string;
+  taxonomyLabel: ReviewTaxonomyLabel;
   title: string;
 };
 
@@ -64,25 +68,33 @@ export function buildReviewQueueScreenModel(
   const dueRows = dedupeRows([
     ...viewModel.overdueItems,
     ...viewModel.dueItems,
-  ]).map(buildReviewQueueRow);
+  ]).map((item) => buildReviewQueueRow(item, viewModel.trackTitle));
 
   return {
     degraded: viewModel.degraded,
     dueRows,
-    emptyDescription: `Incorrect or partial ${viewModel.trackTitle} answers will appear here after they are added to the local review queue.`,
+    emptyDescription: "Incorrect or partial answers from this track will appear here after they are added to review.",
     emptyTitle: EMPTY_TITLE,
     trackTitle: viewModel.trackTitle,
     totalCount: viewModel.totalItems,
-    upcomingRows: viewModel.upcomingItems.map(buildReviewQueueRow),
+    upcomingRows: viewModel.upcomingItems.map((item) =>
+      buildReviewQueueRow(item, viewModel.trackTitle)
+    ),
     warning: viewModel.degraded
       ? "Some local review queue data may be incomplete."
       : undefined,
   };
 }
 
-function buildReviewQueueRow(item: ReviewQueueViewItem): ReviewQueueRow {
+function buildReviewQueueRow(
+  item: ReviewQueueViewItem,
+  trackTitle: string,
+): ReviewQueueRow {
   const title = item.prompt?.trim() || "Review item unavailable";
-  const taxonomyLabel = formatPrimaryTaxonomyLabel(item.taxonomyRefs);
+  const taxonomyLabel = formatPrimaryTaxonomyLabel(
+    item.taxonomyRefs,
+    trackTitle,
+  );
   const status = getRowStatus(item);
 
   return {
@@ -150,7 +162,10 @@ function getStatusRank(item: ReviewQueueViewItem): number {
   }
 }
 
-function formatPrimaryTaxonomyLabel(refs: readonly EvidenceRef[]): string {
+function formatPrimaryTaxonomyLabel(
+  refs: readonly EvidenceRef[],
+  trackTitle: string,
+): ReviewTaxonomyLabel {
   const domainRef = refs.find((ref) => ref.axisId === "cloud-domain");
 
   if (domainRef) {
@@ -159,15 +174,23 @@ function formatPrimaryTaxonomyLabel(refs: readonly EvidenceRef[]): string {
 
   const firstRef = refs[0];
 
-  return firstRef ? formatTaxonomyNodeLabel(firstRef) : "Cloud Certification";
+  return firstRef
+    ? { kind: "authored", value: formatTaxonomyNodeLabel(firstRef) }
+    : { kind: "translation-key", value: trackTitle };
 }
 
-function formatCloudDomainLabel(nodeId: string): string {
+function formatCloudDomainLabel(nodeId: string): ReviewTaxonomyLabel {
   if (isExamDomain(nodeId)) {
-    return getDomainLabel(nodeId);
+    return {
+      kind: "translation-key",
+      value: getDomainLabel(nodeId),
+    };
   }
 
-  return formatNodeId(nodeId);
+  return {
+    kind: "authored",
+    value: formatNodeId(nodeId),
+  };
 }
 
 function formatTaxonomyNodeLabel(ref: EvidenceRef): string {

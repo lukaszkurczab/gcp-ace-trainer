@@ -101,8 +101,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   activeIndicator: {
     backgroundColor: "transparent",
     borderRadius: 999,
-    height: 3,
-    width: 24,
+    height: 6,
+    width: 6,
   },
   activeIndicatorVisible: {
     backgroundColor: palette.primary,

@@ -12,7 +12,8 @@ test("RC Certification Maestro smoke traverses only the canonical product flow",
     "patternly:practice:mode-card:certification-exam-simulation",
   ]) assert.match(flow, new RegExp(selector));
   assert.match(listener, /patternly:content:audit-command-listener:ready/);
-  assert.match(flow, /visible: "Change track"/);
+  assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
+  assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
   assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:cloud-certification"/);
   assert.match(flow, /id: "main-tab-bar-practice"/);
   assert.match(flow, /Question 1 of 50/);
@@ -30,7 +31,7 @@ test("RC Android runner requires the explicit current dev-client and evidence de
   const runner = readFileSync("scripts/runCertificationExamRcAndroid.mjs", "utf8");
   assert.match(runner, /PATTERNLY_DEV_CLIENT_URL is required/);
   assert.match(runner, /MAESTRO_TEST_OUTPUT_DIR is required/);
-  assert.match(runner, /exp\+gcp-ace-trainer/);
+  assert.match(runner, /exp\+patternly/);
   assert.match(runner, /shell", "pm", "clear", APP_ID/);
   assert.match(runner, /--test-output-dir/);
 });

@@ -18,6 +18,7 @@ import { ALGORITHM_MODE_IDS } from "./domain/algorithmModes";
 import type { AlgorithmResponse } from "./domain/algorithmResponse";
 import { selectAlgorithmSessionPlan } from "./algorithmSessionSelection";
 import { isAlgorithmChoiceQuestion, isAlgorithmOrderingQuestion, type AlgorithmQuestion } from "./algorithmQuestionTypes";
+import { createAlgorithmOptionOrder } from "./algorithmOptionOrder";
 import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "./algorithmReview";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 
@@ -111,7 +112,10 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     actualLength: 40,
     currentItemIndex: 0,
     itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: input.contentVersion, itemId: item.id, trackId: "algorithms" } })),
-    optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => [`${input.sessionId}:occurrence:${index}`, optionOrder(item)])),
+    optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => {
+      const occurrenceId = `${input.sessionId}:occurrence:${index}`;
+      return [occurrenceId, createAlgorithmOptionOrder(item, occurrenceId)];
+    })),
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
     contentVersion: input.contentVersion,
@@ -228,12 +232,6 @@ function assertAlgorithmsInterviewSimulationSession(session: TrainingSession): v
   if (session.trackId !== "algorithms" || session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || !session.taxonomyVersion || !session.planFingerprint || session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "countdownForeground" || session.configurationSnapshot.timerDurationMs !== 2_700_000 || session.conditionalReinsertSlots?.length) {
     throw new Error("Training session is not a canonical Algorithms Interview Simulation.");
   }
-}
-
-function optionOrder(question: AlgorithmQuestion): readonly string[] {
-  if (isAlgorithmChoiceQuestion(question)) return question.interaction.options.map((option) => option.id);
-  if (isAlgorithmOrderingQuestion(question)) return question.interaction.elements.map((element) => element.id);
-  return [];
 }
 
 function maximumPointsFor(question: AlgorithmQuestion): number {

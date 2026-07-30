@@ -5,7 +5,7 @@ import { readCanonicalJson, removeCanonicalValue, writeCanonicalJson } from "./c
 import { getActiveTrainingSession } from "./trainingSessionRepository";
 import { isForegroundTimerState } from "./trainingModelGuards";
 
-/** Repository boundary for the one active simulation foreground timer. */
+/** Repository boundary for the one active session foreground timer. */
 export async function getActiveForegroundTimer(): Promise<ForegroundTimerState | null> {
   const value = readCanonicalJson(STORAGE_KEYS.ACTIVE_FOREGROUND_TIMER, isForegroundTimerState);
   return value ? createForegroundTimerState(value) : null;

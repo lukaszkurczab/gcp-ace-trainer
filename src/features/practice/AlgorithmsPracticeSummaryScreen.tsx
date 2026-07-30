@@ -4,15 +4,15 @@ import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import {
-  getAlgorithmsPracticeResultProjection,
+  getAlgorithmsPracticeSummaryProjection,
   type AlgorithmsSessionResultProjection,
 } from "../../application/algorithms";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, EmptyState, Screen } from "../../components";
+import { Button, Card, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
-import { radius, spacing, typography, type AppColors } from "../../theme";
+import { spacing, typography, type AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 
@@ -30,7 +30,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   const sessionId = route.params.sessionId;
   const load = useCallback(async () => {
     try {
-      setState({ kind: "ready", result: await getAlgorithmsPracticeResultProjection(sessionId) });
+      setState({ kind: "ready", result: await getAlgorithmsPracticeSummaryProjection(sessionId) });
     } catch (error) {
       setState({ kind: "unavailable", reason: describeOperationalFailure(error, "The completed session result is unavailable.") });
     }
@@ -52,11 +52,14 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
       edges={["top", "bottom"]}
       footer={<Button onPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} testID={runtimeSelectors.summary.backToPractice(result.sessionId)}>{t("Back to practice")}</Button>}
     >
-      <View style={styles.result}>
-        <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t("Session result")}</Text>
+      <Card style={styles.result} variant="layered">
+        <Text style={styles.eyebrow}>{t(result.completionKind === "completed" ? "Session complete" : "Session ended early")}</Text>
+        <Text style={styles.resultTitle} testID={runtimeSelectors.summary.root(result.sessionId)}>{t(result.completionKind === "completed" ? "Session result" : "Partial summary")}</Text>
+        <View style={styles.divider} />
         <Text style={styles.resultText} testID={runtimeSelectors.summary.configuration(result.sessionId, result.configuration.actualLength, result.configuration.feedbackTiming)}>{result.configuration.actualLength} {t("items")} · {t(result.configuration.feedbackTiming === "atSessionEnd" ? "Feedback at session end" : "Feedback after each answer")}</Text>
         <Text style={styles.resultText}>{result.answeredOccurrenceIds.length} {t("answered")} · {result.unansweredOccurrenceIds.length} {t("unanswered")}</Text>
-        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
+        <Text style={styles.resultText}>{t("Active time")} {formatElapsed(result.elapsedForegroundMs)}</Text>
+        {result.score ? <Text style={styles.resultText}>{result.score.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {result.score.pointsEarned} / {result.score.maxPoints} {t("points")}</Text> : result.completionKind === "abandoned" ? <Text style={styles.resultText}>{t("Score is shown only after a completed session.")}</Text> : <Text style={styles.resultText}>{t("Verified result details are unavailable.")}</Text>}
         {result.feedbackItems.length > 0 ? (
           <View style={styles.feedbackItems}>
             <Text style={styles.feedbackTitle}>{t("Answer review")}</Text>
@@ -68,17 +71,25 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
             ))}
           </View>
         ) : null}
-      </View>
+      </Card>
     </Screen>
   );
 }
 
+function formatElapsed(milliseconds: number): string {
+  const totalSeconds = Math.floor(milliseconds / 1_000);
+  const minutes = Math.floor(totalSeconds / 60);
+  return `${String(minutes).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`;
+}
+
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  feedbackItem: { gap: spacing.sm },
+  divider: { backgroundColor: palette.border, height: StyleSheet.hairlineWidth },
+  eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
+  feedbackItem: { borderTopColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.md, paddingTop: spacing.lg },
   feedbackItems: { gap: spacing.lg },
   feedbackPrompt: { ...typography.bodyStrong, color: palette.textPrimary },
   feedbackTitle: { ...typography.bodyStrong, color: palette.textPrimary },
-  result: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.lg, margin: spacing.xl, padding: spacing.xl },
+  result: { gap: spacing.xl },
   resultText: { ...typography.body, color: palette.textSecondary },
   resultTitle: { ...typography.heading, color: palette.textPrimary },
 });

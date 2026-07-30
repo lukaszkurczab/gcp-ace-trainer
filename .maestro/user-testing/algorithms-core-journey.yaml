@@ -1,0 +1,329 @@
+appId: com.lkurczab.patternly
+name: Patternly user testing — Algorithms core journey
+tags:
+  - user-testing
+  - algorithms
+  - core-journey
+---
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:track-card:algorithms"
+    direction: DOWN
+    centerElement: false
+    timeout: 30000
+    visibilityPercentage: 20
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:algorithms-independent-practice"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:mode-card:algorithms-independent-practice"
+- extendedWaitUntil:
+    visible: "Choose a scope for Independent Practice"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:declared-scope:hash_map_and_set"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-all-pairs-payload"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:mode:algorithms-independent-practice"
+- assertVisible: "Question 1 of 10"
+
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-all-pairs-payload:value_to_index_list"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-all-pairs-payload:value_to_index_list"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-all-pairs-payload"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-all-pairs-payload:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-all-pairs-payload:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-all-pairs-payload"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-check-before-record"
+    timeout: 30000
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-independent-practice:1"
+- tapOn:
+    id: "patternly:session:leave-and-resume:algorithms:algorithms-independent-practice:1"
+- killApp
+- launchApp
+- scrollUntilVisible:
+    element:
+      id: "patternly:resume:card:algorithms:algorithms-independent-practice:1"
+    direction: DOWN
+    visibilityPercentage: 20
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:resume:continue:algorithms:algorithms-independent-practice:1"
+    direction: DOWN
+    visibilityPercentage: 50
+    timeout: 30000
+- tapOn:
+    id: "patternly:resume:continue:algorithms:algorithms-independent-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-check-before-record"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-check-before-record:compute_complement"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:option:alg-hms-complement-check-before-record:compute_complement"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-check-before-record"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-check-before-record:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-check-before-record:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-check-before-record"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-expected-cost"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:complexity-value:alg-hms-complement-expected-cost:time:v-4f_28_6e_29"
+    direction: DOWN
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:complexity-value:alg-hms-complement-expected-cost:time:v-4f_28_6e_29"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:complexity-value:alg-hms-complement-expected-cost:extra_space:v-4f_28_6e_29"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:complexity-value:alg-hms-complement-expected-cost:extra_space:v-4f_28_6e_29"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-expected-cost"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-expected-cost:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-expected-cost:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-expected-cost"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-half-target-duplicate"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-half-target-duplicate:second_finds_first"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-half-target-duplicate:second_finds_first"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-half-target-duplicate"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-half-target-duplicate:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-half-target-duplicate:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-half-target-duplicate"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-index-payload"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-index-payload:value_to_index"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-index-payload:value_to_index"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-index-payload"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-index-payload:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-index-payload:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-index-payload"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-rearrange-sum-condition"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-rearrange-sum-condition:target_minus_current"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-rearrange-sum-condition:target_minus_current"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-rearrange-sum-condition"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-rearrange-sum-condition:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-rearrange-sum-condition:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-rearrange-sum-condition"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-set-or-frequency-boundary"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-set-or-frequency-boundary:prior_presence_suffices"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-set-or-frequency-boundary:prior_presence_suffices"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-set-or-frequency-boundary"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-set-or-frequency-boundary:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-set-or-frequency-boundary:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-set-or-frequency-boundary"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complement-transfer-directed-difference"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complement-transfer-directed-difference:current_minus_d"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complement-transfer-directed-difference:current_minus_d"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complement-transfer-directed-difference"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complement-transfer-directed-difference:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complement-transfer-directed-difference:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complement-transfer-directed-difference"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complexity-adversarial-guarantee-boundary"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complexity-adversarial-guarantee-boundary:need_specified_guarantee"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complexity-adversarial-guarantee-boundary:need_specified_guarantee"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complexity-adversarial-guarantee-boundary"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complexity-adversarial-guarantee-boundary:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complexity-adversarial-guarantee-boundary:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complexity-adversarial-guarantee-boundary"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-hms-complexity-expected-versus-worst"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:alg-hms-complexity-expected-versus-worst:expected_constant_possible_linear_worst"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:alg-hms-complexity-expected-versus-worst:expected_constant_possible_linear_worst"
+- tapOn:
+    id: "patternly:session:submit:alg-hms-complexity-expected-versus-worst"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:alg-hms-complexity-expected-versus-worst:correct"
+    direction: DOWN
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:alg-hms-complexity-expected-versus-worst:correct"
+- tapOn:
+    id: "patternly:session:continue:alg-hms-complexity-expected-versus-worst"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:algorithms:algorithms-independent-practice:1"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:summary:configuration:algorithms:algorithms-independent-practice:1:10:after-each-answer"
+- tapOn:
+    id: "patternly:summary:back-to-practice:algorithms:algorithms-independent-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-progress"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:progress:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:progress:node:hash_map_and_set"
+    direction: DOWN
+    centerElement: true

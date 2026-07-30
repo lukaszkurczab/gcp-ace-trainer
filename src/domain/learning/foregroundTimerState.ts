@@ -1,7 +1,7 @@
 import type { TrackId } from "./trackIdentity";
 
 /**
- * The sole durable clock for a foreground-timed simulation.  Wall-clock time
+ * The sole durable clock for a foreground-timed session. Wall-clock time
  * identifies checkpoints only; elapsed work is accumulated from a monotonic
  * in-memory segment before each checkpoint.
  */

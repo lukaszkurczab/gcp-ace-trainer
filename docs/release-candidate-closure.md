@@ -1,40 +1,88 @@
-# Patternly — RC closure
+# Patternly — current product status
 
-## Status — 2026-07-28
+## Status — 2026-07-30
 
-`RC_VERIFIED`. The published application and content commits identify one
-immutable multi-track release; the active product paths are canonical and the
-iOS, Android, accessibility and visual acceptance checks completed.
+`RELEASE VERIFIED / FULL AUDIT PENDING / USER-TESTING HOLD`
 
-| Area | Status | Current evidence |
-| --- | --- | --- |
-| Canonical Certification mode vocabulary (RC-002) | done | Seven enabled modes, including `certification-exam-simulation`; retired runtime state and duplicate scorer removed. |
-| Certification simulation policy and profile (RC-003) | done | Product-owned Patternly policy is published in the profile; the user approved this decision. |
-| Canonical simulation lifecycle, draft, timer and finalization (RC-004–RC-007) | done | `CertificationFamilyRuntime` and shared lifecycle own prepare, durable drafts, deadline finalization and result evidence. |
-| Parallel exam runtime removal (RC-008) | done | Active UI surfaces use the shared lifecycle and durable projections; duplicate state and scoring paths are removed. |
-| Certification feedback and pool readiness (RC-009–RC-010) | done | Every published Certification item has `Reason`, structured `Details` and exact option explanations; publication requires all seven declared modes and profile-compatible capacity. |
-| Algorithms readiness and content ingress cleanup (RC-011–RC-012) | done | Previous verified evidence remains valid for the current content source. |
-| Immutable multi-track content release (RC-013) | done | `patternly-core-0014` remains pinned by the application lock; the cross-repo release test verifies the manifest and both checksums. |
-| Content gate and local privacy boundaries (RC-014–RC-017) | done | Existing source, tests and CI configuration remain the canonical implementation. |
-| iOS acceptance (RC-018) | done | iPhone 17 completed Algorithms M1–M7 and Certification Exam Simulation on the explicit reset path. The final Certification run also completed at the iOS accessibility-large Dynamic Type size. |
-| Android acceptance (RC-019) | done | `emulator-5554` completed Algorithms M1–M7 and Certification Exam Simulation from deterministic clean dev-client state. The final Certification run also completed at font scale `1.3`. |
-| Accessibility and visual review (RC-020) | done | No P0–P3 issue remained in the reviewed current Certification captures. TalkBack hierarchy inspection exposed labelled controls, roles and selected state; iOS semantic, reduced-motion and large-text checks passed. |
-| Final RC evidence pack (RC-021) | done | Acceptance evidence was reviewed before closure; transient local capture artifacts were removed after the successful decision. |
+This is the only retained execution-status document. Raw audit reports,
+screenshots, logs and historical build artifacts are intentionally not
+canonical: regenerate them against the then-current source whenever a new audit
+or release decision starts.
 
-## Current release identity
+## Bound content release
 
 | Field | Value |
 | --- | --- |
-| Release | `patternly-core-0014` |
-| Producer release commit | `e18fc731e1b577750f954e8f017520e546afc7f9` |
-| Content source commit | `7b2e96a5e357264e6ce06a75dbeb11e386a3dea1` |
-| Algorithms artifact | `algorithms-core-0007`, `89462b2e0f6f47b5b5c3c62652937609fa8be37d0d399b02b6629c58cdbcec54` |
-| Certification artifact | `gcp-ace-0013`, `55dff7ce486cbd1c21b2a8094d60c5ab47d48635256c28c2b2bf83088dc274a2` |
+| Release | `patternly-core-0015` |
+| Producer release commit | `d780204eba858c05b94fdbce8de38ec4c3900a50` |
+| Content source commit | `9e23b08d051ac473436f27544b0dbfefeda496d6` |
+| Algorithms | `algorithms-core-0008`; 2375 items; `2c6749d68c4c2c9f95bc4b9c4d21350df92776603648b2240fd1da39bb8d9adf` |
+| Certification | `gcp-ace-0014`; 360 items; `f692d3878c12907cc1df7922a1eb6e5567757989450063dc9e495cebf4bd4042` |
 
-## Current evidence
+No partial bank was published. The application release lock and bundled
+content identify this exact coordinated release.
 
-- `npm run qa:static`: 354 tests passed; type, content-boundary, runtime-privacy and recovery checks passed.
-- `npm run test:content-release-cross-repo`: the pinned multi-track release passed.
-- The Certification Exam flow completed on iPhone 17 and `emulator-5554`, at normal scale and at the largest tested text setting.
-- Android TalkBack was enabled for hierarchy inspection. Buttons and tabs exposed their accessible labels and selected state; the emulator was then restored to its ordinary settings.
-- iOS dynamic type was restored after capture. The product listens to the native reduce-motion setting and suppresses the navigator transition when it is enabled; that behavior is statically covered.
+## Durable verified facts
+
+- Algorithms 2375/2375 and Certification 360/360 received item-level manual
+  review before release `0015`.
+- At release closure, `patternly-content` passed 45/45 architecture tests;
+  Algorithms source inspection covered 2375 items in 213 batches without
+  diagnostics.
+- At the 2026-07-30 application baseline, recovery inventory, typecheck,
+  400/400 tests, content-boundary, runtime-privacy-boundary and the cross-repo
+  release contract passed.
+- The exact ten-item Algorithms research journey passed twice consecutively on
+  iOS and twice on Android. Current-release light, dark and larger-text
+  represented states had no open visual P0–P3 finding.
+- Participant-build identity schema 1 covered 279 build-affecting inputs and
+  produced SHA-256
+  `6c113edc3bbbfdd716d48385b5356a35eb1b22932084287b3a2e896a863bf646`.
+  Documentation, tests and evidence artifacts are outside that digest.
+
+These are dated baseline facts, not permission to reuse old evidence after a
+source change. The next full audit must rerun every applicable gate.
+
+## Durable product decisions
+
+- The active visual direction is Option 3 — Quiet Layered: few elements,
+  generous space and only decision-relevant information. Option 1 contributes
+  only the one-dominant-action hierarchy rule.
+- The first research cohort uses English product content and a notes-only data
+  model with no screen, audio or video recording.
+- The current product is local-first, with no account, sync, billing or hidden
+  fallback path.
+- Only Algorithms and Google Cloud Associate Cloud Engineer are active.
+  Future tracks remain deferred until evidence from the first cohort.
+
+The canonical rationale and triggers remain in
+[`product-owner-decision-register.md`](product-owner-decision-register.md).
+
+## Work remaining before user testing
+
+| Work | Status | Completion evidence required |
+| --- | --- | --- |
+| New full product audit | `planned` | Fresh functional, visual, accessibility, publication and device evidence against the post-cleanup source |
+| Manual VoiceOver traversal | `blocking` | Completed iOS rows in [`pre-recruitment-acceptance.md`](user-testing/pre-recruitment-acceptance.md) |
+| Manual TalkBack traversal | `blocking` | Completed Android rows in the same acceptance record |
+| Timed human dry-run | `blocking` | One 45–60 minute run with a person uninvolved in implementation |
+| Research operations | `blocking` | Real participant contact, approved note storage, compensation rules and applicable privacy notice |
+| Final readiness decision | `blocking` | Explicit owner GO after every required gate passes |
+
+Do not recruit participants or describe Patternly as ready until the final
+decision is `GO`.
+
+## Canonical handoff
+
+- Product contract: [`canonical-product-contract.yaml`](canonical-product-contract.yaml)
+- Content rules: [`07-content-guidelines.md`](07-content-guidelines.md)
+- Product decisions:
+  [`product-owner-decision-register.md`](product-owner-decision-register.md)
+- Research packet: [`user-testing/README.md`](user-testing/README.md)
+- Manual acceptance:
+  [`user-testing/pre-recruitment-acceptance.md`](user-testing/pre-recruitment-acceptance.md)
+- Current content lock:
+  [`../integration/contracts/content-release/release.lock.json`](../integration/contracts/content-release/release.lock.json)
+
+The next work item is the owner-requested full audit. It must treat this status
+as orientation only and repository evidence as authoritative.

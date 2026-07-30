@@ -63,6 +63,7 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
     planItemIds.add(entry.question.id);
   }
   const reviewedKeys = new Set(input.reviewedItemRefs.map(contentItemRefKey));
+  const sortedEntries = reviewedKeys.size > 0 ? [...input.entries].sort(compareEntries) : [];
   const reservedReviewedVariantIds = new Set<string>();
   const slots: TrainingSessionConditionalReinsertSlot[] = [];
   for (let sourceIndex = 0; sourceIndex + 4 < input.session.itemOrder.length; sourceIndex += 1) {
@@ -74,8 +75,7 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
       if (!relation || relation.relation !== "reviewed_variant") return [];
       return relation.direction === "directed" ? relation.targetItemIds : [...relation.sourceItemIds, ...relation.targetItemIds];
     }));
-    const reviewedVariant = [...input.entries]
-      .sort(compareEntries)
+    const reviewedVariant = sortedEntries
       .find((candidate) => candidate.question.id !== sourceEntry.question.id && compatibleIds.has(candidate.question.id) &&
         reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate, input.session.contentVersion))) &&
         !planItemIds.has(candidate.question.id) && !reservedReviewedVariantIds.has(candidate.question.id));

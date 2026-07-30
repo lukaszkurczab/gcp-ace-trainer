@@ -82,7 +82,7 @@ export function ProgressTab({
         </Text>
       </View>
 
-      <Card variant="tonal" style={styles.reviewCard}>
+      <Card variant="layered" style={styles.reviewCard}>
         <View style={styles.reviewHeader}>
           <View style={styles.reviewCopy}>
             <Text style={styles.reviewTitle}>{t("Due review")}</Text>
@@ -101,13 +101,7 @@ export function ProgressTab({
           <Button onPress={() => onProgressAction(reviewAction)} variant="secondary">
             {t(progress.reviewActionLabel)}
           </Button>
-        ) : (
-          <View style={styles.unavailableAction}>
-            <Text style={styles.unavailableActionText}>
-              {t(progress.reviewActionLabel)}
-            </Text>
-          </View>
-        )}
+        ) : null}
       </Card>
 
       <View style={styles.section}>
@@ -208,7 +202,7 @@ function AlgorithmsProgressContent({
         </Text>
       </View>
 
-      <Card variant="tonal" style={styles.priorityCard}>
+      <Card variant="layered" style={styles.priorityCard}>
         <Badge label={t(model.priority.label)} tone={getBadgeTone(model.priority.tone)} />
         <Text style={styles.priorityTitle}>{t(model.priority.title)}</Text>
         <Text style={styles.mutedText}>{t(model.priority.detail)}</Text>
@@ -241,47 +235,31 @@ function AlgorithmsProgressContent({
           </View>
           <View style={styles.focusMetrics}>
             <FocusMetric
-              label={t("Practiced")}
+              label={t("Items practiced")}
               showDivider
-              value={model.currentFocus.practicedLabel}
+              value={t(model.currentFocus.practicedLabel)}
             />
             <FocusMetric
-              label={t("Core skills")}
-              showDivider
-              value={model.currentFocus.coreSkillsLabel}
+              label={t("Skills tried")}
+              value={t(model.currentFocus.skillEvidenceLabel)}
             />
-            <FocusMetric label={t("Score")} value={model.currentFocus.scoreLabel} />
           </View>
-          <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
+          {model.currentFocus.showProgress ? (
+            <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
+          ) : null}
           <Text style={styles.mutedText}>{t(model.currentFocus.explanation)}</Text>
         </Card>
       </View>
 
       {model.nextTopic ? (
         <View style={styles.section}>
-          <SectionHeader title={t("Next topic")} tight />
+          <SectionHeader title={t("Another topic")} tight />
           <Card style={styles.focusCard}>
             <View style={styles.cardHeading}>
               <Text style={styles.activityValue}>{model.nextTopic.title}</Text>
-              <Badge
-                label={t(getNextTopicStateLabel(model.nextTopic.state))}
-                tone={model.nextTopic.state === "locked" ? "neutral" : "success"}
-              />
+              <Badge label={t("Available")} tone="info" />
             </View>
             <Text style={styles.mutedText}>{t(model.nextTopic.detail)}</Text>
-            {model.nextTopic.requirements.length > 0 ? (
-              <View style={styles.requirementList}>
-                <Text style={styles.performanceTitle}>{t("To unlock")}</Text>
-                {model.nextTopic.requirements.map((requirement) => (
-                  <View key={requirement.label} style={styles.requirementRow}>
-                    <Text style={requirement.met ? styles.metMark : styles.unmetMark}>
-                      {requirement.met ? "✓" : "○"}
-                    </Text>
-                    <Text style={styles.mutedText}>{t(requirement.label)}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : null}
           </Card>
         </View>
       ) : null}
@@ -386,12 +364,6 @@ function getBadgeTone(
   return tone === "muted" ? "neutral" : tone;
 }
 
-function getNextTopicStateLabel(state: "locked" | "available" | "ready"): string {
-  if (state === "locked") return "Locked for now";
-  if (state === "ready") return "Ready now";
-  return "Available now";
-}
-
 function formatDiagnosticFacts(
   facts: AlgorithmsProgressScreenModel["diagnostics"]["outcomeSummary"],
 ): string {
@@ -456,18 +428,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.md,
   },
-  unavailableAction: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: spacing.md,
-  },
-  unavailableActionText: {
-    ...typography.small,
-    color: palette.textSecondary,
-    textAlign: "center",
-  },
   section: {
     gap: spacing.md,
   },
@@ -527,22 +487,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   mutedText: {
     ...typography.small,
     color: palette.textSecondary,
-  },
-  requirementList: {
-    gap: spacing.md,
-  },
-  requirementRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  metMark: {
-    ...typography.bodyStrong,
-    color: palette.success,
-  },
-  unmetMark: {
-    ...typography.bodyStrong,
-    color: palette.textMuted,
   },
   roadmapCard: {
     gap: spacing.lg,

@@ -162,6 +162,84 @@ Expanding or collapsing `Details` has no effect on:
 
 Opening `Details` is never required before the learner may continue.
 
+### Operational explanation standard
+
+`Details` is complete because it closes the learner's reasoning gap, not because
+it reaches a word count. Length, number of blocks, code, and imagery are
+diagnostic signals only. They are never substitutes for editorial judgment.
+
+Every `Details` document must let a learner answer five questions when they are
+relevant to the item:
+
+1. **What does a learner need before this mechanism makes sense?** Make the
+   explanation self-contained for a learner who has the track's general entry
+   prerequisites but no prior knowledge of this specific case, pattern,
+   shorthand, formula, service boundary, or implementation idiom. Define or
+   unpack every item-specific term and intermediate relation needed for the
+   reasoning. Do not require the learner to infer a missing bridge from the
+   accepted option.
+2. **What mechanism determines the answer?** State the causal rule, invariant,
+   contract, or derivation rather than only naming the correct concept.
+3. **How does that mechanism apply here?** Walk through the concrete values,
+   state transition, requirement, or decision in the prompt.
+4. **Where does the tempting alternative fail?** Expose the hidden assumption,
+   violated boundary, or counterexample behind a plausible mistake. The
+   response-specific distractor explanation may provide part of this layer, but
+   the complete document must remain useful after a correct answer too.
+5. **What transfers to the next problem?** End with a decision rule, invariant,
+   trace pattern, or boundary that the learner can apply without memorizing the
+   current wording.
+
+Do not repeat `Reason` as the first paragraph and then rename a generic slogan
+as a key takeaway. `Reason` orients; `Details` teaches. A complete explanation
+may be concise when the mechanism is genuinely simple, but it fails audit when
+removing the prompt and correct option leaves no derivation, application, or
+transferable rule.
+
+Choose the presentation form from the reasoning task:
+
+| Reasoning task | Preferred authored form | Use code or an image when |
+| --- | --- | --- |
+| Recognition or strategy choice | mechanism paragraph, concrete contrast, decision-rule or counterexample callout | a state trace is harder to express accurately in prose |
+| Ordering or state transition | numbered steps that name the invariant before and after each material operation | a short language-neutral trace makes mutation or pointer movement materially clearer |
+| Complexity | explicit cost model, counted operations, aggregate or recurrence derivation, and worst/expected/amortized boundary | pseudocode is needed to show which operation is nested, repeated, or hidden |
+| Implementation planning | invariant, state shape, operation order, edge case, then the smallest useful pseudocode | syntax-independent control flow or state update is itself the learning objective |
+| Spatial or structural reasoning | labelled states or a compact local SVG plus a text equivalent | the relationship cannot be understood as efficiently from a trace or list |
+| Certification decision | scenario requirement, exact capability or limitation, why it determines the choice, competing-option boundary, and transfer condition | a diagram is needed to distinguish scopes, trust boundaries, or request paths |
+
+Code is not a default marker of depth. Include only the smallest executable or
+pseudocode fragment needed to expose the mechanism, and explain the relevant
+line or state transition. Do not turn a decision-focused item into a full
+solution dump. Images are local, accessible, and used only when spatial
+structure is part of the reasoning.
+
+An item fails the editorial explanation audit when any of the following is
+true:
+
+- `Details` only restates the correct option, `Reason`, or prompt;
+- it names a concept or complexity class without deriving why it applies;
+- it contains no concrete application even though the prompt supplies values,
+  states, constraints, or a scenario;
+- its transfer statement is generic enough to fit unrelated items;
+- a plausible distractor receives only a negation or label rather than its
+  failed assumption and relevant boundary;
+- multiple-choice feedback does not explain an omitted material correct
+  element;
+- the chosen format makes the mechanism harder to follow than a short trace,
+  ordered list, counterexample, code fragment, or diagram would;
+- it assumes prior knowledge of an item-specific term, formula, case, pattern,
+  service boundary, or implementation idiom that is necessary to follow the
+  reasoning and is neither established by the track's entry prerequisites nor
+  explained in `Details`;
+- it is technically correct but leaves the learner unable to reconstruct the
+  decision without seeing the accepted answer.
+
+Automated checks may flag short explanations, repeated text, verbatim
+`Reason`/`Details` overlap, shallow distractor explanations, or an implausibly
+uniform block shape. Such flags prioritize review; they do not approve or
+reject pedagogy on their own. Every active item still receives a complete
+technical and editorial review against the item-specific objective.
+
 ## Choice-item contract
 
 Every active wrong option in an instructional choice item has a meaningful authored explanation keyed by its stable option ID.

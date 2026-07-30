@@ -98,7 +98,7 @@ test("runtime resolution rejects an unknown or mismatched family without substit
 
 test("practice response is handed to the family runtime and only its deterministic outcome reaches the coordinator", async () => {
   const f = fixture(); f.setActive(session()); await f.useCases.submitPracticeResponse({ selected: "a" });
-  assert.deepEqual(f.calls, ["get-active", "content-resume", "pending", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
+  assert.deepEqual(f.calls, ["get-active", "content-resume", "get-active", "content-resume", "pending", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
 });
 
 test("a non-submit durable journal requires recovery before practice can accept another answer", async () => {

@@ -1,12 +1,12 @@
-appId: com.lkurczab.gcpacetrainer
+appId: com.lkurczab.patternly
 name: Patternly runtime auditability smoke
 tags:
   - runtime-auditability
 ---
-- openLink: "com.lkurczab.gcpacetrainer://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
+- openLink: "com.lkurczab.patternly://expo-development-client/?url=http%3A%2F%2F127.0.0.1%3A8081"
 - waitForAnimationToEnd:
     timeout: 30000
-- openLink: "com.lkurczab.gcpacetrainer://audit/reset-learning-state"
+- openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:track-card:algorithms"

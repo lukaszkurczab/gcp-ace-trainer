@@ -98,6 +98,8 @@ test("Algorithms dashboard prioritizes repeated mistakes after overdue review an
 test("Algorithms dashboard turns bounded evidence into a scoped guided-practice action", async () => {
   const value = await dashboard({ attempts: [attempt()] });
   assert.equal(value.recommendation.reason, "guided_practice");
+  assert.equal(value.recommendation.explanation, "Practice Binary search signal with guidance before moving on.");
+  assert.doesNotMatch(value.recommendation.explanation, /_/);
   assert.deepEqual(value.recommendation.action, { kind: "start_practice", modeId: ALGORITHM_MODE_IDS.guidedPractice, topicId: TOPIC });
 });
 

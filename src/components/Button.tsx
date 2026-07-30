@@ -6,6 +6,7 @@ import {
   Text,
   type AccessibilityRole,
   type AccessibilityState,
+  type StyleProp,
   type ViewStyle,
 } from "react-native";
 
@@ -24,7 +25,7 @@ type ButtonProps = {
   disabled?: boolean;
   loading?: boolean;
   onPress: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
   variant?: ButtonVariant;
 };
@@ -62,24 +63,24 @@ export function Button({
       testID={testID}
     >
       {loading ? <ActivityIndicator color={getActivityColor(variant, palette)} size="small" style={styles.spinner} /> : null}
-      <Text style={[styles.label, styles[`${variant}Label`], isDisabled ? styles.disabledLabel : null]}>{children}</Text>
+      <Text maxFontSizeMultiplier={2} style={[styles.label, styles[`${variant}Label`], isDisabled ? styles.disabledLabel : null]}>{children}</Text>
     </Pressable>
   );
 }
 
 function getActivityColor(variant: ButtonVariant, palette: AppColors): string {
-  return variant === "primary" || variant === "destructive" ? palette.textPrimary : palette.primary;
+  return variant === "primary" || variant === "destructive" ? palette.onPrimary : palette.primary;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   base: {
     alignItems: "center",
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.sm,
     justifyContent: "center",
-    minHeight: 48,
+    minHeight: 52,
     minWidth: 48,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md
@@ -116,7 +117,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     textAlign: "center"
   },
   primaryLabel: {
-    color: palette.textPrimary
+    color: palette.onPrimary
   },
   secondaryLabel: {
     color: palette.textPrimary
@@ -125,7 +126,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.primary
   },
   destructiveLabel: {
-    color: palette.textPrimary
+    color: palette.onPrimary
   },
   disabledLabel: {
     color: palette.textMuted

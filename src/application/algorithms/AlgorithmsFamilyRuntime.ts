@@ -33,7 +33,7 @@ import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId, type Algorithm
 import type { AlgorithmResponse } from "../../tracks/algorithms/domain/algorithmResponse";
 import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../../tracks/algorithms/algorithmReview";
 import { getAlgorithmInteractionCompleteness, submitAlgorithmInteraction } from "../../tracks/algorithms/algorithmInteractionHandlers";
-import { isAlgorithmChoiceQuestion, isAlgorithmOrderingQuestion } from "../../tracks/algorithms/algorithmQuestionTypes";
+import { createAlgorithmOptionOrder } from "../../tracks/algorithms/algorithmOptionOrder";
 
 export type AlgorithmsPreparationRequest = Readonly<{
   requestedLength: number;
@@ -134,22 +134,31 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
       actualLength: selection.actualLength,
       currentItemIndex: 0,
       itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${request.sessionId}:occurrence:${index}`, item: this.catalog.toContentItemRef(item) })),
-      optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => [`${request.sessionId}:occurrence:${index}`, optionOrder(item)])),
+      optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => {
+        const occurrenceId = `${request.sessionId}:occurrence:${index}`;
+        return [occurrenceId, createAlgorithmOptionOrder(item, occurrenceId)];
+      })),
       conditionalReinsertSlots: [],
       activeForegroundMs: 0,
       contentVersion: this.catalog.getContentVersion(),
-      taxonomyVersion: this.taxonomyVersion,
       status: "active" as const,
       startedAt: input.now,
     };
-    const initial = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base) });
+    const initial = createTrainingSession(base);
+    const reviewedItemRefs = [...(request.reviewItemRefs ?? []), ...input.reviews.map((review) => review.sourceItem)];
     const planned = this.prepareConditionalReinsertPlan({
-      optionOrderByItemId: Object.fromEntries(this.catalog.getItems().map((item) => [item.id, optionOrder(item)])),
-      reviewedItemRefs: [...(request.reviewItemRefs ?? []), ...input.reviews.map((review) => review.sourceItem)],
+      optionOrderByItemId: Object.fromEntries(reviewedItemRefs
+        .filter((ref) => ref.trackId === "algorithms" && ref.contentVersion === this.catalog.getContentVersion())
+        .map((ref) => {
+          const item = this.catalog.getItemById(ref.itemId);
+          return [item.id, createAlgorithmOptionOrder(item, `${request.sessionId}:reinsert:${item.id}`)];
+        })),
+      reviewedItemRefs,
       reviewSource: request.reviewSource,
       session: initial,
     });
-    const session = createTrainingSession({ ...planned, planFingerprint: await createContentSessionPlanFingerprint(planned as TrainingSession & { taxonomyVersion: string }) });
+    const identified = { ...planned, taxonomyVersion: this.taxonomyVersion };
+    const session = createTrainingSession({ ...identified, planFingerprint: await createContentSessionPlanFingerprint(identified as TrainingSession & { taxonomyVersion: string }) });
     return Object.freeze({ session, firstOccurrence: session.itemOrder[0]!.item, draft: null });
   }
 
@@ -333,23 +342,23 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
   recommend(input: Readonly<{ evidence: AlgorithmsEvidence; learnerChoice?: AlgorithmModeId }>): AlgorithmsRecommendation {
     if (input.learnerChoice) {
       if (!Object.values(ALGORITHM_MODE_IDS).includes(input.learnerChoice)) throw new Error("Algorithms learner choice is not a supported mode.");
-      return Object.freeze({ explanation: "Learner-selected supported mode for this session.", modeId: input.learnerChoice, reason: "learner_choice" });
+      return Object.freeze({ explanation: "Use the practice mode you selected for this session.", modeId: input.learnerChoice, reason: "learner_choice" });
     }
     const evidence = input.evidence;
-    if (evidence.activeSessionId) return Object.freeze({ explanation: "Continue or deliberately abandon the active session.", modeId: "continue_active_session", reason: "active_session" });
+    if (evidence.activeSessionId) return Object.freeze({ explanation: "Continue where you left off, or end this session.", modeId: "continue_active_session", reason: "active_session" });
     const overdue = firstPositive(evidence.overdueReviewByMentalUnit);
-    if (overdue) return Object.freeze({ explanation: `Review due for ${overdue}.`, modeId: ALGORITHM_MODE_IDS.weakAreaReview, reason: "overdue_review", source: "due_queue", targetMentalUnitId: overdue });
+    if (overdue) return Object.freeze({ explanation: `Review due for ${learnerMentalUnitLabel(overdue)}.`, modeId: ALGORITHM_MODE_IDS.weakAreaReview, reason: "overdue_review", source: "due_queue", targetMentalUnitId: overdue });
     const repeated = firstAtLeast(evidence.performanceSignals.repeatedHighRiskMistakesByMentalUnit, this.recommendationPolicy.repeatedMistakeThreshold);
-    if (repeated) return Object.freeze({ explanation: `Address repeated high-risk mistake in ${repeated}.`, modeId: ALGORITHM_MODE_IDS.weakAreaReview, reason: "repeated_mistake", source: "due_queue", targetMentalUnitId: repeated });
+    if (repeated) return Object.freeze({ explanation: `Review ${learnerMentalUnitLabel(repeated)} to address a repeated mistake.`, modeId: ALGORITHM_MODE_IDS.weakAreaReview, reason: "repeated_mistake", source: "due_queue", targetMentalUnitId: repeated });
     const absent = firstValue(evidence.learningStageByMentalUnit, (stage) => stage === "absent" || stage === "unstable");
-    if (absent) return Object.freeze({ explanation: `Build the approach for ${absent}.`, modeId: ALGORITHM_MODE_IDS.learnApproach, reason: "learn_approach", targetMentalUnitId: absent });
+    if (absent) return Object.freeze({ explanation: `Build the approach for ${learnerMentalUnitLabel(absent)}.`, modeId: ALGORITHM_MODE_IDS.learnApproach, reason: "learn_approach", targetMentalUnitId: absent });
     const bounded = firstBelow(evidence.boundedEvidenceByMentalUnit, this.recommendationPolicy.minimumBoundedEvidence);
-    if (bounded) return Object.freeze({ explanation: `Continue guided practice in ${bounded}: evidence is still bounded.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId: bounded });
+    if (bounded) return Object.freeze({ explanation: `Practice ${learnerMentalUnitLabel(bounded)} with guidance before moving on.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId: bounded });
     const contrast = firstPositive(evidence.performanceSignals.strategyConfusionByMentalUnit);
-    if (contrast) return Object.freeze({ explanation: `Practise the strategy contrast in ${contrast}.`, modeId: ALGORITHM_MODE_IDS.contrastPractice, reason: "contrast_practice", targetMentalUnitId: contrast });
+    if (contrast) return Object.freeze({ explanation: `Compare strategies for ${learnerMentalUnitLabel(contrast)}.`, modeId: ALGORITHM_MODE_IDS.contrastPractice, reason: "contrast_practice", targetMentalUnitId: contrast });
     const recognition = firstPositive(evidence.performanceSignals.recognitionBottleneckByMentalUnit);
-    if (recognition) return Object.freeze({ explanation: `Pattern recognition is the current bottleneck in ${recognition}.`, modeId: ALGORITHM_MODE_IDS.recognizePatterns, reason: "recognize_patterns", targetMentalUnitId: recognition });
-    return Object.freeze({ explanation: "Choose an explicit declared scope for independent practice.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice" });
+    if (recognition) return Object.freeze({ explanation: `Practice recognizing when to use ${learnerMentalUnitLabel(recognition)}.`, modeId: ALGORITHM_MODE_IDS.recognizePatterns, reason: "recognize_patterns", targetMentalUnitId: recognition });
+    return Object.freeze({ explanation: "Choose a topic for independent practice.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice" });
   }
 
   private actionForRecommendation(recommendation: AlgorithmsRecommendation, activeSession: TrainingSession | null): AlgorithmsRecommendationAction {
@@ -409,6 +418,11 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     if (topicIds.length !== 1) return Object.freeze({ kind: "unavailable", reason: "The declared recognition set does not belong to one Algorithms roadmap topic." });
     return Object.freeze({ kind: "start_practice", modeId: ALGORITHM_MODE_IDS.recognizePatterns, scope: { recognitionSetId: matches[0]!.setId }, topicId: topicIds[0]! });
   }
+}
+
+function learnerMentalUnitLabel(mentalUnitId: string): string {
+  const words = mentalUnitId.replaceAll("_", " ").trim();
+  return words.replace(/^./, (letter) => letter.toUpperCase());
 }
 
 function firstPositive(values: Readonly<Record<string, number>> | undefined): string | undefined {
@@ -485,12 +499,6 @@ function practiceConfiguration(mode: AlgorithmModeDefinition, blueprint: { bluep
 /** Only the declared due-queue session context may advance persistent review retention. */
 function isAlgorithmsDueQueueReviewSession(session: TrainingSession): boolean {
   return session.modeId === ALGORITHM_MODE_IDS.weakAreaReview && session.configurationSnapshot.reviewSource === "due_queue";
-}
-
-function optionOrder(item: ReturnType<AlgorithmContentCatalog["getItemById"]>): readonly string[] {
-  if (isAlgorithmChoiceQuestion(item)) return item.interaction.options.map((option) => option.id);
-  if (isAlgorithmOrderingQuestion(item)) return item.interaction.elements.map((element) => element.id);
-  return [];
 }
 
 function assertAlgorithmsSession(session: TrainingSession, contentVersion: string, taxonomyVersion: string): void {

@@ -22,49 +22,31 @@ import {
 
 export type AlgorithmRoadmapNodeProgressStatus =
   | "not_started"
-  | "initial_exposure"
-  | "in_progress"
-  | "eligible_for_next"
-  | "mastered"
-  | "maintenance";
+  | "practicing"
+  | "review_due";
 
 export type AlgorithmRoadmapNodeProgress = {
   uniquePracticedItemCount: number;
   itemCount: number;
   label: string;
   nodeId: AlgorithmRoadmapNodeId;
-  scorePercent: number;
   status: AlgorithmRoadmapNodeProgressStatus;
   itemCoveragePercent: number;
-  coreSkillAtomCoveragePercent: number;
-  coveredCoreSkillAtomCount: number;
+  sampledCoreSkillAtomCount: number;
   coreSkillAtomCount: number;
+  dueReviewCount: number;
   remediationDueCount: number;
   criticalRemediationDueCount: number;
-  retentionDueCount: number;
-  retentionPassedCount: number;
-  eligibleForNext: boolean;
-  mastered: boolean;
-  nextRequiredAction:
-    | "start"
-    | "continue_practice"
-    | "cover_core_skills"
-    | "remediate"
-    | "retention_check"
-    | "ready_for_next"
-    | "maintenance";
-  eligibleRequiredItemCount: number;
-  masteryRequiredItemCount: number;
 };
 
 export type AlgorithmProgressFacts = {
   activeRoadmapNode: { id: AlgorithmRoadmapNodeId; label: string };
+  contentVersion: string;
   correctCount: number;
   incorrectCount: number;
   itemsCompleted: number;
   nodeProgress: AlgorithmRoadmapNodeProgress[];
   partialCount: number;
-  roadmapNodesMastered: number;
   roadmapNodesStarted: number;
 };
 
@@ -75,17 +57,32 @@ export type AlgorithmWeakAreaRecommendation = {
   selectedRoadmapNodeId: AlgorithmRoadmapNodeId;
 };
 
+export type BuildAlgorithmProgressFactsInput = Readonly<{
+  attempts: readonly TrainingAttempt[];
+  content?: Readonly<{
+    contentVersion: string;
+    items: readonly AlgorithmQuestion[];
+  }>;
+  now?: string;
+  reviewQueueItems?: readonly ReviewQueueEntry[];
+  roadmapNodes?: readonly AlgorithmRoadmapNode[];
+}>;
+
 export function buildAlgorithmProgressFacts(
-  attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmQuestion[] = getAlgorithmContentCatalog().getItems(),
-  roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
-  reviewQueueItems: readonly ReviewQueueEntry[] = [],
-  now = new Date().toISOString(),
+  input: BuildAlgorithmProgressFactsInput,
 ): AlgorithmProgressFacts {
+  const content = input.content ?? getInstalledAlgorithmProgressContent();
+  const items = content.items;
+  const contentVersion = content.contentVersion;
+  const roadmapNodes = input.roadmapNodes ?? ALGORITHM_ROADMAP.nodes;
+  const reviewQueueItems = input.reviewQueueItems ?? [];
+  const now = input.now ?? new Date().toISOString();
   const entries = getKnownRoadmapEntries(items, roadmapNodes);
   const questionIds = new Set(entries.map((entry) => entry.question.id));
-  const algorithmAttempts = attempts.filter((attempt) =>
-    attempt.trackId === "algorithms" && questionIds.has(attempt.item.itemId),
+  const algorithmAttempts = input.attempts.filter((attempt) =>
+    attempt.trackId === "algorithms" &&
+    attempt.item.contentVersion === contentVersion &&
+    questionIds.has(attempt.item.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
   const nodeProgress = getRoadmapNodesWithActiveItems(items)
@@ -93,23 +90,32 @@ export function buildAlgorithmProgressFacts(
     .map((node) => buildNodeProgress(
       node,
       entries,
-      algorithmAttempts,
       latestAttemptByItemId,
       reviewQueueItems,
+      contentVersion,
       now,
     ));
-  const activeNode = getActiveNode(nodeProgress, roadmapNodes);
+  const activeNode = getActiveNode(nodeProgress, entries, algorithmAttempts);
   const statusCounts = countLatestStatuses(latestAttemptByItemId);
 
   return {
     activeRoadmapNode: { id: activeNode.nodeId, label: activeNode.label },
+    contentVersion,
     correctCount: statusCounts.correct,
     incorrectCount: statusCounts.incorrect,
     itemsCompleted: latestAttemptByItemId.size,
     nodeProgress,
     partialCount: statusCounts.partial,
-    roadmapNodesMastered: nodeProgress.filter((node) => node.mastered).length,
     roadmapNodesStarted: nodeProgress.filter((node) => node.status !== "not_started").length,
+  };
+}
+
+function getInstalledAlgorithmProgressContent(): NonNullable<BuildAlgorithmProgressFactsInput["content"]> {
+  const catalog = getAlgorithmContentCatalog();
+
+  return {
+    contentVersion: catalog.getContentVersion(),
+    items: catalog.getItems(),
   };
 }
 
@@ -120,9 +126,13 @@ export function buildAlgorithmWeakAreaRecommendation(
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
   const entries = getKnownRoadmapEntries(items, roadmapNodes);
+  const contentVersion = getAlgorithmContentCatalog().getContentVersion();
   const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
-    attempts.filter((attempt) => attempt.trackId === "algorithms"),
+    attempts.filter((attempt) =>
+      attempt.trackId === "algorithms" &&
+      attempt.item.contentVersion === contentVersion,
+    ),
   );
   const statsByNodeId = buildWeakAreaStats(entries, latestAttemptByItemId);
   const selectedStats = [...statsByNodeId.values()]
@@ -166,9 +176,9 @@ function getKnownRoadmapEntries(
 function buildNodeProgress(
   node: AlgorithmRoadmapNode,
   entries: readonly AlgorithmQuestionEntry[],
-  attempts: readonly TrainingAttempt[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
   reviewQueueItems: readonly ReviewQueueEntry[],
+  contentVersion: string,
   now: string,
 ): AlgorithmRoadmapNodeProgress {
   const questions = entries
@@ -180,110 +190,47 @@ function buildNodeProgress(
   });
   const uniquePracticedItemCount = latestNodeAttempts.length;
   const itemCount = questions.length;
-  const scorePercent = getNodeScorePercent(latestNodeAttempts);
-  const eligibleRequiredItemCount = Math.min(
-    itemCount,
-    Math.min(40, Math.max(25, Math.ceil(itemCount * 0.35))),
-  );
-  const masteryRequiredItemCount = Math.min(
-    itemCount,
-    Math.min(70, Math.max(35, Math.ceil(itemCount * 0.6))),
-  );
   const coreSkillAtomIds = [...new Set(questions.map((question) => question.taxonomy.primarySkillAtomId))];
-  const coveredCoreSkillAtomCount = coreSkillAtomIds.filter((skillId) =>
-    isCoreSkillCovered(skillId, questions, latestAttemptByItemId),
+  const sampledCoreSkillAtomCount = coreSkillAtomIds.filter((skillId) =>
+    isCoreSkillSampled(skillId, questions, latestAttemptByItemId),
   ).length;
   const coreSkillAtomCount = coreSkillAtomIds.length;
-  const coreSkillAtomCoveragePercent = coreSkillAtomCount === 0
-    ? 100
-    : Math.round((coveredCoreSkillAtomCount / coreSkillAtomCount) * 100);
   const questionIds = new Set(questions.map((question) => question.id));
   const dueReviews = reviewQueueItems.filter((item) =>
-    item.trackId === "algorithms" && questionIds.has(item.sourceItem.itemId) && item.dueAt <= now,
+    item.trackId === "algorithms" &&
+    item.sourceItem.trackId === "algorithms" &&
+    item.sourceItem.contentVersion === contentVersion &&
+    questionIds.has(item.sourceItem.itemId) &&
+    item.dueAt <= now,
   );
   const remediationDue = dueReviews.filter((item) => item.persistent);
-  const retentionDueCount = dueReviews.filter((item) => !item.persistent).length;
   const criticalRemediationDueCount = remediationDue.filter((item) =>
     item.reasons.includes("repeated_mistake"),
   ).length;
-  const retainedSkills = getRetainedSkills(reviewQueueItems, questions);
-  const retentionPassedCount = coreSkillAtomIds.filter((skillId) =>
-    retainedSkills.has(skillId),
-  ).length;
-  const eligibleForNext =
-    uniquePracticedItemCount >= eligibleRequiredItemCount &&
-    coreSkillAtomCoveragePercent >= 80 &&
-    scorePercent >= 80 &&
-    criticalRemediationDueCount === 0;
-  const mastered =
-    uniquePracticedItemCount >= masteryRequiredItemCount &&
-    coreSkillAtomCoveragePercent === 100 &&
-    scorePercent >= 85 &&
-    remediationDue.length === 0 &&
-    retentionPassedCount === coreSkillAtomCount &&
-    !hasRepeatedCriticalMistake(
-      attempts.filter((attempt) => questionIds.has(attempt.item.itemId)),
-    );
-  const status = mastered
-    ? retentionDueCount > 0 ? "maintenance" : "mastered"
-    : eligibleForNext ? "eligible_for_next"
-    : getPreEligibilityStatus(uniquePracticedItemCount, itemCount, scorePercent);
+  const status: AlgorithmRoadmapNodeProgressStatus = dueReviews.length > 0
+    ? "review_due"
+    : uniquePracticedItemCount > 0
+      ? "practicing"
+      : "not_started";
 
   return {
     uniquePracticedItemCount,
     itemCount,
     label: node.label,
     nodeId: node.id,
-    scorePercent,
     status,
     itemCoveragePercent: itemCount > 0
       ? Math.round((uniquePracticedItemCount / itemCount) * 100)
       : 0,
-    coreSkillAtomCoveragePercent,
-    coveredCoreSkillAtomCount,
+    sampledCoreSkillAtomCount,
     coreSkillAtomCount,
+    dueReviewCount: dueReviews.length,
     remediationDueCount: remediationDue.length,
     criticalRemediationDueCount,
-    retentionDueCount,
-    retentionPassedCount,
-    eligibleForNext,
-    mastered,
-    nextRequiredAction: mastered
-      ? "maintenance"
-      : remediationDue.length > 0
-        ? "remediate"
-        : eligibleForNext && retentionPassedCount < coreSkillAtomCount
-          ? "retention_check"
-          : eligibleForNext
-            ? "ready_for_next"
-            : uniquePracticedItemCount === 0
-              ? "start"
-              : coreSkillAtomCoveragePercent < 80
-                ? "cover_core_skills"
-                : "continue_practice",
-    eligibleRequiredItemCount,
-    masteryRequiredItemCount,
   };
 }
 
-function getRetainedSkills(
-  reviewQueueItems: readonly ReviewQueueEntry[],
-  questions: readonly AlgorithmQuestion[],
-): ReadonlySet<string> {
-  const questionsById = new Map(questions.map((question) => [question.id, question]));
-  const retained = new Set<string>();
-
-  for (const review of reviewQueueItems) {
-    if (review.consecutiveAfterDueSuccesses < 2) continue;
-    const question = questionsById.get(review.sourceItem.itemId);
-    if (!question) continue;
-    retained.add(question.taxonomy.primarySkillAtomId);
-  }
-
-  return retained;
-}
-
-function isCoreSkillCovered(
+function isCoreSkillSampled(
   skillId: string,
   questions: readonly AlgorithmQuestion[],
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
@@ -295,60 +242,23 @@ function isCoreSkillCovered(
     const attempt = latestAttemptByItemId.get(question.id);
     return attempt ? [attempt] : [];
   });
-  const required = Math.min(2, linkedQuestions.length);
-
-  return required > 0 &&
-    attempts.length >= required &&
-    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) /
-      attempts.length >= 0.75;
-}
-
-function getPreEligibilityStatus(
-  uniquePracticedItemCount: number,
-  itemCount: number,
-  scorePercent: number,
-): AlgorithmRoadmapNodeProgressStatus {
-  if (uniquePracticedItemCount === 0) return "not_started";
-  const exposureCount = Math.min(itemCount, Math.min(5, Math.ceil(itemCount * 0.1)));
-  return uniquePracticedItemCount >= exposureCount && scorePercent >= 60
-    ? "initial_exposure"
-    : "in_progress";
-}
-
-export function isRoadmapPrerequisiteSatisfied(
-  status: AlgorithmRoadmapNodeProgressStatus,
-): boolean {
-  return status === "eligible_for_next" || status === "mastered" || status === "maintenance";
-}
-
-function getNodeScorePercent(attempts: readonly TrainingAttempt[]): number {
-  if (attempts.length === 0) return 0;
-  return Math.round(
-    attempts.reduce((sum, attempt) => sum + getAttemptScore(attempt), 0) /
-      attempts.length * 100,
-  );
-}
-
-function getAttemptScore(attempt: TrainingAttempt): number {
-  const status = getAlgorithmAttemptStatus(attempt.result);
-  return status === "correct" ? 1 : status === "partial" ? 0.5 : 0;
+  return attempts.length > 0;
 }
 
 function getActiveNode(
   nodeProgress: readonly AlgorithmRoadmapNodeProgress[],
-  roadmapNodes: readonly AlgorithmRoadmapNode[],
+  entries: readonly AlgorithmQuestionEntry[],
+  attempts: readonly TrainingAttempt[],
 ): AlgorithmRoadmapNodeProgress {
-  const satisfiedIds = new Set(
-    nodeProgress
-      .filter((node) => isRoadmapPrerequisiteSatisfied(node.status))
-      .map((node) => node.nodeId),
-  );
-  const firstIncompleteNode = nodeProgress.find((progress) => {
-    if (isRoadmapPrerequisiteSatisfied(progress.status)) return false;
-    const node = roadmapNodes.find((candidate) => candidate.id === progress.nodeId);
-    return node?.prerequisiteNodeIds.every((id) => satisfiedIds.has(id)) ?? false;
-  });
-  const active = firstIncompleteNode ?? nodeProgress[nodeProgress.length - 1];
+  const latestAttempt = [...attempts].sort((left, right) =>
+    right.answeredAt.localeCompare(left.answeredAt),
+  )[0];
+  const latestEntry = latestAttempt
+    ? entries.find((entry) => entry.question.id === latestAttempt.item.itemId)
+    : undefined;
+  const active = latestEntry
+    ? nodeProgress.find((progress) => progress.nodeId === latestEntry.roadmapNodeId)
+    : nodeProgress[0];
 
   if (!active) {
     throw new Error("No Algorithms roadmap nodes with questions are available.");
@@ -493,17 +403,6 @@ function getWeakAreaCandidateItemIds(
     }))
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .map(({ entry }) => entry.question.id);
-}
-
-function hasRepeatedCriticalMistake(attempts: readonly TrainingAttempt[]): boolean {
-  const misses = new Map<string, number>();
-
-  for (const attempt of attempts) {
-    if (getAttemptScore(attempt) >= 0.75) continue;
-    misses.set(attempt.item.itemId, (misses.get(attempt.item.itemId) ?? 0) + 1);
-  }
-
-  return [...misses.values()].some((count) => count >= 2);
 }
 
 function getRoadmapNodeOrder(

@@ -31,7 +31,13 @@ test("M2 Custom 10 at session end derives real item, option, and outcome identit
   const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
   assert.ok(reference, "Algorithms artifact must be bundled");
   const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
-  assert.equal(buildAlgorithmProgressFacts([], catalog.getItems()).activeRoadmapNode.id, manifest.session.roadmapNodeId);
+  assert.equal(buildAlgorithmProgressFacts({
+    attempts: [],
+    content: {
+      contentVersion: catalog.getContentVersion(),
+      items: catalog.getItems(),
+    },
+  }).activeRoadmapNode.id, manifest.session.roadmapNodeId);
   const plan = selectAlgorithmSessionPlan({
     contentCatalog: catalog,
     mode: manifest.session.modeId,

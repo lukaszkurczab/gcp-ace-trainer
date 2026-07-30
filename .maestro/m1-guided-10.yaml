@@ -1,5 +1,5 @@
-appId: com.lkurczab.gcpacetrainer
-name: Patternly M1 — Guided Practice 10 after each answer
+appId: com.lkurczab.patternly
+name: Patternly M1 — Custom Practice 10 after each answer
 tags:
   - runtime-auditability
   - m1
@@ -13,7 +13,7 @@ tags:
 - assertVisible:
     id: "patternly:practice:hub:root"
 - tapOn:
-    id: "patternly:practice:start-session"
+    id: "patternly:practice:open-setup"
 - assertVisible:
     id: "patternly:practice:setup:root"
 - tapOn:
@@ -25,7 +25,7 @@ tags:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-guided-practice:1:length:10:feedback-timing:after-each-answer"
+    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:after-each-answer"
 
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
@@ -221,11 +221,11 @@ tags:
     id: "patternly:session:continue:alg-complexity-amortized-010"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+      id: "patternly:summary:root:algorithms:algorithms-custom-practice:1"
     timeout: 30000
 - assertNotVisible:
     id: "patternly:session:question:alg-complexity-amortized-011"
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-guided-practice:1"
+    id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
 - assertVisible:
     id: "patternly:practice:hub:root"

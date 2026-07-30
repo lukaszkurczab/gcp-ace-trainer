@@ -1,15 +1,18 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, AppState, StyleSheet } from "react-native";
 
 import {
   abandonAlgorithmsSession,
   advanceAlgorithmsPracticeSession,
   completeAlgorithmsPracticeSession,
+  enterAlgorithmsPracticeForeground,
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
+  leaveAlgorithmsPracticeForeground,
   recoverAlgorithmsPracticeOperation,
   startAlgorithmsSession,
+  subscribeAlgorithmsPracticeProjectionRefresh,
   type AlgorithmsPracticeProjection,
   submitAlgorithmsPracticeResponse,
 } from "../../application/algorithms";
@@ -27,6 +30,7 @@ import { PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
   buildPracticeResponseControl,
   getPracticePrimaryAction,
+  resolvePracticeLocalResponse,
   type PracticeLocalResponse,
   type PracticeSurfacePhase,
 } from "./practiceSessionPresentation";
@@ -67,6 +71,10 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     setLocalResponse(null);
     setSubmissionError(null);
     void loadOrStartAlgorithmsPractice(route.params, algorithmsMode)
+      .then(async () => {
+        await enterAlgorithmsPracticeForeground();
+        return getAlgorithmsPracticeProjection();
+      })
       .then((projection) => {
         if (!live) return;
         setState({ kind: "session", projection });
@@ -77,8 +85,32 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
           ? { kind: "active_session_conflict", session: error.session }
           : { kind: "unavailable", reason: describePreparationFailure(error) });
       });
-    return () => { live = false; };
+    return () => {
+      live = false;
+      void leaveAlgorithmsPracticeForeground().catch(() => undefined);
+    };
   }, [algorithmsMode, route.params]);
+
+  useEffect(() => {
+    if (state?.kind !== "session") return;
+    const listener = AppState.addEventListener("change", (appState) => {
+      void (appState === "active" ? enterAlgorithmsPracticeForeground() : leaveAlgorithmsPracticeForeground())
+        .then(refresh)
+        .catch(() => undefined);
+    });
+    return () => listener.remove();
+  // refresh intentionally reads the latest canonical projection.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.kind]);
+
+  useEffect(() => {
+    if (state?.kind !== "session") return;
+    return subscribeAlgorithmsPracticeProjectionRefresh((event) => {
+      if (event.sessionId === state.projection.session.id) void refresh();
+    });
+  // refresh intentionally reads the latest canonical projection.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.kind, state?.kind === "session" ? state.projection.session.id : null]);
 
   useEffect(() => navigation.addListener("beforeRemove", (event) => {
     if (permitRouteExit.current || state?.kind !== "session") return;
@@ -87,16 +119,16 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }), [navigation, state]);
 
   if (!algorithmsMode) {
-    return <Screen><EmptyState title={t("Certification Practice unavailable")} description={t("Certification has no approved bundled artifact yet. Algorithms sessions remain available.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen edges={["top", "bottom"]}><EmptyState title={t("Certification Practice unavailable")} description={t("Certification has no approved bundled artifact yet. Algorithms sessions remain available.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
-    return <Screen><EmptyState title={t("Interview Simulation unavailable")} description={t("Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen edges={["top", "bottom"]}><EmptyState title={t("Interview Simulation unavailable")} description={t("Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (!state) return <PracticeSessionSurface exit={{ kind: "none" }} isFinalPosition={false} onAbandon={noop} onChoicePress={noop} onComplexityValuePress={noop} onConfirmLeave={noop} onDismissExit={noop} onOrderingMove={noop} onRequestLeave={noop} phase="preparing" />;
   if (state.kind === "active_session_conflict") {
     const activeModeLabel = isAlgorithmModeId(state.session.modeId) ? getAlgorithmMode(state.session.modeId).title : "another learning session";
     return (
-      <Screen style={styles.conflictScreen}>
+      <Screen edges={["top", "bottom"]} style={styles.conflictScreen}>
         <EmptyState
           title={t("Finish or leave the active session first")}
           description={`${t(activeModeLabel)} ${t("is active. Resume it, or explicitly abandon it before starting")} ${t(getAlgorithmMode(algorithmsMode).title)}.`}
@@ -108,7 +140,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
       </Screen>
     );
   }
-  if (state.kind === "unavailable") return <Screen><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+  if (state.kind === "unavailable") return <Screen edges={["top", "bottom"]}><EmptyState title={t("Practice session unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   const sessionState = state;
   const projection = sessionState.projection;
   const phase = toPracticeSurfacePhase(projection.operation.kind);
@@ -119,7 +151,8 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
     localResponse,
     renderer: projection.interaction.renderer,
   });
-  const primaryAction = getPracticePrimaryAction({ hasLocalResponse: localResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
+  const effectiveLocalResponse = resolvePracticeLocalResponse(localResponse, responseControl);
+  const primaryAction = getPracticePrimaryAction({ hasLocalResponse: effectiveLocalResponse !== null, isFinalPosition: projection.position.current === projection.position.total, phase });
 
   async function refresh() {
     const next = await getAlgorithmsPracticeProjection();
@@ -131,9 +164,9 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }
 
   async function submit() {
-    if (!localResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
+    if (!effectiveLocalResponse || (projection.operation.kind !== "unanswered" && projection.operation.kind !== "submit_journal_failed")) return;
     setSubmissionError(null);
-    try { await submitAlgorithmsPracticeResponse(localResponse); }
+    try { await submitAlgorithmsPracticeResponse(effectiveLocalResponse); }
     catch (error) { setSubmissionError(describePracticeSubmissionFailure(error)); }
     await refresh();
   }
@@ -183,9 +216,9 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   async function abandon() {
     setExit("none");
     try {
-      await abandonAlgorithmsSession();
+      const abandoned = await abandonAlgorithmsSession();
       permitRouteExit.current = true;
-      navigation.navigate(ROUTES.PRACTICE_HUB);
+      navigation.replace(ROUTES.ALGORITHMS_PRACTICE_SUMMARY, { sessionId: abandoned.id });
     } catch { await refresh(); }
   }
 
@@ -267,7 +300,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
         sessionId: projection.session.id,
         trackId: projection.session.trackId,
       }}
-      timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.session.activeForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.session.activeForegroundMs)}` }}
+      timer={{ accessibilityLabel: `${t("Active foreground time")} ${formatElapsed(projection.elapsedForegroundMs)}`, label: `${t("Active time")} ${formatElapsed(projection.elapsedForegroundMs)}` }}
     />
   );
 }

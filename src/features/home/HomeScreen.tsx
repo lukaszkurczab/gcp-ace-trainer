@@ -41,7 +41,7 @@ import { ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsTab } from "./tabs/SettingsTab";
 import type { ShellTab } from "./types";
-import { useThemedStyles } from "../../preferences";
+import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { feedbackTimingFromDurableSession } from "./resumeFeedbackTiming";
 
@@ -68,6 +68,7 @@ type HomeShellTab = Exclude<ShellTab, "practice">;
 
 export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
@@ -218,7 +219,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
         <AppShellHeader
-          subtitle={activeTrack.title}
           title="Patternly"
         />
         {activeTab === "home" ? (
@@ -228,6 +228,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             algorithmsDashboard={data.algorithmsDashboard}
             dashboardError={data.algorithmsDashboardError}
             onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
+            onChooseTopic={() => navigation.navigate(ROUTES.TOPIC_ROADMAP, {
+              trackId: activeTrack.id,
+            })}
             onRecommendationAction={(action) => { void handleRecommendationAction(action); }}
             onStartLearning={(topicId) => navigation.navigate(ROUTES.PRACTICE_HUB, { topicId })}
             trainingAttempts={data.trainingAttempts}

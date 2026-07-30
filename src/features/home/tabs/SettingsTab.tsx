@@ -5,7 +5,6 @@ import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
 import { spacing, typography, type AppColors } from "../../../theme";
-import { throwSettingsFeatureNotImplemented, type DeferredSettingsFeature } from "../settingsFeatureGate";
 
 type SettingsTabProps = {
   onOpenAppearance: () => void;
@@ -24,9 +23,6 @@ const copy = {
     data: "Your data",
     dataDetail: "View the local data contract for this app.",
     dataPrivacy: "Data & privacy",
-    feedback: "Send feedback",
-    feedbackDetail: "Report a problem or suggest an improvement.",
-    helpAccount: "Help & account",
     info: "These settings control how Patternly looks and sends reminders on this device.",
     language: "Language",
     languageDetail: "Choose the language used across Patternly.",
@@ -37,8 +33,6 @@ const copy = {
     preferences: "Preferences",
     storageDegraded: "Local data degraded",
     storageStatus: "Storage status",
-    subscription: "Subscription",
-    subscriptionDetail: "Manage your Patternly subscription.",
   },
   pl: {
     appearance: "Wygląd",
@@ -47,9 +41,6 @@ const copy = {
     data: "Twoje dane",
     dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
     dataPrivacy: "Dane i prywatność",
-    feedback: "Wyślij opinię",
-    feedbackDetail: "Zgłoś problem albo zaproponuj usprawnienie.",
-    helpAccount: "Pomoc i konto",
     info: "Te ustawienia kontrolują wygląd Patternly i przypomnienia na tym urządzeniu.",
     language: "Język",
     languageDetail: "Wybierz język używany w całym Patternly.",
@@ -60,8 +51,6 @@ const copy = {
     preferences: "Preferencje",
     storageDegraded: "Problem z danymi lokalnymi",
     storageStatus: "Stan danych",
-    subscription: "Subskrypcja",
-    subscriptionDetail: "Zarządzaj subskrypcją Patternly.",
   },
 } as const;
 
@@ -105,6 +94,7 @@ export function SettingsTab({
           detail={text.appearanceDetail}
           icon="grid"
           onPress={onOpenAppearance}
+          testID="settings-appearance"
           title={text.appearance}
           value={appearanceLabel(locale, appearance)}
         />
@@ -115,6 +105,7 @@ export function SettingsTab({
           detail={text.languageDetail}
           icon="settings"
           onPress={onOpenLanguage}
+          testID="settings-language"
           title={text.language}
           value={languageLabel(locale, language)}
         />
@@ -122,18 +113,14 @@ export function SettingsTab({
           detail={text.notificationsDetail}
           icon="rotate-ccw"
           onPress={onOpenNotifications}
+          testID="settings-notifications"
           title={text.notifications}
         />
       </SettingsGroup>
 
       <SettingsGroup title={text.dataPrivacy}>
-        <SettingsNavigationRow detail={text.dataDetail} icon="database" onPress={onOpenYourData} title={text.data} />
-        <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} title={text.legal} />
-      </SettingsGroup>
-
-      <SettingsGroup title={text.helpAccount}>
-        <DeferredSettingsRow detail={text.feedbackDetail} feature="feedback" icon="alert-triangle" title={text.feedback} />
-        <DeferredSettingsRow detail={text.subscriptionDetail} feature="subscription" icon="cloud" title={text.subscription} />
+        <SettingsNavigationRow detail={text.dataDetail} icon="database" onPress={onOpenYourData} testID="settings-your-data" title={text.data} />
+        <SettingsNavigationRow detail={text.legalDetail} icon="shield-check" onPress={onOpenLegalInformation} testID="settings-legal-information" title={text.legal} />
       </SettingsGroup>
     </>
   );
@@ -155,10 +142,11 @@ function languageLabel(locale: AppLocale, language: LanguagePreference): string 
   return labels[locale][language];
 }
 
-function SettingsNavigationRow({ detail, icon, onPress, title, value }: Readonly<{
+function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: Readonly<{
   detail: string;
   icon: IconName;
   onPress: () => void;
+  testID: string;
   title: string;
   value?: string;
 }>) {
@@ -169,27 +157,9 @@ function SettingsNavigationRow({ detail, icon, onPress, title, value }: Readonly
       detail={detail}
       leading={<IconTile name={icon} tone="primary" />}
       onPress={onPress}
+      testID={testID}
       title={title}
       trailing={<View style={styles.preferenceMeta}>{value ? <Text style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.textMuted} name="chevron-right" size={18} /></View>}
-      variant="grouped"
-    />
-  );
-}
-
-function DeferredSettingsRow({ detail, feature, icon, title }: Readonly<{
-  detail: string;
-  feature: DeferredSettingsFeature;
-  icon: IconName;
-  title: string;
-}>) {
-  const { colors } = useAppPreferences();
-  return (
-    <ListRow
-      detail={detail}
-      leading={<IconTile name={icon} tone="muted" />}
-      onPress={() => throwSettingsFeatureNotImplemented(feature)}
-      title={title}
-      trailing={<Icon color={colors.textMuted} name="chevron-right" size={18} />}
       variant="grouped"
     />
   );

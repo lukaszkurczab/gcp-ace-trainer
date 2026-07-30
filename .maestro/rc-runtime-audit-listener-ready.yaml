@@ -1,13 +1,38 @@
-appId: com.lkurczab.gcpacetrainer
+appId: com.lkurczab.patternly
 name: Patternly RC — runtime audit listener ready
 tags:
   - rc-evidence
 ---
 - runFlow:
     when:
+      visible: "Otwórz"
+    commands:
+      - tapOn: "Otwórz"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- runFlow:
+    when:
+      visible: "http://localhost:8081"
+    commands:
+      - tapOn: "http://localhost:8081"
+- runFlow:
+    when:
+      visible: "http://127.0.0.1:8081"
+    commands:
+      - tapOn: "http://127.0.0.1:8081"
+- runFlow:
+    when:
       visible: "Continue"
     commands:
       - tapOn: "Continue"
+- runFlow:
+    when:
+      visible: "Close"
+    commands:
+      - tapOn: "Close"
 - extendedWaitUntil:
     visible:
       id: "patternly:content:audit-command-listener:ready"

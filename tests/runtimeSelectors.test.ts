@@ -39,12 +39,35 @@ test("session metadata selectors expose validated lifecycle values without learn
   assert.equal(isRuntimeSelectorId(configuration), true);
 });
 
+test("complexity selectors encode authored notation without weakening the selector grammar", () => {
+  const selector = runtimeSelectors.session.complexityValue(
+    "alg-hms-complement-expected-cost",
+    "extra_space",
+    "O(n)",
+  );
+
+  assert.equal(
+    selector,
+    "patternly:session:complexity-value:alg-hms-complement-expected-cost:extra_space:v-4f_28_6e_29",
+  );
+  assert.equal(isRuntimeSelectorId(selector), true);
+  assert.notEqual(
+    runtimeSelectors.session.complexityValue("item-1", "time", "O(N)"),
+    runtimeSelectors.session.complexityValue("item-1", "time", "O(n)"),
+  );
+  assert.throws(
+    () => runtimeSelectors.session.complexityValue("item-1", "time", ""),
+    /complexity value cannot be empty/,
+  );
+});
+
 test("runtime selectors keep distinct runtime entities distinct", () => {
   const selectors = new Set([
     runtimeSelectors.home.trackCard("algorithms"),
     runtimeSelectors.content.ready(),
     runtimeSelectors.content.readyAfterAuditReset(),
     runtimeSelectors.practice.modeCard("algorithms-guided-practice"),
+    runtimeSelectors.practice.declaredScope("hash_map_and_set"),
     runtimeSelectors.practice.openSetup(),
     runtimeSelectors.practice.customEntry(),
     runtimeSelectors.practice.customSetupTitle(),
@@ -54,6 +77,7 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.practice.feedbackTiming("atSessionEnd"),
     runtimeSelectors.session.submit("alg-complexity-amortized-001"),
     runtimeSelectors.session.continue("alg-complexity-amortized-001"),
+    runtimeSelectors.session.complexityValue("alg-complexity-amortized-001", "time", "O(n)"),
     runtimeSelectors.session.leaveAndResume("algorithms:algorithms-guided-practice:1"),
     runtimeSelectors.session.counter("algorithms:algorithms-guided-practice:1", 1, 10),
     runtimeSelectors.session.configuration("algorithms:algorithms-guided-practice:1", 10, "afterEachAnswer"),
@@ -67,7 +91,7 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.simulation.navigator("algorithms:algorithms-interview-simulation:2:occurrence:1"),
   ]);
 
-  assert.equal(selectors.size, 24);
+  assert.equal(selectors.size, 26);
 });
 
 test("runtime selector factories reject values that cannot be represented in the contract", () => {

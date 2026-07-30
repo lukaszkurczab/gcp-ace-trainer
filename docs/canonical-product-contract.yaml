@@ -10,6 +10,18 @@ requirements:
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: ALGORITHMS-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
+  - id: ALGORITHMS-INDEPENDENT-PRACTICE-001
+    statement: Independent Practice uses one explicitly selected declared interleaved scope, defaults to ten items, supports only ten or twenty items, exposes feedback after each durable answer, and never invents a forty-item session or substitute scope.
+  - id: ALGORITHMS-PROGRESS-EVIDENCE-001
+    statement: Algorithms Progress keeps every supported topic available, separates an explained recommendation from access, and presents only recorded current-content practice evidence without mastery, retention, readiness, locks, or an invented zero score.
+  - id: TRACK-PRESENTATION-001
+    statement: Learner-facing track presentation separates the family category from the concrete registered track, uses Google Cloud Associate Cloud Engineer as the active Certification track, and fails explicitly for unknown or unsupported registrations instead of substituting Algorithms or Certification.
+  - id: RESEARCH-BUILD-SETTINGS-001
+    statement: The moderated-research build exposes only the five complete Settings destinations and does not render Feedback, Subscription, an account group, or another action that lacks an end-to-end implementation.
+  - id: APP-IDENTITY-001
+    statement: The application has one Patternly build identity across npm, Expo, iOS, Android, dev-client links, runtime audit links, RC runners, and Maestro while preserving the canonical versioned local-learning data keys.
+  - id: USER-TESTING-CORE-JOURNEY-001
+    statement: The moderated-research preflight runs the exact ten-item Independent Practice sample through every interaction type, verifies a durable leave-and-resume boundary, completes the canonical summary, and observes recorded Progress evidence without substituting content or state.
   - id: ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001
     statement: Custom Practice with afterEachAnswer journals and materializes each submitted response before exposing that item's feedback, advances only after the durable response, and finalizes one canonical session result.
   - id: ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001
@@ -101,6 +113,30 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-001
       requirementIds: [ALGORITHMS-CUSTOM-PRACTICE-001]
+    - id: canonical-independent-practice-contract
+      testPath: tests/practiceSessionConfig.test.ts
+      testName: Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope
+      requirementIds: [ALGORITHMS-INDEPENDENT-PRACTICE-001]
+    - id: algorithms-progress-evidence-contract
+      testPath: tests/homeProgressProjections.test.ts
+      testName: Algorithms Progress keeps due review evidence honest and recommendations overridable
+      requirementIds: [ALGORITHMS-PROGRESS-EVIDENCE-001]
+    - id: track-presentation-contract
+      testPath: tests/trackPresentation.test.ts
+      testName: track presentation separates the Certification category from the concrete Google Cloud track
+      requirementIds: [TRACK-PRESENTATION-001]
+    - id: research-build-settings-contract
+      testPath: tests/settingsPresentation.test.ts
+      testName: Settings exposes only its five working navigation actions
+      requirementIds: [RESEARCH-BUILD-SETTINGS-001]
+    - id: patternly-build-identity-contract
+      testPath: tests/buildIdentity.test.ts
+      testName: Expo and npm expose one canonical Patternly identity
+      requirementIds: [APP-IDENTITY-001]
+    - id: user-testing-core-journey-contract
+      testPath: tests/userTestingCoreJourneyMaestro.test.ts
+      testName: user-testing core journey executes the exact representative session, resume, summary, and progress evidence
+      requirementIds: [USER-TESTING-CORE-JOURNEY-001]
     - id: custom-practice-immediate-feedback-flow
       testPath: tests/customPracticeImmediateFeedback.test.ts
       testName: Custom Practice afterEachAnswer journals each submitted response, exposes immediate feedback, advances, and finalizes one summary
@@ -194,19 +230,19 @@ requirementTestCoverage:
       testName: Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan
       requirementIds: [SIMULATION-FULL-LIFECYCLE-001]
     - id: algorithms-simulation-timer-ui-refresh
-      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testPath: tests/algorithmsForegroundTimerFacade.test.ts
       testName: controlled timer refreshes consecutive visible labels without a durable write each second
       requirementIds: [SIMULATION-TIMER-UI-REFRESH-001]
     - id: algorithms-simulation-timer-checkpoint-interval
-      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testPath: tests/algorithmsForegroundTimerFacade.test.ts
       testName: periodic checkpoint uses the declared durable interval with an exact write count
       requirementIds: [SIMULATION-TIMER-CHECKPOINT-INTERVAL-001]
     - id: algorithms-simulation-timer-background-checkpoint
-      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testPath: tests/algorithmsForegroundTimerFacade.test.ts
       testName: AppState foreground transitions and force-close recovery never count background or closed-app time
       requirementIds: [SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001]
     - id: algorithms-simulation-timer-finalization-checkpoint
-      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testPath: tests/algorithmsForegroundTimerFacade.test.ts
       testName: manual finalization checkpoints the active foreground segment before it freezes the result
       requirementIds: [SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001]
     - id: algorithms-simulation-timer-mutation-serialization
@@ -214,7 +250,7 @@ requirementTestCoverage:
       testName: concurrent timer checkpoint and save-and-continue retain the draft revision and next position
       requirementIds: [SIMULATION-TIMER-MUTATION-SERIALIZATION-001]
     - id: algorithms-simulation-timer-force-close-boundary
-      testPath: tests/algorithmsSimulationTimerFacade.test.ts
+      testPath: tests/algorithmsForegroundTimerFacade.test.ts
       testName: force-close immediately before and after the checkpoint boundary resumes within the declared drift
       requirementIds: [SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001]
     - id: simulation-active-screen-fidelity
@@ -423,7 +459,15 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: focus-lab-core-shell-001
+      screenStateTarget: quiet-layered-core-journey-and-shared-shell
+      patternPath: docs/designs/product-direction-options/DESIGN.md
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
+    - sourcePathPrefix: src/features/algorithms/session/
+      designReferenceId: focus-lab-core-shell-001
     - sourcePathPrefix: src/features/simulation/
       designReferenceId: algorithms-active-simulation-screen
     - sourcePathPrefix: src/features/simulation/navigator/
@@ -434,6 +478,16 @@ designReferences:
       designReferenceId: certification-exam-active-screen
     - sourcePathPrefix: src/features/practice/
       designReferenceId: shared-practice-flow-001
+    - sourcePathPrefix: src/components/
+      designReferenceId: focus-lab-core-shell-001
+    - sourcePathPrefix: src/features/home/
+      designReferenceId: focus-lab-core-shell-001
+    - sourcePathPrefix: src/features/review/
+      designReferenceId: shared-practice-flow-001
+    - sourcePathPrefix: src/navigation/
+      designReferenceId: focus-lab-core-shell-001
+    - sourcePathPrefix: src/preferences/
+      designReferenceId: focus-lab-core-shell-001
 simulationOperationStateCtas:
   version: 1
   policies:
@@ -548,8 +602,8 @@ algorithms:
     - id: algorithms-independent-practice
       label: Independent Practice
       lengths:
-        default: 20
-        supported: [10, 20, 40]
+        default: 10
+        supported: [10, 20]
       scope: declaredInterleavedScope
       shortening: blueprintControlled
       feedback:

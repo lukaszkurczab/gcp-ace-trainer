@@ -10,14 +10,12 @@ import type { ContentItemRef, TrainingSession } from "../../domain";
 import {
   buildAlgorithmInteractionViewModel,
   composeCommittedAlgorithmPracticeFeedback,
-  getAlgorithmSessionNodeById,
   getAlgorithmsInterviewSimulationRemainingMs,
   mutateAlgorithmsInterviewSimulationDraft,
 } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
-import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
 import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
-import { getAlgorithmsSimulationTimerFacade, type AlgorithmsSimulationTimeProjection, type AlgorithmsSimulationTimerEvent } from "./AlgorithmsSimulationTimerFacade";
+import { getAlgorithmsForegroundTimerFacade, type AlgorithmsForegroundTimeProjection, type AlgorithmsForegroundTimerEvent } from "./AlgorithmsForegroundTimerFacade";
 import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
@@ -35,6 +33,7 @@ export type AlgorithmsPracticeProjection = Readonly<{
   roadmapNodeId: string;
   prompt: string;
   constraints: readonly string[];
+  elapsedForegroundMs: number;
   interaction: ReturnType<typeof buildAlgorithmInteractionViewModel>;
   feedback: Readonly<{
     correctness: "correct" | "partial" | "incorrect";
@@ -66,11 +65,13 @@ export type AlgorithmsSimulationScreenProjection =
   | Readonly<{ kind: "unavailable"; operation: Extract<SimulationDurableOperationState, { error: unknown }> }>;
 
 export type AlgorithmsSessionResultProjection = Readonly<{
+  completionKind: "abandoned" | "completed";
   sessionId: string;
   totalOccurrences: number;
   answeredOccurrenceIds: readonly string[];
   unansweredOccurrenceIds: readonly string[];
   completedAt: string;
+  elapsedForegroundMs: number;
   configuration: Readonly<{
     actualLength: number;
     feedbackTiming: "afterEachAnswer" | "atSessionEnd";
@@ -95,18 +96,6 @@ export type AlgorithmsInterviewSimulationEntry = Readonly<{
   requestedLength: 40;
 }>;
 
-export type AlgorithmsDeclaredScopeMode =
-  | typeof ALGORITHM_MODE_IDS.recognizePatterns
-  | typeof ALGORITHM_MODE_IDS.contrastPractice
-  | typeof ALGORITHM_MODE_IDS.independentPractice;
-
-export type AlgorithmsDeclaredScopeOption = Readonly<{
-  detail: string;
-  scope: AlgorithmSelectionScope;
-  title: string;
-  topicId: string;
-}>;
-
 type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "sessionId"> & Readonly<{
   modeId: AlgorithmModeId;
   source?: string;
@@ -121,9 +110,7 @@ export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput)
     source: input.source,
     request: { ...input, sessionId: runtime.sessionIds.next(input.modeId) },
   });
-  if (prepared.session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
-    await getAlgorithmsSimulationTimerFacade().initialize(prepared.session);
-  }
+  await getAlgorithmsForegroundTimerFacade().initialize(prepared.session);
   return prepared;
 }
 
@@ -138,38 +125,6 @@ export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimu
     throw new Error("Algorithms Interview Simulation requires exactly one validated declared profile.");
   }
   return Object.freeze({ trackId: "algorithms", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: profiles[0].profileId, requestedLength: 40 });
-}
-
-/** Application-owned declared-scope read. Presentation receives choices, never the content catalog. */
-export function getAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: AlgorithmsDeclaredScopeMode; targetMentalUnitId?: string }>): readonly AlgorithmsDeclaredScopeOption[] {
-  const availability = getBundledContentAvailability("algorithms");
-  if (availability.kind !== "available" || !availability.declaredModes.includes(input.modeId)) throw new Error("Algorithms practice content is unavailable.");
-  const catalog = getAlgorithmContentCatalog();
-  const option = (itemIds: readonly string[], scope: AlgorithmSelectionScope, detail: string): AlgorithmsDeclaredScopeOption => {
-    const topicIds = [...new Set(itemIds.map((itemId) => catalog.getItemById(itemId).taxonomy.roadmapNodeId))];
-    if (topicIds.length !== 1) throw new Error("A declared Algorithms practice scope must belong to exactly one roadmap topic.");
-    const topicId = topicIds[0]!;
-    return Object.freeze({ detail, scope: Object.freeze(scope), title: getAlgorithmSessionNodeById(topicId).label, topicId });
-  };
-  if (input.modeId === ALGORITHM_MODE_IDS.recognizePatterns) {
-    return Object.freeze(catalog.bank.recognitionSets
-      .filter((set) => !input.targetMentalUnitId || [...(set.taxonomyScope.mentalUnitIds ?? []), ...(set.taxonomyScope.primaryMentalUnitIds ?? [])].includes(input.targetMentalUnitId))
-      .map((set) => option(set.itemIds, { recognitionSetId: set.setId }, "Identify the pattern from its declared signals and constraints.")));
-  }
-  if (input.modeId === ALGORITHM_MODE_IDS.contrastPractice) {
-    const scopes = new Map<string, Set<string>>();
-    for (const set of catalog.bank.contrastSets.filter((entry) => !input.targetMentalUnitId || entry.primaryMentalUnitId === input.targetMentalUnitId || entry.contrastedMentalUnitIds.includes(input.targetMentalUnitId))) {
-      const topicIds = new Set(set.itemIds.map((itemId) => catalog.getItemById(itemId).taxonomy.roadmapNodeId));
-      if (topicIds.size !== 1) throw new Error("A declared Algorithms contrast set must belong to exactly one roadmap topic.");
-      const topicId = [...topicIds][0]!;
-      const itemIds = scopes.get(topicId) ?? new Set<string>();
-      set.itemIds.forEach((itemId) => itemIds.add(itemId));
-      scopes.set(topicId, itemIds);
-    }
-    return Object.freeze([...scopes.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([topicId, itemIds]) => option([...itemIds].sort(), { contrastRoadmapNodeId: topicId }, "Compare the declared decision rules, counterexamples, and transfer boundaries for this topic.")));
-  }
-  return Object.freeze(catalog.bank.interleavedScopes
-    .map((scope) => option(scope.itemIds, { interleavedScopeId: scope.scopeId }, "Interleave the declared mental units without hints or reinsert.")));
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {
@@ -187,7 +142,10 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   const feedback = attempt && feedbackIsAvailableDuringPractice(session)
     ? composeCommittedAlgorithmPracticeFeedback({ question, attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse> })
     : null;
-  const operation = await lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt));
+  const [operation, time] = await Promise.all([
+    lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
+    getAlgorithmsForegroundTimerFacade().projection(session),
+  ]);
   return Object.freeze({
     kind: "practice",
     operation,
@@ -197,13 +155,15 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
     roadmapNodeId: question.taxonomy.roadmapNodeId,
     prompt: question.prompt,
     constraints: Object.freeze([...(question.constraints ?? [])]),
-    interaction: buildAlgorithmInteractionViewModel(question, response),
+    elapsedForegroundMs: time.elapsedForegroundMs,
+    interaction: buildAlgorithmInteractionViewModel(question, response, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     feedback,
     response: response ? Object.freeze({ source: materializedAttempt ? "materialized" as const : "committed" as const, value: response }) : null,
   });
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {
+  await getAlgorithmsForegroundTimerFacade().checkpointForResponseSave(await requireAlgorithmsSession());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
 
@@ -217,6 +177,7 @@ export async function advanceAlgorithmsPracticeSession(): Promise<TrainingSessio
 }
 
 export async function completeAlgorithmsPracticeSession(): Promise<AlgorithmsSessionResultProjection> {
+  await getAlgorithmsForegroundTimerFacade().checkpointForFinalization(await requireAlgorithmsSession());
   const finalized = await getTrainingLifecycleUseCases().completeActivePracticeSession();
   return getAlgorithmsPracticeResultProjection(finalized.session.id);
 }
@@ -231,7 +192,8 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
-  const time = await getAlgorithmsSimulationTimerFacade().projection(session);
+  const time = await getAlgorithmsForegroundTimerFacade().projection(session);
+  if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
   return Object.freeze({
     kind: "simulation",
@@ -246,7 +208,7 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
     }))),
     item: occurrence.item,
     prompt: question.prompt,
-    interaction: buildAlgorithmInteractionViewModel(question, (draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null) as AlgorithmResponse | null),
+    interaction: buildAlgorithmInteractionViewModel(question, (draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null) as AlgorithmResponse | null, session.optionOrderByOccurrence[occurrence.occurrenceId] ?? []),
     durableDraftRevision: draft.revision,
     elapsedForegroundMs: time.elapsedForegroundMs,
     remainingForegroundMs: time.remainingForegroundMs,
@@ -302,7 +264,7 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
     draft,
     updatedAt: getAlgorithmsSessionRuntimePorts().wallClock.now(),
   });
-  await getAlgorithmsSimulationTimerFacade().checkpointForDraftSave(session);
+  await getAlgorithmsForegroundTimerFacade().checkpointForResponseSave(session);
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
 }
 
@@ -389,26 +351,42 @@ export async function recoverAlgorithmsSimulationOperation(): Promise<void> {
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
-  await getAlgorithmsSimulationTimerFacade().finalizeManually(session);
+  await getAlgorithmsForegroundTimerFacade().finalizeCountdownManually(session);
 }
 
 export async function abandonAlgorithmsSession(): Promise<TrainingSession> {
   const session = await requireAlgorithmsSession();
-  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) await getAlgorithmsSimulationTimerFacade().leaveForeground(session);
+  await getAlgorithmsForegroundTimerFacade().leaveForeground(session);
   return getTrainingLifecycleUseCases().abandonActiveSession();
 }
 
-export async function enterAlgorithmsSimulationForeground(): Promise<AlgorithmsSimulationTimeProjection> {
-  return getAlgorithmsSimulationTimerFacade().enterForeground(await requireAlgorithmsSession());
+export async function enterAlgorithmsSimulationForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+  return getAlgorithmsForegroundTimerFacade().enterForeground(await requireAlgorithmsSession());
 }
 
-export async function leaveAlgorithmsSimulationForeground(): Promise<AlgorithmsSimulationTimeProjection> {
-  return getAlgorithmsSimulationTimerFacade().leaveForeground(await requireAlgorithmsSession());
+export async function leaveAlgorithmsSimulationForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+  return getAlgorithmsForegroundTimerFacade().leaveForeground(await requireAlgorithmsSession());
 }
 
 /** Presentation receives application-owned projection refreshes; it never runs a countdown. */
-export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: AlgorithmsSimulationTimerEvent) => void): () => void {
-  return getAlgorithmsSimulationTimerFacade().subscribe(listener);
+export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: AlgorithmsForegroundTimerEvent) => void): () => void {
+  return getAlgorithmsForegroundTimerFacade().subscribe(listener);
+}
+
+export async function enterAlgorithmsPracticeForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Interview Simulation must use its simulation foreground boundary.");
+  return getAlgorithmsForegroundTimerFacade().enterForeground(session);
+}
+
+export async function leaveAlgorithmsPracticeForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+  const session = await requireAlgorithmsSession();
+  if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Interview Simulation must use its simulation foreground boundary.");
+  return getAlgorithmsForegroundTimerFacade().leaveForeground(session);
+}
+
+export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: AlgorithmsForegroundTimerEvent) => void): () => void {
+  return getAlgorithmsForegroundTimerFacade().subscribe(listener);
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
@@ -424,11 +402,13 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
   }
   const feedbackTiming = feedbackTimingFromSession(session);
   return Object.freeze({
+    completionKind: "completed",
     sessionId: result.sessionId,
     totalOccurrences: result.totalOccurrences,
     answeredOccurrenceIds: Object.freeze([...result.answeredOccurrenceIds]),
     unansweredOccurrenceIds: Object.freeze([...result.unansweredOccurrenceIds]),
     completedAt: result.completedAt,
+    elapsedForegroundMs: session.activeForegroundMs,
     configuration: Object.freeze({
       actualLength: session.actualLength,
       feedbackTiming,
@@ -438,6 +418,36 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       ? completedFeedbackItems(session, attempts.value)
       : Object.freeze([]),
     score: resultScore(result.evidence.details),
+  });
+}
+
+export async function getAlgorithmsPracticeSummaryProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  const session = await lifecycle.loadSessionRecord(sessionId);
+  if (session.status === "completed") return getAlgorithmsPracticeResultProjection(sessionId);
+  if (session.status !== "abandoned" || session.trackId !== "algorithms" || !session.completedAt || session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
+    throw new Error("Only a completed or explicitly ended Algorithms practice session has a summary.");
+  }
+  const attempts = (await loadTrainingAttempts()).value.filter((attempt) => attempt.sessionId === session.id);
+  const answeredOccurrenceIds = session.itemOrder
+    .filter((occurrence) => attempts.some((attempt) => attempt.occurrenceId === occurrence.occurrenceId))
+    .map((occurrence) => occurrence.occurrenceId);
+  const answered = new Set(answeredOccurrenceIds);
+  return Object.freeze({
+    completionKind: "abandoned",
+    sessionId: session.id,
+    totalOccurrences: session.actualLength,
+    answeredOccurrenceIds: Object.freeze(answeredOccurrenceIds),
+    unansweredOccurrenceIds: Object.freeze(session.itemOrder.filter((occurrence) => !answered.has(occurrence.occurrenceId)).map((occurrence) => occurrence.occurrenceId)),
+    completedAt: session.completedAt,
+    elapsedForegroundMs: session.activeForegroundMs,
+    configuration: Object.freeze({
+      actualLength: session.actualLength,
+      feedbackTiming: feedbackTimingFromSession(session),
+      requestedLength: session.requestedLength,
+    }),
+    feedbackItems: Object.freeze([]),
+    score: null,
   });
 }
 

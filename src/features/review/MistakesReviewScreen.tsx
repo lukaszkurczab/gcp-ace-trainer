@@ -17,6 +17,7 @@ import {
   type ReviewQueueRow,
   type ReviewQueueScreenModel,
 } from "./reviewQueueModel";
+import { formatReviewTaxonomyLabel } from "./reviewQueuePresentation";
 import { loadTrackReviewQueueViewModel } from "../../application/reviewQueueQueries";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
@@ -71,7 +72,7 @@ export function MistakesReviewScreen() {
       <Card>
         <SectionHeader
           title={t("Review queue")}
-          subtitle={model ? `${t(model.trackTitle)} — ${t("items scheduled from local practice.")}` : t("Items scheduled from local practice.")}
+          subtitle={model ? `${t(model.trackTitle)} — ${t("Items scheduled from your practice.")}` : t("Items scheduled from your practice.")}
         />
         {model?.warning ? (
           <View style={styles.warningBanner}>
@@ -109,7 +110,7 @@ export function MistakesReviewScreen() {
           />
           {visibleRows.map((row) => (
             <ListRow
-              detail={row.taxonomyLabel}
+              detail={formatReviewTaxonomyLabel(row.taxonomyLabel, t)}
               key={row.id}
               meta={formatDueAt(row.dueAt, locale)}
               onPress={() =>
@@ -149,7 +150,10 @@ function ReviewQueueDetail({ row }: ReviewQueueDetailProps) {
   const { locale, t } = useAppPreferences();
   return (
     <Card>
-      <SectionHeader title={t("Review item")} subtitle={t(row.taxonomyLabel)} />
+      <SectionHeader
+        title={t("Review item")}
+        subtitle={formatReviewTaxonomyLabel(row.taxonomyLabel, t)}
+      />
       <View style={styles.badgeRow}>
         <Badge label={t(formatStatus(row.status))} tone={getStatusTone(row.status)} />
       </View>

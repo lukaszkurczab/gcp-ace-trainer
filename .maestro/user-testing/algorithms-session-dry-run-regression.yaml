@@ -1,0 +1,49 @@
+appId: com.lkurczab.patternly
+name: Patternly — Algorithms session dry-run regression
+tags:
+  - user-testing
+  - algorithms
+  - session-regression
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 10000
+- assertVisible:
+    id: "patternly:session:mode:algorithms-guided-practice"
+- assertVisible:
+    id: "patternly:session:configuration:algorithms:algorithms-guided-practice:1:length:20:feedback-timing:after-each-answer"
+- assertVisible:
+    id: "patternly:session:timer:algorithms:algorithms-guided-practice:1"
+- extendedWaitUntil:
+    visible: "Active foreground time 00:0[1-9]"
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+- assertVisible: "Pause or end this session?"
+- tapOn:
+    id: "patternly:session:abandon:algorithms:algorithms-guided-practice:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+    timeout: 10000
+- assertVisible: "Partial summary"
+- assertVisible: "0 answered · 20 unanswered"
+- assertVisible: "Score is shown only after a completed session."

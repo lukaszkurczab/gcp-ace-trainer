@@ -1,0 +1,40 @@
+appId: com.lkurczab.patternly
+name: Patternly screenshot setup — Algorithms
+tags:
+  - screenshot
+  - uiux-evidence
+---
+- runFlow:
+    when:
+      visible:
+        id: "BackButton"
+    commands:
+      - tapOn:
+          point: "15%,10%"
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar-home"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:change-track"
+- extendedWaitUntil:
+    visible: "Choose a track"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:algorithms"
+    direction: DOWN
+    centerElement: false
+    visibilityPercentage: 10
+- tapOn:
+    id: "patternly:home:select-track:algorithms"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:change-track"
+    timeout: 30000

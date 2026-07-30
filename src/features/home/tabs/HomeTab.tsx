@@ -1,14 +1,6 @@
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from "react-native";
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import {
-  Badge,
-  Button,
-  Card,
-  Icon,
-  IconTile,
-  ListRow,
-  SectionHeader,
-} from "../../../components";
+import { Button, Card, Icon, IconTile } from "../../../components";
 import type { TrackDisplay } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
 import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
@@ -18,6 +10,10 @@ import { buildHomeTabModel } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
+import {
+  formatPracticeTopicDetail,
+  formatPracticeTopicTitle,
+} from "../../practice/practiceFlowPresentation";
 
 
 type HomeTabProps = {
@@ -26,6 +22,7 @@ type HomeTabProps = {
   algorithmsDashboard: AlgorithmsDashboard | null;
   dashboardError: string | null;
   onChangeTrack: () => void;
+  onChooseTopic: () => void;
   onRecommendationAction: (action: AlgorithmsRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
   trainingAttempts: readonly TrainingAttempt[];
@@ -37,178 +34,218 @@ export function HomeTab({
   algorithmsDashboard,
   dashboardError,
   onChangeTrack,
+  onChooseTopic,
   onRecommendationAction,
   onStartLearning,
   trainingAttempts,
 }: HomeTabProps) {
   const styles = useThemedStyles(createStyles);
   const { colors: palette, t } = useAppPreferences();
+  const { fontScale } = useWindowDimensions();
+  const largeText = fontScale >= 1.3;
   const model = buildHomeTabModel({ activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
+  const recommendation = model.recommendations[0];
+  const decisionTitle = recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
+  const decisionDetail = recommendation
+    ? t(recommendation.unavailableReason ?? recommendation.detail)
+    : formatPracticeTopicDetail(model.heroSubtitle, t);
+  const decisionLabel = recommendation?.primaryLabel ?? model.primaryLabel;
+  const decisionIcon = recommendation?.icon ?? (activeTrack.id === "algorithms" ? "route" : "cloud");
+  const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
+  const decisionEnabled = recommendation?.enabled ?? true;
 
   return (
     <>
-      <Card style={styles.focusStrip}>
-        <View style={styles.focusCopy}>
-          <Text style={styles.eyebrow}>{t("Current track")}</Text>
-          <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>{t(model.focusTitle)}</Text>
-        </View>
+      <View style={styles.pageIntro}>
+        <Text style={styles.pageTitle}>{t("Your next practice")}</Text>
         <Pressable
           accessibilityRole="button"
           onPress={onChangeTrack}
-          style={({ pressed }) => [styles.changeFocusButton, pressed ? styles.pressed : null]}
+          style={({ pressed }) => [
+            styles.trackContext,
+            largeText ? styles.trackContextLargeText : null,
+            pressed ? styles.pressed : null,
+          ]}
           testID={runtimeSelectors.home.changeTrack()}
         >
-          <Text style={styles.changeFocusText}>{t("Change track")}</Text>
+          <View style={styles.trackContextCopy}>
+            <View style={styles.trackDot} />
+            <View style={styles.trackLabels}>
+              <Text style={styles.eyebrow}>{t("Current track")}</Text>
+              <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
+                {t(model.focusTitle)}
+              </Text>
+            </View>
+          </View>
+          <Icon color={palette.accentPurple} name="chevron-right" size={18} />
+        </Pressable>
+      </View>
+
+      <Card variant="layered" style={styles.decisionCard}>
+        <Text style={styles.heroEyebrow}>{t(recommendation?.label ?? "Recommended for you")}</Text>
+        <View
+          style={[styles.decisionHeading, largeText ? styles.decisionHeadingLargeText : null]}
+          testID={recommendation?.action.kind === "resume_active_session"
+            ? runtimeSelectors.resume.card(recommendation.action.sessionId)
+            : undefined}
+        >
+          <IconTile name={decisionIcon} size={48} tone={decisionTone} />
+          <Text
+            style={styles.decisionTitle}
+            testID={recommendation?.action.kind === "resume_active_session"
+              ? runtimeSelectors.resume.title(recommendation.action.sessionId)
+              : undefined}
+          >
+            {t(decisionTitle)}
+          </Text>
+        </View>
+        <View style={styles.divider} />
+        <Text
+          style={styles.decisionDetail}
+          testID={recommendation?.action.kind === "resume_active_session"
+            ? runtimeSelectors.resume.status(recommendation.action.sessionId)
+            : undefined}
+        >
+          {decisionDetail}
+        </Text>
+        <Button
+          disabled={!decisionEnabled}
+          onPress={() => {
+            if (recommendation) {
+              onRecommendationAction(recommendation.action);
+              return;
+            }
+            onStartLearning(model.topicId);
+          }}
+          testID={recommendation?.action.kind === "resume_active_session"
+            ? runtimeSelectors.resume.continue(recommendation.action.sessionId)
+            : undefined}
+        >
+          {t(decisionLabel)}
+        </Button>
+        <View style={styles.alternativeDivider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.orLabel}>{t("or")}</Text>
+          <View style={styles.dividerLine} />
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onChooseTopic}
+          style={({ pressed }) => [styles.secondaryAction, pressed ? styles.pressed : null]}
+        >
+          <Text style={styles.secondaryActionText}>{t("Choose another topic")}</Text>
           <Icon color={palette.accentPurple} name="chevron-right" size={18} />
         </Pressable>
       </Card>
-
-      <Card variant="tonal" style={styles.hero}>
-        <Text style={styles.heroEyebrow}>{t(model.heroEyebrow)}</Text>
-        <SectionHeader
-          title={t(model.heroTitle)}
-          subtitle={t(model.heroSubtitle)}
-          tight
-        />
-        <Button onPress={() => onStartLearning(model.topicId)}>
-          {t(model.primaryLabel)}
-        </Button>
-      </Card>
-
-      {model.recommendations.length > 0 ? (
-        <View style={styles.section}>
-          <SectionHeader title={t("Recommended today")} tight />
-          {model.recommendations.map((item, index) => (
-            item.action.kind === "resume_active_session" ? (
-              <ResumeRecommendation
-                action={item.action}
-                detail={t(item.detail)}
-                key={item.action.sessionId}
-                label={t(item.label)}
-                onContinue={onRecommendationAction}
-                style={index === 0 ? styles.recommendedPrimary : undefined}
-                title={t(item.title)}
-              />
-            ) : (
-              <ListRow
-                detail={t(item.unavailableReason ?? item.detail)}
-                key={item.title}
-                leading={<IconTile name={item.icon} tone={item.enabled ? item.tone : "muted"} />}
-                onPress={item.enabled ? () => onRecommendationAction(item.action) : undefined}
-                style={[
-                  index === 0 ? styles.recommendedPrimary : undefined,
-                  item.enabled ? undefined : styles.unavailableRow,
-                ]}
-                title={t(item.title)}
-                trailing={<Badge label={t(item.label)} tone={item.enabled ? "info" : "neutral"} />}
-              />
-            )
-          ))}
-        </View>
-      ) : null}
     </>
   );
 }
 
-function ResumeRecommendation({
-  action,
-  detail,
-  label,
-  onContinue,
-  style,
-  title,
-}: Readonly<{
-  action: Extract<AlgorithmsRecommendationAction, { kind: "resume_active_session" }>;
-  detail: string;
-  label: string;
-  onContinue: (action: AlgorithmsRecommendationAction) => void;
-  style?: ViewStyle;
-  title: string;
-}>) {
-  const styles = useThemedStyles(createStyles);
-
-  return (
-    <Card style={style ? { ...styles.resumeCard, ...style } : styles.resumeCard} testID={runtimeSelectors.resume.card(action.sessionId)}>
-      <View style={styles.resumeHeading}>
-        <Text style={styles.resumeTitle} testID={runtimeSelectors.resume.title(action.sessionId)}>{title}</Text>
-        <View testID={runtimeSelectors.resume.status(action.sessionId)}>
-          <Badge label={label} tone="info" />
-        </View>
-      </View>
-      <Text style={styles.resumeDetail}>{detail}</Text>
-      <Button onPress={() => onContinue(action)} testID={runtimeSelectors.resume.continue(action.sessionId)}>
-        {label}
-      </Button>
-    </Card>
-  );
-}
-
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  focusStrip: {
+  pageIntro: {
+    gap: spacing.lg,
+  },
+  pageTitle: {
+    ...typography.title,
+    color: palette.textPrimary,
+  },
+  trackContext: {
     alignItems: "center",
     flexDirection: "row",
+    gap: spacing.md,
     justifyContent: "space-between",
+    minHeight: 48,
+    paddingVertical: spacing.xs,
   },
-  focusCopy: {
+  trackContextLargeText: {
+    alignSelf: "stretch",
+    alignItems: "flex-start",
+  },
+  trackContextCopy: {
+    alignItems: "center",
+    flex: 1,
+    flexDirection: "row",
+    gap: spacing.md,
+    minWidth: 0,
+  },
+  trackDot: {
+    backgroundColor: palette.primary,
+    borderRadius: 999,
+    height: 8,
+    width: 8,
+  },
+  trackLabels: {
     flex: 1,
     gap: spacing.xxs,
+    minWidth: 0,
   },
   focusTitle: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
   },
-  changeFocusButton: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  changeFocusText: {
-    ...typography.bodyStrong,
-    color: palette.accentPurple,
-  },
   pressed: {
     opacity: 0.78,
-  },
-  hero: {
-    gap: spacing.lg,
   },
   eyebrow: {
     ...typography.caption,
     color: palette.textMuted,
     textTransform: "uppercase",
   },
+  decisionCard: {
+    gap: spacing.xl,
+  },
   heroEyebrow: {
     ...typography.caption,
     color: palette.accentPurple,
+    letterSpacing: 0.7,
     textTransform: "uppercase",
   },
-  section: {
-    gap: spacing.md,
-  },
-  recommendedPrimary: {
-    borderColor: palette.primary,
-  },
-  resumeCard: {
-    gap: spacing.md,
-  },
-  resumeHeading: {
-    alignItems: "flex-start",
+  decisionHeading: {
+    alignItems: "center",
     flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
+    gap: spacing.lg,
   },
-  resumeTitle: {
-    ...typography.bodyStrong,
+  decisionHeadingLargeText: {
+    alignItems: "flex-start",
+    flexDirection: "column",
+  },
+  decisionTitle: {
+    ...typography.heading,
     color: palette.textPrimary,
     flex: 1,
   },
-  resumeDetail: {
-    ...typography.small,
+  divider: {
+    backgroundColor: palette.border,
+    height: StyleSheet.hairlineWidth,
+  },
+  decisionDetail: {
+    ...typography.body,
     color: palette.textSecondary,
   },
-  unavailableRow: {
-    opacity: 0.62,
+  alternativeDivider: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  dividerLine: {
+    backgroundColor: palette.border,
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+  },
+  orLabel: {
+    ...typography.caption,
+    color: palette.textMuted,
+  },
+  secondaryAction: {
+    alignItems: "center",
+    alignSelf: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
+    minHeight: 48,
+    paddingHorizontal: spacing.sm,
+  },
+  secondaryActionText: {
+    ...typography.bodyStrong,
+    color: palette.accentPurple,
   },
 });

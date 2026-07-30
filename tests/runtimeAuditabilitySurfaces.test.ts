@@ -8,23 +8,22 @@ test("passive runtime selectors are attached to visible content rather than cont
   const home = source("src/features/home/tabs/HomeTab.tsx");
   const feedback = source("src/features/practice/PracticeFeedbackBlock.tsx");
 
-  assert.match(home, /<Card style=\{styles\.focusStrip\}>/);
+  assert.match(home, /<Card variant="layered" style=\{styles\.decisionCard\}>/);
   assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
-  assert.doesNotMatch(home, /<Card style=\{styles\.focusStrip\} testID=/);
+  assert.doesNotMatch(home, /<Card[^>]*testID=\{runtimeSelectors\.home\.trackCard/);
   assert.match(feedback, /<Text style=\{styles\.result\} testID=\{runtimeSelectors\.session\.result\(itemId, feedback\.result\)\}>/);
   assert.doesNotMatch(feedback, /<View style=\{styles\.container\} testID=\{runtimeSelectors\.session\.result/);
 });
 
-test("active-session resume has a non-interactive container and a separate continue control", () => {
+test("active-session resume uses the single recommendation card and a separate continue control", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
-  const resume = home.slice(home.indexOf("function ResumeRecommendation"));
 
-  assert.match(home, /item\.action\.kind === "resume_active_session"/);
-  assert.match(resume, /<Card style=\{style \? \{ \.\.\.styles\.resumeCard, \.\.\.style \} : styles\.resumeCard\} testID=\{runtimeSelectors\.resume\.card\(action\.sessionId\)\}>/);
-  assert.doesNotMatch(resume, /<Card[^>]*onPress=/);
-  assert.match(resume, /runtimeSelectors\.resume\.title\(action\.sessionId\)/);
-  assert.match(resume, /runtimeSelectors\.resume\.status\(action\.sessionId\)/);
-  assert.match(resume, /runtimeSelectors\.resume\.continue\(action\.sessionId\)/);
+  assert.match(home, /recommendation\?\.action\.kind === "resume_active_session"/);
+  assert.doesNotMatch(home, /<Card[^>]*onPress=/);
+  assert.match(home, /runtimeSelectors\.resume\.card\(recommendation\.action\.sessionId\)/);
+  assert.match(home, /runtimeSelectors\.resume\.title\(recommendation\.action\.sessionId\)/);
+  assert.match(home, /runtimeSelectors\.resume\.status\(recommendation\.action\.sessionId\)/);
+  assert.match(home, /runtimeSelectors\.resume\.continue\(recommendation\.action\.sessionId\)/);
 });
 
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {

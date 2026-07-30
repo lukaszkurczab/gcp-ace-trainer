@@ -73,6 +73,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
  * recovery remain application-owned.
  */
 export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
+  const styles = useThemedStyles(createStyles);
   const editable = allowsPracticeResponseEditing(props.phase);
   const visibleFeedback = allowsPracticeFeedback(props.phase) ? props.feedback : undefined;
   const itemId = props.runtimeIdentity?.itemId ?? props.question?.itemId;
@@ -93,6 +94,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
   return (
     <SessionShell
       actionBar={<ActionBar {...props} />}
+      key={itemId}
       modeTestID={props.runtimeIdentity ? runtimeSelectors.session.mode(props.runtimeIdentity.modeId) : undefined}
       modeLabel={props.modeLabel}
       position={props.position}
@@ -106,9 +108,9 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       {props.phase === "preparing" ? <PreparingNotice /> : null}
       {props.runtimeIdentity && controls ? (
         <View testID={runtimeSelectors.session.track(props.runtimeIdentity.trackId)}>
-          <View testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>
+          <View style={styles.questionAndResponse} testID={runtimeSelectors.session.roadmapNode(props.runtimeIdentity.roadmapNodeId)}>{controls}</View>
         </View>
-      ) : controls}
+      ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
       {visibleFeedback && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} itemId={itemId} /> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} /> : null}
@@ -119,7 +121,11 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
 function QuestionCard({ question }: Readonly<{ question: PracticeQuestionPresentation }>) {
   const styles = useThemedStyles(createStyles);
   return (
-    <Card style={styles.questionCard} testID={runtimeSelectors.session.question(question.itemId)}>
+    <Card
+      style={styles.questionCard}
+      testID={runtimeSelectors.session.question(question.itemId)}
+      variant="layered"
+    >
       <Text style={styles.prompt}>{question.prompt}</Text>
       {question.constraints?.length ? (
         <View style={styles.constraints}>
@@ -187,12 +193,12 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId }: Readonly<{ onAb
       <View style={styles.modalBackdrop}>
         <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
         <View accessibilityViewIsModal style={styles.exitSurface}>
-          <Text style={styles.exitTitle}>{t("End this session?")}</Text>
-          <Text style={styles.noticeText}>{t("Leave and resume later, or abandon it permanently. Answers already saved remain available.")}</Text>
+          <Text style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
+          <Text style={styles.noticeText}>{t("Pause to resume later, or end the session and view a partial summary. Saved answers remain available.")}</Text>
           <View style={styles.actions}>
             <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined} variant="secondary">{t("Keep learning")}</Button>
-            <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined}>{t("Leave and resume later")}</Button>
-            <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t("Abandon session")}</Button>
+            <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined}>{t("Pause and resume later")}</Button>
+            <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t("End and view summary")}</Button>
           </View>
         </View>
       </View>
@@ -217,5 +223,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   preparing: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
   preparingTitle: { ...typography.heading, color: palette.textPrimary },
   prompt: { ...typography.heading, color: palette.textPrimary },
+  questionAndResponse: { gap: spacing.lg },
   questionCard: { gap: spacing.lg },
 });

@@ -24,7 +24,7 @@ import { OperationProjectionStore } from "./operationProjectionStore";
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
   private readonly finalizations = new Map<string, Promise<void>>();
-  private readonly simulationMutationLanes = new Map<string, Promise<unknown>>();
+  private readonly sessionMutationLanes = new Map<string, Promise<unknown>>();
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
@@ -122,6 +122,11 @@ export class TrainingLifecycleUseCases {
   }
 
   async submitPracticeResponse(response: unknown): Promise<void> {
+    const initial = await this.requireActive();
+    return this.serializeSessionMutation(initial.id, () => this.submitPracticeResponseInLane(response));
+  }
+
+  private async submitPracticeResponseInLane(response: unknown): Promise<void> {
     const session = await this.requireActive();
     const prior = await this.getPracticeOperationState(session, false);
     if (prior.kind === "commit_pending" || prior.kind === "commit_materialization_failed" || prior.kind === "commit_verification_failed") {
@@ -149,6 +154,11 @@ export class TrainingLifecycleUseCases {
   }
 
   async advancePracticeSession(): Promise<TrainingSession> {
+    const initial = await this.requireActive();
+    return this.serializeSessionMutation(initial.id, () => this.advancePracticeSessionInLane());
+  }
+
+  private async advancePracticeSessionInLane(): Promise<TrainingSession> {
     const session = await this.requireActive();
     this.operationStates.set(session.id, practice("advancing"));
     const next = this.runSync("persistence_failure", () => advanceTrainingSession(session));
@@ -167,7 +177,7 @@ export class TrainingLifecycleUseCases {
   /** Simulation navigation changes only the durable active occurrence, never its immutable item plan. */
   async moveSimulationSessionTo(index: number): Promise<TrainingSession> {
     const initial = await this.requireActive();
-    return this.serializeSimulationMutation(initial.id, async () => {
+    return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
     if (session.configurationSnapshot.navigation !== "free" || session.configurationSnapshot.submission !== "manualOrForegroundTimeout") {
       throw new TrainingApplicationFailure("invalid_response", "Only a free-navigation simulation can change its active occurrence.");
@@ -187,18 +197,18 @@ export class TrainingLifecycleUseCases {
     });
   }
 
-  async checkpointSimulationForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
+  async checkpointForegroundTime(activeForegroundMs: number): Promise<TrainingSession> {
     const initial = await this.requireActive();
-    return this.serializeSimulationMutation(initial.id, async () => {
+    return this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
-    if (session.configurationSnapshot.timer !== "countdownForeground" || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
-      throw new TrainingApplicationFailure("invalid_response", "Simulation foreground timer checkpoint is invalid.");
+    if ((session.configurationSnapshot.timer !== "countdownForeground" && session.configurationSnapshot.timer !== "elapsedForeground") || !Number.isSafeInteger(activeForegroundMs) || activeForegroundMs < session.activeForegroundMs) {
+      throw new TrainingApplicationFailure("invalid_response", "Session foreground timer checkpoint is invalid.");
     }
     const next = createTrainingSession({ ...session, activeForegroundMs });
     await this.run("persistence_failure", () => this.ports.mutations.advance(next));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== next.id || verified.activeForegroundMs !== activeForegroundMs) {
-      throw new TrainingApplicationFailure("verification_failure", "Simulation foreground time was not durably verified.");
+      throw new TrainingApplicationFailure("verification_failure", "Session foreground time was not durably verified.");
     }
     return verified;
     });
@@ -211,6 +221,11 @@ export class TrainingLifecycleUseCases {
   }
 
   async completeActivePracticeSession(): Promise<PracticeFinalization> {
+    const initial = await this.requireActive();
+    return this.serializeSessionMutation(initial.id, () => this.completeActivePracticeSessionInLane());
+  }
+
+  private async completeActivePracticeSessionInLane(): Promise<PracticeFinalization> {
     const session = await this.requireActive();
     if (session.configurationSnapshot.submission !== "perItem" || session.currentItemIndex !== session.actualLength - 1) {
       throw new TrainingApplicationFailure("invalid_response", "Only a durably submitted final practice occurrence can complete this session.");
@@ -225,7 +240,7 @@ export class TrainingLifecycleUseCases {
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
     const initial = await this.requireActive();
-    await this.serializeSimulationMutation(initial.id, async () => {
+    await this.serializeSessionMutation(initial.id, async () => {
     const session = await this.requireActive();
     this.operationStates.set(session.id, simulation("saving"));
     if (session.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
@@ -311,6 +326,11 @@ export class TrainingLifecycleUseCases {
   }
 
   async abandonActiveSession(): Promise<TrainingSession> {
+    const initial = await this.requireActive();
+    return this.serializeSessionMutation(initial.id, () => this.abandonActiveSessionInLane());
+  }
+
+  private async abandonActiveSessionInLane(): Promise<TrainingSession> {
     const active = await this.requireActive();
     const abandoned = this.runSync("persistence_failure", () => abandonTrainingSession(active, this.ports.clock.now()));
     const isSimulation = active.configurationSnapshot.submission === "manualOrForegroundTimeout";
@@ -347,6 +367,12 @@ export class TrainingLifecycleUseCases {
     const session = await this.run("summary_unavailable", () => this.ports.repositories.getSession(sessionId));
     if (!session || session.status !== "completed") throw new TrainingApplicationFailure("summary_unavailable", "A verified completed session is required for summary.");
     return this.requireVerifiedSummary(sessionId);
+  }
+
+  async loadSessionRecord(sessionId: string): Promise<TrainingSession> {
+    const session = await this.run("summary_unavailable", () => this.ports.repositories.getSession(sessionId));
+    if (!session) throw new TrainingApplicationFailure("summary_unavailable", "The requested session record is unavailable.");
+    return session;
   }
 
   async queryDashboard(trackId: TrackId): Promise<unknown> { return this.query(trackId, "queryDashboard"); }
@@ -401,12 +427,12 @@ export class TrainingLifecycleUseCases {
     }
   }
 
-  private serializeSimulationMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
-    const previous = this.simulationMutationLanes.get(sessionId) ?? Promise.resolve();
+  private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {
+    const previous = this.sessionMutationLanes.get(sessionId) ?? Promise.resolve();
     const result = previous.catch(() => undefined).then(operation);
-    this.simulationMutationLanes.set(sessionId, result);
+    this.sessionMutationLanes.set(sessionId, result);
     return result.finally(() => {
-      if (this.simulationMutationLanes.get(sessionId) === result) this.simulationMutationLanes.delete(sessionId);
+      if (this.sessionMutationLanes.get(sessionId) === result) this.sessionMutationLanes.delete(sessionId);
     });
   }
 

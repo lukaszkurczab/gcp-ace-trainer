@@ -72,7 +72,7 @@ export const ALGORITHM_MODES = Object.freeze([
   Object.freeze({ contentBlueprintModeId: ALGORITHM_MODE_IDS.recognizePatterns, id: ALGORITHM_MODE_IDS.recognizePatterns, title: "Recognize Patterns", order: 4, profile: practiceProfile(20, false, [10, 20]) }),
   Object.freeze({ contentBlueprintModeId: ALGORITHM_MODE_IDS.contrastPractice, id: ALGORITHM_MODE_IDS.contrastPractice, title: "Contrast Practice", order: 5, profile: practiceProfile(20, false, [10, 20]) }),
   Object.freeze({ contentBlueprintModeId: ALGORITHM_MODE_IDS.weakAreaReview, id: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", order: 6, profile: practiceProfile(10, true, [10, 20]) }),
-  Object.freeze({ contentBlueprintModeId: ALGORITHM_MODE_IDS.independentPractice, id: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice", order: 7, profile: practiceProfile(20, false, [10, 20], "blueprintControlled") }),
+  Object.freeze({ contentBlueprintModeId: ALGORITHM_MODE_IDS.independentPractice, id: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice", order: 7, profile: practiceProfile(10, false, [10, 20], "blueprintControlled") }),
   Object.freeze({
     contentBlueprintModeId: ALGORITHM_MODE_IDS.interviewSimulation,
     id: ALGORITHM_MODE_IDS.interviewSimulation,

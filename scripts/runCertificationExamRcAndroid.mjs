@@ -2,7 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
-const APP_ID = "com.lkurczab.gcpacetrainer";
+const APP_ID = "com.lkurczab.patternly";
 const APP_ACTIVITY = `${APP_ID}/.MainActivity`;
 const DEV_MENU_FLOW = ".maestro/rc-runtime-dev-menu-continue.yaml";
 const CONTENT_READY_FLOW = ".maestro/rc-runtime-content-ready.yaml";
@@ -40,7 +40,7 @@ run("maestro", ["test", "--device", serial, "--test-output-dir", outputDirectory
 function parseLocalMetroPort(value) {
   let launchUrl;
   try { launchUrl = new URL(value); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must be an absolute dev-client URL."); }
-  if (launchUrl.protocol !== "exp+gcp-ace-trainer:" || launchUrl.host !== "expo-development-client") {
+  if (launchUrl.protocol !== "exp+patternly:" || launchUrl.host !== "expo-development-client") {
     throw new Error("PATTERNLY_DEV_CLIENT_URL must target the current Patternly Expo development client.");
   }
   const bundleUrl = launchUrl.searchParams.get("url");

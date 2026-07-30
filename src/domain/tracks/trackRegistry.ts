@@ -6,33 +6,31 @@ export const ALGORITHMS_TRACK_ID = "algorithms";
 
 const registrationDefinitions = [
   {
-    id: CLOUD_CERTIFICATION_TRACK_ID,
-    familyId: "certification",
-    metadata: {
-      accentColor: "#0369A1",
-      accentMutedColor: "#E7F5FD",
-      description: "Scenario-based cloud certification practice with domain review and exam simulation.",
-      legalNote: "Independent study content. Not affiliated with or endorsed by Google.",
-      nextActionLabel: "Continue cloud practice",
-      shortTitle: "Cloud",
-      status: "active",
-      subtitle: "Certification track",
-      title: "Cloud Certification",
-    },
-  },
-  {
     id: ALGORITHMS_TRACK_ID,
     familyId: "algorithms",
     metadata: {
       accentColor: "#7C3AED",
       accentMutedColor: "#F1ECFF",
+      categoryLabel: "Algorithmic problem solving",
       description: "Pattern recognition, strategy choice, and complexity reasoning for algorithmic problem solving.",
       legalNote: "Original training content for algorithmic problem solving.",
-      nextActionLabel: "Start algorithms practice",
       shortTitle: "Algorithms",
       status: "active",
-      subtitle: "Pattern and strategy track",
       title: "Algorithms",
+    },
+  },
+  {
+    id: CLOUD_CERTIFICATION_TRACK_ID,
+    familyId: "certification",
+    metadata: {
+      accentColor: "#0369A1",
+      accentMutedColor: "#E7F5FD",
+      categoryLabel: "Certification",
+      description: "Scenario practice for Google Cloud Associate Cloud Engineer, with domain review and exam simulation.",
+      legalNote: "Independent study content. Not affiliated with or endorsed by Google.",
+      shortTitle: "Google Cloud ACE",
+      status: "active",
+      title: "Google Cloud Associate Cloud Engineer",
     },
   },
 ] as const satisfies readonly TrackRegistration[];

@@ -9,7 +9,7 @@ import type { AppColors } from "../theme";
 
 type AppShellHeaderProps = {
   action?: ReactNode;
-  subtitle: string;
+  subtitle?: string;
   title: string;
 };
 
@@ -24,7 +24,7 @@ export function AppShellHeader({ action, subtitle, title }: AppShellHeaderProps)
         </View>
         <View style={styles.headerCopy}>
           <Text style={styles.brandTitle}>{title}</Text>
-          <Text style={styles.headerMeta}>{subtitle}</Text>
+          {subtitle ? <Text style={styles.headerMeta}>{subtitle}</Text> : null}
         </View>
       </View>
       {action ? <View>{action}</View> : null}
@@ -40,17 +40,22 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   brandRow: {
     alignItems: "center",
+    flex: 1,
     flexDirection: "row",
     gap: spacing.md,
+    minWidth: 0,
   },
   brandMark: {
     alignItems: "center",
+    flexShrink: 0,
     height: 32,
     justifyContent: "center",
     width: 32,
   },
   headerCopy: {
+    flex: 1,
     gap: spacing.xxs,
+    minWidth: 0,
   },
   brandTitle: {
     ...typography.heading,
@@ -59,5 +64,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   headerMeta: {
     ...typography.caption,
     color: palette.textSecondary,
+    flexShrink: 1,
   },
 });

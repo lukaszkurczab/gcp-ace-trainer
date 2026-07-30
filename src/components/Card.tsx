@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View, type ViewStyle } from "react-native";
+import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 
 import { radius, shadows, spacing } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
 
-type CardVariant = "default" | "elevated" | "interactive" | "tonal" | "warning" | "success";
+type CardVariant = "default" | "elevated" | "interactive" | "layered" | "tonal" | "warning" | "success";
 
 type CardProps = {
   children: ReactNode;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
   variant?: CardVariant;
 };
@@ -52,6 +52,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   interactive: {
     borderColor: palette.borderStrong
+  },
+  layered: {
+    ...shadows.elevated,
+    backgroundColor: palette.elevatedSurface,
+    borderColor: palette.borderStrong,
+    borderRadius: radius.xl,
+    padding: spacing.xxl,
   },
   tonal: {
     ...shadows.elevated,

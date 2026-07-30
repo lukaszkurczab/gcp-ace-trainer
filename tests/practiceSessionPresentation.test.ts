@@ -8,6 +8,7 @@ import {
   getPracticePrimaryAction,
   isPracticeActionPending,
   practiceOptionCorrectnessValue,
+  resolvePracticeLocalResponse,
 } from "../src/features/practice/practiceSessionPresentation";
 
 test("Practice presentation never discloses feedback before the durable feedback boundary", () => {
@@ -69,6 +70,28 @@ test("Practice response renderer consumes application feedback states without sc
       { id: "c", state: "correct", text: "C" },
     ],
   });
+});
+
+test("The visible ordering is a complete response before the learner moves an element", () => {
+  const control = buildPracticeResponseControl({
+    localResponse: null,
+    renderer: {
+      kind: "ordering",
+      elements: [
+        { id: "first", text: "First" },
+        { id: "second", text: "Second" },
+      ],
+    },
+  });
+
+  assert.deepEqual(resolvePracticeLocalResponse(null, control), {
+    kind: "ordering",
+    orderedSubgoalIds: ["first", "second"],
+  });
+  assert.deepEqual(
+    resolvePracticeLocalResponse({ kind: "ordering", orderedSubgoalIds: ["second", "first"] }, control),
+    { kind: "ordering", orderedSubgoalIds: ["second", "first"] },
+  );
 });
 
 test("Practice correctness semantics stay separate from the native checked selection state", () => {

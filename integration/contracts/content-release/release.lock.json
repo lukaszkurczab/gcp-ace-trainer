@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "repository": "lukaszkurczab/patternly-content",
-  "producerCommit": "e18fc731e1b577750f954e8f017520e546afc7f9",
-  "releaseId": "patternly-core-0014",
-  "sourceRepositoryCommit": "7b2e96a5e357264e6ce06a75dbeb11e386a3dea1",
+  "producerCommit": "d780204eba858c05b94fdbce8de38ec4c3900a50",
+  "releaseId": "patternly-core-0015",
+  "sourceRepositoryCommit": "9e23b08d051ac473436f27544b0dbfefeda496d6",
   "artifacts": [
     {
       "trackId": "algorithms",
-      "contentVersion": "algorithms-core-0007",
-      "checksumSha256": "89462b2e0f6f47b5b5c3c62652937609fa8be37d0d399b02b6629c58cdbcec54"
+      "contentVersion": "algorithms-core-0008",
+      "checksumSha256": "2c6749d68c4c2c9f95bc4b9c4d21350df92776603648b2240fd1da39bb8d9adf"
     },
     {
       "trackId": "cloud-certification",
-      "contentVersion": "gcp-ace-0013",
-      "checksumSha256": "55dff7ce486cbd1c21b2a8094d60c5ab47d48635256c28c2b2bf83088dc274a2"
+      "contentVersion": "gcp-ace-0014",
+      "checksumSha256": "f692d3878c12907cc1df7922a1eb6e5567757989450063dc9e495cebf4bd4042"
     }
   ]
 }

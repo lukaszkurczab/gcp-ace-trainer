@@ -37,7 +37,7 @@ test("M6 and M7 seed their real first Custom Practice item from the pinned Guide
 
 test("M6 performs a real scheduled due review after the canonical audit clock advance", () => {
   assertCanonicalPreparation(m6, "m6");
-  assert.match(m6, new RegExp(escapeForRegExp("com.lkurczab.gcpacetrainer://audit/clock/advance?milliseconds=604800000")));
+  assert.match(m6, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/clock/advance?milliseconds=604800000")));
   assertReviewInteraction(m6, "correct");
   assert.ok(m6.indexOf("sequence_average") < m6.indexOf("clock/advance"));
   assert.ok(m6.indexOf("clock/advance") < m6.indexOf(runtimeSelectors.practice.modeCard("algorithms-weak-area-review")));
@@ -47,7 +47,7 @@ test("M7 materializes remediation through the canonical weak-area review session
   assertCanonicalPreparation(m7, "m7");
   assert.match(m7, new RegExp(escapeForRegExp(runtimeSelectors.session.option(itemId, "each_worst_constant"))));
   assert.match(m7, new RegExp(escapeForRegExp(runtimeSelectors.session.result(itemId, "incorrect"))));
-  assert.match(m7, new RegExp(escapeForRegExp("com.lkurczab.gcpacetrainer://audit/clock/advance?milliseconds=86400000")));
+  assert.match(m7, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/clock/advance?milliseconds=86400000")));
   assertReviewInteraction(m7, "correct");
   assert.ok(m7.indexOf("each_worst_constant") < m7.indexOf("clock/advance"));
   assert.ok(m7.indexOf("clock/advance") < m7.indexOf(runtimeSelectors.practice.modeCard("algorithms-weak-area-review")));
@@ -55,7 +55,7 @@ test("M7 materializes remediation through the canonical weak-area review session
 
 function assertCanonicalPreparation(flow: string, tag: string): void {
   assert.match(flow, new RegExp(`- ${escapeForRegExp(tag)}`));
-  assert.match(iosRunner, new RegExp(escapeForRegExp("com.lkurczab.gcpacetrainer://audit/reset-learning-state")));
+  assert.match(iosRunner, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/reset-learning-state")));
   assert.match(listener, new RegExp(escapeForRegExp("patternly:content:audit-command-listener:ready")));
   assert.match(bootstrap, new RegExp(escapeForRegExp(runtimeSelectors.home.selectTrack("algorithms"))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.openSetup())));

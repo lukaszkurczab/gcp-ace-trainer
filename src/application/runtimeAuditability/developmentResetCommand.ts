@@ -2,8 +2,8 @@ import { getTrainingLifecycleUseCases } from "../trainingLifecycle";
 import { clearForegroundTimers, clearReviewQueueItems, clearTrainingAttempts, clearTrainingSessionDrafts, clearTrainingSessions } from "../../storage/repositories";
 import { clearMutationJournal } from "../../storage/repositories/mutationJournalRepository";
 
-export const DEVELOPMENT_RESET_LEARNING_STATE_URL = "com.lkurczab.gcpacetrainer://audit/reset-learning-state";
-export const DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL = "com.lkurczab.gcpacetrainer://audit/clock/advance";
+export const DEVELOPMENT_RESET_LEARNING_STATE_URL = "com.lkurczab.patternly://audit/reset-learning-state";
+export const DEVELOPMENT_ADVANCE_AUDIT_CLOCK_URL = "com.lkurczab.patternly://audit/clock/advance";
 
 export type RuntimeAuditabilityCommand =
   | Readonly<{ kind: "reset_learning_state" }>

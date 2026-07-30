@@ -8,7 +8,7 @@ import { runtimeSelectors } from "../src/testing/runtimeSelectors";
 
 type M1Manifest = Readonly<{
   release: Readonly<{ checksumSha256: string; releaseId: string; sourceRepositoryCommit: string }>;
-  session: Readonly<{ feedbackTiming: "afterEachAnswer"; length: 10; modeId: "algorithms-guided-practice"; roadmapNodeId: "complexity_and_constraints"; sessionId: string }>;
+  session: Readonly<{ feedbackTiming: "afterEachAnswer"; length: 10; modeId: "algorithms-custom-practice"; roadmapNodeId: "complexity_and_constraints"; sessionId: string }>;
   detailsOnOrdinals: readonly number[];
   items: readonly Readonly<{ ordinal: number; itemId: string; selectedOptionIds: readonly string[]; expectedResult: "correct" | "incorrect" }>[];
 }>;
@@ -16,11 +16,17 @@ type M1Manifest = Readonly<{
 const manifest = JSON.parse(readFileSync(".maestro/m1-guided-10.expected-session.json", "utf8")) as M1Manifest;
 const flow = readFileSync(".maestro/m1-guided-10.yaml", "utf8");
 
-test("M1 Guided 10 derives real item and option identities from the pinned Algorithms artifact", () => {
+test("M1 Custom 10 derives real item and option identities from the pinned Algorithms artifact", () => {
   const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
   assert.ok(reference, "Algorithms artifact must be bundled");
   const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
-  assert.equal(buildAlgorithmProgressFacts([], catalog.getItems()).activeRoadmapNode.id, manifest.session.roadmapNodeId);
+  assert.equal(buildAlgorithmProgressFacts({
+    attempts: [],
+    content: {
+      contentVersion: catalog.getContentVersion(),
+      items: catalog.getItems(),
+    },
+  }).activeRoadmapNode.id, manifest.session.roadmapNodeId);
   const plan = selectAlgorithmSessionPlan({
     contentCatalog: catalog,
     mode: manifest.session.modeId,
@@ -73,7 +79,8 @@ test("M1 flow uses only runtime selectors for the complete deterministic session
   }
 
   const sessionId = manifest.session.sessionId;
-  assert.equal(count(flow, runtimeSelectors.practice.startSession()), 2, "M1 must enter Guided setup and then start its configured session.");
+  assert.equal(count(flow, runtimeSelectors.practice.startSession()), 1, "M1 must open Custom settings and start its configured session once.");
+  assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practice.openSetup()}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.practice.sessionLength(10)}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.session.configuration(sessionId, 10, "afterEachAnswer")}"`)));
   assert.match(flow, new RegExp(escapeForRegExp(`id: "${runtimeSelectors.summary.root(sessionId)}"`)));

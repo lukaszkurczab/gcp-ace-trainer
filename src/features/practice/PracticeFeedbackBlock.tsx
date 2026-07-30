@@ -36,11 +36,11 @@ export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback:
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  container: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.md, padding: spacing.lg },
+  container: { backgroundColor: palette.elevatedSurface, borderColor: palette.borderStrong, borderRadius: radius.xl, borderWidth: 1, gap: spacing.lg, padding: spacing.xxl },
   details: { gap: spacing.md },
   detailsIndicator: { ...typography.bodyStrong, color: palette.accentPurple },
   detailsLabel: { ...typography.bodyStrong, color: palette.textPrimary },
   detailsToggle: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 48 },
   reason: { ...typography.bodyStrong, color: palette.textPrimary },
-  result: { ...typography.bodyStrong, color: palette.textSecondary },
+  result: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
 });

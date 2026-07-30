@@ -4,19 +4,17 @@ import type { LanguagePreference } from "../../application/appPreferences";
 
 const copy = {
   en: {
-    intro: "Choose the language used across Patternly.",
-    options: "Available languages",
+    intro: "Patternly currently uses English for both the interface and learning content.",
+    options: "Current language",
   },
   pl: {
-    intro: "Wybierz język używany w całym Patternly.",
-    options: "Dostępne języki",
+    intro: "Patternly currently uses English for both the interface and learning content.",
+    options: "Current language",
   },
 } as const;
 
 const options: readonly { detail: Record<AppLocale, string>; label: Record<AppLocale, string>; value: LanguagePreference }[] = [
-  { detail: { en: "Use your device language.", pl: "Użyj języka urządzenia." }, label: { en: "System", pl: "System" }, value: "system" },
-  { detail: { en: "Use English across the app.", pl: "Użyj języka angielskiego w całej aplikacji." }, label: { en: "English", pl: "Angielski" }, value: "en" },
-  { detail: { en: "Use Polish across the app.", pl: "Użyj języka polskiego w całej aplikacji." }, label: { en: "Polish", pl: "Polski" }, value: "pl" },
+  { detail: { en: "English is used across the app and all learning content.", pl: "English is used across the app and all learning content." }, label: { en: "English", pl: "English" }, value: "en" },
 ];
 
 export function LanguageSettingsScreen() {

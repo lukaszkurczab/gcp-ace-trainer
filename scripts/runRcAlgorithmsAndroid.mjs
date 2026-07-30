@@ -2,7 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
-const APP_ID = "com.lkurczab.gcpacetrainer";
+const APP_ID = "com.lkurczab.patternly";
 const APP_ACTIVITY = `${APP_ID}/.MainActivity`;
 const DEV_MENU_FLOW = ".maestro/rc-runtime-dev-menu-continue.yaml";
 const CONTENT_READY_FLOW = ".maestro/rc-runtime-content-ready.yaml";
@@ -22,5 +22,5 @@ run("maestro", ["test", "--device", serial, "--test-output-dir", outputDirectory
 
 function validFlow(value) { return typeof value === "string" && /^\.maestro\/[A-Za-z0-9][A-Za-z0-9._/-]*\.ya?ml$/.test(value) && !value.includes(".."); }
 function required(name) { const value = process.env[name]; if (!value) throw new Error(`${name} is required; RC capture does not guess runtime inputs.`); return value; }
-function assertLocalDevClientUrl(value) { let launch; try { launch = new URL(value); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must be an absolute dev-client URL."); } if (launch.protocol !== "exp+gcp-ace-trainer:" || launch.host !== "expo-development-client") throw new Error("PATTERNLY_DEV_CLIENT_URL must target the current Patternly Expo development client."); const bundle = launch.searchParams.get("url"); let metro; try { metro = new URL(bundle ?? ""); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must include a valid Metro bundle URL."); } if (metro.protocol !== "http:" || metro.hostname !== "127.0.0.1" || !/^[0-9]+$/.test(metro.port)) throw new Error("PATTERNLY_DEV_CLIENT_URL must use the explicit local 127.0.0.1 Metro endpoint for emulator capture."); return metro.port; }
+function assertLocalDevClientUrl(value) { let launch; try { launch = new URL(value); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must be an absolute dev-client URL."); } if (launch.protocol !== "exp+patternly:" || launch.host !== "expo-development-client") throw new Error("PATTERNLY_DEV_CLIENT_URL must target the current Patternly Expo development client."); const bundle = launch.searchParams.get("url"); let metro; try { metro = new URL(bundle ?? ""); } catch { throw new Error("PATTERNLY_DEV_CLIENT_URL must include a valid Metro bundle URL."); } if (metro.protocol !== "http:" || metro.hostname !== "127.0.0.1" || !/^[0-9]+$/.test(metro.port)) throw new Error("PATTERNLY_DEV_CLIENT_URL must use the explicit local 127.0.0.1 Metro endpoint for emulator capture."); return metro.port; }
 function run(command, args, options = {}) { const result = spawnSync(command, args, { encoding: "utf8", ...options }); if (result.error) throw result.error; if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} failed: ${(result.stderr || result.stdout || "unknown error").trim()}`); return result.stdout; }

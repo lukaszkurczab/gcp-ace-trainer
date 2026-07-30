@@ -2,8 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  AlgorithmsForegroundTimerFacade,
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
+  getAlgorithmsPracticeSummaryProjection,
+  installAlgorithmsForegroundTimerFacade,
 } from "../src/application/algorithms";
 import {
   installTrainingLifecycleUseCases,
@@ -13,6 +16,7 @@ import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
 import {
   createFamilyEnvelope,
+  createForegroundTimerState,
   createTrainingAttempt,
   createTrainingSession,
   createTrainingSessionResult,
@@ -33,7 +37,7 @@ import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-07-22T08:00:00.000Z";
 
-function deferredSession(status: "active" | "completed"): Readonly<{ attempt: TrainingAttempt<AlgorithmResponse>; session: TrainingSession }> {
+function deferredSession(status: "active" | "completed" | "abandoned"): Readonly<{ attempt: TrainingAttempt<AlgorithmResponse>; session: TrainingSession }> {
   const catalog = getAlgorithmContentCatalog();
   const question = catalog.getItems().find(isAlgorithmChoiceQuestion);
   if (!question) throw new Error("Deferred feedback fixture requires a choice question.");
@@ -64,7 +68,7 @@ function deferredSession(status: "active" | "completed"): Readonly<{ attempt: Tr
     planFingerprint: "a".repeat(64),
     status,
     startedAt: NOW,
-    ...(status === "completed" ? { completedAt: NOW } : {}),
+    ...(status === "completed" || status === "abandoned" ? { completedAt: NOW } : {}),
   });
   const attempt = createTrainingAttempt({
     id: "deferred-practice:attempt:0",
@@ -92,9 +96,31 @@ test("deferred-feedback practice projection withholds correctness and authored f
   await saveTrainingSession(session);
   await addTrainingAttempt(attempt);
   installTrainingLifecycleUseCases({
+    async checkpointForegroundTime() { return session; },
     async getPendingMutationProjection() { return null; },
     async getPracticeOperationState() { return { family: "practice", kind: "feedback" } as const; },
   } as unknown as TrainingLifecycleUseCases);
+  let timerState: ReturnType<typeof createForegroundTimerState> | null = null;
+  const timer = new AlgorithmsForegroundTimerFacade({
+    repository: {
+      async getActive() { return timerState; },
+      async save(candidate, expected) {
+        assert.equal(expected, timerState?.checkpointRevision ?? null);
+        timerState = createForegroundTimerState({ ...candidate, checkpointRevision: (timerState?.checkpointRevision ?? 0) + 1 });
+        return timerState;
+      },
+    },
+    lifecycle: {
+      async checkpointForegroundTime() { return session; },
+    } as unknown as TrainingLifecycleUseCases,
+    monotonicClock: { now: () => 0 },
+    wallClock: { now: () => NOW },
+    schedule: () => 0 as unknown as ReturnType<typeof setInterval>,
+    cancel: () => undefined,
+    finalize: async () => undefined,
+  });
+  installAlgorithmsForegroundTimerFacade(timer);
+  await timer.initialize(session);
 
   const projection = await getAlgorithmsPracticeProjection();
   assert.equal(projection.response?.value.kind, "choice");
@@ -129,4 +155,22 @@ test("deferred-feedback summary reads timing, length, and authored feedback from
   assert.equal(projection.feedbackItems[0]?.correctness, "correct");
   assert.ok(projection.feedbackItems[0]?.reason.length);
   assert.ok(projection.feedbackItems[0]?.details.blocks.length);
+});
+
+test("explicitly ended practice exposes a partial summary without inventing a completed score", async () => {
+  await validateBundledContent();
+  installMemoryStorage();
+  const { attempt, session } = deferredSession("abandoned");
+  await saveTrainingSession(session);
+  await addTrainingAttempt(attempt);
+  installTrainingLifecycleUseCases({
+    async loadSessionRecord() { return session; },
+  } as unknown as TrainingLifecycleUseCases);
+
+  const projection = await getAlgorithmsPracticeSummaryProjection(session.id);
+  assert.equal(projection.completionKind, "abandoned");
+  assert.equal(projection.answeredOccurrenceIds.length, 1);
+  assert.equal(projection.unansweredOccurrenceIds.length, 0);
+  assert.equal(projection.score, null);
+  assert.deepEqual(projection.feedbackItems, []);
 });

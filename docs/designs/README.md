@@ -2,7 +2,9 @@
 
 ## Status
 
-Files in this directory are visual reference material for future UI implementation. They are not a pixel-perfect implementation contract and should not be copied 1:1.
+This directory contains only visual references that are still approved by the
+canonical product contract. Exploratory alternatives and superseded screen
+mockups are not retained.
 
 The current product direction is defined normatively by `docs/canonical-product-contract.yaml`. The following documents provide supporting context:
 
@@ -27,7 +29,7 @@ This means:
 - prefer one coherent app-wide layout system over exact reproduction of mismatched reference screens;
 - adapt copy, metrics, empty states, and unavailable states to current product truth and repository behavior.
 
-## 90% Alignment Checklist
+## Alignment Checklist
 
 For every UI implementation batch that uses these references, the report should include a short checklist covering:
 

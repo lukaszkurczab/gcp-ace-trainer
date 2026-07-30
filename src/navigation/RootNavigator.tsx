@@ -75,7 +75,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.SELECT_TRACK}
         component={SelectTrackScreen}
-        options={{ headerShown: false, title: t("Choose track") }}
+        options={{ headerShown: false, title: t("Choose a track") }}
       />
       <Stack.Screen
         name={ROUTES.PRACTICE_HUB}
