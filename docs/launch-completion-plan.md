@@ -6446,6 +6446,71 @@ ordinary Practice families (`complete`; repeat independent QA `pass`)**
   tap. YAML parse, the exact sequence/duplicate-path source scan and
   `git diff --check` pass. The device rerun, Android parity and independent
   evidence QA remain required before R7 or slice 5I can close.
+- **Evidence-infrastructure repair 5I-R8 — explicit capture environment and
+  development-client relaunch (`queued from final Android evidence run`):**
+  both RC Algorithms runners currently receive `SCREENSHOT_ROOT`, `THEME` and
+  `PLATFORM` as shell environment but do not pass them to the final Maestro
+  capture invocation. Maestro therefore writes otherwise valid screenshots
+  under the output directory with `undefined` path/name segments. The same
+  Android run proves that `killApp` followed by `launchApp` opens the Expo
+  Development Build shell rather than reloading the local Patternly bundle, so
+  the exact resume-card selector is legitimately absent. Flow 40 also returns
+  Home after pause without exercising the required process relaunch.
+
+  Scope is only both RC Algorithms runners, resume flows 20 and 40, their
+  focused source tests and this plan. Each runner must require an explicit
+  screenshot root, `light` or `dark` theme and its exact platform identity,
+  resolve the screenshot root to an explicit path, and pass those three values
+  plus the already-validated local dev-client URL to only the final Maestro
+  capture command using the installed CLI's canonical `-e KEY=VALUE` form.
+  After each resume flow's `killApp`/`launchApp`, open that explicit
+  `${PATTERNLY_DEV_CLIENT_URL}` once as the local development-client bundle
+  reload boundary before requiring the exact resume card. Flow 40 must first
+  reach exact Certification Home, then perform that relaunch/reopen sequence.
+  This boundary is not product navigation or a deep product route.
+
+  Production code, selectors, content, fixture state, runner redesign,
+  coordinates, conditional fallback branches and extra taps/retries are
+  non-goals. Acceptance requires source tests to prove runner validation, one
+  environment-bearing final capture invocation per runner, one explicit reopen
+  per resume flow, flow 40's real kill/relaunch and preservation of every exact
+  resume assertion. YAML parse, focused tests and `git diff --check` must pass
+  before fresh two-platform device evidence. Stop if the installed Maestro CLI
+  does not confirm `-e KEY=VALUE`, or if the explicit local bundle reopen still
+  cannot expose the exact persisted resume identity; preserve the run instead
+  of adding another path.
+
+  **Source-repair and QA evidence:** both runners now validate their exact
+  platform, bounded theme and explicit screenshot root, resolve the root, and
+  pass the three capture values plus the already-validated local dev-client URL
+  exactly once to only the final Maestro flow. Flows 20 and 40 each contain one
+  explicit `killApp` -> `launchApp` -> local bundle reopen before their exact
+  resume assertions; flow 40 first proves the Certification Home route. Focused
+  source tests pass 3/3, both runner syntax checks and YAML parses pass, the
+  installed Maestro CLI confirms repeated `-e KEY=VALUE`, `git diff --check`
+  passes and independent QA returned `pass` with no production change,
+  fallback, coordinate or additional resume path found.
+
+  **Current external execution blocker (2026-08-02):** the first pre-R8 final
+  runs are preserved: iOS completed flows 10, 20 and 30; Android completed flow
+  10, then flow 20 reached pause and process relaunch but exposed the Expo
+  Development Build shell instead of the resume card. Those runs also preserve
+  the `undefined` capture-name defect fixed by R8 and are not the accepted final
+  pack. A fresh post-R8 two-platform rerun was attempted, but the local
+  simulator/emulator access approval service rejected both controllers after
+  its usage allowance was exhausted and reported that access is unavailable
+  until 2026-08-08 09:18. No post-R8 device flow ran and no Task 5 acceptance
+  criterion is being waived. Until local device access is restored, finish the
+  non-device report/manifest/gates, keep Task 5 open, and do not start Task 6,
+  whose verified-terminal-evidence input is not yet complete.
+
+  The non-device continuation completed the focused Task 5/R8 set `53/53`,
+  typecheck, content-boundary, runtime-privacy, recovery, contract-change and
+  diff gates. The full suite completed `533/556`; all 23 failures occurred
+  before their HTTP assertions because the restricted sandbox denied temporary
+  `127.0.0.1` listeners with `listen EPERM`. They are access-blocked, not waived
+  or recorded as product passes, and a loopback-enabled `556/556` rerun remains
+  part of the unblock work.
 
 ### Task 6 — outcomes, review and progress redesign
 

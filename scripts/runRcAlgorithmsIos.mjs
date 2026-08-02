@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
 
 const APP_ID = "com.lkurczab.patternly";
 const RESET_URL = "com.lkurczab.patternly://audit/reset-learning-state";
@@ -17,6 +18,18 @@ const devClientUrl = required("PATTERNLY_DEV_CLIENT_URL");
 assertLocalDevClientUrl(devClientUrl);
 const outputDirectory = required("MAESTRO_TEST_OUTPUT_DIR");
 mkdirSync(outputDirectory, { recursive: true });
+const capturePlatform = required("PLATFORM");
+if (capturePlatform !== "ios") throw new Error('PLATFORM must be "ios" for the RC Algorithms iOS runner.');
+const captureTheme = required("THEME");
+if (!["light", "dark"].includes(captureTheme)) throw new Error('THEME must be "light" or "dark".');
+const screenshotRoot = resolve(required("SCREENSHOT_ROOT"));
+mkdirSync(screenshotRoot, { recursive: true });
+const captureEnvironmentArgs = [
+  "-e", `SCREENSHOT_ROOT=${screenshotRoot}`,
+  "-e", `THEME=${captureTheme}`,
+  "-e", `PLATFORM=${capturePlatform}`,
+  "-e", `PATTERNLY_DEV_CLIENT_URL=${devClientUrl}`,
+];
 if (!availableBootedSimulator(udid)) throw new Error(`iOS simulator ${udid} is not available and booted.`);
 for (const requiredFlow of [LISTENER_FLOW, RESET_COMPLETE_FLOW, BOOTSTRAP_FLOW, flow]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
 
@@ -26,7 +39,7 @@ run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, LI
 run("xcrun", ["simctl", "openurl", udid, RESET_URL]);
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, RESET_COMPLETE_FLOW], { stdio: "inherit" });
 run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, BOOTSTRAP_FLOW], { stdio: "inherit" });
-run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, flow], { stdio: "inherit" });
+run("maestro", ["test", "--udid", udid, "--test-output-dir", outputDirectory, ...captureEnvironmentArgs, flow], { stdio: "inherit" });
 
 function validFlow(value) { return typeof value === "string" && /^\.maestro\/[A-Za-z0-9][A-Za-z0-9._/-]*\.ya?ml$/.test(value) && !value.includes(".."); }
 function required(name) { const value = process.env[name]; if (!value) throw new Error(`${name} is required; RC capture does not guess runtime inputs.`); return value; }

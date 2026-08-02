@@ -209,6 +209,7 @@ tags:
 
 - killApp
 - launchApp
+- openLink: "${PATTERNLY_DEV_CLIENT_URL}"
 - scrollUntilVisible:
     element:
       id: "patternly:resume:card:algorithms:algorithms-independent-practice:1"

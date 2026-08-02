@@ -25,12 +25,39 @@ test("RC Algorithms bootstrap resets learning data and explicitly selects the Al
   assert.equal((flow.match(/id: "patternly:home:track-card:algorithms"/g) ?? []).length, 2);
 });
 
-test("RC Algorithms runners require an explicit device, local dev-client, output destination, and flow", () => {
-  for (const path of ["scripts/runRcAlgorithmsIos.mjs", "scripts/runRcAlgorithmsAndroid.mjs"]) {
+test("RC Algorithms runners validate and pass explicit capture inputs only to the final Maestro flow", () => {
+  for (const [path, expectedPlatform] of [["scripts/runRcAlgorithmsIos.mjs", "ios"], ["scripts/runRcAlgorithmsAndroid.mjs", "android"]] as const) {
     const runner = readFileSync(path, "utf8");
     assert.match(runner, /PATTERNLY_DEV_CLIENT_URL/);
     assert.match(runner, /MAESTRO_TEST_OUTPUT_DIR/);
     assert.match(runner, /--flow/);
     assert.match(runner, /exp\+patternly/);
+    assert.match(runner, new RegExp(`capturePlatform !== "${expectedPlatform}"`));
+    assert.match(runner, /\["light", "dark"\]\.includes\(captureTheme\)/);
+    assert.match(runner, /resolve\(required\("SCREENSHOT_ROOT"\)\)/);
+    assert.ok(runner.includes('"-e", `SCREENSHOT_ROOT=${screenshotRoot}`'));
+    assert.ok(runner.includes('"-e", `THEME=${captureTheme}`'));
+    assert.ok(runner.includes('"-e", `PLATFORM=${capturePlatform}`'));
+    assert.ok(runner.includes('"-e", `PATTERNLY_DEV_CLIENT_URL=${devClientUrl}`'));
+    assert.equal((runner.match(/\.\.\.captureEnvironmentArgs/g) ?? []).length, 1);
+    assert.match(runner, /run\("maestro", \["test",[^\n]*\.\.\.captureEnvironmentArgs, flow\], \{ stdio: "inherit" \}\);/);
   }
+});
+
+test("RC Algorithms resume evidence reloads the local development bundle once before exact resume", () => {
+  const algorithms = readFileSync(".maestro/screenshot-capture/launch-005-learning-runtimes/20-algorithms-ordering-resume-conflict.yaml", "utf8");
+  const certification = readFileSync(".maestro/screenshot-capture/launch-005-learning-runtimes/40-certification-pause-resume.yaml", "utf8");
+  const reloadBoundary = '- killApp\n- launchApp\n- openLink: "${PATTERNLY_DEV_CLIENT_URL}"';
+
+  for (const flow of [algorithms, certification]) {
+    assert.equal((flow.match(/openLink:/g) ?? []).length, 1);
+    assert.equal((flow.match(/- killApp/g) ?? []).length, 1);
+    assert.equal((flow.match(/- launchApp/g) ?? []).length, 1);
+    assert.ok(flow.includes(reloadBoundary));
+    assert.doesNotMatch(flow, /point:|coordinates:|runFlow:/);
+  }
+
+  assert.ok(algorithms.indexOf(reloadBoundary) < algorithms.indexOf('id: "patternly:resume:card:algorithms:algorithms-independent-practice:1"'));
+  assert.match(certification, /- tapOn:\n    id: "main-tab-bar-home"\n- extendedWaitUntil:\n    visible:\n      id: "patternly:home:track-card:cloud-certification"\n    timeout: 30000\n- killApp\n- launchApp\n- openLink: "\$\{PATTERNLY_DEV_CLIENT_URL\}"[\s\S]*?id: "patternly:resume:card:cloud-certification:certification-focus-practice:1"/);
+  assert.match(certification, /id: "patternly:resume:continue:cloud-certification:certification-focus-practice:1"/);
 });

@@ -129,6 +129,13 @@ tags:
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-home"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:cloud-certification"
+    timeout: 30000
+- killApp
+- launchApp
+- openLink: "${PATTERNLY_DEV_CLIENT_URL}"
 - scrollUntilVisible:
     element:
       id: "patternly:resume:card:cloud-certification:certification-focus-practice:1"
