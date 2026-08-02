@@ -4,6 +4,10 @@ tags:
   - rc-evidence
   - algorithms
 ---
+- extendedWaitUntil:
+    visible:
+      id: "main-tab-bar"
+    timeout: 30000
 - runFlow:
     when:
       visible:
@@ -11,6 +15,7 @@ tags:
     commands:
       - tapOn:
           id: "patternly:home:change-track"
+          retryTapIfNoChange: true
 - scrollUntilVisible:
     element:
       id: "patternly:home:select-track:algorithms"
@@ -27,3 +32,5 @@ tags:
     centerElement: false
     timeout: 30000
     visibilityPercentage: 20
+- assertVisible:
+    id: "patternly:home:track-card:algorithms"

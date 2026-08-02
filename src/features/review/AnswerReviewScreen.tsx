@@ -3,11 +3,11 @@ import { useFocusEffect } from "@react-navigation/native";
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Badge, Button, Card, EmptyState, ProgressBar, Screen, SectionHeader } from "../../components";
+import { Badge, Button, Card, EmptyState, LoadingState, ProgressBar, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
-import { setQuestionNeedsReview } from "../../application/certificationPracticeUseCases";
+import { setQuestionNeedsReview } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/cloud-certification";
 import { radius, spacing, typography } from "../../theme";
@@ -21,14 +21,16 @@ export function AnswerReviewScreen({ route }: Props) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [attempt, setAttempt] = useState<CertificationExamSummaryViewModel | null>(null);
+  const [hasLoadedReviewData, setHasLoadedReviewData] = useState(false);
   const [reviewIds, setReviewIds] = useState<Set<string>>(new Set());
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [updatingReviewIds, setUpdatingReviewIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<ReviewFilter>(route.params?.initialFilter ?? "all");
-  useFocusEffect(useCallback(() => { let active = true; setReviewError(null); void Promise.all([getAttempts(), getReviewQueueItems()]).then(([attempts, reviews]) => { if (!active) return; setAttempt(attempts.find((item) => item.id === route.params?.attemptId) ?? attempts[0] ?? null); setReviewIds(new Set(reviews.value.map((entry) => entry.sourceItem.itemId))); }).catch((error) => { if (active) setReviewError(describeOperationalFailure(error, "Review data could not be loaded locally.")); }); return () => { active = false; }; }, [route.params?.attemptId]));
+  useFocusEffect(useCallback(() => { let active = true; setReviewError(null); setHasLoadedReviewData(false); void Promise.all([getAttempts(), getReviewQueueItems()]).then(([attempts, reviews]) => { if (!active) return; setAttempt(attempts.find((item) => item.id === route.params?.attemptId) ?? attempts[0] ?? null); setReviewIds(new Set(reviews.value.map((entry) => entry.sourceItem.itemId))); setHasLoadedReviewData(true); }).catch((error) => { if (active) { setReviewError(describeOperationalFailure(error, "Review data could not be loaded locally.")); setHasLoadedReviewData(true); } }); return () => { active = false; }; }, [route.params?.attemptId]));
   const answers = useMemo(() => !attempt ? [] : filter === "incorrect" ? attempt.answers.filter((answer) => !answer.isCorrect) : attempt.answers, [attempt, filter]);
   async function toggle(answer: CertificationAnswerViewModel) { const marked = !reviewIds.has(answer.questionId); setReviewError(null); setUpdatingReviewIds((current) => new Set(current).add(answer.questionId)); try { await setQuestionNeedsReview(answer.questionSnapshot, marked); setReviewIds((current) => { const next = new Set(current); marked ? next.add(answer.questionId) : next.delete(answer.questionId); return next; }); } catch (error) { setReviewError(describeOperationalFailure(error, "The review mark could not be saved locally.")); } finally { setUpdatingReviewIds((current) => { const next = new Set(current); next.delete(answer.questionId); return next; }); } }
   if (reviewError) return <Screen><EmptyState title={t("Review unavailable")} description={t(reviewError)} /></Screen>;
+  if (!hasLoadedReviewData) return <Screen><LoadingState title={t("Loading review…")} /></Screen>;
   return <Screen>{attempt ? <><Card><SectionHeader title={t("Answer Review")} subtitle={`${attempt.correctCount}/${attempt.questionCount} ${t("correct")} · ${attempt.scorePercent}%`} /><ProgressBar progress={attempt.scorePercent / 100} /><View style={styles.filterRow}><FilterChip active={filter === "all"} label={t("All")} onPress={() => setFilter("all")} tone="info" /><FilterChip active={filter === "incorrect"} label={t("Incorrect")} onPress={() => setFilter("incorrect")} tone="danger" /></View></Card>{answers.length ? <View style={styles.answerList}>{answers.map((answer) => <AnswerCard answer={answer} disabled={updatingReviewIds.has(answer.questionId)} key={answer.questionId} needsReview={reviewIds.has(answer.questionId)} onToggle={() => void toggle(answer)} />)}</View> : <Card><EmptyState title={t("No answers in this view")} description={t("Switch filters to review the full attempt.")} /></Card>}</> : <Card><EmptyState title={t("No attempt found")} description={t("Submit an exam before reviewing answers.")} /></Card>}</Screen>;
 }
 function AnswerCard({ answer, disabled, needsReview, onToggle }: { answer: CertificationAnswerViewModel; disabled: boolean; needsReview: boolean; onToggle: () => void }) {

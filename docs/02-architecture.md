@@ -11,6 +11,25 @@ application composition root
   → MMKV infrastructure
 ```
 
+For the account-enabled public launch, that local path remains the only
+learning-data write path and receives one account boundary:
+
+```txt
+account lifecycle application service
+  → account-data repository/service boundary
+      → canonical local repositories (device durability authority)
+      → ordered sync outbox
+      → remote account dataset port (cross-device convergence authority)
+```
+
+The remote adapter cannot become a second repository used directly by screens,
+family runtimes or learning commands. A learning command commits and verifies
+the canonical local mutation first; the same boundary then queues its
+revisioned remote operation. Remote compare-and-swap failure preserves the last
+verified local and remote states and returns an explicit sync/conflict state.
+Provider packages, networking and this account boundary are not implemented in
+the current source; Tasks 3 and 8 add them against the canonical contract.
+
 The shared learning kernel owns session lifecycle, immutable attempts, canonical results, review mutation commands, evidence aggregation contracts, and repository interfaces. It treats `trackId` and `familyId` as opaque registry identifiers and is family-agnostic: it does not know certification domains, Algorithms patterns, SQL queries, code traces, system-design dimensions, item renderers, or a global list of interaction types.
 
 `CertificationFamilyRuntime` owns certification scoring, competency evidence, practice semantics, and profile-driven simulation. `AlgorithmsFamilyRuntime` owns mental units, taxonomy evidence, choice/ordering/complexity interactions, and algorithmic review policy. A new track that shares those semantics is an instance of an existing family, not a new parallel runtime. A domain with materially different response, scoring, feedback, or review semantics receives a new family runtime while continuing to use the same kernel, repositories, lifecycle commands, and session shell.

@@ -4,7 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import {
+  AppShellHeader,
+  EmptyState,
   Icon,
+  LoadingState,
   Screen,
   type IconName,
 } from "../../components";
@@ -19,10 +22,10 @@ import type { RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { colorWithOpacity, radius, spacing, typography } from "../../theme";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
-import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 
 import {
   buildTopicRoadmapNodes,
@@ -38,6 +41,13 @@ type RoadmapRow =
   | { kind: "center"; topic: TopicRoadmapNodeModel }
   | { kind: "split"; left: TopicRoadmapNodeModel; right: TopicRoadmapNodeModel };
 
+const STORED_TRACK_REQUEST_KEY = "stored-track" as const;
+type RoadmapRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
+type RoadmapReadState =
+  | Readonly<{ kind: "pending"; requestKey: RoadmapRequestKey }>
+  | Readonly<{ kind: "ready"; requestKey: RoadmapRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
+  | Readonly<{ kind: "unavailable"; requestKey: RoadmapRequestKey; reason: string }>;
+
 const TAB_BAR_RESERVED_HEIGHT = 112;
 const DOT_COLUMNS = 18;
 const DOT_ROWS = 56;
@@ -45,23 +55,39 @@ const DOT_ROWS = 56;
 export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
+  const requestKey: RoadmapRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
+  const [readState, setReadState] = useState<RoadmapReadState>({ kind: "pending", requestKey });
   const [selectedTopicId, setSelectedTopicId] = useState(route.params?.topicId);
-  const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
 
   useFocusEffect(
     useCallback(() => {
+      const capturedRequestKey = requestKey;
       let isActive = true;
+      setReadState({ kind: "pending", requestKey: capturedRequestKey });
 
       async function loadData() {
-        const [savedTrackId, trainingAttemptsResult] = await Promise.all([
-          getActiveTrackId(),
-          getTrainingAttempts(),
-        ]);
+        try {
+          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
+            getActiveTrackId(),
+            getTrainingAttempts(),
+          ]);
 
-        if (isActive) {
-          if (savedTrackId) setActiveTrackId(savedTrackId);
-          setTrainingAttempts(trainingAttemptsResult.value);
+          if (isActive) {
+            setReadState({
+              kind: "ready",
+              requestKey: capturedRequestKey,
+              activeTrackId: capturedRequestKey === STORED_TRACK_REQUEST_KEY ? savedTrackId ?? null : capturedRequestKey,
+              trainingAttempts: trainingAttemptsResult.value,
+            });
+          }
+        } catch (error) {
+          if (isActive) {
+            setReadState({
+              kind: "unavailable",
+              requestKey: capturedRequestKey,
+              reason: describeOperationalFailure(error, "Topic roadmap data is unavailable."),
+            });
+          }
         }
       }
 
@@ -70,19 +96,16 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
       return () => {
         isActive = false;
       };
-    }, []),
+    }, [requestKey]),
   );
 
   useEffect(() => {
     setSelectedTopicId(route.params?.topicId);
   }, [route.params?.topicId]);
 
-  useEffect(() => {
-    if (route.params?.trackId) {
-      setActiveTrackId(route.params.trackId);
-    }
-  }, [route.params?.trackId]);
-
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} /><LoadingState title={t("Preparing practice")} /></Screen>;
+  if (readState.kind === "unavailable") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Topic Roadmap")} /><EmptyState title={t("Topic roadmap is unavailable")} description={t(readState.reason)} /></Screen>;
+  const { activeTrackId, trainingAttempts } = readState;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const topics = buildTopicRoadmapNodes({ activeTrackId, trainingAttempts });
@@ -100,11 +123,7 @@ export function TopicRoadmapScreen({ navigation, route }: TopicRoadmapScreenProp
   return (
     <View style={styles.shell}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppStackHeader
-          navigation={navigation}
-          onBackPress={returnToPracticeHub}
-          showBack
-        />
+        <AppShellHeader backAction={{ onPress: returnToPracticeHub }} />
 
         <View style={styles.intro}>
           <Text style={styles.title}>{t("Choose topic")}</Text>

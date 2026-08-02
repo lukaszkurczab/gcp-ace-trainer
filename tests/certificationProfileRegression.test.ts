@@ -90,6 +90,7 @@ function createProfileRegressionHarness(clock: MutableClock) {
 
   const ports: TrainingLifecyclePorts = {
     clock,
+    sessionIds: { async create({ trackId, modeId }) { return `${trackId}:${modeId}:00000000-0000-4000-8000-000000000001`; } },
     tracks: { getTrackRegistration },
     runtimes: {
       resolve(familyId) {
@@ -123,7 +124,6 @@ function createProfileRegressionHarness(clock: MutableClock) {
       async start(input) { await commitTrainingSessionStart({ session: input.session, draft: input.draft, createdAt: input.session.startedAt }); },
       async submitPractice() { throw new Error("Certification profile regression does not submit per-item practice responses."); },
       async advance(session) { await commitTrainingSessionAdvance(session, clock.now()); },
-      async complete() { throw new Error("Certification profile regression finalizes its simulation through the canonical finalization mutation."); },
       async completeWithResult() { throw new Error("Certification profile regression finalizes its simulation through the canonical finalization mutation."); },
       finalize,
       async abandon() { throw new Error("Certification profile regression does not abandon its active simulation."); },
@@ -156,7 +156,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
   const started = await lifecycle.startSession({
     trackId: "cloud-certification",
     modeId: "certification-exam-simulation",
-    request: { sessionId: "certification-profile-regression-session", requestedLength: 4 },
+    request: { requestedLength: 4 },
   });
   const sessionId = started.session.id;
   assert.equal(started.session.actualLength, 4);

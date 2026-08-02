@@ -52,6 +52,9 @@ export class TrainingApplicationFailure extends Error {
 export type TrackRegistrationPort = Readonly<{ id: TrackId; familyId: TrackFamilyId }>;
 export interface TrackRegistryPort { getTrackRegistration(trackId: TrackId): TrackRegistrationPort; }
 
+export type TrainingSessionIdentityRequest = Readonly<{ trackId: TrackId; modeId: string }>;
+export interface TrainingSessionIdentityPort { create(input: TrainingSessionIdentityRequest): Promise<string>; }
+
 export type PreparedSession = Readonly<{
   session: TrainingSession;
   firstOccurrence: ContentItemRef;
@@ -125,6 +128,7 @@ export type PendingMutationProjection = Readonly<{
     submittedResponse: unknown;
     reviewMutations: readonly ReviewMutationCommand[];
   }>;
+  practiceCompletion?: Readonly<{ resultId: string }>;
   simulationFinalization?: Readonly<{ frozenDraftRevision: number; resultId: string }>;
 }>;
 
@@ -133,7 +137,6 @@ export interface TrainingMutationCoordinatorPort {
   start(input: PreparedSession): Promise<void>;
   submitPractice(input: PracticeSubmission): Promise<void>;
   advance(session: TrainingSession): Promise<void>;
-  complete(session: TrainingSession): Promise<void>;
   completeWithResult(input: PracticeFinalization): Promise<void>;
   finalize(input: SimulationFinalization): Promise<void>;
   abandon(session: TrainingSession): Promise<void>;
@@ -148,6 +151,7 @@ export interface RuntimeAuditabilityPort {
 
 export type TrainingLifecyclePorts = Readonly<{
   clock: Readonly<{ now(): string }>;
+  sessionIds: TrainingSessionIdentityPort;
   tracks: TrackRegistryPort;
   runtimes: FamilyRuntimeRegistryPort;
   content: BundledContentAvailabilityPort;

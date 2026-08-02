@@ -21,6 +21,32 @@ Home shows deterministic, family-specific, explained recommendations. It priorit
 
 Home does not display confidence, readiness, retention, or mastery percentages. A valid learner choice among currently supported configurations overrides the recommendation for the current session.
 
+## Public-launch account and data flow
+
+`canonical-product-contract.yaml` defines the complete account surface and
+state map. The implementation must provide account entry, register, identity
+verification, sign-in, forgot/reset password, expired-session
+reauthentication, account/profile, data adoption, sync status/conflict,
+sign-out, in-app deletion and a public deletion-request path.
+
+First account binding always resolves before Home or track selection. Empty
+local and remote data creates one empty bound dataset. Local-only data is
+previewed and explicitly uploaded; remote-only data is previewed and explicitly
+restored. When both sides contain records, the application presents the
+deterministic reconciliation plan and any active-session choice before applying
+it. Cancellation or failure leaves both last verified datasets unchanged.
+
+A previously verified bound account can open Home and continue local learning
+offline. The shell must expose pending sync and cannot present registration,
+sign-in, recovery, reauthentication, restore or deletion as successful while
+offline. A server-declared revoked or expired session returns to the explicit
+reauthentication surface and blocks sync.
+
+These are required downstream surfaces, not current routes. The current
+`RootNavigator` still contains 21 non-account routes; Task 3 adds the account
+route group only after approved designs exist and removes obsolete entry logic
+instead of keeping parallel anonymous and account paths.
+
 ## Mode setup
 
 Routes resolve the requested Algorithms or Certification mode through `canonical-product-contract.yaml`. This navigation document does not enumerate modes or define their lengths, feedback timing, reinsert, shortening, or timer behavior.

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Linking, Text, View } from "react-native";
-import { EmptyState, Screen } from "../../components";
+import { Linking, View } from "react-native";
+import { EmptyState, LoadingState, Screen } from "../../components";
 import { bootstrapApplication } from "../../application/bootstrap";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
-import { getAlgorithmsForegroundTimerFacade } from "../../application/algorithms";
+import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { validateBundledContent } from "./validateBundledContent";
@@ -37,8 +37,8 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
         async () => {
           if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
           const session = await lifecycle.resumeActiveSession();
-          if (session.trackId === "algorithms" && (session.configurationSnapshot.timer === "countdownForeground" || session.configurationSnapshot.timer === "elapsedForeground")) {
-            await getAlgorithmsForegroundTimerFacade().restoreForResume(session);
+          if (session.configurationSnapshot.timer === "countdownForeground" || session.configurationSnapshot.timer === "elapsedForeground") {
+            await getForegroundSessionTimerFacade().restoreForResume(session);
           }
         },
         async () => {
@@ -96,7 +96,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
   const body = state.kind === "ready"
     ? <View style={{ flex: 1 }} testID={auditResetReady ? runtimeSelectors.content.readyAfterAuditReset() : runtimeSelectors.content.ready()}>{children}</View>
     : state.kind === "loading"
-      ? <Screen><View><Text>Preparing content…</Text></View></Screen>
+      ? <Screen><LoadingState title="Preparing content…" /></Screen>
       : <Screen><EmptyState title="Application unavailable" description={state.reason} /></Screen>;
   return <View style={{ flex: 1 }} testID={auditCommandListenerReady ? runtimeSelectors.content.auditCommandListener() : undefined}>{body}</View>;
 }

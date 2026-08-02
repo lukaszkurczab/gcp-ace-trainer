@@ -1,6 +1,6 @@
 # 08 — Storage and Offline
 
-## Target
+## Current implementation and public-launch target
 
 Patternly is offline-first.
 
@@ -8,16 +8,14 @@ MMKV is the only persistence engine for canonical local application state. Infra
 
 No UI module, screen, family runtime, track instance, content bank, or shared-domain module imports MMKV directly.
 
-Static content is bundled with the application and identified by an active `contentVersion`. User learning data is stored as local canonical state.
+Static content is bundled with the application and identified by an active `contentVersion`. User learning data is stored first as local canonical state.
 
-Canonical learning data is excluded from automatic platform backup and device-transfer restore. Android excludes the app data root in both legacy backup rules and Android 12+ cloud/D2D extraction rules. Before React Native initializes on iOS, the app creates the MMKV `Documents/mmkv` directory and marks it `isExcludedFromBackup`; failure to establish that policy stops startup. Patternly offers no backup or restore path for learning records.
+Canonical learning data is excluded from automatic platform backup and device-transfer restore. Android excludes the app data root in both legacy backup rules and Android 12+ cloud/D2D extraction rules. Before React Native initializes on iOS, the app creates the MMKV `Documents/mmkv` directory and marks it `isExcludedFromBackup`; failure to establish that policy stops startup. The current build offers no restore path. The public-launch account target adds application-level cross-device synchronization under `canonical-product-contract.yaml`; it does not re-enable platform backup.
 
 The target does not include:
 
 - remote content delivery;
 - content synchronization;
-- user accounts;
-- cloud storage;
 - Cloud write-through;
 - AsyncStorage reads or writes;
 - historical-record migration;
@@ -25,7 +23,9 @@ The target does not include:
 - old-schema fallback reads;
 - historical item or explanation reconstruction.
 
-Introducing remote content in the future requires a separate approved contract covering source authenticity, manifest signing, version activation, rollback, active-session compatibility, offline availability, and failure behaviour. It is not part of the current architecture.
+Remote content remains a separate concern. The account contract authorizes only
+the declared identity, account and canonical user-learning fields; it does not
+authorize remote content delivery, analytics, telemetry or arbitrary SDK data.
 
 ## Native runtime prerequisite
 
@@ -54,16 +54,91 @@ The canonical repository set owns:
 - active and completed sessions;
 - immutable attempts;
 - review queue entries;
-- family-neutral evidence records;
-- family-owned progress records;
 - simulation drafts;
-- the single pending mutation journal.
+- the single pending mutation journal;
+- the account-deletion intent used only to resume verified cleanup.
+
+Family-neutral evidence and family progress are read projections derived from
+attempts, results and review entries. They are not separately writable records,
+do not have storage keys and never synchronize as an independent authority.
 
 Static content is not copied into user persistence.
 
 Canonical records reference bundled content by stable track, content-version, item, and occurrence identities.
 
 A `contentVersion` identifies one complete active content bank. It does not authorize runtime access to historical banks.
+
+## Account ownership and synchronization
+
+For public launch, the canonical local repository set remains the durability
+authority for the current device. One revisioned remote account dataset is the
+cross-device convergence authority. These are different roles inside one
+account-data repository/service boundary, not two competing products or direct
+Cloud write-through.
+
+Device-owned storage metadata, application settings and notification settings
+never sync. Account-owned active-track, session, result, attempt, review, draft
+and foreground-timer records sync using the policies declared in
+`canonical-product-contract.yaml`. Evidence and progress are rebuilt from
+those synchronized facts. The local mutation journal stays device-operational;
+only its verified materialized write set enters the ordered sync outbox.
+The account-deletion intent is also device-operational and never syncs. It is a
+minimal cleanup checkpoint, not learning-data authority.
+
+Every remote write carries the expected account revision. The service accepts
+it once or rejects it as stale. A stale revision fetches the remote state and
+attempts only the declared deterministic semantic replay. An immutable
+same-ID/different-fingerprint collision, two divergent active sessions or a
+revisioned record that cannot be replayed becomes a visible blocking conflict;
+neither side is overwritten.
+
+## First account binding and adoption
+
+First binding is an explicit application operation before ordinary learning
+navigation:
+
+```txt
+inspect validated local dataset and remote account dataset
+→ build a record-class adoption plan
+→ show counts, direction and active-session/conflict decisions
+→ receive explicit confirmation
+→ apply revisioned operations
+→ verify the resulting local and remote dataset
+→ expose ready or a specific blocking state
+```
+
+Empty/empty creates an empty bound dataset. Local-only uploads the exact local
+dataset after preview. Remote-only restores the exact remote dataset after
+preview. Both-populated unions distinct immutable IDs, deduplicates identical
+fingerprints and applies revisioned record policy. Divergent active sessions
+require an explicit choice and confirmed abandonment of the other draft.
+Immutable identity collisions block as integrity errors. Cancellation or any
+failed verification preserves both last verified datasets unchanged.
+
+## Offline sync operation
+
+A previously verified account with a validated local binding may continue
+practice, review, progress and resume offline only after at least one successful
+authenticated synchronization. The initial bootstrap cannot enter offline.
+Each later mutation still completes
+the existing local journal/materialization/verification boundary, then appends
+one idempotent sync operation and exposes `offlinePending`. Network return may
+retry in FIFO order without duplicating a logical operation.
+
+Registration, verification, sign-in, first account bootstrap, recovery,
+reauthentication, remote restore and account deletion are unavailable offline.
+An expired access token does not erase or falsify local progress; sync and
+security actions remain blocked until reauthentication. A server-declared
+revocation requires reauthentication and cannot fall back to anonymous use.
+
+An offline previously bound device cannot know that another device deleted the
+account, so it honestly retains its local bound data until an authenticated
+reconnect. If that reconnect returns account-deleted evidence bound to the
+stored account, the device persists its deletion intent, idempotently removes
+credentials, binding, outbox and account-owned records, and exposes the
+terminal remote-account-deleted result. It never asks the user to reauthenticate
+an account known to be deleted. Local cleanup failure remains retryable from
+the durable intent.
 
 ## Storage namespace and ownership
 
@@ -101,6 +176,12 @@ initialize the one MMKV client
 A pending journal is self-contained. Its recovery must not depend on historical content, obsolete runtime code, or the current learner-visible explanation.
 
 Normal learning navigation is not enabled while storage initialization or journal recovery remains unresolved.
+
+The same rule applies before export, sign-out and account deletion: recover the
+durable plan, materialize it, verify it and clear the journal first. Failure
+is the visible `journalRecoveryFailure` result and blocks the requested
+destructive boundary while retaining the current account binding and verified
+data; a different account cannot be bound around an unresolved journal.
 
 After bootstrap:
 
@@ -473,7 +554,8 @@ Learning-state reset deletes:
 - completed-session history;
 - attempts;
 - review queue entries;
-- progress and evidence records;
+- source attempts, results and review entries from which progress and evidence
+  projections are derived;
 - developer learning fixtures in the canonical namespace.
 
 It preserves:
@@ -556,19 +638,30 @@ An explicit failure is evidence that implementation work remains. It must not be
 
 ## Privacy
 
-Patternly stores only local data required for:
+Patternly stores only data required for:
 
 - settings;
 - session recovery;
 - committed attempts;
 - review;
-- progress and evidence;
+- derived progress and evidence projections;
 - deterministic recommendations.
 
-It does not store accounts, identity profiles, confidence responses, or cloud synchronization metadata.
+The account-enabled target additionally stores a normalized email identity,
+account binding, revision/sync metadata and the canonical account-owned
+learning records declared in the normative contract. It does not add
+confidence responses, advertising identifiers or a hidden behavioural profile.
 
-Local-only storage reduces remote transmission and account-linking exposure. Data minimization comes from storing only the records required by the learning contract.
+Local-first storage limits continuous network dependence. Data minimization
+comes from transmitting only the declared identity, revision, content-reference
+and canonical learning fields required for account continuity.
 
 The application must not describe MMKV data as encrypted unless encryption and key management are explicitly configured and verified.
 
-There is no export or import contract in the current recovery scope.
+The current source still has no export, account or sync implementation. Tasks 3,
+7 and 8 must implement the canonical adoption, pending-sign-out export and
+remote-data paths before product copy may claim account recovery or sync.
+The export contract is versioned canonical JSON with SHA-256 integrity over
+account-owned local records and the sync projection; it excludes every
+credential, token, transport envelope and deletion proof and succeeds only
+after a verified file handoff.

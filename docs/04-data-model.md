@@ -108,3 +108,49 @@ type ExamExperienceProfile = {
 ```
 
 Historical item maps, explanation reconstruction, confidence, and translated old records are not models in the target.
+
+## Account and synchronization envelopes
+
+The normative record ownership and sync policies are declared in
+`canonical-product-contract.yaml`. The launch implementation adds envelopes at
+the application/repository boundary; it does not add account fields to family
+payloads or duplicate canonical learning records.
+
+```ts
+type AccountBinding = {
+  accountId: string;
+  normalizedEmail: string;
+  verificationState: 'verified';
+  accountRevision: number;
+};
+
+type SyncOperationEnvelope = {
+  operationId: string;
+  accountId: string;
+  expectedAccountRevision: number;
+  localCommitFingerprint: string;
+  canonicalWrites: readonly unknown[];
+};
+
+type SyncProjection = {
+  state: 'initialSyncRequired' | 'syncing' | 'synced' |
+    'offlinePending' | 'conflict' | 'failed' | 'deletionPending';
+  lastSuccessfulSyncAt?: string;
+  pendingMutationCount: number;
+  blockingConflictCode?: string;
+  lastFailureCode?: string;
+};
+```
+
+An access token is not a learning-data owner. Authentication proves access to
+one account dataset; local record revisions and the remote account revision
+govern synchronization. Device settings and notification permission state do
+not sync. Mutation journals remain device-operational; only their verified
+materialized writes enter the ordered sync outbox.
+
+Canonical account records are ordered lexicographically by the exact UTF-8
+bytes of `type`, then by the exact UTF-8 bytes of `id`; a shorter equal byte
+prefix sorts first. Record IDs must be Unicode-scalar strings: valid surrogate
+pairs are accepted, while lone high or low UTF-16 surrogates are rejected. This
+order is shared by canonical dataset identity, adoption results and Firestore
+semantic record traversal.

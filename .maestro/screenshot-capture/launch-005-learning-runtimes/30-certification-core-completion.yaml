@@ -1,0 +1,413 @@
+appId: com.lkurczab.patternly
+name: Patternly launch 005 — Certification core completion evidence
+tags:
+  - screenshot
+  - uiux-evidence
+  - launch-005
+  - certification
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:home:change-track"
+- tapOn:
+    id: "patternly:home:change-track"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:cloud-certification"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+    timeout: 30000
+- tapOn:
+    id: "patternly:home:select-track:cloud-certification"
+    retryTapIfNoChange: true
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:cloud-certification"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:mode-card:certification-focus-practice"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:mode-card:certification-focus-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:setup:root"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:focus-topic:setup_environment"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:focus-topic:setup_environment"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:session-length:10"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:practice:session-length:10"
+- assertVisible:
+    id: "patternly:practice:session-length:10"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__010__focus-setup-selected__${THEME}__${PLATFORM}-phone"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:start-session"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:practice:start-session"
+- tapOn:
+    id: "patternly:practice:start-session"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:counter:cloud-certification:certification-focus-practice:1:ordinal:1:length:10"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__020__long-single-question-ready__${THEME}__${PLATFORM}-phone"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0001:a"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0001:a"
+- assertVisible:
+    id: "patternly:session:submit:ace-q-0001"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__030__long-single-answer-selected__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:session:submit:ace-q-0001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:ace-q-0001"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:ace-q-0001:correct"
+- tapOn:
+    id: "patternly:session:details-toggle:ace-q-0001"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:details:ace-q-0001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:details:ace-q-0001"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__040__long-single-feedback-expanded__${THEME}__${PLATFORM}-phone"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0001"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0001"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0002"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0002:d"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0002:d"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0002"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0002"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0002:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0002"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0002"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0003"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0003:c"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0003:c"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0003"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0003"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0003:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0003"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0003"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0004"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0004:a"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0004:a"
+- tapOn:
+    id: "patternly:session:option:ace-q-0004:b"
+- assertVisible:
+    id: "patternly:session:submit:ace-q-0004"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__050__multiple-answer-selected__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:session:submit:ace-q-0004"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0004:correct"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:continue:ace-q-0004"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__060__multiple-answer-feedback__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:session:continue:ace-q-0004"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0005"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0005:b"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0005:b"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0005"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0005"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0005:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0005"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0005"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0006"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0006:a"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0006:a"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0006"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0006"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0006:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0006"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0006"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0007"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0007:d"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0007:d"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0007"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0007"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0007:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0007"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0007"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0008"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0008:c"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0008:c"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0008"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0008"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0008:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0008"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0008"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0009"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0009:a"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0009:a"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0009:d"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+    timeout: 30000
+- tapOn:
+    id: "patternly:session:option:ace-q-0009:d"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0009"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0009"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:result:ace-q-0009:correct"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:continue:ace-q-0009"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:continue:ace-q-0009"
+
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:ace-q-0010"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:option:ace-q-0010:b"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:session:option:ace-q-0010:b"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:submit:ace-q-0010"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:submit:ace-q-0010"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:result:ace-q-0010:correct"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- assertVisible:
+    id: "patternly:session:result:ace-q-0010:correct"
+- assertVisible:
+    id: "patternly:session:continue:ace-q-0010"
+- assertVisible: "Finish session"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__070__final-feedback-finish-visible__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:session:continue:ace-q-0010"
+- extendedWaitUntil:
+    visible: "Session complete"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:summary:review-answers:cloud-certification:certification-focus-practice:1"
+- takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__080__verified-result-ready__${THEME}__${PLATFORM}-phone"

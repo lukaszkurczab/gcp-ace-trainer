@@ -1,5 +1,10 @@
 # Patternly moderated user-research packet
 
+> This packet is an independent internal product-research workflow. It is not
+> the public-launch plan and its manual acceptance rows do not block store
+> release. Current launch status lives in
+> [`../release-candidate-closure.md`](../release-candidate-closure.md).
+
 This packet is the canonical protocol for the first moderated Algorithms
 cohort. It tests whether people understand and can use the current product; it
 does not claim that Patternly improves interview performance, retention, or

@@ -4,7 +4,7 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "simulationOperationStateCtas", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "accountData", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "simulationOperationStateCtas", "algorithms", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
@@ -50,6 +50,7 @@
       }
     },
     "requirementTestCoverage": { "$ref": "#/$defs/requirementTestCoverage" },
+    "accountData": { "$ref": "#/$defs/accountData" },
     "userCommands": { "$ref": "#/$defs/userCommands" },
     "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
     "simulationConcurrency": { "$ref": "#/$defs/simulationConcurrency" },
@@ -113,6 +114,400 @@
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9-]*[A-Z0-9]$" }
         }
+      }
+    },
+    "accountData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "publicLaunchEntry", "credentials", "lifecycle", "dataAuthority", "adoption", "sync", "offlineAndExpiry", "signOutAndDeletion", "surfaces", "networkAndPrivacy"],
+      "properties": {
+        "version": { "const": 1 },
+        "publicLaunchEntry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["accountRequired", "identityMethod", "canonicalIdentifier", "firstAuthenticatedBootstrapRequiresNetwork", "offlineEntryRequiresSuccessfulAuthenticatedSync", "learningRequiresVerifiedIdentity", "offlineLearningAfterVerifiedBootstrap", "anonymousLearningPath"],
+          "properties": {
+            "accountRequired": { "const": true },
+            "identityMethod": { "const": "verifiedEmailAndPassword" },
+            "canonicalIdentifier": { "const": "normalizedEmail" },
+            "firstAuthenticatedBootstrapRequiresNetwork": { "const": true },
+            "offlineEntryRequiresSuccessfulAuthenticatedSync": { "const": true },
+            "learningRequiresVerifiedIdentity": { "const": true },
+            "offlineLearningAfterVerifiedBootstrap": { "const": "allowedForBoundAccount" },
+            "anonymousLearningPath": { "const": "prohibited" }
+          }
+        },
+        "credentials": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["passwordTransmission", "passwordPersistenceInApp", "passwordPersistenceRemote", "accessTokenPersistence", "accessTokenTransport", "refreshTokenPersistence", "refreshTokenTransport", "possessionTokenPersistenceInPatternlyStores", "tokenLoggingInPatternlyControlledLogs"],
+          "properties": {
+            "passwordTransmission": { "const": "tlsOnlyForRegisterSignInResetAndReauthentication" },
+            "passwordPersistenceInApp": { "const": "prohibited" },
+            "passwordPersistenceRemote": { "const": "oneWayVerifierOnly" },
+            "accessTokenPersistence": { "const": "memoryOnly" },
+            "accessTokenTransport": { "const": "receiveInTlsResponseBodySendInAuthorizationBearerHeaderOnly" },
+            "refreshTokenPersistence": { "const": "osProtectedCredentialStorage" },
+            "refreshTokenTransport": { "const": "receiveInTlsResponseBodySendOnlyToTokenEndpointTlsRequestBody" },
+            "possessionTokenPersistenceInPatternlyStores": { "const": "prohibited" },
+            "tokenLoggingInPatternlyControlledLogs": { "const": "prohibited" }
+          }
+        },
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["initialState", "states", "operations", "enumerationPolicy", "resendVerificationResult", "changePendingEmailResult", "verificationLink", "recoveryLink", "publicDeletionLink"],
+          "properties": {
+            "initialState": { "const": "signedOut" },
+            "states": {
+              "type": "array",
+              "minItems": 16,
+              "maxItems": 16,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/accountLifecycleState" }
+            },
+            "operations": {
+              "type": "array",
+              "minItems": 15,
+              "maxItems": 15,
+              "items": { "$ref": "#/$defs/accountLifecycleOperation" }
+            },
+            "enumerationPolicy": { "const": "registerMayReportDuplicateIdentityAndSignInMayReportUnverifiedOnlyAfterValidCredentialButRecoveryAndPublicDeletionNeverRevealAccountExistence" },
+            "resendVerificationResult": { "const": "invalidatesPriorVerificationTokenAndSendsReplacement" },
+            "changePendingEmailResult": { "const": "replacesNormalizedEmailInvalidatesPriorVerificationTokenAndSendsReplacement" },
+            "verificationLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "verificationPossessionToken" } } }] },
+            "recoveryLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "recoveryPossessionToken" } } }] },
+            "publicDeletionLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "publicDeletionPossessionToken" } } }] }
+          }
+        },
+        "dataAuthority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["localDurabilityAuthority", "remoteConvergenceAuthority", "synchronizationBoundary", "localCommitBeforeRemoteAcknowledgement", "parallelLearningRepository", "indexPolicy", "recordClasses", "derivedProjections"],
+          "properties": {
+            "localDurabilityAuthority": { "const": "canonicalLocalRepositorySet" },
+            "remoteConvergenceAuthority": { "const": "singleRevisionedAccountDataset" },
+            "synchronizationBoundary": { "const": "accountDataRepositoryService" },
+            "localCommitBeforeRemoteAcknowledgement": { "const": "required" },
+            "parallelLearningRepository": { "const": "prohibited" },
+            "indexPolicy": { "const": "indexesFollowOwningRecordClassAndAreNeverIndependentAuthority" },
+            "recordClasses": {
+              "type": "array",
+              "minItems": 15,
+              "maxItems": 15,
+              "items": { "$ref": "#/$defs/accountRecordClass" }
+            },
+            "derivedProjections": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "$ref": "#/$defs/accountDerivedProjection" }
+            }
+          }
+        },
+        "adoption": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requiresPreviewAndConfirmation", "cases", "recordPolicies", "cancelledOrFailedResult"],
+          "properties": {
+            "requiresPreviewAndConfirmation": { "const": true },
+            "cases": {
+              "type": "array",
+              "minItems": 7,
+              "maxItems": 7,
+              "items": { "$ref": "#/$defs/accountAdoptionCase" }
+            },
+            "recordPolicies": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["immutableDifferentIds", "immutableSameIdSameFingerprint", "immutableSameIdDifferentFingerprint", "revisionedOneSideChanged", "revisionedBothChanged", "deviceOwned"],
+              "properties": {
+                "immutableDifferentIds": { "const": "unionAfterPreviewConfirmation" },
+                "immutableSameIdSameFingerprint": { "const": "idempotentDeduplication" },
+                "immutableSameIdDifferentFingerprint": { "const": "blockingIntegrityConflict" },
+                "revisionedOneSideChanged": { "const": "changedSideAfterExpectedRevisionCheck" },
+                "revisionedBothChanged": { "const": "deterministicSemanticReplayOrBlockingConflict" },
+                "deviceOwned": { "const": "retainCurrentDeviceOnly" }
+              }
+            },
+            "cancelledOrFailedResult": { "const": "retainBothLastVerifiedDatasetsUnchanged" }
+          }
+        },
+        "sync": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["visibleStates", "visibleEvidence", "outboxOrder", "remoteWritePrecondition", "staleRevisionResult", "immutableCollisionResult", "activeSessionConflictResult", "remoteFailureResult", "retry"],
+          "properties": {
+            "visibleStates": { "const": ["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed", "deletionPending"] },
+            "visibleEvidence": { "const": ["lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode"] },
+            "outboxOrder": { "const": "fifoByVerifiedLocalCommit" },
+            "remoteWritePrecondition": { "const": "expectedAccountRevision" },
+            "staleRevisionResult": { "const": "fetchRemoteThenDeterministicReplayOrBlockingConflict" },
+            "immutableCollisionResult": { "const": "blockingIntegrityConflict" },
+            "activeSessionConflictResult": { "const": "explicitSessionChoiceRequired" },
+            "remoteFailureResult": { "const": "retainVerifiedLocalCommitAndPendingOutbox" },
+            "retry": { "const": "explicitOrAutomaticOnNetworkReturnWithoutDuplicateOperation" }
+          }
+        },
+        "offlineAndExpiry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["offlineEntryRequires", "learningAvailability", "mutationResult", "unavailableOffline", "serverDeclaredRevocationResult", "expiredAccessTokenWhileOffline"],
+          "properties": {
+            "offlineEntryRequires": { "const": "previouslyVerifiedBoundAccountValidatedLocalDatasetAndSuccessfulAuthenticatedSync" },
+            "learningAvailability": { "const": "localPracticeReviewProgressAndResumeRemainAvailable" },
+            "mutationResult": { "const": "commitLocallyThenExposeOfflinePending" },
+            "unavailableOffline": { "const": ["register", "verifyIdentity", "signIn", "requestRecovery", "resetPassword", "reauthenticate", "firstBootstrap", "remoteRestore", "accountDeletion", "publicDeletionVerification"] },
+            "serverDeclaredRevocationResult": { "const": "reauthenticationRequiredAndSyncBlocked" },
+            "expiredAccessTokenWhileOffline": { "const": "continueBoundLocalLearningButBlockSyncAndSecurityActionsUntilReauthentication" }
+          }
+        },
+        "signOutAndDeletion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pendingMutationJournal", "export", "signOut", "localLearningReset", "accountDeletion", "retention"],
+          "properties": {
+            "pendingMutationJournal": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["appliesBefore", "requiredSequence", "successBoundary", "blockingResult", "blockingSurfaces", "failureResult", "accountSwitchResult"],
+              "properties": {
+                "appliesBefore": { "const": ["export", "signOut", "accountDeletion"] },
+                "requiredSequence": { "const": ["recoverDurablePlan", "materializeWrites", "verifyWrites", "clearJournal"] },
+                "successBoundary": { "const": "journalAbsentAfterVerifiedClear" },
+                "blockingResult": { "const": "journalRecoveryFailure" },
+                "blockingSurfaces": {
+                  "const": [
+                    { "operation": "export", "surfaceId": "accountProfile" },
+                    { "operation": "signOut", "surfaceId": "signOut" },
+                    { "operation": "accountDeletion", "surfaceId": "deleteAccount" }
+                  ]
+                },
+                "failureResult": { "const": "blockRequestedOperationRetainBindingAndVerifiedData" },
+                "accountSwitchResult": { "const": "blockNewBindingUntilJournalResolvedUnderCurrentBinding" }
+              }
+            },
+            "export": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["format", "scope", "excludes", "integrity", "successBoundary", "availableOffline"],
+              "properties": {
+                "format": { "const": "versionedCanonicalJson" },
+                "scope": { "const": "accountOwnedLocalRecordsAndSyncProjection" },
+                "excludes": { "const": ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "syncTransportEnvelope", "deletionProof"] },
+                "integrity": { "const": "sha256CanonicalBytes" },
+                "successBoundary": { "const": "verifiedFileHandoff" },
+                "availableOffline": { "const": true }
+              }
+            },
+            "signOut": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pendingOutbox", "localResult", "preservedLocalRecords", "failureResult"],
+              "properties": {
+                "pendingOutbox": { "const": "synchronizeOrCompleteVerifiedExportThenExplicitlyDiscard" },
+                "localResult": { "const": "deleteAccountOwnedRecordsAccountBindingTokensAndOutbox" },
+                "preservedLocalRecords": { "const": ["storageMetadata", "applicationSettings", "notificationSettings"] },
+                "failureResult": { "const": "remainBoundAndExposeFailure" }
+              }
+            },
+            "localLearningReset": { "const": "separateFromAccountDeletionAndRemoteDataset" },
+            "accountDeletion": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["prerequisites", "remoteScope", "acceptedResult", "failureResult", "publicRequest", "durableIntent", "remoteAccountDeletedOnReconnect"],
+              "properties": {
+                "prerequisites": { "const": ["network", "recentReauthentication", "explicitScopeConfirmation"] },
+                "remoteScope": { "const": ["identity", "credentials", "sessions", "accountProfile", "learningRecords", "syncOperations"] },
+                "acceptedResult": { "const": "persistDurableIntentThenRevokeAllSessionsVerifyRemoteDeletionAndDeleteAccountOwnedLocalRecords" },
+                "failureResult": { "const": "deletionFailedWithRetryAndNoSuccessClaim" },
+                "publicRequest": { "const": "verifiedEmailPossessionWithoutAccountEnumeration" },
+                "durableIntent": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["recordClass", "authority", "writeBoundaries", "fields", "triggers", "stages", "restart", "remoteIdentityMissingAfterRestart", "clearBoundary"],
+                  "properties": {
+                    "recordClass": { "const": "accountDeletionIntent" },
+                    "authority": { "const": "deletionCleanupCheckpointOnlyNeverLearningAuthority" },
+                    "writeBoundaries": { "const": ["localRequestBeforeFirstRemoteDestructiveStep", "authenticatedRemoteAccountDeletedBeforeLocalCleanup"] },
+                    "fields": { "const": ["operationId", "irreversibleAccountIdHash", "recordedAt", "trigger", "stage"] },
+                    "triggers": { "const": ["localRequest", "authenticatedRemoteAccountDeleted"] },
+                    "stages": { "const": ["prepared", "sessionsRevoked", "remoteDeletionVerified", "localCleanupPending"] },
+                    "restart": { "const": "resumeIdempotentlyFromLastVerifiedStage" },
+                    "remoteIdentityMissingAfterRestart": { "const": "continueIdempotentLocalCleanupAndVerifyLocalAbsence" },
+                    "clearBoundary": { "const": "remoteDeletionAndLocalCleanupVerified" }
+                  }
+                },
+                "remoteAccountDeletedOnReconnect": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["appliesTo", "offlineResult", "evidence", "operation", "localResult", "terminalResult", "reauthenticationResult", "failureResult"],
+                  "properties": {
+                    "appliesTo": { "const": "previouslyBoundDevice" },
+                    "offlineResult": { "const": "retainBoundLocalDataUntilAuthenticatedReconnect" },
+                    "evidence": { "const": "authenticatedRemoteAccountDeletedResultBoundToStoredAccount" },
+                    "operation": { "const": "completeRemoteDeletionCleanup" },
+                    "localResult": { "const": "idempotentlyDeleteCredentialsBindingOutboxAndAccountOwnedLocalRecords" },
+                    "terminalResult": { "const": "remoteAccountDeleted" },
+                    "reauthenticationResult": { "const": "prohibited" },
+                    "failureResult": { "const": "deletionFailedRetainIntentForLocalCleanupRetry" }
+                  }
+                }
+              }
+            },
+            "retention": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["liveServiceDataAfterVerifiedDeletionDays", "encryptedBackupMaximumDays", "backupRestoreIntoLiveService", "minimalDeletionProofDays", "deletionProofFields"],
+              "properties": {
+                "liveServiceDataAfterVerifiedDeletionDays": { "const": 0 },
+                "encryptedBackupMaximumDays": { "const": 30 },
+                "backupRestoreIntoLiveService": { "const": "prohibited" },
+                "minimalDeletionProofDays": { "const": 30 },
+                "deletionProofFields": { "const": ["requestId", "irreversibleAccountIdHash", "requestedAt", "completedAt", "resultCode"] }
+              }
+            }
+          }
+        },
+        "surfaces": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": { "$ref": "#/$defs/accountSurface" }
+        },
+        "networkAndPrivacy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["transmittedFields", "transport", "emailDelivery", "transactionalEmailProcessor", "patternlyControlledLogExclusions", "honestLimitations"],
+          "properties": {
+            "transmittedFields": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["identity", "credentialTransport", "account", "learning", "operations"],
+              "properties": {
+                "identity": { "const": ["normalizedEmail", "passwordOnlyAtCredentialCommand", "verificationToken", "recoveryToken", "publicDeletionPossessionToken"] },
+                "credentialTransport": { "const": ["accessTokenOnlyInAuthorizationBearerHeader", "refreshTokenOnlyInTokenEndpointTlsRequestBody"] },
+                "account": { "const": ["accountId", "verificationState", "sessionId", "accountRevision"] },
+                "learning": { "const": ["recordType", "recordId", "recordRevision", "contentReferences", "canonicalLearningPayload", "operationFingerprint"] },
+                "operations": { "const": ["requestId", "boundedErrorCode", "clientTimestamp"] }
+              }
+            },
+            "transport": { "const": "authenticatedTls" },
+            "emailDelivery": { "const": "transactionalOnlyWithRateLimitAndNonEnumeratingRecoveryResponse" },
+            "transactionalEmailProcessor": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["provider", "plan", "environmentScope", "purpose", "retainedData", "processorCopyFields", "processorCopyLocations", "maximumRetentionDays", "storageRegion", "liveAccountDataAuthority", "backupClassification"],
+              "properties": {
+                "provider": { "const": "resend" },
+                "plan": { "const": "free" },
+                "environmentScope": { "const": "ownerOnlySandbox" },
+                "purpose": { "const": "publicDeletionPossessionLinkDeliveryOnly" },
+                "retainedData": { "const": "transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs" },
+                "processorCopyFields": { "const": ["recipientNormalizedEmail", "publicDeletionPossessionToken"] },
+                "processorCopyLocations": { "const": ["messageContent", "deliveryRecords", "apiRecords"] },
+                "maximumRetentionDays": { "type": "integer", "minimum": 0, "maximum": 30, "const": 30 },
+                "storageRegion": { "const": "UnitedStates" },
+                "liveAccountDataAuthority": { "const": "prohibited" },
+                "backupClassification": { "const": "prohibited" }
+              }
+            },
+            "patternlyControlledLogExclusions": { "const": ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "normalizedEmail", "learnerResponse", "promptText", "explanationText", "draftPayload", "attemptPayload", "reviewPayload", "progressPayload", "journalPayload", "exportPayload", "deletionIntentPayload"] },
+            "honestLimitations": { "const": ["mechanismsNotImplemented", "publicHostingUnavailableUntilMarketPromotion", "signedBuildNotVerified", "legalAndStoreDisclosuresNotPublished"] }
+          }
+        }
+      }
+    },
+    "accountLifecycleState": {
+      "type": "string",
+      "enum": ["signedOut", "registering", "verificationPending", "verifying", "signingIn", "authenticatedSyncing", "authenticatedReady", "offlineAuthenticated", "recoveryPending", "resettingPassword", "sessionExpired", "reauthenticationRequired", "signingOut", "deletionPending", "deletionFailed", "deleted"]
+    },
+    "accountLifecycleOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "surfaceId", "from", "inProgress", "success", "failureTransitions"],
+      "properties": {
+        "id": { "enum": ["register", "verifyIdentity", "resendVerification", "changePendingEmail", "signIn", "requestRecovery", "resetPassword", "completeInitialSync", "enterOffline", "restoreNetwork", "expireSession", "reauthenticate", "signOut", "deleteAccount", "completeRemoteDeletionCleanup"] },
+        "surfaceId": { "$ref": "#/$defs/accountSurfaceId" },
+        "from": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/accountLifecycleState" } },
+        "inProgress": { "$ref": "#/$defs/accountLifecycleState" },
+        "success": { "$ref": "#/$defs/accountLifecycleState" },
+        "failureTransitions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/accountFailureTransition" }
+        }
+      }
+    },
+    "accountFailureTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["failures", "to"],
+      "properties": {
+        "failures": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/accountFailure" } },
+        "to": {
+          "anyOf": [
+            { "$ref": "#/$defs/accountLifecycleState" },
+            { "const": "exactSourceState" }
+          ]
+        }
+      }
+    },
+    "accountFailure": {
+      "type": "string",
+      "enum": ["invalidInput", "duplicateIdentity", "rateLimited", "offline", "remoteFailure", "invalidLink", "expiredLink", "usedLink", "invalidCredential", "unverifiedIdentity", "adoptionConflict", "revokedSession", "journalRecoveryFailure", "pendingSyncRequiresNetwork", "exportRequired", "localDeletionFailure", "reauthenticationRequired", "deletionVerificationFailure"]
+    },
+    "accountEmailLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport", "tokenKind", "singleUse", "expiresAfterMinutes"],
+      "properties": {
+        "transport": { "const": "verifiedHttpsUniversalLink" },
+        "tokenKind": { "enum": ["verificationPossessionToken", "recoveryPossessionToken", "publicDeletionPossessionToken"] },
+        "singleUse": { "const": true },
+        "expiresAfterMinutes": { "type": "integer", "maximum": 30, "const": 30 }
+      }
+    },
+    "accountRecordClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "owner", "remoteSync"],
+      "properties": {
+        "id": { "enum": ["storageMetadata", "accountBinding", "syncMetadataAndOutbox", "applicationSettings", "notificationSettings", "activeTrack", "activeSessionReference", "trainingSession", "trainingSessionResult", "trainingAttempt", "reviewQueueEntry", "simulationDraft", "foregroundTimer", "mutationJournal", "accountDeletionIntent"] },
+        "owner": { "enum": ["device", "accountAndDevice", "account", "deviceOperational"] },
+        "remoteSync": { "enum": ["never", "identityReferenceOnly", "operationEnvelopeOnly", "revisioned", "immutableById", "materializedWritesOnly"] }
+      }
+    },
+    "accountDerivedProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sources", "writable", "remoteSync"],
+      "properties": {
+        "id": { "enum": ["familyNeutralEvidence", "familyProgress"] },
+        "sources": { "const": ["trainingAttempt", "trainingSessionResult", "reviewQueueEntry"] },
+        "writable": { "const": "prohibited" },
+        "remoteSync": { "const": "never" }
+      }
+    },
+    "accountAdoptionCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "result"],
+      "properties": {
+        "id": { "enum": ["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeSessionOnOneSide", "divergentActiveSessions", "divergentRecord"] },
+        "result": { "enum": ["createBoundEmptyDataset", "previewThenUploadExactLocalDataset", "previewThenRestoreExactRemoteDataset", "previewThenReconcileByRecordPolicy", "preserveThatSessionAndRejectSecondActiveSession", "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft", "applyRecordPolicyOrBlockWithoutMutation"] }
+      }
+    },
+    "accountSurfaceId": {
+      "type": "string",
+      "enum": ["accountEntry", "register", "verifyIdentity", "signIn", "forgotPassword", "resetPassword", "sessionExpiredReauthentication", "accountProfile", "dataAdoption", "syncStatus", "signOut", "deleteAccount", "publicDeleteRequest"]
+    },
+    "accountSurface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "states"],
+      "properties": {
+        "id": { "$ref": "#/$defs/accountSurfaceId" },
+        "states": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
       }
     },
     "userCommands": {
@@ -254,7 +649,13 @@
       "additionalProperties": false,
       "required": ["sourcePathPrefix", "designReferenceId"],
       "properties": {
-        "sourcePathPrefix": { "type": "string", "pattern": "^src/(?:assets|components|content/application|features|navigation|preferences|theme)(?:/[A-Za-z0-9_-]+)*/$" },
+        "sourcePathPrefix": {
+          "type": "string",
+          "anyOf": [
+            { "pattern": "^src/(?:assets|components|content/application|features|navigation|preferences|theme)(?:/[A-Za-z0-9_-]+)*/$" },
+            { "pattern": "^src/(?:assets|components|content/application|features|navigation|preferences|theme)(?:/[A-Za-z0-9_-]+)*/[A-Za-z0-9_-]+\\.tsx$" }
+          ]
+        },
         "designReferenceId": { "type": "string", "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$" }
       }
     },
@@ -273,8 +674,8 @@
         },
         "transitions": {
           "type": "array",
-          "minItems": 22,
-          "maxItems": 22,
+          "minItems": 29,
+          "maxItems": 29,
           "items": { "$ref": "#/$defs/practiceSessionTransition" }
         }
       }

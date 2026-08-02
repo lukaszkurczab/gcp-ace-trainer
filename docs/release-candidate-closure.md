@@ -1,13 +1,14 @@
 # Patternly — current product status
 
-## Status — 2026-07-30
+## Status — 2026-07-31
 
-`RELEASE VERIFIED / FULL AUDIT PENDING / USER-TESTING HOLD`
+`CONTENT RELEASE PINNED / PRODUCT COMPLETION NO-GO`
 
-This is the only retained execution-status document. Raw audit reports,
-screenshots, logs and historical build artifacts are intentionally not
-canonical: regenerate them against the then-current source whenever a new audit
-or release decision starts.
+The active objective is public launch readiness. Internal product tests run
+independently and do not define release sequencing or public-launch approval.
+The current evidence and complete product-to-launch sequence are in
+[`launch-completion-plan.md`](launch-completion-plan.md). The narrower release
+audit remains supporting evidence, not the active execution order.
 
 ## Bound content release
 
@@ -22,55 +23,43 @@ or release decision starts.
 No partial bank was published. The application release lock and bundled
 content identify this exact coordinated release.
 
-## Durable verified facts
+## Current verified facts
 
-- Algorithms 2375/2375 and Certification 360/360 received item-level manual
-  review before release `0015`.
-- At release closure, `patternly-content` passed 45/45 architecture tests;
-  Algorithms source inspection covered 2375 items in 213 batches without
-  diagnostics.
-- At the 2026-07-30 application baseline, recovery inventory, typecheck,
-  400/400 tests, content-boundary, runtime-privacy-boundary and the cross-repo
-  release contract passed.
-- The exact ten-item Algorithms research journey passed twice consecutively on
-  iOS and twice on Android. Current-release light, dark and larger-text
-  represented states had no open visual P0–P3 finding.
-- Participant-build identity schema 1 covered 279 build-affecting inputs and
-  produced SHA-256
-  `6c113edc3bbbfdd716d48385b5356a35eb1b22932084287b3a2e896a863bf646`.
-  Documentation, tests and evidence artifacts are outside that digest.
+- The refactored canonical bank contains Algorithms 2,375 items and
+  Certification 360 items.
+- Fresh `patternly-content` verification passes 45/45 tests.
+- The automated explanation audit inspects 2,735/2,735 items exactly once and
+  keeps its form-risk signals advisory.
+- Fresh application recovery inventory, typecheck, 407/407 tests,
+  content-boundary and runtime-privacy-boundary pass.
+- The pinned multi-track release exactly matches the producer manifest and
+  application bundle.
+- Android's merged release manifest targets API 36.
 
-These are dated baseline facts, not permission to reuse old evidence after a
-source change. The next full audit must rerun every applicable gate.
+Manual item review is not a launch requirement. The repository does not use a
+manual approval record as release authority.
 
-## Durable product decisions
-
-- The active visual direction is Option 3 — Quiet Layered: few elements,
-  generous space and only decision-relevant information. Option 1 contributes
-  only the one-dominant-action hierarchy rule.
-- The first research cohort uses English product content and a notes-only data
-  model with no screen, audio or video recording.
-- The current product is local-first, with no account, sync, billing or hidden
-  fallback path.
-- Only Algorithms and Google Cloud Associate Cloud Engineer are active.
-  Future tracks remain deferred until evidence from the first cohort.
-
-The canonical rationale and triggers remain in
-[`product-owner-decision-register.md`](product-owner-decision-register.md).
-
-## Work remaining before user testing
+## Work remaining before public launch
 
 | Work | Status | Completion evidence required |
 | --- | --- | --- |
-| New full product audit | `planned` | Fresh functional, visual, accessibility, publication and device evidence against the post-cleanup source |
-| Manual VoiceOver traversal | `blocking` | Completed iOS rows in [`pre-recruitment-acceptance.md`](user-testing/pre-recruitment-acceptance.md) |
-| Manual TalkBack traversal | `blocking` | Completed Android rows in the same acceptance record |
-| Timed human dry-run | `blocking` | One 45–60 minute run with a person uninvolved in implementation |
-| Research operations | `blocking` | Real participant contact, approved note storage, compensation rules and applicable privacy notice |
-| Final readiness decision | `blocking` | Explicit owner GO after every required gate passes |
+| Complete route/state inventory | `done` | all 21 registered routes, embedded states and missing launch surfaces are classified in `launch-surface-inventory.md` |
+| Competitive/category gap review | `done` | direct Algorithms, certification and adjacent learning products were compared; justified gaps are assigned in the launch plan |
+| Account/data contract | `done` | completed vendor-neutral lifecycle, authority, adoption, offline, recovery and deletion contract passed independent QA; 25/25 focused and 407/407 full tests pass |
+| Registration, sign-in and account lifecycle | `blocking` | no auth/account routes or service path exists in current source |
+| Visual system and screen completion | `blocking` | one shell/header/state system; no clipping; complete entry, setup, outcome, review, progress and settings surfaces |
+| Missing or misleading surfaces | `blocking` | privacy/support access completed; language and tablet contracts resolved; no retained non-functional route |
+| Study Activity and content trust/reporting | `blocking` | durable history can be reopened; release/source context is visible; per-item problem reports reach a canonical correction path |
+| Canonical Certification practice lifecycle | `blocking` | timer, leave/pause/resume, conflict, unanswered validation and truthful summary verified on both platforms |
+| Android production signing | `blocking` | signed AAB using a production upload key / Play App Signing path |
+| iOS distribution archive | `unknown / needs evidence` | validated signed archive and clean TestFlight install |
+| Native configuration alignment | `partial` | one iOS minimum, tablet/orientation and appearance contract across config files |
+| Public privacy and support | `blocking` | public URLs, in-app access and completed store declarations matching the binary |
+| Store metadata and screenshots | `planned` | complete App Store and Play draft packet |
+| Signed-artifact smoke | `planned` | physical-device verification of the actual store candidates |
+| Future content-release validation | `partial` | both `validate:real:*` commands pass from a clean checkout |
 
-Do not recruit participants or describe Patternly as ready until the final
-decision is `GO`.
+Research-only checks and internal testing do not appear as public-launch gates.
 
 ## Canonical handoff
 
@@ -78,11 +67,21 @@ decision is `GO`.
 - Content rules: [`07-content-guidelines.md`](07-content-guidelines.md)
 - Product decisions:
   [`product-owner-decision-register.md`](product-owner-decision-register.md)
-- Research packet: [`user-testing/README.md`](user-testing/README.md)
-- Manual acceptance:
-  [`user-testing/pre-recruitment-acceptance.md`](user-testing/pre-recruitment-acceptance.md)
+- Product completion plan:
+  [`launch-completion-plan.md`](launch-completion-plan.md)
+- Complete launch surface inventory:
+  [`launch-surface-inventory.md`](launch-surface-inventory.md)
+- Competitive product gap audit:
+  [`competitive-product-gap-audit.md`](competitive-product-gap-audit.md)
+- Supporting launch audit:
+  [`launch-readiness-audit.md`](launch-readiness-audit.md)
 - Current content lock:
   [`../integration/contracts/content-release/release.lock.json`](../integration/contracts/content-release/release.lock.json)
 
-The next work item is the owner-requested full audit. It must treat this status
-as orientation only and repository evidence as authoritative.
+The next work item is **Task 2 — canonical visual shell and component rules**
+from the product completion plan. The route and competitive-gap discovery and
+Task 1 contract are complete;
+implementation tasks now perform bounded verification for their assigned
+surfaces instead of requesting another app-wide audit. Known Certification
+lifecycle and visual defects remain blocking inputs to later implementation
+stages.

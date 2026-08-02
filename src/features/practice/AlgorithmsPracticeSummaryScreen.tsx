@@ -8,7 +8,7 @@ import {
   type AlgorithmsSessionResultProjection,
 } from "../../application/algorithms";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, Card, EmptyState, Screen } from "../../components";
+import { Button, Card, EmptyState, LoadingState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -39,7 +39,7 @@ export function AlgorithmsPracticeSummaryScreen({ navigation, route }: Props) {
   useFocusEffect(useCallback(() => { void load(); }, [load]));
 
   if (state.kind === "loading") {
-    return <Screen><EmptyState title={t("Loading session result")} description={t("Reading the verified completed-session result.")} /></Screen>;
+    return <Screen><LoadingState title={t("Loading session result")} description={t("Reading the verified completed-session result.")} /></Screen>;
   }
   if (state.kind === "unavailable") {
     return <Screen><EmptyState title={t("Session result unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;

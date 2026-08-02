@@ -1,6 +1,8 @@
 import type { IconName } from "../../../components";
-import type { TrackDisplay, TrainingAttempt } from "../../../domain";
+import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
 import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
+import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/cloud-certification";
+import { buildCertificationPracticeResumeRoute } from "../../practice/sessionConfig";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
   getCurrentPracticeTopic,
@@ -10,13 +12,21 @@ import {
 
 type HomeRecommendationTone = "info" | "primary" | "warning";
 
+export type CertificationPracticeResumeAction = Readonly<{
+  kind: "resume_certification_practice";
+  modeId: CertificationPracticeModeId;
+  sessionId: string;
+}>;
+
+export type HomeRecommendationAction = AlgorithmsRecommendationAction | CertificationPracticeResumeAction;
+
 export type HomeRecommendationModel = {
   detail: string;
   enabled: boolean;
   icon: IconName;
   label: string;
   primaryLabel: string;
-  action: AlgorithmsRecommendationAction;
+  action: HomeRecommendationAction;
   title: string;
   tone: HomeRecommendationTone;
   unavailableReason?: string;
@@ -34,6 +44,7 @@ export type HomeTabModel = {
 
 export type BuildHomeTabModelInput = {
   activeTrack: TrackDisplay;
+  activeSession?: TrainingSession | null;
   analytics: AnalyticsData;
   algorithmsDashboard: AlgorithmsDashboard | null;
   dashboardError: string | null;
@@ -42,7 +53,8 @@ export type BuildHomeTabModelInput = {
 
 export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
   const topic = getCurrentPracticeTopic(input.activeTrack, input.trainingAttempts);
-  const recommendations = buildAlgorithmsRecommendations(input);
+  const certificationResume = buildCertificationResumeRecommendation(input);
+  const recommendations = certificationResume ? [certificationResume] : buildAlgorithmsRecommendations(input);
   const hasProgress = recommendations.length > 0;
 
   return {
@@ -53,6 +65,38 @@ export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
     primaryLabel: hasProgress ? "Continue learning" : "Start learning",
     recommendations,
     topicId: topic.id,
+  };
+}
+
+function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): HomeRecommendationModel | null {
+  const session = input.activeSession;
+  if (input.activeTrack.id !== "cloud-certification" || !session || session.status !== "active" || session.trackId !== "cloud-certification" || !isCertificationPracticeModeId(session.modeId)) return null;
+  const modeTitle = getCertificationMode(session.modeId).title;
+  try {
+    buildCertificationPracticeResumeRoute(session);
+  } catch {
+    const reason = "This saved Certification Practice session is incomplete and cannot be resumed.";
+    return {
+      action: { kind: "unavailable", reason },
+      detail: reason,
+      enabled: false,
+      icon: "alert-triangle",
+      label: "Unavailable",
+      primaryLabel: "Unavailable",
+      title: `Saved ${modeTitle} session unavailable`,
+      tone: "warning",
+      unavailableReason: reason,
+    };
+  }
+  return {
+    action: { kind: "resume_certification_practice", modeId: session.modeId, sessionId: session.id },
+    detail: `Resume this exact saved ${modeTitle} session at its current question.`,
+    enabled: true,
+    icon: "practice",
+    label: "Continue",
+    primaryLabel: "Continue session",
+    title: `Continue ${modeTitle}`,
+    tone: "primary",
   };
 }
 

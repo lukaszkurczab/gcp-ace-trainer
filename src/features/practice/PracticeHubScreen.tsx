@@ -5,18 +5,21 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 
 import {
   Badge,
+  AppShellHeader,
   Button,
   Card,
+  EmptyState,
   Icon,
   IconTile,
   ListRow,
+  LoadingState,
   Screen,
   SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
   loadTrainingAttempts as getTrainingAttempts,
@@ -28,11 +31,11 @@ import {
 } from "../../tracks/algorithms";
 import { type CertificationModeId } from "../../tracks/cloud-certification";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
-import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 
 import {
   buildPracticeModes,
@@ -65,6 +68,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
+  const [hasLoadedData, setHasLoadedData] = useState(false);
+  const [readError, setReadError] = useState<string | null>(null);
   const [data, setData] = useState<PracticeHubData>({
     trainingAttempts: [],
   });
@@ -72,18 +77,26 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
+      setHasLoadedData(false);
+      setReadError(null);
 
       async function loadData() {
-        const [savedTrackId, trainingAttemptsResult] = await Promise.all([
-          getActiveTrackId(),
-          getTrainingAttempts(),
-        ]);
+        try {
+          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
+            getActiveTrackId(),
+            getTrainingAttempts(),
+          ]);
 
-        if (isActive) {
-          if (savedTrackId) setActiveTrackId(savedTrackId);
-          setData({
-            trainingAttempts: trainingAttemptsResult.value,
-          });
+          if (isActive) {
+            setActiveTrackId(savedTrackId ?? null);
+            setData({ trainingAttempts: trainingAttemptsResult.value });
+            setHasLoadedData(true);
+          }
+        } catch (error) {
+          if (isActive) {
+            setReadError(describeOperationalFailure(error, "Practice data is unavailable."));
+            setHasLoadedData(true);
+          }
         }
       }
 
@@ -95,6 +108,8 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
     }, []),
   );
 
+  if (!hasLoadedData) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><LoadingState title={t("Preparing practice")} /></Screen>;
+  if (readError) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t(readError)} /></Screen>;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
   const topic = resolvePracticeTopic({
@@ -153,10 +168,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.hubRoot()}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppStackHeader
-          navigation={navigation}
-          showBack
-          subtitle={t(activeTrack.title)}
+        <AppShellHeader
+          backAction={{ onPress: () => goBackOrHome(navigation) }}
+          context={t(activeTrack.title)}
         />
 
         <View style={styles.pageIntro}>

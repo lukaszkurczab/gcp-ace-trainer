@@ -15,7 +15,7 @@ export type RootStackParamList = {
   [ROUTES.PRACTICE_HUB]: { topicId?: string } | undefined;
   [ROUTES.ALGORITHMS_SCOPE_SELECTION]: { modeId: AlgorithmsDeclaredScopeMode; source: "home" | "practiceHub"; targetMentalUnitId?: string };
   [ROUTES.TOPIC_ROADMAP]: { topicId?: string; trackId?: TrackId } | undefined;
-  [ROUTES.EXAM]: { questionIndex?: number } | undefined;
+  [ROUTES.EXAM]: { expectedSessionId?: string; questionIndex?: number } | undefined;
   [ROUTES.EXAM_REVIEW]: { sessionId: string };
   [ROUTES.RESULT]: { sessionId: string };
   [ROUTES.ANSWER_REVIEW]: { attemptId?: string; initialFilter?: "all" | "incorrect" } | undefined;

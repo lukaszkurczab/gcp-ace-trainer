@@ -1,9 +1,9 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { CertificationExamExpiredError, finalizeCertificationExam, getCertificationExamProjection, navigateCertificationExamTo, saveCertificationExamResponse, startCertificationExam, toggleCertificationExamFlag, type CertificationExamProjection } from "../../application/certification";
+import { CertificationExamExpiredError, finalizeCertificationExam, getCertificationExamProjection, navigateCertificationExamTo, resumeExpectedCertificationExam, saveCertificationExamResponse, startCertificationExam, toggleCertificationExamFlag, type CertificationExamProjection } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import { Button, Card, EmptyState, Screen, SettingsDialog } from "../../components";
+import { Button, Card, EmptyState, LoadingState, Screen, SettingsDialog } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -14,7 +14,7 @@ import { SimulationQuestionNavigator } from "../simulation/navigator/SimulationQ
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM>;
 
 /** Canonical Cloud exam runner; navigation and responses are durably persisted through the shared lifecycle. */
-export function ExamScreen({ navigation }: Props) {
+export function ExamScreen({ navigation, route }: Props) {
   const styles = useThemedStyles(createStyles); const { t } = useAppPreferences();
   const [projection, setProjection] = useState<CertificationExamProjection | null>(null); const [error, setError] = useState<string | null>(null); const [navigatorVisible, setNavigatorVisible] = useState(false); const [finishVisible, setFinishVisible] = useState(false);
   const refresh = async () => {
@@ -24,14 +24,30 @@ export function ExamScreen({ navigation }: Props) {
       throw cause;
     }
   };
-  useEffect(() => { let active = true; void (async () => { try { await refresh(); } catch { try { await startCertificationExam(); if (active) await refresh(); } catch (startCause) { if (active) setError(describeOperationalFailure(startCause, "Exam is unavailable.")); } } })(); return () => { active = false; }; }, []);
+  useEffect(() => { let active = true; void (async () => {
+    const expectedSessionId = route.params?.expectedSessionId;
+    if (expectedSessionId) {
+      try {
+        const resumed = await resumeExpectedCertificationExam(expectedSessionId);
+        if (!active) return;
+        if (resumed.kind === "active_session_conflict") { setError("The expected Cloud exam is no longer the active session."); return; }
+        setProjection(resumed.projection);
+      } catch (cause) {
+        if (!active) return;
+        if (cause instanceof CertificationExamExpiredError) { navigation.replace(ROUTES.RESULT, { sessionId: cause.sessionId }); return; }
+        setError(describeOperationalFailure(cause, "The expected Cloud exam is unavailable."));
+      }
+      return;
+    }
+    try { await refresh(); } catch { try { await startCertificationExam(); if (active) await refresh(); } catch (startCause) { if (active) setError(describeOperationalFailure(startCause, "Exam is unavailable.")); } }
+  })(); return () => { active = false; }; }, [route.params?.expectedSessionId]);
   useEffect(() => {
     if (!projection) return;
     const interval = setInterval(() => { void refresh().catch((cause) => setError(describeOperationalFailure(cause, "Exam refresh failed."))); }, 1_000);
     return () => clearInterval(interval);
   }, [projection]);
   if (error) return <Screen><EmptyState title={t("Exam unavailable")} description={t(error)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
-  if (!projection) return <Screen><Text style={styles.loading}>{t("Preparing exam simulation…")}</Text></Screen>;
+  if (!projection) return <Screen><LoadingState title={t("Preparing exam simulation…")} /></Screen>;
   const deadline = projection.session.configurationSnapshot.timerDeadlineAt;
   if (typeof deadline !== "string") return <Screen><EmptyState title={t("Exam unavailable")} description={t("The immutable exam deadline is unavailable.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   const remainingMs = Math.max(0, Date.parse(deadline) - Date.parse(projection.now)); const remainingMinutes = Math.floor(remainingMs / 60_000); const remainingSeconds = Math.floor((remainingMs % 60_000) / 1_000);
@@ -51,4 +67,4 @@ export function ExamScreen({ navigation }: Props) {
   <SettingsDialog closeLabel={t("Continue simulation")} message={`${projection.total - Object.keys(projection.draft.responsesByOccurrenceId).length} ${t("unanswered")}. ${t("Unanswered questions receive zero points.")}`} onClose={() => setFinishVisible(false)} onPrimaryAction={() => { setFinishVisible(false); void finish(); }} primaryActionLabel={t("Finish exam")} secondaryActionLabel={t("Continue simulation")} title={t("Finish with unanswered questions?")} visible={finishVisible} />
   </Screen>;
 }
-const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, loading: { ...typography.body, color: palette.textSecondary }, progress: { ...typography.small, color: palette.textMuted }, domain: { ...typography.caption, color: palette.primary, textTransform: "uppercase" }, card: { gap: spacing.md }, question: { ...typography.bodyStrong, color: palette.textPrimary }, options: { gap: spacing.sm }, option: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, padding: spacing.md }, selected: { backgroundColor: palette.primarySoft, borderColor: palette.primary }, optionText: { ...typography.body, color: palette.textPrimary }, navigationActions: { flexDirection: "row", gap: spacing.sm }, examActions: { gap: spacing.sm } });
+const createStyles = (palette: AppColors) => StyleSheet.create({ screen: { gap: spacing.md }, progress: { ...typography.small, color: palette.textMuted }, domain: { ...typography.caption, color: palette.primary, textTransform: "uppercase" }, card: { gap: spacing.md }, question: { ...typography.bodyStrong, color: palette.textPrimary }, options: { gap: spacing.sm }, option: { borderColor: palette.border, borderRadius: 12, borderWidth: 1, padding: spacing.md }, selected: { backgroundColor: palette.primarySoft, borderColor: palette.primary }, optionText: { ...typography.body, color: palette.textPrimary }, navigationActions: { flexDirection: "row", gap: spacing.sm }, examActions: { gap: spacing.sm } });

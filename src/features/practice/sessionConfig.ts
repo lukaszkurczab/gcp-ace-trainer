@@ -1,4 +1,4 @@
-import { ALGORITHMS_TRACK_ID, type ContentItemRef, type TrackId } from "../../domain";
+import { ALGORITHMS_TRACK_ID, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
   getAlgorithmSessionNodeById,
@@ -7,7 +7,7 @@ import {
   type AlgorithmModeId,
 } from "../../tracks/algorithms";
 import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
-import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/cloud-certification";
+import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/cloud-certification";
 
 export type PracticeSessionSource =
   | "home"
@@ -36,9 +36,10 @@ export type PracticeSessionRouteParams = {
   source: PracticeSessionSource;
   topicId: string;
   trackId: TrackId;
+  expectedSessionId?: string;
 };
 
-export type PracticeSessionConfigInput = Partial<PracticeSessionRouteParams> & {
+export type PracticeSessionConfigInput = Partial<Omit<PracticeSessionRouteParams, "expectedSessionId">> & {
   topicId: string;
   trackId: TrackId;
 };
@@ -144,6 +145,73 @@ export function buildPracticeSessionConfig(
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 10, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   throw new Error(`Certification mode ${mode} has no canonical setup configuration.`);
+}
+
+/** Reconstructs only an exact active ordinary Certification route from its durable immutable snapshot. */
+export function buildCertificationPracticeResumeRoute(session: TrainingSession): PracticeSessionRouteParams {
+  if (session.status !== "active") throw new Error("Only an active Certification Practice session can be resumed.");
+  if (session.trackId !== "cloud-certification" || !isCertificationPracticeModeId(session.modeId)) {
+    throw new Error("Certification Practice resume requires an ordinary Cloud Certification session.");
+  }
+  if (!session.id.trim()) throw new Error("Certification Practice resume requires an exact session identity.");
+  assertOrdinaryCertificationConfiguration(session);
+
+  const exact = (params: PracticeSessionRouteParams): PracticeSessionRouteParams => Object.freeze({
+    ...params,
+    expectedSessionId: session.id,
+  });
+
+  if (session.modeId === "certification-diagnostic-baseline") {
+    if (session.configurationSnapshot.kind !== "certificationDiagnosticBaseline" || session.requestedLength !== 40 || session.actualLength !== 40) {
+      throw new Error("Certification Diagnostic Baseline resume requires its immutable 40-item configuration.");
+    }
+    return exact(buildPracticeSessionConfig({ mode: session.modeId, source: "home", topicId: "", trackId: session.trackId }));
+  }
+
+  if (session.modeId === "certification-focus-practice") {
+    const domain = session.configurationSnapshot.domain;
+    if (session.configurationSnapshot.kind !== "certificationFocusPractice" || typeof domain !== "string" || !isCloudTopicId(domain) || ![10, 20, 40].includes(session.requestedLength)) {
+      throw new Error("Certification Focus Practice resume requires its immutable Cloud domain and supported length.");
+    }
+    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: domain, trackId: session.trackId }));
+  }
+
+  if (session.modeId === "certification-scenario-practice") {
+    const competencyId = session.configurationSnapshot.competencyId;
+    if (session.configurationSnapshot.kind !== "certificationScenarioPractice" || typeof competencyId !== "string" || !competencyId.trim() || ![10, 20, 40].includes(session.requestedLength)) {
+      throw new Error("Certification Scenario Practice resume requires its immutable competency and supported length.");
+    }
+    return exact(buildPracticeSessionConfig({ competencyId, mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+  }
+
+  if (session.modeId === "certification-weak-area-review") {
+    if (session.configurationSnapshot.kind !== "certificationWeakAreaReview" || ![10, 20].includes(session.requestedLength)) {
+      throw new Error("Certification Weak Area Review resume requires its immutable supported length.");
+    }
+    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+  }
+
+  if (session.modeId === "certification-mixed-practice") {
+    if (session.configurationSnapshot.kind !== "certificationMixedPractice" || ![10, 20, 40].includes(session.requestedLength)) {
+      throw new Error("Certification Mixed Practice resume requires its immutable supported length.");
+    }
+    return exact(buildPracticeSessionConfig({ mode: session.modeId, sessionLength: session.requestedLength as PracticeSessionLength, source: "home", topicId: "", trackId: session.trackId }));
+  }
+
+  if (session.configurationSnapshot.kind !== "certificationQuickReview" || session.configurationSnapshot.maximumLength !== 10 || session.requestedLength !== 10) {
+    throw new Error("Certification Quick Review resume requires its immutable ten-item configuration.");
+  }
+  return exact(buildPracticeSessionConfig({ mode: session.modeId, source: "home", topicId: "", trackId: session.trackId }));
+}
+
+function assertOrdinaryCertificationConfiguration(session: TrainingSession): void {
+  const configuration = session.configurationSnapshot;
+  if (configuration.navigation !== "linear" || configuration.submission !== "perItem" || configuration.feedbackMode !== "afterEachAnswer" || configuration.answerChanges !== "none" || configuration.timer !== "elapsedForeground") {
+    throw new Error("Certification Practice resume requires its canonical immutable interaction configuration.");
+  }
+  if (!Number.isInteger(session.requestedLength) || session.actualLength < 1 || session.actualLength > session.requestedLength) {
+    throw new Error("Certification Practice resume requires a valid immutable session length.");
+  }
 }
 
 export function getGeneralPracticeReviewSource(

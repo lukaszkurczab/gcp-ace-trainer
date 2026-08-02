@@ -9,6 +9,7 @@ export * from "./Icon";
 export * from "./IconTile";
 export * from "./InfoBlock";
 export * from "./ListRow";
+export * from "./LoadingState";
 export * from "./MetricCard";
 export * from "./ProgressBar";
 export * from "./Screen";

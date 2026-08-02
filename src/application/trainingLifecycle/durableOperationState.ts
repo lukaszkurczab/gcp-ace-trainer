@@ -27,6 +27,13 @@ export type PracticeDurableOperationState =
   | Readonly<{ family: "practice"; kind: "abandonment_recovery_required"; error: DurableOperationError }>
   | Readonly<{ family: "practice"; kind: "abandoned" }>;
 
+export type PracticeCompletionCommandResult<T> =
+  | Readonly<{ kind: "verified"; value: T }>
+  | Readonly<{ expectedSessionId: string; kind: "retry_final_checkpoint" }>
+  | Readonly<{ expectedSessionId: string; kind: "recover_final_checkpoint" }>
+  | Readonly<{ expectedSessionId: string; kind: "retry_completion"; operation: Extract<PracticeDurableOperationState, { kind: "completion_failed" }> }>
+  | Readonly<{ expectedSessionId: string; kind: "recover_completion"; operation: Extract<PracticeDurableOperationState, { kind: "completion_failed" }> }>;
+
 export type SimulationDurableOperationState =
   | Readonly<{ family: "simulation"; kind: "editable" }>
   | Readonly<{ family: "simulation"; kind: "saving" }>

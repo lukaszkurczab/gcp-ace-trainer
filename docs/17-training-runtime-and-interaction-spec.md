@@ -239,8 +239,12 @@ Materialization creates or updates only the records declared by the operation:
 - immutable attempt;
 - session state;
 - review entries;
-- evidence;
-- completed-session result where the submitted item completes the session.
+- evidence.
+
+An answer-submit journal never creates a completed-session result. After the
+final submitted answer has reached verified feedback, only the separate
+`complete_training_session` journal started by `Finish` may create that result
+and complete the session.
 
 Every intended final record is then verified.
 
@@ -287,8 +291,9 @@ If position persistence fails:
 
 When the final item outcome has been verified:
 
-- the completed-session result must already be canonical;
-- `Finish` navigates to summary;
+- the exact final feedback remains visible and locked;
+- `Finish` starts the separate durable completion command;
+- navigation waits until the completed session, its canonical result and the cleared active-session pointer are verified;
 - summary loads the completed result through application queries;
 - summary is not reconstructed from component state.
 

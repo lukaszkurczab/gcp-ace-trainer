@@ -5,6 +5,19 @@ import test from "node:test";
 import { canStartCanonicalSimulationMutation, CanonicalProductContractValidationError, CanonicalUserFacingTaskReadinessError, getCanonicalRequirementTestCoverage, isDeclaredCanonicalSessionTransition, loadCanonicalProductContract, parseCanonicalProductContract, resolveCanonicalUserFacingTaskDesignReference } from "../scripts/validateCanonicalProductContract";
 
 const validContract = readFileSync("docs/canonical-product-contract.yaml", "utf8");
+const transactionalEmailProcessorYaml = `    transactionalEmailProcessor:
+      provider: resend
+      plan: free
+      environmentScope: ownerOnlySandbox
+      purpose: publicDeletionPossessionLinkDeliveryOnly
+      retainedData: transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs
+      processorCopyFields: [recipientNormalizedEmail, publicDeletionPossessionToken]
+      processorCopyLocations: [messageContent, deliveryRecords, apiRecords]
+      maximumRetentionDays: 30
+      storageRegion: UnitedStates
+      liveAccountDataAuthority: prohibited
+      backupClassification: prohibited
+`;
 
 test("parses the canonical product contract", () => {
   const contract = loadCanonicalProductContract();
@@ -60,6 +73,16 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
     getCanonicalRequirementTestCoverage(contract).map(({ requirementId, tests }) => [requirementId, tests.map((test) => test.id)]),
     [
       ["CONTRACT-AUTHORITY-001", ["canonical-contract-authority"]],
+      ["ACCOUNT-ENTRY-IDENTITY-001", ["canonical-account-entry-identity"]],
+      ["ACCOUNT-LIFECYCLE-001", ["canonical-account-lifecycle"]],
+      ["ACCOUNT-DATA-AUTHORITY-001", ["canonical-account-data-authority"]],
+      ["ACCOUNT-DATA-ADOPTION-001", ["canonical-account-adoption-sync-conflicts"]],
+      ["ACCOUNT-SYNC-CONFLICT-001", ["canonical-account-adoption-sync-conflicts"]],
+      ["ACCOUNT-OFFLINE-SESSION-001", ["canonical-account-lifecycle"]],
+      ["ACCOUNT-SIGNOUT-DELETION-001", ["canonical-account-signout-deletion"]],
+      ["ACCOUNT-SECURITY-PRIVACY-001", ["canonical-account-entry-identity"]],
+      ["ACCOUNT-PREMARKET-HOSTING-001", ["canonical-account-entry-identity", "canonical-account-premarket-hosting"]],
+      ["ACCOUNT-SURFACE-MAP-001", ["canonical-account-surface-map"]],
       ["ALGORITHMS-MODE-MATRIX-001", ["canonical-algorithms-mode-matrix"]],
       ["ALGORITHMS-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
       ["ALGORITHMS-INDEPENDENT-PRACTICE-001", ["canonical-independent-practice-contract"]],
@@ -120,6 +143,252 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
     () => parseCanonicalProductContract(validContract.replace("requirementIds: [CONTRACT-AUTHORITY-001]", "requirementIds: [USER-COMMAND-MODEL-001]")),
     /Canonical requirement has no mapped test: CONTRACT-AUTHORITY-001/,
   );
+});
+
+test("defines the required verified account entry and credential boundaries", () => {
+  const { publicLaunchEntry, credentials, lifecycle, networkAndPrivacy } = loadCanonicalProductContract().accountData;
+  assert.deepEqual(publicLaunchEntry, {
+    accountRequired: true,
+    identityMethod: "verifiedEmailAndPassword",
+    canonicalIdentifier: "normalizedEmail",
+    firstAuthenticatedBootstrapRequiresNetwork: true,
+    offlineEntryRequiresSuccessfulAuthenticatedSync: true,
+    learningRequiresVerifiedIdentity: true,
+    offlineLearningAfterVerifiedBootstrap: "allowedForBoundAccount",
+    anonymousLearningPath: "prohibited",
+  });
+  assert.deepEqual(credentials, {
+    passwordTransmission: "tlsOnlyForRegisterSignInResetAndReauthentication",
+    passwordPersistenceInApp: "prohibited",
+    passwordPersistenceRemote: "oneWayVerifierOnly",
+    accessTokenPersistence: "memoryOnly",
+    accessTokenTransport: "receiveInTlsResponseBodySendInAuthorizationBearerHeaderOnly",
+    refreshTokenPersistence: "osProtectedCredentialStorage",
+    refreshTokenTransport: "receiveInTlsResponseBodySendOnlyToTokenEndpointTlsRequestBody",
+    possessionTokenPersistenceInPatternlyStores: "prohibited",
+    tokenLoggingInPatternlyControlledLogs: "prohibited",
+  });
+  assert.deepEqual(lifecycle.verificationLink, { transport: "verifiedHttpsUniversalLink", tokenKind: "verificationPossessionToken", singleUse: true, expiresAfterMinutes: 30 });
+  assert.deepEqual(lifecycle.recoveryLink, { transport: "verifiedHttpsUniversalLink", tokenKind: "recoveryPossessionToken", singleUse: true, expiresAfterMinutes: 30 });
+  assert.deepEqual(lifecycle.publicDeletionLink, { transport: "verifiedHttpsUniversalLink", tokenKind: "publicDeletionPossessionToken", singleUse: true, expiresAfterMinutes: 30 });
+  assert.deepEqual(networkAndPrivacy, {
+    transmittedFields: {
+      identity: ["normalizedEmail", "passwordOnlyAtCredentialCommand", "verificationToken", "recoveryToken", "publicDeletionPossessionToken"],
+      credentialTransport: ["accessTokenOnlyInAuthorizationBearerHeader", "refreshTokenOnlyInTokenEndpointTlsRequestBody"],
+      account: ["accountId", "verificationState", "sessionId", "accountRevision"],
+      learning: ["recordType", "recordId", "recordRevision", "contentReferences", "canonicalLearningPayload", "operationFingerprint"],
+      operations: ["requestId", "boundedErrorCode", "clientTimestamp"],
+    },
+    transport: "authenticatedTls",
+    emailDelivery: "transactionalOnlyWithRateLimitAndNonEnumeratingRecoveryResponse",
+    transactionalEmailProcessor: {
+      provider: "resend",
+      plan: "free",
+      environmentScope: "ownerOnlySandbox",
+      purpose: "publicDeletionPossessionLinkDeliveryOnly",
+      retainedData: "transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs",
+      processorCopyFields: ["recipientNormalizedEmail", "publicDeletionPossessionToken"],
+      processorCopyLocations: ["messageContent", "deliveryRecords", "apiRecords"],
+      maximumRetentionDays: 30,
+      storageRegion: "UnitedStates",
+      liveAccountDataAuthority: "prohibited",
+      backupClassification: "prohibited",
+    },
+    patternlyControlledLogExclusions: ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "normalizedEmail", "learnerResponse", "promptText", "explanationText", "draftPayload", "attemptPayload", "reviewPayload", "progressPayload", "journalPayload", "exportPayload", "deletionIntentPayload"],
+    honestLimitations: ["mechanismsNotImplemented", "publicHostingUnavailableUntilMarketPromotion", "signedBuildNotVerified", "legalAndStoreDisclosuresNotPublished"],
+  });
+});
+
+test("defines every account lifecycle transition and explicit failure outcome", () => {
+  const { lifecycle, offlineAndExpiry } = loadCanonicalProductContract().accountData;
+  assert.equal(lifecycle.initialState, "signedOut");
+  assert.equal(lifecycle.resendVerificationResult, "invalidatesPriorVerificationTokenAndSendsReplacement");
+  assert.equal(lifecycle.changePendingEmailResult, "replacesNormalizedEmailInvalidatesPriorVerificationTokenAndSendsReplacement");
+  assert.deepEqual(lifecycle.operations, [
+    { id: "register", surfaceId: "register", from: ["signedOut"], inProgress: "registering", success: "verificationPending", failureTransitions: [{ failures: ["invalidInput", "duplicateIdentity", "rateLimited", "offline", "remoteFailure"], to: "signedOut" }] },
+    { id: "verifyIdentity", surfaceId: "verifyIdentity", from: ["verificationPending"], inProgress: "verifying", success: "authenticatedSyncing", failureTransitions: [{ failures: ["invalidLink", "expiredLink", "usedLink", "rateLimited", "offline", "remoteFailure"], to: "verificationPending" }] },
+    { id: "resendVerification", surfaceId: "verifyIdentity", from: ["verificationPending"], inProgress: "verificationPending", success: "verificationPending", failureTransitions: [{ failures: ["rateLimited", "offline", "remoteFailure"], to: "verificationPending" }] },
+    { id: "changePendingEmail", surfaceId: "verifyIdentity", from: ["verificationPending"], inProgress: "verificationPending", success: "verificationPending", failureTransitions: [{ failures: ["invalidInput", "duplicateIdentity", "rateLimited", "offline", "remoteFailure"], to: "verificationPending" }] },
+    { id: "signIn", surfaceId: "signIn", from: ["signedOut"], inProgress: "signingIn", success: "authenticatedSyncing", failureTransitions: [{ failures: ["invalidCredential", "unverifiedIdentity", "rateLimited", "offline", "remoteFailure"], to: "signedOut" }] },
+    { id: "requestRecovery", surfaceId: "forgotPassword", from: ["signedOut"], inProgress: "recoveryPending", success: "recoveryPending", failureTransitions: [{ failures: ["invalidInput", "rateLimited", "offline", "remoteFailure"], to: "signedOut" }] },
+    { id: "resetPassword", surfaceId: "resetPassword", from: ["recoveryPending"], inProgress: "resettingPassword", success: "signedOut", failureTransitions: [{ failures: ["invalidInput", "invalidLink", "expiredLink", "usedLink", "rateLimited", "offline", "remoteFailure"], to: "recoveryPending" }] },
+    { id: "completeInitialSync", surfaceId: "dataAdoption", from: ["authenticatedSyncing"], inProgress: "authenticatedSyncing", success: "authenticatedReady", failureTransitions: [{ failures: ["adoptionConflict", "remoteFailure"], to: "authenticatedSyncing" }, { failures: ["offline"], to: "authenticatedSyncing" }] },
+    { id: "enterOffline", surfaceId: "syncStatus", from: ["authenticatedReady"], inProgress: "offlineAuthenticated", success: "offlineAuthenticated", failureTransitions: [] },
+    { id: "restoreNetwork", surfaceId: "syncStatus", from: ["offlineAuthenticated"], inProgress: "authenticatedSyncing", success: "authenticatedSyncing", failureTransitions: [{ failures: ["offline", "remoteFailure"], to: "offlineAuthenticated" }] },
+    { id: "expireSession", surfaceId: "sessionExpiredReauthentication", from: ["authenticatedSyncing", "authenticatedReady"], inProgress: "sessionExpired", success: "reauthenticationRequired", failureTransitions: [] },
+    { id: "reauthenticate", surfaceId: "sessionExpiredReauthentication", from: ["sessionExpired", "reauthenticationRequired"], inProgress: "reauthenticationRequired", success: "authenticatedSyncing", failureTransitions: [{ failures: ["invalidCredential", "revokedSession", "rateLimited", "offline", "remoteFailure"], to: "reauthenticationRequired" }] },
+    { id: "signOut", surfaceId: "signOut", from: ["authenticatedSyncing", "authenticatedReady", "offlineAuthenticated", "reauthenticationRequired"], inProgress: "signingOut", success: "signedOut", failureTransitions: [{ failures: ["journalRecoveryFailure", "pendingSyncRequiresNetwork", "exportRequired", "localDeletionFailure"], to: "exactSourceState" }] },
+    { id: "deleteAccount", surfaceId: "deleteAccount", from: ["authenticatedReady", "deletionFailed"], inProgress: "deletionPending", success: "deleted", failureTransitions: [{ failures: ["journalRecoveryFailure"], to: "exactSourceState" }, { failures: ["reauthenticationRequired"], to: "reauthenticationRequired" }, { failures: ["rateLimited", "offline", "remoteFailure", "deletionVerificationFailure"], to: "deletionFailed" }] },
+    { id: "completeRemoteDeletionCleanup", surfaceId: "syncStatus", from: ["authenticatedSyncing", "reauthenticationRequired", "deletionFailed"], inProgress: "deletionPending", success: "deleted", failureTransitions: [{ failures: ["journalRecoveryFailure", "localDeletionFailure"], to: "deletionFailed" }] },
+  ]);
+  assert.deepEqual(offlineAndExpiry, {
+    offlineEntryRequires: "previouslyVerifiedBoundAccountValidatedLocalDatasetAndSuccessfulAuthenticatedSync",
+    learningAvailability: "localPracticeReviewProgressAndResumeRemainAvailable",
+    mutationResult: "commitLocallyThenExposeOfflinePending",
+    unavailableOffline: ["register", "verifyIdentity", "signIn", "requestRecovery", "resetPassword", "reauthenticate", "firstBootstrap", "remoteRestore", "accountDeletion", "publicDeletionVerification"],
+    serverDeclaredRevocationResult: "reauthenticationRequiredAndSyncBlocked",
+    expiredAccessTokenWhileOffline: "continueBoundLocalLearningButBlockSyncAndSecurityActionsUntilReauthentication",
+  });
+});
+
+test("assigns every account and device record to one authority and sync policy", () => {
+  assert.deepEqual(loadCanonicalProductContract().accountData.dataAuthority, {
+    localDurabilityAuthority: "canonicalLocalRepositorySet",
+    remoteConvergenceAuthority: "singleRevisionedAccountDataset",
+    synchronizationBoundary: "accountDataRepositoryService",
+    localCommitBeforeRemoteAcknowledgement: "required",
+    parallelLearningRepository: "prohibited",
+    indexPolicy: "indexesFollowOwningRecordClassAndAreNeverIndependentAuthority",
+    recordClasses: [
+      { id: "storageMetadata", owner: "device", remoteSync: "never" },
+      { id: "accountBinding", owner: "accountAndDevice", remoteSync: "identityReferenceOnly" },
+      { id: "syncMetadataAndOutbox", owner: "accountAndDevice", remoteSync: "operationEnvelopeOnly" },
+      { id: "applicationSettings", owner: "device", remoteSync: "never" },
+      { id: "notificationSettings", owner: "device", remoteSync: "never" },
+      { id: "activeTrack", owner: "account", remoteSync: "revisioned" },
+      { id: "activeSessionReference", owner: "account", remoteSync: "revisioned" },
+      { id: "trainingSession", owner: "account", remoteSync: "revisioned" },
+      { id: "trainingSessionResult", owner: "account", remoteSync: "immutableById" },
+      { id: "trainingAttempt", owner: "account", remoteSync: "immutableById" },
+      { id: "reviewQueueEntry", owner: "account", remoteSync: "revisioned" },
+      { id: "simulationDraft", owner: "account", remoteSync: "revisioned" },
+      { id: "foregroundTimer", owner: "account", remoteSync: "revisioned" },
+      { id: "mutationJournal", owner: "deviceOperational", remoteSync: "materializedWritesOnly" },
+      { id: "accountDeletionIntent", owner: "deviceOperational", remoteSync: "never" },
+    ],
+    derivedProjections: [
+      { id: "familyNeutralEvidence", sources: ["trainingAttempt", "trainingSessionResult", "reviewQueueEntry"], writable: "prohibited", remoteSync: "never" },
+      { id: "familyProgress", sources: ["trainingAttempt", "trainingSessionResult", "reviewQueueEntry"], writable: "prohibited", remoteSync: "never" },
+    ],
+  });
+});
+
+test("keeps progress and evidence as derived projections of canonical learning records", () => {
+  const storageKeys = readFileSync("src/storage/keys.ts", "utf8");
+  const learningReadModels = readFileSync("src/application/learningReadModels.ts", "utf8");
+  assert.doesNotMatch(storageKeys, /familyNeutralEvidence|familyProgress/);
+  assert.match(learningReadModels, /buildCloudCertificationProgressViewModel/);
+  assert.match(learningReadModels, /getTrainingAttempts\(\), getReviewQueueItems\(\)/);
+});
+
+test("defines deterministic adoption, sync, and conflict results without silent loss", () => {
+  const { adoption, sync } = loadCanonicalProductContract().accountData;
+  assert.equal(adoption.requiresPreviewAndConfirmation, true);
+  assert.deepEqual(adoption.cases, [
+    { id: "emptyLocalEmptyRemote", result: "createBoundEmptyDataset" },
+    { id: "populatedLocalEmptyRemote", result: "previewThenUploadExactLocalDataset" },
+    { id: "emptyLocalPopulatedRemote", result: "previewThenRestoreExactRemoteDataset" },
+    { id: "populatedLocalPopulatedRemote", result: "previewThenReconcileByRecordPolicy" },
+    { id: "activeSessionOnOneSide", result: "preserveThatSessionAndRejectSecondActiveSession" },
+    { id: "divergentActiveSessions", result: "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft" },
+    { id: "divergentRecord", result: "applyRecordPolicyOrBlockWithoutMutation" },
+  ]);
+  assert.deepEqual(adoption.recordPolicies, {
+    immutableDifferentIds: "unionAfterPreviewConfirmation",
+    immutableSameIdSameFingerprint: "idempotentDeduplication",
+    immutableSameIdDifferentFingerprint: "blockingIntegrityConflict",
+    revisionedOneSideChanged: "changedSideAfterExpectedRevisionCheck",
+    revisionedBothChanged: "deterministicSemanticReplayOrBlockingConflict",
+    deviceOwned: "retainCurrentDeviceOnly",
+  });
+  assert.equal(adoption.cancelledOrFailedResult, "retainBothLastVerifiedDatasetsUnchanged");
+  assert.deepEqual(sync, {
+    visibleStates: ["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed", "deletionPending"],
+    visibleEvidence: ["lastSuccessfulSyncAt", "pendingMutationCount", "blockingConflictCode", "lastFailureCode"],
+    outboxOrder: "fifoByVerifiedLocalCommit",
+    remoteWritePrecondition: "expectedAccountRevision",
+    staleRevisionResult: "fetchRemoteThenDeterministicReplayOrBlockingConflict",
+    immutableCollisionResult: "blockingIntegrityConflict",
+    activeSessionConflictResult: "explicitSessionChoiceRequired",
+    remoteFailureResult: "retainVerifiedLocalCommitAndPendingOutbox",
+    retry: "explicitOrAutomaticOnNetworkReturnWithoutDuplicateOperation",
+  });
+});
+
+test("defines sign-out, retention, verified deletion, and public deletion request semantics", () => {
+  assert.deepEqual(loadCanonicalProductContract().accountData.signOutAndDeletion, {
+    pendingMutationJournal: {
+      appliesBefore: ["export", "signOut", "accountDeletion"],
+      requiredSequence: ["recoverDurablePlan", "materializeWrites", "verifyWrites", "clearJournal"],
+      successBoundary: "journalAbsentAfterVerifiedClear",
+      blockingResult: "journalRecoveryFailure",
+      blockingSurfaces: [
+        { operation: "export", surfaceId: "accountProfile" },
+        { operation: "signOut", surfaceId: "signOut" },
+        { operation: "accountDeletion", surfaceId: "deleteAccount" },
+      ],
+      failureResult: "blockRequestedOperationRetainBindingAndVerifiedData",
+      accountSwitchResult: "blockNewBindingUntilJournalResolvedUnderCurrentBinding",
+    },
+    export: {
+      format: "versionedCanonicalJson",
+      scope: "accountOwnedLocalRecordsAndSyncProjection",
+      excludes: ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "syncTransportEnvelope", "deletionProof"],
+      integrity: "sha256CanonicalBytes",
+      successBoundary: "verifiedFileHandoff",
+      availableOffline: true,
+    },
+    signOut: {
+      pendingOutbox: "synchronizeOrCompleteVerifiedExportThenExplicitlyDiscard",
+      localResult: "deleteAccountOwnedRecordsAccountBindingTokensAndOutbox",
+      preservedLocalRecords: ["storageMetadata", "applicationSettings", "notificationSettings"],
+      failureResult: "remainBoundAndExposeFailure",
+    },
+    localLearningReset: "separateFromAccountDeletionAndRemoteDataset",
+    accountDeletion: {
+      prerequisites: ["network", "recentReauthentication", "explicitScopeConfirmation"],
+      remoteScope: ["identity", "credentials", "sessions", "accountProfile", "learningRecords", "syncOperations"],
+      acceptedResult: "persistDurableIntentThenRevokeAllSessionsVerifyRemoteDeletionAndDeleteAccountOwnedLocalRecords",
+      failureResult: "deletionFailedWithRetryAndNoSuccessClaim",
+      publicRequest: "verifiedEmailPossessionWithoutAccountEnumeration",
+      durableIntent: {
+        recordClass: "accountDeletionIntent",
+        authority: "deletionCleanupCheckpointOnlyNeverLearningAuthority",
+        writeBoundaries: ["localRequestBeforeFirstRemoteDestructiveStep", "authenticatedRemoteAccountDeletedBeforeLocalCleanup"],
+        fields: ["operationId", "irreversibleAccountIdHash", "recordedAt", "trigger", "stage"],
+        triggers: ["localRequest", "authenticatedRemoteAccountDeleted"],
+        stages: ["prepared", "sessionsRevoked", "remoteDeletionVerified", "localCleanupPending"],
+        restart: "resumeIdempotentlyFromLastVerifiedStage",
+        remoteIdentityMissingAfterRestart: "continueIdempotentLocalCleanupAndVerifyLocalAbsence",
+        clearBoundary: "remoteDeletionAndLocalCleanupVerified",
+      },
+      remoteAccountDeletedOnReconnect: {
+        appliesTo: "previouslyBoundDevice",
+        offlineResult: "retainBoundLocalDataUntilAuthenticatedReconnect",
+        evidence: "authenticatedRemoteAccountDeletedResultBoundToStoredAccount",
+        operation: "completeRemoteDeletionCleanup",
+        localResult: "idempotentlyDeleteCredentialsBindingOutboxAndAccountOwnedLocalRecords",
+        terminalResult: "remoteAccountDeleted",
+        reauthenticationResult: "prohibited",
+        failureResult: "deletionFailedRetainIntentForLocalCleanupRetry",
+      },
+    },
+    retention: {
+      liveServiceDataAfterVerifiedDeletionDays: 0,
+      encryptedBackupMaximumDays: 30,
+      backupRestoreIntoLiveService: "prohibited",
+      minimalDeletionProofDays: 30,
+      deletionProofFields: ["requestId", "irreversibleAccountIdHash", "requestedAt", "completedAt", "resultCode"],
+    },
+  });
+});
+
+test("maps every required account and data state to a downstream implementation surface", () => {
+  assert.deepEqual(loadCanonicalProductContract().accountData.surfaces, [
+    { id: "accountEntry", states: ["required", "offlineUnavailable"] },
+    { id: "register", states: ["editing", "invalidInput", "duplicateIdentity", "rateLimited", "offline", "remoteFailure"] },
+    { id: "verifyIdentity", states: ["pending", "resendPending", "resendAccepted", "changePendingEmail", "changePendingEmailAccepted", "invalidInput", "duplicateIdentity", "invalidLink", "expiredLink", "usedLink", "rateLimited", "offline", "remoteFailure"] },
+    { id: "signIn", states: ["editing", "invalidCredential", "unverifiedIdentity", "rateLimited", "offline", "remoteFailure"] },
+    { id: "forgotPassword", states: ["editing", "acceptedNonEnumerating", "invalidInput", "rateLimited", "offline", "remoteFailure"] },
+    { id: "resetPassword", states: ["editing", "invalidInput", "invalidLink", "expiredLink", "usedLink", "rateLimited", "offline", "remoteFailure", "success"] },
+    { id: "sessionExpiredReauthentication", states: ["required", "invalidCredential", "revokedSession", "rateLimited", "offline", "remoteFailure"] },
+    { id: "accountProfile", states: ["ready", "offline", "remoteFailure", "journalRecoveryFailure"] },
+    { id: "dataAdoption", states: ["preview", "uploading", "restoring", "activeSessionChoice", "integrityConflict", "adoptionConflict", "offline", "remoteFailure", "completed"] },
+    { id: "syncStatus", states: ["initialSyncRequired", "syncing", "synced", "offlinePending", "conflict", "failed", "deletionPending", "offline", "remoteFailure", "journalRecoveryFailure", "localDeletionFailure", "remoteAccountDeleted"] },
+    { id: "signOut", states: ["confirm", "journalRecoveryFailure", "pendingSyncRequiresNetwork", "exportRequired", "deletingLocal", "localDeletionFailure", "completed"] },
+    { id: "deleteAccount", states: ["scopeConfirmation", "journalRecoveryFailure", "reauthenticationRequired", "deleting", "rateLimited", "offline", "remoteFailure", "deletionVerificationFailure", "completed"] },
+    { id: "publicDeleteRequest", states: ["request", "acceptedNonEnumerating", "verifyPossession", "invalidLink", "expiredLink", "usedLink", "rateLimited", "offline", "remoteFailure", "completed"] },
+  ]);
 });
 
 test("defines canonical user commands and maps every session CTA to its one application command", () => {
@@ -257,8 +526,14 @@ test("requires a registered APPROVED design reference before a user-facing task 
     sourcePathPrefix: "src/features/home/",
     designReferenceId: "focus-lab-core-shell-001",
   }, {
+    sourcePathPrefix: "src/features/navigation/",
+    designReferenceId: "focus-lab-core-shell-001",
+  }, {
     sourcePathPrefix: "src/features/review/",
     designReferenceId: "shared-practice-flow-001",
+  }, {
+    sourcePathPrefix: "src/content/application/ContentPreparationGate.tsx",
+    designReferenceId: "focus-lab-core-shell-001",
   }, {
     sourcePathPrefix: "src/navigation/",
     designReferenceId: "focus-lab-core-shell-001",
@@ -343,6 +618,17 @@ test("requires a registered APPROVED design reference before a user-facing task 
     approvalStatus: "APPROVED",
     owner: "product-owner",
   });
+  assert.deepEqual(resolveCanonicalUserFacingTaskDesignReference(approvedContract, {
+    status: "ready",
+    designReferenceId: "account-lifecycle-001",
+  }), {
+    id: "account-lifecycle-001",
+    screenStateTarget: "account-lifecycle-complete-surface-state-matrix",
+    patternPath: "docs/designs/account_lifecycle/DESIGN.md",
+    version: 1,
+    approvalStatus: "APPROVED",
+    owner: "product-owner",
+  });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "not-ready" }), undefined);
   assert.throws(
     () => resolveCanonicalUserFacingTaskDesignReference(approvedContract, { status: "ready" }),
@@ -389,6 +675,16 @@ test("defines the closed durable session state machines and accepts only declare
   assert.deepEqual(contract.sessionStateMachine.practice.states, [
     "unanswered", "submitting_before_journal", "submit_journal_failed", "commit_pending", "commit_materialization_failed", "commit_verification_failed", "verified_pending_clear", "recovery_required", "feedback", "advancing", "advance_failed", "completing", "completion_failed", "completed", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned",
   ]);
+  assert.equal(contract.sessionStateMachine.practice.transitions.length, 29);
+  assert.deepEqual(contract.sessionStateMachine.practice.transitions.filter((transition) => transition.from === "feedback" && transition.trigger === "finish" || transition.from === "completing" || transition.from === "completion_failed"), [
+    { from: "feedback", trigger: "finish", to: "completing" },
+    { from: "completing", trigger: "completion_verified", to: "completed" },
+    { from: "completing", trigger: "completion_failed", to: "completion_failed" },
+    { from: "completion_failed", trigger: "finish", condition: "durable_state_not_durable", to: "completing" },
+    { from: "completion_failed", trigger: "recover", condition: "journal_status_durable", to: "completing" },
+    { from: "completion_failed", trigger: "recover", condition: "journal_status_materialized", to: "completing" },
+    { from: "completion_failed", trigger: "recover", condition: "journal_status_verified_pending_clear", to: "completing" },
+  ]);
   assert.deepEqual(contract.sessionStateMachine.simulation.states, [
     "editable", "saving", "save_failed", "stale_revision", "navigating", "navigation_failed", "save_and_continue_advance_recovery", "frozen", "finalization_journal_pending", "finalization_journal_failed", "materializing", "materialization_failed", "verifying", "verification_failed", "verified_pending_clear", "recovery_required", "timer_recovery_failed", "missing_draft", "version_mismatch", "corrupt_state", "abandoning", "abandonment_failed_before_journal", "abandonment_recovery_required", "abandoned", "completed",
   ]);
@@ -418,7 +714,9 @@ test("defines the closed durable session state machines and accepts only declare
   assert.match(lifecycleSource, /if \(!verified\) \{\s+this\.operationStates\.clear\(active\.id\);\s+return;\s+}\s+const simulationSession = verified\.configurationSnapshot\.submission === "manualOrForegroundTimeout";\s+this\.operationStates\.publish\(verified\.id, simulationSession \? simulation\("editable"\)/);
   assert.equal(contract.sessionStateMachine.simulation.transitions.some((transition) => transition.from === "navigation_failed" && transition.trigger === "recover"), false);
   assert.equal(contract.sessionStateMachine.simulation.transitions.some((transition) => transition.from === "abandonment_recovery_required" && transition.trigger === "recover"), false);
-  assert.doesNotMatch(lifecycleSource, /practice\("(?:completing|completion_failed)"\)/);
+  assert.match(lifecycleSource, /practice\("completing"\)/);
+  assert.match(lifecycleSource, /practice\("completion_failed"/);
+  assert.match(lifecycleSource, /practice\("completed"\)/);
   assert.doesNotMatch(lifecycleSource, /this\.operationStates\.set\(session\.id, simulation\("(?:materializing|verifying)"\)/);
 });
 
@@ -537,6 +835,26 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["missing version", validContract.replace("version: 1\n", ""), /must have required property 'version'/],
     ["empty requirements", validContract.replace(/requirements:\n(?:  - .*\n    .*\n)+/, "requirements: []\n"), /must NOT have fewer than 1 items/],
     ["duplicate identifier", validContract.replace("    statement: Product behavior is normative only when defined by this contract.\n", "    statement: Product behavior is normative only when defined by this contract.\n  - id: CONTRACT-AUTHORITY-001\n    statement: A second requirement with the same identifier.\n"), /Duplicate canonical product contract requirement identifier/],
+    ["missing account data contract", validContract.replace(/accountData:[\s\S]*?\nuserCommands:/, "userCommands:"), /must have required property 'accountData'/],
+    ["unknown account data field", validContract.replace("accountData:\n  version: 1\n", "accountData:\n  version: 1\n  extra: value\n"), /must NOT have additional properties/],
+    ["changed account identity method", validContract.replace("identityMethod: verifiedEmailAndPassword", "identityMethod: anonymous"), /must be equal to constant/],
+    ["duplicate account lifecycle operation", validContract.replace("      - id: verifyIdentity\n", "      - id: register\n"), /Canonical account lifecycle must declare exactly its operations in canonical order/],
+    ["pre-bootstrap initial sync enters offline", validContract.replace("          - { failures: [offline], to: authenticatedSyncing }", "          - { failures: [offline], to: offlineAuthenticated }"), /Canonical account lifecycle must prohibit offline entry before successful initial sync/],
+    ["initial sync success enters offline", validContract.replace("      - id: completeInitialSync\n        surfaceId: dataAdoption\n        from: [authenticatedSyncing]\n        inProgress: authenticatedSyncing\n        success: authenticatedReady\n", "      - id: completeInitialSync\n        surfaceId: dataAdoption\n        from: [authenticatedSyncing]\n        inProgress: authenticatedSyncing\n        success: offlineAuthenticated\n"), /Canonical account lifecycle must prohibit offline entry before successful initial sync/],
+    ["identity verification success enters offline", validContract.replace("      - id: verifyIdentity\n        surfaceId: verifyIdentity\n        from: [verificationPending]\n        inProgress: verifying\n        success: authenticatedSyncing\n", "      - id: verifyIdentity\n        surfaceId: verifyIdentity\n        from: [verificationPending]\n        inProgress: verifying\n        success: offlineAuthenticated\n"), /Canonical account lifecycle must prohibit offline entry before successful initial sync/],
+    ["lifecycle operation maps to the wrong surface", validContract.replace("      - id: signIn\n        surfaceId: signIn\n", "      - id: signIn\n        surfaceId: sessionExpiredReauthentication\n"), /Canonical account lifecycle operation maps to the wrong surface: signIn/],
+    ["account link validity above 30 minutes", validContract.replace("expiresAfterMinutes: 30", "expiresAfterMinutes: 31"), /must be equal to constant|must be <= 30/],
+    ["wrong public deletion possession token", validContract.replace("tokenKind: publicDeletionPossessionToken", "tokenKind: recoveryPossessionToken"), /must be equal to constant/],
+    ["old unscoped possession-token persistence field", validContract.replace("possessionTokenPersistenceInPatternlyStores", "possessionTokenPersistence"), /must have required property 'possessionTokenPersistenceInPatternlyStores'|must NOT have additional properties/],
+    ["old unscoped token-logging field", validContract.replace("tokenLoggingInPatternlyControlledLogs", "tokenLogging"), /must have required property 'tokenLoggingInPatternlyControlledLogs'|must NOT have additional properties/],
+    ["old unscoped log-exclusions field", validContract.replace("patternlyControlledLogExclusions", "logExclusions"), /must have required property 'patternlyControlledLogExclusions'|must NOT have additional properties/],
+    ["missing transactional email processor boundary", validContract.replace(transactionalEmailProcessorYaml, ""), /must have required property 'transactionalEmailProcessor'/],
+    ["transactional email processor retention above 30 days", validContract.replace("maximumRetentionDays: 30", "maximumRetentionDays: 31"), /must be <= 30|must be equal to constant/],
+    ["transactional email processor outside the approved US boundary", validContract.replace("storageRegion: UnitedStates", "storageRegion: EuropeanUnion"), /must be equal to constant/],
+    ["reordered account record classes", validContract.replace("      - { id: storageMetadata, owner: device, remoteSync: never }\n      - { id: accountBinding, owner: accountAndDevice, remoteSync: identityReferenceOnly }", "      - { id: accountBinding, owner: accountAndDevice, remoteSync: identityReferenceOnly }\n      - { id: storageMetadata, owner: device, remoteSync: never }"), /Canonical account data authority must declare exactly its record classes in canonical order/],
+    ["duplicate account derived projection", validContract.replace("      - { id: familyProgress, sources:", "      - { id: familyNeutralEvidence, sources:"), /Canonical account data authority must declare exactly its derived projections in canonical order/],
+    ["reordered account surfaces", validContract.replace("    - { id: accountEntry, states: [required, offlineUnavailable] }\n    - { id: register,", "    - { id: register, states: [required, offlineUnavailable] }\n    - { id: accountEntry,"), /Canonical account surface map must declare exactly its surfaces in canonical order/],
+    ["lifecycle failure missing from its surface", validContract.replace("duplicateIdentity, rateLimited, offline, remoteFailure] }\n    - { id: verifyIdentity", "duplicateIdentity, rateLimited, offline] }\n    - { id: verifyIdentity"), /Canonical account lifecycle failure is missing from its surface: register/],
     ["missing user commands", validContract.replace(/userCommands:[\s\S]*?\nsessionStateMachine:/, "sessionStateMachine:"), /must have required property 'userCommands'/],
     ["unknown user command field", validContract.replace("    - id: submit\n", "    - id: submit\n      extra: value\n"), /must NOT have additional properties/],
     ["duplicate user command identifier", validContract.replace("    - id: next\n", "    - id: submit\n"), /Duplicate canonical product contract user command identifier/],
@@ -579,6 +897,9 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["design reference UI ownership with an unknown reference", validContract.replace("designReferenceId: algorithms-active-simulation-screen", "designReferenceId: unknown-reference"), /Canonical design reference UI ownership names an unknown reference: unknown-reference/],
     ["design reference UI ownership without a directory boundary", validContract.replace("sourcePathPrefix: src/features/simulation/", "sourcePathPrefix: src/features"), /must match pattern/],
     ["design reference UI ownership without a trailing directory boundary", validContract.replace("sourcePathPrefix: src/features/simulation/", "sourcePathPrefix: src/features/foo"), /must match pattern/],
+    ["design reference exact UI ownership with a non-TSX file", validContract.replace("sourcePathPrefix: src/content/application/ContentPreparationGate.tsx", "sourcePathPrefix: src/content/application/ContentPreparationGate.ts"), /must match a schema in anyOf/],
+    ["design reference exact UI ownership with an arbitrary suffix", validContract.replace("sourcePathPrefix: src/content/application/ContentPreparationGate.tsx", "sourcePathPrefix: src/content/application/ContentPreparationGate.tsx.bak"), /must match a schema in anyOf/],
+    ["design reference exact UI ownership outside a permitted root", validContract.replace("sourcePathPrefix: src/content/application/ContentPreparationGate.tsx", "sourcePathPrefix: App.tsx"), /must match a schema in anyOf/],
     ["duplicate Algorithms mode identifier", validContract.replace("    - id: algorithms-guided-practice", "    - id: algorithms-learn-approach"), /Duplicate canonical product contract Algorithms mode identifier/],
     ["mismatched Algorithms mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Algorithms mode label does not match its identifier/],
     ["missing Algorithms mode field", validContract.replace("      reinsert: false\n", ""), /must have required property 'reinsert'/],

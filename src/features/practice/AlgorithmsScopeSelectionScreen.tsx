@@ -2,17 +2,16 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
-import { EmptyState, Icon, IconTile, ListRow, Screen, SectionHeader } from "../../components";
+import { AppShellHeader, EmptyState, Icon, IconTile, ListRow, LoadingState, Screen, SectionHeader } from "../../components";
 import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing } from "../../theme";
 import { useAppPreferences } from "../../preferences";
 import { getAlgorithmMode } from "../../tracks/algorithms";
-import { AppStackHeader } from "../navigation/AppStackHeader";
 import { buildPracticeSessionConfig } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_SCOPE_SELECTION>;
@@ -38,13 +37,13 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   }, [route.params.modeId, route.params.targetMentalUnitId]);
 
   if (state.kind === "unavailable") {
-    return <Screen><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => navigation.goBack()} /></Screen>;
+    return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} /><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
   }
-  if (state.kind === "loading") return <Screen><AppStackHeader navigation={navigation} showBack subtitle={t("Algorithms")} /><SectionHeader title={t("Loading practice scopes")} subtitle={t("Reading the declared content scopes.")} /></Screen>;
+  if (state.kind === "loading") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} /><LoadingState title={t("Loading practice scopes")} description={t("Reading the declared content scopes.")} /></Screen>;
 
   return (
     <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
-      <AppStackHeader navigation={navigation} showBack subtitle={t("Algorithms")} />
+      <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} />
       <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (

@@ -43,6 +43,7 @@ export type PracticeExitPresentation =
   | Readonly<{ kind: "none" }>;
 
 export type PracticeSessionSurfaceProps = Readonly<{
+  allowLeave?: boolean;
   exit: PracticeExitPresentation;
   feedback?: PracticeFeedback;
   isFinalPosition: boolean;
@@ -113,7 +114,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
       {visibleFeedback && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} itemId={itemId} /> : null}
-      {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} /> : null}
+      {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
   );
 }
@@ -173,7 +174,7 @@ function ActionBar(props: PracticeSessionSurfaceProps) {
         </Button>
       ) : null}
       {props.onRetry && props.retryLabel ? <Button onPress={props.onRetry} variant="secondary">{t(props.retryLabel)}</Button> : null}
-      {props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "abandoning" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
+      {props.allowLeave !== false && props.exit.kind === "none" && props.phase !== "preparing" && props.phase !== "completing" && props.phase !== "completion_failed" && props.phase !== "abandoning" && props.phase !== "abandonment_failed_before_journal" && props.phase !== "abandonment_recovery_required" ? <Button onPress={props.onRequestLeave} testID={props.runtimeIdentity ? runtimeSelectors.session.leave(props.runtimeIdentity.sessionId) : undefined} variant="ghost">{t("Leave session")}</Button> : null}
     </View>
   );
 }
@@ -185,25 +186,32 @@ function primaryActionTestID(props: PracticeSessionSurfaceProps): string | undef
     : runtimeSelectors.session.continue(props.runtimeIdentity.itemId);
 }
 
-function ExitModal({ onAbandon, onDismiss, onLeave, sessionId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string }>) {
+function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readonly<{ onAbandon: () => void; onDismiss: () => void; onLeave: () => void; sessionId?: string; trackId?: TrackId }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
+  const copy = exitCopy(trackId);
   return (
     <Modal animationType="fade" onRequestClose={onDismiss} transparent visible>
       <View style={styles.modalBackdrop}>
         <Pressable accessibilityLabel={t("Keep learning")} accessibilityRole="button" onPress={onDismiss} style={styles.modalDismissArea} />
         <View accessibilityViewIsModal style={styles.exitSurface}>
           <Text style={styles.exitTitle}>{t("Pause or end this session?")}</Text>
-          <Text style={styles.noticeText}>{t("Pause to resume later, or end the session and view a partial summary. Saved answers remain available.")}</Text>
+          <Text style={styles.noticeText}>{t(copy.description)}</Text>
           <View style={styles.actions}>
             <Button onPress={onDismiss} testID={sessionId ? runtimeSelectors.session.keepLearning(sessionId) : undefined} variant="secondary">{t("Keep learning")}</Button>
             <Button onPress={onLeave} testID={sessionId ? runtimeSelectors.session.leaveAndResume(sessionId) : undefined}>{t("Pause and resume later")}</Button>
-            <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t("End and view summary")}</Button>
+            <Button onPress={onAbandon} testID={sessionId ? runtimeSelectors.session.abandon(sessionId) : undefined} variant="destructive">{t(copy.destructiveLabel)}</Button>
           </View>
         </View>
       </View>
     </Modal>
   );
+}
+
+function exitCopy(trackId: TrackId | undefined): Readonly<{ description: string; destructiveLabel: string }> {
+  if (trackId === "algorithms") return Object.freeze({ description: "Pause to resume later, or end the session and view a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
+  if (trackId === "cloud-certification") return Object.freeze({ description: "Pause keeps this exact session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
+  throw new Error("Practice exit requires an exact supported track identity.");
 }
 
 function noop() {}

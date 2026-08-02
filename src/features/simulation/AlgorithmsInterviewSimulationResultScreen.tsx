@@ -26,7 +26,9 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, review, sessio
   const [result, setResult] = useState<AlgorithmsSessionResultProjection | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const load = useCallback(async () => {
-    try { setResult(await getAlgorithmsPracticeResultProjection(sessionId)); setFailure(null); }
+    setResult(null);
+    setFailure(null);
+    try { setResult(await getAlgorithmsPracticeResultProjection(sessionId)); }
     catch (error) { setFailure(messageFor(error)); }
   }, [sessionId]);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
@@ -47,11 +49,15 @@ function AlgorithmsInterviewSimulationResultSurface({ navigation, review, sessio
         },
         actions: { primary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) } },
       }
-    : {
+    : failure ? {
         state: "verification_failed",
         title: "Verified result unavailable",
-        notice: { tone: "error", message: failure ?? "The session result is not available because verification did not complete." },
+        notice: { tone: "error", message: failure },
         actions: { primary: { id: "retry", label: "Try again", onPress: () => { void load(); } }, secondary: { id: "back-to-practice", label: "Back to practice", onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB), variant: "secondary" } },
+      } : {
+        state: "preparing",
+        title: "Preparing Interview Simulation result",
+        notice: { tone: "neutral", message: "Reading the verified session result." },
       };
   return <View testID={runtimeSelectors.summary.root(sessionId)}><SimulationSessionSurface projection={projection} /></View>;
 }

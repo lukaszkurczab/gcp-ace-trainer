@@ -1,8 +1,14 @@
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
+  getForegroundSessionTimerFacade,
   getTrainingLifecycleUseCases,
+  PracticeCompletionCheckpointError,
   startTrainingSession,
+  type ForegroundSessionTimerEvent,
+  type ForegroundTimeProjection,
   type PreparedSession,
+  type PracticeCompletionCommandResult,
+  type PracticeFinalization,
 } from "../trainingLifecycle";
 import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
 import { getBundledContentAvailability } from "../../content/application/validateBundledContent";
@@ -15,8 +21,6 @@ import {
 } from "../../tracks/algorithms";
 import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
 import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
-import { getAlgorithmsForegroundTimerFacade, type AlgorithmsForegroundTimeProjection, type AlgorithmsForegroundTimerEvent } from "./AlgorithmsForegroundTimerFacade";
-import { getAlgorithmsSessionRuntimePorts } from "./AlgorithmsSessionRuntimePorts";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { AlgorithmFeedbackDocument } from "../../content/contracts";
@@ -103,14 +107,13 @@ type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "
 
 /** UI-facing canonical entry points. No storage, runtime, selection or timer ownership leaks into presentation. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
-  const runtime = getAlgorithmsSessionRuntimePorts();
   const prepared = await startTrainingSession({
     trackId: "algorithms",
     modeId: input.modeId,
     source: input.source,
-    request: { ...input, sessionId: runtime.sessionIds.next(input.modeId) },
+    request: input,
   });
-  await getAlgorithmsForegroundTimerFacade().initialize(prepared.session);
+  await getForegroundSessionTimerFacade().initialize(prepared.session);
   return prepared;
 }
 
@@ -144,7 +147,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
     : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
-    getAlgorithmsForegroundTimerFacade().projection(session),
+    getForegroundSessionTimerFacade().projection(session),
   ]);
   return Object.freeze({
     kind: "practice",
@@ -163,7 +166,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
 }
 
 export async function submitAlgorithmsPracticeResponse(response: AlgorithmResponse): Promise<void> {
-  await getAlgorithmsForegroundTimerFacade().checkpointForResponseSave(await requireAlgorithmsSession());
+  await getForegroundSessionTimerFacade().checkpointForResponseSave(await requireAlgorithmsSession());
   await getTrainingLifecycleUseCases().submitPracticeResponse(response);
 }
 
@@ -172,14 +175,61 @@ export async function recoverAlgorithmsPracticeOperation(): Promise<void> {
   await getTrainingLifecycleUseCases().recoverActiveTrainingOperation();
 }
 
+export function subscribeAlgorithmsPracticeOperation(sessionId: string, listener: (operation: PracticeDurableOperationState) => void): () => void {
+  return getTrainingLifecycleUseCases().subscribeOperationProjection(sessionId, (operation) => {
+    if (operation.family === "practice") listener(operation);
+  });
+}
+
 export async function advanceAlgorithmsPracticeSession(): Promise<TrainingSession> {
   return getTrainingLifecycleUseCases().advancePracticeSession();
 }
 
-export async function completeAlgorithmsPracticeSession(): Promise<AlgorithmsSessionResultProjection> {
-  await getAlgorithmsForegroundTimerFacade().checkpointForFinalization(await requireAlgorithmsSession());
-  const finalized = await getTrainingLifecycleUseCases().completeActivePracticeSession();
-  return getAlgorithmsPracticeResultProjection(finalized.session.id);
+export async function completeAlgorithmsPracticeSession(): Promise<PracticeCompletionCommandResult<PracticeFinalization>> {
+  const session = await requireAlgorithmsSession();
+  const lifecycle = getTrainingLifecycleUseCases();
+  const timer = getForegroundSessionTimerFacade();
+  try {
+    const finalized = await timer.completePracticeAfterCheckpoint(session, () => lifecycle.completeActivePracticeSession(session.id));
+    return Object.freeze({ kind: "verified", value: finalized });
+  } catch (cause) {
+    if (cause instanceof PracticeCompletionCheckpointError) {
+      const pending = await lifecycle.getExpectedSessionPendingMutation(session.id);
+      if (pending) {
+        if (pending.operation !== "advance_training_session") throw cause;
+        return Object.freeze({ expectedSessionId: session.id, kind: "recover_final_checkpoint" });
+      }
+      return Object.freeze({ expectedSessionId: session.id, kind: "retry_final_checkpoint" });
+    }
+    const operation = lifecycle.getOperationProjection(session.id);
+    if (operation?.family !== "practice" || operation.kind !== "completion_failed") throw cause;
+    return Object.freeze({ expectedSessionId: session.id, kind: operation.error.allowedAction === "recover" ? "recover_completion" : "retry_completion", operation });
+  }
+}
+
+export async function retryAlgorithmsPracticeCompletionCheckpoint(expectedSessionId: string): Promise<AlgorithmsPracticeProjection> {
+  const session = await requireExactAlgorithmsPractice(expectedSessionId);
+  const lifecycle = getTrainingLifecycleUseCases();
+  await getForegroundSessionTimerFacade().retryPracticeCompletionCheckpointAfterFailure(session);
+  await lifecycle.reconstructOperationProjection(session);
+  return getAlgorithmsPracticeProjection();
+}
+
+export async function recoverAlgorithmsPracticeCompletionCheckpoint(expectedSessionId: string): Promise<AlgorithmsPracticeProjection> {
+  const lifecycle = getTrainingLifecycleUseCases();
+  const pending = await lifecycle.getExpectedSessionPendingMutation(expectedSessionId);
+  if (!pending || pending.operation !== "advance_training_session") throw new TrainingApplicationFailure("resume_unavailable", `No matching final-checkpoint journal exists for ${expectedSessionId}.`);
+  await lifecycle.recoverActiveTrainingOperation();
+  const session = await requireExactAlgorithmsPractice(expectedSessionId);
+  await getForegroundSessionTimerFacade().retryPracticeCompletionCheckpointAfterFailure(session);
+  await lifecycle.reconstructOperationProjection(session);
+  return getAlgorithmsPracticeProjection();
+}
+
+export async function recoverAlgorithmsPracticeCompletion(expectedSessionId: string): Promise<PracticeFinalization> {
+  const finalized = await getTrainingLifecycleUseCases().recoverExpectedSessionCompletion(expectedSessionId);
+  getForegroundSessionTimerFacade().releaseAfterVerifiedPracticeCompletion(expectedSessionId);
+  return finalized;
 }
 
 export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSimulationProjection> {
@@ -192,7 +242,7 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
   const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
-  const time = await getAlgorithmsForegroundTimerFacade().projection(session);
+  const time = await getForegroundSessionTimerFacade().projection(session);
   if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
   return Object.freeze({
@@ -262,9 +312,9 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
     response: input.response,
     session,
     draft,
-    updatedAt: getAlgorithmsSessionRuntimePorts().wallClock.now(),
+    updatedAt: getTrainingLifecycleUseCases().currentTime(),
   });
-  await getAlgorithmsForegroundTimerFacade().checkpointForResponseSave(session);
+  await getForegroundSessionTimerFacade().checkpointForResponseSave(session);
   await getTrainingLifecycleUseCases().saveSimulationDraft({ draft: nextDraft, expectedPreviousRevision: draft.revision });
 }
 
@@ -351,42 +401,42 @@ export async function recoverAlgorithmsSimulationOperation(): Promise<void> {
 
 export async function finalizeAlgorithmsSimulation(): Promise<void> {
   const session = await requireAlgorithmsSession();
-  await getAlgorithmsForegroundTimerFacade().finalizeCountdownManually(session);
+  await getForegroundSessionTimerFacade().finalizeCountdownManually(session);
 }
 
 export async function abandonAlgorithmsSession(): Promise<TrainingSession> {
   const session = await requireAlgorithmsSession();
-  await getAlgorithmsForegroundTimerFacade().leaveForeground(session);
+  await getForegroundSessionTimerFacade().leaveForeground(session);
   return getTrainingLifecycleUseCases().abandonActiveSession();
 }
 
-export async function enterAlgorithmsSimulationForeground(): Promise<AlgorithmsForegroundTimeProjection> {
-  return getAlgorithmsForegroundTimerFacade().enterForeground(await requireAlgorithmsSession());
+export async function enterAlgorithmsSimulationForeground(): Promise<ForegroundTimeProjection> {
+  return getForegroundSessionTimerFacade().enterForeground(await requireAlgorithmsSession());
 }
 
-export async function leaveAlgorithmsSimulationForeground(): Promise<AlgorithmsForegroundTimeProjection> {
-  return getAlgorithmsForegroundTimerFacade().leaveForeground(await requireAlgorithmsSession());
+export async function leaveAlgorithmsSimulationForeground(): Promise<ForegroundTimeProjection> {
+  return getForegroundSessionTimerFacade().leaveForeground(await requireAlgorithmsSession());
 }
 
 /** Presentation receives application-owned projection refreshes; it never runs a countdown. */
-export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: AlgorithmsForegroundTimerEvent) => void): () => void {
-  return getAlgorithmsForegroundTimerFacade().subscribe(listener);
+export function subscribeAlgorithmsSimulationProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
+  return getForegroundSessionTimerFacade().subscribe(listener);
 }
 
-export async function enterAlgorithmsPracticeForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+export async function enterAlgorithmsPracticeForeground(): Promise<ForegroundTimeProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Interview Simulation must use its simulation foreground boundary.");
-  return getAlgorithmsForegroundTimerFacade().enterForeground(session);
+  return getForegroundSessionTimerFacade().enterForeground(session);
 }
 
-export async function leaveAlgorithmsPracticeForeground(): Promise<AlgorithmsForegroundTimeProjection> {
+export async function leaveAlgorithmsPracticeForeground(): Promise<ForegroundTimeProjection> {
   const session = await requireAlgorithmsSession();
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Interview Simulation must use its simulation foreground boundary.");
-  return getAlgorithmsForegroundTimerFacade().leaveForeground(session);
+  return getForegroundSessionTimerFacade().leaveForeground(session);
 }
 
-export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: AlgorithmsForegroundTimerEvent) => void): () => void {
-  return getAlgorithmsForegroundTimerFacade().subscribe(listener);
+export function subscribeAlgorithmsPracticeProjectionRefresh(listener: (event: ForegroundSessionTimerEvent) => void): () => void {
+  return getForegroundSessionTimerFacade().subscribe(listener);
 }
 
 export async function getAlgorithmsPracticeResultProjection(sessionId: string): Promise<AlgorithmsSessionResultProjection> {
@@ -454,6 +504,12 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
 async function requireAlgorithmsSession(): Promise<TrainingSession> {
   const session = await loadActiveTrainingSession();
   if (!session || session.trackId !== "algorithms") throw new Error("No active Algorithms session is available.");
+  return session;
+}
+
+async function requireExactAlgorithmsPractice(expectedSessionId: string): Promise<TrainingSession> {
+  const session = await requireAlgorithmsSession();
+  if (session.id !== expectedSessionId || session.configurationSnapshot.submission !== "perItem") throw new TrainingApplicationFailure("resume_unavailable", `Algorithms practice session ${expectedSessionId} is not the exact active session.`);
   return session;
 }
 

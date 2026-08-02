@@ -37,6 +37,42 @@ track registry and application projections. The visual reference does not
 authorize invented tracks, fake metrics, unavailable actions, silent fallbacks,
 or mock success states.
 
+## Shell ownership
+
+- `AppShellHeader` is the only branded navigation header. Native stack routes
+  render it in stack placement; inline product surfaces render the same
+  component inside `Screen`.
+- The header always carries the Patternly mark and title. It may also carry one
+  reflowing route or track context label and one accessible back action. Inline
+  callers own the back destination, including the explicit Home destination
+  used when a direct entry has no navigation history.
+- `Screen` is the sole general page owner for safe-area edges and scrolling.
+  Stack placement owns only the header's top safe-area inset; it does not add a
+  second page scroll or content safe-area owner.
+- `SessionShell` remains the specialized active-session shell. It composes
+  `Screen` and owns session progress and footer geometry; its question top bar
+  is session state, not a second branded navigation header.
+- Copy in the title and context regions reflows. The shell does not truncate
+  those regions to preserve a fixed header height.
+
+## State primitive ownership
+
+- `LoadingState` is the only generic pending-state primitive. It composes the
+  shared `Card`, uses the shared palette, spacing and typography, and exposes a
+  busy progress announcement with reflowing title and optional description.
+- A generic data read renders `LoadingState` only while its result is pending.
+  Loaded empty, onboarding, unavailable and failed outcomes remain explicit and
+  must not be inferred from the pending value.
+- `EmptyState` owns loaded empty and unavailable explanations; it does not
+  represent work that is still pending.
+- Active learning preparation and durable operations remain session semantics:
+  Algorithms practice uses `SessionShell`, and Interview Simulation uses
+  `SimulationSessionSurface` and `SimulationOperationPanel`. These specialized
+  states do not render `LoadingState`.
+- Interview Simulation result reads use the specialized `preparing` projection
+  while the read is pending and `verification_failed` only after the read
+  returns an actual failure.
+
 ## Verification
 
 The implementation is accepted only after:

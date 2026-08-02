@@ -3,17 +3,16 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card, Screen, SectionHeader } from "../../components";
+import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
-import { AppStackHeader } from "../navigation/AppStackHeader";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
   buildTopicRoadmapNodes,
@@ -35,6 +34,7 @@ import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 
 
 type PracticeSetupScreenProps = NativeStackScreenProps<
@@ -43,12 +43,18 @@ type PracticeSetupScreenProps = NativeStackScreenProps<
 >;
 
 const sessionLengths: readonly PracticeSessionLength[] = [10, 20, 40];
+const STORED_TRACK_REQUEST_KEY = "stored-track" as const;
+type PracticeSetupRequestKey = TrackId | typeof STORED_TRACK_REQUEST_KEY;
+type PracticeSetupReadState =
+  | Readonly<{ kind: "pending"; requestKey: PracticeSetupRequestKey }>
+  | Readonly<{ kind: "ready"; requestKey: PracticeSetupRequestKey; activeTrackId: TrackId | null; trainingAttempts: readonly TrainingAttempt[] }>
+  | Readonly<{ kind: "unavailable"; requestKey: PracticeSetupRequestKey; reason: string }>;
 
 export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenProps) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(route.params?.trackId ?? null);
-  const [trainingAttempts, setTrainingAttempts] = useState<TrainingAttempt[]>([]);
+  const requestKey: PracticeSetupRequestKey = route.params?.trackId ?? STORED_TRACK_REQUEST_KEY;
+  const [readState, setReadState] = useState<PracticeSetupReadState>({ kind: "pending", requestKey });
   const [sessionLength, setSessionLength] = useState<PracticeSessionLength>(
     route.params?.sessionLength ?? DEFAULT_PRACTICE_SESSION_LENGTH,
   );
@@ -64,18 +70,33 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
   useFocusEffect(
     useCallback(() => {
+      const capturedRequestKey = requestKey;
       let isActive = true;
+      setReadState({ kind: "pending", requestKey: capturedRequestKey });
 
       async function loadData() {
-        const [savedTrackId, trainingAttemptsResult] = await Promise.all([
-          getActiveTrackId(),
-          getTrainingAttempts(),
-        ]);
+        try {
+          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
+            getActiveTrackId(),
+            getTrainingAttempts(),
+          ]);
 
-        if (isActive) {
-          const nextTrackId = route.params?.trackId ?? savedTrackId;
-          if (nextTrackId) setActiveTrackId(nextTrackId);
-          setTrainingAttempts(trainingAttemptsResult.value);
+          if (isActive) {
+            setReadState({
+              kind: "ready",
+              requestKey: capturedRequestKey,
+              activeTrackId: capturedRequestKey === STORED_TRACK_REQUEST_KEY ? savedTrackId ?? null : capturedRequestKey,
+              trainingAttempts: trainingAttemptsResult.value,
+            });
+          }
+        } catch (error) {
+          if (isActive) {
+            setReadState({
+              kind: "unavailable",
+              requestKey: capturedRequestKey,
+              reason: describeOperationalFailure(error, "Practice setup data is unavailable."),
+            });
+          }
         }
       }
 
@@ -84,10 +105,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
       return () => {
         isActive = false;
       };
-    }, [route.params?.trackId]),
+    }, [requestKey]),
   );
 
-  const resolvedTrackId = route.params?.trackId ?? activeTrackId;
+  if (readState.requestKey !== requestKey || readState.kind === "pending") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><LoadingState title={t("Preparing practice")} /></Screen>;
+  if (readState.kind === "unavailable") return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t(readState.reason)} /></Screen>;
+  const { activeTrackId: resolvedTrackId, trainingAttempts } = readState;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
   const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
@@ -154,10 +177,9 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   return (
     <View style={styles.shell} testID={runtimeSelectors.practice.setupRoot()}>
       <Screen edges={["top", "bottom"]}>
-        <AppStackHeader
-          navigation={navigation}
-          showBack
-          subtitle={t(activeTrack.title)}
+        <AppShellHeader
+          backAction={{ onPress: () => goBackOrHome(navigation) }}
+          context={t(activeTrack.title)}
         />
 
         <View style={styles.intro}>

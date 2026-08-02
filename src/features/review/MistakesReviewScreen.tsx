@@ -7,6 +7,7 @@ import {
   Card,
   EmptyState,
   ListRow,
+  LoadingState,
   Screen,
   SectionHeader,
 } from "../../components";
@@ -19,6 +20,7 @@ import {
 } from "./reviewQueueModel";
 import { formatReviewTaxonomyLabel } from "./reviewQueuePresentation";
 import { loadTrackReviewQueueViewModel } from "../../application/reviewQueueQueries";
+import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 
@@ -28,6 +30,7 @@ export function MistakesReviewScreen() {
   const { locale, t } = useAppPreferences();
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [readError, setReadError] = useState<string | null>(null);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   useFocusEffect(
@@ -36,16 +39,25 @@ export function MistakesReviewScreen() {
 
       async function loadReviewQueue() {
         setLoading(true);
+        setReadError(null);
+        setModel(null);
+        setSelectedRowId(null);
 
-        const activeTrackId = await getActiveTrackId();
-        if (!activeTrackId) { if (isActive) { setModel(null); setLoading(false); } return; }
-        const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
-        const nextModel = buildReviewQueueScreenModel(viewModel);
+        try {
+          const activeTrackId = await getActiveTrackId();
+          if (!activeTrackId) { if (isActive) setLoading(false); return; }
+          const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
+          const nextModel = buildReviewQueueScreenModel(viewModel);
 
-        if (isActive) {
-          setModel(nextModel);
-          setSelectedRowId(null);
-          setLoading(false);
+          if (isActive) {
+            setModel(nextModel);
+            setLoading(false);
+          }
+        } catch (error) {
+          if (isActive) {
+            setReadError(describeOperationalFailure(error, "Review queue data is unavailable."));
+            setLoading(false);
+          }
         }
       }
 
@@ -89,15 +101,20 @@ export function MistakesReviewScreen() {
       </Card>
 
       {loading ? (
-        <Card>
-          <EmptyState
-            title={t("Loading review queue")}
-            description={t("Reading local review data for the active track.")}
-          />
-        </Card>
+        <LoadingState
+          title={t("Loading review queue")}
+          description={t("Reading local review data for the active track.")}
+        />
       ) : null}
 
-      {!loading && model && visibleRows.length > 0 ? (
+      {!loading && readError ? (
+        <EmptyState
+          title={t("Review queue is unavailable")}
+          description={t(readError)}
+        />
+      ) : null}
+
+      {!loading && !readError && model && visibleRows.length > 0 ? (
         <View style={styles.list}>
           <SectionHeader
             title={t(model.dueRows.length > 0 ? "Due now" : "Upcoming")}
@@ -127,7 +144,7 @@ export function MistakesReviewScreen() {
         </View>
       ) : null}
 
-      {!loading && model && visibleRows.length === 0 ? (
+      {!loading && !readError && model && visibleRows.length === 0 ? (
         <Card>
           <EmptyState
             title={t(model.emptyTitle)}

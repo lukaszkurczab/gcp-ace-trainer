@@ -2,7 +2,20 @@
 
 ## Product promise
 
-Patternly turns technical mistakes into a concrete next practice action. It is a focused, local learning product for technical learners who need repeated retrieval, diagnosis, comparison, and deliberate practice rather than an answer feed. Certification and Algorithms are the initial product families; future domains may reuse an existing family or introduce a new family when their response and evaluation semantics are materially different.
+Patternly turns technical mistakes into a concrete next practice action. It is a focused, local-first learning product for technical learners who need repeated retrieval, diagnosis, comparison, and deliberate practice rather than an answer feed. Certification and Algorithms are the initial product families; future domains may reuse an existing family or introduce a new family when their response and evaluation semantics are materially different.
+
+## Public-launch account purpose
+
+The public launch requires one verified account so that committed learning
+evidence, review state, history and the one active session can converge across
+the learner's devices without removing offline practice. The account is not a
+public profile, social identity, analytics identity, billing identity or a
+reason to gate bundled content behind continuous connectivity.
+
+The normative entry, identity, adoption, sync, conflict, offline, sign-out and
+deletion rules are in `canonical-product-contract.yaml`. The current source has
+not implemented those rules yet; until the downstream account tasks complete,
+the existing local-only build is not a public-launch candidate.
 
 
 ## Product family model

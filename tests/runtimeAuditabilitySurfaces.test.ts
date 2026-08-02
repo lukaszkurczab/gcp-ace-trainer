@@ -18,12 +18,13 @@ test("passive runtime selectors are attached to visible content rather than cont
 test("active-session resume uses the single recommendation card and a separate continue control", () => {
   const home = source("src/features/home/tabs/HomeTab.tsx");
 
-  assert.match(home, /recommendation\?\.action\.kind === "resume_active_session"/);
+  assert.match(home, /const resumeSessionId = recommendation\?\.action\.kind === "resume_active_session" \|\| recommendation\?\.action\.kind === "resume_certification_practice"[\s\S]*?\? recommendation\.action\.sessionId[\s\S]*?: undefined;/);
   assert.doesNotMatch(home, /<Card[^>]*onPress=/);
-  assert.match(home, /runtimeSelectors\.resume\.card\(recommendation\.action\.sessionId\)/);
-  assert.match(home, /runtimeSelectors\.resume\.title\(recommendation\.action\.sessionId\)/);
-  assert.match(home, /runtimeSelectors\.resume\.status\(recommendation\.action\.sessionId\)/);
-  assert.match(home, /runtimeSelectors\.resume\.continue\(recommendation\.action\.sessionId\)/);
+  assert.equal((home.match(/<Card variant="layered" style=\{styles\.decisionCard\}>/g) ?? []).length, 1);
+  for (const helper of ["card", "title", "status", "continue"] as const) {
+    assert.equal((home.match(new RegExp(`runtimeSelectors\\.resume\\.${helper}\\(resumeSessionId\\)`, "g")) ?? []).length, 1);
+  }
+  assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)[\s\S]*?<\/Button>/);
 });
 
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {

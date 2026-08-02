@@ -1,5 +1,8 @@
 # Pre-recruitment acceptance record
 
+> This document gates only a moderated research session. It is not a
+> public-launch audit or store-release gate.
+
 ## Purpose and decision rule
 
 This is the canonical execution record for the stable participant-build
@@ -32,7 +35,7 @@ before using this record.
 | Gate | Status | Completion evidence |
 | --- | --- | --- |
 | Complete reviewed publication and application pin | `done` | [Current product status](../release-candidate-closure.md) and cross-repository release test |
-| Automated/static application checks | `done` | Dated baseline in current product status: 400/400 tests plus recovery, type, content and privacy boundaries |
+| Automated/static application checks | `done` | Dated baseline in current product status: 407/407 tests plus recovery, type, content and privacy boundaries |
 | iOS and Android core journey | `done` | Dated baseline in current product status: two consecutive passes per platform |
 | Current visual review | `done` | 100 screenshots and zero open P0–P3 in represented states |
 | Stable participant-build identity | `done` | Schema 1, 279 inputs and exact SHA above; the dated four-run result is retained in current product status |

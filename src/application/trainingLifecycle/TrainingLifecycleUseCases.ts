@@ -24,12 +24,18 @@ import { OperationProjectionStore } from "./operationProjectionStore";
 export class TrainingLifecycleUseCases {
   private readonly operationStates: OperationProjectionStore;
   private readonly finalizations = new Map<string, Promise<void>>();
+  private readonly practiceCompletions = new Map<string, Promise<PracticeFinalization>>();
   private readonly sessionMutationLanes = new Map<string, Promise<unknown>>();
 
   constructor(private readonly ports: TrainingLifecyclePorts, operationStore = new OperationProjectionStore()) { this.operationStates = operationStore; }
   getOperationProjection(sessionId: string) { return this.operationStates.getOperationProjection(sessionId); }
   subscribeOperationProjection(sessionId: string, listener: (value: DurableOperationState) => void) { return this.operationStates.subscribeOperationProjection(sessionId, listener); }
   async getPendingMutationProjection(sessionId: string): Promise<PendingMutationProjection | null> { return this.pendingFor(sessionId); }
+  async getExpectedSessionPendingMutation(expectedSessionId: string): Promise<PendingMutationProjection | null> {
+    const pending = await this.run("persistence_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null));
+    if (pending && pending.sessionId !== expectedSessionId) throw new TrainingApplicationFailure("resume_unavailable", `Pending mutation belongs to ${pending.sessionId}, not ${expectedSessionId}.`);
+    return pending;
+  }
   currentTime(): string { return this.ports.clock.now(); }
 
   /** Rebuilds the observable state from canonical records before any recovery retry. */
@@ -41,7 +47,7 @@ export class TrainingLifecycleUseCases {
       ? (await this.ports.repositories.getAttempts()).some((attempt) => attempt.sessionId === session.id && attempt.occurrenceId === currentOccurrence.occurrenceId)
       : false;
     const state = pending
-      ? simulationSession ? simulationPendingFor(pending.status) : pending.operation === "submit_training_outcome" ? practicePendingFor(pending.status) : simulationSession ? simulation("recovery_required", operationError("simulation_resume", "journal_durable", "recover")) : practice("commit_pending", operationError("practice_submit", "journal_durable", "recover"))
+      ? simulationSession ? simulationPendingFor(pending.status) : pending.operation === "submit_training_outcome" ? practicePendingFor(pending.status) : pending.operation === "complete_training_session" ? practiceCompletionPendingFor(pending.status) : practice("recovery_required", operationError("practice_resume", pending.status, "recover"))
       : simulationSession ? simulation("editable") : hasMaterializedCurrentPracticeAttempt ? practice("feedback") : practice("unanswered");
     return this.operationStates.reconstruct({ sessionId: session.id, state });
   }
@@ -61,9 +67,51 @@ export class TrainingLifecycleUseCases {
     this.operationStates.publish(verified.id, simulationSession ? simulation("editable") : pending?.operation === "submit_training_outcome" ? practice("feedback") : practice("unanswered"));
   }
 
+  async recoverExpectedSessionAbandonment(expectedSessionId: string): Promise<TrainingSession> {
+    if (!expectedSessionId.trim()) throw new TrainingApplicationFailure("invalid_response", "Expected abandonment recovery requires a session identity.");
+    const pending = await this.run("persistence_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null));
+    if (pending) {
+      if (pending.sessionId !== expectedSessionId || pending.operation !== "abandon_training_session") {
+        throw new TrainingApplicationFailure("resume_unavailable", `Pending mutation does not own abandonment for ${expectedSessionId}.`);
+      }
+      await this.run("persistence_failure", () => this.ports.mutations.recover());
+    }
+    const [active, session] = await Promise.all([
+      this.run("verification_failure", () => this.ports.repositories.getActiveSession()),
+      this.run("verification_failure", () => this.ports.repositories.getSession(expectedSessionId)),
+    ]);
+    if (active?.id === expectedSessionId || !session || session.id !== expectedSessionId || session.status !== "abandoned") {
+      throw new TrainingApplicationFailure("verification_failure", `Session ${expectedSessionId} is not a verified non-resumable abandonment.`);
+    }
+    this.operationStates.clear(expectedSessionId);
+    return session;
+  }
+
+  async recoverExpectedSessionCompletion(expectedSessionId: string): Promise<PracticeFinalization> {
+    if (!expectedSessionId.trim()) throw new TrainingApplicationFailure("invalid_response", "Expected completion recovery requires a session identity.");
+    const pending = await this.run("persistence_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null));
+    let expectedResultId: string | undefined;
+    if (pending) {
+      if (pending.sessionId !== expectedSessionId || pending.operation !== "complete_training_session" || !pending.practiceCompletion) {
+        throw new TrainingApplicationFailure("resume_unavailable", `Pending mutation does not own completion for ${expectedSessionId}.`);
+      }
+      expectedResultId = pending.practiceCompletion.resultId;
+      this.operationStates.publish(expectedSessionId, practice("completing"));
+      try { await this.ports.mutations.recover(); }
+      catch (error) {
+        this.operationStates.publish(expectedSessionId, practiceCompletionPendingFor(pending.status));
+        throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure("persistence_failure", "The exact completion journal could not be recovered.", error);
+      }
+    }
+    const verified = await this.verifyExpectedSessionCompletion(expectedSessionId, expectedResultId);
+    this.operationStates.publish(expectedSessionId, practice("completed"));
+    return verified;
+  }
+
   async getPracticeOperationState(session: TrainingSession, hasCommittedAttempt: boolean): Promise<PracticeDurableOperationState> {
     const pending = await this.pendingFor(session.id);
     if (pending?.operation === "submit_training_outcome") return practicePendingFor(pending.status);
+    if (pending?.operation === "complete_training_session") return practiceCompletionPendingFor(pending.status);
     if (pending) return practice("recovery_required", operationError("practice_resume", pending.status, "recover"));
     const current = this.operationStates.get(session.id);
     if (current && isPracticeOperation(current)) return current;
@@ -110,9 +158,15 @@ export class TrainingLifecycleUseCases {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);
     await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
+    const sessionId = await this.run("persistence_failure", () => this.ports.sessionIds.create({ trackId: input.trackId, modeId: input.modeId }));
+    if (typeof sessionId !== "string" || !sessionId.trim()) throw new TrainingApplicationFailure("persistence_failure", "Training session identity generation returned an invalid identity.");
+    const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
+      ? { ...input.request, sessionId }
+      : { sessionId };
     const runtime = this.resolveRuntime(input.trackId);
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts, reviews, now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts, reviews, now: this.ports.clock.now() }));
+    if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
     await this.run("missing_content", () => this.ports.content.assertPreparedSession(prepared.session));
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
@@ -214,28 +268,39 @@ export class TrainingLifecycleUseCases {
     });
   }
 
-  async completeOrdinarySession(session: TrainingSession): Promise<void> {
-    if (session.status !== "completed") throw new TrainingApplicationFailure("persistence_failure", "Only a completed session can be materialized as ordinary completion.");
-    await this.run("persistence_failure", () => this.ports.mutations.complete(session));
-    await this.requireVerifiedSummary(session.id);
+  async completeActivePracticeSession(expectedSessionId: string): Promise<PracticeFinalization> {
+    if (!expectedSessionId.trim()) throw new TrainingApplicationFailure("invalid_response", "Practice completion requires the expected session identity.");
+    const inFlight = this.practiceCompletions.get(expectedSessionId);
+    if (inFlight) return inFlight;
+    const completion = this.serializeSessionMutation(expectedSessionId, () => this.completeActivePracticeSessionInLane(expectedSessionId));
+    this.practiceCompletions.set(expectedSessionId, completion);
+    try { return await completion; }
+    finally { if (this.practiceCompletions.get(expectedSessionId) === completion) this.practiceCompletions.delete(expectedSessionId); }
   }
 
-  async completeActivePracticeSession(): Promise<PracticeFinalization> {
-    const initial = await this.requireActive();
-    return this.serializeSessionMutation(initial.id, () => this.completeActivePracticeSessionInLane());
-  }
-
-  private async completeActivePracticeSessionInLane(): Promise<PracticeFinalization> {
+  private async completeActivePracticeSessionInLane(expectedSessionId: string): Promise<PracticeFinalization> {
+    const active = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
+    if (!active) return this.recoverExpectedSessionCompletion(expectedSessionId);
+    if (active.id !== expectedSessionId) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${active.id} does not match completion ${expectedSessionId}.`);
     const session = await this.requireActive();
     if (session.configurationSnapshot.submission !== "perItem" || session.currentItemIndex !== session.actualLength - 1) {
       throw new TrainingApplicationFailure("invalid_response", "Only a durably submitted final practice occurrence can complete this session.");
     }
-    const attempts = await this.run("persistence_failure", () => this.ports.repositories.getAttempts());
-    const runtime = this.resolveRuntime(session.trackId);
-    const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts, now: this.ports.clock.now() }));
-    await this.run("persistence_failure", () => this.ports.mutations.completeWithResult(finalized));
-    await this.requireVerifiedSummary(session.id);
-    return finalized;
+    this.operationStates.publish(session.id, practice("completing"));
+    try {
+      const attempts = await this.run("persistence_failure", () => this.ports.repositories.getAttempts());
+      const runtime = this.resolveRuntime(session.trackId);
+      const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts, now: this.ports.clock.now() }));
+      if (finalized.session.id !== session.id || finalized.result.sessionId !== session.id) throw new TrainingApplicationFailure("verification_failure", "Practice completion changed the expected session identity.");
+      await this.ports.mutations.completeWithResult(finalized);
+      this.operationStates.publish(session.id, practice("completed"));
+      return finalized;
+    } catch (error) {
+      const durableState = error instanceof MutationCommitFailure ? error.durableState : "not_durable";
+      const operation = practice("completion_failed", operationError("practice_complete", durableState, durableState === "not_durable" ? "retry_same_command" : "recover"));
+      this.operationStates.publish(session.id, operation);
+      throw error instanceof TrainingApplicationFailure ? error : new TrainingApplicationFailure("persistence_failure", "Practice completion did not reach a verified canonical result.", error);
+    }
   }
 
   async saveSimulationDraft(input: Readonly<{ draft: TrainingSessionDraft; expectedPreviousRevision: number }>): Promise<void> {
@@ -391,6 +456,19 @@ export class TrainingLifecycleUseCases {
     return this.run("persistence_failure", () => runtime[method](input));
   }
 
+  private async verifyExpectedSessionCompletion(expectedSessionId: string, expectedResultId?: string): Promise<PracticeFinalization> {
+    const [active, session, result, pending] = await Promise.all([
+      this.run("verification_failure", () => this.ports.repositories.getActiveSession()),
+      this.run("verification_failure", () => this.ports.repositories.getSession(expectedSessionId)),
+      this.run("verification_failure", () => this.ports.repositories.getResult(expectedSessionId)),
+      this.run("verification_failure", () => this.ports.repositories.getPendingMutation?.() ?? Promise.resolve(null)),
+    ]);
+    if (pending || active?.id === expectedSessionId || !session || session.id !== expectedSessionId || session.status !== "completed" || !result || result.sessionId !== expectedSessionId || result.trackId !== session.trackId || (expectedResultId !== undefined && result.id !== expectedResultId)) {
+      throw new TrainingApplicationFailure("verification_failure", `Session ${expectedSessionId} does not have one verified completion result and cleared active ownership.`);
+    }
+    return Object.freeze({ session, result });
+  }
+
   private async requireVerifiedSummary(sessionId: string) {
     const result = await this.run("summary_unavailable", () => this.ports.repositories.getResult(sessionId));
     if (!result) throw new TrainingApplicationFailure("summary_unavailable", "Completed-session result has not been verified.");
@@ -463,6 +541,10 @@ function practicePendingFor(status: "journal_durable" | "materialized" | "verifi
   if (status === "journal_durable") return practiceRecovery("commit_materialization_failed");
   if (status === "materialized") return practiceRecovery("commit_verification_failed");
   return practice("verified_pending_clear", operationError("practice_submit", "verified_pending_clear", "recover"));
+}
+
+function practiceCompletionPendingFor(status: "journal_durable" | "materialized" | "verified_pending_clear"): Extract<PracticeDurableOperationState, { kind: "completion_failed" }> {
+  return practice("completion_failed", operationError("practice_complete", status, "recover"));
 }
 
 function simulationRecovery(kind: "finalization_journal_pending" | "finalization_journal_failed" | "materialization_failed" | "verification_failed"): Extract<SimulationDurableOperationState, { kind: typeof kind }> {

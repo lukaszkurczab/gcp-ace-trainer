@@ -5,6 +5,8 @@ import { Alert, StyleSheet, View } from "react-native";
 
 import {
   AppShellHeader,
+  EmptyState,
+  LoadingState,
   Screen,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
@@ -16,6 +18,7 @@ import {
 import type { RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
+  loadActiveTrainingSession,
   loadAlgorithmsDashboard,
   loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
   loadExamSummaries as getAttempts,
@@ -26,8 +29,8 @@ import {
 } from "../../application/learningReadModels";
 import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
-import { type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
-import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../application/algorithms";
+import { type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
+import type { AlgorithmsDashboard } from "../../application/algorithms";
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { buildAnalyticsData } from "../analytics/analyticsService";
@@ -35,8 +38,10 @@ import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "./SelectTrackScreen";
 import {
   buildPracticeSessionConfig,
+  buildCertificationPracticeResumeRoute,
 } from "../practice/sessionConfig";
 import { HomeTab } from "./tabs/HomeTab";
+import type { HomeRecommendationAction } from "./tabs/homeTabModel";
 import { ProgressTab } from "./tabs/ProgressTab";
 import type { ProgressAction } from "./tabs/progressTabModel";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -54,6 +59,7 @@ type HomeScreenProps = NativeStackScreenProps<
 type ShellData = {
   algorithmsDashboard: AlgorithmsDashboard | null;
   algorithmsDashboardError: string | null;
+  activeSession: TrainingSession | null;
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress: CloudCertificationProgressViewModel | null;
   practiceHistory: CertificationPracticeAnswerViewModel[];
@@ -72,9 +78,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<HomeShellTab>("home");
   const [activeTrackId, setActiveTrackId] = useState<TrackId | null>(null);
   const [hasLoadedActiveTrack, setHasLoadedActiveTrack] = useState(false);
+  const [shellReadError, setShellReadError] = useState<string | null>(null);
   const [data, setData] = useState<ShellData>({
     algorithmsDashboard: null,
     algorithmsDashboardError: null,
+    activeSession: null,
     attempts: [],
     cloudProgress: null,
     practiceHistory: [],
@@ -92,42 +100,54 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
+      setHasLoadedActiveTrack(false);
+      setShellReadError(null);
 
       async function loadShellData() {
-        const savedTrackId = await getActiveTrackId();
-        const [
-          savedAttempts,
-          savedPracticeHistory,
-          cloudProgress,
-          reviewQueueItemsResult,
-          trainingAttemptsResult,
-        ] = await Promise.all([
-          getAttempts(),
-          getPracticeHistory(),
-          loadCloudCertificationProgressViewModel(),
-          getReviewQueueItems(),
-          getTrainingAttempts(),
-        ]);
-        let algorithmsDashboard: AlgorithmsDashboard | null = null;
-        let algorithmsDashboardError: string | null = null;
-        if (savedTrackId === ALGORITHMS_TRACK_ID) {
-          try { algorithmsDashboard = await loadAlgorithmsDashboard(); }
-          catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Algorithms recommendation is unavailable."); }
-        }
-
-        if (isActive) {
-          setActiveTrackId(savedTrackId ?? null);
-          setHasLoadedActiveTrack(true);
-          setData({
-            algorithmsDashboard,
-            algorithmsDashboardError,
-            attempts: savedAttempts,
+        try {
+          const savedTrackId = await getActiveTrackId();
+          const [
+            savedAttempts,
+            savedPracticeHistory,
+            activeSession,
             cloudProgress,
-            practiceHistory: savedPracticeHistory,
-            reviewQueueItems: reviewQueueItemsResult.value,
-            storageIssues: [],
-            trainingAttempts: trainingAttemptsResult.value,
-          });
+            reviewQueueItemsResult,
+            trainingAttemptsResult,
+          ] = await Promise.all([
+            getAttempts(),
+            getPracticeHistory(),
+            loadActiveTrainingSession(),
+            loadCloudCertificationProgressViewModel(),
+            getReviewQueueItems(),
+            getTrainingAttempts(),
+          ]);
+          let algorithmsDashboard: AlgorithmsDashboard | null = null;
+          let algorithmsDashboardError: string | null = null;
+          if (savedTrackId === ALGORITHMS_TRACK_ID) {
+            try { algorithmsDashboard = await loadAlgorithmsDashboard(); }
+            catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Algorithms recommendation is unavailable."); }
+          }
+
+          if (isActive) {
+            setActiveTrackId(savedTrackId ?? null);
+            setData({
+              algorithmsDashboard,
+              algorithmsDashboardError,
+              activeSession,
+              attempts: savedAttempts,
+              cloudProgress,
+              practiceHistory: savedPracticeHistory,
+              reviewQueueItems: reviewQueueItemsResult.value,
+              storageIssues: [],
+              trainingAttempts: trainingAttemptsResult.value,
+            });
+            setHasLoadedActiveTrack(true);
+          }
+        } catch (error) {
+          if (isActive) {
+            setShellReadError(describeOperationalFailure(error, "Patternly data is unavailable."));
+            setHasLoadedActiveTrack(true);
+          }
         }
       }
 
@@ -143,7 +163,8 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     () => buildAnalyticsData(data.attempts, data.practiceHistory),
     [data.attempts, data.practiceHistory],
   );
-  if (!hasLoadedActiveTrack) return <Screen scroll={false}><View /></Screen>;
+  if (!hasLoadedActiveTrack) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><LoadingState title={t("Loading Patternly…")} /></Screen>;
+  if (shellReadError) return <Screen edges={["top"]} scroll={false}><AppShellHeader /><EmptyState title={t("Patternly is unavailable")} description={t(shellReadError)} /></Screen>;
   if (!activeTrackId) {
     return (
       <SelectTrackScreen
@@ -164,9 +185,18 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     navigation.navigate(ROUTES.MISTAKES_REVIEW);
   }
 
-  async function handleRecommendationAction(action: AlgorithmsRecommendationAction) {
+  async function handleRecommendationAction(action: HomeRecommendationAction) {
     if (action.kind === "unavailable") return;
     try {
+      if (action.kind === "resume_certification_practice") {
+        if (activeTrackId !== "cloud-certification") throw new Error("Certification Practice can resume only from its active track.");
+        const session = await resumeActiveTrainingSession();
+        if (session.id !== action.sessionId || session.trackId !== "cloud-certification" || session.modeId !== action.modeId) {
+          throw new Error("The active Certification Practice session changed before it could be resumed.");
+        }
+        navigation.navigate(ROUTES.PRACTICE_SESSION, buildCertificationPracticeResumeRoute(session));
+        return;
+      }
       if (action.kind === "choose_declared_scope") {
         navigation.navigate(ROUTES.ALGORITHMS_SCOPE_SELECTION, {
           modeId: action.modeId,
@@ -218,11 +248,10 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   return (
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
-        <AppShellHeader
-          title="Patternly"
-        />
+        <AppShellHeader />
         {activeTab === "home" ? (
           <HomeTab
+            activeSession={data.activeSession}
             activeTrack={activeTrack}
             analytics={analytics}
             algorithmsDashboard={data.algorithmsDashboard}

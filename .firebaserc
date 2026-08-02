@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "sandbox": "patternly-app-sandbox",
+    "production": "patternly-app-production"
+  }
+}

@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import { AppShellHeader } from "../components";
 import { ROUTES } from "../constants/routes";
 import { AnswerReviewScreen } from "../features/review/AnswerReviewScreen";
 import { ExamReviewScreen } from "../features/exam/ExamReviewScreen";
@@ -36,10 +37,13 @@ export function RootNavigator() {
       initialRouteName={ROUTES.HOME}
       screenOptions={{
         contentStyle: { backgroundColor: colors.background },
-        headerShadowVisible: false,
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.textPrimary,
-        headerTitleStyle: { fontWeight: "700" },
+        header: ({ back, navigation, options }) => (
+          <AppShellHeader
+            backAction={back ? { onPress: () => navigation.goBack() } : undefined}
+            context={options.title}
+            placement="stack"
+          />
+        ),
       }}
     >
       <Stack.Screen
@@ -125,7 +129,7 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ALGORITHMS_PRACTICE_SUMMARY}
         component={AlgorithmsPracticeSummaryScreen}
-        options={{ headerShown: false, title: t("Session result") }}
+        options={{ title: t("Session result") }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION}
@@ -135,12 +139,12 @@ export function RootNavigator() {
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_SUMMARY}
         component={AlgorithmsInterviewSimulationSummaryScreen}
-        options={{ headerShown: false, title: t("Simulation complete") }}
+        options={{ title: t("Simulation complete") }}
       />
       <Stack.Screen
         name={ROUTES.ALGORITHMS_INTERVIEW_SIMULATION_REVIEW}
         component={AlgorithmsInterviewSimulationReviewScreen}
-        options={{ headerShown: false, title: t("Simulation review") }}
+        options={{ title: t("Simulation review") }}
       />
       <Stack.Screen
         name={ROUTES.MISTAKES_REVIEW}

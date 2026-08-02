@@ -2,13 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  AlgorithmsForegroundTimerFacade,
-  AlgorithmsForegroundTimerRecoveryError,
-  getAlgorithmsSessionRuntimePorts,
-  installAlgorithmsSessionRuntimePorts,
-  type AlgorithmsForegroundTimerDependencies,
-} from "../src/application/algorithms";
-import { createForegroundTimerState, createTrainingSession, type ForegroundTimerState } from "../src/domain";
+  ForegroundSessionTimerFacade,
+  ForegroundSessionTimerRecoveryError,
+  type ForegroundSessionTimerDependencies,
+} from "../src/application/trainingLifecycle";
+import { createForegroundTimerState, createTrainingSession, getTrackRegistration, type ForegroundTimerState, type TrainingSession } from "../src/domain";
 import type { TrainingLifecycleUseCases } from "../src/application/trainingLifecycle";
 import { simulationTimer } from "../src/features/simulation/simulationProjection";
 
@@ -34,11 +32,37 @@ function practiceSession() {
   });
 }
 
-function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown") {
+function certificationPracticeSession() {
+  const contentVersion = "cloud-certification-core-0002";
+  return createTrainingSession({
+    id: "certification-practice-1", trackId: "cloud-certification", modeId: "certification-focus-practice",
+    configurationSnapshot: { kind: "certificationFocusPractice", feedbackMode: "afterEachAnswer", answerChanges: "none", navigation: "linear", submission: "perItem", timer: "elapsedForeground" },
+    requestedLength: 1, actualLength: 1, currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "certification-occurrence-1", item: { trackId: "cloud-certification", contentVersion, itemId: "certification-item-1" } }],
+    optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
+    contentVersion, taxonomyVersion: "cloud-certification-taxonomy-v2", planFingerprint: "b".repeat(64), status: "active", startedAt,
+  });
+}
+
+function certificationExamSession() {
+  const contentVersion = "cloud-certification-core-0002";
+  return createTrainingSession({
+    id: "certification-exam-1", trackId: "cloud-certification", modeId: "certification-exam-simulation",
+    configurationSnapshot: { kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000, timerDeadlineAt: "2026-07-19T12:00:00.000Z" },
+    requestedLength: 1, actualLength: 1, currentItemIndex: 0,
+    itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "cloud-certification", contentVersion, itemId: "certification-exam-item-1" } }],
+    optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
+    contentVersion, taxonomyVersion: "cloud-certification-taxonomy-v2", planFingerprint: "c".repeat(64), status: "active", startedAt,
+  });
+}
+
+function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown", session?: TrainingSession) {
   let now = 0;
   let state: ForegroundTimerState | null = null;
-  let active = kind === "countdown" ? simulationSession(duration) : practiceSession();
+  let active = session ?? (kind === "countdown" ? simulationSession(duration) : practiceSession());
   let scheduled: (() => void) | null = null;
+  let cancelCount = 0;
+  let resumeCount = 0;
   let finalizations = 0;
   let durableAtFinalization: ForegroundTimerState | null = null;
   const checkpoints: number[] = [];
@@ -48,10 +72,10 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown")
       active = createTrainingSession({ ...active, activeForegroundMs: elapsed });
       return active;
     },
-    resumeActiveSession: async () => active,
+    resumeActiveSession: async () => { resumeCount += 1; return active; },
     finalizeSimulation: async () => { finalizations += 1; durableAtFinalization = state; },
   } as unknown as TrainingLifecycleUseCases;
-  const dependencies: AlgorithmsForegroundTimerDependencies = {
+  const dependencies: ForegroundSessionTimerDependencies = {
     repository: {
       async getActive() { return state; },
       async save(candidate, expected) {
@@ -61,19 +85,24 @@ function fixture(duration?: number, kind: "countdown" | "elapsed" = "countdown")
       },
     },
     lifecycle,
+    tracks: { getTrackRegistration },
     monotonicClock: { now: () => now }, wallClock: { now: () => startedAt },
     schedule(callback) { scheduled = callback; return 0 as unknown as ReturnType<typeof setInterval>; },
-    cancel: () => undefined,
+    cancel: () => { cancelCount += 1; },
     finalize: async () => lifecycle.finalizeSimulation(),
   };
-  const create = () => new AlgorithmsForegroundTimerFacade(dependencies);
+  const create = () => new ForegroundSessionTimerFacade(dependencies);
   return {
     session: active, timer: create(), create, checkpoints,
     getActiveSession: () => active,
     setNow(value: number) { now = value; },
     getState: () => state,
+    getCancelCount: () => cancelCount,
+    getResumeCount: () => resumeCount,
     getFinalizations: () => finalizations,
     getDurableAtFinalization: () => durableAtFinalization,
+    fireScheduled() { scheduled?.(); },
+    async settle() { for (let index = 0; index < 12; index += 1) await Promise.resolve(); },
     async tick() { scheduled?.(); for (let index = 0; index < 12; index += 1) await Promise.resolve(); },
   };
 }
@@ -98,6 +127,39 @@ test("ordinary practice publishes a live elapsed timer without a countdown", asy
   assert.deepEqual(projection, { elapsedForegroundMs: 2_400 });
   await f.timer.leaveForeground(f.getActiveSession());
   assert.equal(f.getActiveSession().activeForegroundMs, 2_400);
+});
+
+test("one family-neutral timer initializes and restores ordinary Certification foreground time", async () => {
+  const f = fixture(undefined, "elapsed", certificationPracticeSession());
+  await f.timer.initialize(f.session);
+  assert.equal(f.getState()?.familyId, "certification");
+  assert.equal(f.getState()?.trackId, "cloud-certification");
+  await f.timer.enterForeground(f.session);
+  f.setNow(500);
+  await f.timer.leaveForeground(f.getActiveSession());
+  f.setNow(900_000);
+
+  const restarted = f.create();
+  await restarted.restoreForResume(f.getActiveSession());
+  assert.deepEqual(await restarted.projection(f.getActiveSession()), { elapsedForegroundMs: 500 });
+});
+
+test("absolute-deadline Certification Exam remains outside the foreground timer owner", async () => {
+  const f = fixture(undefined, "elapsed", certificationExamSession());
+  await assert.rejects(() => f.timer.initialize(f.session), /not foreground-timed/);
+  assert.equal(f.getState(), null);
+});
+
+test("a durable foreground timer from another family is rejected instead of reused", async () => {
+  const f = fixture();
+  await f.timer.initialize(f.session);
+  await assert.rejects(() => f.timer.initialize(certificationPracticeSession()), (error: unknown) => {
+    assert.ok(error instanceof ForegroundSessionTimerRecoveryError);
+    assert.match(error.message, /could not be initialized/);
+    return true;
+  });
+  assert.equal(f.getState()?.familyId, "algorithms");
+  assert.equal(f.getState()?.sessionId, f.session.id);
 });
 
 test("AppState foreground transitions and force-close recovery never count background or closed-app time", async () => {
@@ -230,21 +292,71 @@ test("manual finalization checkpoints the active foreground segment before it fr
   assert.equal(f.getFinalizations(), 1);
 });
 
+test("practice completion checkpoint freezes the captured tick until verified release", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(1_250);
+  await f.timer.checkpointForPracticeCompletion(f.getActiveSession());
+  assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+  const checkpointsAtTerminalBoundary = [...f.checkpoints];
+  const durableAtTerminalBoundary = f.getState();
+
+  f.setNow(15_250);
+  f.fireScheduled();
+  await f.settle();
+
+  assert.deepEqual(f.checkpoints, checkpointsAtTerminalBoundary);
+  assert.equal(f.getState(), durableAtTerminalBoundary);
+  assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+  f.timer.releaseAfterVerifiedPracticeCompletion(f.session.id);
+  assert.equal(f.getCancelCount(), 1);
+  assert.equal(f.getResumeCount(), 0);
+});
+
+test("a completed timer checkpoint is not released before completion is verified", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(1_250);
+  await f.timer.checkpointForPracticeCompletion(f.getActiveSession());
+  assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+
+  f.setNow(15_250);
+  f.fireScheduled();
+  await f.settle();
+
+  assert.equal(f.getCancelCount(), 1);
+  assert.equal(f.getResumeCount(), 0);
+  assert.equal(f.getState()?.accumulatedForegroundMs, 1_250);
+  assert.deepEqual(await f.timer.projection(f.getActiveSession()), { elapsedForegroundMs: 1_250 });
+});
+
+test("concurrent Finish handoffs share one timer checkpoint and one completion result", async () => {
+  const f = fixture(undefined, "elapsed");
+  await f.timer.initialize(f.session);
+  await f.timer.enterForeground(f.session);
+  f.setNow(1_250);
+  let completions = 0;
+  const verified = Object.freeze({ kind: "verified", sessionId: f.session.id });
+
+  const [first, second] = await Promise.all([
+    f.timer.completePracticeAfterCheckpoint(f.getActiveSession(), async () => { completions += 1; return verified; }),
+    f.timer.completePracticeAfterCheckpoint(f.getActiveSession(), async () => { completions += 1; return verified; }),
+  ]);
+
+  assert.equal(completions, 1);
+  assert.deepEqual(f.checkpoints, [0, 1_250]);
+  assert.equal(first, verified);
+  assert.equal(second, verified);
+  assert.equal(f.getCancelCount(), 1);
+});
+
 test("missing persisted timer on resume is a typed application recovery failure", async () => {
   const f = fixture();
   await assert.rejects(() => f.timer.restoreForResume(f.session), (error: unknown) => {
-    assert.ok(error instanceof AlgorithmsForegroundTimerRecoveryError);
+    assert.ok(error instanceof ForegroundSessionTimerRecoveryError);
     assert.equal(error.code, "timer_recovery_failure");
     return true;
   });
-});
-
-test("Algorithms session runtime receives deterministic wall-clock and ID ports", () => {
-  installAlgorithmsSessionRuntimePorts({
-    wallClock: { now: () => startedAt },
-    sessionIds: { next: (modeId) => `deterministic:${modeId}:1` },
-  });
-  const ports = getAlgorithmsSessionRuntimePorts();
-  assert.equal(ports.wallClock.now(), startedAt);
-  assert.equal(ports.sessionIds.next("algorithms-interview-simulation"), "deterministic:algorithms-interview-simulation:1");
 });

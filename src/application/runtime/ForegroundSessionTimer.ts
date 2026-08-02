@@ -60,6 +60,7 @@ export class ForegroundSessionTimer {
 
   async checkpointForDraftSave(): Promise<ForegroundTimerState> { return this.persist(this.segmentStartedAt !== null); }
   async checkpointForFinalization(): Promise<ForegroundTimerState> { return this.persist(this.segmentStartedAt !== null); }
+  async checkpointForPracticeCompletion(): Promise<ForegroundTimerState> { return this.persist(false); }
   async checkpointForExpiry(): Promise<ForegroundTimerState> { return this.persist(this.segmentStartedAt !== null); }
 
   async leaveForeground(): Promise<ForegroundTimerState> {

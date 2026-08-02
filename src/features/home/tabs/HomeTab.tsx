@@ -1,12 +1,12 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
 import { Button, Card, Icon, IconTile } from "../../../components";
-import type { TrackDisplay } from "../../../domain";
+import type { TrackDisplay, TrainingSession } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
-import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
+import type { AlgorithmsDashboard } from "../../../application/algorithms";
 import { spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
-import { buildHomeTabModel } from "./homeTabModel";
+import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
@@ -18,18 +18,20 @@ import {
 
 type HomeTabProps = {
   activeTrack: TrackDisplay;
+  activeSession: TrainingSession | null;
   analytics: AnalyticsData;
   algorithmsDashboard: AlgorithmsDashboard | null;
   dashboardError: string | null;
   onChangeTrack: () => void;
   onChooseTopic: () => void;
-  onRecommendationAction: (action: AlgorithmsRecommendationAction) => void;
+  onRecommendationAction: (action: HomeRecommendationAction) => void;
   onStartLearning: (topicId: string) => void;
   trainingAttempts: readonly TrainingAttempt[];
 };
 
 export function HomeTab({
   activeTrack,
+  activeSession,
   analytics,
   algorithmsDashboard,
   dashboardError,
@@ -43,8 +45,11 @@ export function HomeTab({
   const { colors: palette, t } = useAppPreferences();
   const { fontScale } = useWindowDimensions();
   const largeText = fontScale >= 1.3;
-  const model = buildHomeTabModel({ activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
+  const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
   const recommendation = model.recommendations[0];
+  const resumeSessionId = recommendation?.action.kind === "resume_active_session" || recommendation?.action.kind === "resume_certification_practice"
+    ? recommendation.action.sessionId
+    : undefined;
   const decisionTitle = recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
   const decisionDetail = recommendation
     ? t(recommendation.unavailableReason ?? recommendation.detail)
@@ -85,15 +90,15 @@ export function HomeTab({
         <Text style={styles.heroEyebrow}>{t(recommendation?.label ?? "Recommended for you")}</Text>
         <View
           style={[styles.decisionHeading, largeText ? styles.decisionHeadingLargeText : null]}
-          testID={recommendation?.action.kind === "resume_active_session"
-            ? runtimeSelectors.resume.card(recommendation.action.sessionId)
+          testID={resumeSessionId
+            ? runtimeSelectors.resume.card(resumeSessionId)
             : undefined}
         >
           <IconTile name={decisionIcon} size={48} tone={decisionTone} />
           <Text
             style={styles.decisionTitle}
-            testID={recommendation?.action.kind === "resume_active_session"
-              ? runtimeSelectors.resume.title(recommendation.action.sessionId)
+            testID={resumeSessionId
+              ? runtimeSelectors.resume.title(resumeSessionId)
               : undefined}
           >
             {t(decisionTitle)}
@@ -102,8 +107,8 @@ export function HomeTab({
         <View style={styles.divider} />
         <Text
           style={styles.decisionDetail}
-          testID={recommendation?.action.kind === "resume_active_session"
-            ? runtimeSelectors.resume.status(recommendation.action.sessionId)
+          testID={resumeSessionId
+            ? runtimeSelectors.resume.status(resumeSessionId)
             : undefined}
         >
           {decisionDetail}
@@ -117,8 +122,8 @@ export function HomeTab({
             }
             onStartLearning(model.topicId);
           }}
-          testID={recommendation?.action.kind === "resume_active_session"
-            ? runtimeSelectors.resume.continue(recommendation.action.sessionId)
+          testID={resumeSessionId
+            ? runtimeSelectors.resume.continue(resumeSessionId)
             : undefined}
         >
           {t(decisionLabel)}

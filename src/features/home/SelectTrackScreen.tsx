@@ -6,6 +6,7 @@ import { StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import {
   Button,
   Card,
+  AppShellHeader,
   IconTile,
   ProgressBar,
   Screen,
@@ -19,7 +20,7 @@ import {
   type TrackId,
 } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
-import type { RootStackParamList } from "../../navigation";
+import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
   loadExamSummaries as getAttempts,
@@ -31,7 +32,6 @@ import { spacing, typography } from "../../theme";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
-import { AppStackHeader } from "../navigation/AppStackHeader";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
@@ -133,7 +133,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
   return (
     <View style={styles.shell}>
       <Screen edges={["top"]} style={styles.screenContent}>
-        <AppStackHeader navigation={navigation} showBack={!onboarding} />
+        <AppShellHeader backAction={onboarding ? undefined : { onPress: () => goBackOrHome(navigation) }} />
 
         <View style={styles.intro}>
           {onboarding ? <Text style={styles.eyebrow}>{t("Welcome to Patternly")}</Text> : null}

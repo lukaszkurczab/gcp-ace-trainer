@@ -304,6 +304,56 @@ export type CanonicalCertificationMode = Readonly<{
   configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration | CanonicalCertificationQuickReviewConfiguration;
 }>;
 
+export type CanonicalAccountLifecycleOperation = Readonly<{
+  id: string;
+  surfaceId: string;
+  from: readonly string[];
+  inProgress: string;
+  success: string;
+  failureTransitions: readonly Readonly<{
+    failures: readonly string[];
+    to: string;
+  }>[];
+}>;
+
+export type CanonicalAccountDataContract = Readonly<{
+  version: 1;
+  publicLaunchEntry: Readonly<Record<string, string | boolean>>;
+  credentials: Readonly<Record<string, string>>;
+  lifecycle: Readonly<{
+    initialState: string;
+    states: readonly string[];
+    operations: readonly CanonicalAccountLifecycleOperation[];
+    enumerationPolicy: string;
+    resendVerificationResult: string;
+    changePendingEmailResult: string;
+    verificationLink: Readonly<Record<string, string | number | boolean>>;
+    recoveryLink: Readonly<Record<string, string | number | boolean>>;
+    publicDeletionLink: Readonly<Record<string, string | number | boolean>>;
+  }>;
+  dataAuthority: Readonly<{
+    localDurabilityAuthority: string;
+    remoteConvergenceAuthority: string;
+    synchronizationBoundary: string;
+    localCommitBeforeRemoteAcknowledgement: string;
+    parallelLearningRepository: string;
+    indexPolicy: string;
+    recordClasses: readonly Readonly<{ id: string; owner: string; remoteSync: string }>[];
+    derivedProjections: readonly Readonly<{ id: string; sources: readonly string[]; writable: string; remoteSync: string }>[];
+  }>;
+  adoption: Readonly<{
+    requiresPreviewAndConfirmation: boolean;
+    cases: readonly Readonly<{ id: string; result: string }>[];
+    recordPolicies: Readonly<Record<string, string>>;
+    cancelledOrFailedResult: string;
+  }>;
+  sync: Readonly<Record<string, string | readonly string[]>>;
+  offlineAndExpiry: Readonly<Record<string, string | readonly string[]>>;
+  signOutAndDeletion: Readonly<Record<string, unknown>>;
+  surfaces: readonly Readonly<{ id: string; states: readonly string[] }>[];
+  networkAndPrivacy: Readonly<Record<string, unknown>>;
+}>;
+
 export type CanonicalProductContract = Readonly<{
   version: number;
   contractId: "patternly-product-contract";
@@ -319,6 +369,7 @@ export type CanonicalProductContract = Readonly<{
     version: 1;
     tests: readonly CanonicalRequirementTest[];
   }>;
+  accountData: CanonicalAccountDataContract;
   userCommands: Readonly<{
     commands: readonly Readonly<{ id: CanonicalUserCommandId }>[];
     sessionCtaMappings: readonly Readonly<{
@@ -441,13 +492,50 @@ const canonicalSimulationOperationStatePresentationIds: readonly CanonicalSimula
   "saving-response", "save-failed", "response-saved-navigation-failed", "finalizing", "finalization-recovery-required",
 ];
 
+const canonicalAccountLifecycleOperationIds = [
+  "register", "verifyIdentity", "resendVerification", "changePendingEmail", "signIn", "requestRecovery", "resetPassword", "completeInitialSync", "enterOffline", "restoreNetwork", "expireSession", "reauthenticate", "signOut", "deleteAccount", "completeRemoteDeletionCleanup",
+] as const;
+
+const canonicalAccountLifecycleSurfaceByOperation = {
+  register: "register",
+  verifyIdentity: "verifyIdentity",
+  resendVerification: "verifyIdentity",
+  changePendingEmail: "verifyIdentity",
+  signIn: "signIn",
+  requestRecovery: "forgotPassword",
+  resetPassword: "resetPassword",
+  completeInitialSync: "dataAdoption",
+  enterOffline: "syncStatus",
+  restoreNetwork: "syncStatus",
+  expireSession: "sessionExpiredReauthentication",
+  reauthenticate: "sessionExpiredReauthentication",
+  signOut: "signOut",
+  deleteAccount: "deleteAccount",
+  completeRemoteDeletionCleanup: "syncStatus",
+} as const;
+
+const canonicalAccountRecordClassIds = [
+  "storageMetadata", "accountBinding", "syncMetadataAndOutbox", "applicationSettings", "notificationSettings", "activeTrack", "activeSessionReference", "trainingSession", "trainingSessionResult", "trainingAttempt", "reviewQueueEntry", "simulationDraft", "foregroundTimer", "mutationJournal", "accountDeletionIntent",
+] as const;
+
+const canonicalAccountDerivedProjectionIds = ["familyNeutralEvidence", "familyProgress"] as const;
+
+const canonicalAccountAdoptionCaseIds = [
+  "emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeSessionOnOneSide", "divergentActiveSessions", "divergentRecord",
+] as const;
+
+const canonicalAccountSurfaceIds = [
+  "accountEntry", "register", "verifyIdentity", "signIn", "forgotPassword", "resetPassword", "sessionExpiredReauthentication", "accountProfile", "dataAdoption", "syncStatus", "signOut", "deleteAccount", "publicDeleteRequest",
+] as const;
+
 const canonicalPracticeSessionTransitions: readonly CanonicalSessionTransition<CanonicalPracticeSessionState>[] = [
   { from: "unanswered", trigger: "submit", to: "submitting_before_journal" }, { from: "unanswered", trigger: "abandon", to: "abandoning" },
   { from: "submitting_before_journal", trigger: "validation_rejected", to: "unanswered" }, { from: "submitting_before_journal", trigger: "journal_write_failed", to: "submit_journal_failed" }, { from: "submitting_before_journal", trigger: "materialization_failed", to: "commit_materialization_failed" }, { from: "submitting_before_journal", trigger: "verification_failed", to: "commit_verification_failed" }, { from: "submitting_before_journal", trigger: "submit_verified", to: "feedback" },
   { from: "submit_journal_failed", trigger: "submit", to: "submitting_before_journal" },
   { from: "commit_pending", trigger: "recover", to: "unanswered" }, { from: "commit_materialization_failed", trigger: "recover", to: "feedback" }, { from: "commit_verification_failed", trigger: "recover", to: "feedback" }, { from: "verified_pending_clear", trigger: "recover", to: "feedback" }, { from: "recovery_required", trigger: "recover", to: "unanswered" },
-  { from: "feedback", trigger: "next", to: "advancing" }, { from: "feedback", trigger: "abandon", to: "abandoning" },
+  { from: "feedback", trigger: "next", to: "advancing" }, { from: "feedback", trigger: "abandon", to: "abandoning" }, { from: "feedback", trigger: "finish", to: "completing" },
   { from: "advancing", trigger: "advance_verified", to: "unanswered" }, { from: "advancing", trigger: "advance_failed", to: "advance_failed" }, { from: "advance_failed", trigger: "next", to: "advancing" },
+  { from: "completing", trigger: "completion_verified", to: "completed" }, { from: "completing", trigger: "completion_failed", to: "completion_failed" }, { from: "completion_failed", trigger: "finish", condition: "durable_state_not_durable", to: "completing" }, { from: "completion_failed", trigger: "recover", condition: "journal_status_durable", to: "completing" }, { from: "completion_failed", trigger: "recover", condition: "journal_status_materialized", to: "completing" }, { from: "completion_failed", trigger: "recover", condition: "journal_status_verified_pending_clear", to: "completing" },
   { from: "abandoning", trigger: "abandonment_verified", to: "abandoned" }, { from: "abandoning", trigger: "abandonment_before_journal_failed", to: "abandonment_failed_before_journal" }, { from: "abandoning", trigger: "abandonment_recovery_required", to: "abandonment_recovery_required" }, { from: "abandonment_failed_before_journal", trigger: "abandon", to: "abandoning" },
 ];
 
@@ -589,6 +677,57 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   }
 
   validateCanonicalRequirementTestCoverage(contract as CanonicalProductContract);
+
+  const accountData = (contract as CanonicalProductContract).accountData;
+  if (!hasExactValues(accountData.lifecycle.operations.map((operation) => operation.id), canonicalAccountLifecycleOperationIds)) {
+    throw new CanonicalProductContractValidationError("Canonical account lifecycle must declare exactly its operations in canonical order");
+  }
+  const operationWithWrongSurface = accountData.lifecycle.operations.find((operation) =>
+    canonicalAccountLifecycleSurfaceByOperation[operation.id as keyof typeof canonicalAccountLifecycleSurfaceByOperation] !== operation.surfaceId,
+  );
+  if (operationWithWrongSurface) {
+    throw new CanonicalProductContractValidationError(`Canonical account lifecycle operation maps to the wrong surface: ${operationWithWrongSurface.id}`);
+  }
+  const enterOffline = accountData.lifecycle.operations.find((operation) => operation.id === "enterOffline");
+  const hasCanonicalEnterOffline = Boolean(
+    enterOffline &&
+    hasExactValues(enterOffline.from, ["authenticatedReady"]) &&
+    enterOffline.inProgress === "offlineAuthenticated" &&
+    enterOffline.success === "offlineAuthenticated",
+  );
+  const invalidOfflineEdge = accountData.lifecycle.operations.find((operation) => {
+    const targets = [
+      operation.inProgress,
+      operation.success,
+      ...operation.failureTransitions.map((transition) => transition.to),
+    ];
+    if (!targets.includes("offlineAuthenticated")) return false;
+    const isCanonicalEntry = operation.id === "enterOffline" && hasCanonicalEnterOffline;
+    const isTrueOfflineSelfLoop = operation.from.every((state) => state === "offlineAuthenticated");
+    return !isCanonicalEntry && !isTrueOfflineSelfLoop;
+  });
+  if (!hasCanonicalEnterOffline || invalidOfflineEdge) {
+    throw new CanonicalProductContractValidationError("Canonical account lifecycle must prohibit offline entry before successful initial sync");
+  }
+  if (!hasExactValues(accountData.dataAuthority.recordClasses.map((recordClass) => recordClass.id), canonicalAccountRecordClassIds)) {
+    throw new CanonicalProductContractValidationError("Canonical account data authority must declare exactly its record classes in canonical order");
+  }
+  if (!hasExactValues(accountData.dataAuthority.derivedProjections.map((projection) => projection.id), canonicalAccountDerivedProjectionIds)) {
+    throw new CanonicalProductContractValidationError("Canonical account data authority must declare exactly its derived projections in canonical order");
+  }
+  if (!hasExactValues(accountData.adoption.cases.map((adoptionCase) => adoptionCase.id), canonicalAccountAdoptionCaseIds)) {
+    throw new CanonicalProductContractValidationError("Canonical account adoption contract must declare exactly its cases in canonical order");
+  }
+  if (!hasExactValues(accountData.surfaces.map((surface) => surface.id), canonicalAccountSurfaceIds)) {
+    throw new CanonicalProductContractValidationError("Canonical account surface map must declare exactly its surfaces in canonical order");
+  }
+  const operationWithUnsourcedFailure = accountData.lifecycle.operations.find((operation) => {
+    const surface = accountData.surfaces.find((candidate) => candidate.id === operation.surfaceId);
+    return !surface || operation.failureTransitions.some((transition) => transition.failures.some((failure) => !surface.states.includes(failure)));
+  });
+  if (operationWithUnsourcedFailure) {
+    throw new CanonicalProductContractValidationError(`Canonical account lifecycle failure is missing from its surface: ${operationWithUnsourcedFailure.id}`);
+  }
 
   const userCommandIds = (contract as CanonicalProductContract).userCommands.commands.map((command) => command.id);
   const duplicateUserCommandIds = userCommandIds.filter((id, index) => userCommandIds.indexOf(id) !== index);

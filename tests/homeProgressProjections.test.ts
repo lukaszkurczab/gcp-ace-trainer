@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { ReviewQueueEntry, TrainingAttempt } from "../src/domain";
+import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../src/domain";
 import { getTrackDisplay } from "../src/domain";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
 import { buildHomeTabModel } from "../src/features/home/tabs/homeTabModel";
@@ -77,6 +77,55 @@ test("Home projection exposes a stable empty-state focus without inventing evide
   const model = buildHomeTabModel({ activeTrack: getTrackDisplay("cloud-certification"), algorithmsDashboard: null, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] });
   assert.equal(model.focusTitle, "Google Cloud Associate Cloud Engineer");
   assert.equal(model.primaryLabel, "Start learning");
+});
+
+test("Home prioritizes one exact ordinary Certification resume action and excludes exam or cross-track sessions", () => {
+  const activeSession = {
+    actualLength: 10,
+    configurationSnapshot: {
+      answerChanges: "none",
+      domain: "setup_environment",
+      feedbackMode: "afterEachAnswer",
+      kind: "certificationFocusPractice",
+      navigation: "linear",
+      submission: "perItem",
+      timer: "elapsedForeground",
+    },
+    id: "cloud-certification:certification-focus-practice:resume-1",
+    modeId: "certification-focus-practice",
+    requestedLength: 10,
+    status: "active",
+    trackId: "cloud-certification",
+  } as unknown as TrainingSession;
+  const input = {
+    activeTrack: getTrackDisplay("cloud-certification"),
+    algorithmsDashboard: null,
+    analytics: buildAnalyticsData([], []),
+    dashboardError: null,
+    trainingAttempts: [],
+  } as const;
+
+  const model = buildHomeTabModel({ ...input, activeSession });
+  assert.equal(model.recommendations.length, 1);
+  assert.deepEqual(model.recommendations[0]?.action, {
+    kind: "resume_certification_practice",
+    modeId: "certification-focus-practice",
+    sessionId: activeSession.id,
+  });
+  assert.equal(model.recommendations[0]?.title, "Continue Focus Practice");
+  assert.match(model.recommendations[0]?.detail ?? "", /exact saved Focus Practice session/);
+
+  assert.equal(buildHomeTabModel({ ...input, activeSession: { ...activeSession, modeId: "certification-exam-simulation" } }).recommendations.length, 0);
+  assert.equal(buildHomeTabModel({ ...input, activeSession: { ...activeSession, trackId: "algorithms" } }).recommendations.length, 0);
+
+  const stale = buildHomeTabModel({
+    ...input,
+    activeSession: { ...activeSession, configurationSnapshot: { ...activeSession.configurationSnapshot, domain: undefined } } as unknown as TrainingSession,
+  }).recommendations[0];
+  assert.equal(stale?.enabled, false);
+  assert.equal(stale?.action.kind, "unavailable");
+  assert.match(stale?.title ?? "", /Saved Focus Practice session unavailable/);
+  assert.match(stale?.detail ?? "", /incomplete and cannot be resumed/);
 });
 
 test("Progress tab projects Certification empty state and due review availability", () => {

@@ -6,6 +6,26 @@ authority:
 requirements:
   - id: CONTRACT-AUTHORITY-001
     statement: Product behavior is normative only when defined by this contract.
+  - id: ACCOUNT-ENTRY-IDENTITY-001
+    statement: Public-launch learning requires one verified email-and-password account; registration, sign-in, verification, recovery, reset, reauthentication, and the first authenticated bootstrap require a network result, while offline learning is available only for a previously verified bound account.
+  - id: ACCOUNT-LIFECYCLE-001
+    statement: Every account command has one declared success transition and explicit invalid, duplicate, expired, used, rate-limited, offline, revoked-session, and remote-failure outcomes without account enumeration, fake success, or an anonymous bypass.
+  - id: ACCOUNT-DATA-AUTHORITY-001
+    statement: The canonical local repositories are the durability authority for one device and one revisioned remote account dataset is the cross-device convergence authority; device-only records never sync and no second learning-data path may exist.
+  - id: ACCOUNT-DATA-ADOPTION-001
+    statement: First account binding resolves empty, local-only, remote-only, both-populated, active-session, and divergent-record cases through a previewed deterministic plan and explicit confirmation, never a silent merge, overwrite, or discard.
+  - id: ACCOUNT-SYNC-CONFLICT-001
+    statement: Verified local mutations enter one ordered sync outbox, remote writes use compare-and-swap account revisions, and stale, colliding, or irreconcilable records expose a blocking conflict without changing the last verified local or remote state.
+  - id: ACCOUNT-OFFLINE-SESSION-001
+    statement: A previously verified bound account may continue local-first learning offline and queue verified mutations, but registration, sign-in, first bootstrap, recovery, reauthentication, restore, destructive account actions, and remote confirmation remain explicitly unavailable until network authentication succeeds.
+  - id: ACCOUNT-SIGNOUT-DELETION-001
+    statement: Sign-out removes account credentials and account-owned local records only after pending mutations are synchronized or explicitly exported and discarded; account deletion requires reauthentication, revokes sessions, verifies remote and local deletion, exposes failure, and supports a possession-verified public request path.
+  - id: ACCOUNT-SECURITY-PRIVACY-001
+    statement: Account transport, credential storage, transmitted learning fields, retention, deletion proof, logging exclusions, email delivery, and verified HTTPS link boundaries are explicit and must not be represented as implemented until their mechanisms pass provider and signed-build verification.
+  - id: ACCOUNT-PREMARKET-HOSTING-001
+    statement: Before explicit market promotion no public host is active, the one real Task 3 static artifact runs only through a Firebase Hosting emulator bound exactly to 127.0.0.1, and no live or preview deployment path exists; gate 11A selects one professional market host and owned domain, deploys that same artifact without a parallel adapter, verifies sender-domain and association documents and identities before Tasks 12–13 freeze store artifacts, and leaves installed signed-link proof inside those tasks before Task 14.
+  - id: ACCOUNT-SURFACE-MAP-001
+    statement: The launch account lifecycle has one declared surface map for entry, registration, verification, sign-in, recovery, reset, expired session, reauthentication, profile, adoption, sync status, conflict, sign-out, and deletion without placeholder routes.
   - id: ALGORITHMS-MODE-MATRIX-001
     statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: ALGORITHMS-CUSTOM-PRACTICE-001
@@ -105,6 +125,34 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: parses the canonical product contract
       requirementIds: [CONTRACT-AUTHORITY-001]
+    - id: canonical-account-entry-identity
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines the required verified account entry and credential boundaries
+      requirementIds: [ACCOUNT-ENTRY-IDENTITY-001, ACCOUNT-SECURITY-PRIVACY-001, ACCOUNT-PREMARKET-HOSTING-001]
+    - id: canonical-account-premarket-hosting
+      testPath: tests/firebaseHostingPreMarketPolicy.test.ts
+      testName: keeps pre-market Firebase Hosting unpublished and loopback-only
+      requirementIds: [ACCOUNT-PREMARKET-HOSTING-001]
+    - id: canonical-account-lifecycle
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines every account lifecycle transition and explicit failure outcome
+      requirementIds: [ACCOUNT-LIFECYCLE-001, ACCOUNT-OFFLINE-SESSION-001]
+    - id: canonical-account-data-authority
+      testPath: tests/canonicalProductContract.test.ts
+      testName: assigns every account and device record to one authority and sync policy
+      requirementIds: [ACCOUNT-DATA-AUTHORITY-001]
+    - id: canonical-account-adoption-sync-conflicts
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines deterministic adoption, sync, and conflict results without silent loss
+      requirementIds: [ACCOUNT-DATA-ADOPTION-001, ACCOUNT-SYNC-CONFLICT-001]
+    - id: canonical-account-signout-deletion
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines sign-out, retention, verified deletion, and public deletion request semantics
+      requirementIds: [ACCOUNT-SIGNOUT-DELETION-001]
+    - id: canonical-account-surface-map
+      testPath: tests/canonicalProductContract.test.ts
+      testName: maps every required account and data state to a downstream implementation surface
+      requirementIds: [ACCOUNT-SURFACE-MAP-001]
     - id: canonical-algorithms-mode-matrix
       testPath: tests/canonicalProductContract.test.ts
       testName: defines exactly the complete canonical Algorithms mode matrix
@@ -230,19 +278,19 @@ requirementTestCoverage:
       testName: Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan
       requirementIds: [SIMULATION-FULL-LIFECYCLE-001]
     - id: algorithms-simulation-timer-ui-refresh
-      testPath: tests/algorithmsForegroundTimerFacade.test.ts
+      testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: controlled timer refreshes consecutive visible labels without a durable write each second
       requirementIds: [SIMULATION-TIMER-UI-REFRESH-001]
     - id: algorithms-simulation-timer-checkpoint-interval
-      testPath: tests/algorithmsForegroundTimerFacade.test.ts
+      testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: periodic checkpoint uses the declared durable interval with an exact write count
       requirementIds: [SIMULATION-TIMER-CHECKPOINT-INTERVAL-001]
     - id: algorithms-simulation-timer-background-checkpoint
-      testPath: tests/algorithmsForegroundTimerFacade.test.ts
+      testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: AppState foreground transitions and force-close recovery never count background or closed-app time
       requirementIds: [SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001]
     - id: algorithms-simulation-timer-finalization-checkpoint
-      testPath: tests/algorithmsForegroundTimerFacade.test.ts
+      testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: manual finalization checkpoints the active foreground segment before it freezes the result
       requirementIds: [SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001]
     - id: algorithms-simulation-timer-mutation-serialization
@@ -250,7 +298,7 @@ requirementTestCoverage:
       testName: concurrent timer checkpoint and save-and-continue retain the draft revision and next position
       requirementIds: [SIMULATION-TIMER-MUTATION-SERIALIZATION-001]
     - id: algorithms-simulation-timer-force-close-boundary
-      testPath: tests/algorithmsForegroundTimerFacade.test.ts
+      testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: force-close immediately before and after the checkpoint boundary resumes within the declared drift
       requirementIds: [SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001]
     - id: simulation-active-screen-fidelity
@@ -293,6 +341,297 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: requires a registered APPROVED design reference before a user-facing task is ready
       requirementIds: [DESIGN-REFERENCE-REGISTRY-001]
+accountData:
+  version: 1
+  publicLaunchEntry:
+    accountRequired: true
+    identityMethod: verifiedEmailAndPassword
+    canonicalIdentifier: normalizedEmail
+    firstAuthenticatedBootstrapRequiresNetwork: true
+    offlineEntryRequiresSuccessfulAuthenticatedSync: true
+    learningRequiresVerifiedIdentity: true
+    offlineLearningAfterVerifiedBootstrap: allowedForBoundAccount
+    anonymousLearningPath: prohibited
+  credentials:
+    passwordTransmission: tlsOnlyForRegisterSignInResetAndReauthentication
+    passwordPersistenceInApp: prohibited
+    passwordPersistenceRemote: oneWayVerifierOnly
+    accessTokenPersistence: memoryOnly
+    accessTokenTransport: receiveInTlsResponseBodySendInAuthorizationBearerHeaderOnly
+    refreshTokenPersistence: osProtectedCredentialStorage
+    refreshTokenTransport: receiveInTlsResponseBodySendOnlyToTokenEndpointTlsRequestBody
+    possessionTokenPersistenceInPatternlyStores: prohibited
+    tokenLoggingInPatternlyControlledLogs: prohibited
+  lifecycle:
+    initialState: signedOut
+    states: [signedOut, registering, verificationPending, verifying, signingIn, authenticatedSyncing, authenticatedReady, offlineAuthenticated, recoveryPending, resettingPassword, sessionExpired, reauthenticationRequired, signingOut, deletionPending, deletionFailed, deleted]
+    operations:
+      - id: register
+        surfaceId: register
+        from: [signedOut]
+        inProgress: registering
+        success: verificationPending
+        failureTransitions:
+          - { failures: [invalidInput, duplicateIdentity, rateLimited, offline, remoteFailure], to: signedOut }
+      - id: verifyIdentity
+        surfaceId: verifyIdentity
+        from: [verificationPending]
+        inProgress: verifying
+        success: authenticatedSyncing
+        failureTransitions:
+          - { failures: [invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure], to: verificationPending }
+      - id: resendVerification
+        surfaceId: verifyIdentity
+        from: [verificationPending]
+        inProgress: verificationPending
+        success: verificationPending
+        failureTransitions:
+          - { failures: [rateLimited, offline, remoteFailure], to: verificationPending }
+      - id: changePendingEmail
+        surfaceId: verifyIdentity
+        from: [verificationPending]
+        inProgress: verificationPending
+        success: verificationPending
+        failureTransitions:
+          - { failures: [invalidInput, duplicateIdentity, rateLimited, offline, remoteFailure], to: verificationPending }
+      - id: signIn
+        surfaceId: signIn
+        from: [signedOut]
+        inProgress: signingIn
+        success: authenticatedSyncing
+        failureTransitions:
+          - { failures: [invalidCredential, unverifiedIdentity, rateLimited, offline, remoteFailure], to: signedOut }
+      - id: requestRecovery
+        surfaceId: forgotPassword
+        from: [signedOut]
+        inProgress: recoveryPending
+        success: recoveryPending
+        failureTransitions:
+          - { failures: [invalidInput, rateLimited, offline, remoteFailure], to: signedOut }
+      - id: resetPassword
+        surfaceId: resetPassword
+        from: [recoveryPending]
+        inProgress: resettingPassword
+        success: signedOut
+        failureTransitions:
+          - { failures: [invalidInput, invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure], to: recoveryPending }
+      - id: completeInitialSync
+        surfaceId: dataAdoption
+        from: [authenticatedSyncing]
+        inProgress: authenticatedSyncing
+        success: authenticatedReady
+        failureTransitions:
+          - { failures: [adoptionConflict, remoteFailure], to: authenticatedSyncing }
+          - { failures: [offline], to: authenticatedSyncing }
+      - id: enterOffline
+        surfaceId: syncStatus
+        from: [authenticatedReady]
+        inProgress: offlineAuthenticated
+        success: offlineAuthenticated
+        failureTransitions: []
+      - id: restoreNetwork
+        surfaceId: syncStatus
+        from: [offlineAuthenticated]
+        inProgress: authenticatedSyncing
+        success: authenticatedSyncing
+        failureTransitions:
+          - { failures: [offline, remoteFailure], to: offlineAuthenticated }
+      - id: expireSession
+        surfaceId: sessionExpiredReauthentication
+        from: [authenticatedSyncing, authenticatedReady]
+        inProgress: sessionExpired
+        success: reauthenticationRequired
+        failureTransitions: []
+      - id: reauthenticate
+        surfaceId: sessionExpiredReauthentication
+        from: [sessionExpired, reauthenticationRequired]
+        inProgress: reauthenticationRequired
+        success: authenticatedSyncing
+        failureTransitions:
+          - { failures: [invalidCredential, revokedSession, rateLimited, offline, remoteFailure], to: reauthenticationRequired }
+      - id: signOut
+        surfaceId: signOut
+        from: [authenticatedSyncing, authenticatedReady, offlineAuthenticated, reauthenticationRequired]
+        inProgress: signingOut
+        success: signedOut
+        failureTransitions:
+          - { failures: [journalRecoveryFailure, pendingSyncRequiresNetwork, exportRequired, localDeletionFailure], to: exactSourceState }
+      - id: deleteAccount
+        surfaceId: deleteAccount
+        from: [authenticatedReady, deletionFailed]
+        inProgress: deletionPending
+        success: deleted
+        failureTransitions:
+          - { failures: [journalRecoveryFailure], to: exactSourceState }
+          - { failures: [reauthenticationRequired], to: reauthenticationRequired }
+          - { failures: [rateLimited, offline, remoteFailure, deletionVerificationFailure], to: deletionFailed }
+      - id: completeRemoteDeletionCleanup
+        surfaceId: syncStatus
+        from: [authenticatedSyncing, reauthenticationRequired, deletionFailed]
+        inProgress: deletionPending
+        success: deleted
+        failureTransitions:
+          - { failures: [journalRecoveryFailure, localDeletionFailure], to: deletionFailed }
+    enumerationPolicy: registerMayReportDuplicateIdentityAndSignInMayReportUnverifiedOnlyAfterValidCredentialButRecoveryAndPublicDeletionNeverRevealAccountExistence
+    resendVerificationResult: invalidatesPriorVerificationTokenAndSendsReplacement
+    changePendingEmailResult: replacesNormalizedEmailInvalidatesPriorVerificationTokenAndSendsReplacement
+    verificationLink: { transport: verifiedHttpsUniversalLink, tokenKind: verificationPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
+    recoveryLink: { transport: verifiedHttpsUniversalLink, tokenKind: recoveryPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
+    publicDeletionLink: { transport: verifiedHttpsUniversalLink, tokenKind: publicDeletionPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
+  dataAuthority:
+    localDurabilityAuthority: canonicalLocalRepositorySet
+    remoteConvergenceAuthority: singleRevisionedAccountDataset
+    synchronizationBoundary: accountDataRepositoryService
+    localCommitBeforeRemoteAcknowledgement: required
+    parallelLearningRepository: prohibited
+    indexPolicy: indexesFollowOwningRecordClassAndAreNeverIndependentAuthority
+    recordClasses:
+      - { id: storageMetadata, owner: device, remoteSync: never }
+      - { id: accountBinding, owner: accountAndDevice, remoteSync: identityReferenceOnly }
+      - { id: syncMetadataAndOutbox, owner: accountAndDevice, remoteSync: operationEnvelopeOnly }
+      - { id: applicationSettings, owner: device, remoteSync: never }
+      - { id: notificationSettings, owner: device, remoteSync: never }
+      - { id: activeTrack, owner: account, remoteSync: revisioned }
+      - { id: activeSessionReference, owner: account, remoteSync: revisioned }
+      - { id: trainingSession, owner: account, remoteSync: revisioned }
+      - { id: trainingSessionResult, owner: account, remoteSync: immutableById }
+      - { id: trainingAttempt, owner: account, remoteSync: immutableById }
+      - { id: reviewQueueEntry, owner: account, remoteSync: revisioned }
+      - { id: simulationDraft, owner: account, remoteSync: revisioned }
+      - { id: foregroundTimer, owner: account, remoteSync: revisioned }
+      - { id: mutationJournal, owner: deviceOperational, remoteSync: materializedWritesOnly }
+      - { id: accountDeletionIntent, owner: deviceOperational, remoteSync: never }
+    derivedProjections:
+      - { id: familyNeutralEvidence, sources: [trainingAttempt, trainingSessionResult, reviewQueueEntry], writable: prohibited, remoteSync: never }
+      - { id: familyProgress, sources: [trainingAttempt, trainingSessionResult, reviewQueueEntry], writable: prohibited, remoteSync: never }
+  adoption:
+    requiresPreviewAndConfirmation: true
+    cases:
+      - { id: emptyLocalEmptyRemote, result: createBoundEmptyDataset }
+      - { id: populatedLocalEmptyRemote, result: previewThenUploadExactLocalDataset }
+      - { id: emptyLocalPopulatedRemote, result: previewThenRestoreExactRemoteDataset }
+      - { id: populatedLocalPopulatedRemote, result: previewThenReconcileByRecordPolicy }
+      - { id: activeSessionOnOneSide, result: preserveThatSessionAndRejectSecondActiveSession }
+      - { id: divergentActiveSessions, result: requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft }
+      - { id: divergentRecord, result: applyRecordPolicyOrBlockWithoutMutation }
+    recordPolicies:
+      immutableDifferentIds: unionAfterPreviewConfirmation
+      immutableSameIdSameFingerprint: idempotentDeduplication
+      immutableSameIdDifferentFingerprint: blockingIntegrityConflict
+      revisionedOneSideChanged: changedSideAfterExpectedRevisionCheck
+      revisionedBothChanged: deterministicSemanticReplayOrBlockingConflict
+      deviceOwned: retainCurrentDeviceOnly
+    cancelledOrFailedResult: retainBothLastVerifiedDatasetsUnchanged
+  sync:
+    visibleStates: [initialSyncRequired, syncing, synced, offlinePending, conflict, failed, deletionPending]
+    visibleEvidence: [lastSuccessfulSyncAt, pendingMutationCount, blockingConflictCode, lastFailureCode]
+    outboxOrder: fifoByVerifiedLocalCommit
+    remoteWritePrecondition: expectedAccountRevision
+    staleRevisionResult: fetchRemoteThenDeterministicReplayOrBlockingConflict
+    immutableCollisionResult: blockingIntegrityConflict
+    activeSessionConflictResult: explicitSessionChoiceRequired
+    remoteFailureResult: retainVerifiedLocalCommitAndPendingOutbox
+    retry: explicitOrAutomaticOnNetworkReturnWithoutDuplicateOperation
+  offlineAndExpiry:
+    offlineEntryRequires: previouslyVerifiedBoundAccountValidatedLocalDatasetAndSuccessfulAuthenticatedSync
+    learningAvailability: localPracticeReviewProgressAndResumeRemainAvailable
+    mutationResult: commitLocallyThenExposeOfflinePending
+    unavailableOffline: [register, verifyIdentity, signIn, requestRecovery, resetPassword, reauthenticate, firstBootstrap, remoteRestore, accountDeletion, publicDeletionVerification]
+    serverDeclaredRevocationResult: reauthenticationRequiredAndSyncBlocked
+    expiredAccessTokenWhileOffline: continueBoundLocalLearningButBlockSyncAndSecurityActionsUntilReauthentication
+  signOutAndDeletion:
+    pendingMutationJournal:
+      appliesBefore: [export, signOut, accountDeletion]
+      requiredSequence: [recoverDurablePlan, materializeWrites, verifyWrites, clearJournal]
+      successBoundary: journalAbsentAfterVerifiedClear
+      blockingResult: journalRecoveryFailure
+      blockingSurfaces:
+        - { operation: export, surfaceId: accountProfile }
+        - { operation: signOut, surfaceId: signOut }
+        - { operation: accountDeletion, surfaceId: deleteAccount }
+      failureResult: blockRequestedOperationRetainBindingAndVerifiedData
+      accountSwitchResult: blockNewBindingUntilJournalResolvedUnderCurrentBinding
+    export:
+      format: versionedCanonicalJson
+      scope: accountOwnedLocalRecordsAndSyncProjection
+      excludes: [password, accessToken, refreshToken, verificationToken, recoveryToken, publicDeletionPossessionToken, syncTransportEnvelope, deletionProof]
+      integrity: sha256CanonicalBytes
+      successBoundary: verifiedFileHandoff
+      availableOffline: true
+    signOut:
+      pendingOutbox: synchronizeOrCompleteVerifiedExportThenExplicitlyDiscard
+      localResult: deleteAccountOwnedRecordsAccountBindingTokensAndOutbox
+      preservedLocalRecords: [storageMetadata, applicationSettings, notificationSettings]
+      failureResult: remainBoundAndExposeFailure
+    localLearningReset: separateFromAccountDeletionAndRemoteDataset
+    accountDeletion:
+      prerequisites: [network, recentReauthentication, explicitScopeConfirmation]
+      remoteScope: [identity, credentials, sessions, accountProfile, learningRecords, syncOperations]
+      acceptedResult: persistDurableIntentThenRevokeAllSessionsVerifyRemoteDeletionAndDeleteAccountOwnedLocalRecords
+      failureResult: deletionFailedWithRetryAndNoSuccessClaim
+      publicRequest: verifiedEmailPossessionWithoutAccountEnumeration
+      durableIntent:
+        recordClass: accountDeletionIntent
+        authority: deletionCleanupCheckpointOnlyNeverLearningAuthority
+        writeBoundaries: [localRequestBeforeFirstRemoteDestructiveStep, authenticatedRemoteAccountDeletedBeforeLocalCleanup]
+        fields: [operationId, irreversibleAccountIdHash, recordedAt, trigger, stage]
+        triggers: [localRequest, authenticatedRemoteAccountDeleted]
+        stages: [prepared, sessionsRevoked, remoteDeletionVerified, localCleanupPending]
+        restart: resumeIdempotentlyFromLastVerifiedStage
+        remoteIdentityMissingAfterRestart: continueIdempotentLocalCleanupAndVerifyLocalAbsence
+        clearBoundary: remoteDeletionAndLocalCleanupVerified
+      remoteAccountDeletedOnReconnect:
+        appliesTo: previouslyBoundDevice
+        offlineResult: retainBoundLocalDataUntilAuthenticatedReconnect
+        evidence: authenticatedRemoteAccountDeletedResultBoundToStoredAccount
+        operation: completeRemoteDeletionCleanup
+        localResult: idempotentlyDeleteCredentialsBindingOutboxAndAccountOwnedLocalRecords
+        terminalResult: remoteAccountDeleted
+        reauthenticationResult: prohibited
+        failureResult: deletionFailedRetainIntentForLocalCleanupRetry
+    retention:
+      liveServiceDataAfterVerifiedDeletionDays: 0
+      encryptedBackupMaximumDays: 30
+      backupRestoreIntoLiveService: prohibited
+      minimalDeletionProofDays: 30
+      deletionProofFields: [requestId, irreversibleAccountIdHash, requestedAt, completedAt, resultCode]
+  surfaces:
+    - { id: accountEntry, states: [required, offlineUnavailable] }
+    - { id: register, states: [editing, invalidInput, duplicateIdentity, rateLimited, offline, remoteFailure] }
+    - { id: verifyIdentity, states: [pending, resendPending, resendAccepted, changePendingEmail, changePendingEmailAccepted, invalidInput, duplicateIdentity, invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure] }
+    - { id: signIn, states: [editing, invalidCredential, unverifiedIdentity, rateLimited, offline, remoteFailure] }
+    - { id: forgotPassword, states: [editing, acceptedNonEnumerating, invalidInput, rateLimited, offline, remoteFailure] }
+    - { id: resetPassword, states: [editing, invalidInput, invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure, success] }
+    - { id: sessionExpiredReauthentication, states: [required, invalidCredential, revokedSession, rateLimited, offline, remoteFailure] }
+    - { id: accountProfile, states: [ready, offline, remoteFailure, journalRecoveryFailure] }
+    - { id: dataAdoption, states: [preview, uploading, restoring, activeSessionChoice, integrityConflict, adoptionConflict, offline, remoteFailure, completed] }
+    - { id: syncStatus, states: [initialSyncRequired, syncing, synced, offlinePending, conflict, failed, deletionPending, offline, remoteFailure, journalRecoveryFailure, localDeletionFailure, remoteAccountDeleted] }
+    - { id: signOut, states: [confirm, journalRecoveryFailure, pendingSyncRequiresNetwork, exportRequired, deletingLocal, localDeletionFailure, completed] }
+    - { id: deleteAccount, states: [scopeConfirmation, journalRecoveryFailure, reauthenticationRequired, deleting, rateLimited, offline, remoteFailure, deletionVerificationFailure, completed] }
+    - { id: publicDeleteRequest, states: [request, acceptedNonEnumerating, verifyPossession, invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure, completed] }
+  networkAndPrivacy:
+    transmittedFields:
+      identity: [normalizedEmail, passwordOnlyAtCredentialCommand, verificationToken, recoveryToken, publicDeletionPossessionToken]
+      credentialTransport: [accessTokenOnlyInAuthorizationBearerHeader, refreshTokenOnlyInTokenEndpointTlsRequestBody]
+      account: [accountId, verificationState, sessionId, accountRevision]
+      learning: [recordType, recordId, recordRevision, contentReferences, canonicalLearningPayload, operationFingerprint]
+      operations: [requestId, boundedErrorCode, clientTimestamp]
+    transport: authenticatedTls
+    emailDelivery: transactionalOnlyWithRateLimitAndNonEnumeratingRecoveryResponse
+    transactionalEmailProcessor:
+      provider: resend
+      plan: free
+      environmentScope: ownerOnlySandbox
+      purpose: publicDeletionPossessionLinkDeliveryOnly
+      retainedData: transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs
+      processorCopyFields: [recipientNormalizedEmail, publicDeletionPossessionToken]
+      processorCopyLocations: [messageContent, deliveryRecords, apiRecords]
+      maximumRetentionDays: 30
+      storageRegion: UnitedStates
+      liveAccountDataAuthority: prohibited
+      backupClassification: prohibited
+    patternlyControlledLogExclusions: [password, accessToken, refreshToken, verificationToken, recoveryToken, publicDeletionPossessionToken, normalizedEmail, learnerResponse, promptText, explanationText, draftPayload, attemptPayload, reviewPayload, progressPayload, journalPayload, exportPayload, deletionIntentPayload]
+    honestLimitations: [mechanismsNotImplemented, publicHostingUnavailableUntilMarketPromotion, signedBuildNotVerified, legalAndStoreDisclosuresNotPublished]
 userCommands:
   commands:
     - id: submit
@@ -357,9 +696,16 @@ sessionStateMachine:
       - { from: recovery_required, trigger: recover, to: unanswered }
       - { from: feedback, trigger: next, to: advancing }
       - { from: feedback, trigger: abandon, to: abandoning }
+      - { from: feedback, trigger: finish, to: completing }
       - { from: advancing, trigger: advance_verified, to: unanswered }
       - { from: advancing, trigger: advance_failed, to: advance_failed }
       - { from: advance_failed, trigger: next, to: advancing }
+      - { from: completing, trigger: completion_verified, to: completed }
+      - { from: completing, trigger: completion_failed, to: completion_failed }
+      - { from: completion_failed, trigger: finish, condition: durable_state_not_durable, to: completing }
+      - { from: completion_failed, trigger: recover, condition: journal_status_durable, to: completing }
+      - { from: completion_failed, trigger: recover, condition: journal_status_materialized, to: completing }
+      - { from: completion_failed, trigger: recover, condition: journal_status_verified_pending_clear, to: completing }
       - { from: abandoning, trigger: abandonment_verified, to: abandoned }
       - { from: abandoning, trigger: abandonment_before_journal_failed, to: abandonment_failed_before_journal }
       - { from: abandoning, trigger: abandonment_recovery_required, to: abandonment_recovery_required }
@@ -465,6 +811,12 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: account-lifecycle-001
+      screenStateTarget: account-lifecycle-complete-surface-state-matrix
+      patternPath: docs/designs/account_lifecycle/DESIGN.md
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
     - sourcePathPrefix: src/features/algorithms/session/
       designReferenceId: focus-lab-core-shell-001
@@ -482,8 +834,12 @@ designReferences:
       designReferenceId: focus-lab-core-shell-001
     - sourcePathPrefix: src/features/home/
       designReferenceId: focus-lab-core-shell-001
+    - sourcePathPrefix: src/features/navigation/
+      designReferenceId: focus-lab-core-shell-001
     - sourcePathPrefix: src/features/review/
       designReferenceId: shared-practice-flow-001
+    - sourcePathPrefix: src/content/application/ContentPreparationGate.tsx
+      designReferenceId: focus-lab-core-shell-001
     - sourcePathPrefix: src/navigation/
       designReferenceId: focus-lab-core-shell-001
     - sourcePathPrefix: src/preferences/

@@ -1,15 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { commitSessionAbandonment, commitSessionCompletion, recoverPendingMutation } from "../src/application/learningMutations";
+import { commitSessionAbandonment, recoverPendingMutation } from "../src/application/learningMutations";
 import { createForegroundTimerState } from "../src/domain";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { getTrainingSessions, saveActiveForegroundTimer, saveTrainingSession } from "../src/storage/repositories";
 import { getActiveMutationJournal } from "../src/storage/repositories/mutationJournalRepository";
 import { installMemoryStorage, session, timestamp } from "./journalTestSupport";
 
-test("session completion persists completed session before clearing active pointer", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); await commitSessionCompletion(session("completed"), timestamp); assert.equal((await getTrainingSessions()).value[0]?.status, "completed"); assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false); });
-test("session completion replay is idempotent", async () => { installMemoryStorage(); await saveTrainingSession(session()); await commitSessionCompletion(session("completed"), timestamp); await commitSessionCompletion(session("completed"), timestamp); assert.equal((await getTrainingSessions()).value.length, 1); });
-test("session completion clear failure recovers safely", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); storage.setFailurePlan({ kind: "fail_on_key_remove", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION }); await assert.rejects(() => commitSessionCompletion(session("completed"), timestamp)); storage.setFailurePlan(null); await recoverPendingMutation(); assert.equal((await getTrainingSessions()).value[0]?.status, "completed"); assert.equal(await getActiveMutationJournal(), null); });
 test("session abandonment persists abandoned session before clearing active pointer", async () => { const storage = installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value[0]?.status, "abandoned"); assert.equal(storage.contains(STORAGE_KEYS.ACTIVE_TRAINING_SESSION), false); });
 test("session abandonment replay is idempotent", async () => { installMemoryStorage(); await saveTrainingSession(session()); await commitSessionAbandonment(session("abandoned"), timestamp); await commitSessionAbandonment(session("abandoned"), timestamp); assert.equal((await getTrainingSessions()).value.length, 1); });
 test("abandonment recovers identically after every durable write boundary", async () => {

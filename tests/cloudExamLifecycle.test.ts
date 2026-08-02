@@ -3,8 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
+  CertificationExamExpiredError,
+  resumeExpectedCertificationExam,
   startCertificationExam,
 } from "../src/application/certification";
+import { TrainingApplicationFailure } from "../src/application/trainingLifecycle";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getCertificationContentCatalog } from "../src/content/catalogRepository";
@@ -13,7 +16,7 @@ import type { ReviewQueueEntry } from "../src/domain";
 import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
 import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
 import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
-import { getActiveTrainingSession } from "../src/storage/repositories";
+import { getActiveForegroundTimer, getActiveTrainingSession, getTrainingSessionResult } from "../src/storage/repositories";
 import { installMemoryStorage } from "./journalTestSupport";
 
 class MutableClock {
@@ -36,12 +39,66 @@ test("Cloud Exam starts from the installed, validated simulation profile", async
   assert.equal(prepared.session.actualLength, 50);
   assert.equal(prepared.session.configurationSnapshot.simulationPolicyId, "patternly-certification-simulation-v1");
   assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
+  assert.equal(await getActiveForegroundTimer(), null);
+});
+
+test("Cloud Exam expected-session handoff resumes only the exact active exam and never starts a replacement", async () => {
+  const { lifecycle } = await prepare();
+  const prepared = await startCertificationExam("expected-handoff");
+  const resumed = await resumeExpectedCertificationExam(prepared.session.id);
+  assert.equal(resumed.kind, "ready");
+  if (resumed.kind === "ready") assert.equal(resumed.projection.session.id, prepared.session.id);
+
+  await lifecycle.abandonActiveSession();
+  await assert.rejects(
+    resumeExpectedCertificationExam(prepared.session.id),
+    (cause: unknown) => cause instanceof TrainingApplicationFailure && cause.code === "resume_unavailable",
+  );
+  assert.equal(await getActiveTrainingSession(), null);
+
+  const ordinary = await lifecycle.startSession({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: {} });
+  const conflict = await resumeExpectedCertificationExam(prepared.session.id);
+  assert.equal(conflict.kind, "active_session_conflict");
+  if (conflict.kind === "active_session_conflict") assert.equal(conflict.session.id, ordinary.session.id);
+  assert.equal((await getActiveTrainingSession())?.id, ordinary.session.id);
+});
+
+test("Cloud Exam expected-session handoff finalizes an expired exact exam into its verified result", async () => {
+  const clock = new MutableClock("2026-07-23T10:00:00.000Z");
+  await prepare(clock);
+  const prepared = await startCertificationExam("expired-expected-handoff");
+  const deadline = prepared.session.configurationSnapshot.timerDeadlineAt;
+  if (typeof deadline !== "string") assert.fail("Expected Exam deadline is unavailable.");
+  clock.set(new Date(Date.parse(deadline) + 1).toISOString());
+
+  await assert.rejects(
+    resumeExpectedCertificationExam(prepared.session.id),
+    (cause: unknown) => cause instanceof CertificationExamExpiredError && cause.sessionId === prepared.session.id,
+  );
+  assert.equal(await getActiveTrainingSession(), null);
+  const result = await getTrainingSessionResult(prepared.session.id);
+  assert.ok(result);
+  assert.equal(result.sessionId, prepared.session.id);
+  assert.equal(result.totalOccurrences, prepared.session.actualLength);
 });
 
 test("Cloud Exam does not poll before its initial session projection exists", () => {
   const source = readFileSync("src/features/exam/ExamScreen.tsx", "utf8");
   assert.match(source, /useEffect\(\(\) => \{\n    if \(!projection\) return;/);
   assert.match(source, /\}, \[projection\]\);/);
+  assert.match(source, /if \(expectedSessionId\)[\s\S]*?resumeExpectedCertificationExam\(expectedSessionId\)[\s\S]*?return;[\s\S]*?startCertificationExam\(\)/);
+  const expectedBranch = source.slice(source.indexOf("if (expectedSessionId)"), source.indexOf("try { await refresh(); }"));
+  const expiredCheck = expectedBranch.indexOf("cause instanceof CertificationExamExpiredError");
+  const resultNavigation = expectedBranch.indexOf("navigation.replace(ROUTES.RESULT, { sessionId: cause.sessionId })");
+  const genericError = expectedBranch.indexOf('setError(describeOperationalFailure(cause, "The expected Cloud exam is unavailable."))');
+  assert.ok(expiredCheck >= 0 && resultNavigation > expiredCheck && genericError > resultNavigation);
+  assert.match(expectedBranch, /if \(!active\) return;[\s\S]*?navigation\.replace\(ROUTES\.RESULT, \{ sessionId: cause\.sessionId \}\); return;/);
+  assert.doesNotMatch(expectedBranch, /startCertificationExam/);
+  const practiceSource = readFileSync("src/features/practice/CertificationPracticeSessionScreen.tsx", "utf8");
+  assert.match(practiceSource, /openCertificationPracticeSession/);
+  assert.match(practiceSource, /navigation\.replace\(ROUTES\.EXAM, \{ expectedSessionId: conflict\.id \}\)/);
+  assert.match(practiceSource, /navigation\.replace\(ROUTES\.PRACTICE_SESSION, \{ \.\.\.route\.params, mode: conflict\.modeId, expectedSessionId: conflict\.id \}\)/);
+  assert.doesNotMatch(practiceSource, /getCertificationPracticeProjection\(\)\.catch\(\(\) => null\)|if \(!active\) await startCertificationSession/);
 });
 
 test("Cloud Exam runtime derives duration, length, and domain selection from a changed profile fixture", async () => {

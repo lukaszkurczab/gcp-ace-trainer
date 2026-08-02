@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  AlgorithmsForegroundTimerFacade,
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
   getAlgorithmsPracticeSummaryProjection,
-  installAlgorithmsForegroundTimerFacade,
 } from "../src/application/algorithms";
 import {
+  ForegroundSessionTimerFacade,
+  installForegroundSessionTimerFacade,
   installTrainingLifecycleUseCases,
   type TrainingLifecycleUseCases,
 } from "../src/application/trainingLifecycle";
@@ -20,6 +20,7 @@ import {
   createTrainingAttempt,
   createTrainingSession,
   createTrainingSessionResult,
+  getTrackRegistration,
   type TrainingAttempt,
   type TrainingSession,
 } from "../src/domain";
@@ -101,7 +102,7 @@ test("deferred-feedback practice projection withholds correctness and authored f
     async getPracticeOperationState() { return { family: "practice", kind: "feedback" } as const; },
   } as unknown as TrainingLifecycleUseCases);
   let timerState: ReturnType<typeof createForegroundTimerState> | null = null;
-  const timer = new AlgorithmsForegroundTimerFacade({
+  const timer = new ForegroundSessionTimerFacade({
     repository: {
       async getActive() { return timerState; },
       async save(candidate, expected) {
@@ -113,13 +114,14 @@ test("deferred-feedback practice projection withholds correctness and authored f
     lifecycle: {
       async checkpointForegroundTime() { return session; },
     } as unknown as TrainingLifecycleUseCases,
+    tracks: { getTrackRegistration },
     monotonicClock: { now: () => 0 },
     wallClock: { now: () => NOW },
     schedule: () => 0 as unknown as ReturnType<typeof setInterval>,
     cancel: () => undefined,
     finalize: async () => undefined,
   });
-  installAlgorithmsForegroundTimerFacade(timer);
+  installForegroundSessionTimerFacade(timer);
   await timer.initialize(session);
 
   const projection = await getAlgorithmsPracticeProjection();

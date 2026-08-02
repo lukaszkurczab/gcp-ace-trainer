@@ -1,9 +1,4 @@
-import {
-  AlgorithmsForegroundTimerFacade,
-  createAlgorithmsFamilyRuntime,
-  installAlgorithmsSessionRuntimePorts,
-  installAlgorithmsForegroundTimerFacade,
-} from "../algorithms";
+import { createAlgorithmsFamilyRuntime } from "../algorithms";
 import { createCertificationFamilyRuntime } from "../certification";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
@@ -18,8 +13,12 @@ import {
 } from "../learningMutations";
 import {
   installTrainingLifecycleUseCases,
+  ForegroundSessionTimerFacade,
+  installForegroundSessionTimerFacade,
   TrainingLifecycleUseCases,
   type SimulationFinalization,
+  type TrainingSessionIdentityPort,
+  type TrainingSessionIdentityRequest,
   type TrainingLifecyclePorts,
 } from "../trainingLifecycle";
 import { bundledContentAvailabilityPort } from "../../content/application";
@@ -36,10 +35,14 @@ import {
   saveActiveForegroundTimer,
   saveTrainingSessionDraft,
 } from "../../storage/repositories";
+import { trainingSessionIdentity } from "../../infrastructure/identity/trainingSessionIdentity";
 
 export type WallClock = Readonly<{ now(): string }>;
 export type AdjustableWallClock = WallClock & Readonly<{ advanceBy(milliseconds: number): string }>;
-export type TrainingLifecycleCompositionDependencies = Readonly<{ wallClock?: WallClock }>;
+export type TrainingLifecycleCompositionDependencies = Readonly<{
+  wallClock?: WallClock;
+  sessionIds?: TrainingSessionIdentityPort;
+}>;
 
 const realWallClock: WallClock = Object.freeze({ now: () => new Date().toISOString() });
 const MAX_ISO_DATE_MILLISECONDS = 8_640_000_000_000_000;
@@ -77,9 +80,10 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   const developmentAuditability = isDevelopmentRuntimeAuditabilityBuild();
   const wallClock = dependencies.wallClock ?? (developmentAuditability ? createAdjustableWallClock() : realWallClock);
   const adjustableWallClock = isAdjustableWallClock(wallClock) ? wallClock : null;
-  let sessionSequence = 0;
+  const sessionIds = dependencies.sessionIds ?? (developmentAuditability ? developmentAuditSessionIdentity : trainingSessionIdentity);
   const ports: TrainingLifecyclePorts = {
     clock: wallClock,
+    sessionIds,
     tracks: { getTrackRegistration },
     runtimes: {
       resolve(familyId) {
@@ -120,6 +124,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
           operation: pending.operation, status: pending.status, sessionId: pending.sessionId, trackId: pending.trackId,
           commandFingerprint: pending.commandIdentity.fingerprint, planFingerprint: pending.planFingerprint,
           ...(attempt ? { practiceOutcome: Object.freeze({ attempt: attempt.record, submittedResponse: attempt.record.response, reviewMutations: Object.freeze(reviews) }) } : {}),
+          ...(pending.operation === "complete_training_session" && result ? { practiceCompletion: Object.freeze({ resultId: result.record.id }) } : {}),
           ...(frozenDraft && result ? { simulationFinalization: Object.freeze({ frozenDraftRevision: frozenDraft.record.revision, resultId: result.record.id }) } : {}),
         });
       },
@@ -132,8 +137,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
         await commitTrainingOutcome({ attempt: input.attempt, session: input.session, reviews, resolvedReviews, createdAt: input.attempt.committedAt });
       },
       async advance(session) { await commitTrainingSessionAdvance(session, wallClock.now()); },
-      async complete(session) { await commitSessionCompletion(session, session.completedAt ?? wallClock.now()); },
-      async completeWithResult(input) { await commitSessionCompletion(input.session, input.session.completedAt ?? wallClock.now(), input.result); },
+      async completeWithResult(input) { await commitSessionCompletion(input.session, input.result, input.session.completedAt ?? wallClock.now()); },
       async finalize(input) { await commitFinalization(input, wallClock); },
       async abandon(session) { await commitSessionAbandonment(session, session.completedAt ?? wallClock.now()); },
       async recover() { await recoverPendingMutation(); },
@@ -143,13 +147,10 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   };
   const lifecycle = new TrainingLifecycleUseCases(ports, new OperationProjectionStore());
   installTrainingLifecycleUseCases(lifecycle);
-  installAlgorithmsSessionRuntimePorts({
-    wallClock,
-    sessionIds: { next(modeId) { sessionSequence += 1; return `algorithms:${modeId}:${sessionSequence}`; } },
-  });
-  installAlgorithmsForegroundTimerFacade(new AlgorithmsForegroundTimerFacade({
+  installForegroundSessionTimerFacade(new ForegroundSessionTimerFacade({
     repository: { getActive: getActiveForegroundTimer, save: saveActiveForegroundTimer },
     lifecycle,
+    tracks: { getTrackRegistration },
     monotonicClock: { now: () => globalThis.performance?.now?.() ?? Date.now() },
     wallClock,
     schedule: (callback) => setInterval(callback, 1_000),
@@ -158,6 +159,22 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
   }));
   return lifecycle;
 }
+
+const developmentAuditSessionIdentity: TrainingSessionIdentityPort = Object.freeze({
+  async create({ trackId, modeId }: TrainingSessionIdentityRequest) {
+    const sessions = (await getTrainingSessions()).value;
+    const maximumSuffix = sessions.reduce((maximum, session) => {
+      if (session.trackId !== trackId || !session.id.startsWith(`${trackId}:`)) return maximum;
+      const suffix = session.id.slice(session.id.lastIndexOf(":") + 1);
+      if (!/^[1-9]\d*$/.test(suffix)) return maximum;
+      const numericSuffix = Number(suffix);
+      if (!Number.isSafeInteger(numericSuffix)) throw new Error("Development audit session identity suffix exceeds the supported range.");
+      return Math.max(maximum, numericSuffix);
+    }, 0);
+    if (maximumSuffix === Number.MAX_SAFE_INTEGER) throw new Error("Development audit session identity space is exhausted.");
+    return `${trackId}:${modeId}:${maximumSuffix + 1}`;
+  },
+});
 
 async function commitFinalization(input: SimulationFinalization, wallClock: WallClock): Promise<void> {
   const existingById = new Map((await getReviewQueueItems()).value.map((review) => [review.id, review]));

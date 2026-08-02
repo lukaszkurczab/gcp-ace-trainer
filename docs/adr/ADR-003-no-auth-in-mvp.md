@@ -1,7 +1,17 @@
 # ADR-003 — No Auth in MVP
 
-Status: **Accepted**  
+Status: **Superseded for public launch by PO-017 (2026-07-31)**
 Data: 2026-06-26
+
+> Historical decision for the earlier MVP scope. The current repository still
+> implements this local-only model, but the owner now requires registration,
+> sign-in and the full account lifecycle before public launch. The replacement
+> account/data architecture is now normative in
+> [`../canonical-product-contract.yaml`](../canonical-product-contract.yaml)
+> and documented by Task 1 in
+> [`../launch-completion-plan.md`](../launch-completion-plan.md). This ADR must
+> not be used to omit account work or to describe the historical local-only
+> scope as the public-launch target.
 
 ## Kontekst
 

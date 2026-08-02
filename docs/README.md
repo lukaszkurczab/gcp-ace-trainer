@@ -37,6 +37,10 @@ docs/
   15-certification-track-learning-system.md
   16-leetcode-like-learning-system.md
   17-training-runtime-and-interaction-spec.md
+  launch-completion-plan.md
+  launch-surface-inventory.md
+  competitive-product-gap-audit.md
+  launch-readiness-audit.md
 
   adr/
     ADR-001-local-first-mvp.md
@@ -48,7 +52,7 @@ docs/
 
 ## Authority
 
-`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/release-candidate-closure.md` jest jedynym źródłem kolejności wykonania i statusu etapów RC.
+`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/release-candidate-closure.md` jest źródłem bieżącego statusu, a `docs/launch-completion-plan.md` definiuje aktywną kolejność od domknięcia produktu do publicznego launchu. `docs/launch-surface-inventory.md` zamyka jednorazową inwentaryzację tras i brakujących powierzchni, a `docs/competitive-product-gap-audit.md` zamyka benchmark kategorii. `docs/launch-readiness-audit.md` pozostaje materiałem dowodowym dla ryzyk release'u.
 
 ADR-y zachowują historyczne decyzje techniczne, ale nie tworzą drugiego planu wykonawczego i nie zastępują kanonicznych kontraktów. Artefakty audytowe oraz materiały projektowe są dowodami lub referencjami wizualnymi, nie źródłami kontraktu ani kolejności wykonania.
 

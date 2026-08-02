@@ -34,6 +34,12 @@ function isUiPath(path: string): boolean {
   return path.endsWith(".tsx") || uiRoots.some((root) => path.startsWith(root));
 }
 
+function matchesUiOwnership(changedPath: string, sourcePathPrefix: string): boolean {
+  return sourcePathPrefix.endsWith("/")
+    ? changedPath.startsWith(sourcePathPrefix)
+    : changedPath === sourcePathPrefix;
+}
+
 function addedRequirementIds(diff: string): readonly string[] {
   return [...diff.matchAll(/^\+\s*-\s+id:\s*([A-Z][A-Z0-9-]*[A-Z0-9])\s*$/gm)].map((match) => match[1]!);
 }
@@ -69,7 +75,7 @@ export function evaluateContractChangeGate(input: ContractChangeGateInput): read
 
   for (const changedPath of input.changedPaths.filter(isUiPath)) {
     const mappedReference = input.contract.designReferences.uiOwnership
-      .filter((ownership) => changedPath.startsWith(ownership.sourcePathPrefix))
+      .filter((ownership) => matchesUiOwnership(changedPath, ownership.sourcePathPrefix))
       .sort((left, right) => right.sourcePathPrefix.length - left.sourcePathPrefix.length)[0];
     const reference = mappedReference && input.contract.designReferences.references.find((candidate) => candidate.id === mappedReference.designReferenceId);
     if (!reference || reference.approvalStatus !== "APPROVED") {

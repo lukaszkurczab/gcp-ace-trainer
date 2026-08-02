@@ -24,6 +24,7 @@ import {
   createCertificationReviewEntry,
   getCertificationMode,
   scoreCertificationQuestion,
+  type CertificationDomain,
   type CertificationResponse,
 } from "../../tracks/cloud-certification";
 
@@ -73,7 +74,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     const configurationSnapshot: TrainingSession["configurationSnapshot"] = diagnosticBaseline
       ? diagnosticConfiguration(diagnosticBaseline)
       : focusPractice
-      ? focusConfiguration(focusPractice)
+      ? focusConfiguration(focusPractice, request.domain!)
       : scenarioPractice
       ? scenarioConfiguration(scenarioPractice, request.competency!)
       : weakAreaReview
@@ -273,7 +274,8 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     if (session.modeId === "certification-focus-practice") {
       const focusPractice = this.catalog.getFocusPractice();
       const domains = new Set(session.itemOrder.map((occurrence) => this.catalog.getItemById(occurrence.item.itemId).domain));
-      if (session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || domains.size !== 1 || !focusPractice.topicIds.includes([...domains][0]!)) throw new Error("Certification Focus Practice does not match its single-domain immutable contract.");
+      const domain = session.configurationSnapshot.domain;
+      if (typeof domain !== "string" || !focusPractice.topicIds.includes(domain as CertificationDomain) || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none" || ![10, 20, 40].includes(session.requestedLength) || domains.size !== 1 || !domains.has(domain as CertificationDomain)) throw new Error("Certification Focus Practice does not match its single-domain immutable contract.");
     }
     if (session.modeId === "certification-scenario-practice") {
       const scenario = this.catalog.getScenarioPractice();
@@ -318,9 +320,9 @@ function diagnosticConfiguration(baseline: PublishedCertificationDiagnosticBasel
   return { kind: "certificationDiagnosticBaseline", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
 }
 
-function focusConfiguration(focus: PublishedCertificationFocusPractice): TrainingSession["configurationSnapshot"] {
-  if (focus.modeId !== "certification-focus-practice" || focus.shortening !== "allowed_within_topic" || focus.selectionScope !== "cloud_domain" || focus.requestedLengths.length !== 3 || focus.requestedLengths.some((length, index) => length !== [10, 20, 40][index]) || !focus.topicIds.length) throw new Error("Certification Focus Practice content configuration is invalid.");
-  return { kind: "certificationFocusPractice", navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
+function focusConfiguration(focus: PublishedCertificationFocusPractice, domain: CertificationDomain): TrainingSession["configurationSnapshot"] {
+  if (focus.modeId !== "certification-focus-practice" || focus.shortening !== "allowed_within_topic" || focus.selectionScope !== "cloud_domain" || focus.requestedLengths.length !== 3 || focus.requestedLengths.some((length, index) => length !== [10, 20, 40][index]) || !focus.topicIds.includes(domain)) throw new Error("Certification Focus Practice content configuration is invalid.");
+  return { kind: "certificationFocusPractice", domain, navigation: "linear", submission: "perItem", feedbackMode: "afterEachAnswer", answerChanges: "none", timer: "elapsedForeground" };
 }
 
 function scenarioConfiguration(scenario: PublishedCertificationScenarioPractice, competencyId: string): TrainingSession["configurationSnapshot"] {

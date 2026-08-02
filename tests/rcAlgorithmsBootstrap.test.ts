@@ -10,10 +10,19 @@ test("RC Algorithms bootstrap resets learning data and explicitly selects the Al
   assert.match(readFileSync(".maestro/rc-runtime-audit-reset-complete.yaml", "utf8"), /patternly:content:ready-after-audit-reset/);
   assert.equal((devMenu.match(/text: "Continue"\n    optional: true\n    retryTapIfNoChange: true/g) ?? []).length, 2);
   assert.doesNotMatch(devMenu, /when:\n      visible: "Continue"/);
-  assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
-  assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
-  assert.match(flow, /patternly:home:select-track:algorithms/);
-  assert.match(flow, /patternly:home:track-card:algorithms/);
+  const waitForShell = flow.indexOf('- extendedWaitUntil:\n    visible:\n      id: "main-tab-bar"\n    timeout: 30000');
+  const homeBranch = flow.indexOf('- runFlow:\n    when:\n      visible:\n        id: "patternly:home:change-track"');
+  const selectAlgorithms = flow.indexOf('- scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:algorithms"');
+  assert.ok(waitForShell >= 0 && homeBranch > waitForShell && selectAlgorithms > homeBranch);
+  assert.equal((flow.match(/- runFlow:/g) ?? []).length, 1);
+  assert.equal((flow.match(/id: "patternly:home:change-track"/g) ?? []).length, 2);
+  assert.match(flow, /commands:\n      - tapOn:\n          id: "patternly:home:change-track"\n          retryTapIfNoChange: true/);
+  assert.equal((flow.match(/retryTapIfNoChange: true/g) ?? []).length, 1);
+  assert.doesNotMatch(flow, /openLink:|point:|coordinates:|repeat:/);
+  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:algorithms"[\s\S]*?timeout: 30000[\s\S]*?- tapOn:\n    id: "patternly:home:select-track:algorithms"/);
+  assert.equal((flow.match(/id: "patternly:home:select-track:algorithms"/g) ?? []).length, 2);
+  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:track-card:algorithms"[\s\S]*?timeout: 30000[\s\S]*?- assertVisible:\n    id: "patternly:home:track-card:algorithms"/);
+  assert.equal((flow.match(/id: "patternly:home:track-card:algorithms"/g) ?? []).length, 2);
 });
 
 test("RC Algorithms runners require an explicit device, local dev-client, output destination, and flow", () => {

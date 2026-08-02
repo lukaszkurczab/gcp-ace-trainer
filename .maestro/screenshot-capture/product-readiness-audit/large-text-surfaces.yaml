@@ -1,0 +1,49 @@
+appId: com.lkurczab.patternly
+name: Patternly product readiness audit — large text surfaces
+tags:
+  - screenshot
+  - uiux-evidence
+  - accessibility
+  - product-readiness
+---
+- openLink: "com.lkurczab.patternly://audit/reset-learning-state"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:algorithms"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__010__home__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+
+- tapOn:
+    id: "patternly:home:change-track"
+- extendedWaitUntil:
+    visible: "Choose a track"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__020__track-selection__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- scrollUntilVisible:
+    element:
+      id: "patternly:home:select-track:algorithms"
+    direction: DOWN
+    centerElement: false
+    visibilityPercentage: 20
+- tapOn:
+    id: "patternly:home:select-track:algorithms"
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__030__practice-hub__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
+- scrollUntilVisible:
+    element:
+      id: "patternly:practice:start-session"
+    direction: DOWN
+    centerElement: true
+    visibilityPercentage: 50
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__040__session-question__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"

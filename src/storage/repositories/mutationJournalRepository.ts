@@ -219,7 +219,7 @@ function hasValidOperationPlan(record: MutationJournalPlan): boolean {
     case "submit_training_outcome":
       return only("put_attempt", "put_review_entry", "update_review_entry", "delete_review_entry", "put_session") && count("put_attempt") === 1 && count("put_review_entry") + count("update_review_entry") + count("delete_review_entry") <= 1 && count("put_session") === 1 && sessionWrite?.record.status === "active" && immediateAttemptMatchesCurrentOccurrence && hasUniqueOutcomeSemantics && deletedReviewsMatchPlannedItems && attemptsMatchSessionPlan && reviewsMatchAttempts && deletedReviewsMatchAttempts;
     case "complete_training_session":
-      return only("put_session_result", "put_session", "clear_active_session") && count("put_session") === 1 && count("put_session_result") <= 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed" && (!resultWrite || (resultWrite.record.sessionId === sessionWrite.record.id && resultWrite.record.trackId === sessionWrite.record.trackId));
+      return only("put_session_result", "put_session", "clear_active_session") && count("put_session") === 1 && count("put_session_result") === 1 && count("clear_active_session") === 1 && sessionWrite?.record.status === "completed" && resultWrite?.record.sessionId === sessionWrite.record.id && resultWrite.record.trackId === sessionWrite.record.trackId;
     case "abandon_training_session": {
       const draftExpected = Boolean(sessionWrite && getTrainingSessionFinalizationCleanupKind(sessionWrite.record) === "session_draft");
       return only("put_session", "clear_active_session", "clear_active_session_draft") &&

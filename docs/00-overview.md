@@ -2,7 +2,14 @@
 
 ## Product
 
-Patternly is a local, offline-first focus lab for technical decision practice. A track is a concrete content and learning domain, a track family defines the shared learning semantics for similar tracks, and a mode is a family-specific session configuration. The initial product contains Certification and Algorithms families; they are the first supported families, not a closed list of all future learning domains. The product does not provide an online judge, copied exam material, official certification status, user accounts, cloud synchronization, or a content feed.
+Patternly is a local, offline-first focus lab for technical decision practice. A track is a concrete content and learning domain, a track family defines the shared learning semantics for similar tracks, and a mode is a family-specific session configuration. The initial product contains Certification and Algorithms families; they are the first supported families, not a closed list of all future learning domains. The current implementation does not provide an online judge, copied exam material, official certification status, user accounts, cloud synchronization, or a content feed.
+
+The public-launch scope requires registration, sign-in and the full account
+lifecycle under `PO-017`. `canonical-product-contract.yaml` now defines the
+vendor-neutral identity, local/remote data, offline, recovery, sync/conflict
+and deletion target. Those mechanisms are not present in the current runtime;
+this overview can describe account continuity as shipped behaviour only after
+Tasks 3 and 8 implement and verify that contract.
 
 
 ## Track families and extension boundary
