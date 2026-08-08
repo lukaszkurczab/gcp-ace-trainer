@@ -3,7 +3,8 @@
 > This packet is an independent internal product-research workflow. It is not
 > the public-launch plan and its manual acceptance rows do not block store
 > release. Current launch status lives in
-> [`../release-candidate-closure.md`](../release-candidate-closure.md).
+> [`../release-candidate-closure.md`](../release-candidate-closure.md), which is
+> historical RC evidence rather than current launch status.
 
 This packet is the canonical protocol for the first moderated Algorithms
 cohort. It tests whether people understand and can use the current product; it
@@ -50,7 +51,7 @@ Do not start recruitment until all of the following are true:
   dates;
 - the exact build and platform have passed the automated, publication,
   device and visual subgates recorded in
-  [current product status](../release-candidate-closure.md);
+  [historical RC status evidence](../release-candidate-closure.md);
 - participant-build identity remains schema 1 / 279 inputs / SHA-256
   `6c113edc3bbbfdd716d48385b5356a35eb1b22932084287b3a2e896a863bf646`,
   unchanged by notes or acceptance-record edits;

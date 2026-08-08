@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is a capability roadmap, not an implementation recovery plan. During RC closure, `docs/release-candidate-closure.md` is the sole source of repository implementation sequencing and stage status.
+This is a capability roadmap, not an implementation recovery plan. `docs/launch-completion-plan.md` remains the sole source of repository implementation sequencing and stage status until its controlled regeneration in Directive 3; `docs/release-candidate-closure.md` is historical RC evidence only.
 
 ## Capability order
 

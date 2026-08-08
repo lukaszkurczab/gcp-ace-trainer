@@ -1,4 +1,8 @@
-# Patternly — current product status
+# Patternly — historical release-candidate status
+
+> Historical RC evidence as of 2026-07-31. This file is not a current product
+> contract or execution-status authority. Directive 2 reconciles the canonical
+> documentation before Directive 3 regenerates the sole execution plan.
 
 ## Status — 2026-07-31
 

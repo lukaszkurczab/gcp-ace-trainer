@@ -34,11 +34,11 @@ before using this record.
 
 | Gate | Status | Completion evidence |
 | --- | --- | --- |
-| Complete reviewed publication and application pin | `done` | [Current product status](../release-candidate-closure.md) and cross-repository release test |
-| Automated/static application checks | `done` | Dated baseline in current product status: 407/407 tests plus recovery, type, content and privacy boundaries |
-| iOS and Android core journey | `done` | Dated baseline in current product status: two consecutive passes per platform |
+| Complete reviewed publication and application pin | `done` | [Historical RC status evidence](../release-candidate-closure.md) and cross-repository release test |
+| Automated/static application checks | `done` | Dated historical RC evidence records 407/407 tests plus recovery, type, content and privacy boundaries |
+| iOS and Android core journey | `done` | Dated historical RC evidence records two consecutive passes per platform |
 | Current visual review | `done` | 100 screenshots and zero open P0–P3 in represented states |
-| Stable participant-build identity | `done` | Schema 1, 279 inputs and exact SHA above; the dated four-run result is retained in current product status |
+| Stable participant-build identity | `done` | Schema 1, 279 inputs and exact SHA above; the dated four-run result is retained in historical RC evidence |
 | PO-013 A protocol consistency | `done` | Screener, consent, moderator guide, observation form and synthesis require notes-only operation and contain no optional-recording path |
 | Manual VoiceOver traversal | `blocking` | Complete section 1A |
 | Manual TalkBack traversal | `blocking` | Complete section 1B |
@@ -227,7 +227,7 @@ Final operational confirmation:
 ## 4. Final readiness decision
 
 The owner updates
-[current product status](../release-candidate-closure.md) only after checking
+[historical RC status evidence](../release-candidate-closure.md) only after checking
 this table against the completed evidence.
 
 | Required gate | Final result | Evidence location |

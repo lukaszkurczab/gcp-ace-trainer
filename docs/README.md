@@ -52,7 +52,7 @@ docs/
 
 ## Authority
 
-`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/release-candidate-closure.md` jest źródłem bieżącego statusu, a `docs/launch-completion-plan.md` definiuje aktywną kolejność od domknięcia produktu do publicznego launchu. `docs/launch-surface-inventory.md` zamyka jednorazową inwentaryzację tras i brakujących powierzchni, a `docs/competitive-product-gap-audit.md` zamyka benchmark kategorii. `docs/launch-readiness-audit.md` pozostaje materiałem dowodowym dla ryzyk release'u.
+`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/launch-completion-plan.md` pozostaje jedynym dokumentem kolejności wykonania do jego regeneracji w Directive 3; przed kolejną pracą wykonawczą Directive 2 uzgadnia kontrakt i dokumentację. `docs/release-candidate-closure.md` jest historycznym zapisem RC, nie bieżącym źródłem statusu. `docs/launch-surface-inventory.md` zamyka jednorazową inwentaryzację tras i brakujących powierzchni, a `docs/competitive-product-gap-audit.md` zamyka benchmark kategorii. `docs/launch-readiness-audit.md` pozostaje materiałem dowodowym dla ryzyk release'u.
 
 ADR-y zachowują historyczne decyzje techniczne, ale nie tworzą drugiego planu wykonawczego i nie zastępują kanonicznych kontraktów. Artefakty audytowe oraz materiały projektowe są dowodami lub referencjami wizualnymi, nie źródłami kontraktu ani kolejności wykonania.
 
