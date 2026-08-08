@@ -19,7 +19,6 @@
     "e2e:rc:certification-exam:ios": "node scripts/runCertificationExamRcIos.mjs",
     "e2e:rc:algorithms:android": "node scripts/runRcAlgorithmsAndroid.mjs",
     "e2e:rc:algorithms:ios": "node scripts/runRcAlgorithmsIos.mjs",
-    "e2e:user-testing:readiness": "node scripts/runUserTestingReadinessEvidence.mjs",
     "validate:content-boundary": "node scripts/validateContentBoundary.mjs",
     "validate:runtime-privacy-boundary": "node scripts/validateRuntimePrivacyBoundary.mjs",
     "sync:content-release": "node scripts/syncBundledContentRelease.mjs"

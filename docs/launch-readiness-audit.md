@@ -1,21 +1,26 @@
 # Patternly — launch readiness audit
 
-> **Scope correction — 2026-07-31:** this audit's original implementation plan
-> started at release closure too early. The current application still requires
-> full product-surface inventory, missing-surface closure and systematic visual
-> completion before signing and store packaging. The canonical active plan is
+> **Historical reconciliation input:** this dated NO-GO audit is retained for
+> Directive 2 as implementation and risk evidence. It is not the current status
+> ledger, release gate, product contract, or execution plan.
+
+> **Previous-contract scope correction — 2026-07-31:** this audit's original
+> implementation plan started at release closure too early. At that evidence
+> date, the application still required full product-surface inventory,
+> missing-surface closure and systematic visual completion before signing and
+> store packaging. The execution plan retained for Directive 3 is
 > [`launch-completion-plan.md`](launch-completion-plan.md).
 
 Status date: **2026-07-31**  
 Application commit: `4a2c2abe045d13bb11018b9720c6bdf5ef85ca5b`  
 Content release commit: `d780204eba858c05b94fdbce8de38ec4c3900a50`  
-Public launch verdict: **NO-GO**
+Public launch verdict at the evidence date: **NO-GO**
 
 ## Decision scope
 
-This document replaces moderated-user-testing readiness as the active audit
-objective. Internal product tests may run independently at every stage; they do
-not authorize or block a store launch.
+Under the previous contract, this document replaced moderated-user-testing
+readiness as the audit objective. Internal product tests may run independently
+at every stage; they do not authorize or block a store launch.
 
 Manual item-by-item question review is not part of the launch process. The
 launch audit evaluates visible large-text behaviour, deterministic

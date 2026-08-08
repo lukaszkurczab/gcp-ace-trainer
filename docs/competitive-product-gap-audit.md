@@ -1,8 +1,12 @@
 # Patternly — competitive product gap audit
 
+> **Historical reconciliation input:** this dated category research is retained
+> for Directive 2. It does not define the current product, launch scope, status,
+> or implementation sequence.
+
 Status date: 2026-07-31  
 Application evidence commit: `4a2c2ab`  
-Decision: `CATEGORY BASELINE REVIEWED / PRODUCT COMPLETION NO-GO`
+Decision at the evidence date: `CATEGORY BASELINE REVIEWED / PRODUCT COMPLETION NO-GO`
 
 ## Purpose
 

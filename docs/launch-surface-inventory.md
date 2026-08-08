@@ -1,9 +1,14 @@
 # Patternly — complete launch surface inventory
 
-Status date: 2026-07-31  
-Application evidence commit: `4a2c2ab`  
-Inventory status: `done`  
-Product status: `PRODUCT COMPLETION NO-GO`
+> **Historical reconciliation input:** this dated route inventory describes a
+> previous launch contract. Directive 2 must reconcile its verified repository
+> facts with the new owner decisions. It is not current product, route, status,
+> or execution authority.
+
+Status date: 2026-07-31
+Application evidence commit: `4a2c2ab`
+Inventory status: `historical input (completed under the previous contract)`
+Product status at the evidence date: `PRODUCT COMPLETION NO-GO`
 
 ## Purpose and authority
 
@@ -12,11 +17,9 @@ launch. It covers every route registered by the current application, embedded
 surfaces and operational states, missing launch surfaces, account and store
 registration, and distribution signing.
 
-This is the discovery authority for the active
-[`launch-completion-plan.md`](launch-completion-plan.md). Implementation tasks
-must update this inventory when they add, merge or delete a route. They must
-verify the routes in their own scope, but must not reopen another app-wide
-discovery audit unless the product scope or route graph changes.
+This was the discovery inventory for the previous
+[`launch-completion-plan.md`](launch-completion-plan.md). Its route observations
+remain evidence; its product conclusions and sequencing do not.
 
 The category benchmark and gaps discovered outside the current route graph are
 recorded in

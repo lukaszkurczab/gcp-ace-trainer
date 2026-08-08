@@ -2,9 +2,11 @@
 
 ## Status
 
-This directory contains only visual references that are still approved by the
-canonical product contract. Exploratory alternatives and superseded screen
-mockups are not retained.
+This directory contains visual references consumed by the previous canonical
+contract, current tests, or implemented screens. Directive 1 preserves them as
+implementation evidence; Directive 2 must reconcile their authority against
+the new owner-directed Figma-to-code handoff. Presence here is not approval of
+the new target visual system.
 
 The current product direction is defined normatively by `docs/canonical-product-contract.yaml`. The following documents provide supporting context:
 
@@ -17,7 +19,7 @@ The current product direction is defined normatively by `docs/canonical-product-
 
 If an individual design conflicts with the canonical product contract, verified product constraints, or repository evidence, the contract and verified constraints win.
 
-## Implementation Rule
+## Previous-contract implementation rule
 
 Final implemented layouts should reach at least **90% design-reference alignment** with the relevant screens in this directory, while remaining internally consistent across the app.
 

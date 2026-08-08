@@ -1,5 +1,9 @@
 # Launch 001 — account, identity and data contract
 
+> **Historical evidence:** this report records the previous account-contract
+> implementation slice. It is retained as input to Directive 2 and is not
+> current product authority, execution status, or approval of the new target.
+
 ## Decision
 
 Slice 1A defines one vendor-neutral, implementation-ready public-launch
@@ -423,15 +427,12 @@ No route or placeholder component is created by this slice.
 - `docs/adr/ADR-003-no-auth-in-mvp.md` and
   `docs/product-owner-decision-register.md` — historical retirement and
   contract-resolution record.
-- `docs/launch-completion-plan.md` and
-  `docs/release-candidate-closure.md` — record the independently accepted
-  account contract and move active execution to Task 2.
+- `docs/launch-completion-plan.md` — records the previous implementation
+  sequencing and remains the sole execution-order surface until Directive 3
+  regenerates it.
 - `docs/launch-surface-inventory.md` and
-  `docs/launch-readiness-audit.md` — incrementally distinguish the now-defined
-  account target from the still-unimplemented runtime. These four status and
-  audit documents were pre-existing dirty or untracked owner work; Slices
-  1A–1D changed only their account-contract alignment and did not claim
-  ownership of the surrounding edits.
+  `docs/launch-readiness-audit.md` — retain dated route and readiness evidence
+  for Directive 2; neither document is current product or execution authority.
 - this report — route/data/threat walkthrough, risks and downstream slices.
 
 ## Verification record

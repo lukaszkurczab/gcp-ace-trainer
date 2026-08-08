@@ -5,7 +5,7 @@ import test from "node:test";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
 
 const flow = readFileSync(
-  ".maestro/user-testing/algorithms-session-dry-run-regression.yaml",
+  ".maestro/algorithms-session-dry-run-regression.yaml",
   "utf8",
 );
 const sessionId = "algorithms:algorithms-guided-practice:1";

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is a capability roadmap, not an implementation recovery plan. `docs/launch-completion-plan.md` remains the sole source of repository implementation sequencing and stage status until its controlled regeneration in Directive 3; `docs/release-candidate-closure.md` is historical RC evidence only.
+This is a capability roadmap, not an implementation recovery plan. `docs/launch-completion-plan.md` remains the sole source of repository implementation sequencing and stage status until its controlled regeneration in Directive 3. Retained audits and reports are historical evidence, never current product or execution authority.
 
 ## Capability order
 

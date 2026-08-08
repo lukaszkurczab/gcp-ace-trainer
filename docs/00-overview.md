@@ -67,4 +67,4 @@ Each certification track instance owns a versioned `ExamExperienceProfile` sourc
 
 ## Documentation authority
 
-`canonical-product-contract.yaml` is the sole normative product-behavior contract. Documents `00`–`13` and `15`–`17` provide narrative context and cannot override it. `docs/launch-completion-plan.md` remains the sole repository execution-order source until its controlled regeneration in Directive 3; `docs/release-candidate-closure.md` is historical RC evidence only.
+`canonical-product-contract.yaml` is the sole normative product-behavior contract. Documents `00`–`13` and `15`–`17` provide narrative context and cannot override it. `docs/launch-completion-plan.md` remains the sole repository execution-order source until its controlled regeneration in Directive 3. Retained audits and reports are historical evidence, never current product or execution authority.

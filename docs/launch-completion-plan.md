@@ -518,9 +518,11 @@ is [`reports/launch-001-account-data-contract.md`](reports/launch-001-account-da
 
 ### Completed Task 2 — canonical visual shell and component rules (`done`, not active)
 
-Task 2 closed after independent QA `pass`. Its detailed Slices 2A–2C and
-repairs remain below as acceptance and evidence history, not active work. The
-canonical output is [`reports/launch-002-visual-shell.md`](reports/launch-002-visual-shell.md).
+Task 2 closed under the previous contract after independent QA `pass`. Its
+detailed Slices 2A–2C remain below as historical acceptance evidence. The
+duplicated report was removed during Directive 1; Git history preserves it,
+while current direct evidence remains in source, tests, and
+[`designs/product-direction-options/DESIGN.md`](designs/product-direction-options/DESIGN.md).
 
 **Controller slice 2A — shared shell/header ownership (`completed`)**
 
@@ -960,7 +962,8 @@ scroll (`completed`)**
 - **Required evidence:** before/after comparisons for Home, nested settings,
   setup, session and result.
 - **Risk:** per-screen exceptions would preserve the current inconsistency.
-- **Report target:** `docs/reports/launch-002-visual-shell.md`.
+- **Historical report:** removed as duplicated task evidence during Directive 1;
+  retained in Git history.
 
 ### Task 3 — authentication and account surfaces (`active`; bounded server
 sync, snapshot and durable adoption transport passed QA; the first reachable
@@ -4410,8 +4413,9 @@ deletion email provider requires owner selection`)**
       those checks read-only, confirmed the unchanged 13/13 and 99/99 design
       authority and returned the exact verdict `pass` with no blocking or high
       finding. The transition is complete.
-  - **Report target:**
-    `docs/reports/launch-003a2-account-lifecycle-design.md`.
+  - **Direct evidence:**
+    `docs/designs/account_lifecycle/DESIGN.md` and its checked-in approved PNG;
+    the duplicated task report remains available in Git history.
 - **Deferred release-promotion inputs:** select one professional market host and
   control the owned domain/DNS; authorize public deployment of the one static artifact;
   verify the transactional-email sender domain; and provide signing/team access
