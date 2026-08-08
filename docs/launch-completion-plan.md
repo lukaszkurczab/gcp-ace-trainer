@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** none in progress
+**Current task:** `PLAT-01 — Expo 57 and target native matrix` (started from `5fe4d1aeff6b3597b22a2073293ca045a092900c`)
 
-**Next executable task:** `PLAT-01 — Expo 57 and target native matrix` (`READY`, not started)
+**Next executable task:** `PLAT-01 — Expo 57 and target native matrix` (`ACTIVE`)
 
 ## 1. Purpose and authority
 
@@ -189,7 +189,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Security/privacy/content:** no semantic or provider change. **Checkpoint:** none. **Output:** `docs/reports/fnd-01-clean-checkout-gates.md` only if repository convention needs durable blockers; otherwise commit/CI links. **Unlocks:** all implementation lanes.
 - **Verification and evidence:** application gate-integrity commit `f4dcc0008b428b056f4e2d1d6197b57a7fa77883` passed [QA run 31276876009](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/31276876009), including both locked installs, server typecheck/build before root QA, recovery and contract gates. Content final commit `ddaaeae0607d672b0f3b4eb8c8243055cee257bb` passed [architecture run 31277407577](https://github.com/lukaszkurczab/patternly-content/actions/runs/31277407577) and [isolated real-release run 31277414226](https://github.com/lukaszkurczab/patternly-content/actions/runs/31277414226). Durable evidence is commit `7302f88b98efe725f2063e5c053c2e9cbcdb87cf` plus exact manifest: Algorithms technical/coverage `5f81e720eaa43c001bb23a6aa8eab7f85c23189e62317c2a840a4ade31ce9817`; Certification technical `98943d91b7e1281c6e2da5128feff21807aaac5020c4374734dd5f63c5d0802d`. Questions, content versions, immutable `patternly-core-0015`, and the application release lock were unchanged.
 
-#### PLAT-01 — Expo 57 and target native matrix — `READY`
+#### PLAT-01 — Expo 57 and target native matrix — `ACTIVE`
 
 - **Objective / why now:** establish the supported runtime before native Firebase, RevenueCat, Storybook and final design integrations. **Owners:** `PLATFORM-RELEASE-001`, docs 02/09/12. **Dependencies:** `FND-01`. **State:** Expo 54, Light-only, tablet-capable, implicit Android levels; native folders ignored.
 - **Paths / scope:** package/lock, `app.json`, canonical plugins, build config, CI; migrate to Expo 57, iOS 16.4+ iPhone-only, Android 28/36, portrait, Light/Dark/System, 200% text basis and backup exclusion. **Non-goals:** UI redesign, provider registration, signed release.
@@ -642,9 +642,9 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 ## 8. Current and next executable task
 
-There is no active implementation task. `FND-01` is verified at application `f4dcc0008b428b056f4e2d1d6197b57a7fa77883` and content `ddaaeae0607d672b0f3b4eb8c8243055cee257bb`: each canonical branch is pushed, the declared clean dependency/evidence gates pass, and the content candidate builds only in a temporary output root.
+`PLAT-01` is the sole active implementation task, started from application `5fe4d1aeff6b3597b22a2073293ca045a092900c` and content `ddaaeae0607d672b0f3b4eb8c8243055cee257bb`. `FND-01` is verified: each canonical branch is pushed, the declared clean dependency/evidence gates pass, and the content candidate builds only in a temporary output root.
 
-The dependency graph now makes `PLAT-01`, `GUEST-01`, `TRACK-01`, and `B-01` ready. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; downstream work remains blocked by its listed dependencies. `PLAT-01` is the single selected next task because it unblocks `ARCH-01` and the native platform matrix; it is not active in this execution window.
+The dependency graph keeps `GUEST-01`, `TRACK-01`, and `B-01` ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; downstream work remains blocked by its listed dependencies. `PLAT-01` is active because it unblocks `ARCH-01` and the native platform matrix.
 
 ## 9. Old-to-new mapping and plan maintenance
 
