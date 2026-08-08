@@ -16,6 +16,18 @@ Content must be:
 
 Content quality is part of the product contract. Runtime, UI, validators, or generic fallback text must not compensate for incomplete educational material.
 
+## Catalogue, Free verticals, and publication
+
+Learners see tracks, not implementation families. The internal families are `certification`, `coding_interview`, and `design_interview`. The target catalogue contains ten equal-status track briefs; a track enters the production registry only with a real bundled `freeNodeId`, complete core loop, valid modes and goal templates, Progress dimensions, provenance rules, and a release-ready content/package plan. Empty cards, placeholder tracks, and fixed filler counts are prohibited.
+
+Shared architecture is proven before broad copying: GCP ACE for Certification, Coding Interview for `coding_interview`, Backend System Design for Design Interview, then a second representative track in each reusable family. Brief approval is not production admission and does not authorize bulk content generation.
+
+Canonical source may be corrected, but an already published artifact or package is immutable. A correction creates a new content and publication identity with complete validation, technical/editorial review, provenance, checksums, and reproducibility evidence.
+
+Each production track bundles one complete English Free node. Premium content is published as immutable compressed whole-node packages. A session pins an exact package version; runtime never assembles a session through per-question Firestore fetching or silently substitutes a newer version. Document `08` owns delivery, activation, cache, and review-resolution behavior.
+
+Launch application and content are English-only. Future locale packages reuse stable evidence identities while localizing learner-visible content; they do not fork scores, attempts, review evidence, or taxonomy identity merely because language changes.
+
 ## Instructional item contract
 
 Every active instructional item provides:
@@ -329,9 +341,9 @@ Feedback must explain the actual dimension error, including where relevant:
 
 A complexity explanation must derive the result. Merely stating `O(n)` or another class is insufficient.
 
-## Algorithms content
+## Coding Interview content
 
-Algorithms content is strategy-first and teaches transferable reasoning rather than syntax recall or imitation of a coding platform.
+Coding Interview content is strategy-first and teaches transferable reasoning rather than syntax recall or imitation of a coding platform.
 
 It may train:
 
@@ -369,9 +381,9 @@ The editorial-remediation priority is:
 
 This order governs authoring and remediation work. It is not a runtime session-selection algorithm.
 
-### Algorithms originality
+### Coding Interview originality
 
-Algorithms content may use common algorithmic concepts, structures, and archetypes, but prompts, scenarios, options, traces, and explanations must be independently authored.
+Coding Interview content may use common algorithmic concepts, structures, and archetypes, but prompts, scenarios, options, traces, and explanations must be independently authored.
 
 Do not copy or closely paraphrase:
 
@@ -435,7 +447,7 @@ Do not copy exam dumps, recalled exam questions, proprietary training questions,
 
 Provider names and trademarks identify subject matter only and do not imply affiliation or endorsement.
 
-## Provenance for Algorithms and general technical content
+## Provenance for Coding Interview and general technical content
 
 External provenance is required when an item depends on:
 
@@ -629,3 +641,7 @@ Every Codex content task must specify:
 - forbidden changes.
 
 Planned or generated content remains unapproved until the documented human review is completed.
+
+## Content-report correction workflow
+
+A learner report is triaged against the exact stable content and publication identity. Accepted corrections modify canonical source, pass technical/editorial and provenance review, create a new immutable package/release, and retain an auditable relation to the report without exposing account or response data to the content repository. A report never patches a published object in place.

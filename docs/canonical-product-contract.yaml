@@ -1,4 +1,4 @@
-version: 1
+version: 2
 contractId: patternly-product-contract
 authority:
   normativeSource: canonical-product-contract
@@ -7,53 +7,53 @@ requirements:
   - id: CONTRACT-AUTHORITY-001
     statement: Product behavior is normative only when defined by this contract.
   - id: ACCOUNT-ENTRY-IDENTITY-001
-    statement: Public-launch learning requires one verified email-and-password account; registration, sign-in, verification, recovery, reset, reauthentication, and the first authenticated bootstrap require a network result, while offline learning is available only for a previously verified bound account.
+    statement: Public-launch learning is guest-first through a local installation identity; an account and verified identity are required for Premium, synchronization, restore, and cross-device continuity, not for first learning value.
   - id: ACCOUNT-LIFECYCLE-001
     statement: Every account command has one declared success transition and explicit invalid, duplicate, expired, used, rate-limited, offline, revoked-session, and remote-failure outcomes without account enumeration, fake success, or an anonymous bypass.
   - id: ACCOUNT-DATA-AUTHORITY-001
     statement: The canonical local repositories are the durability authority for one device and one revisioned remote account dataset is the cross-device convergence authority; device-only records never sync and no second learning-data path may exist.
   - id: ACCOUNT-DATA-ADOPTION-001
-    statement: First account binding resolves empty, local-only, remote-only, both-populated, active-session, and divergent-record cases through a previewed deterministic plan and explicit confirmation, never a silent merge, overwrite, or discard.
+    statement: First account binding resolves empty, local-only, remote-only, both-populated, active-guest-session, and divergent-record cases through a previewed deterministic plan and explicit confirmation, never a silent merge, overwrite, or discard; an active guest session must finish or be explicitly abandoned.
   - id: ACCOUNT-SYNC-CONFLICT-001
     statement: Verified local mutations enter one ordered sync outbox, remote writes use compare-and-swap account revisions, and stale, colliding, or irreconcilable records expose a blocking conflict without changing the last verified local or remote state.
   - id: ACCOUNT-OFFLINE-SESSION-001
-    statement: A previously verified bound account may continue local-first learning offline and queue verified mutations, but registration, sign-in, first bootstrap, recovery, reauthentication, restore, destructive account actions, and remote confirmation remain explicitly unavailable until network authentication succeeds.
+    statement: Guests and previously verified bound accounts may continue local-first learning offline from verified local content, while identity, Premium, synchronization, restore, destructive account actions, and remote confirmation expose explicit network-dependent states.
   - id: ACCOUNT-SIGNOUT-DELETION-001
     statement: Sign-out removes account credentials and account-owned local records only after pending mutations are synchronized or explicitly exported and discarded; account deletion requires reauthentication, revokes sessions, verifies remote and local deletion, exposes failure, and supports a possession-verified public request path.
   - id: ACCOUNT-SECURITY-PRIVACY-001
     statement: Account transport, credential storage, transmitted learning fields, retention, deletion proof, logging exclusions, email delivery, and verified HTTPS link boundaries are explicit and must not be represented as implemented until their mechanisms pass provider and signed-build verification.
   - id: ACCOUNT-PREMARKET-HOSTING-001
-    statement: Before explicit market promotion no public host is active, the one real Task 3 static artifact runs only through a Firebase Hosting emulator bound exactly to 127.0.0.1, and no live or preview deployment path exists; gate 11A selects one professional market host and owned domain, deploys that same artifact without a parallel adapter, verifies sender-domain and association documents and identities before Tasks 12–13 freeze store artifacts, and leaves installed signed-link proof inside those tasks before Task 14.
+    statement: Development and sandbox may use the default Firebase domain, while production promotion requires the same canonical web artifact to use environment-driven professional public, authentication, legal, support, deletion, association, redirect, and sender origins.
   - id: ACCOUNT-SURFACE-MAP-001
     statement: The launch account lifecycle has one declared surface map for entry, registration, verification, sign-in, recovery, reset, expired session, reauthentication, profile, adoption, sync status, conflict, sign-out, and deletion without placeholder routes.
-  - id: ALGORITHMS-MODE-MATRIX-001
-    statement: Algorithms exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
-  - id: ALGORITHMS-CUSTOM-PRACTICE-001
+  - id: CODING-INTERVIEW-MODE-MATRIX-001
+    statement: Coding Interview exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
+  - id: CODING-INTERVIEW-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
-  - id: ALGORITHMS-INDEPENDENT-PRACTICE-001
+  - id: CODING-INTERVIEW-INDEPENDENT-PRACTICE-001
     statement: Independent Practice uses one explicitly selected declared interleaved scope, defaults to ten items, supports only ten or twenty items, exposes feedback after each durable answer, and never invents a forty-item session or substitute scope.
-  - id: ALGORITHMS-PROGRESS-EVIDENCE-001
-    statement: Algorithms Progress keeps every supported topic available, separates an explained recommendation from access, and presents only recorded current-content practice evidence without mastery, retention, readiness, locks, or an invented zero score.
+  - id: CODING-INTERVIEW-PROGRESS-EVIDENCE-001
+    statement: Coding Interview Progress keeps every supported topic available, separates an explained recommendation from access, and presents only recorded current-content practice evidence without mastery, retention, readiness, locks, or an invented zero score.
   - id: TRACK-PRESENTATION-001
-    statement: Learner-facing track presentation separates the family category from the concrete registered track, uses Google Cloud Associate Cloud Engineer as the active Certification track, and fails explicitly for unknown or unsupported registrations instead of substituting Algorithms or Certification.
+    statement: Learners see concrete registered tracks only; internal family identifiers never appear as categories, filters, headings, or marketing sections, and unknown registrations fail explicitly without substitution.
   - id: RESEARCH-BUILD-SETTINGS-001
-    statement: The moderated-research build exposes only the five complete Settings destinations and does not render Feedback, Subscription, an account group, or another action that lacks an end-to-end implementation.
+    statement: Launch Settings exposes only complete product destinations and explicit unavailable states; obsolete moderated-research scope does not define launch product behavior.
   - id: APP-IDENTITY-001
     statement: The application has one Patternly build identity across npm, Expo, iOS, Android, dev-client links, runtime audit links, RC runners, and Maestro while preserving the canonical versioned local-learning data keys.
   - id: USER-TESTING-CORE-JOURNEY-001
-    statement: The moderated-research preflight runs the exact ten-item Independent Practice sample through every interaction type, verifies a durable leave-and-resume boundary, completes the canonical summary, and observes recorded Progress evidence without substituting content or state.
-  - id: ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001
+    statement: Core-journey evidence preserves durable leave-and-resume, canonical summary, and recorded Progress behavior without making the historical moderated-research packet a product authority.
+  - id: CODING-INTERVIEW-CUSTOM-IMMEDIATE-FEEDBACK-001
     statement: Custom Practice with afterEachAnswer journals and materializes each submitted response before exposing that item's feedback, advances only after the durable response, and finalizes one canonical session result.
-  - id: ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001
+  - id: CODING-INTERVIEW-CUSTOM-DEFERRED-FEEDBACK-001
     statement: Custom Practice with atSessionEnd keeps correctness, Reason, Details, and distractor explanations unavailable after every durable per-item submission until its canonical completed result is loaded.
-  - id: ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001
+  - id: CODING-INTERVIEW-CUSTOM-DEFERRED-SUMMARY-001
     statement: A completed Custom Practice atSessionEnd session reloads its complete feedback only from the durable canonical result after application relaunch.
-  - id: ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001
+  - id: CODING-INTERVIEW-CUSTOM-REINSERT-OWNERSHIP-001
     statement: Custom Practice resolves its eligible and skipped conditional reinsert slots only from the profile-owned policy and rejects every learner reinsert override before session preparation.
-  - id: ALGORITHMS-REINSERT-POLICY-001
-    statement: Algorithms reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
+  - id: CODING-INTERVIEW-REINSERT-POLICY-001
+    statement: Coding Interview reinsert permits one eligible incorrect or partial source attempt after at least three intervening durable submissions, preferring a compatible reviewed variant then an exact-source fallback, and skips when no valid slot exists.
   - id: CERTIFICATION-MODE-MATRIX-001
-    statement: Certification exposes exactly seven declared modes, each owned by the certification family and cloud-certification track with explicit contract, implementation, and verification status.
+    statement: Certification exposes exactly seven declared modes, each owned by the certification family and the representative GCP ACE track with an explicit normative learning configuration; implementation and verification status live outside this contract.
   - id: CERTIFICATION-DIAGNOSTIC-BASELINE-001
     statement: Certification Diagnostic Baseline uses its approved shared practice flow with exactly forty unique blueprint items, no selectors, shortening, or reinsert, elapsed foreground time, feedback after each durable response, and a domain breakdown summary.
   - id: CERTIFICATION-FOCUS-PRACTICE-001
@@ -71,43 +71,43 @@ requirements:
   - id: USER-COMMAND-RESUME-001
     statement: Resume is distinct from recover because a user-facing Resume CTA restores an active session, while recover replays a pending durable mutation.
   - id: SIMULATION-SAVE-AND-CONTINUE-001
-    statement: The save-and-continue user action for a non-final Algorithms Interview Simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.
+    statement: The save-and-continue user action for a non-final Coding Interview simulation occurrence is represented by one application command that accepts the active occurrence and a complete response.
   - id: SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001
     statement: Save-and-continue verifies the durable draft revision and persisted response before it advances exactly one occurrence and publishes the verified next simulation projection.
   - id: SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001
     statement: If save-and-continue persists a response but does not verify its advance, it exposes explicit recovery that advances only from the durable response without creating another draft revision.
   - id: SIMULATION-SAVE-AND-CONTINUE-CTA-001
-    statement: Every non-final Algorithms Interview Simulation response CTA is labelled Save and continue, is disabled until complete, and invokes only the save-and-continue application command.
+    statement: Every non-final Coding Interview simulation response CTA is labelled Save and continue, is disabled until complete, and invokes only the save-and-continue application command.
   - id: SIMULATION-FINAL-OCCURRENCE-001
-    statement: At the final Algorithms Interview Simulation occurrence, a changed complete response is saved as a durable draft before the canonical finish confirmation is exposed; an unchanged unanswered final occurrence exposes that same finish confirmation.
+    statement: At the final Coding Interview simulation occurrence, a changed complete response is saved as a durable draft before the canonical finish confirmation is exposed; an unchanged unanswered final occurrence exposes that same finish confirmation.
   - id: SIMULATION-SAVE-AND-JUMP-001
-    statement: The Algorithms Interview Simulation navigator-jump command saves a changed local response as a verified durable draft before it publishes the requested occurrence; a navigator interaction never silently discards that response.
+    statement: The Coding Interview simulation navigator-jump command saves a changed local response as a verified durable draft before it publishes the requested occurrence; a navigator interaction never silently discards that response.
   - id: SIMULATION-RELAUNCH-001
-    statement: After the first Algorithms Interview Simulation response saves and advances, a new composition root restores its durable response, second occurrence, timer checkpoint, and exactly one active session.
+    statement: After the first Coding Interview simulation response saves and advances, a new composition root restores its durable response, second occurrence, timer checkpoint, and exactly one active session.
   - id: SIMULATION-SAVE-AND-CONTINUE-IDEMPOTENCY-001
-    statement: Duplicate concurrent save-and-continue commands for the same active Algorithms Interview Simulation occurrence and response share one durable draft save and one verified advance.
+    statement: Duplicate concurrent save-and-continue commands for the same active Coding Interview simulation occurrence and response share one durable draft save and one verified advance.
   - id: SIMULATION-FULL-LIFECYCLE-001
-    statement: The complete immutable forty-occurrence Algorithms Interview Simulation plan finalizes into one result with forty distinct answered occurrences and no active session or durable draft.
+    statement: The complete immutable forty-occurrence Coding Interview simulation plan finalizes into one result with forty distinct answered occurrences and no active session or durable draft.
   - id: SIMULATION-TIMER-UI-REFRESH-001
-    statement: The visible Algorithms Interview Simulation timer formats the runtime remaining-foreground projection every second without a durable write for each UI refresh.
+    statement: The visible Coding Interview simulation timer formats the runtime remaining-foreground projection every second without a durable write for each UI refresh.
   - id: SIMULATION-TIMER-CHECKPOINT-INTERVAL-001
-    statement: Algorithms Interview Simulation periodic durable checkpoints use the declared fifteen-second interval and one-second maximum drift, producing one durable write per due interval.
+    statement: Coding Interview simulation periodic durable checkpoints use the declared fifteen-second interval and one-second maximum drift, producing one durable write per due interval.
   - id: SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001
-    statement: Leaving Algorithms Interview Simulation foreground durably checkpoints its active segment before background time begins, and background duration never reduces its countdown.
+    statement: Leaving Coding Interview simulation foreground durably checkpoints its active segment before background time begins, and background duration never reduces its countdown.
   - id: SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001
-    statement: Manual Algorithms Interview Simulation finalization durably checkpoints the active foreground segment before it freezes the result, so finalization observes that verified elapsed time.
+    statement: Manual Coding Interview simulation finalization durably checkpoints the active foreground segment before it freezes the result, so finalization observes that verified elapsed time.
   - id: SIMULATION-TIMER-MUTATION-SERIALIZATION-001
-    statement: Algorithms Interview Simulation timer checkpoints, draft saves, and navigation share one mutation lane and do not overwrite a durable draft revision or current position.
+    statement: Coding Interview simulation timer checkpoints, draft saves, and navigation share one mutation lane and do not overwrite a durable draft revision or current position.
   - id: SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001
-    statement: Algorithms Interview Simulation force-close immediately before and after the periodic checkpoint boundary restores only its last verified foreground time within the declared one-second drift bound.
+    statement: Coding Interview simulation force-close immediately before and after the periodic checkpoint boundary restores only its last verified foreground time within the declared one-second drift bound.
   - id: SIMULATION-ACTIVE-SCREEN-FIDELITY-001
-    statement: The approved active Algorithms Interview Simulation screen fills its viewport and presents the timer, counter, active question, save state, and leave/save actions without an inline question navigator.
+    statement: The approved active Coding Interview simulation screen fills its viewport and presents the timer, counter, active question, save state, and leave/save actions without an inline question navigator.
   - id: SIMULATION-NAVIGATOR-FIDELITY-001
-    statement: The approved Algorithms Interview Simulation question navigator exposes exactly forty positions in reading order with current, answered-and-saved, and unanswered states, adapts to four columns at larger text sizes, and labels every position without showing correctness.
+    statement: The approved Coding Interview simulation question navigator exposes exactly forty positions in reading order with current, answered-and-saved, and unanswered states, adapts to four columns at larger text sizes, and labels every position without showing correctness.
   - id: SIMULATION-OPERATION-STATE-ACTIONS-001
-    statement: The approved Algorithms Interview Simulation operation states render only the state and CTA actions returned by the application layer; a save failure may explicitly resume local editing only when no response was durably saved, and no generic retry is rendered.
+    statement: The approved Coding Interview simulation operation states render only the state and CTA actions returned by the application layer; a save failure may explicitly resume local editing only when no response was durably saved, and no generic retry is rendered.
   - id: SIMULATION-ACCESSIBILITY-001
-    statement: Interactive Algorithms Interview Simulation controls provide a 48-point target, navigator errors retain their retry CTA as a separate focusable element, and the navigator removes its transition when the operating system enables Reduce Motion.
+    statement: Interactive Coding Interview simulation controls provide a 48-point target, navigator errors retain their retry CTA as a separate focusable element, and the navigator removes its transition when the operating system enables Reduce Motion.
   - id: SESSION-STATE-MACHINE-001
     statement: Practice and simulation expose only their declared durable operation states and triggered transitions; recovery returns only the state declared for the recovered durable mutation.
   - id: SIMULATION-CONCURRENCY-001
@@ -117,7 +117,31 @@ requirements:
   - id: NARRATIVE-DOCS-CANONICALIZATION-001
     statement: Narrative documents reference the canonical contract and do not maintain competing mode matrices or fixed configuration values.
   - id: DESIGN-REFERENCE-REGISTRY-001
-    statement: User-facing work may be ready only when it names a registered APPROVED design reference.
+    statement: Actual visual work may be approved only by the Product Owner, Figma is temporary design-phase authority, and repository-owned tokens, assets, production components, Storybook, tests, and baselines become operational authority after verified handoff without a production Figma or Storybook dependency.
+  - id: COMMERCIAL-ENTITLEMENT-001
+    statement: Patternly provides permanent Free access and one account-bound Premium entitlement for all Premium content through one monthly and one annual product, with no tiers or track slots and with store, RevenueCat, backend, and bounded-device-cache authority kept distinct.
+  - id: GUEST-FREE-001
+    statement: A local-installation guest reaches meaningful bundled free-node learning without registration, cannot purchase or download Premium, and adopts progress only through preview, explicit confirmation, deterministic reconciliation, and a finish-or-abandon active-session boundary.
+  - id: IDENTITY-SECURITY-001
+    statement: Email/password, Apple, Google, and eight one-time recovery codes resolve to one Firebase UID and Patternly account with proof-based linking, no email-only merge, protected unlinking, recent reauthentication, and session revocation.
+  - id: ENVIRONMENT-PUBLIC-LINKS-001
+    statement: Public, authentication, legal, support, deletion, association, and sender origins are environment-driven; ordinary Firebase action-code expiry is provider-controlled while only the custom public-deletion token is exactly thirty minutes.
+  - id: DEVICE-SESSION-SYNC-001
+    statement: Current track and compact completed learning facts synchronize incrementally, while the active session, pointer, draft, position, timer, and mutation journal are device-owned and never synchronize or resume across devices.
+  - id: PRODUCT-SURFACES-GOALS-001
+    statement: Primary tabs are Today, Practice, Progress, and Settings, Activity is nested under Progress, and per-track goals affect recommendations and cadence without affecting entitlement, locking, scoring, mastery, streaks, or punitive messaging.
+  - id: LEARNING-PRODUCTS-001
+    statement: Certification, coding_interview, and design_interview are internal-only families; ten equal-status target track briefs are required, and no track enters the production registry without a real free vertical and complete core loop.
+  - id: CONTENT-PACKAGES-001
+    statement: Complete Free nodes are bundled and Premium content uses immutable compressed whole-node packages authorized by Cloud Run, checksum and semantic validation, atomic activation, exact session pinning, and active-session-safe cache retention without per-question Firestore fetching or silent substitution.
+  - id: ANALYTICS-REPORTS-001
+    statement: Firebase Analytics and Crashlytics are fail-closed behind privacy and consent, events use a closed redacted vocabulary, and content reports are account-unlinked by default with bounded context, explicit linking consent, retention, and offline retry states.
+  - id: BACKUP-RESTORE-001
+    statement: Production Firestore targets seven-day point-in-time recovery for disaster recovery only, with a restore runbook, sanitized drill, deletion-tombstone reconciliation, and an absolute prohibition on deleted-account resurrection.
+  - id: PLATFORM-RELEASE-001
+    statement: The target release uses Expo SDK 57, iOS 16.4 or later on iPhone only, Android API 28 minimum and API 36 target, portrait, Light Dark and System appearances, 200 percent text scaling, and signed physical-device evidence on both platforms.
+  - id: BRAND-DESIGN-AUTHORITY-001
+    statement: Patternly is one focused flagship brand with subordinate track accents, a controlled 3-to-2-to-1 owner-approved Figma phase, restrained accessible motion and haptics, repository-owned handoff, and CODE_CANONICAL independence from paid Figma.
 requirementTestCoverage:
   version: 1
   tests:
@@ -127,7 +151,7 @@ requirementTestCoverage:
       requirementIds: [CONTRACT-AUTHORITY-001]
     - id: canonical-account-entry-identity
       testPath: tests/canonicalProductContract.test.ts
-      testName: defines the required verified account entry and credential boundaries
+      testName: defines guest-first account entry and credential boundaries
       requirementIds: [ACCOUNT-ENTRY-IDENTITY-001, ACCOUNT-SECURITY-PRIVACY-001, ACCOUNT-PREMARKET-HOSTING-001]
     - id: canonical-account-premarket-hosting
       testPath: tests/firebaseHostingPreMarketPolicy.test.ts
@@ -153,22 +177,22 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: maps every required account and data state to a downstream implementation surface
       requirementIds: [ACCOUNT-SURFACE-MAP-001]
-    - id: canonical-algorithms-mode-matrix
+    - id: canonical-coding-interview-mode-matrix
       testPath: tests/canonicalProductContract.test.ts
-      testName: defines exactly the complete canonical Algorithms mode matrix
-      requirementIds: [ALGORITHMS-MODE-MATRIX-001]
+      testName: defines exactly the complete canonical Coding Interview mode matrix
+      requirementIds: [CODING-INTERVIEW-MODE-MATRIX-001]
     - id: canonical-custom-practice-contract
       testPath: tests/canonicalProductContract.test.ts
-      testName: locks the Custom Practice contract required by ALGORITHMS-CUSTOM-PRACTICE-001
-      requirementIds: [ALGORITHMS-CUSTOM-PRACTICE-001]
+      testName: locks the Custom Practice contract required by CODING-INTERVIEW-CUSTOM-PRACTICE-001
+      requirementIds: [CODING-INTERVIEW-CUSTOM-PRACTICE-001]
     - id: canonical-independent-practice-contract
       testPath: tests/practiceSessionConfig.test.ts
       testName: Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope
-      requirementIds: [ALGORITHMS-INDEPENDENT-PRACTICE-001]
-    - id: algorithms-progress-evidence-contract
+      requirementIds: [CODING-INTERVIEW-INDEPENDENT-PRACTICE-001]
+    - id: coding-interview-progress-evidence-contract
       testPath: tests/homeProgressProjections.test.ts
       testName: Algorithms Progress keeps due review evidence honest and recommendations overridable
-      requirementIds: [ALGORITHMS-PROGRESS-EVIDENCE-001]
+      requirementIds: [CODING-INTERVIEW-PROGRESS-EVIDENCE-001]
     - id: track-presentation-contract
       testPath: tests/trackPresentation.test.ts
       testName: track presentation separates the Certification category from the concrete Google Cloud track
@@ -188,27 +212,27 @@ requirementTestCoverage:
     - id: custom-practice-immediate-feedback-flow
       testPath: tests/customPracticeImmediateFeedback.test.ts
       testName: Custom Practice afterEachAnswer journals each submitted response, exposes immediate feedback, advances, and finalizes one summary
-      requirementIds: [ALGORITHMS-CUSTOM-IMMEDIATE-FEEDBACK-001]
+      requirementIds: [CODING-INTERVIEW-CUSTOM-IMMEDIATE-FEEDBACK-001]
     - id: custom-practice-deferred-feedback-withholding
       testPath: tests/customPracticeDeferredFeedback.test.ts
       testName: Custom Practice atSessionEnd withholds correctness, Reason, Details, and distractor explanations after every submit
-      requirementIds: [ALGORITHMS-CUSTOM-DEFERRED-FEEDBACK-001]
+      requirementIds: [CODING-INTERVIEW-CUSTOM-DEFERRED-FEEDBACK-001]
     - id: custom-practice-deferred-summary-relaunch
       testPath: tests/customPracticeDeferredFeedback.test.ts
       testName: Custom Practice atSessionEnd reloads its complete feedback from the canonical result after relaunch
-      requirementIds: [ALGORITHMS-CUSTOM-DEFERRED-SUMMARY-001]
+      requirementIds: [CODING-INTERVIEW-CUSTOM-DEFERRED-SUMMARY-001]
     - id: custom-practice-reinsert-ownership
       testPath: tests/customPracticeReinsert.test.ts
       testName: Custom Practice resolves eligible and skipped reinserts only from its profile-owned immutable slots
-      requirementIds: [ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001]
+      requirementIds: [CODING-INTERVIEW-CUSTOM-REINSERT-OWNERSHIP-001]
     - id: custom-practice-reinsert-override-rejection
       testPath: tests/customPracticeReinsert.test.ts
       testName: Custom Practice rejects learner reinsert overrides before it prepares a session
-      requirementIds: [ALGORITHMS-CUSTOM-REINSERT-OWNERSHIP-001]
-    - id: canonical-algorithms-reinsert-policy
+      requirementIds: [CODING-INTERVIEW-CUSTOM-REINSERT-OWNERSHIP-001]
+    - id: canonical-coding-interview-reinsert-policy
       testPath: tests/canonicalProductContract.test.ts
-      testName: locks the versioned Algorithms reinsert placement policy
-      requirementIds: [ALGORITHMS-REINSERT-POLICY-001]
+      testName: locks the versioned Coding Interview reinsert placement policy
+      requirementIds: [CODING-INTERVIEW-REINSERT-POLICY-001]
     - id: canonical-certification-mode-matrix
       testPath: tests/canonicalProductContract.test.ts
       testName: defines exactly the complete declared Certification mode matrix
@@ -241,15 +265,15 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines canonical user commands and maps every session CTA to its one application command
       requirementIds: [USER-COMMAND-MODEL-001, USER-COMMAND-RESUME-001]
-    - id: algorithms-save-and-continue-command
+    - id: coding-interview-save-and-continue-command
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-continue is one application command for the active non-final occurrence
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-001]
-    - id: algorithms-save-and-continue-verification
+    - id: coding-interview-save-and-continue-verification
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-continue verifies its durable response revision before publishing occurrence two
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-VERIFICATION-001]
-    - id: algorithms-save-and-continue-recovery
+    - id: coding-interview-save-and-continue-recovery
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-continue recovery advances a durable response without a second draft revision
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-RECOVERY-001]
@@ -261,43 +285,43 @@ requirementTestCoverage:
       testPath: tests/simulationFinalQuestionAction.test.ts
       testName: final simulation action saves an answered response before finish and lets an unanswered final occurrence finish
       requirementIds: [SIMULATION-FINAL-OCCURRENCE-001]
-    - id: algorithms-save-and-jump-command
+    - id: coding-interview-save-and-jump-command
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms save-and-jump durably saves a changed response before publishing the requested occurrence
       requirementIds: [SIMULATION-SAVE-AND-JUMP-001]
-    - id: algorithms-simulation-relaunch
+    - id: coding-interview-simulation-relaunch
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session
       requirementIds: [SIMULATION-RELAUNCH-001]
-    - id: algorithms-save-and-continue-idempotency
+    - id: coding-interview-save-and-continue-idempotency
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: two concurrent Algorithms save-and-continue commands share one durable save and one advance
       requirementIds: [SIMULATION-SAVE-AND-CONTINUE-IDEMPOTENCY-001]
-    - id: algorithms-simulation-full-lifecycle
+    - id: coding-interview-simulation-full-lifecycle
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan
       requirementIds: [SIMULATION-FULL-LIFECYCLE-001]
-    - id: algorithms-simulation-timer-ui-refresh
+    - id: coding-interview-simulation-timer-ui-refresh
       testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: controlled timer refreshes consecutive visible labels without a durable write each second
       requirementIds: [SIMULATION-TIMER-UI-REFRESH-001]
-    - id: algorithms-simulation-timer-checkpoint-interval
+    - id: coding-interview-simulation-timer-checkpoint-interval
       testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: periodic checkpoint uses the declared durable interval with an exact write count
       requirementIds: [SIMULATION-TIMER-CHECKPOINT-INTERVAL-001]
-    - id: algorithms-simulation-timer-background-checkpoint
+    - id: coding-interview-simulation-timer-background-checkpoint
       testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: AppState foreground transitions and force-close recovery never count background or closed-app time
       requirementIds: [SIMULATION-TIMER-BACKGROUND-CHECKPOINT-001]
-    - id: algorithms-simulation-timer-finalization-checkpoint
+    - id: coding-interview-simulation-timer-finalization-checkpoint
       testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: manual finalization checkpoints the active foreground segment before it freezes the result
       requirementIds: [SIMULATION-TIMER-FINALIZATION-CHECKPOINT-001]
-    - id: algorithms-simulation-timer-mutation-serialization
+    - id: coding-interview-simulation-timer-mutation-serialization
       testPath: tests/durableSimulationResponseSave.test.ts
       testName: concurrent timer checkpoint and save-and-continue retain the draft revision and next position
       requirementIds: [SIMULATION-TIMER-MUTATION-SERIALIZATION-001]
-    - id: algorithms-simulation-timer-force-close-boundary
+    - id: coding-interview-simulation-timer-force-close-boundary
       testPath: tests/foregroundSessionTimerFacade.test.ts
       testName: force-close immediately before and after the checkpoint boundary resumes within the declared drift
       requirementIds: [SIMULATION-TIMER-FORCE-CLOSE-BOUNDARY-001]
@@ -327,7 +351,7 @@ requirementTestCoverage:
       requirementIds: [SESSION-STATE-MACHINE-001]
     - id: canonical-simulation-concurrency
       testPath: tests/canonicalProductContract.test.ts
-      testName: locks FIFO serialization for every simulation mutation of one active session
+      testName: locks FIFO serialization for every simulation mutation of one active session per device
       requirementIds: [SIMULATION-CONCURRENCY-001]
     - id: canonical-simulation-timer-cadence
       testPath: tests/canonicalProductContract.test.ts
@@ -339,19 +363,233 @@ requirementTestCoverage:
       requirementIds: [NARRATIVE-DOCS-CANONICALIZATION-001]
     - id: canonical-design-reference-readiness
       testPath: tests/canonicalProductContract.test.ts
-      testName: requires a registered APPROVED design reference before a user-facing task is ready
+      testName: requires Product Owner approval and no inherited target design evidence
       requirementIds: [DESIGN-REFERENCE-REGISTRY-001]
+    - id: canonical-commercial-guest-identity
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines commercial guest and identity target semantics
+      requirementIds: [COMMERCIAL-ENTITLEMENT-001, GUEST-FREE-001, IDENTITY-SECURITY-001, ENVIRONMENT-PUBLIC-LINKS-001]
+    - id: canonical-session-sync-surfaces-products
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines device session sync surface goal and learning-product semantics
+      requirementIds: [DEVICE-SESSION-SYNC-001, PRODUCT-SURFACES-GOALS-001, LEARNING-PRODUCTS-001]
+    - id: canonical-packages-operations-platform
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines package analytics report backup and platform semantics
+      requirementIds: [CONTENT-PACKAGES-001, ANALYTICS-REPORTS-001, BACKUP-RESTORE-001, PLATFORM-RELEASE-001]
+    - id: canonical-brand-design-authority
+      testPath: tests/canonicalProductContract.test.ts
+      testName: defines one brand owner approval and repository handoff semantics
+      requirementIds: [BRAND-DESIGN-AUTHORITY-001]
+commercialEntitlement:
+  freeAccess: permanent
+  premiumProducts: [monthly, annual]
+  entitlement: oneAccountBoundPremiumForAllPremiumContentInAllTracks
+  tiers: prohibited
+  trackSlots: prohibited
+  storeFreeTrialRequired: false
+  purchaseRequires: verifiedPatternlyAccount
+  guestPurchase: prohibited
+  revenueCatAppUserId: stableOpaquePatternlyAccountIdNeverEmail
+  authorityChain: [storeTransaction, revenueCatNormalization, patternlyBackendProjection, boundedDeviceCache]
+  paidDownloadAuthority: patternlyBackendEntitlementOnly
+  crossPlatformPremium: required
+  offlineVerificationGraceDays: 7
+  deviceMayNotAdvanceVerifiedAt: true
+  startedEntitledSessionCompletion: allowedOnStartingDevice
+  downgradeHistory: remainsReadableAndIndependentOfEntitlement
+  restorePurchases: storeThenRevenueCatThenBackendWithExplicitAccountConflict
+  accountDeletionStoreBilling: independentNoAutomaticCancelRefundOrExpiry
+  deletionChoices: [manageSubscription, deleteNow, scheduleAtPaidPeriodEndWhenSupported]
+guestAndFree:
+  guestIdentity: localInstallation
+  firebaseAnonymousAuthentication: prohibited
+  firstLearningValueRequiresAccount: false
+  freeNodePerProductionTrack: exactlyOne
+  completeFreeNodeBundled: required
+  allowedCapabilities: [trackSwitching, goals, attempts, review, activity, progress, settings, offlineLearning]
+  prohibitedCapabilities: [synchronization, crossDeviceRestore, premiumPurchase, premiumPackageDownload, uninstallRecovery]
+  freeSessionContent: freeNodeOnlyWithoutPremiumFiller
+  freeReviewContent: eligibleFreeNodeEvidenceOnly
+  adoption:
+    preview: required
+    confirmation: explicit
+    newEmptyAccountDefault: preserveGuestData
+    discard: explicitDestructiveChoice
+    existingAccount: deterministicLocalVersusAccountPlan
+    silentMergeOrDiscard: prohibited
+    convergenceVerification: requiredBeforeBinding
+    activeGuestSession: finishOrExplicitlyAbandonBeforeAdoption
+identityAndAccountSecurity:
+  methods: [emailPassword, signInWithApple, signInWithGoogle, recoveryCodes]
+  identity: oneFirebaseUidAndOnePatternlyAccount
+  providerLinking: proofThroughExistingUsableMethod
+  automaticMergeByEmail: prohibited
+  unlinkLastUsableMethod: prohibited
+  recoveryCodeCount: 8
+  recoveryCodeStorage: strongHashesAndMetadataOnly
+  recoveryCodeDisplay: once
+  recoveryCodeReuse: prohibited
+  regenerateInvalidatesPriorCodes: true
+  recoverySession: narrowShortLived
+  successfulRecovery: newCredentialOrProviderThenRevokeAllPriorSessions
+  manualSupportTakeoverWithoutMethodOrCode: prohibited
+  passwordAndEmailChange: recentReauthenticationWithNewEmailVerification
+  signOutAllDevices: revokeRefreshTokensAndEnforceRevocationForProtectedApi
+  termsAcceptance: versionedAndSeparateFromAnalyticsConsent
+environmentAndPublicLinks:
+  requiredValues: [publicWebOrigin, authActionOrigin, authRedirectDomain, privacyUrl, termsUrl, supportUrl, publicDeletionUrl, iosAssociatedDomain, androidAppLinkHost, transactionalSenderDomain]
+  defaultFirebaseDomain: developmentAndSandboxOnly
+  productionDomainAndSender: releasePromotionInputs
+  ordinaryFirebaseActionCodes:
+    expiry: providerControlled
+    singleUse: providerControlled
+  publicDeletionPossessionToken:
+    expiryMinutes: 30
+    singleUse: true
+  actionHandlerOutcomes: [valid, expired, alreadyUsed, malformed, rateLimited, remoteFailure]
+  accountEnumeration: prohibited
+learningOwnershipAndSync:
+  currentTrackId: accountOwnedAndSynchronized
+  activeSessionLimit: onePerDeviceAcrossTracks
+  independentActiveSessionsAcrossDevices: allowed
+  crossDeviceActiveSessionResume: prohibited
+  deviceOnlyRecords: [activeSessionPointer, activeSession, draft, currentPosition, foregroundTimer, mutationJournal]
+  deviceOnlyRemoteSync: never
+  mutationOrder: [validate, persistLocalJournal, materializeAndVerifyLocalRecords, clearLocalJournal, enqueueCompactIdempotentOperation, synchronizeOpportunistically]
+  syncTriggers: [coldStart, networkReturn, staleForegroundReturn, terminalSessionEnd, goalChange, currentTrackChange, entitlementUpdate, explicitRetry]
+  backgroundSyncPromise: prohibited
+  transfer: incrementalPaginated
+  bootstrapProjection: [accountProfile, entitlement, currentTrack, goals, perTrackProgress, currentTrackDueReview, recentActivity, revisionCursors]
+  exactHistory: onDemandAndLocallyCached
+  canonicalFacts: [terminalSessionSummary, attempts, results, reviewMutations, stableContentReferences]
+  derivedProjections: rebuildableNeverSoleAuthority
+productSurfacesAndGoals:
+  primaryTabs: [Today, Practice, Progress, Settings]
+  activity: nestedUnderProgress
+  launchLanguage: EnglishOnly
+  languageRoute: absentUntilRealSecondLanguage
+  todayJob: oneMostUsefulExecutableNextAction
+  practiceJob: manualCurrentTrackLearningWorkspace
+  progressJob: evidenceOfHowLearningChanges
+  activityJob: paginatedTerminalSessionHistory
+  manualSessionChoicePrecedence: wins
+  recommendationPriority: [resumeActiveLocalSession, overdueReview, missingWeeklyPlanSession, repeatedHighSignalMistake, continueCurrentNode, nextRoadmapNode]
+  goals:
+    ownership: perTrack
+    invalidTemplates: prohibited
+    affects: [recommendations, weeklyPlanning, reminders, suggestedSessionCadence]
+    doesNotAffect: [entitlement, contentLocking, scoring, mastery, streaks, punitiveMessaging]
+learningProducts:
+  families:
+    ids: [certification, coding_interview, design_interview]
+    userVisible: false
+  targetTracks:
+    - coding-interview-dsa-problem-solving
+    - backend-system-design-interview
+    - object-oriented-design-interview
+    - frontend-system-design-interview
+    - google-cloud-associate-cloud-engineer
+    - aws-certified-solutions-architect-associate
+    - microsoft-azure-administrator-associate-az-104
+    - microsoft-azure-ai-fundamentals-ai-901
+    - hashicorp-terraform-associate-004
+    - kubernetes-cloud-native-associate-kcna
+  targetTrackBriefRequiredFields: [jobToBeDone, targetLearner, internalFamily, taxonomyOutline, freeNodeId, validModes, goalTemplates, progressDimensions, packageContentPlan, launchCommercialGate]
+  productionRegistryAdmission: realFreeVerticalAndCompleteCoreLoop
+  emptyPlaceholderOrComingSoonTracks: prohibited
+  representativeProofsBeforeBroadCopying: required
+  codingInterview:
+    targetFamilyId: coding_interview
+    userFacingName: "Coding Interview: DSA & Problem Solving"
+    permanentAlgorithmsAlias: prohibited
+    migration: atomicOrBoundedPrerequisiteBeforeRegistryAdmission
+    productBoundary: strategyFirstNotOnlineJudge
+    implementationPlanningObjective: mandatory
+contentPackages:
+  freeNodes: bundledComplete
+  premiumUnit: immutableCompressedWholeNodePackage
+  objectStore: cloudStorage
+  manifestStore: firestore
+  authorization: cloudRunIdentityAndBackendEntitlement
+  downloadUrl: shortLivedSigned
+  perQuestionFirestoreFetching: prohibited
+  manifestRequiredFields: [trackId, nodeId, contentReleaseId, packageVersion, schemaVersion, promptLocale, feedbackLocale, itemCount, compressedSize, sha256, immutableObjectIdentityGeneration, minimumAppVersion, publishedAt]
+  publishedMutation: prohibited
+  correction: newObjectAndVersion
+  activationOrder: [temporaryDownload, checksumVerification, schemaValidation, semanticValidation, versionedPersistence, atomicPointerActivation]
+  validationFailure: retainPreviousVerifiedPackage
+  sessionVersionPinning: exact
+  silentVersionSubstitution: prohibited
+  reviewResolution: groupReferencesByPackageAndFetchOnlyMissingVerifiedPackages
+  cacheEviction: neverRemoveActiveSessionPinnedPackage
+  futureLocales: reuseStableEvidenceIdentities
+analyticsAndReports:
+  analyticsProvider: firebaseAnalytics
+  crashProvider: firebaseCrashlytics
+  consentGate: failClosed
+  termsAsAnalyticsConsent: prohibited
+  rawFirestoreEventStream: prohibited
+  eventVocabulary: closed
+  forbiddenEventFields: [email, password, token, promptText, optionText, learnerResponse, reason, details, draft, reportFreeText, rawPrivateException, storePurchaseToken]
+  contentReports:
+    accountLinkDefault: unlinked
+    requiredUserFields: [category, description]
+    automaticContext: [reportId, itemId, releasePackageId, trackNode, modeRoute, locales, appBuild, platform, timestamp]
+    prohibitedAutomaticAttachments: [learnerResponse, fullPrompt, fullFeedback, email, accountId]
+    accountOrContactLink: explicitOptIn
+    ordinaryRawRetentionDays: 30
+    importantRetention: untilFixReleasedPlus30Days
+    identifiableRawMaximumDays: 180
+    offlineStates: [queued, retry, failed, accepted]
+backupAndRestore:
+  firestorePitrDays: 7
+  purpose: disasterRecoveryNotUserAccountRecovery
+  scheduledLongTermExportAtLaunch: prohibited
+  restoreRunbook: required
+  sanitizedSandboxDrill: required
+  deletionTombstoneReconciliation: required
+  deletedAccountResurrection: prohibited
+  localPlatformBackupForCanonicalLearningAndCache: excluded
+platformRelease:
+  expoSdkBeforeFinalFreeze: 57
+  iosMinimum: "16.4"
+  iosDevices: iPhoneOnly
+  ipadSupportClaim: prohibited
+  androidMinimumApi: 28
+  androidTargetApi: 36
+  orientation: portrait
+  appearances: [Light, Dark, System]
+  textScalingPercent: 200
+  evidenceDevices: phonesOnly
+  signedPhysicalDeviceSmoke: [iOS, Android]
+designAuthority:
+  brand: onePatternlyBrand
+  trackIdentity: subordinateAccentsAndSharedGrammarSymbolsNotSubBrands
+  qualityTarget: focusedFlagshipSoloSustainable
+  visualTerritory: dispersedAmbiguityToRecognizedOrderedPattern
+  mark: emergingPThroughStructureAndNegativeSpace
+  illustration: sparseDiagrammaticSharedPrimitives
+  motion: restrainedFunctionalWithReducedMotion
+  haptics: sparseSemanticAfterVerifiedBoundaries
+  figmaSpaces: [PatternlyBrandLab, PatternlyDesignSystem, PatternlyProduct]
+  exploration: threeDirectionsToTwoFinalistsToOneSystem
+  actualVisualApprovalAuthority: productOwnerOnly
+  handoffStates: [FIGMA_DRAFT, FIGMA_REVIEW, FIGMA_APPROVED, IMPLEMENTED, VISUALLY_VERIFIED, HANDED_OFF, CODE_CANONICAL]
+  postHandoffOperationalAuthority: repositoryTokensAssetsProductionComponentsStorybookTestsAndBaselines
+  figmaProductionDependency: prohibited
+  storybookProductionDependency: prohibited
+  storybook: developmentOnlyProductionComponentsTypedFixtures
+  paidFigmaOrdinaryDevelopmentDependencyAfterHandoff: prohibited
 accountData:
   version: 1
   publicLaunchEntry:
-    accountRequired: true
-    identityMethod: verifiedEmailAndPassword
-    canonicalIdentifier: normalizedEmail
-    firstAuthenticatedBootstrapRequiresNetwork: true
-    offlineEntryRequiresSuccessfulAuthenticatedSync: true
-    learningRequiresVerifiedIdentity: true
-    offlineLearningAfterVerifiedBootstrap: allowedForBoundAccount
-    anonymousLearningPath: prohibited
+    firstLearningValueRequiresAccount: false
+    guestIdentity: localInstallation
+    accountRequiredFor: [premiumPurchase, synchronization, restore, crossDeviceContinuity]
+    identityMethods: [emailPassword, signInWithApple, signInWithGoogle, recoveryCodes]
+    canonicalIdentifier: stableOpaquePatternlyAccountId
+    firebaseAnonymousAuthentication: prohibited
   credentials:
     passwordTransmission: tlsOnlyForRegisterSignInResetAndReauthentication
     passwordPersistenceInApp: prohibited
@@ -475,8 +713,8 @@ accountData:
     enumerationPolicy: registerMayReportDuplicateIdentityAndSignInMayReportUnverifiedOnlyAfterValidCredentialButRecoveryAndPublicDeletionNeverRevealAccountExistence
     resendVerificationResult: invalidatesPriorVerificationTokenAndSendsReplacement
     changePendingEmailResult: replacesNormalizedEmailInvalidatesPriorVerificationTokenAndSendsReplacement
-    verificationLink: { transport: verifiedHttpsUniversalLink, tokenKind: verificationPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
-    recoveryLink: { transport: verifiedHttpsUniversalLink, tokenKind: recoveryPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
+    verificationLink: { transport: verifiedHttpsUniversalLink, tokenKind: verificationActionCode, singleUse: providerControlled, expiry: providerControlled }
+    recoveryLink: { transport: verifiedHttpsUniversalLink, tokenKind: recoveryActionCode, singleUse: providerControlled, expiry: providerControlled }
     publicDeletionLink: { transport: verifiedHttpsUniversalLink, tokenKind: publicDeletionPossessionToken, singleUse: true, expiresAfterMinutes: 30 }
   dataAuthority:
     localDurabilityAuthority: canonicalLocalRepositorySet
@@ -492,14 +730,14 @@ accountData:
       - { id: applicationSettings, owner: device, remoteSync: never }
       - { id: notificationSettings, owner: device, remoteSync: never }
       - { id: activeTrack, owner: account, remoteSync: revisioned }
-      - { id: activeSessionReference, owner: account, remoteSync: revisioned }
-      - { id: trainingSession, owner: account, remoteSync: revisioned }
+      - { id: activeSessionReference, owner: device, remoteSync: never }
+      - { id: trainingSession, owner: device, remoteSync: terminalFactsOnly }
       - { id: trainingSessionResult, owner: account, remoteSync: immutableById }
       - { id: trainingAttempt, owner: account, remoteSync: immutableById }
       - { id: reviewQueueEntry, owner: account, remoteSync: revisioned }
-      - { id: simulationDraft, owner: account, remoteSync: revisioned }
-      - { id: foregroundTimer, owner: account, remoteSync: revisioned }
-      - { id: mutationJournal, owner: deviceOperational, remoteSync: materializedWritesOnly }
+      - { id: simulationDraft, owner: device, remoteSync: never }
+      - { id: foregroundTimer, owner: device, remoteSync: never }
+      - { id: mutationJournal, owner: deviceOperational, remoteSync: never }
       - { id: accountDeletionIntent, owner: deviceOperational, remoteSync: never }
     derivedProjections:
       - { id: familyNeutralEvidence, sources: [trainingAttempt, trainingSessionResult, reviewQueueEntry], writable: prohibited, remoteSync: never }
@@ -511,8 +749,7 @@ accountData:
       - { id: populatedLocalEmptyRemote, result: previewThenUploadExactLocalDataset }
       - { id: emptyLocalPopulatedRemote, result: previewThenRestoreExactRemoteDataset }
       - { id: populatedLocalPopulatedRemote, result: previewThenReconcileByRecordPolicy }
-      - { id: activeSessionOnOneSide, result: preserveThatSessionAndRejectSecondActiveSession }
-      - { id: divergentActiveSessions, result: requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft }
+      - { id: activeGuestSession, result: requireFinishOrExplicitAbandonmentBeforeAdoption }
       - { id: divergentRecord, result: applyRecordPolicyOrBlockWithoutMutation }
     recordPolicies:
       immutableDifferentIds: unionAfterPreviewConfirmation
@@ -529,7 +766,7 @@ accountData:
     remoteWritePrecondition: expectedAccountRevision
     staleRevisionResult: fetchRemoteThenDeterministicReplayOrBlockingConflict
     immutableCollisionResult: blockingIntegrityConflict
-    activeSessionConflictResult: explicitSessionChoiceRequired
+    activeSessionConflictResult: notApplicableDeviceOwnedSessionsNeverSync
     remoteFailureResult: retainVerifiedLocalCommitAndPendingOutbox
     retry: explicitOrAutomaticOnNetworkReturnWithoutDuplicateOperation
   offlineAndExpiry:
@@ -591,8 +828,8 @@ accountData:
         failureResult: deletionFailedRetainIntentForLocalCleanupRetry
     retention:
       liveServiceDataAfterVerifiedDeletionDays: 0
-      encryptedBackupMaximumDays: 30
-      backupRestoreIntoLiveService: prohibited
+      encryptedBackupMaximumDays: 7
+      backupRestoreIntoLiveService: controlledDisasterRecoveryWithDeletionTombstoneReconciliation
       minimalDeletionProofDays: 30
       deletionProofFields: [requestId, irreversibleAccountIdHash, requestedAt, completedAt, resultCode]
   surfaces:
@@ -604,7 +841,7 @@ accountData:
     - { id: resetPassword, states: [editing, invalidInput, invalidLink, expiredLink, usedLink, rateLimited, offline, remoteFailure, success] }
     - { id: sessionExpiredReauthentication, states: [required, invalidCredential, revokedSession, rateLimited, offline, remoteFailure] }
     - { id: accountProfile, states: [ready, offline, remoteFailure, journalRecoveryFailure] }
-    - { id: dataAdoption, states: [preview, uploading, restoring, activeSessionChoice, integrityConflict, adoptionConflict, offline, remoteFailure, completed] }
+    - { id: dataAdoption, states: [preview, uploading, restoring, integrityConflict, adoptionConflict, offline, remoteFailure, completed] }
     - { id: syncStatus, states: [initialSyncRequired, syncing, synced, offlinePending, conflict, failed, deletionPending, offline, remoteFailure, journalRecoveryFailure, localDeletionFailure, remoteAccountDeleted] }
     - { id: signOut, states: [confirm, journalRecoveryFailure, pendingSyncRequiresNetwork, exportRequired, deletingLocal, localDeletionFailure, completed] }
     - { id: deleteAccount, states: [scopeConfirmation, journalRecoveryFailure, reauthenticationRequired, deleting, rateLimited, offline, remoteFailure, deletionVerificationFailure, completed] }
@@ -618,20 +855,7 @@ accountData:
       operations: [requestId, boundedErrorCode, clientTimestamp]
     transport: authenticatedTls
     emailDelivery: transactionalOnlyWithRateLimitAndNonEnumeratingRecoveryResponse
-    transactionalEmailProcessor:
-      provider: resend
-      plan: free
-      environmentScope: ownerOnlySandbox
-      purpose: publicDeletionPossessionLinkDeliveryOnly
-      retainedData: transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs
-      processorCopyFields: [recipientNormalizedEmail, publicDeletionPossessionToken]
-      processorCopyLocations: [messageContent, deliveryRecords, apiRecords]
-      maximumRetentionDays: 30
-      storageRegion: UnitedStates
-      liveAccountDataAuthority: prohibited
-      backupClassification: prohibited
     patternlyControlledLogExclusions: [password, accessToken, refreshToken, verificationToken, recoveryToken, publicDeletionPossessionToken, normalizedEmail, learnerResponse, promptText, explanationText, draftPayload, attemptPayload, reviewPayload, progressPayload, journalPayload, exportPayload, deletionIntentPayload]
-    honestLimitations: [mechanismsNotImplemented, publicHostingUnavailableUntilMarketPromotion, signedBuildNotVerified, legalAndStoreDisclosuresNotPublished]
 userCommands:
   commands:
     - id: submit
@@ -748,7 +972,7 @@ sessionStateMachine:
       - { from: abandonment_recovery_required, trigger: reconstruct, condition: journal_status_materialized, to: verifying }
       - { from: abandonment_recovery_required, trigger: reconstruct, condition: journal_status_verified_pending_clear, to: verified_pending_clear }
 simulationConcurrency:
-  scope: oneActiveSession
+  scope: oneActiveSessionPerDevice
   queueDiscipline: fifo
   maxInFlight: 1
   revalidateActiveSessionAtExecution: true
@@ -761,89 +985,9 @@ simulationTimerCadence:
   maxDurableCheckpointDriftMs: 1000
   lifecycleCheckpoints: [foreground-enter, foreground-leave, draft-save, finalization, expiry]
 designReferences:
-  version: 1
-  references:
-    - id: algorithms-active-simulation-screen
-      screenStateTarget: algorithms-interview-simulation-active-question
-      patternPath: docs/designs/algorithms_active_simulation/active-simulation-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: algorithms-simulation-question-navigator
-      screenStateTarget: algorithms-interview-simulation-question-navigator
-      patternPath: docs/designs/algorithms_simulation_navigator/simulation-navigator-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: algorithms-simulation-operational-states
-      screenStateTarget: algorithms-interview-simulation-operational-states
-      patternPath: docs/designs/algorithms_simulation_operational_states/simulation-operational-states-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: certification-exam-active-screen
-      screenStateTarget: certification-exam-active-question
-      patternPath: docs/designs/algorithms_active_simulation/active-simulation-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: certification-exam-question-navigator
-      screenStateTarget: certification-exam-question-navigator
-      patternPath: docs/designs/algorithms_simulation_navigator/simulation-navigator-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: certification-exam-operational-states
-      screenStateTarget: certification-exam-operational-states
-      patternPath: docs/designs/algorithms_simulation_operational_states/simulation-operational-states-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: shared-practice-flow-001
-      screenStateTarget: non-simulation-practice-setup-runner-summary
-      patternPath: docs/designs/algorithms_custom_practice/custom-practice-flow-reference.png
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: focus-lab-core-shell-001
-      screenStateTarget: quiet-layered-core-journey-and-shared-shell
-      patternPath: docs/designs/product-direction-options/DESIGN.md
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-    - id: account-lifecycle-001
-      screenStateTarget: account-lifecycle-complete-surface-state-matrix
-      patternPath: docs/designs/account_lifecycle/DESIGN.md
-      version: 1
-      approvalStatus: APPROVED
-      owner: product-owner
-  uiOwnership:
-    - sourcePathPrefix: src/features/algorithms/session/
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/features/simulation/
-      designReferenceId: algorithms-active-simulation-screen
-    - sourcePathPrefix: src/features/simulation/navigator/
-      designReferenceId: algorithms-simulation-question-navigator
-    - sourcePathPrefix: src/features/simulation/operation/
-      designReferenceId: algorithms-simulation-operational-states
-    - sourcePathPrefix: src/features/exam/
-      designReferenceId: certification-exam-active-screen
-    - sourcePathPrefix: src/features/practice/
-      designReferenceId: shared-practice-flow-001
-    - sourcePathPrefix: src/components/
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/features/home/
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/features/navigation/
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/features/review/
-      designReferenceId: shared-practice-flow-001
-    - sourcePathPrefix: src/content/application/ContentPreparationGate.tsx
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/navigation/
-      designReferenceId: focus-lab-core-shell-001
-    - sourcePathPrefix: src/preferences/
-      designReferenceId: focus-lab-core-shell-001
+  version: 2
+  references: []
+  uiOwnership: []
 simulationOperationStateCtas:
   version: 1
   policies:
@@ -862,10 +1006,10 @@ simulationOperationStateCtas:
     - id: finalization-recovery-required
       operationStates: [finalization_journal_failed, materialization_failed, verification_failed, recovery_required]
       allowedCtaIds: [simulation-finish, simulation-recover]
-algorithms:
+codingInterview:
   customPractice:
-    modeId: algorithms-custom-practice
-    contentBlueprintModeId: algorithms-guided-practice
+    modeId: coding-interview-custom-practice
+    contentBlueprintModeId: coding-interview-guided-practice
     mentalUnitSelection: explicit
     reinsertOwnership: profile
     lifecycle: sharedOneActiveSession
@@ -877,7 +1021,7 @@ algorithms:
     variantSelectionOrder: [compatibleReviewedVariant, exactSourceFallback]
     missingValidSlot: skip
   modes:
-    - id: algorithms-learn-approach
+    - id: coding-interview-learn-approach
       label: Learn Approach
       lengths:
         default: 10
@@ -890,7 +1034,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: false
-    - id: algorithms-guided-practice
+    - id: coding-interview-guided-practice
       label: Guided Practice
       lengths:
         default: 20
@@ -903,7 +1047,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: true
-    - id: algorithms-custom-practice
+    - id: coding-interview-custom-practice
       label: Custom Practice
       lengths:
         default: 20
@@ -916,7 +1060,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: true
-    - id: algorithms-recognize-patterns
+    - id: coding-interview-recognize-patterns
       label: Recognize Patterns
       lengths:
         default: 20
@@ -929,7 +1073,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: false
-    - id: algorithms-contrast-practice
+    - id: coding-interview-contrast-practice
       label: Contrast Practice
       lengths:
         default: 20
@@ -942,7 +1086,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: false
-    - id: algorithms-weak-area-review
+    - id: coding-interview-weak-area-review
       label: Weak Area Review
       lengths:
         default: 10
@@ -955,7 +1099,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: true
-    - id: algorithms-independent-practice
+    - id: coding-interview-independent-practice
       label: Independent Practice
       lengths:
         default: 10
@@ -968,7 +1112,7 @@ algorithms:
       timer:
         kind: elapsedForeground
       reinsert: false
-    - id: algorithms-interview-simulation
+    - id: coding-interview-simulation
       label: Interview Simulation
       lengths:
         default: 40
@@ -989,10 +1133,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: []
         sessionLength: 40
@@ -1009,10 +1149,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: [topic, sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1029,10 +1165,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: [competency, sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1049,10 +1181,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: [sessionLength]
         sessionLengths: [10, 20]
@@ -1069,10 +1197,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: [sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1089,10 +1213,6 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified
       configuration:
         setupControls: []
         sessionLength: 10
@@ -1109,7 +1229,3 @@ certification:
       owner:
         familyId: certification
         trackId: cloud-certification
-      status:
-        contract: declared
-        implementation: available
-        verification: verified

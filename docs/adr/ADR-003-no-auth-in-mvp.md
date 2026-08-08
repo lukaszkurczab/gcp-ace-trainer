@@ -1,17 +1,18 @@
 # ADR-003 — No Auth in MVP
 
-Status: **Superseded for public launch by PO-017 (2026-07-31)**
+Status: **Superseded for public launch by PO-036 and PO-040 (2026-08-08)**
 Data: 2026-06-26
 
 > Historical decision for the earlier MVP scope. The current repository still
-> implements this local-only model, but the owner now requires registration,
-> sign-in and the full account lifecycle before public launch. The replacement
+> implements much of this historical local-only model. The target is guest-first:
+> registration does not block first learning value, but verified identity is
+> required for Premium, sync, restore and cross-device continuity. The replacement
 > account/data architecture is now normative in
 > [`../canonical-product-contract.yaml`](../canonical-product-contract.yaml)
-> and documented by Task 1 in
-> [`../launch-completion-plan.md`](../launch-completion-plan.md). This ADR must
+> and traced in
+> [`../product-owner-decision-register.md`](../product-owner-decision-register.md). This ADR must
 > not be used to omit account work or to describe the historical local-only
-> scope as the public-launch target.
+> scope as the public-launch target or to add an account wall before first value.
 
 ## Kontekst
 

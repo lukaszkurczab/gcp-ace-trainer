@@ -11,7 +11,7 @@ Certification modes, their availability, and all session configuration are resol
 
 ## Certification track instances
 
-Certification is one reusable family runtime, not a separate runner per exam. GCP ACE is the initial track instance. Future examples such as Azure AI Fundamentals and AWS Solutions Architect Associate must be added through track metadata, taxonomy, blueprint, `ExamExperienceProfile`, content manifest, and authored content.
+Certification is one internal reusable family runtime, not a learner-visible category and not a separate runner per exam. GCP ACE is the representative reference track. AWS Solutions Architect Associate is the second target proof that must reuse the family without new shared lifecycle code. Other target certification tracks use the same admission boundary through track metadata, taxonomy, blueprint, `ExamExperienceProfile`, bundled Free node, package manifest, and reviewed authored content.
 
 Adding a certification track must not require:
 
@@ -29,7 +29,7 @@ Evidence separates volume, learning-stage evidence, and performance signals. The
 
 Every instructional choice item has a concise `Reason`, complete collapsed `Details`, and a meaningful explanation for each active wrong option keyed by stable option ID. Details remains available after correct, partial, and incorrect attempts. Content must explain the scenario requirement, relevant service/property, expected decision, selected wrong reasoning where applicable, and transfer boundary. Human technical/editorial review is required.
 
-Review stores source item reference and competency/topic/skill evidence. It may be triggered by incorrect, partial, supported hint use, wrong pattern, wrong strategy, complexity error, repeated mistake, scheduled retrieval, weak taxonomy area, or manual marking. It resolves only through two successful after-due review attempts. Correct content in place; do not retain obsolete content or historical explanation reconstruction.
+Review stores stable source item/package reference and competency/topic/skill evidence. It may be triggered by incorrect, partial, supported hint use, wrong pattern, wrong strategy, complexity error, repeated mistake, scheduled retrieval, weak taxonomy area, or manual marking. It resolves only through two successful after-due review attempts. Correct canonical source and publish a new immutable version; do not mutate published packages or reconstruct historical explanations against current content.
 
 ## Exam Simulation
 

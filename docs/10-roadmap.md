@@ -2,31 +2,34 @@
 
 ## Purpose
 
-This is a capability roadmap, not an implementation recovery plan. `docs/launch-completion-plan.md` remains the sole source of repository implementation sequencing and stage status until its controlled regeneration in Directive 3. Retained audits and reports are historical evidence, never current product or execution authority.
+This is a capability dependency map, not task sequencing or repository status. `launch-completion-plan.md`, regenerated only in Directive 3, owns execution order.
 
-## Capability order
+## Capability progression
 
-1. **Canonical learning contract** — shared session, attempt, scoring, review, evidence, explicit error, and deletion rules.
-2. **Canonical local persistence** — MMKV infrastructure, repositories, durable journal, one active session, resume/abandon behavior, and deletion of old local state paths.
-3. **Algorithms practice** — the seven canonical modes, mental-unit content, adjacent ordering, content-defined complexity, compatible shortened review, and constrained reinsert.
-4. **Certification practice** — the seven certification modes, competency remediation, authored distractor feedback, and two-level review evidence.
-5. **Profile-driven simulation** — versioned `ExamExperienceProfile`, official-source provenance, exact navigation/timeout/resume/final-review behavior.
-6. **Evidence and recommendation** — deterministic family-specific recommendation, explained next action, and visible metrics only when actionable.
-7. **Content quality hardening** — full Details narratives, distractor coverage, editorial review, stable source maintenance, and correction in place.
-8. **Experience hardening** — accessibility, failure states, mobile interaction design, and contract-level verification.
+1. **Contract and architecture foundation** — one executable product contract, guest/local/account ownership, one learning lifecycle, one persistence path and explicit provider boundaries.
+2. **Guest Free vertical** — guest-first entry, track/goal selection, complete bundled free nodes, strict Free filtering, offline attempts/review/Progress/Activity and no account wall before value.
+3. **Account adoption and identity security** — deterministic guest adoption, email/password, Apple, Google, recovery codes, reauthentication, revocation, Terms and public action handling.
+4. **Device-session incremental sync** — local journal-first operations, device-owned active sessions, compact idempotent outbox, cursors/pagination, rebuildable projections and on-demand history.
+5. **Commercial entitlement** — monthly/annual Premium, RevenueCat/backend authority, restore/conflict, downgrade and seven-day offline verification grace.
+6. **Immutable remote packages** — bundled free nodes, whole-node Premium packages, authorization, signed URLs, checksum/schema/semantic verification, atomic activation, version pinning and safe eviction.
+7. **Deletion, consent and operational visibility** — truthful subscription/deletion, analytics/crash fail-closed consent, bounded content reports and processor/retention disclosure.
+8. **Backup and restore safety** — production seven-day PITR target, runbook, sanitized drill, deletion reconciliation and no resurrection.
+9. **Brand and visual foundation** — one Patternly brand, landscape/anti-reference audit, Figma 3→2→1 exploration and Product Owner approval of actual visual work.
+10. **Repository design authority** — tokens/assets, development-only Storybook, production components/states, visual/accessibility evidence, release exclusion and verified Figma-to-code handoff.
+11. **Vertical product closure** — Today, Practice, runners/simulations, Progress/nested Activity, Settings, account/adoption, Premium, packages/offline, reports, deletion and public surfaces each complete through design, code and device evidence.
+12. **Representative family proofs** — GCP ACE, Coding Interview, Backend System Design, a second Certification track and a second Design Interview track prove reuse before broad copying.
+13. **Ten-track content expansion** — complete briefs, taxonomies, free nodes, package plans, reviewed content and publishing evidence; no placeholder admission or filler counts.
+14. **Platform/public/store hardening** — Expo SDK 57, target mobile matrix, links/domain/sender/legal/support surfaces, perceived quality, accessibility, performance, store assets, signing and physical-device evidence.
+15. **Release closure** — clean signed artifacts, production provider/store state, complete gates, whole-product audit and explicit GO/NO-GO.
 
+## Parallelism and dependencies
 
-## Extensibility validation after the canonical product
+Nonvisual kernel, persistence, server, sync and package work may proceed during brand exploration when it does not commit a new presentation. Significant new or rewritten UI waits for the applicable owner-approved Figma state. Storybook/token implementation starts after sufficient final visual direction exists.
 
-Certification and Algorithms are the initial families, not the final catalogue. After the canonical two-family product is stable, extensibility is validated in two steps before broader expansion:
+Backend entitlement precedes Premium package authorization. Package integrity precedes remote-content sessions. Privacy/consent precedes analytics or crash collection. Representative family proofs precede broad track/content copying. Platform migration occurs before final design/device freeze. Final Figma independence occurs after implementation and visual verification, not before.
 
-1. **Existing-family proof** — add a second certification instance such as Azure AI Fundamentals without changing the shared kernel, persistence, session shell, or Certification family runtime contracts.
-2. **New-family proof** — add a deterministic non-certification family such as SQL and Data Reasoning with family-owned handlers while preserving the same lifecycle, attempts, review envelopes, journal, repositories, and error model.
+External domains, provider/store records, billing, PITR mutation, signing and submissions are explicit gates. They do not block unrelated local work unless technically required.
 
-Further candidates are AWS Solutions Architect Associate within Certification, Debugging and Code Review within a `code_reasoning` family, and Backend System Design within a `system_design` family. These are future candidates used to test architecture breadth, not committed roadmap capabilities.
+## Exit condition
 
-The product must not prebuild empty runtimes, placeholder taxonomies, inactive flags, or generic payload types for these candidates. A future family is introduced only with a complete canonical contract, content model, tests, UI design, and active content.
-
-## Product exit criteria
-
-A capability is complete only when its canonical contract, tests, UI design, content validation, and explicit error behaviour agree. The product does not use hidden substitutes or preserve an obsolete path merely to make a flow appear complete.
+Product completion requires verified behavior, obsolete-path deletion, applicable owner approvals, iOS/Android physical-device evidence, truthful public/store assets and clean signed-artifact smoke. A contract edit, Figma frame, Storybook render, screenshot, compile or partial test suite is not release completion.

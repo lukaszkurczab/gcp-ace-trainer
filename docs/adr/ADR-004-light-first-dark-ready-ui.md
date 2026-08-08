@@ -1,13 +1,16 @@
 # ADR-004 — Light-first, Dark-ready UI
 
-Status: **Superseded by ADR-005**
+Status: **Superseded by ADR-005; final appearance target now PO-052/054/055**
 Data: 2026-06-26
 
 ## Supersession note
 
 Ta decyzja opisuje wcześniejszy kierunek UI dla pierwszej wersji GCP/certification-focused. Po zmianie produktu na wielotrackowe Patternly kanoniczny kierunek wizualny jest opisany w `ADR-005-dark-first-focus-lab-ui.md`.
 
-ADR-004 pozostaje historycznym kontekstem. Nie należy używać `light-first` ani `dark mode later` jako aktywnej wytycznej dla dalszych prac nad Patternly.
+ADR-004 pozostaje historycznym kontekstem. Nie należy używać `light-first` ani
+`dark mode later` jako aktywnej wytycznej. Target ma kompletne Light, Dark i
+System, z Dark jako primary brand expression, zatwierdzane i przekazywane według
+nowego lifecycle.
 
 ## Kontekst
 

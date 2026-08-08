@@ -35,8 +35,11 @@ docs/
   12-testing-strategy.md
   13-risk-register.md
   15-certification-track-learning-system.md
-  16-leetcode-like-learning-system.md
+  16-coding-interview-learning-system.md
   17-training-runtime-and-interaction-spec.md
+  canonical-product-contract.yaml
+  canonical-product-contract.schema.json
+  product-owner-decision-register.md
   launch-completion-plan.md
   launch-surface-inventory.md
   competitive-product-gap-audit.md
@@ -59,13 +62,25 @@ docs/
 
 ## Authority
 
-`canonical-product-contract.yaml` jest jedynym normatywnym kontraktem zachowania produktu. Dokumenty `00`–`13` oraz `15`–`17` są narracyjne i nie mogą go nadpisywać. `docs/launch-completion-plan.md` pozostaje jedynym dokumentem kolejności wykonania do jego regeneracji w Directive 3; przed kolejną pracą wykonawczą Directive 2 uzgadnia kontrakt i dokumentację.
+Hierarchia autorytetu jest jednoznaczna:
+
+1. `canonical-product-contract.yaml` — normatywne zachowanie produktu i polityki przekrojowe;
+2. `product-owner-decision-register.md` — decyzje właściciela, uzasadnienie i historia supersession;
+3. dokumenty `00`–`13` oraz `15`–`17` — narracyjni/domain owners, którzy nie mogą nadpisać kontraktu;
+4. ADR-y — historia lub aktywne decyzje techniczne, nigdy product authority ani sequencing;
+5. `launch-completion-plan.md` — wyłącznie implementation order i repository status, zamrożone do regeneracji w Directive 3;
+6. raporty, audyty, Figma references, screenshoty i QA artifacts — dowody.
 
 `docs/directives/` zawiera zweryfikowaną pięcioplikową paczkę wejściową Product Ownera. Directive 1/2/3 kontrolują zakres kolejnych faz, a dwa dokumenty właścicielskie kontrolują decyzje zgodnie z zapisaną w dyrektywach hierarchią. Same pliki wejściowe nie są drugim normatywnym kontraktem produktu: Directive 2 ma przenieść ich decyzje do właściwych canonical owners.
 
 `launch-surface-inventory.md`, `competitive-product-gap-audit.md` oraz `launch-readiness-audit.md` są oznaczonymi, historycznymi wejściami dowodowymi do Directive 2. Nie są bieżącym źródłem produktu, statusu, gate'ów ani kolejności wykonania.
 
-ADR-y zachowują historyczne decyzje techniczne, ale nie tworzą drugiego planu wykonawczego i nie zastępują kanonicznych kontraktów. Artefakty audytowe oraz materiały projektowe są dowodami lub referencjami wizualnymi, nie źródłami kontraktu ani kolejności wykonania.
+Figma jest przejściowym visual authority wyłącznie podczas aktywnej fazy
+designu i tylko Product Owner może zatwierdzić realną pracę wizualną. Po
+zweryfikowanym handoffie do `CODE_CANONICAL` operational authority przechodzi
+do repozytorium: tokenów, assets, production components, Storybooka, testów i
+checked-in baselines. Ani Figma, ani Storybook nie są product-behavior lub
+execution authority; Storybook nie może wejść do release bundle.
 
 ## Najważniejsza zasada produktu
 
@@ -75,4 +90,4 @@ Każda funkcja powinna przejść przez pytanie:
 
 > Czy ta funkcja realnie poprawia aktywną praktykę, diagnozę błędów, rozpoznawanie wzorców albo decyzję użytkownika, co ćwiczyć dalej?
 
-Jeżeli nie, nie trafia do MVP.
+Jeżeli nie, nie trafia do produktu.

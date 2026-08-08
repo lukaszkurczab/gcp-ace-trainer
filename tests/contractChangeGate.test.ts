@@ -5,6 +5,12 @@ import { changedPathsFromNameStatus, evaluateContractChangeGate } from "../scrip
 import { loadCanonicalProductContract, type CanonicalProductContract } from "../scripts/validateCanonicalProductContract";
 
 const contractPath = "docs/canonical-product-contract.yaml";
+const contractCompanionPaths = [
+  contractPath,
+  "docs/canonical-product-contract.schema.json",
+  "scripts/validateCanonicalProductContract.ts",
+  "tests/canonicalProductContract.test.ts",
+] as const;
 const requirementId = "CONTRACT-CHANGE-GATE-001";
 const requirementDiff = `+  - id: ${requirementId}\n`;
 
@@ -49,142 +55,81 @@ test("enforces contract changes for behavior changes", () => {
   ]);
 
   const validNonUiChange = evaluateContractChangeGate({
-    changedPaths: ["src/application/newBehavior.ts", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/application/newBehavior.ts", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(),
   });
   assert.deepEqual(validNonUiChange, []);
 });
 
+test("requires schema parser and focused tests for every canonical contract change", () => {
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [contractPath],
+    canonicalContractDiff: requirementDiff,
+    contract: loadCanonicalProductContract(),
+  }), [
+    "Canonical contract change requires docs/canonical-product-contract.schema.json to change.",
+    "Canonical contract change requires scripts/validateCanonicalProductContract.ts to change.",
+    "Canonical contract change requires tests/canonicalProductContract.test.ts to change.",
+  ]);
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: contractCompanionPaths,
+    canonicalContractDiff: requirementDiff,
+    contract: loadCanonicalProductContract(),
+  }), []);
+});
+
 test("requires an approved design reference only for UI behavior changes", () => {
   const withoutDesign = evaluateContractChangeGate({
-    changedPaths: ["src/features/NewScreen.tsx", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/features/NewScreen.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(),
   });
-  assert.deepEqual(withoutDesign, ["UI change requires an APPROVED design reference mapped to src/features/NewScreen.tsx."]);
+  assert.deepEqual(withoutDesign, ["UI change requires a Product Owner APPROVED design reference mapped to src/features/NewScreen.tsx."]);
 
   const unrelatedDesign = evaluateContractChangeGate({
-    changedPaths: ["src/features/NewScreen.tsx", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/features/NewScreen.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(true, "src/components/"),
   });
-  assert.deepEqual(unrelatedDesign, ["UI change requires an APPROVED design reference mapped to src/features/NewScreen.tsx."]);
+  assert.deepEqual(unrelatedDesign, ["UI change requires a Product Owner APPROVED design reference mapped to src/features/NewScreen.tsx."]);
 
   const withDesign = evaluateContractChangeGate({
-    changedPaths: ["src/features/NewScreen.tsx", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/features/NewScreen.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(true),
   });
   assert.deepEqual(withDesign, []);
+
+  const codexApprovedContract = contractWithGateEvidence(true);
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: ["src/features/NewScreen.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
+    canonicalContractDiff: requirementDiff,
+    contract: {
+      ...codexApprovedContract,
+      designReferences: {
+        ...codexApprovedContract.designReferences,
+        references: codexApprovedContract.designReferences.references.map((reference) => ({ ...reference, owner: "codex" })),
+      },
+    },
+  }), ["UI change requires a Product Owner APPROVED design reference mapped to src/features/NewScreen.tsx."]);
 
   for (const [changedPath, sourcePathPrefix] of [
     ["src/assets/icons/home.svg", "src/assets/"],
     ["src/content/application/ContentPreparationGate.tsx", "src/content/application/ContentPreparationGate.tsx"],
   ] as const) {
     assert.deepEqual(evaluateContractChangeGate({
-      changedPaths: [changedPath, contractPath, "tests/contractChangeGate.test.ts"],
+      changedPaths: [changedPath, ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
       canonicalContractDiff: requirementDiff,
       contract: contractWithGateEvidence(true, sourcePathPrefix),
     }), [], changedPath);
   }
 
   assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: ["src/features/foobar/Screen.tsx", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/features/foobar/Screen.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(true, "src/features/foo/"),
-  }), ["UI change requires an APPROVED design reference mapped to src/features/foobar/Screen.tsx."]);
-});
-
-test("maps deleted and retained shared feature navigation UI to the approved shell reference", () => {
-  const contract = loadCanonicalProductContract();
-  const ownership = contract.designReferences.uiOwnership.find(
-    (candidate) => candidate.sourcePathPrefix === "src/features/navigation/",
-  );
-  assert.deepEqual(ownership, {
-    sourcePathPrefix: "src/features/navigation/",
-    designReferenceId: "focus-lab-core-shell-001",
-  });
-
-  const reference = contract.designReferences.references.find(
-    (candidate) => candidate.id === ownership?.designReferenceId,
-  );
-  assert.equal(reference?.approvalStatus, "APPROVED");
-
-  const contractWithRequirement = {
-    ...contract,
-    requirements: [...contract.requirements, { id: requirementId, statement: "Gate fixture requirement." }],
-    requirementTestCoverage: {
-      ...contract.requirementTestCoverage,
-      tests: [...contract.requirementTestCoverage.tests, {
-        id: "contract-change-gate-navigation-fixture",
-        testPath: "tests/contractChangeGate.test.ts",
-        testName: "maps deleted and retained shared feature navigation UI to the approved shell reference",
-        requirementIds: [requirementId],
-      }],
-    },
-  } satisfies CanonicalProductContract;
-
-  assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: [
-      "src/features/navigation/AppStackHeader.tsx",
-      "src/features/navigation/AppBottomNavigation.tsx",
-      contractPath,
-      "tests/contractChangeGate.test.ts",
-    ],
-    canonicalContractDiff: requirementDiff,
-    contract: contractWithRequirement,
-  }), []);
-});
-
-test("maps only the exact content preparation gate file while directory ownership still uses boundaries", () => {
-  const contract = loadCanonicalProductContract();
-  const ownership = contract.designReferences.uiOwnership.find(
-    (candidate) => candidate.sourcePathPrefix === "src/content/application/ContentPreparationGate.tsx",
-  );
-  assert.deepEqual(ownership, {
-    sourcePathPrefix: "src/content/application/ContentPreparationGate.tsx",
-    designReferenceId: "focus-lab-core-shell-001",
-  });
-
-  const contractWithRequirement = {
-    ...contract,
-    requirements: [...contract.requirements, { id: requirementId, statement: "Gate fixture requirement." }],
-    requirementTestCoverage: {
-      ...contract.requirementTestCoverage,
-      tests: [...contract.requirementTestCoverage.tests, {
-        id: "contract-change-gate-exact-ui-fixture",
-        testPath: "tests/contractChangeGate.test.ts",
-        testName: "maps only the exact content preparation gate file while directory ownership still uses boundaries",
-        requirementIds: [requirementId],
-      }],
-    },
-  } satisfies CanonicalProductContract;
-  const evidencePaths = [contractPath, "tests/contractChangeGate.test.ts"];
-
-  assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: ["src/content/application/ContentPreparationGate.tsx", ...evidencePaths],
-    canonicalContractDiff: requirementDiff,
-    contract: contractWithRequirement,
-  }), []);
-
-  for (const changedPath of [
-    "src/content/application/validateBundledContent.ts",
-    "src/content/application/ContentPreparationGate.tsx.bak",
-    "src/content/application/ContentPreparationGate.tsxSuffix",
-  ]) {
-    assert.deepEqual(evaluateContractChangeGate({
-      changedPaths: [changedPath, ...evidencePaths],
-      canonicalContractDiff: requirementDiff,
-      contract: contractWithRequirement,
-    }), [`UI change requires an APPROVED design reference mapped to ${changedPath}.`], changedPath);
-  }
-
-  assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: ["src/features/NewScreen.tsx", ...evidencePaths],
-    canonicalContractDiff: requirementDiff,
-    contract: contractWithGateEvidence(true, "src/features/"),
-  }), []);
+  }), ["UI change requires a Product Owner APPROVED design reference mapped to src/features/foobar/Screen.tsx."]);
 });
 
 test("prefers a longer exact-file UI owner over a matching directory owner", () => {
@@ -213,7 +158,7 @@ test("prefers a longer exact-file UI owner over a matching directory owner", () 
   };
 
   assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: ["src/content/application/ContentPreparationGate.tsx", contractPath, "tests/contractChangeGate.test.ts"],
+    changedPaths: ["src/content/application/ContentPreparationGate.tsx", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: contractWithCompetingOwners,
   }), []);

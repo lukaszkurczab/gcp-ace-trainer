@@ -6,17 +6,17 @@ import { parseDocument } from "yaml";
 
 import schema from "../docs/canonical-product-contract.schema.json";
 
-export type CanonicalAlgorithmModeId =
-  | "algorithms-learn-approach"
-  | "algorithms-guided-practice"
-  | "algorithms-custom-practice"
-  | "algorithms-recognize-patterns"
-  | "algorithms-contrast-practice"
-  | "algorithms-weak-area-review"
-  | "algorithms-independent-practice"
-  | "algorithms-interview-simulation";
+export type CanonicalCodingInterviewModeId =
+  | "coding-interview-learn-approach"
+  | "coding-interview-guided-practice"
+  | "coding-interview-custom-practice"
+  | "coding-interview-recognize-patterns"
+  | "coding-interview-contrast-practice"
+  | "coding-interview-weak-area-review"
+  | "coding-interview-independent-practice"
+  | "coding-interview-simulation";
 
-export type CanonicalAlgorithmModeLabel =
+export type CanonicalCodingInterviewModeLabel =
   | "Learn Approach"
   | "Guided Practice"
   | "Custom Practice"
@@ -173,19 +173,19 @@ export type CanonicalAlgorithmScope =
   | "declaredInterleavedScope"
   | "fixedSimulationBlueprint";
 
-export type CanonicalAlgorithmTimer =
+export type CanonicalCodingInterviewTimer =
   | Readonly<{ kind: "elapsedForeground" }>
   | Readonly<{ kind: "countdownForeground"; durationMs: 2_700_000 }>;
 
 export type CanonicalCustomPracticeContract = Readonly<{
-  modeId: "algorithms-custom-practice";
-  contentBlueprintModeId: "algorithms-guided-practice";
+  modeId: "coding-interview-custom-practice";
+  contentBlueprintModeId: "coding-interview-guided-practice";
   mentalUnitSelection: "explicit";
   reinsertOwnership: "profile";
   lifecycle: "sharedOneActiveSession";
 }>;
 
-export type CanonicalAlgorithmsReinsertPolicy = Readonly<{
+export type CanonicalCodingInterviewReinsertPolicy = Readonly<{
   version: 1;
   eligibleResultKinds: readonly ["incorrect", "partial"];
   maxReinsertsPerSource: 1;
@@ -194,9 +194,9 @@ export type CanonicalAlgorithmsReinsertPolicy = Readonly<{
   missingValidSlot: "skip";
 }>;
 
-export type CanonicalAlgorithmMode = Readonly<{
-  id: CanonicalAlgorithmModeId;
-  label: CanonicalAlgorithmModeLabel;
+export type CanonicalCodingInterviewMode = Readonly<{
+  id: CanonicalCodingInterviewModeId;
+  label: CanonicalCodingInterviewModeLabel;
   lengths: Readonly<{
     default: 10 | 20 | 40;
     supported: readonly (10 | 20 | 40)[];
@@ -207,7 +207,7 @@ export type CanonicalAlgorithmMode = Readonly<{
     default: "afterEachAnswer" | "atSessionEnd";
     supported: readonly ("afterEachAnswer" | "atSessionEnd")[];
   }>;
-  timer: CanonicalAlgorithmTimer;
+  timer: CanonicalCodingInterviewTimer;
   reinsert: boolean;
 }>;
 
@@ -296,11 +296,6 @@ export type CanonicalCertificationMode = Readonly<{
     familyId: "certification";
     trackId: "cloud-certification";
   }>;
-  status: Readonly<{
-    contract: "declared";
-    implementation: "available" | "unavailable";
-    verification: "verified" | "unverified";
-  }>;
   configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration | CanonicalCertificationQuickReviewConfiguration;
 }>;
 
@@ -369,6 +364,18 @@ export type CanonicalProductContract = Readonly<{
     version: 1;
     tests: readonly CanonicalRequirementTest[];
   }>;
+  commercialEntitlement: Readonly<Record<string, unknown>>;
+  guestAndFree: Readonly<Record<string, unknown>>;
+  identityAndAccountSecurity: Readonly<Record<string, unknown>>;
+  environmentAndPublicLinks: Readonly<Record<string, unknown>>;
+  learningOwnershipAndSync: Readonly<Record<string, unknown>>;
+  productSurfacesAndGoals: Readonly<Record<string, unknown>>;
+  learningProducts: Readonly<Record<string, unknown>>;
+  contentPackages: Readonly<Record<string, unknown>>;
+  analyticsAndReports: Readonly<Record<string, unknown>>;
+  backupAndRestore: Readonly<Record<string, unknown>>;
+  platformRelease: Readonly<Record<string, unknown>>;
+  designAuthority: Readonly<Record<string, unknown>>;
   accountData: CanonicalAccountDataContract;
   userCommands: Readonly<{
     commands: readonly Readonly<{ id: CanonicalUserCommandId }>[];
@@ -390,7 +397,7 @@ export type CanonicalProductContract = Readonly<{
     }>;
   }>;
   simulationConcurrency: Readonly<{
-    scope: "oneActiveSession";
+    scope: "oneActiveSessionPerDevice";
     queueDiscipline: "fifo";
     maxInFlight: 1;
     revalidateActiveSessionAtExecution: true;
@@ -405,7 +412,7 @@ export type CanonicalProductContract = Readonly<{
     lifecycleCheckpoints: readonly CanonicalSimulationTimerLifecycleCheckpoint[];
   }>;
   designReferences: Readonly<{
-    version: 1;
+    version: 2;
     references: readonly CanonicalDesignReference[];
     uiOwnership: readonly CanonicalDesignReferenceUiOwnership[];
   }>;
@@ -413,10 +420,10 @@ export type CanonicalProductContract = Readonly<{
     version: 1;
     policies: readonly CanonicalSimulationOperationStateCtaPolicy[];
   }>;
-  algorithms: Readonly<{
+  codingInterview: Readonly<{
     customPractice: CanonicalCustomPracticeContract;
-    reinsertPolicy: CanonicalAlgorithmsReinsertPolicy;
-    modes: readonly CanonicalAlgorithmMode[];
+    reinsertPolicy: CanonicalCodingInterviewReinsertPolicy;
+    modes: readonly CanonicalCodingInterviewMode[];
   }>;
   certification: Readonly<{
     modes: readonly CanonicalCertificationMode[];
@@ -433,15 +440,15 @@ export class CanonicalUserFacingTaskReadinessError extends Error {
 
 const validateSchema = new Ajv2020({ allErrors: true, strict: true }).compile(schema);
 
-const algorithmModeLabels: Readonly<Record<CanonicalAlgorithmModeId, CanonicalAlgorithmModeLabel>> = {
-  "algorithms-learn-approach": "Learn Approach",
-  "algorithms-guided-practice": "Guided Practice",
-  "algorithms-custom-practice": "Custom Practice",
-  "algorithms-recognize-patterns": "Recognize Patterns",
-  "algorithms-contrast-practice": "Contrast Practice",
-  "algorithms-weak-area-review": "Weak Area Review",
-  "algorithms-independent-practice": "Independent Practice",
-  "algorithms-interview-simulation": "Interview Simulation",
+const codingInterviewModeLabels: Readonly<Record<CanonicalCodingInterviewModeId, CanonicalCodingInterviewModeLabel>> = {
+  "coding-interview-learn-approach": "Learn Approach",
+  "coding-interview-guided-practice": "Guided Practice",
+  "coding-interview-custom-practice": "Custom Practice",
+  "coding-interview-recognize-patterns": "Recognize Patterns",
+  "coding-interview-contrast-practice": "Contrast Practice",
+  "coding-interview-weak-area-review": "Weak Area Review",
+  "coding-interview-independent-practice": "Independent Practice",
+  "coding-interview-simulation": "Interview Simulation",
 };
 
 const certificationModeLabels: Readonly<Record<CanonicalCertificationModeId, CanonicalCertificationModeLabel>> = {
@@ -521,7 +528,7 @@ const canonicalAccountRecordClassIds = [
 const canonicalAccountDerivedProjectionIds = ["familyNeutralEvidence", "familyProgress"] as const;
 
 const canonicalAccountAdoptionCaseIds = [
-  "emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeSessionOnOneSide", "divergentActiveSessions", "divergentRecord",
+  "emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeGuestSession", "divergentRecord",
 ] as const;
 
 const canonicalAccountSurfaceIds = [
@@ -577,7 +584,7 @@ export function isDeclaredCanonicalSessionTransition(contract: CanonicalProductC
 export function canStartCanonicalSimulationMutation(contract: CanonicalProductContract, input: CanonicalSimulationMutationAdmissionInput): boolean {
   const concurrency = contract.simulationConcurrency;
   const isKnownKind = (kind: string): kind is CanonicalSimulationMutationKind => concurrency.mutationKinds.includes(kind as CanonicalSimulationMutationKind);
-  return concurrency.scope === "oneActiveSession"
+  return concurrency.scope === "oneActiveSessionPerDevice"
     && concurrency.queueDiscipline === "fifo"
     && concurrency.maxInFlight === 1
     && concurrency.revalidateActiveSessionAtExecution
@@ -600,7 +607,7 @@ export function resolveCanonicalUserFacingTaskDesignReference(
   if (!reference) {
     throw new CanonicalUserFacingTaskReadinessError(`A ready user-facing task names an unknown design reference: ${input.designReferenceId}`);
   }
-  if (reference.approvalStatus !== "APPROVED") {
+  if (reference.approvalStatus !== "APPROVED" || reference.owner !== "product-owner") {
     throw new CanonicalUserFacingTaskReadinessError(`A ready user-facing task requires an APPROVED design reference: ${input.designReferenceId}`);
   }
   return reference;
@@ -678,6 +685,233 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
 
   validateCanonicalRequirementTestCoverage(contract as CanonicalProductContract);
 
+  const target = contract as CanonicalProductContract;
+  const commercial = target.commercialEntitlement;
+  if (commercial.freeAccess !== "permanent"
+    || !hasExactValues(commercial.premiumProducts as readonly string[], ["monthly", "annual"])
+    || commercial.entitlement !== "oneAccountBoundPremiumForAllPremiumContentInAllTracks"
+    || commercial.tiers !== "prohibited"
+    || commercial.trackSlots !== "prohibited"
+    || commercial.storeFreeTrialRequired !== false
+    || commercial.purchaseRequires !== "verifiedPatternlyAccount"
+    || commercial.guestPurchase !== "prohibited"
+    || commercial.revenueCatAppUserId !== "stableOpaquePatternlyAccountIdNeverEmail"
+    || !hasExactValues(commercial.authorityChain as readonly string[], ["storeTransaction", "revenueCatNormalization", "patternlyBackendProjection", "boundedDeviceCache"])
+    || commercial.paidDownloadAuthority !== "patternlyBackendEntitlementOnly"
+    || commercial.crossPlatformPremium !== "required"
+    || commercial.offlineVerificationGraceDays !== 7
+    || commercial.deviceMayNotAdvanceVerifiedAt !== true
+    || commercial.startedEntitledSessionCompletion !== "allowedOnStartingDevice"
+    || commercial.downgradeHistory !== "remainsReadableAndIndependentOfEntitlement"
+    || commercial.restorePurchases !== "storeThenRevenueCatThenBackendWithExplicitAccountConflict"
+    || commercial.accountDeletionStoreBilling !== "independentNoAutomaticCancelRefundOrExpiry"
+    || !hasExactValues(commercial.deletionChoices as readonly string[], ["manageSubscription", "deleteNow", "scheduleAtPaidPeriodEndWhenSupported"])) {
+    throw new CanonicalProductContractValidationError("Canonical commercial contract must preserve one Free/Premium entitlement and store-to-backend authority without tiers or track slots");
+  }
+
+  const guest = target.guestAndFree;
+  const guestAdoption = guest.adoption as Readonly<Record<string, unknown>>;
+  if (guest.guestIdentity !== "localInstallation"
+    || guest.firebaseAnonymousAuthentication !== "prohibited"
+    || guest.firstLearningValueRequiresAccount !== false
+    || guest.freeNodePerProductionTrack !== "exactlyOne"
+    || guest.completeFreeNodeBundled !== "required"
+    || !hasExactValues(guest.allowedCapabilities as readonly string[], ["trackSwitching", "goals", "attempts", "review", "activity", "progress", "settings", "offlineLearning"])
+    || !hasExactValues(guest.prohibitedCapabilities as readonly string[], ["synchronization", "crossDeviceRestore", "premiumPurchase", "premiumPackageDownload", "uninstallRecovery"])
+    || guest.freeSessionContent !== "freeNodeOnlyWithoutPremiumFiller"
+    || guest.freeReviewContent !== "eligibleFreeNodeEvidenceOnly"
+    || !(guest.prohibitedCapabilities as readonly string[]).includes("premiumPurchase")
+    || !(guest.prohibitedCapabilities as readonly string[]).includes("premiumPackageDownload")
+    || guestAdoption.preview !== "required"
+    || guestAdoption.confirmation !== "explicit"
+    || guestAdoption.newEmptyAccountDefault !== "preserveGuestData"
+    || guestAdoption.discard !== "explicitDestructiveChoice"
+    || guestAdoption.existingAccount !== "deterministicLocalVersusAccountPlan"
+    || guestAdoption.silentMergeOrDiscard !== "prohibited"
+    || guestAdoption.convergenceVerification !== "requiredBeforeBinding"
+    || guestAdoption.activeGuestSession !== "finishOrExplicitlyAbandonBeforeAdoption") {
+    throw new CanonicalProductContractValidationError("Canonical guest contract must provide local first value, strict Free filtering, and explicit lossless adoption");
+  }
+
+  const identity = target.identityAndAccountSecurity;
+  if (!hasExactValues(identity.methods as readonly string[], ["emailPassword", "signInWithApple", "signInWithGoogle", "recoveryCodes"])
+    || identity.identity !== "oneFirebaseUidAndOnePatternlyAccount"
+    || identity.providerLinking !== "proofThroughExistingUsableMethod"
+    || identity.automaticMergeByEmail !== "prohibited"
+    || identity.unlinkLastUsableMethod !== "prohibited"
+    || identity.recoveryCodeCount !== 8
+    || identity.recoveryCodeStorage !== "strongHashesAndMetadataOnly"
+    || identity.recoveryCodeDisplay !== "once"
+    || identity.recoveryCodeReuse !== "prohibited"
+    || identity.regenerateInvalidatesPriorCodes !== true
+    || identity.recoverySession !== "narrowShortLived"
+    || identity.successfulRecovery !== "newCredentialOrProviderThenRevokeAllPriorSessions"
+    || identity.manualSupportTakeoverWithoutMethodOrCode !== "prohibited"
+    || identity.passwordAndEmailChange !== "recentReauthenticationWithNewEmailVerification"
+    || identity.signOutAllDevices !== "revokeRefreshTokensAndEnforceRevocationForProtectedApi"
+    || identity.termsAcceptance !== "versionedAndSeparateFromAnalyticsConsent") {
+    throw new CanonicalProductContractValidationError("Canonical identity contract must preserve linked providers, eight hashed recovery codes, and revocation enforcement");
+  }
+
+  const links = target.environmentAndPublicLinks;
+  const ordinaryCodes = links.ordinaryFirebaseActionCodes as Readonly<Record<string, unknown>>;
+  const deletionToken = links.publicDeletionPossessionToken as Readonly<Record<string, unknown>>;
+  if (!hasExactValues(links.requiredValues as readonly string[], ["publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"])
+    || ordinaryCodes.expiry !== "providerControlled" || ordinaryCodes.singleUse !== "providerControlled"
+    || deletionToken.expiryMinutes !== 30 || deletionToken.singleUse !== true
+    || links.defaultFirebaseDomain !== "developmentAndSandboxOnly"
+    || links.productionDomainAndSender !== "releasePromotionInputs"
+    || !hasExactValues(links.actionHandlerOutcomes as readonly string[], ["valid", "expired", "alreadyUsed", "malformed", "rateLimited", "remoteFailure"])
+    || links.accountEnumeration !== "prohibited") {
+    throw new CanonicalProductContractValidationError("Canonical public-link contract must keep ordinary action codes provider-controlled and only deletion possession at thirty minutes");
+  }
+
+  const syncTarget = target.learningOwnershipAndSync;
+  if (syncTarget.activeSessionLimit !== "onePerDeviceAcrossTracks"
+    || syncTarget.currentTrackId !== "accountOwnedAndSynchronized"
+    || syncTarget.independentActiveSessionsAcrossDevices !== "allowed"
+    || syncTarget.crossDeviceActiveSessionResume !== "prohibited"
+    || !hasExactValues(syncTarget.deviceOnlyRecords as readonly string[], ["activeSessionPointer", "activeSession", "draft", "currentPosition", "foregroundTimer", "mutationJournal"])
+    || syncTarget.deviceOnlyRemoteSync !== "never"
+    || !hasExactValues(syncTarget.mutationOrder as readonly string[], ["validate", "persistLocalJournal", "materializeAndVerifyLocalRecords", "clearLocalJournal", "enqueueCompactIdempotentOperation", "synchronizeOpportunistically"])
+    || !hasExactValues(syncTarget.syncTriggers as readonly string[], ["coldStart", "networkReturn", "staleForegroundReturn", "terminalSessionEnd", "goalChange", "currentTrackChange", "entitlementUpdate", "explicitRetry"])
+    || syncTarget.backgroundSyncPromise !== "prohibited"
+    || syncTarget.transfer !== "incrementalPaginated"
+    || !hasExactValues(syncTarget.bootstrapProjection as readonly string[], ["accountProfile", "entitlement", "currentTrack", "goals", "perTrackProgress", "currentTrackDueReview", "recentActivity", "revisionCursors"])
+    || syncTarget.exactHistory !== "onDemandAndLocallyCached"
+    || !hasExactValues(syncTarget.canonicalFacts as readonly string[], ["terminalSessionSummary", "attempts", "results", "reviewMutations", "stableContentReferences"])
+    || syncTarget.derivedProjections !== "rebuildableNeverSoleAuthority") {
+    throw new CanonicalProductContractValidationError("Canonical synchronization contract must keep active session state device-owned and use incremental explicit-trigger synchronization");
+  }
+
+  const surfaces = target.productSurfacesAndGoals;
+  const goals = surfaces.goals as Readonly<Record<string, unknown>>;
+  if (!hasExactValues(surfaces.primaryTabs as readonly string[], ["Today", "Practice", "Progress", "Settings"])
+    || surfaces.activity !== "nestedUnderProgress"
+    || surfaces.launchLanguage !== "EnglishOnly"
+    || surfaces.languageRoute !== "absentUntilRealSecondLanguage"
+    || surfaces.todayJob !== "oneMostUsefulExecutableNextAction"
+    || surfaces.practiceJob !== "manualCurrentTrackLearningWorkspace"
+    || surfaces.progressJob !== "evidenceOfHowLearningChanges"
+    || surfaces.activityJob !== "paginatedTerminalSessionHistory"
+    || surfaces.manualSessionChoicePrecedence !== "wins"
+    || !hasExactValues(surfaces.recommendationPriority as readonly string[], ["resumeActiveLocalSession", "overdueReview", "missingWeeklyPlanSession", "repeatedHighSignalMistake", "continueCurrentNode", "nextRoadmapNode"])
+    || goals.ownership !== "perTrack"
+    || goals.invalidTemplates !== "prohibited"
+    || !hasExactValues(goals.affects as readonly string[], ["recommendations", "weeklyPlanning", "reminders", "suggestedSessionCadence"])
+    || !hasExactValues(goals.doesNotAffect as readonly string[], ["entitlement", "contentLocking", "scoring", "mastery", "streaks", "punitiveMessaging"])) {
+    throw new CanonicalProductContractValidationError("Canonical surface contract must use four primary tabs, nested Activity, and non-entitling per-track goals");
+  }
+
+  const products = target.learningProducts;
+  const families = products.families as Readonly<Record<string, unknown>>;
+  const codingInterview = products.codingInterview as Readonly<Record<string, unknown>>;
+  if (!hasExactValues(families.ids as readonly string[], ["certification", "coding_interview", "design_interview"])
+    || families.userVisible !== false
+    || !hasExactValues(products.targetTracks as readonly string[], ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901", "hashicorp-terraform-associate-004", "kubernetes-cloud-native-associate-kcna"])
+    || !hasExactValues(products.targetTrackBriefRequiredFields as readonly string[], ["jobToBeDone", "targetLearner", "internalFamily", "taxonomyOutline", "freeNodeId", "validModes", "goalTemplates", "progressDimensions", "packageContentPlan", "launchCommercialGate"])
+    || products.emptyPlaceholderOrComingSoonTracks !== "prohibited"
+    || products.productionRegistryAdmission !== "realFreeVerticalAndCompleteCoreLoop"
+    || products.representativeProofsBeforeBroadCopying !== "required"
+    || codingInterview.targetFamilyId !== "coding_interview"
+    || codingInterview.userFacingName !== "Coding Interview: DSA & Problem Solving"
+    || codingInterview.permanentAlgorithmsAlias !== "prohibited"
+    || codingInterview.migration !== "atomicOrBoundedPrerequisiteBeforeRegistryAdmission"
+    || codingInterview.productBoundary !== "strategyFirstNotOnlineJudge"
+    || codingInterview.implementationPlanningObjective !== "mandatory") {
+    throw new CanonicalProductContractValidationError("Canonical learning products must keep internal-only families, ten real briefs, and the Coding Interview boundary without aliases or placeholders");
+  }
+
+  const packages = target.contentPackages;
+  if (packages.freeNodes !== "bundledComplete"
+    || packages.premiumUnit !== "immutableCompressedWholeNodePackage"
+    || packages.objectStore !== "cloudStorage"
+    || packages.manifestStore !== "firestore"
+    || packages.authorization !== "cloudRunIdentityAndBackendEntitlement"
+    || packages.downloadUrl !== "shortLivedSigned"
+    || packages.perQuestionFirestoreFetching !== "prohibited"
+    || !hasExactValues(packages.manifestRequiredFields as readonly string[], ["trackId", "nodeId", "contentReleaseId", "packageVersion", "schemaVersion", "promptLocale", "feedbackLocale", "itemCount", "compressedSize", "sha256", "immutableObjectIdentityGeneration", "minimumAppVersion", "publishedAt"])
+    || packages.publishedMutation !== "prohibited"
+    || packages.correction !== "newObjectAndVersion"
+    || !hasExactValues(packages.activationOrder as readonly string[], ["temporaryDownload", "checksumVerification", "schemaValidation", "semanticValidation", "versionedPersistence", "atomicPointerActivation"])
+    || packages.validationFailure !== "retainPreviousVerifiedPackage"
+    || packages.sessionVersionPinning !== "exact"
+    || packages.silentVersionSubstitution !== "prohibited"
+    || packages.reviewResolution !== "groupReferencesByPackageAndFetchOnlyMissingVerifiedPackages"
+    || packages.cacheEviction !== "neverRemoveActiveSessionPinnedPackage"
+    || packages.futureLocales !== "reuseStableEvidenceIdentities") {
+    throw new CanonicalProductContractValidationError("Canonical package contract must use immutable authorized whole-node packages with verified atomic activation and exact pinning");
+  }
+
+  const analytics = target.analyticsAndReports;
+  const reports = analytics.contentReports as Readonly<Record<string, unknown>>;
+  if (analytics.analyticsProvider !== "firebaseAnalytics"
+    || analytics.crashProvider !== "firebaseCrashlytics"
+    || analytics.consentGate !== "failClosed"
+    || analytics.termsAsAnalyticsConsent !== "prohibited"
+    || analytics.rawFirestoreEventStream !== "prohibited"
+    || analytics.eventVocabulary !== "closed"
+    || !hasExactValues(analytics.forbiddenEventFields as readonly string[], ["email", "password", "token", "promptText", "optionText", "learnerResponse", "reason", "details", "draft", "reportFreeText", "rawPrivateException", "storePurchaseToken"])
+    || reports.accountLinkDefault !== "unlinked"
+    || !hasExactValues(reports.requiredUserFields as readonly string[], ["category", "description"])
+    || !hasExactValues(reports.automaticContext as readonly string[], ["reportId", "itemId", "releasePackageId", "trackNode", "modeRoute", "locales", "appBuild", "platform", "timestamp"])
+    || reports.accountOrContactLink !== "explicitOptIn"
+    || !hasExactValues(reports.prohibitedAutomaticAttachments as readonly string[], ["learnerResponse", "fullPrompt", "fullFeedback", "email", "accountId"])
+    || reports.ordinaryRawRetentionDays !== 30
+    || reports.importantRetention !== "untilFixReleasedPlus30Days"
+    || reports.identifiableRawMaximumDays !== 180
+    || !hasExactValues(reports.offlineStates as readonly string[], ["queued", "retry", "failed", "accepted"])) {
+    throw new CanonicalProductContractValidationError("Canonical analytics and report contract must fail closed and prohibit automatic private learning or identity attachments");
+  }
+
+  const backup = target.backupAndRestore;
+  if (backup.firestorePitrDays !== 7
+    || backup.purpose !== "disasterRecoveryNotUserAccountRecovery"
+    || backup.scheduledLongTermExportAtLaunch !== "prohibited"
+    || backup.restoreRunbook !== "required"
+    || backup.sanitizedSandboxDrill !== "required"
+    || backup.deletionTombstoneReconciliation !== "required"
+    || backup.deletedAccountResurrection !== "prohibited"
+    || backup.localPlatformBackupForCanonicalLearningAndCache !== "excluded") {
+    throw new CanonicalProductContractValidationError("Canonical backup contract must preserve seven-day PITR and prohibit deleted-account resurrection");
+  }
+
+  const platform = target.platformRelease;
+  if (platform.expoSdkBeforeFinalFreeze !== 57
+    || platform.iosMinimum !== "16.4"
+    || platform.iosDevices !== "iPhoneOnly"
+    || platform.ipadSupportClaim !== "prohibited"
+    || platform.androidMinimumApi !== 28
+    || platform.androidTargetApi !== 36
+    || platform.orientation !== "portrait"
+    || !hasExactValues(platform.appearances as readonly string[], ["Light", "Dark", "System"])
+    || platform.textScalingPercent !== 200
+    || platform.evidenceDevices !== "phonesOnly"
+    || !hasExactValues(platform.signedPhysicalDeviceSmoke as readonly string[], ["iOS", "Android"])) {
+    throw new CanonicalProductContractValidationError("Canonical platform contract must preserve the exact phone-only release matrix");
+  }
+
+  const design = target.designAuthority;
+  if (design.brand !== "onePatternlyBrand"
+    || design.trackIdentity !== "subordinateAccentsAndSharedGrammarSymbolsNotSubBrands"
+    || design.qualityTarget !== "focusedFlagshipSoloSustainable"
+    || design.visualTerritory !== "dispersedAmbiguityToRecognizedOrderedPattern"
+    || design.mark !== "emergingPThroughStructureAndNegativeSpace"
+    || design.illustration !== "sparseDiagrammaticSharedPrimitives"
+    || design.motion !== "restrainedFunctionalWithReducedMotion"
+    || design.haptics !== "sparseSemanticAfterVerifiedBoundaries"
+    || !hasExactValues(design.figmaSpaces as readonly string[], ["PatternlyBrandLab", "PatternlyDesignSystem", "PatternlyProduct"])
+    || design.exploration !== "threeDirectionsToTwoFinalistsToOneSystem"
+    || design.actualVisualApprovalAuthority !== "productOwnerOnly"
+    || !hasExactValues(design.handoffStates as readonly string[], ["FIGMA_DRAFT", "FIGMA_REVIEW", "FIGMA_APPROVED", "IMPLEMENTED", "VISUALLY_VERIFIED", "HANDED_OFF", "CODE_CANONICAL"])
+    || design.figmaProductionDependency !== "prohibited"
+    || design.storybookProductionDependency !== "prohibited"
+    || design.storybook !== "developmentOnlyProductionComponentsTypedFixtures"
+    || design.postHandoffOperationalAuthority !== "repositoryTokensAssetsProductionComponentsStorybookTestsAndBaselines"
+    || design.paidFigmaOrdinaryDevelopmentDependencyAfterHandoff !== "prohibited") {
+    throw new CanonicalProductContractValidationError("Canonical design authority must require owner approval, repository handoff, and no production Figma or Storybook dependency");
+  }
+
   const accountData = (contract as CanonicalProductContract).accountData;
   if (!hasExactValues(accountData.lifecycle.operations.map((operation) => operation.id), canonicalAccountLifecycleOperationIds)) {
     throw new CanonicalProductContractValidationError("Canonical account lifecycle must declare exactly its operations in canonical order");
@@ -711,6 +945,14 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   }
   if (!hasExactValues(accountData.dataAuthority.recordClasses.map((recordClass) => recordClass.id), canonicalAccountRecordClassIds)) {
     throw new CanonicalProductContractValidationError("Canonical account data authority must declare exactly its record classes in canonical order");
+  }
+  const deviceSessionRecords = new Map(accountData.dataAuthority.recordClasses.map((recordClass) => [recordClass.id, recordClass]));
+  if (deviceSessionRecords.get("activeSessionReference")?.owner !== "device" || deviceSessionRecords.get("activeSessionReference")?.remoteSync !== "never"
+    || deviceSessionRecords.get("trainingSession")?.owner !== "device" || deviceSessionRecords.get("trainingSession")?.remoteSync !== "terminalFactsOnly"
+    || deviceSessionRecords.get("simulationDraft")?.owner !== "device" || deviceSessionRecords.get("simulationDraft")?.remoteSync !== "never"
+    || deviceSessionRecords.get("foregroundTimer")?.owner !== "device" || deviceSessionRecords.get("foregroundTimer")?.remoteSync !== "never"
+    || deviceSessionRecords.get("mutationJournal")?.remoteSync !== "never") {
+    throw new CanonicalProductContractValidationError("Canonical active session pointer, session, draft, timer, and mutation journal must remain device-owned and unsynchronized");
   }
   if (!hasExactValues(accountData.dataAuthority.derivedProjections.map((projection) => projection.id), canonicalAccountDerivedProjectionIds)) {
     throw new CanonicalProductContractValidationError("Canonical account data authority must declare exactly its derived projections in canonical order");
@@ -836,17 +1078,17 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     throw new CanonicalProductContractValidationError(`Canonical design reference pattern path does not resolve to a file: ${missingPattern.patternPath}`);
   }
 
-  const algorithmModeIds = (contract as CanonicalProductContract).algorithms.modes.map((mode) => mode.id);
-  const duplicateAlgorithmModeIds = algorithmModeIds.filter((id, index) => algorithmModeIds.indexOf(id) !== index);
-  if (duplicateAlgorithmModeIds.length > 0) {
-    throw new CanonicalProductContractValidationError(`Duplicate canonical product contract Algorithms mode identifier: ${duplicateAlgorithmModeIds[0]}`);
+  const codingInterviewModeIds = (contract as CanonicalProductContract).codingInterview.modes.map((mode) => mode.id);
+  const duplicateCodingInterviewModeIds = codingInterviewModeIds.filter((id, index) => codingInterviewModeIds.indexOf(id) !== index);
+  if (duplicateCodingInterviewModeIds.length > 0) {
+    throw new CanonicalProductContractValidationError(`Duplicate canonical product contract Coding Interview mode identifier: ${duplicateCodingInterviewModeIds[0]}`);
   }
 
-  const modeWithMismatchedLabel = (contract as CanonicalProductContract).algorithms.modes.find(
-    (mode) => algorithmModeLabels[mode.id] !== mode.label,
+  const modeWithMismatchedLabel = (contract as CanonicalProductContract).codingInterview.modes.find(
+    (mode) => codingInterviewModeLabels[mode.id] !== mode.label,
   );
   if (modeWithMismatchedLabel) {
-    throw new CanonicalProductContractValidationError(`Algorithms mode label does not match its identifier: ${modeWithMismatchedLabel.id}`);
+    throw new CanonicalProductContractValidationError(`Coding Interview mode label does not match its identifier: ${modeWithMismatchedLabel.id}`);
   }
 
   const certificationModeIds = (contract as CanonicalProductContract).certification.modes.map((mode) => mode.id);
@@ -862,46 +1104,46 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     throw new CanonicalProductContractValidationError(`Certification mode label does not match its identifier: ${certificationModeWithMismatchedLabel.id}`);
   }
   const diagnosticBaseline = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-diagnostic-baseline");
-  if (!diagnosticBaseline || diagnosticBaseline.status.implementation !== "available" || diagnosticBaseline.status.verification !== "verified" || !diagnosticBaseline.configuration || !("sessionLength" in diagnosticBaseline.configuration) || diagnosticBaseline.configuration.sessionLength !== 40 || diagnosticBaseline.configuration.shortening !== "prohibited" || diagnosticBaseline.configuration.reinsert || diagnosticBaseline.configuration.timer !== "elapsedForeground" || diagnosticBaseline.configuration.feedbackTiming !== "afterEachDurableSubmit" || diagnosticBaseline.configuration.setupControls.length !== 0) {
+  if (!diagnosticBaseline || !diagnosticBaseline.configuration || !("sessionLength" in diagnosticBaseline.configuration) || diagnosticBaseline.configuration.sessionLength !== 40 || diagnosticBaseline.configuration.shortening !== "prohibited" || diagnosticBaseline.configuration.reinsert || diagnosticBaseline.configuration.timer !== "elapsedForeground" || diagnosticBaseline.configuration.feedbackTiming !== "afterEachDurableSubmit" || diagnosticBaseline.configuration.setupControls.length !== 0) {
     throw new CanonicalProductContractValidationError("Certification Diagnostic Baseline must preserve its approved fixed 40-item shared-practice configuration.");
   }
   const focusPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-focus-practice");
-  if (!focusPractice || focusPractice.status.implementation !== "available" || focusPractice.status.verification !== "verified" || !focusPractice.configuration || !("sessionLengths" in focusPractice.configuration) || !hasExactValues(focusPractice.configuration.setupControls, ["topic", "sessionLength"]) || !hasExactValues(focusPractice.configuration.sessionLengths, [10, 20, 40]) || focusPractice.configuration.selectionScope !== "explicitCloudDomain" || focusPractice.configuration.shortening !== "allowedWithinSelectedTopic" || focusPractice.configuration.reinsert || focusPractice.configuration.timer !== "elapsedForeground" || focusPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
+  if (!focusPractice || !focusPractice.configuration || !("sessionLengths" in focusPractice.configuration) || !hasExactValues(focusPractice.configuration.setupControls, ["topic", "sessionLength"]) || !hasExactValues(focusPractice.configuration.sessionLengths, [10, 20, 40]) || focusPractice.configuration.selectionScope !== "explicitCloudDomain" || focusPractice.configuration.shortening !== "allowedWithinSelectedTopic" || focusPractice.configuration.reinsert || focusPractice.configuration.timer !== "elapsedForeground" || focusPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
     throw new CanonicalProductContractValidationError("Certification Focus Practice must preserve its explicit single-domain shared-practice configuration.");
   }
   const scenarioPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-scenario-practice");
-  if (!scenarioPractice || scenarioPractice.status.implementation !== "available" || scenarioPractice.status.verification !== "verified" || !scenarioPractice.configuration || !("sessionLengths" in scenarioPractice.configuration) || !hasExactValues(scenarioPractice.configuration.setupControls, ["competency", "sessionLength"]) || !hasExactValues(scenarioPractice.configuration.sessionLengths, [10, 20, 40]) || scenarioPractice.configuration.selectionScope !== "explicitApprovedScenarioCompetency" || scenarioPractice.configuration.shortening !== "allowedWithinSelectedCompetency" || scenarioPractice.configuration.reinsert || scenarioPractice.configuration.timer !== "elapsedForeground" || scenarioPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
+  if (!scenarioPractice || !scenarioPractice.configuration || !("sessionLengths" in scenarioPractice.configuration) || !hasExactValues(scenarioPractice.configuration.setupControls, ["competency", "sessionLength"]) || !hasExactValues(scenarioPractice.configuration.sessionLengths, [10, 20, 40]) || scenarioPractice.configuration.selectionScope !== "explicitApprovedScenarioCompetency" || scenarioPractice.configuration.shortening !== "allowedWithinSelectedCompetency" || scenarioPractice.configuration.reinsert || scenarioPractice.configuration.timer !== "elapsedForeground" || scenarioPractice.configuration.feedbackTiming !== "afterEachDurableSubmit") {
     throw new CanonicalProductContractValidationError("Certification Scenario Practice must preserve its explicit approved-competency shared-practice configuration.");
   }
   const weakAreaReview = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-weak-area-review");
-  if (!weakAreaReview || weakAreaReview.status.implementation !== "available" || weakAreaReview.status.verification !== "verified" || !weakAreaReview.configuration || !("sessionLengths" in weakAreaReview.configuration) || !hasExactValues(weakAreaReview.configuration.setupControls, ["sessionLength"]) || !hasExactValues(weakAreaReview.configuration.sessionLengths, [10, 20]) || weakAreaReview.configuration.selectionScope !== "eligibleDueReviewEvidence" || weakAreaReview.configuration.shortening !== "allowedWithinEligibleReviewEvidence" || weakAreaReview.configuration.reinsert || weakAreaReview.configuration.timer !== "elapsedForeground" || weakAreaReview.configuration.feedbackTiming !== "afterEachDurableSubmit" || weakAreaReview.configuration.reviewBehavior !== "resolveAfterTwoConsecutiveDueReviewSuccesses") {
+  if (!weakAreaReview || !weakAreaReview.configuration || !("sessionLengths" in weakAreaReview.configuration) || !hasExactValues(weakAreaReview.configuration.setupControls, ["sessionLength"]) || !hasExactValues(weakAreaReview.configuration.sessionLengths, [10, 20]) || weakAreaReview.configuration.selectionScope !== "eligibleDueReviewEvidence" || weakAreaReview.configuration.shortening !== "allowedWithinEligibleReviewEvidence" || weakAreaReview.configuration.reinsert || weakAreaReview.configuration.timer !== "elapsedForeground" || weakAreaReview.configuration.feedbackTiming !== "afterEachDurableSubmit" || weakAreaReview.configuration.reviewBehavior !== "resolveAfterTwoConsecutiveDueReviewSuccesses") {
     throw new CanonicalProductContractValidationError("Certification Weak Area Review must preserve its due-evidence shared-practice configuration.");
   }
   const mixedPractice = (contract as CanonicalProductContract).certification.modes.find((mode) => mode.id === "certification-mixed-practice");
-  if (!mixedPractice || mixedPractice.status.implementation !== "available" || mixedPractice.status.verification !== "verified" || !mixedPractice.configuration || !("sessionLengths" in mixedPractice.configuration) || !hasExactValues(mixedPractice.configuration.setupControls, ["sessionLength"]) || !hasExactValues(mixedPractice.configuration.sessionLengths, [10, 20, 40]) || mixedPractice.configuration.selectionScope !== "explicitUniqueInterleavedBlueprint" || mixedPractice.configuration.shortening !== "allowedWithinInterleavedBlueprint" || mixedPractice.configuration.reinsert || mixedPractice.configuration.timer !== "elapsedForeground" || mixedPractice.configuration.feedbackTiming !== "afterEachDurableSubmit" || mixedPractice.configuration.reviewBehavior !== "domainBreakdown") {
+  if (!mixedPractice || !mixedPractice.configuration || !("sessionLengths" in mixedPractice.configuration) || !hasExactValues(mixedPractice.configuration.setupControls, ["sessionLength"]) || !hasExactValues(mixedPractice.configuration.sessionLengths, [10, 20, 40]) || mixedPractice.configuration.selectionScope !== "explicitUniqueInterleavedBlueprint" || mixedPractice.configuration.shortening !== "allowedWithinInterleavedBlueprint" || mixedPractice.configuration.reinsert || mixedPractice.configuration.timer !== "elapsedForeground" || mixedPractice.configuration.feedbackTiming !== "afterEachDurableSubmit" || mixedPractice.configuration.reviewBehavior !== "domainBreakdown") {
     throw new CanonicalProductContractValidationError("Certification Mixed Practice must preserve its unique interleaved shared-practice configuration.");
   }
 
-  const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).algorithms.modes.find(
+  const modeWithUnsupportedDefaultLength = (contract as CanonicalProductContract).codingInterview.modes.find(
     (mode) => !mode.lengths.supported.includes(mode.lengths.default),
   );
   if (modeWithUnsupportedDefaultLength) {
-    throw new CanonicalProductContractValidationError(`Algorithms mode default length must be supported: ${modeWithUnsupportedDefaultLength.id}`);
+    throw new CanonicalProductContractValidationError(`Coding Interview mode default length must be supported: ${modeWithUnsupportedDefaultLength.id}`);
   }
 
-  const modeWithUnsupportedDefaultFeedback = (contract as CanonicalProductContract).algorithms.modes.find(
+  const modeWithUnsupportedDefaultFeedback = (contract as CanonicalProductContract).codingInterview.modes.find(
     (mode) => !mode.feedback.supported.includes(mode.feedback.default),
   );
   if (modeWithUnsupportedDefaultFeedback) {
-    throw new CanonicalProductContractValidationError(`Algorithms mode default feedback must be supported: ${modeWithUnsupportedDefaultFeedback.id}`);
+    throw new CanonicalProductContractValidationError(`Coding Interview mode default feedback must be supported: ${modeWithUnsupportedDefaultFeedback.id}`);
   }
 
-  const customPractice = (contract as CanonicalProductContract).algorithms.customPractice;
-  const customPracticeMode = (contract as CanonicalProductContract).algorithms.modes.find(
+  const customPractice = (contract as CanonicalProductContract).codingInterview.customPractice;
+  const customPracticeMode = (contract as CanonicalProductContract).codingInterview.modes.find(
     (mode) => mode.id === customPractice.modeId,
   );
   if (!customPracticeMode) {
-    throw new CanonicalProductContractValidationError("Custom Practice contract must reference its declared Algorithms mode");
+    throw new CanonicalProductContractValidationError("Custom Practice contract must reference its declared Coding Interview mode");
   }
 
   const customPracticeHasExpectedModeConfiguration =

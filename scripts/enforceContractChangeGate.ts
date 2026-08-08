@@ -22,6 +22,11 @@ const uiRoots = [
 ] as const;
 
 const canonicalContractPath = "docs/canonical-product-contract.yaml";
+const canonicalContractCompanionPaths = [
+  "docs/canonical-product-contract.schema.json",
+  "scripts/validateCanonicalProductContract.ts",
+  "tests/canonicalProductContract.test.ts",
+] as const;
 
 function isBehaviorPath(path: string): boolean {
   return path.startsWith("src/")
@@ -50,9 +55,16 @@ function addedRequirementIds(diff: string): readonly string[] {
  */
 export function evaluateContractChangeGate(input: ContractChangeGateInput): readonly string[] {
   const behaviorChanged = input.changedPaths.some(isBehaviorPath);
-  if (!behaviorChanged) return [];
-
   const errors: string[] = [];
+  if (input.changedPaths.includes(canonicalContractPath)) {
+    for (const companionPath of canonicalContractCompanionPaths) {
+      if (!input.changedPaths.includes(companionPath)) {
+        errors.push(`Canonical contract change requires ${companionPath} to change.`);
+      }
+    }
+  }
+  if (!behaviorChanged) return errors;
+
   if (!input.changedPaths.includes(canonicalContractPath)) {
     errors.push("Behavior change requires docs/canonical-product-contract.yaml to change.");
   }
@@ -78,8 +90,8 @@ export function evaluateContractChangeGate(input: ContractChangeGateInput): read
       .filter((ownership) => matchesUiOwnership(changedPath, ownership.sourcePathPrefix))
       .sort((left, right) => right.sourcePathPrefix.length - left.sourcePathPrefix.length)[0];
     const reference = mappedReference && input.contract.designReferences.references.find((candidate) => candidate.id === mappedReference.designReferenceId);
-    if (!reference || reference.approvalStatus !== "APPROVED") {
-      errors.push(`UI change requires an APPROVED design reference mapped to ${changedPath}.`);
+    if (!reference || reference.approvalStatus !== "APPROVED" || reference.owner !== "product-owner") {
+      errors.push(`UI change requires a Product Owner APPROVED design reference mapped to ${changedPath}.`);
       break;
     }
   }

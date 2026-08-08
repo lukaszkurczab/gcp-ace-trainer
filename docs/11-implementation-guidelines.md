@@ -18,7 +18,7 @@ For implementation detail, use the following supporting references only after re
 - `04-data-model.md` provides persisted and domain-record context;
 - `17-training-runtime-and-interaction-spec.md` provides session-lifecycle implementation context;
 - `08-storage-and-offline.md` provides persistence, journal, recovery, reset, and resume implementation context;
-- `05-design-system.md` and approved visual references define presentation;
+- `05-design-system.md` and `06-branding-and-style-direction.md` define presentation ownership; actual Figma work is temporary authority only while owner-approved, then repository assets/components/Storybook/tests at `CODE_CANONICAL` take operational ownership;
 - `07-content-guidelines.md` provides authored-content and release-quality context;
 - `12-testing-strategy.md` provides required-verification context;
 - family learning-system documents provide family-specific context.
@@ -71,7 +71,7 @@ The shared kernel owns only family-neutral contracts:
 The kernel does not own:
 
 - a global union of concrete item types;
-- certification or Algorithms taxonomy;
+- certification or Coding Interview taxonomy;
 - family-specific selection;
 - scoring;
 - response completeness;
@@ -143,7 +143,7 @@ A track instance owns declarative track material:
 - enabled modes;
 - family-specific configuration;
 - certification `ExamExperienceProfile` where applicable;
-- Algorithms simulation profile where applicable;
+- Coding Interview simulation profile where applicable;
 - required provenance.
 
 A new track fitting an existing family is implemented as a track instance, not as a copied runtime.
@@ -298,7 +298,7 @@ Do not:
 - substitute a default item;
 - display an item before active-session persistence succeeds.
 
-Only one canonical active session may exist.
+Only one canonical active session may exist per device. Its pointer, draft, current position, timer, and mutation journal never enter an account operation or remote projection.
 
 ## Immediate-feedback practice
 
@@ -406,9 +406,9 @@ Draft mutation creates no immutable attempt, score, review mutation, correctness
 
 After finalization freezes a draft revision, all later draft mutations are rejected.
 
-## Algorithms Interview Simulation
+## Coding Interview Interview Simulation
 
-Algorithms simulation consumes its Patternly-defined profile from the canonical contract. Preparation validates the declared plan rather than changing its size, scope, feedback, reinsert, or timer behavior.
+Coding Interview simulation consumes its Patternly-defined profile from the canonical contract. Preparation validates the declared plan rather than changing its size, scope, feedback, reinsert, or timer behavior.
 
 The resolved foreground-timer behavior is not an absolute deadline. Background and closed-app time are handled only as declared by the canonical timer contract.
 
@@ -421,9 +421,9 @@ The draft stores the approved mutable simulation state, including:
 - canonical foreground timer state;
 - draft revision.
 
-Flags are implemented only if the approved Algorithms simulation profile explicitly supports them.
+Flags are implemented only if the approved Coding Interview simulation profile explicitly supports them.
 
-### Algorithms finalization
+### Coding Interview finalization
 
 Manual submission or canonical foreground-timer exhaustion freezes one exact durable draft revision.
 
@@ -442,7 +442,7 @@ freeze durable draft revision
 
 Answered occurrences create immutable attempts during finalization.
 
-Eligible finalized outcomes create review mutations only according to Algorithms review policy.
+Eligible finalized outcomes create review mutations only according to Coding Interview review policy.
 
 Unanswered occurrences:
 
@@ -643,11 +643,11 @@ Production code and logs must not expose:
 
 Do not claim local data is encrypted unless encryption and key management are explicitly configured and verified.
 
-Do not add analytics, telemetry, remote content, cloud synchronization, or device permissions without an approved security and privacy contract.
+Analytics, crash reporting, remote packages, account synchronization, RevenueCat, and device permissions may be implemented only within the closed contract in documents `08`, `09`, and the canonical YAML. Missing consent, identity, entitlement, authorization, or package-integrity state fails closed.
 
 ## Design dependency
 
-Implementation requires an approved visual and interaction reference for every new user-facing state.
+Significant new or rewritten UI requires the applicable actual Figma work marked `APPROVED` by the Product Owner. During active design, Figma is temporary visual authority. After verified handoff, repository-owned tokens, assets, production components, Storybook fixtures, tests, and checked-in baselines at `CODE_CANONICAL` become operational authority.
 
 This includes:
 
@@ -665,6 +665,10 @@ This includes:
 - explicit storage and content errors.
 
 If required design is absent, stop at that boundary.
+
+Storybook is development-only, renders production React Native components through deterministic typed fixtures, and imports no MMKV, repositories, account/payment/sync clients, or session lifecycle. Static checks must prove that Storybook is absent from release entry points, dependency graphs, and bundles. Neither Figma nor Storybook may be required at production runtime or for ordinary post-handoff development.
+
+Visual status may be assigned only by the Product Owner to actual reviewable work. Codex can prepare evidence and implement an approved direction but cannot mark its own visual output `APPROVED`.
 
 Codex must not invent:
 

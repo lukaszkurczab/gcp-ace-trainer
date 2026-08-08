@@ -1,156 +1,171 @@
 # 04 — Data Model
 
-## Core contracts
+This document owns narrative domain and persistence-record context. Exact normative fields and invariants belong to `canonical-product-contract.yaml` and its schema/parser.
+
+## Core identity and registry
 
 ```ts
-type TrackFamilyId = string;
+type TrackFamilyId = 'certification' | 'coding_interview' | 'design_interview';
 type TrackId = string;
 
 type TrackDescriptor = {
   id: TrackId;
   familyId: TrackFamilyId;
-  contentVersion: string;
+  freeNodeId: string;
   taxonomyVersion: string;
-  enabledModeIds: readonly string[];
-};
-
-type AlgorithmsModeId = string; // validated against canonical-product-contract.yaml at the family boundary
-
-type ReviewSource = 'due_queue' | 'session_misses';
-type ResultKind = 'correct' | 'partial' | 'incorrect';
-
-type TrainingSession = {
-  id: string;
-  trackId: string;
-  mode: string;
-  requestedLength: number;
-  actualLength: number;
-  itemOrder: readonly ContentItemRef[];
-  optionOrderByItem: Readonly<Record<string, readonly string[]>>;
-  activeForegroundMs: number;
-  contentVersion: string;
-  status: 'active' | 'completed' | 'abandoned';
-};
-
-type ReviewEvidence = {
-  sourceItem: ContentItemRef;
-  taxonomyOrSkillRefs: readonly string[];
-};
-
-type ReviewReason =
-  | 'incorrect' | 'partial' | 'hint_used' | 'wrong_pattern'
-  | 'wrong_strategy' | 'complexity_error' | 'repeated_mistake'
-  | 'scheduled_retrieval' | 'weak_taxonomy_area' | 'manual_mark';
-
-type ReviewQueueEntry = ReviewEvidence & {
-  reasons: readonly ReviewReason[];
-  dueAt: string;
-  consecutiveAfterDueSuccesses: number;
-  persistent: boolean;
-};
-
-type EvidenceModel = {
-  evidenceVolume: unknown;
-  learningStageEvidence: unknown;
-  performanceSignals: unknown;
+  validModeIds: readonly string[];
+  validGoalTemplateIds: readonly string[];
 };
 ```
 
+Families remain internal. A registry descriptor exists only for a shipping
+track with a complete free vertical and core loop. Ten-track density evidence
+uses separate design/test fixtures and never creates an incomplete registry
+record or unavailable product path.
 
-## Track registry and family extensibility
-
-`TrackFamilyId` and `TrackId` are opaque identifiers at the shared-kernel boundary. The kernel must not use a closed union of all product families or tracks and must not branch on concrete IDs. The application composition root registers a `TrackDescriptor` with exactly one family runtime. Family-specific configuration is registered and typed inside that family; the kernel neither stores nor interprets a generic `familyConfig` payload.
-
-Current registrations are Certification and Algorithms. Future examples include Azure AI Fundamentals and AWS Solutions Architect Associate as Certification track instances, plus possible `database_reasoning`, `code_reasoning`, and `system_design` families. These examples do not add shared domain fields for SQL, code traces, or architecture evaluation. Concrete payload and response contracts remain owned by their family runtime.
-
-A new track inside an existing family does not add a new session, attempt, review, or repository model. A new family may define new payload, response, score-detail, and evidence-detail types, but they remain inside deterministic family outcomes carried by canonical envelopes.
-
-`TrainingAttempt` is immutable and stores deterministic response, result, score, review evidence, and committed time. It has no confidence field. One active session exists. Current selection is UI state and is never persisted.
-
-## Scoring models
-
-Multiple-choice practice is correct only when the selected set equals the correct set; it is partial only for a non-empty proper correct subset without wrong options; any wrong option is incorrect with zero points. In an exam only correct contributes to the correct count.
-
-Ordering content has at least two elements. It scores preserved correct adjacent relations: for `A → B → C → D`, evaluate `A→B`, `B→C`, and `C→D`; `maxPoints = itemCount - 1`. All relations are correct, some but not all are partial, and zero is incorrect.
-
-Complexity content declares its checked dimensions, available values, accepted values or normalized aliases, and optional shared preset. It awards one point per checked dimension. Time-only and space-only items are valid; there is no closed global class list.
-
-## Review and reinsert
-
-Review resolution requires two successful review attempts after `dueAt`; attempts before it do not increment success, and incorrect or partial resets the consecutive count. A same-session correction does not resolve persistent review. Reinsert availability and placement resolve from the canonical mode configuration and family policy; it preserves both diagnostic attempts when selected.
-
-## Durable storage model
+## Guest, account and identity
 
 ```ts
-type MutationJournal = {
-  id: string;
-  operation: 'submit' | 'complete_exam';
-  deterministicOutcome: unknown;
-  state: 'durable' | 'materialized';
+type GuestInstallation = {
+  installationId: string;
+  localDatasetId: string;
+  bindingState: 'guest' | 'adoption_pending' | 'account_bound';
 };
-```
 
-Submit validates and freezes, builds a deterministic attempt/session/review outcome, persists this journal, then exposes feedback or transition, materializes canonical records, verifies materialization, and clears the journal. Retry and force-close recovery are idempotent.
-
-## Exam profile
-
-```ts
-type ExamExperienceProfile = {
-  sourceUrl: string; sourceCheckedAt: string; examGuideVersion?: string;
-  durationMinutes: number; questionCount: number | { min: number; max: number };
-  navigationPolicy: 'linear_no_return' | 'previous_next' | 'free_navigation';
-  answerChangePolicy: 'locked_after_submit' | 'editable_until_section_submit' | 'editable_until_final_submit';
-  flaggingPolicy: 'not_available' | 'available';
-  navigatorPolicy: 'not_available' | 'answered_unanswered' | 'answered_unanswered_flagged';
-  sectionPolicy: { kind: 'single_section' } | { kind: 'multiple_sections'; sections: readonly unknown[]; canReturnToCompletedSection: boolean };
-  timeoutPolicy: 'automatic_final_submit';
-};
-```
-
-Historical item maps, explanation reconstruction, confidence, and translated old records are not models in the target.
-
-## Account and synchronization envelopes
-
-The normative record ownership and sync policies are declared in
-`canonical-product-contract.yaml`. The launch implementation adds envelopes at
-the application/repository boundary; it does not add account fields to family
-payloads or duplicate canonical learning records.
-
-```ts
 type AccountBinding = {
-  accountId: string;
-  normalizedEmail: string;
+  accountId: string; // stable opaque Patternly ID
+  firebaseUid: string;
   verificationState: 'verified';
   accountRevision: number;
 };
 
-type SyncOperationEnvelope = {
-  operationId: string;
-  accountId: string;
-  expectedAccountRevision: number;
-  localCommitFingerprint: string;
-  canonicalWrites: readonly unknown[];
-};
-
-type SyncProjection = {
-  state: 'initialSyncRequired' | 'syncing' | 'synced' |
-    'offlinePending' | 'conflict' | 'failed' | 'deletionPending';
-  lastSuccessfulSyncAt?: string;
-  pendingMutationCount: number;
-  blockingConflictCode?: string;
-  lastFailureCode?: string;
+type TermsAcceptance = {
+  version: string;
+  acceptedAt: string;
 };
 ```
 
-An access token is not a learning-data owner. Authentication proves access to
-one account dataset; local record revisions and the remote account revision
-govern synchronization. Device settings and notification permission state do
-not sync. Mutation journals remain device-operational; only their verified
-materialized writes enter the ordered sync outbox.
+Credentials, raw provider tokens and recovery-code plaintext are not domain learning records. Eight recovery codes are shown once; only strong hashes and bounded metadata are stored server-side.
 
-Canonical account records are ordered lexicographically by the exact UTF-8
-bytes of `type`, then by the exact UTF-8 bytes of `id`; a shorter equal byte
-prefix sorts first. Record IDs must be Unicode-scalar strings: valid surrogate
-pairs are accepted, while lone high or low UTF-16 surrogates are rejected. This
-order is shared by canonical dataset identity, adoption results and Firestore
-semantic record traversal.
+An adoption plan records dataset classes, counts, intended direction, destructive choices and confirmation. It never treats a mutable active session as adoptable account data.
+
+## Entitlement
+
+```ts
+type PremiumProjection = {
+  accountId: string;
+  entitlement: 'premium';
+  state: 'active' | 'grace' | 'expired' | 'revoked' | 'refunded';
+  verifiedAt: string;
+  sourceRevision: string;
+};
+```
+
+There is one Premium entitlement, not a track-slot allocation. Store transaction, RevenueCat normalized state, backend projection and device cache are distinct layers. Email is never the RevenueCat user identity.
+
+## Goals, learning facts and Activity
+
+```ts
+type TrackGoal = {
+  trackId: TrackId;
+  goalType: string;
+  targetDate?: string;
+  weeklySessionTarget: number;
+  preferredDays?: readonly number[];
+  preferredLocalReminderTime?: string;
+  preferredSessionLength?: number;
+  state: 'active' | 'paused';
+};
+
+type ActivitySummary = {
+  sessionId: string;
+  trackId: TrackId;
+  nodeId: string;
+  modeId: string;
+  contentReleaseId: string;
+  packageVersion: string;
+  startedAt: string;
+  endedAt: string;
+  completionKind: 'completed' | 'ended_early';
+  requestedLength: number;
+  actualLength: number;
+  answeredCount: number;
+  elapsedForegroundMs: number;
+  resultRef: string;
+};
+```
+
+Immutable attempts/results/review facts remain canonical. Progress and statistics are rebuildable read models, never the only authority. Activity stores compact terminal summaries and resolves exact result detail on demand.
+
+## Device-owned session and local journal
+
+```ts
+type DeviceSessionPointer = {
+  installationId: string;
+  sessionId: string;
+};
+
+type LocalMutationJournal = {
+  operationId: string;
+  deterministicWritePlan: unknown;
+  state: 'durable' | 'materialized';
+};
+```
+
+At most one pointer exists per device. The pointer, session draft, current position, timer and journal never enter account sync. Terminal attempts, results, review mutations and summaries may enqueue only after local materialization and verification.
+
+## Incremental synchronization
+
+```ts
+type AccountOperation = {
+  operationId: string;
+  accountId: string;
+  expectedRevision: number;
+  kind: string;
+  compactCanonicalFacts: readonly unknown[];
+};
+
+type SyncCursor = {
+  accountRevision: number;
+  activityCursor?: string;
+  resultDetailCursor?: string;
+};
+```
+
+The initial/returning-device projection contains profile/entitlement, current track, goals, compact per-track Progress, current-track due review, recent Activity and cursors. Older pages and exact details load on demand. There is no remote active-session record, divergent-draft choice or account-wide session lock.
+
+## Content packages
+
+```ts
+type NodePackageManifest = {
+  trackId: TrackId;
+  nodeId: string;
+  contentReleaseId: string;
+  packageVersion: string;
+  locale: string;
+  checksumSha256: string;
+  objectIdentity: string;
+  objectGeneration: string;
+  minimumAppVersion: string;
+  schemaVersion: string;
+};
+
+type PreparedContentPin = {
+  sessionId: string;
+  packageIdentity: string;
+  packageVersion: string;
+  contentReleaseId: string;
+};
+```
+
+Published objects are immutable. Activation is atomic and a failed candidate cannot replace the last verified version. Locale variants reuse stable instructional evidence identities. A package pinned by an active session cannot be evicted.
+
+## Content report and deletion records
+
+Content reports attach only bounded content/build context by default. Learner response, full prompt/feedback, account ID and email require explicit rules and are not automatic. Account/contact linking is an intentional optional consent.
+
+Deletion uses durable intent, idempotent service operation, minimal proof and tombstone/proof reconciliation. Restore records cannot authorize account resurrection. Backup/PITR records are disaster-recovery metadata, not user account-recovery state.
+
+## Boundaries
+
+Design tokens, Figma status and Storybook fixtures are not product-domain records. Static content is not copied into user learning persistence. Unknown IDs, invalid package identity, immutable collisions, stale revisions and corrupt records fail explicitly.

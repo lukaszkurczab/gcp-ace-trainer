@@ -1,21 +1,37 @@
 # 13 — Risk Register
 
-| Risk                                               | Severity | Signal                                                             | Required mitigation                                                                                       |
-| -------------------------------------------------- | -------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Silent substitute hides incomplete migration       | Critical | Missing data produces an ordinary session                          | Fail explicitly; remove default branches and test them absent.                                            |
-| Permanent translator creates a second architecture | Critical | Old records or types are interpreted beside canonical ones         | Delete old records and paths; no historical translation.                                                  |
-| AsyncStorage survives the MMKV switch              | Critical | Any import, key, or read/write remains                             | Delete it; use one MMKV infrastructure client and repositories.                                           |
-| Old model remains reachable                        | Critical | Imports, routes, tests, or state access old owner                  | Delete references and prove unreachable with focused tests/search.                                        |
-| Exam profile drifts from official behaviour        | High     | Profile lacks official source/date or runtime uses global defaults | Require versioned `ExamExperienceProfile`; test every change; block faithful claim if unclear.            |
-| Weak explanation passes structural validation      | High     | Reason/Details exist but do not teach mechanism or selected error  | Content audit against the batch rubric before release.                                                     |
-| Review is filled with unrelated items              | High     | Requested length exceeds compatible reviewed pool                  | Shorten and disclose actual length; never widen or duplicate.                                             |
-| Evidence becomes status theatre                    | High     | Confidence or synthetic percentage returns                         | Separate evidence volume, learning stage evidence, and performance signals; show only actionable metrics. |
-| Journal loses or duplicates a committed outcome    | Critical | Feedback appears before durable intent or retry changes counts     | Journal-before-feedback, deterministic outcome, idempotency, force-close tests.                           |
-| Codex improvises missing design                    | High     | Required interaction has no approved reference                     | Treat missing design as implementation blocker.                                                           |
-| Unsupported content is hidden                      | High     | Unknown ID/payload gives a generic item or answer                  | Validate boundaries and display explicit error.                                                           |
+This register owns current product/architecture risk context. Task status and sequencing belong only to `launch-completion-plan.md`.
 
-## Mandatory recovery rule
+| Risk | Severity | Detection | Required mitigation |
+| --- | --- | --- | --- |
+| Account wall prevents first learning value | Critical | Guest cannot finish bundled free-node journey | Guest-first end-to-end gate; account only at Premium/sync/restore boundary. |
+| Guest adoption loses or silently merges learning | Critical | Missing preview/confirmation/convergence evidence | Deterministic plan, explicit destructive choice, restart/failure tests, active-session finish/abandon boundary. |
+| Device session becomes remotely owned | Critical | Remote pointer/draft/timer or cross-device resume | Architecture/contract negative tests and deletion of account-wide session paths. |
+| Local durability is bypassed by sync | Critical | Remote call before verified journal materialization | Journal-first command tests, idempotent compact outbox and failure injection. |
+| Store or SDK becomes entitlement authority | Critical | Package download authorized by local RevenueCat result | Store → RevenueCat → backend projection boundary; protected signed-URL tests. |
+| Stale entitlement grants paid access indefinitely | High | Client advances verification time or ignores revoke/refund | Server timestamp, seven-day maximum, known-negative precedence and Free fallback. |
+| Free session leaks Premium content | Critical | Filler or review selection crosses `freeNodeId` | Strict package/node filtering and negative pool-exhaustion tests. |
+| Mutable or silently substituted package corrupts evidence | Critical | Same identity changes or session resolves newer version | Immutable object/generation/checksum, atomic activation, exact version pin and explicit unavailable history. |
+| Identity linking causes takeover | Critical | Auto-link by matching email or unlink last method | Proof through existing method, recent reauth, last-method invariant and revocation tests. |
+| Recovery code leaks | Critical | Plaintext persisted/logged/reported | Show once, strong hashes, closed schemas, log/privacy gates and one-time consumption. |
+| Account deletion misstates subscription behavior | High | Copy implies cancellation/refund or blocks immediate deletion | Separate Manage subscription, truthful processor disclosure and immediate delete path. |
+| Restore resurrects a deleted account | Critical | Snapshot overrides tombstone/proof | Restore runbook, sanitized drill and deletion reconciliation before production PITR acceptance. |
+| Analytics/crash collection bypasses consent | Critical | SDK emits before privacy gate or captures forbidden fields | Fail-closed gate, closed vocabulary/schema, sanitized Crashlytics and network-client inventory. |
+| Content report exposes learner/account data | High | Automatic response, prompt, email or account attachment | Bounded default context, explicit unchecked link/contact consent and retention tests. |
+| Visible family/category leaks implementation model | Medium | UI headings/filters expose family | Track-only surface and density tests across all ten descriptors. |
+| Placeholder tracks create false launch scope | High | Empty/Coming soon production registry entry | Shipping admission requires real free vertical and full core loop. |
+| Coding Interview implies executable verification | High | Judge/pass wording without code runner | Strategy-first copy, implementation-planning objective and simulation disclaimer tests. |
+| Generic or provider-like brand damages trust | High | Clichéd node/cloud/AI mark or provider mimicry | Landscape/anti-reference audit, owner review and selected-finalist similarity screen. |
+| Track symbols become sub-brands | Medium | Separate logos/type/component styles | One shared grammar, monochrome proof and subordinate identity rule. |
+| Codex self-approves visuals | Critical | `APPROVED` without owner action | Owner-only status enforcement and approval evidence gate. |
+| Figma becomes permanent paid dependency | High | Build/CI/docs require live Figma | Verified handoff, repository sources/exports and `CODE_CANONICAL` gate. |
+| Storybook drifts or enters release bundle | High | Parallel components/business access/release import | Production-component stories, typed fixtures, dependency boundary and static release exclusion proof. |
+| Token or local style bypass fragments UI | Medium | Unapproved literals/overrides/local motion | Repository token authority and lint/architecture checks. |
+| Motion/haptics harm accessibility or imply false durability | High | No reduced-motion path or success before commit | Semantic adapter, persistence-aware events, reduced-motion and physical-device checks. |
+| Public/store visuals diverge from product | High | Different mark/copy/states across surfaces | One source package and whole-product/public/store consistency audit. |
+| Platform claims exceed evidence | High | iPad claim, wrong API target or simulator-only proof | Exact release matrix, phone-only signed smoke and 200%/screen-reader evidence. |
+| Low perceived quality survives functional QA | High | Flicker, unstable layout or weak operational states | Measured performance budgets, canonical state inventory, visual comparison and release-quality audit. |
 
-If an existing model, record, flow, or module cannot be moved into the canonical structure without preserving obsolete semantics, delete it. Do not create fallbacks, translators, compatibility adapters, or parallel paths. Backward compatibility is not required for pre-production storage, content, or runtime models. An explicit runtime failure is a valuable signal that migration work remains; it must not be hidden by substituting defaults or reading the old system.
+## Recovery rule
 
-Risk review rejects changes that retain old keys, dual ownership, silent defaults, permanent status flags, or untested exam-profile changes. Current legacy code is an implementation risk, not a reason to weaken this mitigation.
+Do not mitigate a risk with a hidden fallback, compatibility alias, placeholder, second authority or fake success. If obsolete pre-production behavior cannot move into the canonical ownership model without preserving the risk, delete it in the responsible implementation task and prove removal.

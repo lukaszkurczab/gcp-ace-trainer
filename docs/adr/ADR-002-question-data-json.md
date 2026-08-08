@@ -1,11 +1,15 @@
 # ADR-002 — Question Data as Local JSON
 
-Status: **Accepted**  
+Status: **Superseded for launch delivery by PO-048 (2026-08-08)**
 Data: 2026-06-26
 
 ## Scope note
 
-Ta decyzja pozostaje historycznie poprawna dla pierwszego contentu certyfikacyjnego. W aktualnym modelu Patternly `Question` jest tylko jednym wariantem `TrainingItem`, a lokalne dane powinny docelowo przyjąć postać wersjonowanych content packów per track zgodnie z `docs/04-data-model.md` i `docs/08-storage-and-offline.md`.
+Ta decyzja pozostaje historycznie poprawna dla pierwszego bundled contentu.
+Launch dostarcza kompletne bundled free nodes oraz immutable compressed
+whole-node Premium packages. Format canonical source może nadal być
+walidowalnym JSON-em, ale ten ADR nie jest już autorytetem dystrybucji,
+wersjonowania ani aktywacji contentu.
 
 ## Kontekst
 

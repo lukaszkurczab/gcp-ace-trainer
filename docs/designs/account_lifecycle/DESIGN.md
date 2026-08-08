@@ -1,13 +1,13 @@
 # Patternly account lifecycle design
 
-## Authority and status
+## Historical authority and status
 
 - Design reference: `account-lifecycle-001`
-- Status: `APPROVED` — focused transition, controller inspection and repeated
+- Status: `HISTORICAL` — approval applied only to the previous contract; focused transition, controller inspection and repeated
   independent QA completed on 2026-08-01 with verdict `pass`.
-- Owner: `product-owner`
-- Authority: owner authorization recorded on 2026-08-01 permits derivation now
-  and permits `APPROVED` only after every acceptance criterion is met,
+- Owner at the time: `product-owner`
+- Historical authority: owner authorization recorded on 2026-08-01 permitted derivation
+  and permitted `APPROVED` only after every acceptance criterion was met,
   controller inspection passes and independent QA returns `pass`. Candidate
   review supplied that evidence before this status transition; the transition
   itself then passed controller inspection and repeated independent QA.
@@ -16,9 +16,13 @@
 - Composite reference:
   `docs/designs/account_lifecycle/account-lifecycle-reference.png`.
 
-This document is the account-lifecycle design authority for copy, coverage and
-behavior. The raster is a representative hierarchy and archetype reference; it
-does not replace the complete matrix below. It does not implement runtime UI.
+This document was the account-lifecycle design authority for the previous
+account-first contract. It is retained only as implementation and approval
+provenance. Its account-before-bootstrap, Home, email/password-only, and
+account-wide active-session assumptions are superseded and must not be used as
+target copy, behavior, navigation, or visual approval. The target requires new
+owner-approved Figma work and the verified repository handoff defined by the
+canonical contract. The raster does not implement runtime UI.
 
 ## Visual system
 

@@ -1,23 +1,23 @@
-# 16 — Algorithms Learning System
+# 16 — Coding Interview Learning System
 
 ## Purpose and scope
 
-This document provides Algorithms-family context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
+This document owns the internal `coding_interview` family learning semantics for the learner-visible target track **Coding Interview: DSA & Problem Solving**. It elaborates `canonical-product-contract.yaml` and cannot override it. The former Algorithms identity must migrate atomically across application and content repositories; this document does not authorize a permanent alias.
 
 It describes:
 
-- the Algorithms taxonomy;
-- Algorithms practice blueprints;
-- semantics of the eight Algorithms modes;
-- Algorithms item selection;
+- the Coding Interview taxonomy;
+- Coding Interview practice blueprints;
+- semantics of the eight Coding Interview modes;
+- Coding Interview item selection;
 - mental-unit sequencing;
 - pattern and strategy discrimination;
 - family-specific scoring interpretation;
 - algorithmic review selection and reinsert policy;
 - family-specific evidence interpretation;
-- Algorithms recommendation rules;
+- Coding Interview recommendation rules;
 - `Interview Simulation` learning semantics;
-- Algorithms-specific content requirements.
+- Coding Interview-specific content requirements.
 
 It does not redefine:
 
@@ -33,7 +33,7 @@ Those shared concerns remain defined by the canonical product contract.
 
 ## Product boundary
 
-Algorithms is a strategy-first learning family.
+Coding Interview is a strategy-first learning family.
 
 It is not:
 
@@ -54,6 +54,7 @@ recognize the relevant structure
 → order the operations
 → justify correctness
 → derive complexity
+→ produce an implementation plan with data structures, invariants, operation order, and edge cases
 → distinguish the approach from plausible alternatives
 → transfer the reasoning to a related problem
 ```
@@ -68,7 +69,7 @@ Patternly uses findings from cognitive science and computing-education research 
 
 Retrieving information or a decision rule from memory can produce better delayed retention than additional restudy. Retrieval can also support transfer, particularly when learners retrieve and apply knowledge across varied examples rather than merely repeat identical questions.
 
-Algorithms practice therefore requires an active decision before instructional feedback is shown. Passive rereading of an explanation is not the default learning loop.
+Coding Interview practice therefore requires an active decision before instructional feedback is shown. Passive rereading of an explanation is not the default learning loop.
 
 Retrieval alone is not sufficient evidence of transferable understanding. Selection must vary surface form, constraints, and application while preserving the underlying mechanism.
 
@@ -76,7 +77,7 @@ Retrieval alone is not sufficient evidence of transferable understanding. Select
 
 Distributed practice generally produces stronger delayed retention than the same practice massed into one period. The most effective spacing interval depends on the intended retention interval; research does not provide one universal review schedule for every learning target.
 
-Algorithms review therefore distinguishes:
+Coding Interview review therefore distinguishes:
 
 - immediate correction;
 - later due retrieval;
@@ -127,7 +128,7 @@ Patternly does not require free-form self-explanation in the current interaction
 
 Interleaving related categories can improve discrimination when learners need to choose between plausible alternatives. Contrasting cases can help make decisive structural differences more noticeable than studying one category in isolation.
 
-Algorithms `Contrast Practice` therefore places closely competing strategies or variants into explicit comparison. `Independent Practice` interleaves previously introduced mental units so that the learner must identify the applicable strategy rather than follow a visible topic cue.
+Coding Interview `Contrast Practice` therefore places closely competing strategies or variants into explicit comparison. `Independent Practice` interleaves previously introduced mental units so that the learner must identify the applicable strategy rather than follow a visible topic cue.
 
 Interleaving is not used indiscriminately. Initial acquisition remains more bounded because comparison is useful only when the learner has enough knowledge to represent the alternatives being compared.
 
@@ -135,7 +136,7 @@ Interleaving is not used indiscriminately. Initial acquisition remains more boun
 
 Multiple-choice testing can reinforce false alternatives when learners select plausible distractors without receiving correction. Corrective feedback can reduce this risk while retaining the benefits of retrieval practice.
 
-Every non-simulation Algorithms mode therefore provides authored feedback after durable submission.
+Every non-simulation Coding Interview mode therefore provides authored feedback after durable submission.
 
 Feedback must explain the relevant mechanism and selected misconception. Merely displaying the correct option is insufficient.
 
@@ -175,9 +176,9 @@ They must be:
 
 Patternly does not claim that using these mechanisms guarantees interview success.
 
-## Algorithms taxonomy
+## Coding Interview taxonomy
 
-Algorithms content is organized as:
+Coding Interview content is organized as:
 
 ```txt
 roadmap node
@@ -190,7 +191,7 @@ roadmap node
 
 ### Roadmap node
 
-A roadmap node is the learner-facing topic or contrast area shown in the Algorithms roadmap.
+A roadmap node is the learner-facing topic or contrast area shown in the Coding Interview roadmap.
 
 A node may contain one or more mental units, but a practice batch must identify which mental unit is primary.
 
@@ -261,22 +262,22 @@ An instructional item has one primary skill atom.
 
 Secondary skill atoms may provide context but must not make the item diagnostically ambiguous.
 
-## Algorithms track instance
+## Coding Interview track instance
 
-The Algorithms track instance owns:
+The Coding Interview: DSA & Problem Solving track instance owns:
 
 - roadmap;
 - taxonomy;
 - active content manifest;
 - active content bank;
 - content version;
-- `AlgorithmsPracticeBlueprint`;
-- `AlgorithmsRecommendationPolicy`;
-- `AlgorithmsInterviewSimulationProfile`;
+- `CodingInterviewPracticeBlueprint`;
+- `CodingInterviewRecommendationPolicy`;
+- `CodingInterviewSimulationProfile`;
 - supported interaction types.
 
 ```ts
-type AlgorithmsMode =
+type CodingInterviewMode =
   | "Learn Approach"
   | "Guided Practice"
   | "Custom Practice"
@@ -286,17 +287,17 @@ type AlgorithmsMode =
   | "Independent Practice"
   | "Interview Simulation";
 
-type AlgorithmsPracticeBlueprint = {
+type CodingInterviewPracticeBlueprint = {
   blueprintId: string;
   blueprintVersion: string;
-  supportedLengthsByMode: Readonly<Record<AlgorithmsMode, readonly number[]>>;
+  supportedLengthsByMode: Readonly<Record<CodingInterviewMode, readonly number[]>>;
   modeStageDistribution: Readonly<
-    Partial<Record<AlgorithmsMode, readonly AlgorithmsLearningStage[]>>
+    Partial<Record<CodingInterviewMode, readonly CodingInterviewLearningStage[]>>
   >;
   simulationDistribution: JsonValue;
 };
 
-type AlgorithmsLearningStage =
+type CodingInterviewLearningStage =
   | "approach_model"
   | "guided_application"
   | "recognition"
@@ -305,7 +306,7 @@ type AlgorithmsLearningStage =
   | "spaced_review"
   | "simulation";
 
-type AlgorithmsRecommendationPolicy = {
+type CodingInterviewRecommendationPolicy = {
   policyId: string;
   policyVersion: string;
   evidenceRequirements: JsonValue;
@@ -321,7 +322,7 @@ It does not infer missing stages, distributions, thresholds, or mode support fro
 
 ## Canonical mode configuration
 
-`canonical-product-contract.yaml` is the only Algorithms mode matrix. It supplies the mode IDs and labels together with selection boundary, session length, feedback, timer, shortening, and reinsert configuration. This learning document does not repeat those values or map entry intents.
+`canonical-product-contract.yaml` is the only Coding Interview mode matrix. It supplies the mode IDs and labels together with selection boundary, session length, feedback, timer, shortening, and reinsert configuration. This learning document does not repeat those values or map entry intents.
 
 The exact session plan is selected, ordered, and persisted before the first item appears. Selection does not adapt silently in response to answers during the active session.
 
@@ -329,7 +330,7 @@ The exact session plan is selected, ordered, and persisted before the first item
 
 All seven non-simulation modes:
 
-- use one canonical active session;
+- use the one active session owned by the current device;
 - use unique content identities except an explicitly scheduled exact-item reinsert;
 - persist the session before the first item appears;
 - render the timer behavior resolved from the canonical configuration;
@@ -762,7 +763,7 @@ Feedback should connect the new response to the recorded misconception without r
 
 ### Reinsert
 
-Reinsert follows the resolved Algorithms reinsert configuration.
+Reinsert follows the resolved Coding Interview reinsert configuration.
 
 ### Summary
 
@@ -877,7 +878,7 @@ The canonical product contract supplies the simulation configuration. Its values
 
 ### Preparation
 
-Selection follows the versioned Algorithms simulation blueprint.
+Selection follows the versioned Coding Interview simulation blueprint.
 
 The blueprint declares:
 
@@ -985,7 +986,7 @@ A simulation result does not automatically recommend another simulation and does
 
 ## Multiple choice
 
-The shared Algorithms multiple-choice contract is:
+The shared Coding Interview multiple-choice contract is:
 
 - exact selected correct set → `correct`;
 - non-empty proper correct subset containing no wrong option → `partial`;
@@ -1072,7 +1073,7 @@ Feedback explains, where applicable:
 
 ## Review creation
 
-Algorithms attempts may create or increase review from approved triggers, including:
+Coding Interview attempts may create or increase review from approved triggers, including:
 
 - incorrect;
 - partial;
@@ -1085,7 +1086,7 @@ Algorithms attempts may create or increase review from approved triggers, includ
 - supported hint use;
 - manual mark.
 
-Algorithms review evidence identifies:
+Coding Interview review evidence identifies:
 
 - source item;
 - exact attempt or transition provenance;
@@ -1134,9 +1135,9 @@ Skipping must not:
 
 The resolved reinsert policy is a Patternly product decision. It must be tested and evaluated; it is not represented as a universal finding from learning science.
 
-## Algorithms evidence model
+## Coding Interview evidence model
 
-Algorithms evidence remains separated into three categories.
+Coding Interview evidence remains separated into three categories.
 
 ### Evidence volume
 
@@ -1205,7 +1206,7 @@ The general priority is:
 8. use `Independent Practice` when broader strategy selection and transfer are the next challenge;
 9. offer `Interview Simulation` as a chosen validation condition, not proof of readiness.
 
-Exact thresholds and tie-breaking rules belong to the versioned `AlgorithmsRecommendationPolicy`.
+Exact thresholds and tie-breaking rules belong to the versioned `CodingInterviewRecommendationPolicy`.
 
 The policy must use explicit evidence counts and categories.
 
@@ -1235,7 +1236,7 @@ Avoid:
 
 ## Content quality
 
-Every active Algorithms instructional item has:
+Every active Coding Interview instructional item has:
 
 - one primary skill atom;
 - explicit constraints;
@@ -1324,7 +1325,7 @@ Runtime must not:
 
 ## Explicit failures
 
-Algorithms preparation or resume fails explicitly for:
+Coding Interview preparation or resume fails explicitly for:
 
 - unknown track or mode;
 - unknown roadmap node or mental unit;
@@ -1379,6 +1380,6 @@ The following remain external to this document:
 - required verification → `12-testing-strategy.md`;
 - complete session state transitions → `17-training-runtime-and-interaction-spec.md`.
 
-This document supplies Algorithms-family learning semantics to those shared contracts.
+This document supplies Coding Interview-family learning semantics to those shared contracts.
 
 It does not create a second lifecycle, persistence system, feedback model, or review queue.

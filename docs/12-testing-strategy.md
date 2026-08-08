@@ -69,7 +69,7 @@ Test family-neutral contracts for:
 
 - stable identifiers;
 - content and occurrence references;
-- one active session;
+- one active session per device and no remote active-session state;
 - immutable attempts;
 - canonical result envelopes;
 - session lifecycle guards;
@@ -81,7 +81,7 @@ Test family-neutral contracts for:
 
 Assert that the shared kernel does not import or interpret:
 
-- concrete Algorithms payloads;
+- concrete Coding Interview payloads;
 - concrete Certification payloads;
 - track instances;
 - active content banks;
@@ -210,15 +210,15 @@ Adding an interaction is incomplete unless all these contracts exist.
 
 Tests must fail if an interaction is registered without its complete handler.
 
-## Algorithms mode tests
+## Coding Interview mode tests
 
-The canonical-product-contract suite validates the complete Algorithms mode matrix and entry resolution from the contract data. Application tests consume the resolved configuration rather than restating a mode list, session lengths, feedback timing, timer, or reinsert policy in this strategy.
+The canonical-product-contract suite validates the complete Coding Interview mode matrix and entry resolution from the contract data. Application tests consume the resolved configuration rather than restating a mode list, session lengths, feedback timing, timer, or reinsert policy in this strategy.
 
 For Custom Practice, exercise every configuration declared by the contract, its required blueprint and explicit mental-unit boundary, unsupported-value rejection, the one-active-session lifecycle, and the specified feedback-disclosure boundary. A real-device evidence flow must reset development learning state before each independent case and preserve screenshots, Maestro output, and the resolved session-configuration selector outside the repository worktree.
 
 ## Review selection tests
 
-For Algorithms `Weak Area Review`, test that selection:
+For Coding Interview `Weak Area Review`, test that selection:
 
 1. takes eligible source items;
 2. then takes only reviewed compatible items under the family policy;
@@ -328,11 +328,11 @@ Assert:
 
 Test the commit-pending state where feedback is visible but materialization is incomplete.
 
-## Algorithms Interview Simulation tests
+## Coding Interview Interview Simulation tests
 
 Test the resolved canonical simulation configuration: identity and version, valid blueprint, explicit preparation failure, plan integrity, draft response operations, current-position persistence, and the declared feedback boundary.
 
-### Algorithms timer tests
+### Coding Interview timer tests
 
 Test:
 
@@ -357,7 +357,7 @@ Test checkpoint behaviour:
 - force-close immediately after checkpoint;
 - the contract-declared checkpoint cadence and maximum drift.
 
-### Algorithms draft tests
+### Coding Interview draft tests
 
 Test revisioned draft operations:
 
@@ -388,7 +388,7 @@ Draft changes must create no:
 - `Details`;
 - distractor explanation.
 
-### Algorithms finalization tests
+### Coding Interview finalization tests
 
 Manual submit and foreground-time exhaustion must invoke the same logical finalization contract.
 
@@ -532,7 +532,7 @@ Results tests include:
 
 Test:
 
-- one active session globally;
+- one active session per device, with independent sessions allowed on other devices;
 - persistence before first item;
 - active-session reference consistency;
 - immutable item order;
@@ -644,7 +644,7 @@ For every simulation draft family, test:
 
 Certification draft tests must reject fields forbidden by the active `ExamExperienceProfile`.
 
-Algorithms draft tests must reject flags unless an approved Algorithms profile explicitly enables them.
+Coding Interview draft tests must reject flags unless an approved Coding Interview profile explicitly enables them.
 
 ## Reset tests
 
@@ -756,7 +756,7 @@ Test the approved session top bar:
 - `x of y` counter on the right;
 - no `Item` label;
 - no Patternly logo in the session top bar;
-- no dedicated close button in the approved Algorithms session layout.
+- no dedicated close button in the approved Coding Interview session layout.
 
 Practice response states cover:
 
@@ -816,7 +816,7 @@ Assert that UI does not expose:
 
 ## Simulation navigator tests
 
-Algorithms navigator tests include:
+Coding Interview navigator tests include:
 
 - the canonical resolved occurrence plan;
 - current;
@@ -928,6 +928,28 @@ Local integrity fingerprints must not be presented as tamper-proof credentials o
 
 The suite must fail if any of the following returns:
 
+- account creation required before all first learning value;
+- silent guest-data discard, overwrite, or merge;
+- guest purchase, restore, or Premium-package download;
+- local RevenueCat SDK state treated as paid-download authority;
+- Premium track slots, tiers, or cooldowns;
+- account-wide active-session ownership or cross-device resume;
+- synchronized active pointer, draft, current position, timer, or mutation journal;
+- a Free session or review selecting Premium content;
+- per-question Firestore content fetching;
+- mutable published package or silent package-version substitution;
+- learner-visible family/category grouping;
+- empty or placeholder production track;
+- ordinary Firebase verification/recovery fixed to exactly 30 minutes;
+- a launch Language route with English as its only option;
+- Activity as a fifth primary tab;
+- analytics or crash collection before the fail-closed consent/privacy gate;
+- content report automatically attaching response, account ID, email, full prompt, options, explanation, or feedback;
+- restore capable of resurrecting a deleted account;
+- an iPad support claim in the target release matrix;
+- Figma or Storybook in the production runtime graph;
+- visual approval assigned by Codex or anyone other than the Product Owner;
+
 - confidence fields or confidence UI;
 - synthetic readiness percentage;
 - synthetic retention percentage;
@@ -958,6 +980,21 @@ The suite must fail if any of the following returns:
 
 ## Manual and screenshot QA
 
+The complete release verification matrix also covers:
+
+- contract/schema/parser requirement coverage and superseded-path rejection;
+- guest bootstrap, Free-node filtering, adoption preview/confirmation, restart, cancellation, and failure injection;
+- journal-first local durability, incremental cursors, pagination, idempotency, stale revisions, and device-session isolation;
+- email/password, Apple, Google, linking collisions, last-method protection, recovery codes, reauthentication, and revocation;
+- store/RevenueCat/backend entitlement authority, restore conflict, seven-day grace, downgrade, and already-started session completion;
+- signed package authorization, checksum/schema/semantic validation, atomic activation/rollback, pinning, review resolution, and protected eviction;
+- consent fail-closed analytics/crash behavior, closed event fields, report attachment preview, retention, and offline queue states;
+- deletion/subscription truth, public deletion non-enumeration, PITR sandbox drill, tombstone reconciliation, and no-resurrection;
+- ten-track registry admission and representative family proofs before broad content copying;
+- owner-approved Figma evidence, production components in development-only Storybook, risk-based state coverage, visual baselines, and release-bundle exclusion;
+- Light/Dark/System, 200% text, screen reader, reduced motion, semantic haptics, performance budgets, and signed physical-phone smoke on iOS and Android;
+- public Privacy, Terms, support, auth-action, deletion and store surfaces plus signed-artifact release evidence.
+
 Critical flows require manual and screenshot-based verification on supported mobile platforms.
 
 Cover at least:
@@ -967,7 +1004,7 @@ Cover at least:
 - Reason and collapsed Details;
 - reinsert and skipped reinsert;
 - shortened review disclosure;
-- Algorithms simulation draft navigation;
+- Coding Interview simulation draft navigation;
 - timer pause outside foreground;
 - draft-save failure;
 - timer exhaustion;
@@ -981,7 +1018,7 @@ Cover at least:
 - screen reader;
 - reduced motion.
 
-Missing approved visual design blocks the corresponding implementation and QA case.
+Missing applicable Product Owner-approved Figma design blocks significant UI implementation. After verified handoff, `CODE_CANONICAL` repository evidence replaces Figma as the operational comparison source.
 
 It is not replaced by a Codex-created generic interaction.
 

@@ -4,7 +4,9 @@ This document provides design-system context for the behavior defined by `canoni
 
 ## Purpose
 
-Patternly uses a calm, accessible focus-lab interface.
+Patternly uses a calm, accessible focus-lab interface with complete Light,
+Dark and System behavior. Dark is the primary brand expression; Light has full
+functional and semantic parity rather than being a later accessibility patch.
 
 The design system makes the following information clear without decorative performance claims:
 
@@ -23,16 +25,100 @@ Visual components render application and family-runtime states. They do not calc
 
 The primary tab navigation contains:
 
-1. `Home`
+1. `Today`
 2. `Practice`
 3. `Progress`
 4. `Settings`
 
-Track selection, session setup, session runner, summary, review, and topic or competency details are nested routes.
+`Activity` is a required nested section/route under Progress, not a fifth tab.
+Track selection, goal selection, roadmap/node, session setup, runner, summary,
+exact result/review, account, Premium, package, recovery and topic or competency
+details are nested routes.
 
 Track identity remains visible wherever it changes content, progress, recommendation, review, or session behaviour.
 
 Track accents remain stable across navigation, setup, session, summary, and progress surfaces. They support orientation and do not encode readiness, mastery, or status.
+
+The user sees tracks, not implementation families or family-category labels.
+
+## Token and semantic ownership
+
+The final system uses one repository-owned, platform-neutral token source for:
+
+- Light, Dark and System surfaces;
+- Patternly and subordinate track accents;
+- semantic status and response states;
+- typography, spacing, shape and elevation;
+- motion and reduced-motion values;
+- relevant haptic intent metadata.
+
+Brand and track colour never encodes correctness, partial/incorrect response,
+warning, error, entitlement, readiness or mastery. Every semantic distinction
+also has text, shape, iconography or accessibility state.
+
+Production components consume typed tokens and recipes. Screen-local literal
+styles, arbitrary overrides and local motion/haptic behavior do not become a
+second design system.
+
+## Design authority lifecycle
+
+Figma is the temporary visual authority while the one-time active design phase
+is open. The controlled spaces are `Patternly — Brand Lab`,
+`Patternly — Design System` and `Patternly — Product`.
+
+Exploration follows one funnel:
+
+```txt
+3 materially different directions
+→ 2 developed finalists
+→ 1 final system
+```
+
+Codex may set actual Figma work to `DRAFT` or `REVIEW`. Only the Product Owner
+may set `APPROVED`; a report, screenshot, generated image or Codex review does
+not substitute for that approval.
+
+The complete handoff state machine is:
+
+```txt
+FIGMA_DRAFT → FIGMA_REVIEW → FIGMA_APPROVED → IMPLEMENTED
+→ VISUALLY_VERIFIED → HANDED_OFF → CODE_CANONICAL
+```
+
+After `CODE_CANONICAL`, repository tokens/assets, production components,
+canonical states, Storybook, tests and checked-in baselines are operational
+authority. Figma may remain an archive, but ordinary development, CI and builds
+do not require it or a paid Figma plan.
+
+## Development-only Storybook
+
+React Native Storybook uses a separate development entry/target and renders
+the same production components and screen views as the app through
+deterministic typed presentation fixtures. It does not contain a parallel UI.
+
+Stories cannot access MMKV, production repositories, identity, payment,
+entitlement, synchronization, package services or session lifecycle. Required
+states and justified `NOT_APPLICABLE` cases are machine-readable and selected
+by risk rather than by a wasteful cartesian product.
+
+Production builds must statically prove that Storybook and its entry path are
+absent from the release graph and bundle. Storybook tests complement rather
+than replace application integration, screenshot comparison, accessibility
+and physical-device QA.
+
+## Brand, illustration, motion and haptics
+
+The design system implements the formal grammar owned by
+`06-branding-and-style-direction.md`. One Patternly mark, optical app-icon
+master and wordmark sit above subordinate monochrome-capable track symbols.
+Track signatures orient content; they are not sub-brands.
+
+Illustration is sparse, abstract and diagrammatic, built from the same bounded
+primitives as the brand. Motion is functional with a limited brand signature;
+every material animation has a reduced-motion equivalent and cannot delay an
+action. Haptics pass through a semantic platform adapter and occur only at a
+small number of meaningful boundaries. A success haptic cannot precede
+canonical durability and verification.
 
 ## Track and mode cards
 
@@ -61,10 +147,10 @@ A fixed-length simulation does not shorten. Failure to prepare its required cont
 Setup discloses timer semantics before start:
 
 - practice uses elapsed foreground time;
-- an Algorithms foreground-countdown simulation uses the canonical contract's resolved duration and pause behavior;
+- a Coding Interview foreground-countdown simulation uses the canonical contract's resolved duration and pause behavior;
 - certification `Exam Simulation` uses the absolute deadline defined by its profile.
 
-The Algorithms timer is labelled as active work time, not as a deadline or exact reproduction of an uninterrupted external interview.
+The Coding Interview timer is labelled as active work time, not as a deadline or exact reproduction of an uninterrupted external interview.
 
 ## Session shell
 
@@ -85,7 +171,7 @@ The shell does not import concrete item payloads or calculate family-specific st
 
 ### Session top bar
 
-For standard Algorithms practice and simulation screens:
+For standard Coding Interview practice and simulation screens:
 
 - the timer appears on the left;
 - the question counter appears on the right;
@@ -124,7 +210,7 @@ The following timer states require defined presentation:
 - frozen for finalization;
 - persistence or recovery failure.
 
-The Algorithms foreground countdown is never labelled, described, or implemented as an absolute deadline.
+The Coding Interview foreground countdown is never labelled, described, or implemented as an absolute deadline.
 
 ## Practice response controls
 
@@ -272,9 +358,9 @@ The UI renders the complete family-composed authored narrative rather than a sta
 
 For choice items, the selected wrong-option explanation may be composed into `Details` by stable option ID. UI never fabricates an explanation from option text, IDs, result enums, or generic templates.
 
-## Algorithms Interview Simulation navigator
+## Coding Interview simulation navigator
 
-Algorithms simulation requires an approved navigator for the occurrence plan resolved from the canonical contract.
+Coding Interview simulation requires an approved navigator for the occurrence plan resolved from the canonical contract.
 
 The navigator distinguishes at least:
 
@@ -285,7 +371,7 @@ The navigator distinguishes at least:
 
 Correctness is not shown before finalization.
 
-The navigator must not render flagged state unless the Algorithms simulation profile explicitly introduces and permits flagging.
+The navigator must not render flagged state unless the Coding Interview simulation profile explicitly introduces and permits flagging.
 
 Required surrounding states include:
 
@@ -392,19 +478,31 @@ Animations must not be the only indication of state and must not delay a require
 
 ## Missing design dependency
 
+Significant new or rewritten presentation requires its applicable actual
+Figma state to be owner-approved before production implementation. Nonvisual
+kernel, application, persistence, server and package work may proceed while
+brand exploration is active when it does not commit a new presentation.
+
 Approved visual and interaction design must exist before implementing every required state, including:
 
 - response-state treatments;
 - ordering movement;
 - content-defined complexity controls;
 - foreground-countdown disclosure;
-- Algorithms simulation navigator;
+- Coding Interview simulation navigator;
 - draft saving and save failure;
 - timer exhaustion and frozen state;
 - certification navigator and sections;
 - unanswered warning;
 - finalization progress and recovery;
 - review disclosure;
+- guest first value and adoption preview;
+- account, recovery-code and security actions;
+- Premium, purchase, restore, downgrade and entitlement conflict;
+- package download, verification, offline and unavailable states;
+- Today, nested Activity and per-track goals;
+- analytics consent, content reporting and account deletion;
+- public, legal, support and store surfaces;
 - explicit content and storage failures.
 
 Missing design is an implementation blocker.

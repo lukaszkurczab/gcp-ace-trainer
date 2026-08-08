@@ -2,10 +2,17 @@
 
 ## Jak używać rejestru
 
-To jest rejestr decyzji produktowych, w tym historycznych decyzji dotyczących
-moderowanych testów. Bieżący publiczny launch jest prowadzony przez
-[`launch-completion-plan.md`](launch-completion-plan.md). Decyzje operacyjne
-badania nie blokują launchu; testy wewnętrzne odbywają się niezależnie.
+To jest autorytatywny rejestr bezpośrednich decyzji Product Ownera, ich
+uzasadnienia, konsekwencji i jawnych relacji zastąpienia. Normatywne zachowanie
+produktu jest kodowane w
+[`canonical-product-contract.yaml`](canonical-product-contract.yaml), a
+dokumenty narracyjne je rozwijają bez nadpisywania.
+
+[`launch-completion-plan.md`](launch-completion-plan.md) jest wyłącznie źródłem
+kolejności implementacji i statusu repozytorium; pozostaje zamrożony do
+regeneracji w Directive 3. ADR-y są historią lub decyzjami technicznymi, a
+raporty, audyty, projekty i screenshoty są dowodami. Żaden z nich nie zastępuje
+tego rejestru ani kontraktu normatywnego.
 
 Wykonawca nie zatrzymuje pracy przy każdej pozycji:
 
@@ -18,6 +25,14 @@ Wykonawca nie zatrzymuje pracy przy każdej pozycji:
   nie może wybrać finalnej opcji za właściciela;
 - **`deferred`** — decyzja jest świadomie odsunięta do wskazanego gate'u
   dowodowego.
+- **`implemented`** — decyzja ma zweryfikowany implementation evidence, ale
+  nie staje się przez to execution authority;
+- **`superseded` / `partly superseded`** — zapis pozostaje historią, a wskazana
+  nowsza decyzja przejmuje całość albo wymienioną część znaczenia;
+- **`historical evidence`** — zapis wyjaśnia wcześniejszy stan lub operację i
+  nie jest bieżącym targetem;
+- **`owner-decision-required`** — pozostaje najmniejsza materialna decyzja albo
+  autoryzacja, której nie wolno wywnioskować.
 
 Brak odpowiedzi nie oznacza akceptacji ceny, przyszłego tracku ani finalnej
 stylistyki. Każda zmiana decyzji wymaga aktualizacji konsekwencji i zakresu
@@ -27,36 +42,66 @@ aktywnego planu.
 
 | ID     | Decyzja                             | Status                     | Ustawienie robocze                                                            |
 | ------ | ----------------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
-| PO-001 | Architektura marki                  | `provisional`              | Branded house: Patternly → family → track.                                    |
-| PO-002 | Pierwszy klin a tożsamość portfolio | `provisional`              | Algorithms jako klin; Patternly pozostaje wielotrackowe.                      |
-| PO-003 | Publiczne nazwy family i track      | `provisional`              | Konkretny track jako tytuł, family jako kategoria.                            |
+| PO-001 | Architektura marki                  | `superseded by PO-053`     | Historyczny model z publiczną warstwą family.                                 |
+| PO-002 | Pierwszy klin a tożsamość portfolio | `superseded by PO-046`     | Historyczny klin Algorithms.                                                  |
+| PO-003 | Publiczne nazwy family i track      | `superseded by PO-046`     | Historyczna prezentacja family jako kategorii.                                |
 | PO-004 | Semantyka Progress                  | `resolved`                 | Wszystko wspierane jest dostępne; rekomendacja nie jest blokadą.              |
-| PO-005 | Niedostępne akcje Settings          | `provisional`              | W buildzie zewnętrznym nie pokazuj funkcji, która nie istnieje end-to-end.    |
-| PO-006 | Język i locale badania              | `resolved`                 | EN dla interfejsu i treści pierwszej kohorty; moderacja może być po polsku.   |
+| PO-005 | Niedostępne akcje Settings          | `historical research only` | Launch nadal pokazuje wyłącznie prawdziwe stany i funkcje end-to-end.         |
+| PO-006 | Język i locale badania              | `superseded by PO-042`     | Historyczna decyzja pierwszej kohorty.                                        |
 | PO-007 | Historyczna kohorta i sygnały       | `resolved`                 | Brak aktywnej kohorty po decyzji o pracy solo; ponowne badanie wymaga nowej decyzji. |
-| PO-008 | Gate przyszłych tracków             | `deferred`                 | Brak rozszerzeń przed dowodem pierwszego klina.                               |
-| PO-009 | Kierunek stylistyczny               | `resolved`                 | Option 3 — Quiet Layered; jedna dominująca decyzja pozostaje guardrailem.     |
-| PO-010 | Kanał feedbacku                     | `deferred`                 | Moderowane badanie zbiera feedback poza aplikacją.                            |
-| PO-011 | Model monetyzacji                   | `deferred`                 | Brak paywalla i ceny w buildzie badawczym.                                    |
+| PO-008 | Gate przyszłych tracków             | `superseded by PO-046`     | Historyczny gate dwutrackowy.                                                 |
+| PO-009 | Kierunek stylistyczny               | `superseded by PO-054`     | Option 3 jest historycznym dowodem, nie finalnym autorytetem wizualnym.       |
+| PO-010 | Kanał feedbacku                     | `superseded by PO-050`     | Historyczny kanał badania moderowanego.                                       |
+| PO-011 | Model monetyzacji                   | `superseded by PO-037`     | Model Free/Premium jest rozstrzygnięty.                                       |
 | PO-012 | Długość Independent Practice        | `provisional`              | 10 pytań domyślnie; 20 pozostaje wspieranym dłuższym wariantem.               |
 | PO-013 | Operacje pierwszego badania         | `resolved`                 | Nie będzie rekrutacji ani badania z uczestnikami; właściciel pracuje solo.    |
-| PO-017 | Konto i rejestracja w publicznym launchu | `resolved`             | Rejestracja, logowanie i pełny lifecycle konta są wymagane; kontrakt danych powstaje przed UI. |
-| PO-018 | Jednorazowe domknięcie audytu tras  | `resolved`                 | Wszystkie bieżące trasy i brakujące powierzchnie są w jednej inwentaryzacji; bez kolejnego szerokiego audytu przy niezmienionym scope. |
-| PO-019 | Benchmark kategorii                 | `provisional`              | Dodać historię sesji i content trust/reporting; nie kopiować gamifikacji, judge'a, laboratoriów ani AI tutora. |
+| PO-014 | Zakończenie nieukończonej sesji     | `provisional`              | Jawne zakończenie daje partial summary bez udawania completed score.          |
+| PO-015 | Domyślne ustawienia szybkiego startu | `provisional`             | Rekomendowany profil produktu; Custom nie zmienia go po cichu.                |
+| PO-016 | Forma szczegółowego wyjaśnienia     | `provisional`              | Format Details wynika z mechanizmu i zadania poznawczego.                     |
+| PO-017 | Konto i rejestracja w publicznym launchu | `partly superseded by PO-036/043` | Konto pozostaje wymagane na granicach identity; first value jest guest-first, sesja device-owned. |
+| PO-018 | Jednorazowe domknięcie audytu tras  | `historical evidence`      | Inwentaryzacja opisuje wcześniejszy/current implementation state, nie target. |
+| PO-019 | Benchmark kategorii                 | `partly superseded by PO-037/044/045/050` | Activity/report/goal pozostają; brak paywalla nie jest launch target. |
 | PO-020 | Dostawca konta i zdalnych danych    | `resolved`                 | Firebase Auth + Firestore Standard + Cloud Run w Warszawie; bez Identity Platform, Cloud SQL i bez bezpośredniego Firestore w aplikacji. |
 | PO-021 | Projekty Patternly sandbox i production | `resolved`              | Utworzyć dokładnie dwa odrębne projekty; pozostała konfiguracja i billing wymagają osobnej zgody. |
 | PO-022 | Bazy Firestore i reguły klienta     | `resolved`                 | Utworzyć po jednej bazie Standard w Warszawie i wdrożyć deny-all rules; billing oraz dalsze usługi pozostają poza zgodą. |
-| PO-023 | Standard Firebase Authentication    | `resolved`                 | Włączyć email/hasło z improved email privacy w obu projektach, bez Identity Platform, billingu, aplikacji Firebase i użytkowników. |
+| PO-023 | Standard Firebase Authentication    | `external foundation; extended by PO-040` | Email/password pozostaje istniejącą podstawą; launch dodaje Apple/Google/recovery. |
 | PO-024 | Sandboxowy limit kosztów            | `resolved`                 | Sandbox: alert wszystkich usług 5 PLN i Cloud Run Preview spend cap 5 PLN; produkcja pozostaje bez billingu. |
 | PO-025 | Hosting przed promocją rynkową      | `resolved`                 | Brak aktywnego publicznego hosta; jedyną ścieżką przedrynkową jest Firebase Hosting Emulator na `127.0.0.1`, a profesjonalny host/domena są wybierane w gate 11A. |
-| PO-026 | Retencja po usunięciu konta          | `resolved`                 | 0 dni danych live; start bez backupu po odczytowym potwierdzeniu; przyszły backup maks. 30 dni bez odtworzenia konta; pięciopolowy proof dokładnie 30 dni. |
-| PO-027 | Projekt account lifecycle            | `resolved`                 | Ten sam kompletny ref przeszedł do `APPROVED`; inspekcja i niezależne QA finalizacji zwróciły `pass`. |
+| PO-026 | Retencja po usunięciu konta          | `partly superseded by PO-051` | Live deletion/no-resurrection pozostaje; target ma siedmiodniowe PITR.      |
+| PO-027 | Projekt account lifecycle            | `historical evidence; superseded by PO-054` | Poprzednia referencja nie zatwierdza nowego systemu wizualnego.             |
 | PO-028 | Sandboxowa implementacja Task 3A     | `resolved`                 | Zatwierdzono bazowy pakiet sandbox; jego lokalny build i trzy-SA model zostały następnie jawnie zastąpione przez `PO-031` oraz czwartą, izolowaną build identity. |
 | PO-029 | Zakres urządzeń i zakupy przed powrotem właściciela | `resolved`       | Launch wspiera tylko telefony; wszelkie zakupy czekają na nową, jawną zgodę właściciela po jego powrocie. |
 | PO-030 | Lokalna instalacja Google Cloud CLI  | `resolved`                 | Po odwracalnej awarii caska użyć oficjalnego archiwum Google sprawdzonego opublikowaną sumą SHA-256. |
 | PO-031 | Budowanie obrazu Cloud Run           | `resolved`                 | Zastąpić ciężką lokalną VM ręcznym Cloud Build bez triggerów; dokładny IAM/koszt musi przejść QA przed mutacją. |
+| PO-032 | Publiczny transport usunięcia konta | `resolved`                 | Ograniczona autoryzacja Resend w sandboxie i jawna granica procesora.          |
+| PO-033 | Praca podczas nieobecności właściciela | `resolved`              | Niezależna bezpieczna praca trwa; zewnętrzne i sekretne gate'y pozostają jawne. |
+| PO-034 | Odporne dokończenie zdalnego usunięcia | `owner-decision-required` | Wynik produktowy jest wymagany; dokładna mutacja schedulera nie jest autoryzowana. |
+| PO-035 | Osobny Finish zwykłej sesji          | `implemented`              | Trwały zapis odpowiedzi poprzedza jedyną jawną akcję terminalną.              |
+| PO-036 | Guest-first i adopcja                | `resolved`                 | Pierwsza wartość lokalnie; konto na granicy Premium/sync/restore.             |
+| PO-037 | Free i Premium                       | `resolved`                 | Stałe Free; monthly + annual; jedno Premium; bez slotów i tierów.             |
+| PO-038 | Autorytet Premium i grace            | `resolved`                 | Store → RevenueCat → backend; cross-platform; 7 dni zweryfikowanego offline.  |
+| PO-039 | Usunięcie a subskrypcja sklepu       | `resolved`                 | Natychmiastowe usunięcie konta jest niezależne od anulowania/refundu.          |
+| PO-040 | Metody tożsamości i recovery codes   | `resolved`                 | Email/hasło, Apple, Google oraz osiem jednorazowych kodów.                     |
+| PO-041 | Wygaśnięcie action codes             | `resolved`                 | Provider kontroluje zwykłe kody; dokładne 30 min tylko dla tokenu usunięcia.  |
+| PO-042 | Język launchu                        | `resolved`                 | Launch English-only; brak Language route; przyszłe locale zachowuje evidence IDs. |
+| PO-043 | Sesja urządzenia i incremental sync  | `resolved`                 | Jedna aktywna sesja per device; brak remote draft/pointer/timer/journal.       |
+| PO-044 | Własność powierzchni produktu        | `resolved`                 | Today, Practice, Progress, Settings; Activity zagnieżdżone pod Progress.       |
+| PO-045 | Cele per track                       | `resolved`                 | Ważne templates wpływają na cadence/rekomendacje, nigdy access/scoring.       |
+| PO-046 | Wewnętrzne families i dziesięć tracków | `resolved`              | Trzy wewnętrzne families; dziesięć równych briefs i gate admission.           |
+| PO-047 | Granica Coding Interview             | `resolved`                 | `coding_interview`, strategy-first, atomowa migracja, bez sugestii judge'a.   |
+| PO-048 | Niezmienne node packages             | `resolved`                 | Bundled free nodes i autoryzowane immutable whole-node Premium packages.      |
+| PO-049 | Analytics i crash boundary           | `resolved`                 | Firebase Analytics/Crashlytics fail-closed za privacy/consent gate.           |
+| PO-050 | Content reports                      | `resolved`                 | Bounded context, domyślnie bez konta, jawna zgoda na link/contact.            |
+| PO-051 | PITR i bezpieczny restore            | `resolved`                 | Produkcyjne 7 dni PITR, tylko DR, tombstones zapobiegają resurrection.        |
+| PO-052 | Macierz platformowa                  | `resolved`                 | Expo 57, iPhone/iOS 16.4+, Android API 28/36, phone-only signed evidence.     |
+| PO-053 | Jedna marka Patternly                | `resolved`                 | Jedna marka z podrzędnymi accents/symbols tracków, bez sub-brands.            |
+| PO-054 | Figma i approval właściciela         | `resolved`                 | Jednorazowe 3→2→1; tylko owner oznacza realną pracę `APPROVED`.               |
+| PO-055 | Handoff Storybook/code               | `resolved`                 | `CODE_CANONICAL`, repo authority i brak trwałej płatnej zależności Figma.     |
 
 ## PO-001 — Architektura marki
+
+**Status historyczny:** `superseded by PO-053`. Family nie jest publiczną
+warstwą marki; poniższy model zachowuje wyłącznie historię decyzji.
 
 **Pytanie:** jak relacjonować Patternly, rodziny i konkretne tracki?
 
@@ -75,12 +120,15 @@ osobno.
 **Ustawienie robocze:** Patternly jest marką nadrzędną; family porządkuje semantykę
 nauki; track jest konkretnym wyborem użytkownika.
 
-**Status:** `provisional`.
+**Stan w poprzedniej fazie:** `provisional`.
 
-**Trigger decyzji właściciela:** przed zatwierdzeniem finalnego copy UTR-003 lub
+**Historyczny trigger:** przed zatwierdzeniem finalnego copy UTR-003 lub
 gdy badanie pokaże, że wspólna obietnica jest niezrozumiała.
 
 ## PO-002 — Pierwszy klin a tożsamość portfolio
+
+**Status historyczny:** `superseded by PO-046`. Dziesięć target track briefs i
+representative proofs zastępują Algorithms-first launch wedge.
 
 **Pytanie:** z którego segmentu zacząć walidację bez zamykania marki?
 
@@ -101,12 +149,15 @@ Patternly pozostaje domain-neutral, a GCP ACE pozostaje działającą drugą
 instancją i sanity-checkiem architektury. `PO-013` wycofuje rekrutację i
 badanie uczestników, ale nie zmienia pierwszego klina produktu.
 
-**Status:** `provisional`.
+**Stan w poprzedniej fazie:** `provisional`.
 
-**Trigger decyzji właściciela:** przed zmianą pierwszego klina albo po dowodzie,
+**Historyczny trigger:** przed zmianą pierwszego klina albo po dowodzie,
 że segment Algorithms nie rozpoznaje problemu lub nie widzi przewagi.
 
 ## PO-003 — Publiczne nazwy family i track
+
+**Status historyczny:** `superseded by PO-046`. Użytkownik nie widzi family ani
+family category.
 
 **Pytanie:** co użytkownik widzi jako nazwę karty i kontekst?
 
@@ -126,9 +177,9 @@ family i instancji.
 `Certification`; `Algorithms` z kategorią opisującą practice, bez zmiany
 stabilnych identyfikatorów runtime.
 
-**Status:** `provisional`.
+**Stan w poprzedniej fazie:** `provisional`.
 
-**Trigger decyzji właściciela:** po layout check najdłuższych nazw w UTR-003,
+**Historyczny trigger:** po layout check najdłuższych nazw w UTR-003,
 przed copy freeze.
 
 ## PO-004 — Semantyka Progress
@@ -155,6 +206,9 @@ blokuje wspieranej konfiguracji. Publiczne mastery/retention jest zabronione.
 
 ## PO-005 — Niedostępne akcje Settings w badaniu zewnętrznym
 
+**Status historyczny:** decyzja dotyczy wycofanego badania. Jej trwałą zasadą
+jest wyłącznie zakaz udawania funkcji end-to-end.
+
 **Pytanie:** co zrobić z Feedback i Subscription, które celowo rzucają błąd w
 development?
 
@@ -174,12 +228,15 @@ może zostać wdrożony end-to-end później, gdy ma realnego odbiorcę.
 ustawienia. Nie powstaje release flag ani fallback. Diagnostyczny wyjątek nie
 jest zamieniany w fake success.
 
-**Status:** `provisional`.
+**Stan w poprzedniej fazie:** `provisional`.
 
-**Trigger decyzji właściciela:** przed UTR-006; jeśli właściciel poda działający
+**Historyczny trigger:** przed UTR-006; jeśli właściciel poda działający
 kanał feedbacku i chce go badać, Feedback przechodzi do pełnej implementacji.
 
 ## PO-006 — Język i locale pierwszego badania
+
+**Status historyczny:** `superseded by PO-042` dla launchu. Poniższy zapis
+dotyczy wyłącznie wycofanej kohorty.
 
 **Pytanie:** czy pierwsza kohorta korzysta z EN, PL, czy miksu?
 
@@ -202,9 +259,9 @@ buildzie/protokole badania bez ukrytego przełącznika produkcyjnego.
 angielskiej powłoki i angielskiej treści. Moderacja może być prowadzona po
 polsku lub angielsku, ale interfejs i materiał edukacyjny nie mieszają locale.
 
-**Status:** `resolved`.
+**Stan w poprzedniej fazie:** `resolved`.
 
-**Trigger decyzji właściciela:** wyłącznie przed zmianą publicznego języka
+**Historyczny trigger:** wyłącznie przed zmianą publicznego języka
 interfejsu lub treści. Nie ma już języka uczestników ani moderatora do wyboru.
 
 ## PO-007 — Kohorta i sygnały powodzenia
@@ -253,6 +310,8 @@ Ponowne badanie wymaga nowej decyzji i prawdziwego pakietu operacyjnego.
 
 ## PO-008 — Gate przyszłych tracków
 
+**Status historyczny:** `superseded by PO-046`.
+
 **Pytanie:** kiedy wybrać kolejną instancję lub rodzinę?
 
 **Dowód:** Azure, AWS, SQL, debugging i system design są w dokumentacji
@@ -271,12 +330,15 @@ nie wymaga track-specific branch w kernelu.
 **Ustawienie robocze:** tylko Algorithms i GCP ACE są renderowane. Nie tworzyć
 kart, taxonomii, statusów ani pustych runtime'ów przyszłych kandydatów.
 
-**Status:** `deferred`.
+**Stan w poprzedniej fazie:** `deferred`.
 
-**Trigger decyzji właściciela:** po syntezie pierwszej kohorty i ocenie
+**Historyczny trigger:** po syntezie pierwszej kohorty i ocenie
 operacyjnej aktualności GCP ACE.
 
 ## PO-009 — Kierunek stylistyczny
+
+**Status historyczny:** `superseded by PO-054`. Option 3 jest dowodem
+poprzedniej fazy, nie finalnym kierunkiem nowego Figma funnel.
 
 **Pytanie:** który z trzech istniejących systemów wizualnych ma stać się finalną
 twarzą Patternly?
@@ -302,13 +364,15 @@ dominujący wybór i usuwanie powtórzonego kontekstu. Duże paddingi nie mogą
 prowadzić do zagnieżdżania kart ani wypychania podstawowej decyzji poza pierwszy
 viewport; mały ekran i większy tekst są obowiązkową bramką UTR-005.
 
-**Status:** `resolved`.
+**Stan w poprzedniej fazie:** `resolved`.
 
-**Trigger wykonawczy:** wybór odblokował UTR-005. Implementacja i porównawcze
+**Historyczny trigger wykonawczy:** wybór odblokował UTR-005. Implementacja i porównawcze
 QA korzystają z
 [Option 3](designs/product-direction-options/option-3.png) jako źródła.
 
 ## PO-010 — Kanał feedbacku
+
+**Status historyczny:** `superseded by PO-050`.
 
 **Pytanie:** czy feedback wewnątrz aplikacji jest częścią pierwszego badania?
 
@@ -326,12 +390,14 @@ asynchronicznymi, jeśli istnieje realny odbiorca.
 
 **Ustawienie robocze:** brak widocznego wiersza bez działającej integracji.
 
-**Status:** `deferred`.
+**Stan w poprzedniej fazie:** `deferred`.
 
-**Trigger decyzji właściciela:** wskazanie kanału i ownera albo przejście do
+**Historyczny trigger:** wskazanie kanału i ownera albo przejście do
 testów bez moderatora.
 
 ## PO-011 — Model monetyzacji
+
+**Status historyczny:** `superseded by PO-037`.
 
 **Pytanie:** subscription, zakup tracku czy inny model?
 
@@ -350,9 +416,9 @@ bez przedstawiania ceny jako faktu.
 
 **Ustawienie robocze:** build badawczy bez subskrypcji i lokalnego entitlement.
 
-**Status:** `deferred`.
+**Stan w poprzedniej fazie:** `deferred`.
 
-**Trigger decyzji właściciela:** po dowodzie powtarzalnej wartości i analizie
+**Historyczny trigger:** po dowodzie powtarzalnej wartości i analizie
 odpowiedzi o gotowości do zapłaty; przed rozpoczęciem kompletnego pionowego
 zakresu billing.
 
@@ -528,6 +594,10 @@ mechanizm oraz zastosować go później.
 
 ## PO-017 — Konto i rejestracja w publicznym launchu
 
+**Status:** `partly superseded by PO-036 and PO-043`. Konto pozostaje wymagane
+dla Premium/sync/restore/cross-device, ale nie przed first value; aktywna sesja
+nie jest account-owned.
+
 **Pytanie:** czy publiczny launch pozostaje lokalnym produktem bez konta, czy
 obejmuje rejestrację i logowanie?
 
@@ -554,11 +624,14 @@ autorytetem konwergencji konta. Adopcja, konflikt, wylogowanie i usunięcie
 danych mają jawne, testowane wyniki w `canonical-product-contract.yaml`; żaden
 z tych mechanizmów nie jest jeszcze opisany jako zaimplementowany runtime.
 
-**Status:** `resolved` dla wymagania właściciela i kontraktu Task 1. Dostawcę
+**Stan w poprzedniej fazie:** `resolved` dla wymagania właściciela i kontraktu Task 1. Dostawcę
 konta i danych oraz region backendu rozstrzyga `PO-020`; implementacja,
 publiczny host/domena i dowody produkcyjne pozostają w Tasks 3 i 8.
 
 ## PO-018 — Jednorazowe domknięcie audytu tras
+
+**Status historyczny:** inventory pozostaje implementation evidence;
+`PO-044` definiuje target navigation.
 
 **Pytanie:** czy praca ma nadal wracać do szerokich audytów, czy obecny audyt
 ma ustalić całą trasę do launchu?
@@ -572,9 +645,11 @@ tras, stanów wbudowanych, brakujących ekranów konta/trust oraz rejestracji i
 podpisywania aplikacji. Każdy task wykonuje własne before/after i aktualizuje
 inwentaryzację, ale nie otwiera szerokiego audytu przy niezmienionym scope.
 
-**Status:** `resolved`.
+**Stan w poprzedniej fazie:** `resolved`.
 
 ## PO-019 — Benchmark konkurencji a zakres launchu
+
+**Status:** `partly superseded by PO-037, PO-044, PO-045 and PO-050`.
 
 **Pytanie:** które braki ujawnione przez konkurencyjne aplikacje są rzeczywistą
 luką Patternly, a które tylko kopiowaniem cudzych katalogów funkcji?
@@ -594,7 +669,7 @@ Brilliant, Codecademy i Quizlet na aktualnych oficjalnych źródłach.
 - globalny katalog/search, code judge, cloud labs, AI tutor, streaki, XP,
   ligi, badge'e, community i paywall nie są wymagane do launchu.
 
-**Status:** `provisional`; zmienić tylko po dowodzie, że odrzucona funkcja
+**Stan w poprzedniej fazie:** `provisional`; zmienić tylko po dowodzie, że odrzucona funkcja
 usuwa realną przeszkodę w core loopie albo że wskazana luka nie zmienia decyzji
 użytkownika.
 
@@ -707,6 +782,9 @@ projekty nadal raportują `billingEnabled: false`.
 
 ## PO-023 — Standard Firebase Authentication email/password
 
+**Status docelowy:** istniejąca konfiguracja pozostaje external foundation;
+`PO-040` rozszerza launch methods.
+
 **Pytanie:** czy wykonać bezbillingowy slice 3B-3 inicjalizujący standardowe
 Firebase Authentication w obu projektach?
 
@@ -733,7 +811,7 @@ email privacy, przy wyłączonych pozostałych providerach, MFA, multi-tenancy i
 blocking functions. Oba projekty nadal mają zero użytkowników i aplikacji
 Firebase oraz `billingEnabled: false`.
 
-**Status:** `resolved`; implementacja 3B-3 i poprawka jednego nieaktualnego
+**Stan external foundation:** `resolved`; implementacja 3B-3 i poprawka jednego nieaktualnego
 słowa w raporcie przeszły powtórne niezależne QA z werdyktem `pass`.
 
 ## PO-024 — Sandboxowy limit kosztów przed Cloud Run
@@ -827,6 +905,9 @@ aktywnymi i nie dowodzi ich bieżącej zawartości.
 
 ## PO-026 — Retencja po zweryfikowanym usunięciu konta
 
+**Status:** `partly superseded by PO-051`. Live deletion i no-resurrection
+pozostają; launch target obejmuje siedmiodniowe PITR.
+
 **Pytanie:** jakie granice retencji obowiązują po zweryfikowanym usunięciu
 konta bez włączania płatnego mechanizmu odzyskiwania przed potwierdzeniem
 potrzeby produktu?
@@ -857,11 +938,14 @@ backupu, TTL, Scheduler/retention joba ani na jakąkolwiek mutację Firebase/GCP
 Start bez backupu nie tworzy kosztu backup/PITR. Przyszły backup, TTL lub job
 wymagają osobnego pakietu z odczytowym preflightem, kosztem i autoryzacją.
 
-**Status:** `resolved`; zapis decyzji 3A-1 oraz jego granice kosztowe i dowodowe
+**Stan w poprzedniej fazie:** `resolved`; zapis decyzji 3A-1 oraz jego granice kosztowe i dowodowe
 przeszły niezależne QA z werdyktem `pass`. Implementacja usuwania, expiry,
 provider proof i sandbox deletion drill należą do właściwego zakresu Task 3.
 
 ## PO-027 — Projekt kompletnego account lifecycle
+
+**Status historyczny:** `superseded by PO-054` jako visual authority. Artefakt
+pozostaje dowodem poprzedniego kontraktu.
 
 **Pytanie:** czy autoryzować derivację jednego kompletnego projektu account
 lifecycle z zatwierdzonego kierunku Quiet Layered i warunkowo dopuścić jego
@@ -890,7 +974,7 @@ produktu, zakresu danych, treści prawnej, kierunku wizualnego lub zachowania
 poza kanonicznym kontraktem musi zostać przedstawiona właścicielowi do jawnej
 decyzji; kontroler nie wybiera jej domyślnie.
 
-**Status:** decyzja o derivacji i warunkowej ścieżce zatwierdzenia jest
+**Stan w poprzedniej fazie:** decyzja o derivacji i warunkowej ścieżce zatwierdzenia jest
 `resolved`. Artefakt `account-lifecycle-001` pozostaje `PENDING` do zakończenia
 inspekcji kontrolera i niezależnego QA; ten zapis nie deklaruje `APPROVED` ani
 `pass`.
@@ -1220,3 +1304,340 @@ testach siedmiu granic trwałości dla obu rodzin i powtórnym niezależnym QA
 `pass`. Osobny `Finish session` jest jedyną kanoniczną ścieżką utworzenia
 wyniku zwykłej sesji Practice; usunięto równoległy writer i fallback zapytania
 do wyniku.
+
+## PO-036 — Guest-first entry i adopcja danych
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Pierwsza istotna wartość edukacyjna jest dostępna bez rejestracji. Lokalny
+guest może wybierać i zmieniać track, ustawiać cele, korzystać z bundled free
+node, pracować offline oraz gromadzić attempts, results, review, Activity,
+Progress i settings. Guest nie jest Firebase Anonymous Authentication.
+
+Konto jest wymagane dla Premium, synchronizacji, restore i cross-device
+continuity. Powiązanie konta wymaga prawdziwego preview, jawnego potwierdzenia,
+deterministycznego planu local-versus-account i weryfikacji convergence.
+Aktywna sesja guest pozostaje na urządzeniu i przed adopcją musi zostać
+ukończona albo jawnie porzucona.
+
+**Supersedes:** `PO-017` w zakresie account-gated Home/track/first value oraz
+launchowe znaczenie `ADR-003`.
+**Status:** `resolved`.
+
+## PO-037 — Permanent Free i jeden Premium
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Produkt ma stałe Free oraz jedno account-bound Premium obejmujące cały Premium
+content wszystkich tracków. Sprzedawany jest jeden produkt miesięczny i jeden
+roczny. Nie istnieją active-track slots, track-count tiers ani
+assignment/release/cooldown. Cena liczbowa i identyfikatory produktów są
+późniejszą decyzją store i nie mogą być zgadywane.
+
+Każdy produkcyjny track ma jeden kompletny bundled `freeNodeId`; Free nigdy nie
+dociąga Premium filler. Guest nie kupuje Premium.
+
+**Supersedes:** `PO-011` oraz sprzeczne slot/tier statements z materiałów
+wizualnych.
+**Status:** `resolved`.
+
+## PO-038 — Autorytet entitlement, restore i offline grace
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Apple/Google jest autorytetem transakcji, RevenueCat normalizuje stan, backend
+Patternly posiada account-bound entitlement projection, a urządzenie tylko
+bounded cache. RevenueCat App User ID jest stabilnym opaque Patternly account
+ID, nigdy e-mailem. Lokalny SDK result nie autoryzuje paid download.
+
+Premium działa cross-platform. Restore ponownie czyta i weryfikuje aktywną
+transakcję i nie przywraca expired subscription ani learning snapshot.
+Konflikt transakcji między kontami jest jawny.
+
+Offline Premium verification grace wynosi siedem dni przy lokalnym package i
+braku nowszego revoke/refund/expiry. Sesja rozpoczęta podczas entitlement może
+zawsze zakończyć się na tym samym urządzeniu. Po grace produkt działa jako
+Free do weryfikacji sieciowej.
+
+**Supersedes:** brak wcześniejszego kompletnego modelu; rozszerza `PO-020`.
+**Status:** `resolved`.
+
+## PO-039 — Account deletion a subskrypcja sklepu
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Usunięcie Patternly account nie deklaruje automatycznego anulowania, refundu
+ani wygaśnięcia subskrypcji sklepu. UI pokazuje aktywny entitlement, prowadzi
+do `Manage subscription`, zachowuje natychmiastowe `Delete now` i może oferować
+end-of-paid-period deletion wyłącznie tam, gdzie jest technicznie wspierane.
+Processor records są opisane i odłączane od Patternly account zgodnie z
+kontraktem providera.
+
+**Supersedes:** wcześniejsze niepełne powiązanie deletion/subscription;
+zachowuje bezpieczne granice `PO-026`.
+**Status:** `resolved`.
+
+## PO-040 — Metody logowania i recovery codes
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Launch wspiera email/password, Sign in with Apple, Sign in with Google i osiem
+jednorazowych high-entropy recovery codes. Metody prowadzą do jednego Firebase
+UID i Patternly account. Nie ma auto-merge po e-mailu; linking wymaga dowodu
+przez istniejącą metodę, a ostatnia używalna metoda nie może zostać odłączona.
+
+Wymagane są recent reauthentication dla zmian hasła/e-maila, bezpieczne
+link/unlink, sign out current/all devices z revocation enforcement, regeneracja
+kodów i narrow recovery session. Plaintext kodów nie trafia do storage, logów,
+Analytics, support ani reports. Terms version/timestamp jest oddzielne od
+opcjonalnego analytics consent.
+
+**Supersedes:** `PO-023` wyłącznie jako pełny launch-method contract;
+istniejąca konfiguracja email/password pozostaje ważnym external fact.
+**Status:** `resolved`.
+
+## PO-041 — Wygaśnięcie zwykłych action codes
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Zwykłe Firebase verification i password-recovery codes używają
+provider-controlled expiry i single-use semantics. Nie obiecujemy dokładnych
+30 minut. Dokładne 30 minut i single use pozostaje wyłącznie dla własnego
+public-deletion possession token.
+
+**Supersedes:** każdy wcześniejszy wymóg dokładnie 30 minut dla zwykłej
+weryfikacji/recovery.
+**Status:** `resolved`.
+
+## PO-042 — English-only launch
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Launch application i launch content są English-only. Jedno-opcyjna trasa
+Language nie należy do launchu. Polish jest przyszłym kierunkiem localization,
+nie launch capability. Locale pozostaje presentation: stable item/option IDs,
+accepted answers, scoring i evidence identity nie zmieniają się.
+
+**Supersedes:** `PO-006` jako launch contract; `PO-006` pozostaje historyczną
+decyzją kohorty.
+**Status:** `resolved`.
+
+## PO-043 — Device-owned session i incremental sync
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+`currentTrackId` i per-track canonical facts synchronizują się, ale aktywna
+sesja jest device-owned. Na urządzeniu istnieje najwyżej jedna aktywna sesja
+we wszystkich trackach; inne urządzenie może mieć własną. Pointer, draft,
+position, timer i mutation journal nigdy nie synchronizują się ani nie resume
+cross-device. Nie istnieje account-wide active-session conflict.
+
+Learning mutation pozostaje journal-first lokalnie, następnie enqueue compact
+idempotent account operation. Sync używa triggerów jawnych, cursors, pagination,
+recent Activity i on-demand exact history; launch nie obiecuje background sync.
+
+**Supersedes:** account-owned active-session model w `PO-017`/Task 1 oraz remote
+draft/timer/conflict semantics.
+**Status:** `resolved`.
+
+## PO-044 — Today, Practice, Progress, Activity i Settings
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Primary tabs to `Today`, `Practice`, `Progress`, `Settings`. `Activity` jest
+wymaganą nested route pod Progress, nie piątym tabem. Today daje jedną
+wykonywalną next action; Practice jest manual workspace; Progress wyjaśnia
+zmianę evidence; Activity pokazuje paginated terminal history. User-facing
+`Home` zostaje przemianowane na `Today`.
+
+**Supersedes:** `PO-018` jako target route authority i koryguje placement z
+`PO-019`; inventory pozostaje historycznym implementation evidence.
+**Status:** `resolved`.
+
+## PO-045 — Per-track goals
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Cele należą do tracku, który pokazuje wyłącznie sensowne dla siebie templates.
+Goal obejmuje typ, opcjonalny target date, weekly target, preferred days/time,
+opcjonalną długość oraz active/paused. Może wpływać na Today, planowanie,
+reminders, cadence i sugerowaną długość. Nie wpływa na entitlement, locking,
+scoring, mastery/readiness, streaks ani punitive messaging.
+
+**Supersedes:** provisional goal/cadence fragment `PO-019`.
+**Status:** `resolved`.
+
+## PO-046 — Internal families i dziesięć równych tracków
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Families są wyłącznie wewnętrzne: `certification`, `coding_interview`,
+`design_interview`. Użytkownik widzi dziesięć tracków wymienionych w
+`00-overview.md`, bez family headings/filters/categories.
+
+Każdy track wymaga kompletnego briefu, taxonomy, `freeNodeId`, valid modes,
+goals, Progress, package/content plan i commercial gate. Shipping registry
+admission następuje dopiero z realnym free vertical i pełnym core loop; nie ma
+placeholderów. Representative proofs poprzedzają kopiowanie.
+
+**Supersedes:** `PO-001`, `PO-002`, `PO-003`, `PO-008` w zakresie publicznej
+family, pierwszego klina i dwutrackowego gate'u.
+**Status:** `resolved`.
+
+## PO-047 — Coding Interview: DSA & Problem Solving
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Publiczny Algorithms product staje się `Coding Interview: DSA & Problem
+Solving`, a target family ID to `coding_interview`. Migracja jest atomowa albo
+staje się jawnym bounded prerequisite; nie istnieje permanentny alias
+`algorithms` → `coding_interview`.
+
+Produkt pozostaje strategy-first, nie jest online judge i nie sugeruje
+verification executable code. Wymagany jest objective uczący analizy problemu,
+strategii, struktur danych, złożoności, edge cases, pseudocode i kompletnego
+implementation plan.
+
+**Supersedes:** Algorithms jako target user-facing/family identity.
+**Status:** `resolved`.
+
+## PO-048 — Immutable whole-node packages
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Complete free node każdego tracku jest bundled. Premium content jest
+immutable compressed whole-node package w Cloud Storage. Firestore przechowuje
+manifest/account metadata, Cloud Run autoryzuje identity/entitlement i wydaje
+short-lived signed URL. App pobiera tymczasowo, sprawdza checksum, schema i
+semantics, zapisuje versioned package i atomowo aktywuje pointer.
+
+Sesja pin exact versions. Failed validation/crash zachowuje previous verified
+package. Cache nie usuwa package aktywnej sesji; historical Activity nie
+podstawia nowej wersji.
+
+**Supersedes:** `ADR-002` jako pełny launch delivery model oraz all-content-
+bundled assumptions.
+**Status:** `resolved`.
+
+## PO-049 — Analytics i Crashlytics
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Firebase Analytics i Crashlytics są wybranymi narzędziami, ale fail closed do
+czasu autoryzacji przez privacy/consent gate dla rynku launchowego. Terms nie
+są analytics consent. Obowiązuje closed event vocabulary, closed field schemas
+i forbidden-field enforcement; nie istnieje raw per-event Firestore stream.
+
+**Supersedes:** categorical no-analytics statements jako target.
+**Status:** `resolved`.
+
+## PO-050 — Report a problem
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Per-item content report jest wymagany. Automatyczny context jest bounded do
+report/item/release-package/track-node/mode-route/locale/app/platform/time.
+Response, full prompt, full feedback, account ID i email nie są dołączane
+automatycznie. Link account/contact wymaga osobnej jawnej intencji. Offline
+queue/retry i admin correction workflow mają jawne stany oraz ograniczoną
+retencję.
+
+**Supersedes:** `PO-010`; rozwija trust/reporting z `PO-019`.
+**Status:** `resolved`.
+
+## PO-051 — Siedmiodniowe PITR i bezpieczny restore
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Produkcyjna ścieżka Firestore ma target siedmiu dni point-in-time recovery,
+bez launchowych long-term scheduled exports. Wymagane są configuration record,
+restore runbook, sanitized sandbox drill i reconciliation z deletion
+tombstones/proofs. Backup jest disaster recovery, nie user account recovery;
+restore nigdy nie resurrect deleted account. Sama external mutation nadal
+wymaga właściwej autoryzacji.
+
+**Supersedes:** `PO-026` w zakresie launchu bez backupu i `PO-022` jedynie jako
+target PITR; ich obecny zewnętrzny stan pozostaje historią.
+**Status:** `resolved` dla produktu, external mutation gated.
+
+## PO-052 — Target platform release matrix
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Przed final freeze: Expo SDK 57, iOS 16.4+, iPhone only bez iPad claim,
+Android 9/API 28 minimum i target API 36, portrait, Light/Dark/System, 200%
+text scaling, phone-only evidence oraz signed physical-device smoke na obu
+platformach. Platform backup pozostaje wyłączony dla canonical learning/cache.
+
+**Supersedes:** rozszerza dokładnie phone-only granicę `PO-029`; zastępuje
+sprzeczne Light-only/tablet/current-SDK claims jako target.
+**Status:** `resolved`.
+
+## PO-053 — Jedna marka Patternly
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera z dyrektywy brandowej po
+zastosowaniu pierwszeństwa product contract.
+
+Patternly jest jedną marką. Track może mieć stable accent, compact symbol i
+ograniczony motif ze wspólnej grammar, ale nie logo, wordmark, app icon,
+typography, component library ani provider mimicry. Target quality to focused
+flagship sustainable dla solo developera.
+
+**Supersedes:** `PO-001` i publiczną family hierarchy.
+**Status:** `resolved`.
+
+## PO-054 — Figma 3 → 2 → 1 i owner-only approval
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Figma jest jednorazowym aktywnym środowiskiem wizualnym w trzech kontrolowanych
+spaces. Funnel obejmuje trzy materialnie różne directions, dwóch rozwiniętych
+finalists i jeden final system. Codex ustawia `DRAFT`/`REVIEW`; wyłącznie owner
+ustawia actual work `APPROVED`.
+
+System obejmuje emerging-P mark, optical app icon, wordmark, Light/Dark/System,
+track signatures, sparse illustration, restrained/reduced motion, semantic
+haptics oraz public/store consistency. Screenshot lub generated raster nie jest
+finalnym editable asset.
+
+**Supersedes:** `PO-009`, `PO-027` i `ADR-005` jako final visual authority;
+ich artefakty pozostają historycznym evidence.
+**Status:** `resolved` dla procesu; finalny wybór wymaga realnych artefaktów i
+owner approval.
+
+## PO-055 — Storybook/code handoff i Figma independence
+
+**Data:** 2026-08-08
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Handoff przebiega przez `FIGMA_DRAFT`, `FIGMA_REVIEW`, `FIGMA_APPROVED`,
+`IMPLEMENTED`, `VISUALLY_VERIFIED`, `HANDED_OFF`, `CODE_CANONICAL`. Potem repo
+tokens/assets, production components, Storybook, tests i checked-in baselines
+są operational authority. CI/build/ordinary development nie zależą od Figma
+ani paid plan.
+
+Storybook jest osobnym dev-only targetem, renderuje production components przez
+typed deterministic fixtures, nie dotyka MMKV/business services i jest
+statycznie wykluczony z release bundle.
+
+**Supersedes:** generic permanent approved-reference/Figma dependency.
+**Status:** `resolved`.

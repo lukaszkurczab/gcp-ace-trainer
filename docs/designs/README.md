@@ -2,11 +2,10 @@
 
 ## Status
 
-This directory contains visual references consumed by the previous canonical
-contract, current tests, or implemented screens. Directive 1 preserves them as
-implementation evidence; Directive 2 must reconcile their authority against
-the new owner-directed Figma-to-code handoff. Presence here is not approval of
-the new target visual system.
+This directory contains historical visual and implementation evidence from the
+previous product contract. The files explain existing screens and earlier
+owner decisions; they are not current target design authority and do not
+approve any target UI.
 
 The current product direction is defined normatively by `docs/canonical-product-contract.yaml`. The following documents provide supporting context:
 
@@ -14,35 +13,26 @@ The current product direction is defined normatively by `docs/canonical-product-
 - `docs/05-design-system.md`,
 - `docs/06-branding-and-style-direction.md`,
 - `docs/15-certification-track-learning-system.md`,
-- `docs/16-leetcode-like-learning-system.md`,
+- `docs/16-coding-interview-learning-system.md`,
 - `docs/17-training-runtime-and-interaction-spec.md`.
 
 If an individual design conflicts with the canonical product contract, verified product constraints, or repository evidence, the contract and verified constraints win.
 
-## Previous-contract implementation rule
+## Historical-use rule
 
-Final implemented layouts should reach at least **90% design-reference alignment** with the relevant screens in this directory, while remaining internally consistent across the app.
+Earlier approval labels and fidelity targets apply only to the pre-reconciliation
+implementation they originally governed. They cannot be used to approve,
+select, or implement the target visual system. Target visual work requires the
+owner-controlled Figma 3 → 2 → 1 process in `docs/05-design-system.md` and
+`docs/06-branding-and-style-direction.md`; after verified handoff, repository
+tokens, assets, production components, Storybook, tests, and checked-in
+baselines become operational authority.
 
-This means:
+These retained files may be used only to:
 
-- preserve the screen purpose, information hierarchy, primary action, density, and interaction model from the selected reference;
-- preserve the visual direction, spacing rhythm, typography scale, and component language after normalizing them through the shared design system;
-- do not copy inconsistent one-off values, duplicated patterns, fake metrics, conflicting colors, or screen-local layout decisions from separate references;
-- prefer one coherent app-wide layout system over exact reproduction of mismatched reference screens;
-- adapt copy, metrics, empty states, and unavailable states to current product truth and repository behavior.
+- interpret why current code, assets, or tests exist;
+- compare current implementation with the new target during Directive 3;
+- preserve provenance for earlier owner review.
 
-## Alignment Checklist
-
-For every UI implementation batch that uses these references, the report should include a short checklist covering:
-
-- selected reference screen(s),
-- preserved screen job and primary action,
-- preserved top-level layout structure,
-- preserved core component hierarchy,
-- preserved visual tone and density,
-- intentional deviations with rationale,
-- responsive/mobile fit,
-- accessibility and text-overlap verification,
-- Maestro screenshot evidence where applicable.
-
-The target is high fidelity to the reference direction, not blind duplication of every pixel.
+They impose no alignment percentage, implementation mandate, or current visual
+acceptance criterion.

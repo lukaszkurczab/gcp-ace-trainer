@@ -24,6 +24,101 @@ It is not:
 
 Patternly describes what the available evidence supports and what action follows from it. It does not convert limited evidence into certainty or judge the learner as a person.
 
+## Brand architecture
+
+Patternly is one product brand. Internal learning families are not public
+brands, categories or portfolio headings.
+
+Tracks may have a stable accent colour, one compact symbol and a bounded
+geometric motif built from the shared Patternly grammar. They do not receive
+separate logos, wordmarks, app icons, typography systems, component libraries
+or visual treatments that mimic a certification provider or imply affiliation.
+Track symbols are navigational/content identifiers, work in monochrome and
+remain subordinate to Patternly.
+
+## Formal visual grammar
+
+The primary territory is:
+
+```txt
+ambiguous or dispersed elements
+→ recognition of relationships
+→ ordered pattern
+```
+
+The narrative and motion logic is:
+
+```txt
+several plausible interpretations or paths
+→ reveal the decisive boundary
+→ resolve to the useful structure or path
+```
+
+Use a bounded hybrid grammar built from `module`, `space`, `connector`,
+`branch`, `boundary`, `focus frame` and `resolved group`. The result should be
+precise and technical without becoming a generic AI node graph, blockchain
+network, analytics/workflow logo, cloud mark, terminal cliché or developer-tool
+hexagon.
+
+The primary mark is an abstract structure in which a `P` emerges as a second
+reading through negative space, grouping, boundary or one resolved path. It is
+not a conventional letter decorated with random nodes. The app icon is an
+optical adaptation of that mark with dedicated small-size, launcher-mask,
+adaptive and monochrome masters; it is not a second logo.
+
+The wordmark uses a rational humanist technical sans with a controlled custom
+detail or spacing. Monospace is reserved for code, pseudocode and formal
+notation. Prefer a high-quality open-source/OFL type family unless repository
+evidence proves a materially better no-recurring-cost option.
+
+## Colour and track signatures
+
+The system contains neutral Light and Dark surfaces, one primary Patternly
+accent, subordinate track accents, independent semantic status colours and
+independent correct/partial/incorrect response treatments. Dark is the primary
+brand expression and Light has complete parity; System follows the platform.
+
+Brand and track colours never encode correctness, warning, error, entitlement,
+readiness or mastery. Every semantic distinction has an accessible non-colour
+treatment.
+
+## Illustration, motion and haptics
+
+Illustration is diagrammatic, abstract, sparse and constructed from the same
+formal primitives. Use it selectively for first entry, track orientation,
+important empty states, public/store surfaces and a small number of explanatory
+moments. Do not use mascots, people scenes, 3D renders, decorative stock art or
+an unrelated large editorial library.
+
+Motion serves functional transitions plus a limited signature: pattern
+resolution, path selection, track entry, revealed next action and transition
+from session to summary. No continuous background motion, pulsing urgency,
+animation on every tap or delayed action is permitted. Every material motion
+has a reduced-motion counterpart and remains understandable without motion.
+
+Haptics are sparse semantic events through one platform adapter. Appropriate
+boundaries include durable confirmation, warning, recoverable/blocking failure
+or completion. Routine navigation and ordinary taps receive no haptic. A
+success signal cannot be emitted before canonical persistence and verification.
+
+## Visual approval and handoff
+
+Figma is the one-time active visual environment. Exploration uses three
+materially different directions, two developed finalists and one final system.
+The Product Owner alone may set actual visual work to `APPROVED`; Codex may set
+only `DRAFT` or `REVIEW`.
+
+The final package includes editable vectors and production exports for the
+mark, icon, wordmark and track symbols; colour/type rules; illustration
+primitives; motion/reduced-motion and haptic specifications; approved product
+references; store/public assets; licensing/source records; and sufficient
+local sources to end a paid Figma dependency.
+
+After verified handoff to `CODE_CANONICAL`, repository assets, tokens,
+production components, Storybook, tests and baselines become operational
+authority. Figma is reopened only for a system-level redesign, materially new
+interaction grammar or large incomparable vertical.
+
 ## Voice
 
 Patternly uses concise, concrete language.
@@ -200,7 +295,7 @@ Timer language must reflect the actual timer contract.
 
 For ordinary practice, describe elapsed foreground activity as practice time, not total wall-clock session duration.
 
-For a foreground-countdown Algorithms simulation, use the resolved duration and behavior from the canonical contract. Suitable language includes “active work”, “Timer pauses outside the app”, and “Active time remaining”.
+For a foreground-countdown Coding Interview simulation, use the resolved duration and behavior from the canonical contract. Suitable language includes “active work”, “Timer pauses outside the app”, and “Active time remaining”.
 
 Do not call this timer:
 
@@ -285,9 +380,9 @@ Avoid:
 
 > “Exam passed”
 
-## Algorithms simulation safety
+## Coding Interview simulation safety
 
-Algorithms `Interview Simulation` is Patternly-defined.
+Coding Interview simulation is Patternly-defined.
 
 It may be described as:
 
@@ -307,7 +402,8 @@ Because its timer pauses outside the foreground, copy must disclose this behavio
 
 ## Visual direction
 
-Use a focused workbench rather than a game board.
+Use the Patternly formal grammar as a focused learning environment rather than
+a game board, generic dashboard or provider imitation.
 
 The visual system uses:
 

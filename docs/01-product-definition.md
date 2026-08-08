@@ -2,77 +2,71 @@
 
 ## Product promise
 
-Patternly turns technical mistakes into a concrete next practice action. It is a focused, local-first learning product for technical learners who need repeated retrieval, diagnosis, comparison, and deliberate practice rather than an answer feed. Certification and Algorithms are the initial product families; future domains may reuse an existing family or introduce a new family when their response and evaluation semantics are materially different.
+Patternly turns a technical mistake into a concrete next practice action. It trains retrieval, diagnosis, comparison, strategy selection and deliberate practice rather than supplying an answer feed, a code judge or an official exam result.
 
-## Public-launch account purpose
+## Entry, Free, Premium and account value
 
-The public launch requires one verified account so that committed learning
-evidence, review state, history and the one active session can converge across
-the learner's devices without removing offline practice. The account is not a
-public profile, social identity, analytics identity, billing identity or a
-reason to gate bundled content behind continuous connectivity.
+First value is guest-first:
 
-The normative entry, identity, adoption, sync, conflict, offline, sign-out and
-deletion rules are in `canonical-product-contract.yaml`. The current source has
-not implemented those rules yet; until the downstream account tasks complete,
-the existing local-only build is not a public-launch candidate.
+```txt
+concise value
+→ choose a track and valid goal
+→ start its bundled free node
+→ make a real decision
+→ receive authored Reason and Details
+→ see an explained next action
+```
 
+A guest has a local installation identity and local dataset. The guest may switch tracks, set per-track goals, practise each track's free node, review eligible free evidence, inspect Activity and Progress, and work offline. Guest mode is not Firebase Anonymous Authentication.
 
-## Product family model
+An account is required for Premium purchase, synchronization, restore and cross-device continuity. Account creation must not discard guest progress. After verification the product shows an adoption preview, obtains explicit confirmation, applies a deterministic local-versus-account plan and verifies convergence. A new empty account recommends preserving guest data; discard is an explicit destructive choice. An active guest session must be finished or abandoned before adoption and is never migrated.
 
-A **track** is a concrete learning product such as GCP ACE, Azure AI Fundamentals, Algorithms, SQL and Data Reasoning, or Backend System Design. A **track family** is the reusable learning runtime shared by tracks with the same fundamental interaction, evidence, scoring, and review semantics.
+Free is permanent. Every visible production track includes one complete bundled `freeNodeId`. Free sessions filter strictly to that node and never use Premium filler to reach a requested length.
 
-Future candidates illustrate the intended scaling model:
+Premium is one account-bound entitlement for all Premium content in all tracks, available as one monthly and one annual product. It has no track slots or track-count tiers. Store transactions are authoritative at Apple or Google, RevenueCat normalizes them, the Patternly backend owns the account entitlement projection, and the device keeps only a bounded offline cache. A guest cannot purchase Premium or download Premium packages.
 
-| Candidate track | Intended family | Architectural meaning |
-| --- | --- | --- |
-| Azure AI Fundamentals | `certification` | New certification instance; no new runner, storage path, or shell branch. |
-| AWS Solutions Architect Associate | `certification` | More scenario-heavy certification instance using the same family contracts. |
-| SQL and Data Reasoning | `database_reasoning` | New family for query results, schema/index decisions, and deterministic data reasoning. |
-| Debugging and Code Review | `code_reasoning` | New family for traces, bug localization, fix comparison, and regression diagnosis. |
-| Backend System Design | `system_design` | New family for authored trade-off evaluation, capacity reasoning, and failure-mode diagnosis. |
+After downgrade, historical learning, Activity, Progress, feedback and review remain readable. A Premium session started while entitled can finish on the same device. No new Premium session starts without valid entitlement, and the main recommendation always offers an executable Free alternative.
 
-The table is an extensibility target, not a commitment to ship these tracks. A track belongs to an existing family only when that family can represent its content and evaluation semantics without track-specific exceptions in shared code. Otherwise it receives a new family runtime, not a special case inside Algorithms or Certification.
+## Identity and recovery
 
-## Users and value
+Launch methods are email/password, Sign in with Apple, Sign in with Google and eight one-time recovery codes. Linked methods resolve to one Firebase UID and one Patternly account. Email equality alone never merges accounts; provider linking requires proof through an existing usable method, and the last usable method cannot be unlinked.
 
-- A certification candidate practises scenario decisions, sees the competency evidence behind a recommendation, and can run a faithful simulation only where an official profile supports it.
-- An algorithm learner practises mental units, pattern recognition, contrasts, strategy selection, ordering, and complexity reasoning without pretending to be a coding platform.
-- A returning learner can continue one active session or abandon it deliberately; committed attempts remain diagnostic evidence.
+Account security includes recent reauthentication for password/email changes, new-email verification, sign out on this device, sign out on all devices with revocation enforcement, recovery-code regeneration and truthful account deletion. Terms acceptance is versioned and separate from optional analytics consent.
 
-## Modes
+Ordinary Firebase verification and password-recovery action codes use provider-controlled expiry and single-use behavior. Only the custom public-deletion possession token has an exact 30-minute single-use lifetime.
 
-Algorithms modes are `Learn Approach`, `Guided Practice`, `Custom Practice`, `Recognize Patterns`, `Contrast Practice`, `Weak Area Review`, `Independent Practice`, and `Interview Simulation`.
+## Surface ownership
 
-Certification modes are `Diagnostic Baseline`, `Focus Practice`, `Scenario Practice`, `Weak Area Review`, `Mixed Practice`, `Quick Review`, and `Exam Simulation`.
+- `Today` answers “what should I do now?” with one primary executable recommendation, current track, active local session, goal/review context, compact previous result and only actionable warnings.
+- `Practice` is the manual workspace for roadmap/node selection, supported modes, setup, packages/downloads, simulations and explicit Free/Premium state.
+- `Progress` answers “how is my learning changing?” through node evidence, weak areas, recurring errors, trend, goal adherence, due review and recent Activity.
+- `Activity`, nested under Progress, answers “what did I actually do?” with paginated terminal session summaries and on-demand exact details.
+- `Settings` owns application, account, security, consent, support and subscription management settings that exist end to end.
 
-Algorithms entry points map as follows:
+Today does not duplicate the full mode catalogue or Progress dashboard. Activity is neither a streak/heatmap nor an analytics feed.
 
-| Entry intent | Canonical configuration |
-| --- | --- |
-| Topic/default practice | `Guided Practice` for the chosen mental unit |
-| `Custom Practice` setup | `Custom Practice` for the chosen mental unit, using the Guided Practice content blueprint |
-| Pattern recognition | `Recognize Patterns` |
-| Contrast | `Contrast Practice` |
-| Due review | `Weak Area Review`, `source = due_queue` |
-| Session misses | `Weak Area Review`, `source = session_misses` |
-| Mixed practice | `Independent Practice` |
-| Timed validation | `Interview Simulation` |
+## Goals
 
-`Custom Practice` is an Algorithms mode with its own stored mode ID and the same one-active-session lifecycle as other non-simulation practice. It consumes only the immutable Guided Practice content blueprint for the selected mental unit; it does not create a second content taxonomy or selection policy. It permits requested lengths 10, 20, or 40 and explicit feedback timing `afterEachAnswer` or `atSessionEnd`. Reinsert remains profile-owned and cannot be overridden by the learner.
+Goals are stored per track. A track exposes only templates appropriate to its purpose: certification preparation, interview preparation, foundations, maintenance or self-paced learning where valid.
 
-## Evidence and recommendation
+Goals may influence recommendation priority, weekly planning, reminders, suggested cadence and session length. They never change entitlement, content locks, scoring, mastery/readiness claims, streaks or punitive messaging.
 
-Patternly keeps distinct `evidenceVolume`, `learningStageEvidence`, and `performanceSignals`. Recommendations are deterministic, family-specific, and explained. Home prioritizes overdue review and repeated mistakes. A manual learner choice wins for that session. Hints exist only in interactions explicitly designed with hints, and only those interactions can turn hint use into review evidence.
+## Track and family model
 
-## Feedback and review
+A track is a user-visible learning product. A family is an internal runtime contract. Families are not headings, filters, categories or marketing sections.
 
-`Reason` is concise immediate orientation. `Details` is collapsed by default and contains the complete instructional explanation; opening it has no scoring, review, or domain side effect. The Details narrative connects mechanism and application, corrects the selected error, and adds a transfer rule or counterexample when useful.
+The three target families are `certification`, `coding_interview` and `design_interview`. Coding and design interview remain separate because their payloads, evaluation details, evidence, review and simulation semantics differ materially. All families reuse one kernel, lifecycle, persistence path, entitlement/package boundary, Activity/Goal/Progress shell and session shell.
 
-Review is both a source-item reference and skill, competency, or taxonomy evidence. It may increase for incorrect or partial work, supported hint use, wrong pattern or strategy, complexity error, repeated mistake, scheduled retrieval, weak taxonomy evidence, or manual marking. Resolution requires two successful review attempts after their due dates; a correction in the same session never resolves persistent review.
+The exact ten-track catalogue is owned at overview level in `00-overview.md`. Representative proofs precede broad copying: GCP ACE for Certification, Coding Interview for its migrated family, Backend System Design for Design Interview, then a second Certification and second Design Interview proof.
 
-## Boundaries
+## Learning and recommendation boundaries
 
-The product does not claim official certification outcomes. It does not use confidence collection, synthetic readiness, retention, or mastery scores. It does not hide missing content with default topics, default items, or generic answers. Unknown IDs, unsupported payloads, and missing content are errors.
+Evidence volume, learning-stage evidence and performance signals remain distinct. Recommendations are deterministic, track-scoped and explained. Priority is active local session, overdue review, missing weekly-plan session, high-signal remediation, current node, then next roadmap node. A learner's explicit supported choice wins for a new session.
 
-The approved architecture and persistence contract require removal rather than preservation of obsolete pre-production semantics. This is a product safety rule: hidden continuity would make evidence and review unreliable.
+Every active item provides concise `Reason` and complete, collapsed `Details`. Persistent review resolves only through the canonical after-due evidence rule. Patternly does not collect confidence or publish synthetic readiness, retention or mastery percentages.
+
+## Language and platform
+
+Launch UI and content are English-only; the Language setting is absent until a real second language exists. Future locale variants preserve stable evidence identity.
+
+The release target is iOS 16.4+ on iPhone only and Android 9/API 28+ targeting API 36, portrait, with Light/Dark/System appearances and 200% text scaling. Patternly makes no iPad support claim.

@@ -1,6 +1,6 @@
 # ADR-005 — Dark-first Focus Lab UI
 
-Status: **Accepted**
+Status: **Superseded as final visual authority by PO-052, PO-053, PO-054 and PO-055 (2026-08-08)**
 Data: 2026-06-29
 
 ## Kontekst
@@ -11,7 +11,15 @@ Patternly nie jest już pojedynczym trenerem GCP ACE ani light-first exam simula
 - LeetCode-like / algorithmic problem-solving practice,
 - przyszłych tracków technicznych, jeżeli zostaną dodane.
 
-Dokumenty `00-overview.md`, `01-product-definition.md`, `05-design-system.md`, `06-branding-and-style-direction.md`, `15-certification-track-learning-system.md`, `16-leetcode-like-learning-system.md` i `17-training-runtime-and-interaction-spec.md` przesuwają kierunek produktu w stronę Focus Lab: spokojnego, premium, technicznego i neutralnego domenowo środowiska praktyki.
+Dokumenty `00-overview.md`, `01-product-definition.md`, `05-design-system.md`,
+`06-branding-and-style-direction.md`, `15-certification-track-learning-system.md`,
+`16-coding-interview-learning-system.md` i
+`17-training-runtime-and-interaction-spec.md` opisują aktualny target.
+
+Dark pozostaje primary brand expression, ale launch wymaga pełnych Light, Dark
+i System. Finalna grammar i assets powstają w owner-approved Figma 3→2→1, po
+czym repo/Storybook/code przejmują operational authority. Poniższy dark-first
+Focus Lab jest historycznym kierunkiem, a nie finalnym approval.
 
 ## Decyzja
 
@@ -53,5 +61,5 @@ Dark-first Focus Lab lepiej wspiera aktualne pozycjonowanie Patternly jako osobi
 - `docs/05-design-system.md`
 - `docs/06-branding-and-style-direction.md`
 - `docs/15-certification-track-learning-system.md`
-- `docs/16-leetcode-like-learning-system.md`
+- `docs/16-coding-interview-learning-system.md`
 - `docs/17-training-runtime-and-interaction-spec.md`

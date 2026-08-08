@@ -40,7 +40,9 @@ Before session setup is exposed, resolve and validate:
 - requested session length;
 - track configuration;
 - practice or simulation blueprint;
-- active content version;
+- Free/Premium eligibility and account entitlement where applicable;
+- canonical `freeNodeId` filtering for a Free session or review;
+- exact bundled-node or installed package version;
 - required content payloads;
 - interaction handlers;
 - required certification profile;
@@ -61,6 +63,8 @@ The following are explicit preparation failures:
 - content-version mismatch;
 - profile-version mismatch;
 - repository failure.
+- Premium entitlement or offline-grace failure;
+- unavailable or invalid pinned package;
 
 The runtime never substitutes:
 
@@ -76,7 +80,7 @@ The runtime never substitutes:
 
 ## 2. Mode configuration
 
-The runtime resolves Algorithms and Certification modes exclusively from `canonical-product-contract.yaml`. It does not maintain mode matrices, entry mappings, session lengths, feedback timing, reinsert behavior, shortening policy, or timer behavior in this specification.
+The runtime resolves Coding Interview and Certification modes exclusively from `canonical-product-contract.yaml`. It does not maintain mode matrices, entry mappings, session lengths, feedback timing, reinsert behavior, shortening policy, or timer behavior in this specification.
 
 An entry intent or review source is validated by the resolved family configuration. Unknown or unsupported values fail preparation explicitly; the runtime never infers behavior from a mode label.
 
@@ -88,15 +92,17 @@ Session preparation follows:
 resolve track and family
 → resolve mode and exact configuration
 → validate blueprint, content, handlers, and profile
+→ enforce Free-node filtering or Premium entitlement
+→ pin the exact bundled-node/package version
 → prepare complete deterministic session plan
 → generate stable plan-slot and occurrence identities
 → prepare option order for every possible resolved occurrence
-→ persist and verify the one active session
+→ persist and verify the one active session on this device
 → create and verify a simulation draft where required
 → expose the first resolved item
 ```
 
-Only one active session may exist across all tracks and families.
+Only one active session may exist on a device across all tracks and families. The active pointer, session, draft, current position, timer, and journal are device-owned and never synchronize. A session cannot resume or conflict across devices.
 
 The first item must not appear before:
 
@@ -109,7 +115,7 @@ The first item must not appear before:
 The following never shorten:
 
 - Certification `Diagnostic Baseline`;
-- Algorithms `Interview Simulation`;
+- Coding Interview `Interview Simulation`;
 - Certification `Exam Simulation`.
 
 If their exact valid pool cannot be prepared, setup fails explicitly.
@@ -397,7 +403,7 @@ Opening or closing `Details` has no effect on:
 
 ### Session-end modes
 
-Algorithms `Interview Simulation` and Certification `Exam Simulation` reveal no item-level:
+Coding Interview `Interview Simulation` and Certification `Exam Simulation` reveal no item-level:
 
 - correctness;
 - score;
@@ -468,7 +474,7 @@ Rules:
 
 Mode eligibility is family-owned.
 
-### Algorithms
+### Coding Interview
 
 Attempts may advance persistent resolution when prepared through:
 
@@ -477,7 +483,7 @@ Attempts may advance persistent resolution when prepared through:
 
 `session_misses` provides immediate correction. Its attempts count toward resolution only when they independently satisfy the due-time and family eligibility contract.
 
-Ordinary Algorithms practice and simulation do not silently resolve persistent review.
+Ordinary Coding Interview practice and simulation do not silently resolve persistent review.
 
 ### Certification
 
@@ -573,7 +579,7 @@ Skipping must not:
 
 A simulation uses:
 
-- one canonical active session;
+- the one active session owned by the current device;
 - one revisioned session-owned draft.
 
 The draft is not a second session or attempt store.
@@ -688,9 +694,9 @@ Timer kind, duration, cadence, durable checkpointing, drift, and lifecycle check
 
 Expiry freezes the verified durable draft and begins the declared idempotent finalization path. Recovery resumes only from canonical durable state.
 
-## 15. Algorithms Interview Simulation
+## 15. Coding Interview Interview Simulation
 
-Algorithms simulation resolves its product-defined configuration from the canonical contract. Preparation validates the resolved blueprint without silently changing its content scope, item plan, feedback, reinsert, or timer behavior.
+Coding Interview simulation resolves its product-defined configuration from the canonical contract. Preparation validates the resolved blueprint without silently changing its content scope, item plan, feedback, reinsert, or timer behavior.
 
 ### Answered outcomes
 
@@ -934,7 +940,13 @@ Ordering exposes accessible movement controls.
 
 Complexity controls expose declared available values, not hidden accepted answers.
 
-Missing approved design for a required runtime state blocks implementation.
+Significant new presentation requires the applicable actual Figma state marked `APPROVED` by the Product Owner. After verified handoff, repository-owned components, tokens, Storybook states, tests, and baselines at `CODE_CANONICAL` are operational authority. Codex cannot approve visual work, and neither Figma nor Storybook may be a production runtime dependency.
+
+## 20.1 Terminal facts and synchronization
+
+Session completion first materializes and verifies local attempts, result, review mutations, Activity fact, Progress inputs, and cleared device-owned active state. Only after that local boundary may compact idempotent account operations be appended. A synchronized terminal fact never includes the draft, timer, current position, local journal, or enough mutable state to resume the session elsewhere.
+
+If entitlement expires or is revoked after a session was validly started, that session may reach its safe terminal boundary. The result remains historical learning evidence; entitlement changes never delete or rewrite it.
 
 ## 21. Required recovery rule
 

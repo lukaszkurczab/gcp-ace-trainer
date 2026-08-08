@@ -1,150 +1,98 @@
 # 03 — Navigation and Flows
 
-This document provides navigation context for the behavior defined by `canonical-product-contract.yaml`; it cannot override that contract.
+This document owns navigation and user-flow context. Normative behavior remains in `canonical-product-contract.yaml`.
 
-## Navigation
+## Primary navigation
 
-The primary tab navigation exposes:
+Primary tabs are:
 
-1. `Home`
-2. `Practice`
-3. `Progress`
-4. `Settings`
+1. `Today`;
+2. `Practice`;
+3. `Progress`;
+4. `Settings`.
 
-Track selection, session setup, session runner, session summary, review, and topic or competency details are nested application routes rather than additional primary tabs.
+`Activity` is a first-class nested route under Progress, not a fifth tab. Track/goal selection, roadmap/node, setup, runner, summary, exact result/review, account, Premium, package, recovery and destructive flows are nested routes.
 
-Track context is visible on every learning surface where it affects content, recommendations, progress, review, or session behaviour. A session belongs to exactly one track and never mixes tracks or track families.
+Routes carry required stable identifiers. Missing or unknown track, node, mode, package, session or result identity produces an explicit unavailable/error state; navigation never chooses a substitute silently.
 
-Routes carry explicit track, mode, source, topic, competency, or session identifiers where required. An unknown or missing required identifier produces an explicit unavailable or error state. Navigation never silently selects a default topic, item, track, or session.
-
-Home shows deterministic, family-specific, explained recommendations. It prioritizes overdue review and repeated mistakes when those signals require action.
-
-Home does not display confidence, readiness, retention, or mastery percentages. A valid learner choice among currently supported configurations overrides the recommendation for the current session.
-
-## Public-launch account and data flow
-
-`canonical-product-contract.yaml` defines the complete account surface and
-state map. The implementation must provide account entry, register, identity
-verification, sign-in, forgot/reset password, expired-session
-reauthentication, account/profile, data adoption, sync status/conflict,
-sign-out, in-app deletion and a public deletion-request path.
-
-First account binding always resolves before Home or track selection. Empty
-local and remote data creates one empty bound dataset. Local-only data is
-previewed and explicitly uploaded; remote-only data is previewed and explicitly
-restored. When both sides contain records, the application presents the
-deterministic reconciliation plan and any active-session choice before applying
-it. Cancellation or failure leaves both last verified datasets unchanged.
-
-A previously verified bound account can open Home and continue local learning
-offline. The shell must expose pending sync and cannot present registration,
-sign-in, recovery, reauthentication, restore or deletion as successful while
-offline. A server-declared revoked or expired session returns to the explicit
-reauthentication surface and blocks sync.
-
-These are required downstream surfaces, not current routes. The current
-`RootNavigator` still contains 21 non-account routes; Task 3 adds the account
-route group only after approved designs exist and removes obsolete entry logic
-instead of keeping parallel anonymous and account paths.
-
-## Mode setup
-
-Routes resolve the requested Algorithms or Certification mode through `canonical-product-contract.yaml`. This navigation document does not enumerate modes or define their lengths, feedback timing, reinsert, shortening, or timer behavior.
-
-The resolved configuration is shown before start. A route may carry an entry intent or review source, but the application resolves it against the contract and owning family runtime rather than this document. Unknown, unsupported, or incomplete configurations remain explicit preparation failures.
-
-## Practice session flow
-
-A non-simulation session follows this application flow:
+## Guest-first entry
 
 ```txt
-setup
-→ resolve and show actual configuration
-→ prepare valid item order and option order
-→ persist the one active session
-→ show the first item
-→ keep the current unsubmitted response in UI state
-→ validate and freeze on submit
-→ build deterministic attempt, session, evidence, and review outcome
-→ persist the durable mutation journal
-→ reveal feedback or transition as permitted by the mode
-→ materialize canonical records
-→ verify materialization
-→ clear the journal
-→ advance or complete
-→ show summary
+first launch
+→ concise Patternly value
+→ choose track and valid goal
+→ open bundled free node
+→ start as local guest
+→ commit a real response
+→ read authored Reason and Details
+→ receive explained next action
 ```
 
-No first item appears before the active session is durably persisted.
+Registration and paywall do not block this flow. The app introduces account or Premium only at a real purchase, synchronization, restore, cross-device or paid-package boundary.
 
-No feedback or item advance occurs before the submit journal is durable.
+## Account and guest adoption
 
-A practice selection that has not been submitted is ephemeral UI state and is not persisted.
+Register/sign-in supports email/password, Apple and Google; recovery codes provide a separate recovery route. Ordinary verification/recovery results include valid, expired, already-used, malformed, rate-limited and remote-failure states without account enumeration.
 
-All non-simulation sessions use elapsed foreground time and show an accessible count-up timer.
+When a guest attaches an account:
 
-The learner may continue the one active session or explicitly abandon it. An abandoned session does not appear in history. Already committed attempts and their evidence remain.
+```txt
+verify identity
+→ inspect local guest and account data
+→ show deterministic adoption preview
+→ finish or abandon active guest session
+→ obtain explicit confirmation
+→ apply/reconcile canonical facts
+→ verify convergence
+→ bind installation to account
+```
 
-Practice modes reveal authored feedback after each durable submission. The runner has:
+No silent merge or discard is permitted. Cancellation or failure preserves the last verified datasets. An active session never transfers to the account or another device.
 
-- a visible question counter;
-- an accessible timer;
-- accessible response controls;
-- explicit preparation, content, submit, and persistence failures;
-- family-specific item rendering;
-- shared lifecycle actions.
+## Today, Practice, Progress and Activity
 
-## Simulation draft model
+Today contains current track/fast switch, active local session if present, one executable recommendation, weekly goal state, due review when higher priority, compact previous-session context, at most one evidence-backed insight and actionable sync/entitlement warnings. It is not a mode catalogue.
 
-A simulation uses the same canonical active-session lifecycle as practice but adds a persisted, session-owned draft state.
+Practice contains manual roadmap/node and mode selection, setup, active local session, review modes, simulation where supported, package/download state and explicit Free/Premium availability. It does not duplicate Today.
 
-The draft state is not a second session, separate history, independent runtime, or parallel source of truth. It is keyed by and belongs exclusively to the one active simulation session.
+Progress contains node evidence, weak areas, recurring errors, trend, goal adherence, due review, recent Activity and entry to full Activity.
 
-Depending on the family and profile, persisted draft state may contain:
+Activity contains paginated terminal summaries for completed sessions, ended-early sessions with committed attempts, completed reviews and simulations. It excludes setup-only, active, transient-recovery and abandoned-without-attempt activity. Exact details load on demand; unavailable historical content is reported explicitly rather than substituted.
 
-- responses by item ID;
-- current item position;
-- navigation state;
-- flags;
-- section state;
-- timer state;
-- other explicitly supported simulation controls.
+## Session preparation and ownership
 
-A saved simulation response is distinct from an unsubmitted practice selection. It is an accepted, persisted draft response that remains editable until the applicable finalization boundary.
+Before start, preparation validates the selected track/node/mode, Free/Premium eligibility, exact package/content version, family configuration, required item pool and any simulation profile. Free preparation filters strictly to `freeNodeId`. Premium preparation requires backend-authoritative entitlement or valid bounded offline grace and a verified local package.
 
-Draft changes create no immutable `TrainingAttempt`, score, instructional feedback, or review mutation.
+The complete session plan is persisted and verified before the first item appears. At most one session is active per device across all tracks. Another device may have a different active session; no cross-device resume or account-wide conflict flow exists.
 
-A draft response, navigation change, flag change, or section transition must not be represented as safely saved until its canonical draft update is durable. Persistence failure remains explicit and preserves the last verified durable state.
+A learner may resume the local session or explicitly abandon/end it according to the runtime contract. Terminal facts enter Activity and the compact sync outbox only after local durability. A Premium session already started while entitled can finish on that device after downgrade.
 
-## Simulation navigation context
+## Premium and package flows
 
-Simulation routes render the configuration resolved from the canonical contract and, for Certification, the selected track profile. The shared shell may present draft, persistence, freeze, finalization, summary, and recovery states, but it does not define their timing, feedback, reinsert, item-count, or timer policy.
+Guests encountering Premium first receive an account boundary, never a guest purchase. Purchase and restore use store → RevenueCat → backend verification. Transaction/account conflict is explicit and never attaches one transaction silently to multiple Patternly accounts.
 
-Algorithms simulation remains Patternly-defined rather than an official assessment. Certification simulation makes fidelity claims only when its resolved profile has the required official support. In both families, a UI timer is a projection of canonical runtime state, never a second source of truth.
+Package flow is:
 
-Draft changes remain separate from immutable attempts and results. Finalization freezes the verified durable draft, materializes one deterministic result, and exposes the summary only after verification; a failure keeps the recoverable state explicit rather than reopening an apparently saved draft.
+```txt
+authorize identity + backend entitlement
+→ obtain short-lived signed URL
+→ download temporary package
+→ verify checksum, schema and semantics
+→ persist version
+→ atomically activate
+→ prepare session pinned to that version
+```
 
-## Summary and review navigation
+Offline states distinguish verified cached entitlement/package availability from expired or unavailable access. After the seven-day entitlement-verification window, the app remains Free until network verification succeeds.
 
-A completed session routes to one canonical summary identified by session ID.
+## Account deletion and subscription
 
-Summary and review load canonical completed-session, attempt, score, unanswered, and review evidence through application queries. They do not reconstruct results from UI state or obsolete storage.
+Deletion shows active entitlement truthfully, links to Manage subscription and preserves an immediate `Delete now` path. Store cancellation/refund is not implied. End-of-paid-period scheduling appears only where technically supported and never prevents immediate deletion.
 
-Opening post-session review does not create a new training session. Starting a remediation or weak-area session from review creates a new explicitly configured session through the normal setup flow.
+Deletion removes the Patternly account, Patternly data and account-entitlement association under the security contract. It does not automatically cancel the store subscription. Previously bound devices use authenticated deletion evidence and durable local cleanup; restore must never resurrect a deleted account.
 
-## Design dependency
+## Language and design states
 
-Approved visual and interaction design is required before implementing a new user-facing interaction or state, including:
+Launch routes and content are English-only. There is no Language route until a real second locale exists.
 
-- simulation navigator;
-- editable draft-answer state;
-- foreground-paused timer disclosure;
-- timer-expired frozen state;
-- finalization-in-progress state;
-- finalization failure and retry;
-- unanswered warning;
-- section transitions;
-- review disclosure;
-- explicit content or preparation failure.
-
-Missing design is a blocker. It is not permission for Codex to invent a substitute interaction, generic modal, alternative navigator, or hidden fallback.
+Every significant new or rewritten user-facing state follows the active design lifecycle: complete state inventory, Figma work, owner approval, implementation, Storybook production-component states, accessibility/interaction proof, visual comparison and iOS/Android device verification. Nonvisual work need not wait for brand exploration; significant presentation cannot bypass applicable approval.

@@ -1,546 +1,152 @@
-# 09 — Security and Privacy
+# 09 — Security, Privacy, Identity, and Operations
 
-> This document separates the implemented local-only build from the
-> account-enabled public-launch target. The normative target is
-> `canonical-product-contract.yaml`. Account, networking, remote storage,
-> email/link delivery, sync and deletion mechanisms are not implemented or
-> provider-verified yet and must not be described as current build behaviour.
+## Purpose and authority
 
-## Purpose
+This document owns the narrative security, privacy, identity, entitlement, observability, reporting, deletion, and disaster-recovery boundaries. Normative behavior is in `canonical-product-contract.yaml`. Provider configuration and current implementation are evidence, not product authority.
 
-Patternly uses a local-first security and privacy model.
-
-The product stores only the data required to authenticate a launch account, run learning sessions, preserve committed evidence, support review and recommendations, recover the one active session, synchronize the account dataset and retain user settings.
-
-Local storage reduces network exposure and avoids account-linked profiling. It does not by itself guarantee encryption, protection from a compromised device, or irrecoverable deletion.
-
-Security claims must describe mechanisms that are explicitly configured, tested, and supported by the current application build.
+Patternly minimizes collection, fails closed at privacy boundaries, and states local, synchronized, billable, deleted, or pending status truthfully.
 
 ## Data boundary
 
-Patternly may store the following canonical local data:
+Patternly may process only data required for:
 
-- application settings;
-- the active-session reference;
-- active and completed session records;
-- immutable attempts and deterministic results;
-- simulation drafts;
-- review queue entries;
-- evidence and progress read projections derived from attempts, results and
-  review entries, never independent writable records;
-- explained recommendation inputs;
-- durable mutation journals and recovery metadata;
-- exact content, configuration, and profile references required for resume.
-- a verified account binding, sync revision metadata and ordered pending
-  operation envelopes in the account-enabled target.
+- a guest installation and local learning dataset;
+- verified identity and linked sign-in methods;
+- versioned Terms acceptance and separate optional analytics consent;
+- account-owned learning synchronization and rebuildable projections;
+- Premium entitlement projection and purchase/restore support;
+- immutable content-package authorization and integrity;
+- bounded analytics/crash diagnostics after consent;
+- learner-initiated content reports;
+- account security, deletion, deletion proof, and disaster recovery.
 
-The public-launch remote service may store:
+Names, public profiles, advertising identifiers, contacts, location, photos, microphone, health data, and hidden learner profiling are not required for launch. No SDK, provider, log, or report may expand this boundary incidentally.
 
-- a normalized email and opaque account identifier;
-- a one-way password verifier and revocable session records;
-- verification, recovery and distinct public-deletion possession tokens with
-  single-use expiry;
-- one revisioned account dataset containing the canonical account-owned
-  learning records and content references;
-- bounded sync operation identity, revision and deletion-verification records.
+## Guest and account identity
 
-Patternly does not require:
+A guest uses a local opaque installation identity. Patternly does not use Firebase Anonymous Authentication.
 
-- names or public identity profiles;
-- confidence collection;
-- synthetic readiness, retention, or mastery metrics;
-- location, contacts, photos, microphone, camera, health, or advertising identifiers.
+A Patternly account has one Firebase UID and one stable opaque Patternly account ID. The opaque account ID, never an email address, is used for RevenueCat identity and backend account references. Email is contact and credential data, not canonical commercial identity.
 
-A later feature that requires additional personal data, device permission,
-telemetry, analytics, billing, social login, remote content delivery or a field
-outside the canonical account contract requires a separate approved data and
-security contract.
+Launch sign-in methods are:
 
-It must not be introduced as an incidental implementation detail.
+- email and password;
+- Sign in with Apple;
+- Sign in with Google;
+- eight one-time recovery codes generated for the Patternly account.
 
-## Data minimization
+Linking requires proof of control of the currently authenticated account and the new provider. Patternly never merges accounts automatically because email strings match. A collision enters an explicit sign-in-and-link flow. The last usable sign-in method cannot be unlinked.
 
-Persist only fields required by an approved product, learning, persistence, or recovery contract.
+Password or email changes require recent reauthentication and applicable verification. Provider and email action outcomes are non-enumerating.
 
-Do not store:
+## Verification, recovery, and sessions
 
-- duplicate copies of static bundled content;
-- obsolete item or explanation versions;
-- raw UI component state that has no resume requirement;
-- speculative future fields;
-- unused device identifiers;
-- free-form diagnostic data when structured codes are sufficient;
-- complete journal or repository payloads in production logs;
-- hidden behavioural profiles beyond documented learning evidence.
+Ordinary Firebase verification and recovery action codes use provider-controlled expiry and single-use behavior. Product copy does not promise an exact duration. The separate public account-deletion possession token is Patternly-controlled, single-use, and expires after exactly 30 minutes.
 
-Derived progress projections must remain limited to evidence required for a
-concrete training decision and must not become separately stored or synchronized
-profiles.
+Recovery codes are displayed only at creation/regeneration, stored server-side only as salted hashes, consumed once, and invalidated on regeneration. A successful recovery code opens a narrow recovery session, requires establishment of a usable sign-in method, and revokes other account sessions.
 
-Do not derive or retain additional personal classifications from learning performance.
+Patternly supports sign-out on the current device and sign-out on all devices. Sensitive APIs verify revocation, recent authentication where required, approved client/environment, closed request schema, and account generation. Revocation is enforced server-side; removing a local token is not sufficient.
 
-## Local storage boundary
+There is no manual support takeover without a usable linked method or unused recovery code.
 
-MMKV is an infrastructure boundary, not a domain dependency.
+## Terms and consent
 
-One infrastructure-owned client and one canonical repository set own local persistence.
+Acceptance of a specific Terms version is required for account operations and is stored separately from optional analytics/crash consent. Refusing optional analytics does not block Free or Premium learning.
 
-No screen, UI component, family runtime, track instance, content module, or shared-domain module accesses MMKV directly.
+Consent state is explicit, versioned where necessary, changeable, and applied before an analytics or crash SDK can collect. A missing, corrupt, unknown, or not-yet-loaded consent state disables collection.
 
-Old local records, keys, APIs, AsyncStorage paths, Cloud write-through, translators, and compatibility readers are deleted rather than preserved.
+## Commercial and entitlement authority
 
-Historical pre-production learning state is not migrated or interpreted.
+The App Store and Google Play own transactions. RevenueCat normalizes store state. Patternly backend owns the account-bound Premium projection used to authorize server resources. A bounded device cache supports offline experience but is never authority for a paid package download.
 
-If an obsolete record cannot be represented without changing or obscuring its meaning, it is deleted.
+RevenueCat uses the opaque Patternly account ID. Purchase requires a verified Patternly account. Guests cannot purchase, restore, or download Premium packages.
 
-## Confidentiality and encryption
+Premium is one entitlement across every Premium track, with one monthly and one annual product. There are no active-track slots, track tiers, release cooldowns, or account-local substitutions.
 
-Patternly must not describe local data as encrypted unless encryption and key management are explicitly configured and verified in the supported application builds.
+Cross-platform Premium follows the verified Patternly account and normalized store state. Purchase and restore conflicts produce explicit ownership/recovery outcomes. They never silently transfer learning data, merge accounts, or trust a local SDK result as backend authorization.
 
-The use of MMKV alone is not an encryption claim.
+A last verified Premium projection may be used offline for up to seven days under the canonical grace policy. Known refund, revocation, expiry, account deletion, or conflict evidence takes precedence. A session started while entitled can finish safely; new Premium sessions require the current entitlement rule.
 
-Before enabling an encryption claim, the implementation contract must define and test:
+Downgrade removes access to new Premium sessions and downloads but never deletes or falsifies historical attempts, results, Activity, or progress. The product offers an eligible Free alternative when possible.
 
-- whether the MMKV instance is encrypted;
-- how the encryption key is generated;
-- where the key is stored;
-- whether the key is hardware- or OS-protected where supported;
-- key availability after restart;
-- key loss behaviour;
-- reset behaviour;
-- development and test-key separation;
-- behaviour on unsupported or compromised devices.
+## Network and provider boundary
 
-Encryption keys must not be:
+Only approved clients may send user data. Every remote request uses TLS, a closed schema, bounded payload, explicit timeout/retry policy, redacted logs, and environment-specific endpoints and credentials.
 
-- hard-coded in source;
-- committed to the repository;
-- included in bundled static content;
-- written to logs;
-- derived from predictable public constants;
-- reused across unrelated application environments without an approved policy.
-
-If encryption is not enabled, product copy and privacy documentation must state only that learning data is stored locally on the device.
-
-## Threat model
-
-The current security model is intended to protect against:
-
-- accidental network transmission by the product;
-- unnecessary collection of personal data;
-- parallel or obsolete storage paths;
-- silent substitution of missing records;
-- incomplete or duplicated committed outcomes;
-- accidental disclosure through production logs;
-- unauthorized data access through unrelated application modules;
-- incorrect claims of official certification status.
+Public configuration is environment-driven and includes product origin, auth-action origin, redirect domain, Privacy, Terms, support, public deletion, iOS associated domain, Android host, and sender domain. Default Firebase domains are allowed only in development/sandbox. Professional domain and sender promotion are release inputs, not hard-coded product semantics.
 
-The account-enabled target additionally protects against:
+Client applications never access Firestore directly. Firebase ID tokens are verified by the backend; Firestore rules remain deny-all for direct clients. Cloud Run mediates account, sync, entitlement, package, report, and deletion operations.
 
-- account enumeration through recovery and public deletion requests;
-- replay of used or expired verification, recovery or public-deletion links;
-- disclosure of raw passwords or tokens in application persistence or logs;
-- stale remote overwrites and duplicate sync operations;
-- silent data adoption, merge or active-session loss;
-- continued remote access after verified account deletion.
-
-The current product does not claim to protect local data against an attacker who has:
-
-- an unlocked device;
-- operating-system-level access;
-- root or jailbreak access;
-- access to application backups;
-- access to application debug tooling;
-- physical forensic access to device storage.
-
-A compromised local device may permit inspection or modification of local records.
-
-Patternly learning results are therefore personal practice evidence, not tamper-proof credentials, official examination records, or independently verifiable proof of competence.
-
-## Integrity and recovery
-
-The durable mutation journal, revisions, fingerprints, and verification checks protect application-level consistency and idempotent recovery.
-
-They are designed to prevent:
-
-- duplicated attempts;
-- duplicated review mutations;
-- partial session completion;
-- inconsistent active-session state;
-- divergent outcomes after retry;
-- presentation of an unverified completed result.
-
-These mechanisms provide logical integrity within the application contract.
-
-They do not constitute:
+## Package authorization and integrity
 
-- cryptographic authentication of the user;
-- anti-cheat protection;
-- protection from malicious local record modification;
-- proof that a result was produced on an uncompromised device;
-- an official certification record.
-
-Unexpected record fingerprints, stale revisions, conflicting materialization, or corrupt canonical records produce explicit blocking errors. Runtime does not repair them heuristically.
-
-## Network and credential boundary
-
-Ordinary learning remains local-first after one verified online account
-bootstrap. Network access is required for registration, verification, sign-in,
-recovery/reset, reauthentication, remote restore and account deletion.
+Firestore contains bounded manifest/account metadata, Cloud Storage contains immutable whole-node package bytes, and Cloud Run authorizes identity and backend entitlement before issuing a short-lived signed URL.
 
-The authorized field groups are closed in `canonical-product-contract.yaml`:
+Signed URLs are bearer capabilities and therefore short-lived, excluded from logs/analytics, and not persisted beyond download. Package checksum, immutable object identity/generation, schema, semantics, minimum app version, locale, and publication identity are verified before atomic activation. Per-question Firestore fetching, mutable published objects, and silent version substitution are prohibited.
 
-- identity commands transmit normalized email, the password only for the
-  active credential command, and the distinct verification, recovery or public
-  deletion possession token where needed;
-- access tokens are received in an authenticated TLS response and sent only in
-  the authorization bearer header; refresh tokens are sent only to the token
-  endpoint in an authenticated TLS request body;
-- account calls transmit opaque account/session identity, verification state
-  and expected account revision;
-- sync transmits record type/identity/revision, content references, canonical
-  learning payload and operation fingerprint;
-- operational metadata is limited to request identity, bounded error code and
-  client timestamp.
+## Analytics and crash reporting
 
-Transport must be authenticated TLS. The app never persists a password. The
-remote service stores only a one-way verifier. Access tokens remain in memory;
-refresh tokens use OS-protected credential storage. Verification, recovery and
-public-deletion possession tokens are never persisted. Tokens, normalized
-email and canonical learning payloads are excluded from logs.
+Firebase Analytics and Crashlytics are allowed only behind the fail-closed consent/privacy gate. No raw per-event Firestore stream is permitted.
 
-Before export, sign-out or account deletion, an unresolved mutation journal
-must complete recovery, materialization, verification and clear. Failure blocks
-the operation as visible `journalRecoveryFailure` without deleting the binding
-or verified learner data. Account
-deletion persists a minimal hashed durable intent before its first remote
-destructive step, resumes idempotently from its last verified stage after
-restart and completes verified local cleanup even when the remote identity or
-sessions are already absent.
+Analytics uses a closed event vocabulary and bounded enumerated properties. Forbidden fields include account ID, Firebase UID, email, tokens, recovery codes, free-form prompt/response/feedback, full content text, signed URLs, package bytes, journal payloads, and stable identifiers that enable unintended profiling.
 
-The deletion intent is a device-operational, never-synchronized cleanup
-checkpoint and has no authority over learning data. A previously bound offline
-device retains local data until it reconnects because no provider-neutral
-contract can prove remote deletion while offline. Authenticated account-deleted
-evidence on reconnect persists that intent before idempotent local cleanup,
-ends in the visible remote-account-deleted result and must not enter an
-impossible reauthentication flow.
+Crash reports are sanitized before SDK submission. User-authored text, learning responses, content bodies, credentials, request headers, and full repository records are never attached. Changing consent stops future collection and handles queued provider data according to the disclosed policy.
 
-The current build transmits none of these account fields because the service
-does not exist yet. Remote analytics, crash uploads, telemetry, billing,
-content delivery and arbitrary third-party SDK collection remain unauthorized.
+## Content reports
 
-A third-party SDK must not be added merely for convenience if it collects identifiers or application data outside the approved boundary.
+A learner may report content using a closed category set and optional bounded description. Automatic context is limited to technical identifiers and versions necessary to locate the content and reproduce the issue.
 
-## Logging and diagnostics
+By default a report is not linked to the Patternly account and does not attach the learner response, account ID, email, full prompt, answer options, explanation, or feedback. Account linking and contact details require separate explicit opt-in, with the exact attachment previewed before submission.
 
-Production logs must not contain:
+Offline reports have visible queued/retrying/failed/sent states. The UI confirms submission only after server acknowledgement. Server records use bounded retention, closed admin states, access control, audit events, and deletion/de-identification rules. The content repository owns the report-to-correction-to-release workflow; reports never mutate published packages directly.
 
-- normalized email addresses;
-- passwords, access tokens, refresh tokens, verification tokens, recovery
-  tokens or public-deletion possession tokens;
+## Logging and secrets
 
-- learner responses;
-- answer option text;
-- complete prompts or explanations;
-- simulation drafts;
-- attempt payloads;
-- review evidence payloads;
-- complete progress projections;
-- MMKV values;
-- mutation-journal write plans;
-- encryption keys;
-- internal source URLs containing credentials;
-- stack traces containing persisted user data.
-- data export payloads.
+Production logs use structured allow-listed codes. They do not contain passwords, tokens, recovery codes, raw authorization headers, emails, signed URLs, learning responses, complete content, package bytes, journal payloads, or repository dumps.
 
-Diagnostics may use:
+Secrets and service credentials remain outside source, bundles, screenshots, reports, and test fixtures. Environment separation prevents development/sandbox credentials and endpoints from being promoted implicitly.
 
-- bounded error codes;
-- operation names;
-- non-sensitive schema versions;
-- redacted record types;
-- safe correlation IDs;
-- counts that cannot reconstruct learning content or responses.
+## Device security and backup
 
-Identifiers should be included only when necessary for local diagnosis and must not be transmitted remotely without an approved telemetry contract.
+MMKV is not described as encrypted unless key creation, protection, restart, loss, reset, and supported-device behavior are implemented and verified. Local-first storage does not protect against an unlocked, rooted/jailbroken, or forensically inspected device.
 
-Developer-only diagnostics must be disabled or redacted in production builds.
+Canonical learning data, credentials, and package caches are excluded from iCloud/Android backup and device transfer. Account synchronization is the only product continuity mechanism.
 
-The canonical learner-visible diagnostic projection is `src/application/operationalDiagnostics.ts`. It emits only an action-specific sentence and a finite operational code; it never carries a caught error message, session ID, storage key, answer, draft, or content payload. `npm run validate:runtime-privacy-boundary` rejects production source that introduces raw operational messages, console diagnostics, or a network client, and `qa:static` runs that gate.
+Production Firestore uses a seven-day PITR target. PITR is disaster recovery, not user account recovery. Restore requires an authorized runbook, sanitized sandbox drill, audit trail, and reconciliation against deletion tombstones/proofs before any live promotion. A restore cannot recreate a deleted account, credential, entitlement association, report linkage, or account data. No long-term scheduled export is part of launch.
 
-## Device permissions
+## Account deletion and subscriptions
 
-Patternly requests no device permission unless an approved, implemented feature requires it.
+The account surface shows verified entitlement status and a truthful Manage subscription action. Deleting a Patternly account is independent of store cancellation and is never described as cancelling or refunding a subscription.
 
-A new permission requires:
+The learner can choose immediate deletion. Scheduled deletion at the end of a paid period may be offered only where the verified store/provider state makes it technically supportable; immediate deletion remains available.
 
-- an explicit product use case;
-- least-privilege scope;
-- user-facing explanation;
-- denial behaviour;
-- revocation behaviour;
-- platform testing;
-- confirmation that denial does not silently produce substitute learning data.
+Deletion covers Patternly identity, linked methods and recovery codes, account dataset, profile, consent, processor association, entitlement projection, report linkage where applicable, server sessions, and bound-device cleanup evidence. Processor transaction records governed by the store/provider and legal obligations are disclosed rather than falsely claimed deleted.
 
-Learning sessions, review, progress, and certification simulation must not require unrelated device permissions.
+The public deletion flow verifies mailbox possession using the custom 30-minute token and returns non-enumerating outcomes. Deletion revokes sessions, writes tombstone/proof state, and prevents PITR or a stale device from resurrecting the account.
 
-## Platform backup and device transfer
+Local reset, sign-out, store subscription management, and Patternly account deletion remain distinct actions.
 
-The application must explicitly decide and verify platform backup behaviour for canonical local learning data.
+## Privacy communication
 
-Product documentation must not assume that “local-only” means “never copied by the operating system.”
+Privacy, Terms, support, store declarations, and in-product copy must state:
 
-Before release, the implementation and privacy contract must state whether canonical data:
+- what remains only on the device and what synchronizes;
+- that active sessions and drafts never synchronize;
+- what guest adoption will preserve, combine, or block before confirmation;
+- when Premium is verified, cached, expired, revoked, or in offline grace;
+- what analytics/crash collection is enabled by consent;
+- exactly what a content report will attach;
+- the separation between account deletion and subscription cancellation/refund;
+- the PITR disaster-recovery boundary and no-resurrection protection;
+- the actual supported platforms and release configuration.
 
-- is included in system backups;
-- can move to another device through platform restore;
-- is excluded from backup;
-- remains usable after restore;
-- is rejected after restore because key, schema, profile, or content requirements cannot be resolved.
+No implementation is described as encrypted, anonymous, deleted, restored, synchronized, endorsed, or provider-verified without evidence.
 
-Backup behaviour must be consistent with encryption-key management and resume semantics.
+## Verification obligations
 
-The current policy excludes the canonical storage root from Android cloud backup and device transfer, and marks the iOS MMKV directory as excluded from automatic backup before storage initialization. The current build offers no restore path; the launch target restores only remotely acknowledged account data through the application service. This is an application policy, not a claim that the operating system, a compromised device, or forensic tooling can never copy local data.
+Security and privacy verification includes identity linking collisions, last-method protection, recent reauthentication, revocation, recovery-code hashing/single use/regeneration, non-enumeration, guest adoption failure injection, sync idempotency, package authorization and signed-URL redaction, consent fail-closed behavior, analytics/report forbidden fields, deletion/subscription truth, tombstone restore reconciliation, backup exclusion, environment isolation, direct-Firestore denial, secret scanning, and production-log inspection.
 
-## Reset and deletion
-
-A user-initiated learning-state reset logically deletes canonical local learning records from the Patternly namespace, including:
-
-- active-session state;
-- simulation drafts;
-- completed-session history;
-- attempts;
-- review queue entries;
-- source attempts, results and review entries from which progress and evidence
-  projections are derived;
-- pending learning-state mutations where the reset contract safely permits their removal.
-
-Bundled static content is not user data and remains part of the application.
-
-Non-learning settings may remain unless the user selects a separately defined full local reset.
-
-Reset is journaled and verified according to the storage contract. It is not reported as complete after partial deletion.
-
-Patternly may claim logical application-level deletion after verification.
-
-It must not claim:
-
-- forensic secure erasure;
-- guaranteed immediate destruction of every flash-memory remnant;
-- deletion from an operating-system backup that the application cannot control;
-- deletion from external diagnostic services unless those services have an approved deletion contract.
-
-Pre-production recovery deletion and user-initiated reset are separate concepts:
-
-- recovery deletion removes obsolete unsupported schemas and keys;
-- user reset removes supported canonical learning state.
-
-Neither operation creates a migration or compatibility path.
-
-Account deletion is separate from local learning reset. It requires network,
-recent reauthentication and explicit confirmation of the scope. The accepted
-request revokes every account session, deletes identity, credential, profile,
-learning and sync-operation data from the live service, verifies that deletion,
-and only then deletes account-owned local records. A remote or local
-verification failure remains `deletionFailed` with retry; it is never presented
-as success.
-
-The public web request path verifies possession of the email address without
-revealing whether an account exists. Live service data has zero retention days
-after verified deletion. Encrypted backups may retain an inaccessible copy for
-at most 30 days and must never restore a deleted account into the live service.
-A minimal deletion proof containing only request identity, irreversible account
-ID hash, request/completion timestamps and result code remains for 30 days,
-then is removed. These are target requirements; provider retention and deletion
-jobs still require implementation and production verification.
-
-## Data loss and recovery communication
-
-The current build still has no account recovery or cross-device restoration;
-uninstall, reset, device loss and corruption can permanently remove its local
-learning data.
-
-The public-launch target changes that product boundary only after verified
-sync exists. A bound account may restore the last remotely acknowledged
-dataset. Offline-pending mutations remain only on their originating device
-until acknowledged, so device loss can still lose those pending changes.
-Platform backup remains excluded. An incompatible content/profile version may
-still block resume, and selecting one of two divergent active sessions requires
-explicit confirmed abandonment of the other draft.
-
-User-facing copy must show the last successful sync time, pending count,
-conflict or failure. It must not use “backed up” or “synced” for local-only or
-pending data.
-
-## Content provenance and integrity
-
-Active content must be:
-
-- original or lawfully used;
-- structurally validated;
-- factually reviewed;
-- audited in canonical source and released with technical evidence;
-- identified by a stable manifest and content version.
-
-The active content version identifies one complete active bank. Runtime does not reconstruct obsolete explanations or map inactive content into a current session.
-
-Bundled content must not contain:
-
-- application secrets;
-- private keys;
-- credentials;
-- confidential exam material;
-- exam dumps;
-- unlawfully copied questions;
-- hidden personal data.
-
-Content validation and review protect educational correctness and legal provenance. They do not make Patternly an official certification source.
-
-A future remote-content mechanism requires an additional security contract for authenticity, integrity, activation, rollback, cache isolation, and failure handling.
-
-## Certification profile provenance
-
-Each certification track instance owns a versioned `ExamExperienceProfile`.
-
-The profile retains:
-
-- stable profile identity;
-- profile version;
-- official public `sourceUrl`;
-- `sourceCheckedAt`;
-- optional official guide version;
-- documented simulation behaviour;
-- provenance necessary to audit profile changes.
-
-Only official public sources may define a claim of faithful certification simulation behaviour.
-
-A profile rule must not be:
-
-- inferred from memory;
-- copied from another certification;
-- guessed from the current UI;
-- supplied by an unofficial exam dump;
-- retained after the official source contradicts it.
-
-If a material official rule is missing, ambiguous, obsolete, or unsupported, the track cannot claim faithful simulation.
-
-Profile provenance demonstrates the source of the implemented behaviour. It does not imply provider endorsement, official software status, or official scoring.
-
-## Product safety
-
-Missing content, unsupported payloads, unknown IDs, unresolved profiles, content-version mismatches, journal conflicts, corrupt records, and storage failures are explicit states.
-
-Patternly does not respond by creating:
-
-- a default topic;
-- a default item;
-- a guessed answer;
-- a substitute result;
-- a fabricated review entry;
-- a generic explanation;
-- a silent empty history;
-- an apparently successful session.
-
-Error messages expose only information needed for a safe user action. They do not expose persisted payloads, secret material, stack traces, or internal storage structure in ordinary product UI.
-
-A failure is actionable evidence that a contract or implementation path remains unresolved. It must not be hidden through a fallback to obsolete data.
-
-## Communication and affiliation
-
-Patternly is independent.
-
-Certification provider names and trademarks identify subject matter only.
-
-Patternly does not claim:
-
-- affiliation;
-- endorsement;
-- provider approval;
-- official exam content;
-- official scores;
-- official pass or fail;
-- official certification status;
-- guaranteed examination or interview outcomes.
-
-Diagnostic results are Patternly learning evidence.
-
-Any internal practice threshold is:
-
-- explicitly labelled as Patternly-defined;
-- visually and verbally distinct from an official result;
-- not represented as eligibility, readiness, certification, or a guaranteed outcome.
-
-Algorithms `Interview Simulation` is also Patternly-defined and does not claim to reproduce an official company interview or prove interview readiness.
-
-## User-facing privacy communication
-
-Privacy and settings surfaces must state clearly:
-
-- whether the user is viewing the current local-only build or the verified
-  account-enabled release;
-- which learning data is local, remotely acknowledged or still pending;
-- the verified account identity, last successful sync time, pending count and
-  any blocking conflict/failure;
-- local storage is not described as encrypted unless verified;
-- reset removes canonical learning data from the application;
-- local reset is distinct from sign-out and account deletion;
-- reset may not erase external operating-system backups;
-- uninstall, reset, device loss, or storage corruption may lose local and
-  offline-pending data;
-- account deletion scope, 30-day backup maximum and 30-day minimal proof
-  retention;
-- certification results are practice diagnostics, not official records;
-- account mechanisms and data transmission are not claimed in a build until
-  provider and signed-binary verification pass.
-
-Copy must distinguish current verified behaviour from planned or possible future functionality.
-
-## Security validation
-
-Pre-release verification includes:
-
-- one MMKV infrastructure owner;
-- absence of AsyncStorage and old storage reads;
-- absence of dual writes and compatibility repositories;
-- repository validation and explicit corruption handling;
-- journal idempotency and conflict handling;
-- reset completeness;
-- production-log redaction;
-- absence of hard-coded keys and secrets;
-- permission inventory;
-- network dependency inventory;
-- normalized-email, password and token persistence/logging checks;
-- non-enumerating recovery and public-deletion responses;
-- verification/recovery link expiry, one-use and replay checks;
-- local/remote adoption, stale revision, immutable collision and divergent
-  active-session tests;
-- sign-out with pending outbox and export/discard evidence;
-- remote deletion, session revocation, local deletion, backup exclusion and
-  retention-job evidence;
-- platform backup configuration review;
-- certification-profile provenance validation;
-- content legality and secret scanning;
-- user-facing privacy-copy review.
-
-A successful functional test suite alone is not sufficient evidence of security or privacy compliance.
+Missing evidence is an explicit release blocker; it is not converted into a silent fallback or optimistic claim.
 
 ## Required recovery rule
 
-If an existing record, model, flow, key, API, module, SDK, or diagnostic path cannot move into the canonical structure without preserving obsolete or unsafe semantics, delete it.
-
-Do not create:
-
-- old-schema readers;
-- historical translators;
-- compatibility adapters;
-- dual storage paths;
-- hidden network transmission;
-- generic recovery defaults;
-- unreviewed telemetry;
-- silent record repair;
-- misleading encryption or privacy claims.
-
-Backward compatibility is not required for pre-production storage or learning history.
-
-An explicit failure is safer than silently producing incorrect learning evidence or transmitting data outside the approved boundary.
+Obsolete auth paths, duplicate account models, direct Firestore clients, local entitlement authority, raw telemetry streams, mutable package paths, compatibility stores, and restoration paths capable of account resurrection are deleted rather than retained behind flags.

@@ -1,70 +1,81 @@
 # 00 — Overview
 
-## Product
+## Product boundary
 
-Patternly is a local, offline-first focus lab for technical decision practice. A track is a concrete content and learning domain, a track family defines the shared learning semantics for similar tracks, and a mode is a family-specific session configuration. The initial product contains Certification and Algorithms families; they are the first supported families, not a closed list of all future learning domains. The current implementation does not provide an online judge, copied exam material, official certification status, user accounts, cloud synchronization, or a content feed.
+Patternly is a commercial, guest-first and local-first mobile product for deliberate technical practice. A learner can choose a track, set a goal, complete the bundled free node and receive authored feedback without creating an account. An account becomes required at the real identity boundary: Premium purchase, synchronization, restore and cross-device continuity.
 
-The public-launch scope requires registration, sign-in and the full account
-lifecycle under `PO-017`. `canonical-product-contract.yaml` now defines the
-vendor-neutral identity, local/remote data, offline, recovery, sync/conflict
-and deletion target. Those mechanisms are not present in the current runtime;
-this overview can describe account continuity as shipped behaviour only after
-Tasks 3 and 8 implement and verify that contract.
+Local-first does not mean local-only. Learning mutations become durable on the device before any compact account operation is queued. The synchronized product adds Firebase Authentication, a Patternly API on Cloud Run, Firestore account projections, RevenueCat entitlement normalization and immutable Premium node packages in Cloud Storage. Network or provider failure must not silently replace verified local learning evidence.
 
+Permanent Free access is part of the product. Premium is one account-bound entitlement covering all Premium content in every track, sold through one monthly and one annual product. There are no active-track slots, track-count tiers, release/cooldown rules or guest purchases.
 
-## Track families and extension boundary
+## Tracks and internal families
 
-The shared kernel does not encode a fixed list of product tracks or concrete interaction payloads. A track instance supplies content, taxonomy, configuration, and family-specific metadata; its family runtime supplies selection, response validation, scoring, feedback composition, review policy, recommendations, and renderers.
+The learner sees tracks, never implementation families or family categories. A family is an internal contract for learning, scoring, evidence, review and simulation semantics.
 
-The current structure is:
+The target uses three internal families:
 
-```txt
-CertificationFamilyRuntime
-├── gcp-ace
-├── future Azure AI Fundamentals track
-└── future AWS Solutions Architect Associate track
+- `certification`;
+- `coding_interview`;
+- `design_interview`.
 
-AlgorithmsFamilyRuntime
-└── algorithms
-```
+The target launch catalogue contains ten equal-status tracks:
 
-Possible future families used to test extensibility are:
+1. Coding Interview: DSA & Problem Solving;
+2. Backend System Design Interview;
+3. Object-Oriented Design Interview;
+4. Frontend System Design Interview;
+5. Google Cloud Associate Cloud Engineer;
+6. AWS Certified Solutions Architect – Associate;
+7. Microsoft Azure Administrator Associate (AZ-104);
+8. Microsoft Azure AI Fundamentals (AI-901);
+9. HashiCorp Terraform Associate (004);
+10. Kubernetes and Cloud Native Associate (KCNA).
 
-- `DatabaseReasoningFamilyRuntime` with a `sql-and-data-reasoning` track;
-- `CodeReasoningFamilyRuntime` with a `debugging-and-code-review` track;
-- `SystemDesignFamilyRuntime` with a `backend-system-design` track.
+A target descriptor or design-density fixture is not a production admission. A track enters the shipping registry only with a complete free vertical, valid modes, goals, Progress and Activity behavior, verified packages/content, and a complete user-visible core loop. No placeholder, unavailable or “Coming soon” production card is permitted.
 
-These are architecture examples and future candidates, not committed release scope. Adding a new track inside an existing family must not require changes to the shared kernel, persistence subsystem, or session shell. Adding a genuinely new family may add a family runtime and interaction handlers, but it must not introduce a parallel session lifecycle, storage path, or track-specific branch in shared screens.
+## Product surfaces and loop
 
-## Canonical session modes
-
-`canonical-product-contract.yaml` supplies all user-facing modes and their configuration. Progress never locks a mode; it supplies an evidence-based recommendation and the learner may choose another supported configuration.
-
-## Product loop
+Primary tabs are `Today`, `Practice`, `Progress` and `Settings`. `Activity` is a required nested route under Progress, not a fifth tab.
 
 ```txt
-choose track and mode → select a bounded session → attempt → receive authored feedback
-→ create evidence and review obligations → choose the next explained action
+choose track and goal
+→ start a bounded local session
+→ make a technical decision
+→ commit the outcome durably
+→ receive authored Reason and Details
+→ update review, Progress and Activity
+→ receive one explained executable next action
 ```
 
-The product shows only metrics that answer a training question, change a training decision, and have enough evidence. It does not collect confidence or display synthetic readiness, retention, or mastery percentages.
+Today owns the most useful next action. Practice is the manual learning workspace. Progress explains how learning evidence is changing. Activity answers what the learner actually did. Manual choice wins when starting a new supported session.
 
-## Content and feedback
+An active session is owned by its device. Each device may have at most one active session across all tracks. Its pointer, draft, position, timer and mutation journal never synchronize and cannot resume on another device. Terminal learning facts synchronize only after local durability.
 
-Every instructional item has concise immediate `Reason` and collapsed, complete `Details`, available after correct, partial, and incorrect attempts. Choice-item wrong options have authored explanations keyed by stable option ID. Patternly corrects content in place: it does not retain obsolete explanations to reconstruct local history.
+## Content, access and language
 
-Algorithms sessions select an explicit roadmap unit or declared scope: active roadmap units, then highest false-heuristic risk, then contrasts and mistake diagnosis, then remaining foundations and mechanics. A roadmap unit may contain several related mental units, but a session never widens beyond its declared boundary. Certification remediation batches by competency area and then topic. All active content is audited in canonical source and released with matching technical evidence.
+Every production-visible track has one canonical `freeNodeId`, bundled completely with the application. Premium content is delivered as immutable, compressed whole-node packages. Every prepared session pins exact content/package versions; an update affects only later sessions.
 
-## Persistence and recovery rule
+The launch application and launch content are English-only. There is no one-option Language route. Future localization reuses stable item, option and scoring identities so presentation language cannot create a second evidence bank.
 
-The target is one MMKV client, imported only by infrastructure, and one set of repositories. Historical local data, old keys, old read/write APIs, and Cloud write-through are deleted; they are not migrated or translated. A content version identifies the active bank only.
+Patternly does not claim official certification outcomes, executable-code verification, guaranteed interview readiness or provider affiliation. Coding Interview remains strategy-first and includes implementation planning without pretending to be an online judge.
 
-If an existing model, record, flow, or module cannot move into the canonical structure without preserving obsolete semantics, delete it. Do not create fallbacks, translators, compatibility adapters, or parallel paths. Backward compatibility is not required for pre-production storage, content, or runtime models. An explicit runtime failure is a valuable signal that migration work remains; it must not be hidden by defaults or by reading the old system.
+## Brand and quality
 
-## Certification boundary
+Patternly is one brand. Tracks may use subordinate accent colours, compact symbols and bounded motifs built from one shared grammar, but they do not receive separate logos, wordmarks, typography, component systems or provider-like treatment.
 
-Each certification track instance owns a versioned `ExamExperienceProfile` sourced from an official public guide and dated when checked. Patternly mirrors only documented official behaviour and never implies affiliation, official scoring, or a pass/fail outcome.
+The target is focused flagship quality sustainable by one developer: complete Light, Dark and System appearance, accessible typography up to 200%, restrained motion with reduced-motion equivalents, sparse semantic haptics, diagrammatic illustration, truthful operational states, and coherent public/store presentation.
+
+Figma is temporary visual authority during the one-time active design phase. Only the Product Owner may mark actual visual work `APPROVED`. After verified handoff through `CODE_CANONICAL`, repository-owned tokens, assets, production components, Storybook, tests and checked-in baselines become operational design authority; normal development and CI no longer depend on Figma or a paid Figma plan.
 
 ## Documentation authority
 
-`canonical-product-contract.yaml` is the sole normative product-behavior contract. Documents `00`–`13` and `15`–`17` provide narrative context and cannot override it. `docs/launch-completion-plan.md` remains the sole repository execution-order source until its controlled regeneration in Directive 3. Retained audits and reports are historical evidence, never current product or execution authority.
+Authority is ordered as follows:
+
+1. `canonical-product-contract.yaml` — normative product behavior and cross-cutting policy;
+2. `product-owner-decision-register.md` — direct owner decisions, rationale and supersession history;
+3. documents `00`–`13` and `15`–`17` — narrative owners that elaborate the contract without overriding it;
+4. ADRs — technical history or current technical decisions, never product or execution authority;
+5. `launch-completion-plan.md` — implementation order and repository status only, to be regenerated by Directive 3;
+6. reports, audits, designs and screenshots — evidence only.
+
+Existing code and retained reports describe current implementation evidence. They do not turn an obsolete behavior into the target contract.

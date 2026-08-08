@@ -1,11 +1,15 @@
 # ADR-001 — Local-first MVP
 
-Status: **Accepted**  
+Status: **Partially superseded for commercial launch by PO-036, PO-043 and PO-048 (2026-08-08)**
 Data: 2026-06-26
 
 ## Scope note
 
-Decyzja `local-first/offline-first` pozostaje aktywna dla Patternly. Oryginalny kontekst GCP ACE poniżej jest historycznym kontekstem pierwszego tracka, a nie aktualnym zakresem całego produktu. Aktualny produkt jest wielotrackowy zgodnie z `docs/00-overview.md` i `docs/01-product-definition.md`.
+Decyzja `local-first/offline-first` pozostaje aktywna: learning mutation jest
+najpierw trwały lokalnie. Kategoryczne „bez backendu, konta, synchronizacji i
+remote content” jest historyczne i zostało zastąpione przez guest-first account
+boundary, incremental sync i immutable packages. Poniższy prywatny GCP MVP nie
+jest targetem publicznego produktu.
 
 ## Kontekst
 

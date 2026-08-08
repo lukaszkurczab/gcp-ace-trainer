@@ -4,12 +4,12 @@
   "title": "Patternly canonical product contract",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "accountData", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "simulationOperationStateCtas", "algorithms", "certification"],
+  "required": ["version", "contractId", "authority", "requirements", "requirementTestCoverage", "commercialEntitlement", "guestAndFree", "identityAndAccountSecurity", "environmentAndPublicLinks", "learningOwnershipAndSync", "productSurfacesAndGoals", "learningProducts", "contentPackages", "analyticsAndReports", "backupAndRestore", "platformRelease", "designAuthority", "accountData", "userCommands", "sessionStateMachine", "simulationConcurrency", "simulationTimerCadence", "designReferences", "simulationOperationStateCtas", "codingInterview", "certification"],
   "properties": {
     "version": {
       "description": "The version of this contract format.",
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "contractId": {
       "type": "string",
@@ -50,6 +50,18 @@
       }
     },
     "requirementTestCoverage": { "$ref": "#/$defs/requirementTestCoverage" },
+    "commercialEntitlement": { "type": "object", "additionalProperties": false, "required": ["freeAccess", "premiumProducts", "entitlement", "tiers", "trackSlots", "storeFreeTrialRequired", "purchaseRequires", "guestPurchase", "revenueCatAppUserId", "authorityChain", "paidDownloadAuthority", "crossPlatformPremium", "offlineVerificationGraceDays", "deviceMayNotAdvanceVerifiedAt", "startedEntitledSessionCompletion", "downgradeHistory", "restorePurchases", "accountDeletionStoreBilling", "deletionChoices"], "properties": { "freeAccess": {}, "premiumProducts": {}, "entitlement": {}, "tiers": {}, "trackSlots": {}, "storeFreeTrialRequired": {}, "purchaseRequires": {}, "guestPurchase": {}, "revenueCatAppUserId": {}, "authorityChain": {}, "paidDownloadAuthority": {}, "crossPlatformPremium": {}, "offlineVerificationGraceDays": {}, "deviceMayNotAdvanceVerifiedAt": {}, "startedEntitledSessionCompletion": {}, "downgradeHistory": {}, "restorePurchases": {}, "accountDeletionStoreBilling": {}, "deletionChoices": {} } },
+    "guestAndFree": { "type": "object", "additionalProperties": false, "required": ["guestIdentity", "firebaseAnonymousAuthentication", "firstLearningValueRequiresAccount", "freeNodePerProductionTrack", "completeFreeNodeBundled", "allowedCapabilities", "prohibitedCapabilities", "freeSessionContent", "freeReviewContent", "adoption"], "properties": { "guestIdentity": {}, "firebaseAnonymousAuthentication": {}, "firstLearningValueRequiresAccount": {}, "freeNodePerProductionTrack": {}, "completeFreeNodeBundled": {}, "allowedCapabilities": {}, "prohibitedCapabilities": {}, "freeSessionContent": {}, "freeReviewContent": {}, "adoption": {} } },
+    "identityAndAccountSecurity": { "type": "object", "additionalProperties": false, "required": ["methods", "identity", "providerLinking", "automaticMergeByEmail", "unlinkLastUsableMethod", "recoveryCodeCount", "recoveryCodeStorage", "recoveryCodeDisplay", "recoveryCodeReuse", "regenerateInvalidatesPriorCodes", "recoverySession", "successfulRecovery", "manualSupportTakeoverWithoutMethodOrCode", "passwordAndEmailChange", "signOutAllDevices", "termsAcceptance"], "properties": { "methods": {}, "identity": {}, "providerLinking": {}, "automaticMergeByEmail": {}, "unlinkLastUsableMethod": {}, "recoveryCodeCount": {}, "recoveryCodeStorage": {}, "recoveryCodeDisplay": {}, "recoveryCodeReuse": {}, "regenerateInvalidatesPriorCodes": {}, "recoverySession": {}, "successfulRecovery": {}, "manualSupportTakeoverWithoutMethodOrCode": {}, "passwordAndEmailChange": {}, "signOutAllDevices": {}, "termsAcceptance": {} } },
+    "environmentAndPublicLinks": { "type": "object", "additionalProperties": false, "required": ["requiredValues", "defaultFirebaseDomain", "productionDomainAndSender", "ordinaryFirebaseActionCodes", "publicDeletionPossessionToken", "actionHandlerOutcomes", "accountEnumeration"], "properties": { "requiredValues": { "const": ["publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"] }, "defaultFirebaseDomain": {}, "productionDomainAndSender": {}, "ordinaryFirebaseActionCodes": {}, "publicDeletionPossessionToken": {}, "actionHandlerOutcomes": {}, "accountEnumeration": {} } },
+    "learningOwnershipAndSync": { "type": "object", "additionalProperties": false, "required": ["currentTrackId", "activeSessionLimit", "independentActiveSessionsAcrossDevices", "crossDeviceActiveSessionResume", "deviceOnlyRecords", "deviceOnlyRemoteSync", "mutationOrder", "syncTriggers", "backgroundSyncPromise", "transfer", "bootstrapProjection", "exactHistory", "canonicalFacts", "derivedProjections"], "properties": { "currentTrackId": {}, "activeSessionLimit": {}, "independentActiveSessionsAcrossDevices": {}, "crossDeviceActiveSessionResume": {}, "deviceOnlyRecords": {}, "deviceOnlyRemoteSync": {}, "mutationOrder": {}, "syncTriggers": {}, "backgroundSyncPromise": {}, "transfer": {}, "bootstrapProjection": {}, "exactHistory": {}, "canonicalFacts": {}, "derivedProjections": {} } },
+    "productSurfacesAndGoals": { "type": "object", "additionalProperties": false, "required": ["primaryTabs", "activity", "launchLanguage", "languageRoute", "todayJob", "practiceJob", "progressJob", "activityJob", "manualSessionChoicePrecedence", "recommendationPriority", "goals"], "properties": { "primaryTabs": {}, "activity": {}, "launchLanguage": {}, "languageRoute": {}, "todayJob": {}, "practiceJob": {}, "progressJob": {}, "activityJob": {}, "manualSessionChoicePrecedence": {}, "recommendationPriority": {}, "goals": {} } },
+    "learningProducts": { "type": "object", "additionalProperties": false, "required": ["families", "targetTracks", "targetTrackBriefRequiredFields", "productionRegistryAdmission", "emptyPlaceholderOrComingSoonTracks", "representativeProofsBeforeBroadCopying", "codingInterview"], "properties": { "families": {}, "targetTracks": {}, "targetTrackBriefRequiredFields": {}, "productionRegistryAdmission": {}, "emptyPlaceholderOrComingSoonTracks": {}, "representativeProofsBeforeBroadCopying": {}, "codingInterview": {} } },
+    "contentPackages": { "type": "object", "additionalProperties": false, "required": ["freeNodes", "premiumUnit", "objectStore", "manifestStore", "authorization", "downloadUrl", "perQuestionFirestoreFetching", "manifestRequiredFields", "publishedMutation", "correction", "activationOrder", "validationFailure", "sessionVersionPinning", "silentVersionSubstitution", "reviewResolution", "cacheEviction", "futureLocales"], "properties": { "freeNodes": {}, "premiumUnit": {}, "objectStore": {}, "manifestStore": {}, "authorization": {}, "downloadUrl": {}, "perQuestionFirestoreFetching": {}, "manifestRequiredFields": {}, "publishedMutation": {}, "correction": {}, "activationOrder": {}, "validationFailure": {}, "sessionVersionPinning": {}, "silentVersionSubstitution": {}, "reviewResolution": {}, "cacheEviction": {}, "futureLocales": {} } },
+    "analyticsAndReports": { "type": "object", "additionalProperties": false, "required": ["analyticsProvider", "crashProvider", "consentGate", "termsAsAnalyticsConsent", "rawFirestoreEventStream", "eventVocabulary", "forbiddenEventFields", "contentReports"], "properties": { "analyticsProvider": {}, "crashProvider": { "const": "firebaseCrashlytics" }, "consentGate": {}, "termsAsAnalyticsConsent": { "const": "prohibited" }, "rawFirestoreEventStream": {}, "eventVocabulary": {}, "forbiddenEventFields": {}, "contentReports": {} } },
+    "backupAndRestore": { "type": "object", "additionalProperties": false, "required": ["firestorePitrDays", "purpose", "scheduledLongTermExportAtLaunch", "restoreRunbook", "sanitizedSandboxDrill", "deletionTombstoneReconciliation", "deletedAccountResurrection", "localPlatformBackupForCanonicalLearningAndCache"], "properties": { "firestorePitrDays": {}, "purpose": {}, "scheduledLongTermExportAtLaunch": { "const": "prohibited" }, "restoreRunbook": {}, "sanitizedSandboxDrill": {}, "deletionTombstoneReconciliation": {}, "deletedAccountResurrection": {}, "localPlatformBackupForCanonicalLearningAndCache": {} } },
+    "platformRelease": { "type": "object", "additionalProperties": false, "required": ["expoSdkBeforeFinalFreeze", "iosMinimum", "iosDevices", "ipadSupportClaim", "androidMinimumApi", "androidTargetApi", "orientation", "appearances", "textScalingPercent", "evidenceDevices", "signedPhysicalDeviceSmoke"], "properties": { "expoSdkBeforeFinalFreeze": {}, "iosMinimum": {}, "iosDevices": {}, "ipadSupportClaim": {}, "androidMinimumApi": {}, "androidTargetApi": {}, "orientation": { "const": "portrait" }, "appearances": {}, "textScalingPercent": {}, "evidenceDevices": {}, "signedPhysicalDeviceSmoke": {} } },
+    "designAuthority": { "type": "object", "additionalProperties": false, "required": ["brand", "trackIdentity", "qualityTarget", "visualTerritory", "mark", "illustration", "motion", "haptics", "figmaSpaces", "exploration", "actualVisualApprovalAuthority", "handoffStates", "postHandoffOperationalAuthority", "figmaProductionDependency", "storybookProductionDependency", "storybook", "paidFigmaOrdinaryDevelopmentDependencyAfterHandoff"], "properties": { "brand": {}, "trackIdentity": {}, "qualityTarget": {}, "visualTerritory": {}, "mark": {}, "illustration": {}, "motion": {}, "haptics": {}, "figmaSpaces": {}, "exploration": {}, "actualVisualApprovalAuthority": {}, "handoffStates": {}, "postHandoffOperationalAuthority": {}, "figmaProductionDependency": {}, "storybookProductionDependency": {}, "storybook": {}, "paidFigmaOrdinaryDevelopmentDependencyAfterHandoff": {} } },
     "accountData": { "$ref": "#/$defs/accountData" },
     "userCommands": { "$ref": "#/$defs/userCommands" },
     "sessionStateMachine": { "$ref": "#/$defs/sessionStateMachine" },
@@ -57,13 +69,13 @@
     "simulationTimerCadence": { "$ref": "#/$defs/simulationTimerCadence" },
     "designReferences": { "$ref": "#/$defs/designReferences" },
     "simulationOperationStateCtas": { "$ref": "#/$defs/simulationOperationStateCtas" },
-    "algorithms": {
+    "codingInterview": {
       "type": "object",
       "additionalProperties": false,
       "required": ["customPractice", "reinsertPolicy", "modes"],
       "properties": {
         "customPractice": { "$ref": "#/$defs/customPractice" },
-        "reinsertPolicy": { "$ref": "#/$defs/algorithmsReinsertPolicy" },
+        "reinsertPolicy": { "$ref": "#/$defs/codingInterviewReinsertPolicy" },
         "modes": {
           "type": "array",
           "minItems": 8,
@@ -125,16 +137,14 @@
         "publicLaunchEntry": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["accountRequired", "identityMethod", "canonicalIdentifier", "firstAuthenticatedBootstrapRequiresNetwork", "offlineEntryRequiresSuccessfulAuthenticatedSync", "learningRequiresVerifiedIdentity", "offlineLearningAfterVerifiedBootstrap", "anonymousLearningPath"],
+          "required": ["firstLearningValueRequiresAccount", "guestIdentity", "accountRequiredFor", "identityMethods", "canonicalIdentifier", "firebaseAnonymousAuthentication"],
           "properties": {
-            "accountRequired": { "const": true },
-            "identityMethod": { "const": "verifiedEmailAndPassword" },
-            "canonicalIdentifier": { "const": "normalizedEmail" },
-            "firstAuthenticatedBootstrapRequiresNetwork": { "const": true },
-            "offlineEntryRequiresSuccessfulAuthenticatedSync": { "const": true },
-            "learningRequiresVerifiedIdentity": { "const": true },
-            "offlineLearningAfterVerifiedBootstrap": { "const": "allowedForBoundAccount" },
-            "anonymousLearningPath": { "const": "prohibited" }
+            "firstLearningValueRequiresAccount": { "const": false },
+            "guestIdentity": { "const": "localInstallation" },
+            "accountRequiredFor": { "const": ["premiumPurchase", "synchronization", "restore", "crossDeviceContinuity"] },
+            "identityMethods": { "const": ["emailPassword", "signInWithApple", "signInWithGoogle", "recoveryCodes"] },
+            "canonicalIdentifier": { "const": "stableOpaquePatternlyAccountId" },
+            "firebaseAnonymousAuthentication": { "const": "prohibited" }
           }
         },
         "credentials": {
@@ -175,9 +185,9 @@
             "enumerationPolicy": { "const": "registerMayReportDuplicateIdentityAndSignInMayReportUnverifiedOnlyAfterValidCredentialButRecoveryAndPublicDeletionNeverRevealAccountExistence" },
             "resendVerificationResult": { "const": "invalidatesPriorVerificationTokenAndSendsReplacement" },
             "changePendingEmailResult": { "const": "replacesNormalizedEmailInvalidatesPriorVerificationTokenAndSendsReplacement" },
-            "verificationLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "verificationPossessionToken" } } }] },
-            "recoveryLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "recoveryPossessionToken" } } }] },
-            "publicDeletionLink": { "allOf": [{ "$ref": "#/$defs/accountEmailLink" }, { "type": "object", "properties": { "tokenKind": { "const": "publicDeletionPossessionToken" } } }] }
+            "verificationLink": { "$ref": "#/$defs/providerControlledActionLink" },
+            "recoveryLink": { "$ref": "#/$defs/providerControlledActionLink" },
+            "publicDeletionLink": { "$ref": "#/$defs/publicDeletionLink" }
           }
         },
         "dataAuthority": {
@@ -213,8 +223,8 @@
             "requiresPreviewAndConfirmation": { "const": true },
             "cases": {
               "type": "array",
-              "minItems": 7,
-              "maxItems": 7,
+              "minItems": 6,
+              "maxItems": 6,
               "items": { "$ref": "#/$defs/accountAdoptionCase" }
             },
             "recordPolicies": {
@@ -244,7 +254,7 @@
             "remoteWritePrecondition": { "const": "expectedAccountRevision" },
             "staleRevisionResult": { "const": "fetchRemoteThenDeterministicReplayOrBlockingConflict" },
             "immutableCollisionResult": { "const": "blockingIntegrityConflict" },
-            "activeSessionConflictResult": { "const": "explicitSessionChoiceRequired" },
+            "activeSessionConflictResult": { "const": "notApplicableDeviceOwnedSessionsNeverSync" },
             "remoteFailureResult": { "const": "retainVerifiedLocalCommitAndPendingOutbox" },
             "retry": { "const": "explicitOrAutomaticOnNetworkReturnWithoutDuplicateOperation" }
           }
@@ -361,8 +371,8 @@
               "required": ["liveServiceDataAfterVerifiedDeletionDays", "encryptedBackupMaximumDays", "backupRestoreIntoLiveService", "minimalDeletionProofDays", "deletionProofFields"],
               "properties": {
                 "liveServiceDataAfterVerifiedDeletionDays": { "const": 0 },
-                "encryptedBackupMaximumDays": { "const": 30 },
-                "backupRestoreIntoLiveService": { "const": "prohibited" },
+                "encryptedBackupMaximumDays": { "const": 7 },
+                "backupRestoreIntoLiveService": { "const": "controlledDisasterRecoveryWithDeletionTombstoneReconciliation" },
                 "minimalDeletionProofDays": { "const": 30 },
                 "deletionProofFields": { "const": ["requestId", "irreversibleAccountIdHash", "requestedAt", "completedAt", "resultCode"] }
               }
@@ -378,7 +388,7 @@
         "networkAndPrivacy": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["transmittedFields", "transport", "emailDelivery", "transactionalEmailProcessor", "patternlyControlledLogExclusions", "honestLimitations"],
+          "required": ["transmittedFields", "transport", "emailDelivery", "patternlyControlledLogExclusions"],
           "properties": {
             "transmittedFields": {
               "type": "object",
@@ -394,26 +404,7 @@
             },
             "transport": { "const": "authenticatedTls" },
             "emailDelivery": { "const": "transactionalOnlyWithRateLimitAndNonEnumeratingRecoveryResponse" },
-            "transactionalEmailProcessor": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["provider", "plan", "environmentScope", "purpose", "retainedData", "processorCopyFields", "processorCopyLocations", "maximumRetentionDays", "storageRegion", "liveAccountDataAuthority", "backupClassification"],
-              "properties": {
-                "provider": { "const": "resend" },
-                "plan": { "const": "free" },
-                "environmentScope": { "const": "ownerOnlySandbox" },
-                "purpose": { "const": "publicDeletionPossessionLinkDeliveryOnly" },
-                "retainedData": { "const": "transactionalEmailDeliveryDataIncludingMessageContentMetadataAndApiLogs" },
-                "processorCopyFields": { "const": ["recipientNormalizedEmail", "publicDeletionPossessionToken"] },
-                "processorCopyLocations": { "const": ["messageContent", "deliveryRecords", "apiRecords"] },
-                "maximumRetentionDays": { "type": "integer", "minimum": 0, "maximum": 30, "const": 30 },
-                "storageRegion": { "const": "UnitedStates" },
-                "liveAccountDataAuthority": { "const": "prohibited" },
-                "backupClassification": { "const": "prohibited" }
-              }
-            },
-            "patternlyControlledLogExclusions": { "const": ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "normalizedEmail", "learnerResponse", "promptText", "explanationText", "draftPayload", "attemptPayload", "reviewPayload", "progressPayload", "journalPayload", "exportPayload", "deletionIntentPayload"] },
-            "honestLimitations": { "const": ["mechanismsNotImplemented", "publicHostingUnavailableUntilMarketPromotion", "signedBuildNotVerified", "legalAndStoreDisclosuresNotPublished"] }
+            "patternlyControlledLogExclusions": { "const": ["password", "accessToken", "refreshToken", "verificationToken", "recoveryToken", "publicDeletionPossessionToken", "normalizedEmail", "learnerResponse", "promptText", "explanationText", "draftPayload", "attemptPayload", "reviewPayload", "progressPayload", "journalPayload", "exportPayload", "deletionIntentPayload"] }
           }
         }
       }
@@ -456,15 +447,26 @@
       "type": "string",
       "enum": ["invalidInput", "duplicateIdentity", "rateLimited", "offline", "remoteFailure", "invalidLink", "expiredLink", "usedLink", "invalidCredential", "unverifiedIdentity", "adoptionConflict", "revokedSession", "journalRecoveryFailure", "pendingSyncRequiresNetwork", "exportRequired", "localDeletionFailure", "reauthenticationRequired", "deletionVerificationFailure"]
     },
-    "accountEmailLink": {
+    "providerControlledActionLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport", "tokenKind", "singleUse", "expiry"],
+      "properties": {
+        "transport": { "const": "verifiedHttpsUniversalLink" },
+        "tokenKind": { "enum": ["verificationActionCode", "recoveryActionCode"] },
+        "singleUse": { "const": "providerControlled" },
+        "expiry": { "const": "providerControlled" }
+      }
+    },
+    "publicDeletionLink": {
       "type": "object",
       "additionalProperties": false,
       "required": ["transport", "tokenKind", "singleUse", "expiresAfterMinutes"],
       "properties": {
         "transport": { "const": "verifiedHttpsUniversalLink" },
-        "tokenKind": { "enum": ["verificationPossessionToken", "recoveryPossessionToken", "publicDeletionPossessionToken"] },
+        "tokenKind": { "const": "publicDeletionPossessionToken" },
         "singleUse": { "const": true },
-        "expiresAfterMinutes": { "type": "integer", "maximum": 30, "const": 30 }
+        "expiresAfterMinutes": { "const": 30 }
       }
     },
     "accountRecordClass": {
@@ -474,7 +476,7 @@
       "properties": {
         "id": { "enum": ["storageMetadata", "accountBinding", "syncMetadataAndOutbox", "applicationSettings", "notificationSettings", "activeTrack", "activeSessionReference", "trainingSession", "trainingSessionResult", "trainingAttempt", "reviewQueueEntry", "simulationDraft", "foregroundTimer", "mutationJournal", "accountDeletionIntent"] },
         "owner": { "enum": ["device", "accountAndDevice", "account", "deviceOperational"] },
-        "remoteSync": { "enum": ["never", "identityReferenceOnly", "operationEnvelopeOnly", "revisioned", "immutableById", "materializedWritesOnly"] }
+        "remoteSync": { "enum": ["never", "identityReferenceOnly", "operationEnvelopeOnly", "revisioned", "immutableById", "materializedWritesOnly", "terminalFactsOnly"] }
       }
     },
     "accountDerivedProjection": {
@@ -493,8 +495,8 @@
       "additionalProperties": false,
       "required": ["id", "result"],
       "properties": {
-        "id": { "enum": ["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeSessionOnOneSide", "divergentActiveSessions", "divergentRecord"] },
-        "result": { "enum": ["createBoundEmptyDataset", "previewThenUploadExactLocalDataset", "previewThenRestoreExactRemoteDataset", "previewThenReconcileByRecordPolicy", "preserveThatSessionAndRejectSecondActiveSession", "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft", "applyRecordPolicyOrBlockWithoutMutation"] }
+        "id": { "enum": ["emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote", "populatedLocalPopulatedRemote", "activeGuestSession", "divergentRecord"] },
+        "result": { "enum": ["createBoundEmptyDataset", "previewThenUploadExactLocalDataset", "previewThenRestoreExactRemoteDataset", "previewThenReconcileByRecordPolicy", "requireFinishOrExplicitAbandonmentBeforeAdoption", "applyRecordPolicyOrBlockWithoutMutation"] }
       }
     },
     "accountSurfaceId": {
@@ -542,7 +544,7 @@
       "additionalProperties": false,
       "required": ["scope", "queueDiscipline", "maxInFlight", "revalidateActiveSessionAtExecution", "mutationKinds"],
       "properties": {
-        "scope": { "const": "oneActiveSession" },
+        "scope": { "const": "oneActiveSessionPerDevice" },
         "queueDiscipline": { "const": "fifo" },
         "maxInFlight": { "const": 1 },
         "revalidateActiveSessionAtExecution": { "const": true },
@@ -587,7 +589,7 @@
       "additionalProperties": false,
       "required": ["version", "references", "uiOwnership"],
       "properties": {
-        "version": { "const": 1 },
+        "version": { "const": 2 },
         "references": {
           "type": "array",
           "items": { "$ref": "#/$defs/designReference" }
@@ -796,14 +798,14 @@
       "additionalProperties": false,
       "required": ["modeId", "contentBlueprintModeId", "mentalUnitSelection", "reinsertOwnership", "lifecycle"],
       "properties": {
-        "modeId": { "const": "algorithms-custom-practice" },
-        "contentBlueprintModeId": { "const": "algorithms-guided-practice" },
+        "modeId": { "const": "coding-interview-custom-practice" },
+        "contentBlueprintModeId": { "const": "coding-interview-guided-practice" },
         "mentalUnitSelection": { "const": "explicit" },
         "reinsertOwnership": { "const": "profile" },
         "lifecycle": { "const": "sharedOneActiveSession" }
       }
     },
-    "algorithmsReinsertPolicy": {
+    "codingInterviewReinsertPolicy": {
       "type": "object",
       "additionalProperties": false,
       "required": ["version", "eligibleResultKinds", "maxReinsertsPerSource", "minInterveningDurableSubmissions", "variantSelectionOrder", "missingValidSlot"],
@@ -832,14 +834,14 @@
         "id": {
           "type": "string",
           "enum": [
-            "algorithms-learn-approach",
-            "algorithms-guided-practice",
-            "algorithms-custom-practice",
-            "algorithms-recognize-patterns",
-            "algorithms-contrast-practice",
-            "algorithms-weak-area-review",
-            "algorithms-independent-practice",
-            "algorithms-interview-simulation"
+            "coding-interview-learn-approach",
+            "coding-interview-guided-practice",
+            "coding-interview-custom-practice",
+            "coding-interview-recognize-patterns",
+            "coding-interview-contrast-practice",
+            "coding-interview-weak-area-review",
+            "coding-interview-independent-practice",
+            "coding-interview-simulation"
           ]
         },
         "label": {
@@ -921,7 +923,7 @@
     "certificationMode": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "label", "owner", "status"],
+      "required": ["id", "label", "owner"],
       "properties": {
         "id": {
           "type": "string",
@@ -954,16 +956,6 @@
           "properties": {
             "familyId": { "const": "certification" },
             "trackId": { "const": "cloud-certification" }
-          }
-        },
-        "status": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["contract", "implementation", "verification"],
-          "properties": {
-            "contract": { "const": "declared" },
-            "implementation": { "enum": ["available", "unavailable"] },
-            "verification": { "enum": ["verified", "unverified"] }
           }
         },
         "configuration": {

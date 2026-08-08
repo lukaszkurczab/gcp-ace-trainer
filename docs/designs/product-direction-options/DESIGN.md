@@ -1,13 +1,17 @@
 # Patternly core journey — Quiet Layered
 
-## Approval
+## Historical approval
 
-- **Status:** APPROVED
-- **Authority:** product owner
+- **Status:** HISTORICAL — approved only for the previous product contract
+- **Authority at the time:** product owner
 - **Approval date:** 2026-07-28
 - **Visual source:** [Option 3 — Quiet Layered](option-3.png)
-- **Scope:** Track Selection, Home, Practice, active question and feedback,
+- **Historical scope:** Track Selection, Home, Practice, active question and feedback,
   session summary, Progress, and the shared shell required by those surfaces.
+
+This approval does not carry into the reconciled target visual system. The
+artifact remains implementation provenance only; it cannot authorize target UI
+or bypass the owner-controlled Figma 3 → 2 → 1 approval and repository handoff.
 
 ## Product intent
 
@@ -16,7 +20,7 @@ large card padding limits each surface to the information required for the
 current decision. The application is not a dashboard and does not use
 decorative metrics, gamification, or repeated topic and track context.
 
-## Canonical visual rules
+## Previous-contract visual rules
 
 1. Each screen exposes one dominant decision.
 2. One spacious outlined layer contains the recommended next action.
@@ -75,7 +79,7 @@ or mock success states.
 
 ## Verification
 
-The implementation is accepted only after:
+The previous-contract implementation was assessed against:
 
 - side-by-side visual comparison with `option-3.png`;
 - dark and light evidence on iOS and Android;

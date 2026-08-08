@@ -1,667 +1,182 @@
-# 08 — Storage and Offline
+# 08 — Storage, Offline, and Synchronization
 
-## Current implementation and public-launch target
+## Purpose and authority
 
-Patternly is offline-first.
+This document owns the narrative persistence, offline, guest-adoption, synchronization, and package-cache boundaries. The normative behavior is in `canonical-product-contract.yaml`; document `17` owns the detailed learning-session lifecycle. Current repository behavior does not override the target.
 
-MMKV is the only persistence engine for canonical local application state. Infrastructure creates one MMKV client, and repository implementations are the only read and write boundary.
+Patternly is local-first. A learning mutation is successful locally before synchronization is attempted. Network availability is never required for a guest to use the bundled Free product.
 
-No UI module, screen, family runtime, track instance, content bank, or shared-domain module imports MMKV directly.
+## Local persistence ownership
 
-Static content is bundled with the application and identified by an active `contentVersion`. User learning data is stored first as local canonical state.
+One infrastructure-owned MMKV client and one canonical repository set own local application state. Screens, components, family runtimes, track instances, and content modules do not import MMKV directly.
 
-Canonical learning data is excluded from automatic platform backup and device-transfer restore. Android excludes the app data root in both legacy backup rules and Android 12+ cloud/D2D extraction rules. Before React Native initializes on iOS, the app creates the MMKV `Documents/mmkv` directory and marks it `isExcludedFromBackup`; failure to establish that policy stops startup. The current build offers no restore path. The public-launch account target adds application-level cross-device synchronization under `canonical-product-contract.yaml`; it does not re-enable platform backup.
+Canonical local records include:
 
-The target does not include:
+- installation and guest identity metadata;
+- optional verified Patternly-account binding;
+- current track and per-track goals;
+- one active-session pointer per device;
+- active and completed device sessions;
+- immutable attempts and terminal results;
+- review entries and Activity facts;
+- simulation drafts, current position, and foreground timer checkpoints;
+- one pending local mutation journal;
+- ordered idempotent account-operation outbox and incremental sync cursors;
+- validated package metadata, versioned package payloads, and atomic active-package pointers;
+- account-deletion intent and tombstone evidence needed for safe cleanup.
 
-- remote content delivery;
-- content synchronization;
-- Cloud write-through;
-- AsyncStorage reads or writes;
-- historical-record migration;
-- record translation;
-- old-schema fallback reads;
-- historical item or explanation reconstruction.
+Derived progress, recommendations, due-review summaries, and compact Activity projections are rebuildable. They are not independent canonical learning authority.
 
-Remote content remains a separate concern. The account contract authorizes only
-the declared identity, account and canonical user-learning fields; it does not
-authorize remote content delivery, analytics, telemetry or arbitrary SDK data.
+## Guest dataset
 
-## Native runtime prerequisite
+Every installation starts with a local guest identity and guest dataset. Guest use supports track switching, goals, attempts, review, Activity, Progress, and offline operation. It does not use Firebase Anonymous Authentication.
 
-The repository-pinned `react-native-mmkv` V4 dependency is a native Nitro Module and requires the compatible pinned `react-native-nitro-modules` dependency.
+Guest data remains local until the learner explicitly creates or signs into a Patternly account and confirms an adoption plan. Registration never silently discards, overwrites, or merges guest learning.
 
-Expo Go cannot supply this native dependency to an already-installed client. Development and testing therefore use an iOS or Android development build containing the pinned native modules.
+## Device-owned active session
 
-A new native build is required when:
+At most one active learning session exists per device. The following records are always device-owned and have no remote representation:
 
-- `react-native-mmkv` is first added;
-- its native version changes;
-- `react-native-nitro-modules` changes;
-- relevant native configuration changes.
+- active-session pointer;
+- active session and exact prepared item order;
+- simulation draft;
+- current item or position;
+- foreground timer and timer checkpoints;
+- local mutation journal.
 
-Ordinary JavaScript or TypeScript changes do not by themselves require rebuilding the native client.
+An active session is never resumed, selected, merged, or resolved on another device. Cross-device synchronization cannot create an account-wide active-session conflict because active sessions are outside the account dataset.
 
-The exact dependency versions belong to `package.json`, the lockfile, and the current implementation verification record. This document defines their architectural use rather than treating one package version as a permanent product contract.
+Session preparation pins exact track, node/package or bundled-content version, taxonomy/configuration versions, and item occurrences before the first item appears. A published version is never silently substituted during resume or review.
 
-## Canonical local records
+## Journal-first mutation
 
-The canonical repository set owns:
-
-- storage metadata and schema identity;
-- application settings;
-- the active-session reference;
-- active and completed sessions;
-- immutable attempts;
-- review queue entries;
-- simulation drafts;
-- the single pending mutation journal;
-- the account-deletion intent used only to resume verified cleanup.
-
-Family-neutral evidence and family progress are read projections derived from
-attempts, results and review entries. They are not separately writable records,
-do not have storage keys and never synchronize as an independent authority.
-
-Static content is not copied into user persistence.
-
-Canonical records reference bundled content by stable track, content-version, item, and occurrence identities.
-
-A `contentVersion` identifies one complete active content bank. It does not authorize runtime access to historical banks.
-
-## Account ownership and synchronization
-
-For public launch, the canonical local repository set remains the durability
-authority for the current device. One revisioned remote account dataset is the
-cross-device convergence authority. These are different roles inside one
-account-data repository/service boundary, not two competing products or direct
-Cloud write-through.
-
-Device-owned storage metadata, application settings and notification settings
-never sync. Account-owned active-track, session, result, attempt, review, draft
-and foreground-timer records sync using the policies declared in
-`canonical-product-contract.yaml`. Evidence and progress are rebuilt from
-those synchronized facts. The local mutation journal stays device-operational;
-only its verified materialized write set enters the ordered sync outbox.
-The account-deletion intent is also device-operational and never syncs. It is a
-minimal cleanup checkpoint, not learning-data authority.
-
-Every remote write carries the expected account revision. The service accepts
-it once or rejects it as stale. A stale revision fetches the remote state and
-attempts only the declared deterministic semantic replay. An immutable
-same-ID/different-fingerprint collision, two divergent active sessions or a
-revisioned record that cannot be replayed becomes a visible blocking conflict;
-neither side is overwritten.
-
-## First account binding and adoption
-
-First binding is an explicit application operation before ordinary learning
-navigation:
+Every learning mutation follows one durability boundary:
 
 ```txt
-inspect validated local dataset and remote account dataset
-→ build a record-class adoption plan
-→ show counts, direction and active-session/conflict decisions
-→ receive explicit confirmation
-→ apply revisioned operations
-→ verify the resulting local and remote dataset
-→ expose ready or a specific blocking state
-```
-
-Empty/empty creates an empty bound dataset. Local-only uploads the exact local
-dataset after preview. Remote-only restores the exact remote dataset after
-preview. Both-populated unions distinct immutable IDs, deduplicates identical
-fingerprints and applies revisioned record policy. Divergent active sessions
-require an explicit choice and confirmed abandonment of the other draft.
-Immutable identity collisions block as integrity errors. Cancellation or any
-failed verification preserves both last verified datasets unchanged.
-
-## Offline sync operation
-
-A previously verified account with a validated local binding may continue
-practice, review, progress and resume offline only after at least one successful
-authenticated synchronization. The initial bootstrap cannot enter offline.
-Each later mutation still completes
-the existing local journal/materialization/verification boundary, then appends
-one idempotent sync operation and exposes `offlinePending`. Network return may
-retry in FIFO order without duplicating a logical operation.
-
-Registration, verification, sign-in, first account bootstrap, recovery,
-reauthentication, remote restore and account deletion are unavailable offline.
-An expired access token does not erase or falsify local progress; sync and
-security actions remain blocked until reauthentication. A server-declared
-revocation requires reauthentication and cannot fall back to anonymous use.
-
-An offline previously bound device cannot know that another device deleted the
-account, so it honestly retains its local bound data until an authenticated
-reconnect. If that reconnect returns account-deleted evidence bound to the
-stored account, the device persists its deletion intent, idempotently removes
-credentials, binding, outbox and account-owned records, and exposes the
-terminal remote-account-deleted result. It never asks the user to reauthenticate
-an account known to be deleted. Local cleanup failure remains retryable from
-the durable intent.
-
-## Storage namespace and ownership
-
-All canonical records use one Patternly-owned namespace and one schema version.
-
-Old namespaces, keys, APIs, and repository implementations are deleted. They are not read, migrated, translated, or retained as fallback paths.
-
-Repository contracts operate on validated canonical records. Repository implementations:
-
-- serialize and deserialize canonical records;
-- validate schema and record identity;
-- return explicit success or failure results;
-- support deterministic revision checks;
-- support journal materialization and verification;
-- never interpret item correctness or taxonomy semantics.
-
-Family runtimes validate family-owned payloads before application use cases pass them to repositories.
-
-## Application bootstrap
-
-Application bootstrap follows this order:
-
-```txt
-initialize the one MMKV client
-→ open canonical repositories
-→ validate storage metadata and schema identity
-→ recover and verify the single pending mutation journal, if present
-→ resolve and validate bundled track manifests and active content banks
-→ load the active-session reference, if present
-→ load and validate the owning session and simulation draft, if applicable
-→ resolve the exact track, content version, family configuration, and profile
-→ enter a ready, unavailable, or blocking recovery state
-```
-
-A pending journal is self-contained. Its recovery must not depend on historical content, obsolete runtime code, or the current learner-visible explanation.
-
-Normal learning navigation is not enabled while storage initialization or journal recovery remains unresolved.
-
-The same rule applies before export, sign-out and account deletion: recover the
-durable plan, materialize it, verify it and clear the journal first. Failure
-is the visible `journalRecoveryFailure` result and blocks the requested
-destructive boundary while retaining the current account binding and verified
-data; a different account cannot be bound around an unresolved journal.
-
-After bootstrap:
-
-- a global storage or journal failure produces a root recovery state;
-- an invalid track bank makes that track explicitly unavailable;
-- an active-session content or profile mismatch produces an explicit resume-unavailable state;
-- an incompatible active session may be deliberately abandoned where the application contract permits it;
-- another track or mode is never selected silently as a substitute.
-
-Committed attempts remain canonical evidence when an incompatible active session is abandoned.
-
-## One active session
-
-At most one canonical session is active across all tracks and families.
-
-The active-session reference and referenced active session must agree. Missing, duplicated, or conflicting active-session state is an explicit storage error.
-
-A session is persisted and verified before its first item appears.
-
-The immutable session plan includes:
-
-- track and family identity;
-- mode and configuration snapshot;
-- requested and actual length;
-- occurrence-keyed item order;
-- occurrence-keyed option order;
-- active content version;
-- required profile or configuration version;
-- creation time.
-
-Runtime must not regenerate item order, option order, or configuration during resume.
-
-## Immediate-feedback practice persistence
-
-In immediate-feedback practice:
-
-- the current unsubmitted selection is ephemeral UI state;
-- it is not written to storage;
-- changing the selection creates no attempt or review mutation;
-- foreground practice time is persisted according to the canonical timer-checkpoint policy.
-
-A practice submit follows:
-
-```txt
-validate and freeze the response
-→ build the deterministic attempt, session, evidence, and review outcome
-→ build the complete immutable write plan
-→ persist the durable mutation journal
-→ permit authored feedback
-→ materialize all canonical writes idempotently
-→ verify every intended final record
+validate command and expected revision
+→ persist a self-contained local journal entry
+→ materialize every declared local write and deletion
+→ read back and verify the intended final state
 → clear the journal
-→ permit item advance or completed-session navigation
+→ append one compact idempotent account operation when the dataset is bound
+→ render committed success
 ```
 
-No feedback appears before journal durability.
+Synchronization does not sit inside the local success boundary. A network failure leaves the verified local result intact and the account operation visibly pending. Recovery replays the journal by operation identity and expected prior state; it never reconstructs an answer, score, explanation, or package version from current content.
 
-The next item, completed summary, or other state that depends on materialized records is not exposed until materialization has been verified.
+## Guest-to-account adoption
 
-If materialization fails after feedback becomes visible:
+Adoption begins only after registration or sign-in. The learner sees a preview and confirms the exact deterministic plan before either dataset changes.
 
-- the deterministic submitted outcome remains logically committed in the journal;
-- the response cannot be edited or submitted again;
-- item advance remains blocked;
-- the UI shows an explicit recoverable commit-pending state;
-- retry and startup recovery replay the same write plan.
+The plan handles these cases:
 
-The UI must not describe such a state as an ordinary failure that permits another answer.
+- new empty account: preserve the guest dataset by default; explicit discard remains available;
+- existing account with no guest learning: restore the account dataset;
+- existing account plus guest learning: deduplicate identical stable facts, preserve distinct facts, and block irreconcilable same-ID/different-fingerprint collisions;
+- active guest session: finish or abandon it before binding; it is never uploaded or merged.
 
-## Simulation draft contract
+Cancellation and failed verification preserve both last verified datasets. Adoption becomes effective only after the remote operation converges and the resulting local binding is verified.
 
-A simulation uses one canonical active session and one optional session-owned draft record.
+## Account-owned synchronized facts
 
-The draft is not:
+The account dataset may contain:
 
-- a second session;
-- a separate history;
-- an independent attempt store;
-- a family-specific persistence subsystem;
-- a parallel source of truth.
+- current track;
+- per-track goals;
+- immutable attempt and terminal-result facts;
+- review mutations and resolution facts;
+- compact recent Activity and Progress projections;
+- stable content, node, package, taxonomy, and configuration references;
+- account/profile, consent, entitlement projection, and deletion metadata owned by their respective contracts.
 
-The immutable session owns the plan and configuration. The draft owns mutable, resumable simulation state permitted by the applicable family configuration or certification profile.
+It never contains an active-session pointer, session draft, current position, timer, or local journal. A compact canonical fact remains authority; a server or device projection must be rebuildable from those facts.
 
-A simulation draft is revisioned and may contain:
+## Incremental synchronization
 
-- occurrence-keyed editable responses;
-- current occurrence;
-- profile-permitted flags;
-- navigator state;
-- section state;
-- foreground-timer state where applicable;
-- other explicitly approved editable simulation state.
+Each account operation has a stable idempotency key, expected revision or cursor boundary, closed operation type, and bounded payload. The service either applies it once or returns an explicit stale, duplicate, invalid, revoked, deleted-account, or integrity result.
 
-Each durable draft mutation increments its revision.
+Synchronization is triggered explicitly by account bootstrap, foreground/resume, network regain while the app is active, a committed local mutation, a user refresh, and pre-sign-out/deletion flush where safe. Patternly does not promise unrestricted operating-system background synchronization.
 
-A draft update is accepted only when its expected previous revision matches the canonical stored revision. Stale updates fail explicitly.
+Bootstrap and refresh use incremental cursors and pagination. Initial reads are bounded to current track, goals, due review, compact progress, and recent Activity. Exact historical results load on demand. Retry is ordered and idempotent; it never duplicates a logical learning fact.
 
-The UI may show a response or navigation state as saved only after the new draft revision is durably written and validated.
+## Offline behavior
 
-A failed draft save preserves the last verified durable revision. It creates no attempt, score, feedback, review mutation, or partial saved state.
+Guests can use bundled Free nodes entirely offline. A previously verified account can continue locally while offline. Pending account operations are visible and retry after an explicit trigger.
 
-## Algorithms Interview Simulation persistence
+Premium package use follows the entitlement cache and seven-day offline verification grace in the canonical contract. A session already started while entitled may finish safely even if entitlement becomes unverifiable or expires during the session. Starting a new Premium session requires the applicable entitlement and package checks.
 
-Algorithms simulation persists the occurrence plan and timer behavior resolved from the canonical product contract. This storage document does not restate its count, duration, formula, checkpoint cadence, or foreground policy.
+Authentication, first account binding, purchase, restore, remote package download, sensitive account security operations, and remote account deletion require network access.
 
-The Algorithms draft persists:
+If a bound device later receives verified deleted-account evidence, it durably records cleanup intent, removes credentials, binding, outbox, entitlement association, and account-owned local facts, and exposes a terminal deleted-account result. It does not resurrect or reauthenticate the deleted account.
 
-- editable responses by occurrence ID;
-- the current occurrence;
-- canonical foreground-timer state;
-- draft revision and update time.
+## Bundled Free nodes
 
-Algorithms flags are not persisted or rendered unless the approved Algorithms simulation profile is explicitly extended with a flagging policy.
+Each production-visible track has one canonical `freeNodeId`. Its complete Free node and every interaction needed for its core loop are bundled with the application. Free session and Free review selection are strictly filtered to that node; Premium content is never filler for a Free session.
 
-Draft changes create no:
+Bundled content remains immutable within an application build and is referenced by stable evidence identity.
 
-- immutable attempt;
-- score;
-- correctness state;
-- instructional feedback;
-- review mutation.
+## Premium whole-node packages
 
-Manual submission or foreground-time exhaustion freezes one exact durable draft revision and starts finalization.
+Premium content is published as immutable compressed whole-node packages. Firestore owns manifest/account metadata; Cloud Storage owns immutable package bytes; Cloud Run verifies identity and backend entitlement before returning a short-lived signed URL.
 
-Unanswered occurrences:
+A manifest contains at least track, node, package, schema, content, taxonomy/configuration, locale, checksum, compressed/uncompressed size, immutable object identity and generation, minimum app version, and publication identity.
 
-- receive zero points;
-- remain separate completed-session diagnostics;
-- create no fabricated response;
-- create no ordinary item-level attempt;
-- do not automatically create content-specific review.
-
-Their occurrence and content references remain stored in the completed-session result after the draft is deleted.
-
-## Certification Exam Simulation persistence
-
-Certification `Exam Simulation` uses the owning track instance’s exact versioned `ExamExperienceProfile`.
-
-The immutable session stores:
-
-- the profile identity and version;
-- the absolute deadline;
-- profile-derived session configuration;
-- the fixed occurrence and option order.
-
-The certification draft stores only profile-permitted mutable state, including as applicable:
-
-- occurrence-keyed answers;
-- current occurrence;
-- flags;
-- navigator state;
-- current section;
-- submitted-section state;
-- answer-change state.
-
-If the profile does not permit a feature, its corresponding draft state must not exist.
-
-Returning before the absolute deadline resumes the last verified durable draft.
-
-Returning after the deadline freezes that draft and starts idempotent automatic finalization.
-
-Unanswered occurrences remain in the completed-session result and count according to the certification scoring contract. Runtime does not fabricate an answer in order to create an ordinary attempt.
-
-Post-session review may display unanswered items from the completed-session result. Persistent review is created only according to the explicit Certification family review policy.
-
-## Foreground timer persistence
-
-Foreground timers use a checkpointed canonical state.
-
-The persisted timer records at least:
-
-- accumulated durable foreground milliseconds;
-- checkpoint revision or sequence;
-- last checkpoint time;
-- whether the timer was running when checkpointed.
-
-Runtime may add a current in-memory segment measured with a monotonic clock while the application is active.
-
-A checkpoint is written:
-
-- on defined periodic intervals;
-- before or during a response or draft save where required;
-- when the application leaves the foreground;
-- before manual simulation finalization;
-- when the timer reaches zero.
-
-After force-close, recovery resumes from the last verified durable checkpoint. It does not infer active time from wall-clock time while the application was closed.
-
-The implementation contract defines and tests the checkpoint interval and maximum accepted timer drift. The product must not claim precision beyond that bound.
-
-## Mutation coordination
-
-One application-level mutation coordinator serializes canonical writes.
-
-At most one durable mutation journal exists at a time.
-
-While a journal is pending:
-
-- another journaled command cannot begin;
-- an operation cannot overwrite the pending journal;
-- recovery or materialization must complete first;
-- unsafe navigation and mutations remain disabled.
-
-Single-record simulation draft updates do not require a multi-record journal, but they must use:
-
-- expected revision;
-- deterministic validation;
-- complete-record replacement;
-- durable write confirmation;
-- explicit failure.
-
-Draft updates cannot execute after finalization has frozen the relevant draft revision.
-
-## Durable mutation journal
-
-The durable journal stores a complete immutable write plan for one logical command.
-
-Supported operations are defined by the canonical data model. They include practice submission, session abandonment, simulation finalization, review mutation, and learning-state reset where approved.
-
-The journal contains enough information to complete materialization without:
-
-- rereading obsolete storage;
-- recalculating scoring;
-- resolving historical content;
-- invoking a different family-runtime decision;
-- reading an editable draft after its freeze boundary.
-
-The journal provides logical atomicity and crash-consistent recovery. It does not claim that MMKV physically commits all target keys in one native multi-key transaction.
-
-## Canonical serialization and fingerprints
-
-Journal, command, attempt, and write-plan identities use SHA-256 over one versioned canonical byte representation.
-
-The canonical serializer:
-
-- accepts only the approved JSON-compatible value domain;
-- sorts object keys deterministically;
-- preserves array order;
-- encodes text as UTF-8;
-- rejects `undefined`, non-finite numbers, functions, symbols, and unsupported native values;
-- normalizes no family payload implicitly;
-- includes its serializer version in the fingerprinted envelope.
-
-Ad hoc `JSON.stringify` output from arbitrary objects is not a canonical identity contract.
-
-The command fingerprint identifies the logical command.
-
-The plan fingerprint identifies the exact complete write set.
-
-Changing any intended write, expected revision, target key, deletion, attempt identity, review mutation, completed result, or draft revision changes the plan fingerprint.
-
-## Journal validation
-
-Before the journal becomes durable, validation rejects:
-
-- an unknown operation;
-- an unsupported write kind;
-- duplicate writes to the same target;
-- cross-session writes;
-- cross-track writes;
-- missing required writes;
-- unexpected additional writes;
-- stale expected revisions;
-- incomplete finalization plans;
-- a plan that depends on mutable state not captured in the journal.
-
-Each operation admits only its documented complete write set.
-
-## Materialization and verification
-
-One materializer replays the immutable journal plan.
-
-Each write is idempotent and has an expected state or revision.
-
-Recovery may encounter:
-
-- a write not yet applied;
-- a write already applied with the expected fingerprint;
-- an unexpected conflicting record.
-
-The first is applied. The second is accepted as completed. The third is an explicit recovery conflict and does not trigger heuristic repair.
-
-Verification reads every intended final record and confirms:
-
-- expected identity;
-- expected revision;
-- expected content fingerprint;
-- required record absence for deletions;
-- active-session consistency;
-- completed-session consistency where applicable.
-
-The journal is cleared only after all verification succeeds.
-
-## Simulation finalization
-
-Simulation finalization follows:
+Download and activation follow this boundary:
 
 ```txt
-freeze one exact durable draft revision
-→ reject further draft mutations
-→ build deterministic attempts, completed result, and review mutations
-→ persist the complete finalization journal
-→ materialize its writes idempotently
-→ verify all attempts, review changes, completed session, active-session removal, and draft deletion
-→ clear the journal
-→ expose the canonical summary
+authorize identity and backend entitlement
+→ obtain short-lived URL
+→ download to temporary storage
+→ verify checksum and immutable object identity
+→ validate schema and semantic content
+→ persist under its exact version
+→ atomically move the active pointer
 ```
 
-The journal write plan contains the complete deterministic outcome. It must remain sufficient even if the draft deletion has already been materialized before a force-close.
+Failure leaves the previous verified package active. Runtime never fetches one question at a time from Firestore and never substitutes another package version silently.
 
-Finalization failure never reopens the frozen draft for editing.
+## Review resolution and cache eviction
 
-Retry or startup recovery completes the same outcome. It cannot create:
+Review facts retain stable evidence and exact content references. The resolver uses the pinned package version when available and follows an explicit unavailable-content state when exact material cannot be resolved; it does not rewrite historical evidence against current content.
 
-- a second completed session;
-- duplicate attempts;
-- duplicate review mutations;
-- a different score;
-- a new unanswered set.
+Eviction is deterministic and cannot remove:
 
-## Session abandonment
+- a package pinned by an active device session;
+- a package required by a pending local journal;
+- a package required for an immediately due review when no safe replacement exists;
+- the previous verified version until activation of the replacement succeeds.
 
-Abandonment is an explicit journaled operation.
+The bundled Free node is not evicted.
 
-For an ordinary active session, abandonment:
+## Bootstrap and recovery
 
-- removes the active-session designation;
-- removes resumable session state;
-- excludes the session from learner history;
-- preserves already committed attempts and evidence.
+Bootstrap runs in this order:
 
-For a simulation, abandonment additionally deletes its draft.
+```txt
+initialize MMKV and verify backup exclusion
+→ validate storage identity
+→ recover and verify the pending local journal
+→ load guest/account binding and entitlement cache
+→ validate bundled Free manifests and installed package index
+→ resolve the device-owned active-session pointer and records
+→ verify every pinned content/configuration reference
+→ enter ready, unavailable, or explicit recovery state
+```
 
-If the data model retains a minimal abandoned-session tombstone for referential integrity, that tombstone is not exposed as history and contains no editable response or simulation state.
+Normal learning navigation remains unavailable while local integrity recovery is unresolved. Network and account failures do not invalidate verified guest/local learning.
 
-Abandonment does not translate or delete already committed attempts.
+## Platform backup
 
-## Content mismatch
+Canonical learning data, package cache, credentials, and entitlement cache are excluded from automatic iCloud/Android backup and device-transfer restore. Cross-device continuity is an application-level account synchronization feature, not an operating-system backup feature.
 
-Resume requires the exact active:
+Firestore PITR is disaster recovery for the service. It is not a user account recovery path and cannot restore a deleted account into live service. Document `09` owns restore authorization, tombstone reconciliation, and deletion/privacy constraints.
 
-- track;
-- family configuration;
-- content version;
-- referenced item identities;
-- profile version where applicable.
+## Reset, sign-out, and deletion
 
-A mismatch blocks resume.
+Local reset is journaled, verified, and scoped explicitly. It is distinct from sign-out and account deletion.
 
-Runtime must not:
-
-- substitute the current item version;
-- map an obsolete item to a new item;
-- reconstruct old explanations;
-- use a newer profile;
-- continue with a partially resolvable plan.
-
-The error state may permit deliberate abandonment. Committed attempts remain.
-
-## Learning-state reset
-
-Learning-state reset is a deterministic journaled operation and must be added to the canonical journal-operation contract.
-
-Before reset begins, any existing journal is recovered and cleared. Reset must not overwrite another pending operation.
-
-Learning-state reset deletes:
-
-- active-session state;
-- simulation drafts;
-- completed-session history;
-- attempts;
-- review queue entries;
-- source attempts, results and review entries from which progress and evidence
-  projections are derived;
-- developer learning fixtures in the canonical namespace.
-
-It preserves:
-
-- bundled static content;
-- application binaries;
-- non-learning settings unless the UI explicitly offers a separate full local reset.
-
-Reset verifies every required deletion before clearing its own journal and reporting success.
-
-A partial reset is not reported as complete.
-
-## Corrupt canonical records
-
-Automatic heuristic repair of corrupt canonical records is not permitted.
-
-The application must not:
-
-- alter scores;
-- infer missing answers;
-- reconstruct review;
-- substitute default content;
-- discard records silently;
-- activate a destructive MMKV recovery policy without an approved product and security decision.
-
-Until the pre-release corruption policy is approved, canonical-record corruption produces an explicit blocking storage state.
-
-Permitted recovery actions must be defined deliberately and tested. A library-provided recovery option is not by itself a product policy.
-
-## Errors
-
-The following are explicit storage or resume states:
-
-- MMKV initialization failure;
-- unsupported canonical schema;
-- invalid storage metadata;
-- pending-journal recovery failure;
-- conflicting materialized record;
-- repository validation failure;
-- missing active-session record;
-- missing simulation draft;
-- stale draft revision;
-- draft-save failure;
-- content-version mismatch;
-- unresolved profile;
-- finalization failure;
-- reset failure;
-- corrupt canonical record.
-
-Each state exposes only recovery actions known to be safe.
-
-The application does not:
-
-- continue with a default record;
-- fall back to AsyncStorage;
-- read an old key;
-- show partial-success copy;
-- silently discard a draft;
-- retry a non-idempotent operation;
-- display an apparently successful result without verified materialization.
+Sign-out removes credentials and binding only after the selected pending-operation policy completes; it never pretends unsynchronized work was uploaded. Account deletion follows document `09`, persists retryable cleanup intent, and prevents stale local state or disaster-recovery data from recreating the account.
 
 ## Required recovery rule
 
-If an existing record, key, API, repository, flow, or module cannot move into the canonical structure without preserving obsolete semantics, delete it.
-
-Do not create:
-
-- migration readers;
-- historical translators;
-- compatibility adapters;
-- dual reads or writes;
-- Cloud write-through;
-- parallel repository sets;
-- old and new authoritative records;
-- hidden catch-and-continue paths.
-
-Backward compatibility is not required for pre-production local state.
-
-An explicit failure is evidence that implementation work remains. It must not be hidden by a default, fallback, translation, or read from the obsolete system.
-
-## Privacy
-
-Patternly stores only data required for:
-
-- settings;
-- session recovery;
-- committed attempts;
-- review;
-- derived progress and evidence projections;
-- deterministic recommendations.
-
-The account-enabled target additionally stores a normalized email identity,
-account binding, revision/sync metadata and the canonical account-owned
-learning records declared in the normative contract. It does not add
-confidence responses, advertising identifiers or a hidden behavioural profile.
-
-Local-first storage limits continuous network dependence. Data minimization
-comes from transmitting only the declared identity, revision, content-reference
-and canonical learning fields required for account continuity.
-
-The application must not describe MMKV data as encrypted unless encryption and key management are explicitly configured and verified.
-
-The current source still has no export, account or sync implementation. Tasks 3,
-7 and 8 must implement the canonical adoption, pending-sign-out export and
-remote-data paths before product copy may claim account recovery or sync.
-The export contract is versioned canonical JSON with SHA-256 integrity over
-account-owned local records and the sync projection; it excludes every
-credential, token, transport envelope and deletion proof and succeeds only
-after a verified file handoff.
+Old namespaces, dual reads/writes, translators, compatibility stores, fallback package banks, and parallel sync paths are not retained. If pre-production state cannot move without preserving obsolete meaning, implementation deletes that path and exposes an explicit unavailable or reset boundary.
