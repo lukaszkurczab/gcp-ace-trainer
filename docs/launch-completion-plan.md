@@ -8,7 +8,7 @@
 
 **Current task:** none in progress
 
-**Next executable task:** `FND-01 — Clean-checkout gate integrity`
+**Next executable task:** `PLAT-01 — Expo 57 and target native matrix` (`READY`, not started)
 
 ## 1. Purpose and authority
 
@@ -22,8 +22,8 @@ Task status is one of `READY`, `ACTIVE`, `BLOCKED`, `PARTIAL`, `VERIFIED`, or `S
 
 | Repository | Branch and HEAD | State at audit | Upstream |
 | --- | --- | --- | --- |
-| application | `main @ 6749928fb03e34e1b2708e4f4d16bd2a6238a1a8` | clean | `origin/main`, ahead/behind `0/0` |
-| content/publishing | `master @ d780204eba858c05b94fdbce8de38ec4c3900a50` | clean | `origin/master`, ahead/behind `0/0` |
+| application | `main @ f4dcc0008b428b056f4e2d1d6197b57a7fa77883` | clean | `origin/main`, ahead/behind `0/0` |
+| content/publishing | `master @ ddaeae0607d672b0f3b4eb8c8243055cee257bb` | clean | `origin/master`, ahead/behind `0/0` |
 
 ### Current implementation facts
 
@@ -179,7 +179,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage F — trustworthy foundation and platform
 
-#### FND-01 — Clean-checkout gate integrity — `READY`
+#### FND-01 — Clean-checkout gate integrity — `VERIFIED`
 
 - **Objective / why now:** make both repositories’ claimed gates reproducible before architectural implementation relies on them.
 - **Canonical owners:** contract authority; docs 11–12. **Prerequisites:** pushed D2 baseline. **Confirmed state:** root CI omits `server/npm ci`; server tests depend on ignored modules; content release gate fails `MISSING_TECHNICAL_EVIDENCE` although release 0015 byte-lock passes.
@@ -187,8 +187,9 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Out of scope:** feature work, provider mutation, content edits, ID/package migration. **Keep/move/rewrite/delete:** keep current gates and immutable release; rewrite dependency/evidence ownership; delete no evidence unless proven duplicate and replaced.
 - **Acceptance / automated verification:** clean dependency installs; server typecheck/tests use only declared locks; content `npm test`, both `validate:real:*`, isolated `ci-release-gate`, app `qa:static`, contract gate and cross-repo lock pass; loopback blockers are reported, never passed. **Manual evidence:** CI run/clean-clone command matrix.
 - **Security/privacy/content:** no semantic or provider change. **Checkpoint:** none. **Output:** `docs/reports/fnd-01-clean-checkout-gates.md` only if repository convention needs durable blockers; otherwise commit/CI links. **Unlocks:** all implementation lanes.
+- **Verification and evidence:** application gate-integrity commit `f4dcc0008b428b056f4e2d1d6197b57a7fa77883` passed [QA run 31276876009](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/31276876009), including both locked installs, server typecheck/build before root QA, recovery and contract gates. Content final commit `ddaaeae0607d672b0f3b4eb8c8243055cee257bb` passed [architecture run 31277407577](https://github.com/lukaszkurczab/patternly-content/actions/runs/31277407577) and [isolated real-release run 31277414226](https://github.com/lukaszkurczab/patternly-content/actions/runs/31277414226). Durable evidence is commit `7302f88b98efe725f2063e5c053c2e9cbcdb87cf` plus exact manifest: Algorithms technical/coverage `5f81e720eaa43c001bb23a6aa8eab7f85c23189e62317c2a840a4ade31ce9817`; Certification technical `98943d91b7e1281c6e2da5128feff21807aaac5020c4374734dd5f63c5d0802d`. Questions, content versions, immutable `patternly-core-0015`, and the application release lock were unchanged.
 
-#### PLAT-01 — Expo 57 and target native matrix — `BLOCKED`
+#### PLAT-01 — Expo 57 and target native matrix — `READY`
 
 - **Objective / why now:** establish the supported runtime before native Firebase, RevenueCat, Storybook and final design integrations. **Owners:** `PLATFORM-RELEASE-001`, docs 02/09/12. **Dependencies:** `FND-01`. **State:** Expo 54, Light-only, tablet-capable, implicit Android levels; native folders ignored.
 - **Paths / scope:** package/lock, `app.json`, canonical plugins, build config, CI; migrate to Expo 57, iOS 16.4+ iPhone-only, Android 28/36, portrait, Light/Dark/System, 200% text basis and backup exclusion. **Non-goals:** UI redesign, provider registration, signed release.
@@ -204,7 +205,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage G — guest, device ownership, synchronization and goals
 
-#### GUEST-01 — Installation guest identity and local dataset — `BLOCKED`
+#### GUEST-01 — Installation guest identity and local dataset — `READY`
 
 - **Objective:** make existing local-first entry explicitly guest-owned. **Owners:** `GUEST-FREE-001`, docs 01/04/08. **Dependencies:** `FND-01`. **State:** learning works without auth but data has no installation identity/account binding.
 - **Paths / scope:** bootstrap, storage keys/repositories, installation identity, guest dataset metadata/reset tests. **Non-goals:** account UI, adoption, Premium. **Obligations:** keep kernel/journal; rewrite bootstrap ownership; delete any first-value auth assumption encountered.
@@ -369,7 +370,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage B/D — Brand Lab and repository design authority
 
-#### B-01 — Design/tooling capability and asset audit — `BLOCKED`
+#### B-01 — Design/tooling capability and asset audit — `READY`
 
 - **Objective:** establish actual Figma access, Expo-compatible Storybook approach, visual tooling, assets/licensing and release boundaries. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `FND-01`; Storybook compatibility uses `PLAT-01` result. **State:** historical references only, no Storybook/canonical brand assets.
 - **Paths / scope:** read-only design registry, tokens/components/icons/fonts/screenshots/Maestro/build graph audit. **Non-goals:** create visual directions or install Storybook. **Obligations:** classify and later delete unapproved alternatives; no metadata placeholder.
@@ -416,7 +417,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage T — product identities, briefs and representative content proofs
 
-#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `BLOCKED`
+#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `READY`
 
 - **Objective:** remove old target IDs across app/content without an alias. **Owners:** `LEARNING-PRODUCTS-001`, docs 04/07/16. **Dependencies:** `FND-01`. **State:** `algorithms`/`cloud-certification`, hard-coded two-family branches; eight candidate filenames; stale planning ledger.
 - **Paths / scope:** app registry/runtime/persistence/content lock/tests; content configs/taxonomy/source/publisher/evidence; migrate to `coding_interview`, `coding-interview-dsa-problem-solving`, and `google-cloud-associate-cloud-engineer` while retaining stable item/evidence identities.
@@ -641,11 +642,9 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 ## 8. Current and next executable task
 
-There is no active implementation task. Exactly one task is `READY`: **`FND-01 — Clean-checkout gate integrity`**.
+There is no active implementation task. `FND-01` is verified at application `f4dcc0008b428b056f4e2d1d6197b57a7fa77883` and content `ddaaeae0607d672b0f3b4eb8c8243055cee257bb`: each canonical branch is pushed, the declared clean dependency/evidence gates pass, and the content candidate builds only in a temporary output root.
 
-It is first because current evidence can produce false confidence: server QA resolves ignored local dependencies, while the content repository cannot validate a fresh release candidate from committed inputs. Fixing those two clean-checkout trust boundaries is one bounded cross-repository acceptance slice and changes no product semantics. The D2 contract, clean baselines, current immutable release and existing test suites satisfy its prerequisites. Missing Figma access, provider credentials, domains, stores and physical devices do not block it. Its first acceptance boundary is a clean declared-dependency run in which server checks and content release/evidence gates execute reproducibly without question or product changes.
-
-Do not begin `PLAT-01`, `TRACK-01`, guest identity, design exploration, provider mutation or any other task until `FND-01` is pushed and this section is updated.
+The dependency graph now makes `PLAT-01`, `GUEST-01`, `TRACK-01`, and `B-01` ready. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; downstream work remains blocked by its listed dependencies. `PLAT-01` is the single selected next task because it unblocks `ARCH-01` and the native platform matrix; it is not active in this execution window.
 
 ## 9. Old-to-new mapping and plan maintenance
 
