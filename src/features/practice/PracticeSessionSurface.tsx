@@ -227,7 +227,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   noticeSuccess: { backgroundColor: palette.successSoft, borderColor: palette.success },
   noticeText: { ...typography.small, color: palette.textSecondary },
   modalBackdrop: { alignItems: "center", backgroundColor: "rgba(0, 0, 0, 0.56)", flex: 1, justifyContent: "center", padding: spacing.lg },
-  modalDismissArea: { ...StyleSheet.absoluteFillObject },
+  modalDismissArea: { ...StyleSheet.absoluteFill },
   preparing: { backgroundColor: palette.elevatedSurface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, gap: spacing.sm, minHeight: 160, justifyContent: "center", padding: spacing.xl },
   preparingTitle: { ...typography.heading, color: palette.textPrimary },
   prompt: { ...typography.heading, color: palette.textPrimary },

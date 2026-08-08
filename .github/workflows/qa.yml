@@ -37,7 +37,7 @@ jobs:
           path: patternly-content
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.13.1
           cache: npm
           cache-dependency-path: |
             app/package-lock.json
@@ -53,6 +53,33 @@ jobs:
         run: |
           npm run typecheck
           npm run build
+      - name: Verify clean generated native platform contract
+        working-directory: app
+        shell: bash
+        run: |
+          prebuild_root="$(mktemp -d)"
+          trap 'rm -rf "$prebuild_root"' EXIT
+          git archive HEAD | tar -x -C "$prebuild_root"
+          ln -s "$GITHUB_WORKSPACE/app/node_modules" "$prebuild_root/node_modules"
+          (
+            cd "$prebuild_root"
+            npx expo prebuild --no-install --clean
+            node -e '
+              const { readFileSync } = require("node:fs");
+              const android = readFileSync("android/gradle.properties", "utf8");
+              for (const expected of ["android.minSdkVersion=28", "android.compileSdkVersion=36", "android.targetSdkVersion=36"]) if (!android.includes(expected)) process.exit(1);
+              const ios = JSON.parse(readFileSync("ios/Podfile.properties.json", "utf8"));
+              if (ios["ios.deploymentTarget"] !== "16.4") process.exit(1);
+              const infoPlist = readFileSync("ios/Patternly/Info.plist", "utf8");
+              for (const expected of ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIUserInterfaceStyle", "<string>Automatic</string>"]) if (!infoPlist.includes(expected)) process.exit(1);
+              if (!readFileSync("ios/Patternly.xcodeproj/project.pbxproj", "utf8").includes("TARGETED_DEVICE_FAMILY = \"1\"")) process.exit(1);
+              const appDelegate = readFileSync("ios/Patternly/AppDelegate.swift", "utf8");
+              for (const expected of ["appendingPathComponent(\"mmkv\", isDirectory: true)", "values.isExcludedFromBackup = true"]) if (!appDelegate.includes(expected)) process.exit(1);
+              const manifest = readFileSync("android/app/src/main/AndroidManifest.xml", "utf8");
+              for (const expected of ["android:allowBackup=\"false\"", "android:dataExtractionRules=\"@xml/data_extraction_rules\"", "android:fullBackupContent=\"@xml/backup_rules\""]) if (!manifest.includes(expected)) process.exit(1);
+              for (const path of ["android/app/src/main/res/xml/backup_rules.xml", "android/app/src/main/res/xml/data_extraction_rules.xml"]) if (!readFileSync(path, "utf8").includes("<exclude domain=\"root\" path=\".\"/>")) process.exit(1);
+            '
+          )
       - name: Enforce canonical contract change gate
         working-directory: app
         shell: bash
@@ -97,7 +124,7 @@ jobs:
           path: patternly-content
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.13.1
           cache: npm
           cache-dependency-path: |
             app/package-lock.json

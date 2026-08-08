@@ -96,7 +96,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   close: { alignItems: "center", justifyContent: "center", minHeight: 48, minWidth: 48 },
   currentCell: { backgroundColor: palette.primary, borderColor: palette.primary },
   currentCellText: { color: palette.background },
-  dismissArea: { ...StyleSheet.absoluteFillObject },
+  dismissArea: { ...StyleSheet.absoluteFill },
   feedback: { alignItems: "center", borderRadius: radius.md, borderWidth: 1, flexDirection: "row", gap: spacing.sm, justifyContent: "space-between", padding: spacing.sm },
   feedbackError: { backgroundColor: palette.dangerSoft, borderColor: palette.danger },
   feedbackText: { ...typography.small, color: palette.textPrimary, flex: 1 },

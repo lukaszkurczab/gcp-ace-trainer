@@ -37,7 +37,7 @@ export function SettingsBottomSheet({ children, closeLabel, intro, onClose, titl
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end" },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0, 0, 0, 0.48)" },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
   sheet: { backgroundColor: palette.background, borderColor: palette.border, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, borderTopWidth: StyleSheet.hairlineWidth, maxHeight: "86%" },
   content: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   handle: { alignSelf: "center", backgroundColor: palette.borderStrong, borderRadius: radius.pill, height: 4, marginBottom: spacing.xs, width: 44 },

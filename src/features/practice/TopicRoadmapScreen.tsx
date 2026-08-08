@@ -388,7 +388,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     position: "relative",
   },
   dotGrid: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     opacity: 0.55,
   },
   dot: {

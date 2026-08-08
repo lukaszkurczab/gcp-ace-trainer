@@ -46,7 +46,7 @@ export function SettingsDialog({
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { alignItems: "center", flex: 1, justifyContent: "center", padding: spacing.lg },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0, 0, 0, 0.48)" },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
   dialog: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.lg, borderWidth: 1, gap: spacing.md, maxWidth: 440, padding: spacing.lg, width: "100%" },
   title: { ...typography.heading, color: palette.textPrimary },
   message: { ...typography.small, color: palette.textSecondary },

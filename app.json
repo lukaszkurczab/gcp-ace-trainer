@@ -5,21 +5,33 @@
     "version": "0.1.0",
     "scheme": "com.lkurczab.patternly",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "plugins": [
       "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4"
+          },
+          "android": {
+            "minSdkVersion": 28,
+            "targetSdkVersion": 36,
+            "compileSdkVersion": 36
+          }
+        }
+      ],
       "./plugins/withPrivacyBoundary"
     ],
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.lkurczab.patternly"
     },
     "android": {
-      "edgeToEdgeEnabled": true,
       "package": "com.lkurczab.patternly"
     }
   }
