@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This is a capability dependency map, not task sequencing or repository status. `launch-completion-plan.md`, regenerated only in Directive 3, owns execution order.
+This is a capability dependency map, not task sequencing or repository status. `launch-completion-plan.md` owns execution order.
 
 ## Capability progression
 

@@ -9,8 +9,8 @@ produktu jest kodowane w
 dokumenty narracyjne je rozwijają bez nadpisywania.
 
 [`launch-completion-plan.md`](launch-completion-plan.md) jest wyłącznie źródłem
-kolejności implementacji i statusu repozytorium; pozostaje zamrożony do
-regeneracji w Directive 3. ADR-y są historią lub decyzjami technicznymi, a
+kolejności implementacji i statusu repozytorium. ADR-y są historią lub
+decyzjami technicznymi, a
 raporty, audyty, projekty i screenshoty są dowodami. Żaden z nich nie zastępuje
 tego rejestru ani kontraktu normatywnego.
 

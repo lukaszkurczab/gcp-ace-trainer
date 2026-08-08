@@ -68,12 +68,12 @@ Hierarchia autorytetu jest jednoznaczna:
 2. `product-owner-decision-register.md` — decyzje właściciela, uzasadnienie i historia supersession;
 3. dokumenty `00`–`13` oraz `15`–`17` — narracyjni/domain owners, którzy nie mogą nadpisać kontraktu;
 4. ADR-y — historia lub aktywne decyzje techniczne, nigdy product authority ani sequencing;
-5. `launch-completion-plan.md` — wyłącznie implementation order i repository status, zamrożone do regeneracji w Directive 3;
+5. `launch-completion-plan.md` — jedyne aktywne źródło implementation order i repository status;
 6. raporty, audyty, Figma references, screenshoty i QA artifacts — dowody.
 
-`docs/directives/` zawiera zweryfikowaną pięcioplikową paczkę wejściową Product Ownera. Directive 1/2/3 kontrolują zakres kolejnych faz, a dwa dokumenty właścicielskie kontrolują decyzje zgodnie z zapisaną w dyrektywach hierarchią. Same pliki wejściowe nie są drugim normatywnym kontraktem produktu: Directive 2 ma przenieść ich decyzje do właściwych canonical owners.
+`docs/directives/` zawiera zweryfikowaną pięcioplikową paczkę wejściową Product Ownera i historyczny zakres trzech zakończonych faz kontrolnych. Decyzje właścicielskie zostały przeniesione do canonical contract, rejestru PO i narrative owners; dyrektywy wejściowe nie są drugim normatywnym kontraktem ani execution planem.
 
-`launch-surface-inventory.md`, `competitive-product-gap-audit.md` oraz `launch-readiness-audit.md` są oznaczonymi, historycznymi wejściami dowodowymi do Directive 2. Nie są bieżącym źródłem produktu, statusu, gate'ów ani kolejności wykonania.
+`launch-surface-inventory.md`, `competitive-product-gap-audit.md` oraz `launch-readiness-audit.md` są oznaczonymi, historycznymi wejściami dowodowymi. Nie są bieżącym źródłem produktu, statusu, gate'ów ani kolejności wykonania.
 
 Figma jest przejściowym visual authority wyłącznie podczas aktywnej fazy
 designu i tylko Product Owner może zatwierdzić realną pracę wizualną. Po

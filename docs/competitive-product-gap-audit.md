@@ -184,7 +184,7 @@ a proven gap.
 
 ## Required plan changes
 
-The active launch plan must now include:
+The later canonical execution plan should evaluate:
 
 1. a real Study Activity/history route and reopen-result/review flow;
 2. a content trust surface with visible release/source context;
