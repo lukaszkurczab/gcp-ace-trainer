@@ -150,6 +150,8 @@ requirements:
     statement: Package preparation and exact pin resolution accept only trusted immutable outer bytes, validate compressed payload, family schema, node-local profile and canonical runner mappings, and expose frozen package-local catalogs without mode or version substitution.
   - id: CONTENT-PACKAGE-RUNTIME-CATALOG-001
     statement: A verified package exposes only its closed profile's typed family runtime catalog, including package-local items, assets, and configurations; excluded modes and structures are explicitly unavailable. This defines no session cutover, runtime composition switch, cache, or bootstrap activation.
+  - id: CONTENT-PACKAGE-NATIVE-RUNTIME-001
+    statement: Native package verification uses platform-supported SHA-256, canonical RFC 4648 base64, strict UTF-8, and deterministic gzip decoding; malformed package bytes fail closed before package-local content is exposed, without a Node-only runtime dependency in the mobile bundle.
   - id: ANALYTICS-REPORTS-001
     statement: Firebase Analytics and Crashlytics are fail-closed behind privacy and consent, events use a closed redacted vocabulary, and content reports are account-unlinked by default with bounded context, explicit linking consent, retention, and offline retry states.
   - id: BACKUP-RESTORE-001
@@ -421,6 +423,10 @@ requirementTestCoverage:
       testPath: tests/contentPackageResolver.test.ts
       testName: PKG-04A package catalogs are accepted by family runtimes only for their closed profile paths
       requirementIds: [CONTENT-PACKAGE-RUNTIME-CATALOG-001]
+    - id: content-package-native-runtime
+      testPath: tests/contentPackageRuntime.test.ts
+      testName: PKG-04A node adapter verifies both generated packages through the production runtime contract
+      requirementIds: [CONTENT-PACKAGE-NATIVE-RUNTIME-001]
     - id: canonical-brand-design-authority
       testPath: tests/canonicalProductContract.test.ts
       testName: defines one brand owner approval and repository handoff semantics

@@ -4,19 +4,13 @@ import { readFileSync } from "node:fs";
 import { gunzipSync, gzipSync } from "node:zlib";
 import test from "node:test";
 
-import { createContentPackageResolver, createPackageCatalogProfileAdapter, type ContentPackageRuntime, type ContentPackageSource } from "../src/content";
+import { contentPackageRuntime, createContentPackageResolver, createPackageCatalogProfileAdapter, type ContentPackageSource } from "../src/content";
 import { createCodingPackageRuntimeCatalog, createCertificationPackageRuntimeCatalog } from "../src/content";
 import { CodingInterviewFamilyRuntime } from "../src/application/coding-interview/CodingInterviewFamilyRuntime";
 import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
 import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFreeNodePackages";
 
-const runtime: ContentPackageRuntime = Object.freeze({
-  async sha256Utf8(value) { return createHash("sha256").update(value, "utf8").digest("hex"); },
-  async sha256Bytes(value) { return createHash("sha256").update(value).digest("hex"); },
-  decodeBase64(value) { return new Uint8Array(Buffer.from(value, "base64")); },
-  async gunzip(value) { return new Uint8Array(gunzipSync(value)); },
-  decodeUtf8(value) { return new TextDecoder().decode(value); },
-});
+const runtime = contentPackageRuntime;
 
 test("PKG-04A adapts each verified package into a closed family-local catalog/profile", async () => {
   const resolver = createContentPackageResolver(sources, runtime);

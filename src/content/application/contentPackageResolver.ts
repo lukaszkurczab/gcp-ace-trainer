@@ -66,7 +66,8 @@ async function verify(source: ContentPackageSource, appVersion: string, runtime:
   let payloadBytes: Uint8Array;
   try { payloadBytes = await runtime.gunzip(compressed); } catch { fail("package_payload_invalid", "Package payload cannot be decompressed."); }
   if (payloadBytes!.length !== manifest.payloadUncompressedSize) fail("package_payload_integrity_failed", "Payload size does not match the manifest.");
-  const payloadText = runtime.decodeUtf8(payloadBytes!);
+  let payloadText: string;
+  try { payloadText = runtime.decodeUtf8(payloadBytes!); } catch { fail("package_payload_invalid", "Package payload is not valid UTF-8."); }
   if (await runtime.sha256Utf8(payloadText) !== manifest.payloadCanonicalSha256) fail("package_payload_integrity_failed", "Payload checksum does not match the manifest.");
   const payload = parse(payloadText, "package_payload_invalid");
   exactKeys(payload, ["assets", "contentVersion", "familyId", "freeNodeExperienceProfile", "freeNodeId", "items", "modeStructures", "schemaVersion", "taxonomy", "taxonomyVersion", "trackId"], "package_payload_invalid");

@@ -131,6 +131,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["CONTENT-PACKAGE-RESOLVER-001", ["content-packages-verifier-resolver"]],
       ["CONTENT-PACKAGE-RUNTIME-CATALOG-001", ["content-package-runtime-catalog"]],
+      ["CONTENT-PACKAGE-NATIVE-RUNTIME-001", ["content-package-native-runtime"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
       ["BACKUP-RESTORE-001", ["canonical-packages-operations-platform"]],
       ["PLATFORM-RELEASE-001", ["canonical-packages-operations-platform"]],
