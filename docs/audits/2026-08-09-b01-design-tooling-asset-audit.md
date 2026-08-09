@@ -1,16 +1,18 @@
 # B-01 — Design/tooling and asset audit
 
 Date: 2026-08-09
+Updated: 2026-08-10
 Scope: repository evidence for the B-01 boundary only; no product, asset, or
 tooling implementation was changed.
 
 ## Decision
 
-**B-01 is partially evidenced, not complete.** The repository establishes the
-current Expo/build baseline and the status of its visual evidence, but it does
-not establish a compatible Storybook integration, provenance/licensing for
-local visual assets, or Figma write access. Do not install Storybook or begin
-target visual implementation from this report.
+**B-01 is verified.** The repository establishes the current Expo/build
+baseline and the status of its visual evidence; authenticated Figma write
+access is now independently evidenced. Storybook compatibility and
+asset/font provenance remain explicitly recorded downstream risks, rather
+than reasons to keep this audit open. Do not install Storybook or begin target
+visual implementation from this report.
 
 ## Confirmed repository facts
 
@@ -21,7 +23,7 @@ target visual implementation from this report.
 | Icons, fonts, and product assets | Tracked source visual files are 17 SVGs in `src/assets/icons/` and six historical PNGs under `docs/designs/`. `git ls-files` finds no tracked TTF/OTF/WOFF files, and `package.json` has no `expo-font` dependency. `app.json` has no source `icon`, `splash`, adaptive-icon, or monochrome-icon declaration. | The app currently uses platform/default typography and a small local icon set. There is no canonical mark, wordmark, app-icon master, font package, illustration system, or public/store asset source. |
 | Screenshots and Maestro | The repository tracks 32 `.maestro/*.yaml` flows, including 15 capture flows. The test suite reads named flows (for example `tests/algorithmsSessionDryRunRegressionMaestro.test.ts`); no Maestro screenshot artifact is tracked because `artifacts/` is ignored. `docs/designs/README.md` identifies all retained design PNGs as previous-contract historical evidence only. | Flows are reachable test/QA inputs; screenshot outputs are non-versioned historical evidence and cannot be target visual approval or release baselines. |
 | Historical visual paths | `docs/designs/README.md` marks the directory historical. `docs/designs/product-direction-options/DESIGN.md` and `docs/designs/account_lifecycle/DESIGN.md` explicitly supersede their previous-contract authority. The contract validator and `tests/canonicalProductContract.test.ts` still consume the historical registry/provenance. | No deletion is justified in B-01: the paths have declared provenance and live validation/repository references. They must remain non-authoritative until the replacement work proves a safe removal. |
-| Licensing/provenance | `git ls-files` finds no tracked `LICENSE`, `NOTICE`, or attribution/source record for the local UI SVGs or historical PNGs. Separately, `src/content/bundled/generatedAlgorithmFeedbackAssets.ts` is a hash-pinned educational feedback asset whose content-source path and SHA-256 are recorded by `scripts/syncBundledContentRelease.mjs`; it is not a brand asset. | UI-icon and historical-image provenance/license evidence are absent from the repository. The generated feedback diagram has content provenance, but that does not establish a reusable brand-asset license record. This is a handoff/release risk, not proof that any asset is unlicensed. |
+| Licensing/provenance | `git ls-files` finds no tracked `LICENSE`, `NOTICE`, or attribution/source record for the local UI SVGs or historical PNGs. Educational feedback assets now travel only inside immutable, hash-verified Free-node package bytes and are resolved by `src/application/contentPackageRuntimeOwner.ts`; they are not brand assets. | UI-icon and historical-image provenance/license evidence are absent from the repository. Package-local educational assets have content provenance, but that does not establish a reusable brand-asset license record. This is a handoff/release risk, not proof that any asset is unlicensed. |
 
 ## Storybook and Figma capability
 
@@ -44,16 +46,17 @@ this task explicitly does not install it.
 
 ### Figma — X-09 condition
 
-The available tool registry for this execution environment contains **no
-Figma connector or write-capable Figma tool**. No Figma file URL, file key,
-connected account, or successful write response was available. A local Figma
-skill description alone is not evidence of authenticated file access.
+**X-09 is satisfied.** On 2026-08-10 the authenticated TalkToFigma channel
+`wtk4hp8i` accepted a write and read-back against the controlled reference
+board `10:2`, *PKG-04A • Free package interaction references v1 • PO
+APPROVED*. The Product Owner approval annotation is stored on that board and
+the four editable frames are `10:5` through `10:8`. The same reference is
+recorded in `docs/designs/pkg-04a-free-package-interactions/DESIGN.md` and in
+the canonical design-reference registry under PO-060.
 
-**X-09 is unmet.** It is satisfied only when the Product Owner provides an
-authorized Figma connector/file context and a write operation can be performed
-and evidenced against the controlled Brand Lab, Design System, or Product
-space. Until then, B-02 must not claim actual Figma exploration or owner visual
-approval.
+This proves authenticated Figma access and a narrow interaction-reference
+workflow. It does **not** approve a visual brand direction, replace B-02's
+evidence-only landscape work, or satisfy the later B-05 final visual authority.
 
 ## Risks and required successor evidence
 
@@ -94,6 +97,6 @@ approval.
   and 23 failures where sandboxed server tests cannot bind `127.0.0.1`
   (`EPERM`). It is not used as B-01 verification.
 
-**Next task:** B-02 may begin only after the X-09 Figma access condition is
-met; it should use the above asset/provenance inventory and retain historical
-references solely as provenance, not as target authority.
+**Next task:** B-02 is ready. It should use the above asset/provenance
+inventory and retain historical references solely as provenance, not as target
+authority.
