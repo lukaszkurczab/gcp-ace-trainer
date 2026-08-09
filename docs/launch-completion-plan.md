@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (resumed after `59cefd9` and `PO-058`)
+**Current task:** `PO-059 — closed Free-node profiles, bundled package evidence, and TRACK-02 / PKG-01 reconciliation` (`VERIFIED`)
 
-**Next executable task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (`ACTIVE`)
+**Next executable task:** intentionally not started under the PO-059 stop boundary; `PKG-02` remains externally blocked on `X-07` and is outside this execution window.
 
 ## 1. Purpose and authority
 
@@ -303,12 +303,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Paths / scope:** purchase/restore/manage/downgrade state machine; final UI in `UX-09I`. **Non-goals:** store production setup.
 - **Obligations:** verified account required; guest purchase prohibited; historical learning independent; Free alternative explicit. **Acceptance:** restore conflicts, cancellation, network/store/backend disagreement and cross-platform cases are explicit; no fake success. **Evidence:** sandbox/device flow. **Checkpoint:** `X-06`, later `X-10`. **Unlocks:** Premium UX and release products.
 
-#### PKG-01 — Generic node package and release format — `PARTIAL — complete free-vertical definition required`
+#### PKG-01 — Generic node package and release format — `VERIFIED`
 
 - **Objective:** produce immutable compressed whole-node artifacts and a bundled complete free node. **Owners:** `CONTENT-PACKAGES-001`, docs 04/07. **Dependencies:** `FND-01`, `TRACK-01`, `TRACK-02`. **State:** deterministic whole-track pipeline only.
 - **Repositories / paths:** content schemas/config/publisher/tests; app contract fixtures. **Non-goals:** cloud upload or mobile download. **Obligations:** keep canonical source/evidence/checksums/history; rewrite publisher generically; never mutate 0015.
-- **Acceptance:** manifest includes track/node/version/checksum/object identity+generation/min app/locale/evidence/compressed size; reproducible bytes; complete freeNodeId; negative tests reject mutation/substitution/placeholder. **Evidence:** cross-repo fixture. **Checkpoint:** none. **Unlocks:** server auth, mobile package store and representative proofs.
-- **Verification / remaining decision:** content `4108099` records exact inventory evidence (Coding Interview 158 items; GCP ACE 82 items), and `ddf3cae`/`a03db0c` adds a deterministic bundled-free-node builder that fails closed when the selected node cannot close every required mode. Both current nodes fail `FREE_NODE_MODE_NOT_CLOSED`: their session structures reference items or scopes outside the proposed free node. No bundle, remote object, compression, Premium claim, or runtime fallback was created.
+- **Acceptance:** local bundled package records include exact track/node/version/checksum/minimum app/evidence/compressed size; reproducible bytes; complete freeNodeId; negative tests reject mutation/substitution/partial output. Remote object identity/generation belongs only to `PKG-02`, not a bundled package. **Evidence:** exact-byte cross-repository fixture. **Unlocks:** server auth, mobile package store and representative proofs.
+- **Verification:** `PO-059` selects closed, versioned Free-node experience profiles instead of treating full-track `validModes` as Free modes. Content `955159c` publishes immutable `patternly-core-0018`, validates both profiles and emits deterministic `bundled-free-node-v2` records: Coding Interview `complexity_and_constraints` (158 items; Learn/Guided/Custom/Weak) and GCP ACE `setup_environment` (82 items; Focus/Weak/Quick). Both bind release, source, technical evidence, inventory, brief, profile and payload checksums; empty review evidence is explicitly unavailable. App `9fc20e5` verifies exact bytes and provenance, rejects tampering, and preserves no remote-delivery, entitlement, or runtime fallback claim.
 
 #### PKG-02 — Entitled package manifest and signed-URL API — `BLOCKED`
 
@@ -428,12 +428,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Non-goals:** new questions or permanent alias. **Obligations:** move candidate paths/rationale, delete old IDs/branches and 243-file planning ledger plus generator/scripts/tests after consumers move. **Acceptance:** whole-repo/cross-repo old-ID scan, storage migration failure tests, byte/provenance gates and no user-visible family. **Evidence:** migration map. **Checkpoint:** `PO-058` approves exactly the eight existing `two-pointers/*.candidate.json` items as reviewed canonical content; promotion must preserve their payload, item, option, taxonomy and evidence identities and still pass immutable release verification. **Unlocks:** briefs/packages/proofs.
 - **Verification:** content source/evidence/artifacts/releases are pushed through `patternly-core-0017` at content `4822bca`; independent QA preserved all item payloads and stable identities. Application `afe8f8e` pins each track to its immutable verified producer, removes retired active paths and aliases, rejects persisted retired IDs explicitly, and passes the closed contract gate with independent QA.
 
-#### TRACK-02 — Ten complete track briefs and registry admission contract — `PARTIAL — free-vertical product decision required`
+#### TRACK-02 — Ten complete track briefs and registry admission contract — `PARTIAL — package evidence verified; production catalogue gate remains intentionally pending`
 
 - **Objective:** define production-shaped briefs without empty registry cards or filler. **Owners:** `LEARNING-PRODUCTS-001`, docs 01/07/15/16. **Dependencies:** `TRACK-01`. **State:** two configs, no Design Interview or admission/free-node fields; canonical goal semantics already exist in `PRODUCT-SURFACES-GOALS-001`, so brief definition does not wait for their runtime implementation.
 - **Repositories / scope:** canonical content briefs and app internal density/admission tests for GCP ACE, AWS SAA, Azure AZ-104, AI-901, Terraform Associate, KCNA, Coding Interview, Backend System Design, Frontend System Design, Object-Oriented Design; each owns learner/JTBD, internal family, taxonomy, freeNodeId, modes, goals, Progress, package/provenance and admission gate.
 - **Non-goals:** registry placeholders or bulk questions. **Obligations:** generic internal families only; delete public family/category metadata. **Acceptance:** ten real briefs validate; production registry admits only complete free/core-loop tracks; density harness remains non-production. **Evidence:** cross-repo schema tests. **Unlocks:** package schema and proofs.
-- **Verification / remaining decision:** content `13dfacb` adds and validates ten canonical briefs; application `dd47503` pins every descriptor byte-for-byte and rejects duplicate/orphan/missing admission evidence. Current two whole-track artifacts are honestly `unverified_free_node_package`: they contain no factual complete-free-node package evidence. Registry behavior remains unchanged until a complete free vertical is selected.
+- **Verification / remaining boundary:** content `955159c` validates all ten canonical briefs and packages factual evidence only for the two real tracks. App `9fc20e5` pins every brief exactly, rejects duplicate/orphan/missing evidence, and verifies the two immutable Free-node package records against their bytes, profile mode closure and producer provenance. They report `package_evidence_verified_catalogue_gate_pending`; no descriptor-only track receives package evidence or registry admission. Shipping-catalogue admission remains truthfully pending the existing guest/runtime/package-activation gates (`GUEST-01`, `PKG-03`, and their downstream product proof), rather than being inferred from a brief or bundle alone.
 
 #### PROOF-01 — GCP Certification free/package vertical — `BLOCKED`
 
@@ -650,7 +650,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`; subsequent app admission evidence is pushed at `dd47503`, and content source/evidence/inventory/package-closure checkpoints are pushed through `a03db0c`. `TRACK-02` and `PKG-01` are partial: a complete free vertical must be selected before either can truthfully admit a production track or emit a bundled free node. `B-01` remains independently ready. `ID-01` and `OPS-01` are unblocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is now durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` is reclassified as package-evidence verified while its shipping-catalogue admission remains intentionally pending the existing guest/runtime/package-activation gates. This execution window stops here: it does not start `PKG-02`, `PKG-03`, UX, remote delivery, or entitlement work. `B-01` remains independently ready. `ID-01` and `OPS-01` are unblocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
