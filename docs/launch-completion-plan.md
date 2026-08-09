@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `PO-059 — closed Free-node profiles, bundled package evidence, and TRACK-02 / PKG-01 reconciliation` (`VERIFIED`)
+**Current task:** `ID-01 — Account/security service contracts and composition` (`ACTIVE`)
 
-**Next executable task:** intentionally not started under the PO-059 stop boundary; `PKG-02` remains externally blocked on `X-07` and is outside this execution window.
+**Next executable task:** `ID-01 — Account/security service contracts and composition`; B-01 is independently partially evidenced and awaits only `X-09` Figma access.
 
 ## 1. Purpose and authority
 
@@ -212,7 +212,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Objective:** make existing local-first entry explicitly guest-owned. **Owners:** `GUEST-FREE-001`, docs 01/04/08. **Dependencies:** `FND-01`. **State:** learning works without auth but data has no installation identity/account binding.
 - **Paths / scope:** bootstrap, storage keys/repositories, installation identity, guest dataset metadata/reset tests. **Non-goals:** account UI, adoption, Premium. **Obligations:** keep kernel/journal; rewrite bootstrap ownership; delete any first-value auth assumption encountered.
 - **Acceptance:** first launch reaches a complete bundled free node offline; restart preserves identity/data; reset is explicit; no Firebase Anonymous Auth; failure injection cannot orphan data. **Evidence:** focused Maestro after existing UI only, storage migration report. **Checkpoint:** none. **Unlocks:** `SESSION-01`, `ADOPT-01`, `UX-01D`.
-- **Checkpoint / remaining boundary:** the canonical local installation/dataset record is provisioned and verified before journal recovery or content navigation. It begins in `guest` state, preserves valid later binding states without adopting or regenerating, rejects corrupt/unsupported identities without replacement, and blocks before first value on identity or durable-write failure. Focused behavioral/contract tests, typecheck, the staged canonical contract gate, and independent QA passed at `3690df756daf34e1fa0b26f676c9785fa2180997`. Existing explicit local-history reset behavior remains to be reconciled with the guest-dataset contract. Complete bundled `freeNodeId` first value is not present in source and is owned by the downstream `TRACK-01` → `TRACK-02` → `PKG-01` path; it cannot be claimed here or satisfied by a fallback. `GUEST-01` therefore remains partial without blocking independent `TRACK-01`.
+- **Checkpoint / remaining boundary:** the canonical local installation/dataset record is provisioned and verified before journal recovery or content navigation. It begins in `guest` state, preserves valid later binding states without adopting or regenerating, rejects corrupt/unsupported identities without replacement, and blocks before first value on identity or durable-write failure. Focused behavioral/contract tests, typecheck, the staged canonical contract gate, and independent QA passed at `3690df756daf34e1fa0b26f676c9785fa2180997`. Existing explicit local-history reset behavior remains to be reconciled with the guest-dataset contract. Complete bundled `freeNodeId` package evidence is present after `PKG-01`, but runtime activation and the complete first-value flow remain downstream work; neither can be claimed here or satisfied by a fallback. `GUEST-01` therefore remains partial without blocking independent account-security work.
 
 #### SESSION-01 — Device-session cutover across server contracts — `BLOCKED`
 
@@ -253,7 +253,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage I — identity and account security
 
-#### ID-01 — Account/security service contracts and composition — `BLOCKED`
+#### ID-01 — Account/security service contracts and composition — `ACTIVE`
 
 - **Objective:** expose one composed account API over the compatible Firebase foundation. **Owners:** `IDENTITY-SECURITY-001`, docs 02/04/09. **Dependencies:** `FND-01`, `ARCH-01`. **State:** token verification exists; deletion is not composed; mobile auth absent.
 - **Paths / scope:** server composition/HTTP, account generation, revocation and approved-operation schemas. **Non-goals:** provider console or UI. **Obligations:** keep verifier/HTTP boundary; wire or delete unreachable duplicate primitives.
@@ -374,7 +374,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage B/D — Brand Lab and repository design authority
 
-#### B-01 — Design/tooling capability and asset audit — `READY`
+#### B-01 — Design/tooling capability and asset audit — `PARTIAL — X-09 Figma access pending`
 
 - **Objective:** establish actual Figma access, Expo-compatible Storybook approach, visual tooling, assets/licensing and release boundaries. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `FND-01`; Storybook compatibility uses `PLAT-01` result. **State:** historical references only, no Storybook/canonical brand assets.
 - **Paths / scope:** read-only design registry, tokens/components/icons/fonts/screenshots/Maestro/build graph audit. **Non-goals:** create visual directions or install Storybook. **Obligations:** classify and later delete unapproved alternatives; no metadata placeholder.
@@ -650,7 +650,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is now durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` is reclassified as package-evidence verified while its shipping-catalogue admission remains intentionally pending the existing guest/runtime/package-activation gates. This execution window stops here: it does not start `PKG-02`, `PKG-03`, UX, remote delivery, or entitlement work. `B-01` remains independently ready. `ID-01` and `OPS-01` are unblocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is partially evidenced at application `d63cb00`: its tracked audit confirms the asset, Storybook and release-boundary inventory, while `X-09` remains unmet because no authenticated Figma write access is available. `ID-01` is the active independent server-security task; no task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
