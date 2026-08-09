@@ -712,6 +712,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const guest = target.guestAndFree;
   const guestAdoption = guest.adoption as Readonly<Record<string, unknown>>;
   if (guest.guestIdentity !== "localInstallation"
+    || guest.installationRecord !== "opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery"
     || guest.firebaseAnonymousAuthentication !== "prohibited"
     || guest.firstLearningValueRequiresAccount !== false
     || guest.freeNodePerProductionTrack !== "exactlyOne"

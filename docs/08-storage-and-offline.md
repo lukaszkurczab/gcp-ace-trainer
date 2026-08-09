@@ -155,8 +155,9 @@ Bootstrap runs in this order:
 ```txt
 initialize MMKV and verify backup exclusion
 → validate storage identity
+→ provision and validate the local guest installation record
 → recover and verify the pending local journal
-→ load guest/account binding and entitlement cache
+→ load later account binding and entitlement cache when present
 → validate bundled Free manifests and installed package index
 → resolve the device-owned active-session pointer and records
 → verify every pinned content/configuration reference

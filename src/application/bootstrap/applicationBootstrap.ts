@@ -3,6 +3,7 @@ import { recoverPendingMutation } from "../learningMutations";
 import { canPersistTrainingSessionDraft } from "../../domain";
 import { describeOperationalFailure } from "../operationalDiagnostics";
 import {
+  type CanonicalRepositoryBootstrapDependencies,
   getActiveTrainingSession,
   getActiveTrainingSessionDraft,
   getTrainingSessions,
@@ -12,6 +13,7 @@ import {
 export type ApplicationBootstrapState =
   | Readonly<{ kind: "ready"; activeSessionId: string | null }>
   | Readonly<{ kind: "blocking"; reason: string }>;
+export type ApplicationBootstrapDependencies = Readonly<{ repositories?: CanonicalRepositoryBootstrapDependencies }>;
 
 /**
  * The bootstrap sequence is deliberately linear.  Do not make recovery or
@@ -21,9 +23,10 @@ export async function bootstrapApplication(
   validateBundledContent: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void>,
   prepareLifecycle?: () => Promise<void>,
+  dependencies: ApplicationBootstrapDependencies = {},
 ): Promise<ApplicationBootstrapState> {
   try {
-    await openCanonicalRepositories();
+    await openCanonicalRepositories(dependencies.repositories);
     if (prepareLifecycle) {
       await prepareLifecycle();
       const lifecycle = getTrainingLifecycleUseCases();

@@ -122,6 +122,8 @@ requirements:
     statement: Patternly provides permanent Free access and one account-bound Premium entitlement for all Premium content through one monthly and one annual product, with no tiers or track slots and with store, RevenueCat, backend, and bounded-device-cache authority kept distinct.
   - id: GUEST-FREE-001
     statement: A local-installation guest reaches meaningful bundled free-node learning without registration, cannot purchase or download Premium, and adopts progress only through preview, explicit confirmation, deterministic reconciliation, and a finish-or-abandon active-session boundary.
+  - id: GUEST-INSTALLATION-001
+    statement: Before recovery or content navigation, bootstrap provisions and verifies exactly one opaque local installation ID and local dataset ID in a guest-bound canonical record; a corrupt, unsupported, identity-generation, or durable-write failure blocks without replacement or a partial guest record.
   - id: IDENTITY-SECURITY-001
     statement: Email/password, Apple, Google, and eight one-time recovery codes resolve to one Firebase UID and Patternly account with proof-based linking, no email-only merge, protected unlinking, recent reauthentication, and session revocation.
   - id: ENVIRONMENT-PUBLIC-LINKS-001
@@ -369,6 +371,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines commercial guest and identity target semantics
       requirementIds: [COMMERCIAL-ENTITLEMENT-001, GUEST-FREE-001, IDENTITY-SECURITY-001, ENVIRONMENT-PUBLIC-LINKS-001]
+    - id: guest-installation-repository
+      testPath: tests/guestInstallationRepository.test.ts
+      testName: provisions one validated guest installation and preserves it across repeated bootstrap
+      requirementIds: [GUEST-INSTALLATION-001]
     - id: canonical-session-sync-surfaces-products
       testPath: tests/canonicalProductContract.test.ts
       testName: defines device session sync surface goal and learning-product semantics
@@ -403,6 +409,7 @@ commercialEntitlement:
   deletionChoices: [manageSubscription, deleteNow, scheduleAtPaidPeriodEndWhenSupported]
 guestAndFree:
   guestIdentity: localInstallation
+  installationRecord: opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery
   firebaseAnonymousAuthentication: prohibited
   firstLearningValueRequiresAccount: false
   freeNodePerProductionTrack: exactlyOne

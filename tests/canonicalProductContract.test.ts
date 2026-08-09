@@ -117,6 +117,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["DESIGN-REFERENCE-REGISTRY-001", ["canonical-design-reference-readiness"]],
       ["COMMERCIAL-ENTITLEMENT-001", ["canonical-commercial-guest-identity"]],
       ["GUEST-FREE-001", ["canonical-commercial-guest-identity"]],
+      ["GUEST-INSTALLATION-001", ["guest-installation-repository"]],
       ["IDENTITY-SECURITY-001", ["canonical-commercial-guest-identity"]],
       ["ENVIRONMENT-PUBLIC-LINKS-001", ["canonical-commercial-guest-identity"]],
       ["DEVICE-SESSION-SYNC-001", ["canonical-session-sync-surfaces-products"]],
@@ -361,6 +362,7 @@ test("defines commercial guest and identity target semantics", () => {
   assert.equal(contract.commercialEntitlement.trackSlots, "prohibited");
   assert.equal(contract.commercialEntitlement.offlineVerificationGraceDays, 7);
   assert.equal(contract.guestAndFree.firstLearningValueRequiresAccount, false);
+  assert.equal(contract.guestAndFree.installationRecord, "opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery");
   assert.equal(contract.guestAndFree.firebaseAnonymousAuthentication, "prohibited");
   assert.deepEqual(contract.identityAndAccountSecurity.methods, ["emailPassword", "signInWithApple", "signInWithGoogle", "recoveryCodes"]);
   assert.equal(contract.identityAndAccountSecurity.recoveryCodeCount, 8);
@@ -706,7 +708,7 @@ test("defines exactly the complete declared Certification mode matrix", () => {
 
 test("rejects every superseded Directive 2 product model", () => {
   const cases: readonly [string, string, RegExp][] = [
-    ["account required before learning", validContract.replace("guestAndFree:\n  guestIdentity: localInstallation\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: false", "guestAndFree:\n  guestIdentity: localInstallation\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: true"), /guest contract/],
+    ["account required before learning", validContract.replace("guestAndFree:\n  guestIdentity: localInstallation\n  installationRecord: opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: false", "guestAndFree:\n  guestIdentity: localInstallation\n  installationRecord: opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery\n  firebaseAnonymousAuthentication: prohibited\n  firstLearningValueRequiresAccount: true"), /guest contract/],
     ["guest data silently discarded", validContract.replace("silentMergeOrDiscard: prohibited", "silentMergeOrDiscard: allowed"), /guest contract/],
     ["guest purchase", validContract.replace("guestPurchase: prohibited", "guestPurchase: allowed"), /commercial contract/],
     ["guest Premium package download", validContract.replace("premiumPackageDownload, uninstallRecovery", "uninstallRecovery"), /guest contract/],
