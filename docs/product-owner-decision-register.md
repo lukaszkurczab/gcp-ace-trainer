@@ -1711,3 +1711,50 @@ nowych pytań, zmian payloadów, item IDs, evidence IDs ani obejścia publishera
 
 **Status:** `resolved`; zastępuje wyłącznie brakujący review checkpoint dla
 tych ośmiu istniejących elementów.
+
+## PO-059 — Zamknięte profile doświadczenia Free node
+
+**Data:** 2026-08-09
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Każdy rzeczywiście wdrożony production track ma dokładnie jeden własny,
+wersjonowany i zamknięty `FreeNodeExperienceProfile`. Profil jest jawnym
+podzbiorem pełnej listy `validModes` tracku. `validModes` nadal opisuje całą
+możliwość tracku i nie oznacza listy trybów darmowego pakietu.
+
+Profil używa wyłącznie istniejących canonical user-facing mode IDs oraz tych
+samych family runners, scoringu, feedbacku, persistence i lifecycle. Nie wolno
+tworzyć Free-only mode ID, etykiety, runnera ani drugiego lifecycle. Pakiet
+Free zamyka wyłącznie konfiguracje potrzebne temu profilowi; nie pobiera
+struktur Premium tylko dlatego, że pełny track wspiera szerszy tryb.
+
+Model komercyjny pozostaje bez zmian: każdy production track ma jeden
+canonical `freeNodeId`, kompletny node jest bundled z aplikacją, a wszystkie
+pozostałe node'y są Premium. Cały track nie staje się darmowy i nie rozszerza
+się darmowego node'a wyłącznie po to, by domknąć complete-track mode blueprint.
+Celowane rozszerzenie node-local content jest dopuszczalne dopiero po
+udowodnieniu realnej luki przez coverage audit.
+
+Coding Interview (`complexity_and_constraints`) ma profil: natychmiastowe
+Learn Approach 10 jako primary entry, Guided Practice 10/20/40, Custom
+Practice 10 z mental unit z node'a i `afterEachAnswer` lub `atSessionEnd`
+przez canonical Guided mapping oraz evidence-conditioned Weak Area Review
+10/20. Recognize, Contrast, Independent i Simulation pozostają pełnymi
+trybami tracku, lecz nie należą do profilu Free.
+
+GCP ACE (`setup_environment`) ma profil: natychmiastowe Focus Practice
+10/20/40 (domyślnie 10), evidence-conditioned Weak Area Review 10/20 oraz
+Quick Review do 10. Diagnostic, Scenario, Mixed i Exam pozostają pełnymi
+trybami tracku, lecz nie należą do profilu Free. Certyfikacja nie zyskuje
+Custom ani Learn dla pozornej symetrii.
+
+Tryby evidence-conditioned są poprawnie niedostępne przy pustej kolejce.
+Ich runtime selection może użyć tylko evidence i itemów należących do tego
+samego bundled Free node; nie może wypełniać sesji Premium, sibling node'em,
+globalną compatibility set ani zwykłą praktyką. Admission wymaga immutable,
+deterministycznych factual package bytes i provenance, a nie samego briefu.
+Nie jest to decyzja o remote delivery, produkcyjnym pierwszym UI ani Premium
+authorization.
+
+**Status:** `resolved`; doprecyzowuje PO-037, PO-046 i PO-048 bez zmiany
+Free/Premium boundary albo family runtime.

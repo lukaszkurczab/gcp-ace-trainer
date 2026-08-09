@@ -13,6 +13,7 @@ import {
   getTracks,
 } from "../src/domain";
 import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled";
+import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFreeNodePackages";
 import { validateBundledContent } from "../src/content/application/validateBundledContent";
 
 test("internal density harness pins exactly ten complete canonical content-brief descriptors", () => {
@@ -61,13 +62,13 @@ test("density harness rejects missing, duplicate, and incomplete descriptors", (
   );
 });
 
-test("current production tracks have pinned artifacts but remain explicitly unverified without free-node package proof", async () => {
+test("production admission remains closed until exact immutable Free-node package evidence exists", async () => {
   const registrations = getTracks();
-  const evaluations = evaluateProductionTrackAdmissions(registrations);
+  const evaluations = await evaluateProductionTrackAdmissions(registrations);
   const availability = await validateBundledContent();
 
   assert.deepEqual(registrations.map((registration) => registration.id).sort(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort());
-  assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["unverified_free_node_package", "unverified_free_node_package"]);
+  assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["package_evidence_verified_catalogue_gate_pending", "package_evidence_verified_catalogue_gate_pending"]);
   for (const fact of CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE) {
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === fact.trackId);
     const artifact = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((candidate) => candidate.trackId === fact.trackId);
@@ -79,7 +80,7 @@ test("current production tracks have pinned artifacts but remain explicitly unve
   }
 });
 
-test("admission evaluator rejects missing and orphan artifact evidence instead of admitting it", () => {
+test("admission evaluator rejects missing and orphan artifact evidence instead of admitting it", async () => {
   const candidate = TRACK_DENSITY_DESCRIPTORS.find((descriptor) => descriptor.trackId === "backend-system-design-interview")!;
   const registration = {
     id: candidate.trackId,
@@ -87,7 +88,17 @@ test("admission evaluator rejects missing and orphan artifact evidence instead o
     metadata: { title: "Backend System Design", shortTitle: "Backend Design", description: "Test-only candidate.", status: "active" as const, accentColor: "#000000", accentMutedColor: "#FFFFFF" },
   };
 
-  assert.deepEqual(evaluateProductionTrackAdmissions([registration], []), [{ trackId: candidate.trackId, kind: "missing_artifact_evidence" }]);
-  assert.throws(() => evaluateProductionTrackAdmissions(getTracks(), [...CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, { trackId: candidate.trackId, bundledReleaseId: "patternly-core-unknown" }]), /orphaned/u);
-  assert.throws(() => evaluateProductionTrackAdmissions(getTracks(), [CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!, CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!]), /unique track IDs/u);
+  assert.deepEqual(await evaluateProductionTrackAdmissions([registration], []), [{ trackId: candidate.trackId, kind: "missing_artifact_evidence" }]);
+  await assert.rejects(() => evaluateProductionTrackAdmissions(getTracks(), [...CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, { trackId: candidate.trackId, bundledReleaseId: "patternly-core-unknown" }]), /orphaned/u);
+  await assert.rejects(() => evaluateProductionTrackAdmissions(getTracks(), [CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!, CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE[0]!]), /unique track IDs/u);
+});
+
+test("package admission rejects tampered bytes or extracted profile modes without affecting the other track", async () => {
+  const coding = GENERATED_FREE_NODE_PACKAGES[0]!;
+  const bytesTampered = GENERATED_FREE_NODE_PACKAGES.map((entry) => entry.trackId === coding.trackId ? { ...entry, packageBytes: `${entry.packageBytes} ` } : entry);
+  const profileTampered = GENERATED_FREE_NODE_PACKAGES.map((entry) => entry.trackId === coding.trackId ? { ...entry, profileModes: [...entry.profileModes, "coding-interview-simulation"] } : entry);
+  for (const packages of [bytesTampered, profileTampered]) {
+    const results = await evaluateProductionTrackAdmissions(getTracks(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, TRACK_DENSITY_DESCRIPTORS, packages);
+    assert.deepEqual(results.map((result) => result.kind), ["unverified_free_node_package", "package_evidence_verified_catalogue_gate_pending"]);
+  }
 });

@@ -729,6 +729,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     || guest.firstLearningValueRequiresAccount !== false
     || guest.freeNodePerProductionTrack !== "exactlyOne"
     || guest.completeFreeNodeBundled !== "required"
+    || guest.freeNodeExperienceProfile !== "trackOwnedVersionedClosedSubsetOfCompleteValidModes"
     || !hasExactValues(guest.allowedCapabilities as readonly string[], ["trackSwitching", "goals", "attempts", "review", "activity", "progress", "settings", "offlineLearning"])
     || !hasExactValues(guest.prohibitedCapabilities as readonly string[], ["synchronization", "crossDeviceRestore", "premiumPurchase", "premiumPackageDownload", "uninstallRecovery"])
     || guest.freeSessionContent !== "freeNodeOnlyWithoutPremiumFiller"
@@ -854,6 +855,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     || packages.silentVersionSubstitution !== "prohibited"
     || packages.reviewResolution !== "groupReferencesByPackageAndFetchOnlyMissingVerifiedPackages"
     || packages.cacheEviction !== "neverRemoveActiveSessionPinnedPackage"
+    || packages.freeNodePackageAdmission !== "immutableFactualProfileAndClosureEvidenceOnly"
     || packages.futureLocales !== "reuseStableEvidenceIdentities") {
     throw new CanonicalProductContractValidationError("Canonical package contract must use immutable authorized whole-node packages with verified atomic activation and exact pinning");
   }

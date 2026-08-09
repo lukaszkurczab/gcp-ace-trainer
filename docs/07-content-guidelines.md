@@ -26,6 +26,13 @@ Canonical source may be corrected, but an already published artifact or package 
 
 Each production track bundles one complete English Free node. Premium content is published as immutable compressed whole-node packages. A session pins an exact package version; runtime never assembles a session through per-question Firestore fetching or silently substitutes a newer version. Document `08` owns delivery, activation, cache, and review-resolution behavior.
 
+The complete track mode list describes what the track can support; it is not the
+bundle list. An implemented track owns one versioned closed Free-node experience
+profile, which selects existing family modes and only the node-local structures
+needed for the declared Free experience. It never creates a Free-only mode,
+runner, scoring path, or lifecycle. The canonical product contract owns exact
+profile configurations and package-admission evidence.
+
 Launch application and content are English-only. Future locale packages reuse stable evidence identities while localizing learner-visible content; they do not fork scores, attempts, review evidence, or taxonomy identity merely because language changes.
 
 ## Instructional item contract

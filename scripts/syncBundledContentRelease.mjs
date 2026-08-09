@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
+import { gunzipSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 
@@ -9,6 +10,7 @@ const releasesRoot = resolve(contentRoot, "artifacts/releases");
 const lock = JSON.parse(readFileSync(resolve(root, "integration/contracts/content-release/release.lock.json"), "utf8"));
 const target = resolve(root, "src/content/bundled/generatedArtifacts.ts");
 const assetsTarget = resolve(root, "src/content/bundled/generatedAlgorithmFeedbackAssets.ts");
+const freeNodeTarget = resolve(root, "src/content/bundled/generatedFreeNodePackages.ts");
 const expectedTracks = ["coding-interview-dsa-problem-solving", "google-cloud-associate-cloud-engineer"];
 
 if (lock?.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || typeof lock.bundleId !== "string" || !Array.isArray(lock.artifacts)) {
@@ -61,4 +63,18 @@ const assetsOutput = `/** Generated from the pinned Coding Interview artifact an
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, output, "utf8");
 writeFileSync(assetsTarget, assetsOutput, "utf8");
+const freeNodeConfigBytes = execFileSync("git", ["-C", contentRoot, "show", `${lock.artifacts[0].producerCommit}:config/bundled-free-node-packages.json`], { encoding: "utf8" });
+const freeNodePackages = expectedTracks.map((trackId) => {
+  const config = JSON.parse(freeNodeConfigBytes);
+  const pin = config.packages.find((entry) => entry.trackId === trackId);
+  if (!pin) throw new Error(`Missing bundled Free-node package pin for ${trackId}.`);
+  const packagePath = `artifacts/bundled-free-nodes/${trackId}/${pin.packageVersion}/package.json`;
+  const bytes = execFileSync("git", ["-C", contentRoot, "show", `${lock.artifacts[0].producerCommit}:${packagePath}`], { encoding: "utf8" });
+  const record = JSON.parse(bytes);
+  if (record?.schemaVersion !== "bundled-free-node-v2" || record?.manifest?.trackId !== trackId || record.manifest.packageVersion !== pin.packageVersion || record.manifest.minimumAppVersion !== pin.minimumAppVersion || createHash("sha256").update(bytes).digest("hex") !== (trackId === "coding-interview-dsa-problem-solving" ? "41dfadaa70de470e921cc7e565a3a986541110cb31a5a016ea0d0e55f16a09a7" : "60e9aa98aa84bf63893f235b5a9cd170274dd1a723148ef237c82e18f35ba1d4")) throw new Error(`Invalid immutable bundled Free-node package for ${trackId}.`);
+  const payload = JSON.parse(gunzipSync(Buffer.from(record.payloadGzipBase64, "base64")).toString("utf8"));
+  if (!Array.isArray(payload?.freeNodeExperienceProfile?.modes)) throw new Error(`Free-node profile payload is invalid for ${trackId}.`);
+  return { trackId, packageVersion: pin.packageVersion, packageBytes: bytes, packageSha256: createHash("sha256").update(bytes).digest("hex"), packageSize: Buffer.byteLength(bytes), profileModes: payload.freeNodeExperienceProfile.modes.map((mode) => mode.modeId), manifest: record.manifest };
+});
+writeFileSync(freeNodeTarget, `/** Generated from immutable bundled Free-node package bytes; do not edit. */\nexport const GENERATED_FREE_NODE_PACKAGES = Object.freeze(${JSON.stringify(freeNodePackages)});\n`, "utf8");
 console.log(`BUNDLED_CONTENT_SYNCED=${lock.bundleId}`);

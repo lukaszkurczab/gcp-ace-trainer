@@ -113,6 +113,12 @@ If a bound device later receives verified deleted-account evidence, it durably r
 
 Each production-visible track has one canonical `freeNodeId`. Its complete Free node and every interaction needed for its core loop are bundled with the application. Free session and Free review selection are strictly filtered to that node; Premium content is never filler for a Free session.
 
+The bundled boundary is the track-owned, versioned Free-node experience
+profile—not every mode supported by the complete track. Package admission uses
+immutable package evidence tying the profile, node, inventory, release and
+exact bytes together. An evidence-conditioned review mode may truthfully be
+unavailable on a fresh install; this does not permit a global or Premium fill.
+
 Bundled content remains immutable within an application build and is referenced by stable evidence identity.
 
 ## Premium whole-node packages

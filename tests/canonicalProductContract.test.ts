@@ -125,6 +125,8 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["PRODUCT-SURFACES-GOALS-001", ["canonical-session-sync-surfaces-products"]],
       ["LEARNING-PRODUCTS-001", ["canonical-session-sync-surfaces-products"]],
       ["TRACK-REGISTRY-ADMISSION-001", ["track-registry-admission"]],
+      ["FREE-NODE-EXPERIENCE-PROFILE-001", ["free-node-package-admission"]],
+      ["FREE-NODE-PACKAGE-ADMISSION-001", ["free-node-package-admission"]],
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
@@ -367,6 +369,7 @@ test("defines commercial guest and identity target semantics", () => {
   assert.equal(contract.guestAndFree.firstLearningValueRequiresAccount, false);
   assert.equal(contract.guestAndFree.installationRecord, "opaqueInstallationIdAndLocalDatasetIdGuestBoundBeforeRecovery");
   assert.equal(contract.guestAndFree.firebaseAnonymousAuthentication, "prohibited");
+  assert.equal(contract.guestAndFree.freeNodeExperienceProfile, "trackOwnedVersionedClosedSubsetOfCompleteValidModes");
   assert.deepEqual(contract.identityAndAccountSecurity.methods, ["emailPassword", "signInWithApple", "signInWithGoogle", "recoveryCodes"]);
   assert.equal(contract.identityAndAccountSecurity.recoveryCodeCount, 8);
   assert.deepEqual(contract.environmentAndPublicLinks.requiredValues, ["apiOrigin", "publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"]);
@@ -391,6 +394,7 @@ test("defines package analytics report backup and platform semantics", () => {
   const contract = loadCanonicalProductContract();
   assert.equal(contract.contentPackages.premiumUnit, "immutableCompressedWholeNodePackage");
   assert.equal(contract.contentPackages.perQuestionFirestoreFetching, "prohibited");
+  assert.equal(contract.contentPackages.freeNodePackageAdmission, "immutableFactualProfileAndClosureEvidenceOnly");
   assert.equal(contract.analyticsAndReports.consentGate, "failClosed");
   assert.deepEqual((contract.analyticsAndReports.contentReports as { prohibitedAutomaticAttachments: readonly string[] }).prohibitedAutomaticAttachments, ["learnerResponse", "fullPrompt", "fullFeedback", "email", "accountId"]);
   assert.equal(contract.backupAndRestore.deletedAccountResurrection, "prohibited");
@@ -726,6 +730,8 @@ test("rejects every superseded Directive 2 product model", () => {
     ["cross-device active resume", validContract.replace("crossDeviceActiveSessionResume: prohibited", "crossDeviceActiveSessionResume: allowed"), /synchronization contract/],
     ["Free session pulls Premium", validContract.replace("freeSessionContent: freeNodeOnlyWithoutPremiumFiller", "freeSessionContent: mayFillFromPremium"), /guest contract/],
     ["Free review pulls Premium", validContract.replace("freeReviewContent: eligibleFreeNodeEvidenceOnly", "freeReviewContent: allTrackEvidence"), /guest contract/],
+    ["Free profile becomes a second mode system", validContract.replace("freeNodeExperienceProfile: trackOwnedVersionedClosedSubsetOfCompleteValidModes", "freeNodeExperienceProfile: freeOnlyModesAndRunner"), /must be equal to constant|guest contract/],
+    ["Free package admission inferred from a brief", validContract.replace("freeNodePackageAdmission: immutableFactualProfileAndClosureEvidenceOnly", "freeNodePackageAdmission: briefOnly"), /must be equal to constant|package contract/],
     ["per-question Firestore fetching", validContract.replace("perQuestionFirestoreFetching: prohibited", "perQuestionFirestoreFetching: allowed"), /package contract/],
     ["mutable published package", validContract.replace("publishedMutation: prohibited", "publishedMutation: allowed"), /package contract/],
     ["silent package substitution", validContract.replace("silentVersionSubstitution: prohibited", "silentVersionSubstitution: allowed"), /package contract/],
