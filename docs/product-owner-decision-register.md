@@ -1696,3 +1696,18 @@ w tym wymaganiu Product Owner `APPROVED` design reference dla user-facing UI.
 
 **Status:** `resolved`; historyczny wyjątek nie zmienia authority design
 references dla rzeczywistych zmian designu lub interakcji.
+
+## PO-058 — Reviewed canonical content dla Coding Interview two pointers
+
+**Data:** 2026-08-09
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Product Owner zatwierdza osiem istniejących plików
+`manual/source/algorithms/two-pointers/*.candidate.json` jako reviewed
+canonical content dla atomowej migracji `TRACK-01`. Worker może przenieść je
+do canonical Coding Interview namespace, usunąć suffix `.candidate` i objąć
+zwykłą weryfikacją provenance oraz immutable release. Decyzja nie zatwierdza
+nowych pytań, zmian payloadów, item IDs, evidence IDs ani obejścia publishera.
+
+**Status:** `resolved`; zastępuje wyłącznie brakujący review checkpoint dla
+tych ośmiu istniejących elementów.

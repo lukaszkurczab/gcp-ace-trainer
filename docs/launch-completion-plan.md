@@ -6,7 +6,7 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (started from `3690df756daf34e1fa0b26f676c9785fa2180997`)
+**Current task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (resumed after `59cefd9` and `PO-058`)
 
 **Next executable task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (`ACTIVE`)
 
@@ -197,12 +197,13 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Implications/checkpoint:** security review of permissions; no external mutation. **Output:** platform migration report. **Unlocks:** `ARCH-01`, native identity/entitlement, Storybook foundation and final device work.
 - **Verification and exact decisions:** clean `npm ci` completed for root and `server`; root/server typechecks and server build passed; root `qa:static` passed with 560 tests; the cross-repository release-lock test, content/privacy boundaries, `git diff --check`, and a clean generated-native Expo prebuild with iOS/Android/backup assertions all passed. The canonical contract gate passed for both `a5eb8ac14b3753bd443486d94853468183605ad7^..a5eb8ac14b3753bd443486d94853468183605ad7` and current `HEAD`; focused gate tests passed 7/7. The five exact RN 0.86 `StyleSheet.absoluteFillObject` → `StyleSheet.absoluteFill` substitutions in `a5eb8ac14b3753bd443486d94853468183605ad7` are `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION` under the closed six-criterion `PO-057` exception; no design reference was fabricated. This host has neither an iOS phone simulator nor Android phone emulator/device, and no unsigned debug boot/smoke was performed. That unavailable smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION` under `PO-056`, not device-test evidence; signed physical-device proof remains a `REL-07` release requirement. No signing or provider authority is required.
 
-#### ARCH-01 — Approved clients, environment and public-origin boundary — `READY`
+#### ARCH-01 — Approved clients, environment and public-origin boundary — `VERIFIED`
 
 - **Objective:** replace the old no-network rule with one closed, testable client registry. **Owners:** `ENVIRONMENT-PUBLIC-LINKS-001`, `IDENTITY-SECURITY-001`, docs 02/09/11. **Dependencies:** `PLAT-01`. **State:** privacy check bans app networking; server environment isolation is strong.
 - **Paths / scope:** environment schema, network/secure-storage adapters, privacy static checks, link origin configuration; register only auth/account, entitlement, package, analytics/crash and report clients. **Non-goals:** implement provider flows or public deployment.
 - **Obligations:** keep fail-closed environments and deny-all Firestore; rewrite privacy plugin/check; delete direct/unregistered transport paths. **Acceptance:** secrets absent from bundles/logs, default Firebase domains restricted to sandbox, closed-schema tests, no raw Firestore client. **Evidence:** clean release graph/config audit.
 - **Checkpoint:** production values remain `X-03/X-04`; local safe defaults explicit. **Output/unlocks:** architecture evidence; unlocks networked lanes.
+- **Verification:** pushed application `59cefd9`; closed `APPROVED-CLIENT-ENVIRONMENT-001` schema/parser/registry mapping passed staged contract gate and independent QA. The transport allowlist is registry-derived; direct Firebase/raw transport, raw error diagnostics and console output remain blocked. Android retains only required `INTERNET`; backup and unnecessary-ingress exclusions remain enforced.
 
 ### Stage G — guest, device ownership, synchronization and goals
 
@@ -419,11 +420,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage T — product identities, briefs and representative content proofs
 
-#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `ACTIVE`
+#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `VERIFIED`
 
 - **Objective:** remove old target IDs across app/content without an alias. **Owners:** `LEARNING-PRODUCTS-001`, docs 04/07/16. **Dependencies:** `FND-01`. **State:** `algorithms`/`cloud-certification`, hard-coded two-family branches; eight candidate filenames; stale planning ledger.
 - **Paths / scope:** app registry/runtime/persistence/content lock/tests; content configs/taxonomy/source/publisher/evidence; migrate to `coding_interview`, `coding-interview-dsa-problem-solving`, and `google-cloud-associate-cloud-engineer` while retaining stable item/evidence identities.
-- **Non-goals:** new questions or permanent alias. **Obligations:** move candidate paths/rationale, delete old IDs/branches and 243-file planning ledger plus generator/scripts/tests after consumers move. **Acceptance:** whole-repo/cross-repo old-ID scan, storage migration failure tests, byte/provenance gates and no user-visible family. **Evidence:** migration map. **Checkpoint:** none. **Unlocks:** briefs/packages/proofs.
+- **Non-goals:** new questions or permanent alias. **Obligations:** move candidate paths/rationale, delete old IDs/branches and 243-file planning ledger plus generator/scripts/tests after consumers move. **Acceptance:** whole-repo/cross-repo old-ID scan, storage migration failure tests, byte/provenance gates and no user-visible family. **Evidence:** migration map. **Checkpoint:** `PO-058` approves exactly the eight existing `two-pointers/*.candidate.json` items as reviewed canonical content; promotion must preserve their payload, item, option, taxonomy and evidence identities and still pass immutable release verification. **Unlocks:** briefs/packages/proofs.
+- **Verification:** content source/evidence/artifacts/releases are pushed through `patternly-core-0017` at content `4822bca`; independent QA preserved all item payloads and stable identities. Application `afe8f8e` pins each track to its immutable verified producer, removes retired active paths and aliases, rejects persisted retired IDs explicitly, and passes the closed contract gate with independent QA.
 
 #### TRACK-02 — Ten complete track briefs and registry admission contract — `BLOCKED`
 
@@ -644,9 +646,9 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 ## 8. Current and next executable task
 
-`PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is now ready. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
+`PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is the sole active implementation task because it is independent, ready, and begins the canonical path that supplies the missing free-node/package prerequisites. `B-01` and `ARCH-01` are also ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e` with content release `patternly-core-0017` at `4822bca`. `TRACK-02` is the next dependent task; `B-01` remains independently ready. `ID-01` and `OPS-01` are unblocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
