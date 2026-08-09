@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 import test from "node:test";
 
 import {
@@ -27,8 +26,12 @@ test("internal density harness pins exactly ten complete canonical content-brief
   assert.deepEqual(new Set(descriptors.map((descriptor) => descriptor.internalFamily)), new Set(["certification", "coding_interview", "design_interview"]));
 
   for (const descriptor of descriptors) {
-    const briefPath = join("..", "patternly-content", "docs", "track-briefs", `${descriptor.trackId}.json`);
-    const briefBytes = readFileSync(briefPath);
+    const briefPath = `docs/track-briefs/${descriptor.trackId}.json`;
+    const briefBytes = execFileSync(
+      "git",
+      ["-C", "../patternly-content", "show", `${CANONICAL_TRACK_BRIEF_SOURCE.commit}:${briefPath}`],
+      { encoding: "buffer" },
+    );
     const brief = JSON.parse(briefBytes.toString()) as Record<string, unknown>;
     assert.equal(createHash("sha256").update(briefBytes).digest("hex"), descriptor.sourceBriefSha256);
     assert.equal(brief.trackId, descriptor.trackId);
