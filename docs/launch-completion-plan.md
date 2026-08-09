@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `PKG-04A — verified content-package resolver and session-pin contract` (`IN PROGRESS — verified resolver, closed catalogs and native decoder pushed; atomic lifecycle cutover remains`)
+**Current task:** no additional safe application-only slice while the canonical content repository has an active, unpushed concurrent change set.
 
-**Next executable task:** `PKG-04A — coordinated package-runtime lifecycle cutover`; it is the required code-only continuation that replaces whole-track runtime ownership with the already verified Free-node package path, without creating a second runner or package store.
+**Next executable task:** reconcile the next pushed canonical content checkpoint with the app’s exact brief/package locks, then select the next unblocked plan task. `PKG-02`/`PKG-03` remain external-infrastructure work and are not started by this checkpoint.
 
 ## 1. Purpose and authority
 
@@ -323,22 +323,14 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Paths / scope:** client, versioned store, checksum/schema/semantic validation, active pointer, rollback. **Non-goals:** final Practice UI. **Obligations:** keep free bundle and immutable refs; no fallback to stale/wrong version.
 - **Acceptance:** interruption/corruption/disk-full/restart/min-version tests retain previous verified version; paid download needs backend authority. **Evidence:** filesystem fault harness. **Checkpoint:** sandbox bucket later. **Unlocks:** `PKG-04`, download UI.
 
-#### PKG-04A — Verified content-package resolver and session-pin contract — `PARTIAL — resolver, closed catalogs and native verification runtime pushed; atomic lifecycle cutover remains`
-
-**Catalog migration map (PKG-04A foundation):** current whole-track owners remain
-`AlgorithmContentCatalog` and `CertificationContentCatalog` through the coordinated
-activation cutover. Their exact later replacement at preparation is the verified
-`ContentPackageResolver` result adapted by `createCodingPackageRuntimeCatalog` or
-`createCertificationPackageRuntimeCatalog`; both implement the existing family
-runtime catalog interfaces. This checkpoint changes no bootstrap/composition owner
-and does not claim that the replacement is active.
+#### PKG-04A — Verified content-package resolver and session-pin contract — `VERIFIED`
 
 - **Objective:** define and implement one package resolver contract that accepts exact verified bundled packages now and future installed packages later, without a separate Free runner, cache, or compatibility catalog.
-- **Inputs:** `PKG-01` package records/profiles, `CONTENT-PACKAGES-001`, docs 04/08/17, and the current `validateBundledContent`/availability/family-runtime owners.
-- **Scope:** package identity/version/provenance and availability taxonomy; decoder/schema/semantic boundary; profile-only catalog adapter contract; exact session package-pin record; migration map for whole-track generated artifact ownership.
-- **Non-goals:** remote download, Cloud Storage, entitlement authorization, cache eviction, new UI/design, device testing, or activating a Free session before the coordinated cutover is accepted.
-- **Acceptance:** one typed resolver contract supports bundled and future installed packages; malformed/tampered/profile-incompatible bytes fail closed; package identity/version is sufficient for exact resume/review resolution; no full-track mode may be inferred from a Free profile; no second lifecycle or Free-only runner is introduced. **Verification:** parser/negative-contract tests and a replacement map covering existing whole-track owners. **Evidence:** bounded architecture/implementation checkpoint with independent QA. **Risks:** current family runtimes and Practice Hub assume full banks; implementation must replace, not layer beside, those paths.
-- **Pushed evidence:** application `dd7b8cc` introduces the verified exact-byte resolver; `2a15d14` adds profile-closed package catalogs accepted by the existing family runtimes without activating them; `e7821e0` adds the React Native package decoder using Expo Crypto and `fflate`. It rejects non-canonical base64, malformed gzip and invalid UTF-8 before exposing content. Focused resolver/runtime tests, typecheck, contract/content/privacy gates and independent QA pass. An iOS Metro export passes; physical-device execution remains unverified because no device is currently available, and no device result is claimed.
+- **Inputs:** `PKG-01` package records/profiles, `CONTENT-PACKAGES-001`, docs 04/08/17, and the retired whole-track validator/availability/family-runtime owners.
+- **Scope:** package identity/version/provenance and availability taxonomy; decoder/schema/semantic boundary; profile-only catalog adapter contract; exact session package-pin record; atomic replacement of whole-track generated-artifact ownership.
+- **Non-goals:** remote download, Cloud Storage, entitlement authorization, cache eviction, or any claim of Premium delivery. PO-060 supplies the narrow approved Practice Hub, Setup, and unavailable-mode references; no device result is claimed.
+- **Acceptance:** one typed resolver contract supports bundled and future installed packages; malformed/tampered/profile-incompatible bytes fail closed; package identity/version is sufficient for exact resume/review/progress resolution; only profile modes are discoverable; no second lifecycle or Free-only runner is introduced; retired whole-track owners have no production import.
+- **Pushed evidence:** application `dd7b8cc` introduces the verified exact-byte resolver; `2a15d14` adds profile-closed package catalogs; `e7821e0` adds the React Native decoder using Expo Crypto and `fflate`; `02c47aa` completes the atomic cutover. At `02c47aa`, bootstrap/lifecycle/review/progress use exact `ContentPackagePin`, Coding exposes Learn/Guided/Custom/Weak and GCP exposes Focus/Weak/Quick, unavailable modes and foreign-package evidence are explicit, and whole-track runtime owners are deleted. Independent QA passed after adversarial profile, pin, default-entry, malformed-route and presentation checks. Typecheck, the staged contract gate, recovery/content/privacy boundaries, cross-repository package checks and focused 88-test verification pass. A full local suite reports only the active unpushed content-brief hash mismatch and sandbox loopback restrictions; neither is masked or used to alter locks.
 
 #### PKG-04 — Session pinning, review resolution and safe eviction — `BLOCKED`
 
@@ -669,7 +661,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is partially evidenced at application `d63cb00`: its tracked audit confirms the asset, Storybook and release-boundary inventory, while `X-09` remains unmet because no authenticated Figma write access is available. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` now has the pushed exact-byte resolver (`dd7b8cc`), closed runtime catalogs (`2a15d14`) and mobile-safe decoder (`e7821e0`); its remaining atomic lifecycle, persistence, review, discovery and legacy-owner deletion cutover is the next code-only task. No task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is partially evidenced at application `d63cb00`: its tracked audit confirms the asset, Storybook and release-boundary inventory, while `X-09` remains unmet because no authenticated Figma write access is available. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. The next application action waits for a pushed canonical content checkpoint before changing an exact cross-repository lock. No task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
