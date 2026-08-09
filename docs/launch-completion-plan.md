@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** none in progress (`PLAT-01` is `PARTIAL`)
+**Current task:** `GUEST-01 — Installation guest identity and local dataset` (started from `28a97ad436cc8fb910843372d3ee10ad8755b331`)
 
-**Next executable task:** `PLAT-01 — Expo 57 and target native matrix` (phone simulator/emulator smoke required)
+**Next executable task:** `GUEST-01 — Installation guest identity and local dataset` (`ACTIVE`)
 
 ## 1. Purpose and authority
 
@@ -206,7 +206,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage G — guest, device ownership, synchronization and goals
 
-#### GUEST-01 — Installation guest identity and local dataset — `READY`
+#### GUEST-01 — Installation guest identity and local dataset — `ACTIVE`
 
 - **Objective:** make existing local-first entry explicitly guest-owned. **Owners:** `GUEST-FREE-001`, docs 01/04/08. **Dependencies:** `FND-01`. **State:** learning works without auth but data has no installation identity/account binding.
 - **Paths / scope:** bootstrap, storage keys/repositories, installation identity, guest dataset metadata/reset tests. **Non-goals:** account UI, adoption, Premium. **Obligations:** keep kernel/journal; rewrite bootstrap ownership; delete any first-value auth assumption encountered.
@@ -643,9 +643,9 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 ## 8. Current and next executable task
 
-There is no active implementation task. `PLAT-01` is partial: its repository configuration and clean generated-native gates are complete, but its canonical contract gate requires Product Owner design/requirement evidence for five RN compatibility substitutions, and iOS/Android unsigned debug-boot smoke evidence cannot be produced on this host because no phone simulator/emulator/device is available. `FND-01` remains verified.
+`GUEST-01` is the sole active implementation task, started from application `28a97ad436cc8fb910843372d3ee10ad8755b331`. `PLAT-01` remains partial: its repository configuration and clean generated-native gates are complete, but its canonical contract gate requires Product Owner design/requirement evidence for five RN compatibility substitutions, and iOS/Android unsigned debug-boot smoke evidence cannot be produced on this host because no phone simulator/emulator/device is available. `FND-01` remains verified.
 
-The dependency graph keeps `GUEST-01`, `TRACK-01`, and `B-01` ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; `ARCH-01` remains blocked until `PLAT-01` is verified. No newly ready task is started in this execution window.
+The dependency graph keeps `TRACK-01` and `B-01` ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; `ARCH-01` remains blocked until `PLAT-01` is verified. No other ready task is started in this execution window.
 
 ## 9. Old-to-new mapping and plan maintenance
 
