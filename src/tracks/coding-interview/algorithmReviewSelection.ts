@@ -1,11 +1,11 @@
 import type { ContentItemRef, ReviewQueueEntry } from "../../domain";
-import type { AlgorithmContentCatalog } from "./algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "./algorithmContentCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 export type AlgorithmReviewSource = "due_queue" | "session_misses";
 export type AlgorithmReviewSelectionSource = Readonly<{ kind: "due_queue"; now: string; reviewQueueItems: readonly ReviewQueueEntry[] }> | Readonly<{ itemRefs: readonly ContentItemRef[]; kind: "session_misses" }>;
 export type AlgorithmReviewSelection = Readonly<{ actualLength: number; items: readonly AlgorithmQuestion[]; requestedLength: number }>;
 /** Compatibility is explicit in the installed bank; same-node and same-skill inference is forbidden. */
-export function selectAlgorithmReviewItems(input: Readonly<{ catalog: AlgorithmContentCatalog; reviewedItemRefs: readonly ContentItemRef[]; requestedLength: number; source: AlgorithmReviewSelectionSource }>): AlgorithmReviewSelection {
+export function selectAlgorithmReviewItems(input: Readonly<{ catalog: AlgorithmRuntimeCatalog; reviewedItemRefs: readonly ContentItemRef[]; requestedLength: number; source: AlgorithmReviewSelectionSource }>): AlgorithmReviewSelection {
   const source = input.source;
   const refs = source.kind === "session_misses"
     ? source.itemRefs

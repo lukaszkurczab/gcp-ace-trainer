@@ -16,7 +16,7 @@ import {
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
-import { CertificationContentCatalog } from "../../tracks/certification/certificationContentCatalog";
+import type { CertificationRuntimeCatalog } from "../../tracks/certification/certificationContentCatalog";
 import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationQuickReview, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
@@ -43,7 +43,7 @@ export type CertificationPreparationRequest = Readonly<{
 export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   readonly familyId = "certification" as const;
 
-  constructor(private readonly catalog: CertificationContentCatalog, private readonly taxonomyVersion: string) {}
+  constructor(private readonly catalog: CertificationRuntimeCatalog, private readonly taxonomyVersion: string) {}
 
   async prepare(input: Readonly<{ trackId: string; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession> {
     if (input.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) throw new Error(`Certification runtime cannot prepare ${input.trackId}.`);

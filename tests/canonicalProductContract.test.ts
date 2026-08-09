@@ -130,6 +130,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["CONTENT-PACKAGE-RESOLVER-001", ["content-packages-verifier-resolver"]],
+      ["CONTENT-PACKAGE-RUNTIME-CATALOG-001", ["content-package-runtime-catalog"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
       ["BACKUP-RESTORE-001", ["canonical-packages-operations-platform"]],
       ["PLATFORM-RELEASE-001", ["canonical-packages-operations-platform"]],

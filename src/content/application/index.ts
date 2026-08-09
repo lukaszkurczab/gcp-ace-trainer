@@ -3,4 +3,5 @@ export * from "./validateBundledContent";
 export * from "./contentSessionIdentity";
 export * from "./bundledContentAvailabilityPort";
 export * from "./contentPackageResolver";
+export * from "./packageRuntimeCatalog";
 export * from "./bundledContentPackageTrustIndex";

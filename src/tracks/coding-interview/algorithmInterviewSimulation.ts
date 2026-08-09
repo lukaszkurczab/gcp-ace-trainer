@@ -11,7 +11,7 @@ import {
   type TrainingSessionDraft,
   type TrainingSessionResult,
 } from "../../domain";
-import type { AlgorithmContentCatalog } from "./algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "./algorithmContentCatalog";
 import { deriveAlgorithmReviewReasons, submitAlgorithmInteraction, validateAlgorithmInteractionItem } from "./algorithmInteractionHandlers";
 import { getAlgorithmQuestionEntries } from "./algorithmItems";
 import { ALGORITHM_MODE_IDS } from "./domain/algorithmModes";
@@ -66,7 +66,7 @@ export class AlgorithmsInterviewSimulationFinalizationGate {
 
 /** Builds the exact, fixed simulation record before application lifecycle persists it. */
 export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
-  catalog: AlgorithmContentCatalog;
+  catalog: AlgorithmRuntimeCatalog;
   contentVersion: string;
   taxonomyVersion: string;
   profileId: string;
@@ -74,7 +74,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
   startedAt: string;
 }>): Promise<AlgorithmsInterviewSimulationPreparation> {
   const profile = input.catalog.getSimulationProfile(input.profileId);
-  const blueprint = input.catalog.bank.practiceBlueprints.find((entry) => entry.modeId === ALGORITHM_MODE_IDS.interviewSimulation);
+  const blueprint = input.catalog.getPracticeBlueprint(ALGORITHM_MODE_IDS.interviewSimulation);
   if (!profile || !blueprint || profile.totalOccurrences !== 40 || profile.foregroundDurationMs !== 2_700_000 || !input.taxonomyVersion.trim()) {
     throw new Error("Algorithms Interview Simulation profile is unsupported.");
   }

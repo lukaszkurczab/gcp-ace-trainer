@@ -14,7 +14,7 @@ import {
 import type { PreparedSession, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { createAttemptId } from "../learningMutations/identity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
-import { AlgorithmContentCatalog } from "../../tracks/coding-interview/algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "../../tracks/coding-interview/algorithmContentCatalog";
 import { ALGORITHMS_RECOMMENDATION_POLICY, type AlgorithmsRecommendationPolicy } from "../../tracks/coding-interview/algorithmsBlueprints";
 import {
   selectAlgorithmSessionPlan,
@@ -89,7 +89,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
   readonly familyId = "coding_interview" as const;
 
   constructor(
-    private readonly catalog: AlgorithmContentCatalog,
+    private readonly catalog: AlgorithmRuntimeCatalog,
     private readonly recommendationPolicy: AlgorithmsRecommendationPolicy = ALGORITHMS_RECOMMENDATION_POLICY,
     private readonly taxonomyVersion: string,
   ) {
@@ -103,6 +103,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
     const mode = getAlgorithmMode(input.modeId);
     const request = preparationRequest(input.request);
     if (!mode.profile.supportedLengths.includes(request.requestedLength)) throw new Error(`Algorithms mode ${mode.id} does not support requested length ${request.requestedLength}.`);
+    this.catalog.assertModeAvailable(mode.id, request.requestedLength);
     if (mode.id === ALGORITHM_MODE_IDS.interviewSimulation) {
       const profileId = request.scope?.simulationProfileId;
       if (!profileId || request.requestedLength !== 40) throw new Error("Algorithms Interview Simulation requires its declared 40-item profile.");
@@ -123,7 +124,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
       reviews: input.reviews,
       source: request.reviewSource,
     });
-    const blueprint = this.catalog.bank.practiceBlueprints.find((candidate) => candidate.modeId === mode.contentBlueprintModeId);
+    const blueprint = this.catalog.getPracticeBlueprint(mode.contentBlueprintModeId);
     if (!blueprint || selection.actualLength !== selection.items.length || selection.items.length === 0) throw new Error(`Algorithms mode ${mode.id} has no valid declared practice plan.`);
     const base = {
       id: request.sessionId,
@@ -317,7 +318,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
   }>): TrainingSession {
     return prepareAlgorithmsConditionalReinsertPlan({
       entries: getAlgorithmQuestionEntries(this.catalog.getItems()),
-      compatibilitySets: this.catalog.bank.compatibilitySets,
+      compatibilitySets: this.catalog.getCompatibilitySets(),
       mode: input.session.modeId as AlgorithmModeId,
       optionOrderByItemId: input.optionOrderByItemId,
       reviewedItemRefs: input.reviewedItemRefs,
@@ -409,7 +410,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
 
   private recognitionAction(mentalUnitId: string | undefined): AlgorithmsRecommendationAction {
     if (!mentalUnitId) return Object.freeze({ kind: "unavailable", reason: "The recognition recommendation has no declared Algorithms target." });
-    const matches = this.catalog.bank.recognitionSets.filter((set) => [
+    const matches = this.catalog.getRecognitionSets().filter((set) => [
       ...(set.taxonomyScope.mentalUnitIds ?? []),
       ...(set.taxonomyScope.primaryMentalUnitIds ?? []),
     ].includes(mentalUnitId));

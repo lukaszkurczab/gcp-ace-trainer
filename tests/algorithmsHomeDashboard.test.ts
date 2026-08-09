@@ -5,7 +5,8 @@ import {
   CodingInterviewFamilyRuntime,
   type CodingInterviewDashboard,
 } from "../src/application/coding-interview";
-import type { AlgorithmContentCatalog } from "../src/tracks/coding-interview/algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "../src/tracks/coding-interview/algorithmContentCatalog";
+import type { AlgorithmQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
 import { ALGORITHM_MODE_IDS } from "../src/tracks/coding-interview/domain";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../src/domain";
 import { getTrackDisplay } from "../src/domain";
@@ -18,20 +19,37 @@ const MENTAL_UNIT = "binary_search_signal";
 const TOPIC = "binary_search";
 
 function runtime() {
-  const catalog = {
-    bank: {
-      recognitionSets: [{
+  const item: AlgorithmQuestion = {
+    id: "item-1", prompt: "Prompt", itemFingerprint: "0".repeat(64), compatibilityMemberships: [],
+    interaction: { type: "choice", selectionMode: "single", options: [{ id: "a", text: "A" }, { id: "b", text: "B" }], acceptedOptionIds: ["a"] }, scoringContract: { type: "choice", resultSemantics: "exact_selected_set_with_partial_v1" },
+    feedback: { reason: "Reason", details: { blocks: [{ type: "paragraph", text: "Details" }] } },
+    taxonomy: { roadmapNodeId: TOPIC, primaryMentalUnitId: MENTAL_UNIT, patternFamilyId: "search", primarySkillAtomId: "signal", secondarySkillAtomIds: [], learningStage: "introduced" },
+    provenance: { author: "test", createdAt: NOW, contentBatchId: "test", authoringMethod: "independently_authored", externalSources: [] },
+  };
+  const catalog: AlgorithmRuntimeCatalog = {
+    getContentVersion() { return "algorithms-core-0002"; },
+    getItems() { return [item]; },
+    getRecognitionSets() { return [{
         itemIds: ["item-1"],
         setId: "binary-recognition",
+        setVersion: "1",
+        legalLearningStages: ["introduced"],
         taxonomyScope: { mentalUnitIds: [MENTAL_UNIT] },
-      }],
-    },
-    getItemById() { return { taxonomy: { roadmapNodeId: TOPIC } }; },
+      }]; },
+    getItemById() { return item; },
     getItemsForMentalUnit(mentalUnitId: string) {
-      return mentalUnitId === MENTAL_UNIT ? [{ taxonomy: { roadmapNodeId: TOPIC } }] : [];
+      return mentalUnitId === MENTAL_UNIT ? [item] : [];
     },
+    toContentItemRef(question) { return { contentVersion: "algorithms-core-0002", itemId: question.id, trackId: "coding-interview-dsa-problem-solving" }; },
+    getPracticeBlueprint() { return undefined; },
+    assertModeAvailable() { throw new Error("Unavailable in dashboard fixture."); },
+    getCompatibilitySets() { return []; },
+    getCompatibilitySet() { return undefined; },
+    getContrastSets() { return []; },
+    getInterleavedScopes() { return []; },
+    getSimulationPool() { return undefined; },
     getSimulationProfile() { return undefined; },
-  } as unknown as AlgorithmContentCatalog;
+  };
   return new CodingInterviewFamilyRuntime(catalog, undefined, "algorithms-taxonomy-v2");
 }
 

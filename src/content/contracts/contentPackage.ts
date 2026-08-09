@@ -55,6 +55,20 @@ export type VerifiedPackageMode = Readonly<{
   defaultRequestedLength: number;
 }>;
 
+/** A verified, node-local configuration. It is deliberately not a published-bank blueprint. */
+export type VerifiedPackageModeConfiguration = Readonly<{
+  configurationId: string;
+  configurationVersion: string;
+  modeId: string;
+  blueprintModeId: string;
+  availability: "immediate" | "evidence_conditioned";
+  requestedLengths: readonly number[];
+  defaultRequestedLength: number;
+  reinsertPolicy: string;
+  feedbackOptions?: readonly string[];
+  selection: Readonly<Record<string, unknown>>;
+}>;
+
 export type VerifiedContentPackageBase = Readonly<{
   packagePin: ContentPackagePin;
   trackId: string;
@@ -72,6 +86,7 @@ export type VerifiedContentPackageBase = Readonly<{
     profileVersion: string;
     primaryEntry: Readonly<{ modeId: string; requestedLength: number }>;
     modes: readonly VerifiedPackageMode[];
+    configurations: readonly VerifiedPackageModeConfiguration[];
   }>;
 }>;
 

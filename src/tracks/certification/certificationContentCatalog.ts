@@ -29,3 +29,7 @@ export class CertificationContentCatalog {
     return { contentVersion: this.contentVersion, itemId: item.id, trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID };
   }
 }
+
+export interface CertificationRuntimeCatalog {
+  getContentVersion(): string; getExamExperienceProfile(): PublishedCertificationExamExperienceProfile; getDiagnosticBaseline(): PublishedCertificationDiagnosticBaseline; getFocusPractice(): PublishedCertificationFocusPractice; getScenarioPractice(): PublishedCertificationScenarioPractice; getWeakAreaReview(): PublishedCertificationWeakAreaReview; getMixedPractice(): PublishedCertificationMixedPractice; getQuickReview(): PublishedCertificationQuickReview; getItems(): readonly CertificationQuestion[]; getItemsForMode(modeId: string): readonly CertificationQuestion[]; getItemById(itemId: string): CertificationQuestion; toContentItemRef(item: CertificationQuestion): ContentItemRef;
+}

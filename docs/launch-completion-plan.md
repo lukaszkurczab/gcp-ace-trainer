@@ -325,6 +325,14 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 #### PKG-04A — Verified content-package resolver and session-pin contract — `READY`
 
+**Catalog migration map (PKG-04A foundation):** current whole-track owners remain
+`AlgorithmContentCatalog` and `CertificationContentCatalog` through the coordinated
+activation cutover. Their exact later replacement at preparation is the verified
+`ContentPackageResolver` result adapted by `createCodingPackageRuntimeCatalog` or
+`createCertificationPackageRuntimeCatalog`; both implement the existing family
+runtime catalog interfaces. This checkpoint changes no bootstrap/composition owner
+and does not claim that the replacement is active.
+
 - **Objective:** define and implement one package resolver contract that accepts exact verified bundled packages now and future installed packages later, without a separate Free runner, cache, or compatibility catalog.
 - **Inputs:** `PKG-01` package records/profiles, `CONTENT-PACKAGES-001`, docs 04/08/17, and the current `validateBundledContent`/availability/family-runtime owners.
 - **Scope:** package identity/version/provenance and availability taxonomy; decoder/schema/semantic boundary; profile-only catalog adapter contract; exact session package-pin record; migration map for whole-track generated artifact ownership.
