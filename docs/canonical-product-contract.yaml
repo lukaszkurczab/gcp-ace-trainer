@@ -128,6 +128,8 @@ requirements:
     statement: Email/password, Apple, Google, and eight one-time recovery codes resolve to one Firebase UID and Patternly account with proof-based linking, no email-only merge, protected unlinking, recent reauthentication, and session revocation.
   - id: ENVIRONMENT-PUBLIC-LINKS-001
     statement: Public, authentication, legal, support, deletion, association, and sender origins are environment-driven; ordinary Firebase action-code expiry is provider-controlled while only the custom public-deletion token is exactly thirty minutes.
+  - id: APPROVED-CLIENT-ENVIRONMENT-001
+    statement: App-side remote client categories use one closed public configuration schema with an explicit HTTPS API origin and only sandbox or production environments; an absent local configuration remains explicitly unconfigured and cannot choose an endpoint or send data.
   - id: DEVICE-SESSION-SYNC-001
     statement: Current track and compact completed learning facts synchronize incrementally, while the active session, pointer, draft, position, timer, and mutation journal are device-owned and never synchronize or resume across devices.
   - id: PRODUCT-SURFACES-GOALS-001
@@ -371,6 +373,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines commercial guest and identity target semantics
       requirementIds: [COMMERCIAL-ENTITLEMENT-001, GUEST-FREE-001, IDENTITY-SECURITY-001, ENVIRONMENT-PUBLIC-LINKS-001]
+    - id: approved-client-environment-boundary
+      testPath: tests/approvedClientRegistry.test.ts
+      testName: local remote-client boundary is explicit and has no implicit endpoint
+      requirementIds: [APPROVED-CLIENT-ENVIRONMENT-001]
     - id: guest-installation-repository
       testPath: tests/guestInstallationRepository.test.ts
       testName: provisions one validated guest installation and preserves it across repeated bootstrap
@@ -445,7 +451,9 @@ identityAndAccountSecurity:
   signOutAllDevices: revokeRefreshTokensAndEnforceRevocationForProtectedApi
   termsAcceptance: versionedAndSeparateFromAnalyticsConsent
 environmentAndPublicLinks:
-  requiredValues: [publicWebOrigin, authActionOrigin, authRedirectDomain, privacyUrl, termsUrl, supportUrl, publicDeletionUrl, iosAssociatedDomain, androidAppLinkHost, transactionalSenderDomain]
+  requiredValues: [apiOrigin, publicWebOrigin, authActionOrigin, authRedirectDomain, privacyUrl, termsUrl, supportUrl, publicDeletionUrl, iosAssociatedDomain, androidAppLinkHost, transactionalSenderDomain]
+  supportedEnvironments: [sandbox, production]
+  localConfiguration: unconfiguredFailsClosed
   defaultFirebaseDomain: developmentAndSandboxOnly
   productionDomainAndSender: releasePromotionInputs
   ordinaryFirebaseActionCodes:

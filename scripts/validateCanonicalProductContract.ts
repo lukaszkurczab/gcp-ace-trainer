@@ -130,6 +130,18 @@ export type CanonicalRequirementTestCoverage = Readonly<{
   tests: readonly CanonicalRequirementTest[];
 }>;
 
+export type CanonicalEnvironmentAndPublicLinks = Readonly<{
+  requiredValues: readonly ["apiOrigin", "publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"];
+  supportedEnvironments: readonly ["sandbox", "production"];
+  localConfiguration: "unconfiguredFailsClosed";
+  defaultFirebaseDomain: "developmentAndSandboxOnly";
+  productionDomainAndSender: "releasePromotionInputs";
+  ordinaryFirebaseActionCodes: Readonly<{ expiry: "providerControlled"; singleUse: "providerControlled" }>;
+  publicDeletionPossessionToken: Readonly<{ expiryMinutes: 30; singleUse: true }>;
+  actionHandlerOutcomes: readonly ["valid", "expired", "alreadyUsed", "malformed", "rateLimited", "remoteFailure"];
+  accountEnumeration: "prohibited";
+}>;
+
 export type CanonicalUserFacingTaskReadinessInput = Readonly<{
   status: "ready" | "not-ready";
   designReferenceId?: string;
@@ -367,7 +379,7 @@ export type CanonicalProductContract = Readonly<{
   commercialEntitlement: Readonly<Record<string, unknown>>;
   guestAndFree: Readonly<Record<string, unknown>>;
   identityAndAccountSecurity: Readonly<Record<string, unknown>>;
-  environmentAndPublicLinks: Readonly<Record<string, unknown>>;
+  environmentAndPublicLinks: CanonicalEnvironmentAndPublicLinks;
   learningOwnershipAndSync: Readonly<Record<string, unknown>>;
   productSurfacesAndGoals: Readonly<Record<string, unknown>>;
   learningProducts: Readonly<Record<string, unknown>>;
@@ -755,14 +767,16 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   }
 
   const links = target.environmentAndPublicLinks;
-  const ordinaryCodes = links.ordinaryFirebaseActionCodes as Readonly<Record<string, unknown>>;
-  const deletionToken = links.publicDeletionPossessionToken as Readonly<Record<string, unknown>>;
-  if (!hasExactValues(links.requiredValues as readonly string[], ["publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"])
+  const ordinaryCodes = links.ordinaryFirebaseActionCodes;
+  const deletionToken = links.publicDeletionPossessionToken;
+  if (!hasExactValues(links.requiredValues, ["apiOrigin", "publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"])
+    || !hasExactValues(links.supportedEnvironments, ["sandbox", "production"])
+    || links.localConfiguration !== "unconfiguredFailsClosed"
     || ordinaryCodes.expiry !== "providerControlled" || ordinaryCodes.singleUse !== "providerControlled"
     || deletionToken.expiryMinutes !== 30 || deletionToken.singleUse !== true
     || links.defaultFirebaseDomain !== "developmentAndSandboxOnly"
     || links.productionDomainAndSender !== "releasePromotionInputs"
-    || !hasExactValues(links.actionHandlerOutcomes as readonly string[], ["valid", "expired", "alreadyUsed", "malformed", "rateLimited", "remoteFailure"])
+    || !hasExactValues(links.actionHandlerOutcomes, ["valid", "expired", "alreadyUsed", "malformed", "rateLimited", "remoteFailure"])
     || links.accountEnumeration !== "prohibited") {
     throw new CanonicalProductContractValidationError("Canonical public-link contract must keep ordinary action codes provider-controlled and only deletion possession at thirty minutes");
   }

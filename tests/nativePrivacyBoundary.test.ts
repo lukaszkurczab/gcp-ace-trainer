@@ -6,7 +6,6 @@ import test from "node:test";
 const read = (path: string) => readFileSync(path, "utf8");
 const require = createRequire(import.meta.url);
 const {
-  injectAndroidDebugMetroPermission,
   injectIosBackupPolicy,
   withAndroidBackupPolicy,
 } = require("../plugins/withPrivacyBoundary.js");
@@ -20,7 +19,6 @@ test("release-native configuration excludes canonical learning storage from back
   assert.match(plugin, /"android:fullBackupContent": "@xml\/backup_rules"/);
   assert.match(plugin, /"android:dataExtractionRules": "@xml\/data_extraction_rules"/);
   for (const permission of [
-    "android.permission.INTERNET",
     "android.permission.READ_EXTERNAL_STORAGE",
     "android.permission.WRITE_EXTERNAL_STORAGE",
     "android.permission.VIBRATE",
@@ -37,8 +35,7 @@ test("release-native configuration excludes canonical learning storage from back
   assert.match(plugin, /appendingPathComponent\("mmkv", isDirectory: true\)/);
   assert.match(plugin, /values\.isExcludedFromBackup = true/);
   assert.match(plugin, /fatalError\("Patternly cannot establish its local-storage backup policy\./);
-  assert.match(plugin, /function injectAndroidDebugMetroPermission/);
-  assert.match(plugin, /android\.permission\.INTERNET/);
+  assert.match(plugin, /REQUIRED_ANDROID_PERMISSION = "android\.permission\.INTERNET"/);
 });
 
 test("Android privacy transforms are reproducible without generated native projects", () => {
@@ -62,24 +59,12 @@ test("Android privacy transforms are reproducible without generated native proje
   assert.equal(manifest.application[0].$["android:allowBackup"], "false");
   assert.equal(manifest.application[0].$["android:fullBackupContent"], "@xml/backup_rules");
   assert.equal(manifest.application[0].$["android:dataExtractionRules"], "@xml/data_extraction_rules");
+  assert.deepEqual(permissions[0]?.$, { "android:name": "android.permission.INTERNET", "tools:node": "replace" });
   assert.ok(
-    permissions.some(
-      (permission: { $: Record<string, string> }) =>
-        permission.$["android:name"] === "android.permission.INTERNET" &&
-        permission.$["tools:node"] === "remove",
+    permissions.slice(1).every(
+      (permission: { $: Record<string, string> }) => permission.$["tools:node"] === "remove" && permission.$["android:name"] !== "android.permission.INTERNET",
     ),
   );
-  assert.ok(
-    permissions.every(
-      (permission: { $: Record<string, string> }) => permission.$["tools:node"] === "remove",
-    ),
-  );
-
-  const debugManifest = injectAndroidDebugMetroPermission(
-    '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n</manifest>\n',
-  );
-  assert.match(debugManifest, /android\.permission\.INTERNET" tools:node="replace"/);
-  assert.equal(injectAndroidDebugMetroPermission(debugManifest), debugManifest);
 });
 
 test("iOS backup transform is reproducible without a generated AppDelegate", () => {

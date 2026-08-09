@@ -120,6 +120,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["GUEST-INSTALLATION-001", ["guest-installation-repository"]],
       ["IDENTITY-SECURITY-001", ["canonical-commercial-guest-identity"]],
       ["ENVIRONMENT-PUBLIC-LINKS-001", ["canonical-commercial-guest-identity"]],
+      ["APPROVED-CLIENT-ENVIRONMENT-001", ["approved-client-environment-boundary"]],
       ["DEVICE-SESSION-SYNC-001", ["canonical-session-sync-surfaces-products"]],
       ["PRODUCT-SURFACES-GOALS-001", ["canonical-session-sync-surfaces-products"]],
       ["LEARNING-PRODUCTS-001", ["canonical-session-sync-surfaces-products"]],
@@ -366,6 +367,9 @@ test("defines commercial guest and identity target semantics", () => {
   assert.equal(contract.guestAndFree.firebaseAnonymousAuthentication, "prohibited");
   assert.deepEqual(contract.identityAndAccountSecurity.methods, ["emailPassword", "signInWithApple", "signInWithGoogle", "recoveryCodes"]);
   assert.equal(contract.identityAndAccountSecurity.recoveryCodeCount, 8);
+  assert.deepEqual(contract.environmentAndPublicLinks.requiredValues, ["apiOrigin", "publicWebOrigin", "authActionOrigin", "authRedirectDomain", "privacyUrl", "termsUrl", "supportUrl", "publicDeletionUrl", "iosAssociatedDomain", "androidAppLinkHost", "transactionalSenderDomain"]);
+  assert.deepEqual(contract.environmentAndPublicLinks.supportedEnvironments, ["sandbox", "production"]);
+  assert.equal(contract.environmentAndPublicLinks.localConfiguration, "unconfiguredFailsClosed");
   assert.deepEqual(contract.environmentAndPublicLinks.ordinaryFirebaseActionCodes, { expiry: "providerControlled", singleUse: "providerControlled" });
   assert.deepEqual(contract.environmentAndPublicLinks.publicDeletionPossessionToken, { expiryMinutes: 30, singleUse: true });
 });
@@ -726,7 +730,8 @@ test("rejects every superseded Directive 2 product model", () => {
     ["visible family category", validContract.replace("userVisible: false", "userVisible: true"), /learning products/],
     ["placeholder production tracks", validContract.replace("emptyPlaceholderOrComingSoonTracks: prohibited", "emptyPlaceholderOrComingSoonTracks: allowed"), /learning products/],
     ["ordinary action-code fixed expiry", validContract.replace("expiry: providerControlled\n    singleUse: providerControlled", "expiry: 30Minutes\n    singleUse: true"), /public-link contract/],
-    ["missing public environment inputs", validContract.replace("requiredValues: [publicWebOrigin, authActionOrigin, authRedirectDomain, privacyUrl, termsUrl, supportUrl, publicDeletionUrl, iosAssociatedDomain, androidAppLinkHost, transactionalSenderDomain]", "requiredValues: []"), /must be equal to constant|public-link contract/],
+    ["missing public environment inputs", validContract.replace("requiredValues: [apiOrigin, publicWebOrigin, authActionOrigin, authRedirectDomain, privacyUrl, termsUrl, supportUrl, publicDeletionUrl, iosAssociatedDomain, androidAppLinkHost, transactionalSenderDomain]", "requiredValues: []"), /must be equal to constant|public-link contract/],
+    ["implicit local public environment", validContract.replace("localConfiguration: unconfiguredFailsClosed", "localConfiguration: implicitDefault"), /must be equal to constant|public-link contract/],
     ["automatic provider link without existing proof", validContract.replace("providerLinking: proofThroughExistingUsableMethod", "providerLinking: automaticByEmail"), /identity contract/],
     ["cross-platform Premium disabled", validContract.replace("crossPlatformPremium: required", "crossPlatformPremium: prohibited"), /commercial contract/],
     ["one-option Language route", validContract.replace("languageRoute: absentUntilRealSecondLanguage", "languageRoute: EnglishOnlySetting"), /surface contract/],

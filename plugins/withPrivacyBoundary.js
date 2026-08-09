@@ -3,7 +3,6 @@ const { mkdirSync, readFileSync, writeFileSync } = require("node:fs");
 const { join } = require("node:path");
 
 const REMOVED_ANDROID_PERMISSIONS = [
-  "android.permission.INTERNET",
   "android.permission.READ_EXTERNAL_STORAGE",
   "android.permission.WRITE_EXTERNAL_STORAGE",
   "android.permission.VIBRATE",
@@ -30,16 +29,17 @@ const REMOVED_ANDROID_PERMISSIONS = [
   "me.everything.badger.permission.BADGE_COUNT_WRITE",
 ];
 
+const REQUIRED_ANDROID_PERMISSION = "android.permission.INTERNET";
+
 const LEGACY_BACKUP_RULES = `<?xml version="1.0" encoding="utf-8"?>\n<full-backup-content>\n  <exclude domain="root" path="."/>\n</full-backup-content>\n`;
 const DATA_EXTRACTION_RULES = `<?xml version="1.0" encoding="utf-8"?>\n<data-extraction-rules>\n  <cloud-backup>\n    <exclude domain="root" path="."/>\n  </cloud-backup>\n  <device-transfer>\n    <exclude domain="root" path="."/>\n  </device-transfer>\n</data-extraction-rules>\n`;
-const DEBUG_METRO_PERMISSION = "  <uses-permission android:name=\"android.permission.INTERNET\" tools:node=\"replace\"/>\n";
-
 function withAndroidBackupPolicy(config) {
   const manifest = config.modResults.manifest;
   manifest.$ = { ...manifest.$, "xmlns:tools": "http://schemas.android.com/tools" };
-  manifest["uses-permission"] = REMOVED_ANDROID_PERMISSIONS.map((name) => ({
-    $: { "android:name": name, "tools:node": "remove" },
-  }));
+  manifest["uses-permission"] = [
+    { $: { "android:name": REQUIRED_ANDROID_PERMISSION, "tools:node": "replace" } },
+    ...REMOVED_ANDROID_PERMISSIONS.map((name) => ({ $: { "android:name": name, "tools:node": "remove" } })),
+  ];
   manifest.queries = [{ $: { "tools:node": "remove" } }];
   const application = manifest.application?.[0];
   if (!application) throw new Error("Patternly Android manifest has no application element.");
@@ -63,18 +63,6 @@ function injectIosBackupPolicy(source) {
   return withLaunchCall.replace("  // Linking API\n", `${helper}  // Linking API\n`);
 }
 
-/**
- * Development builds execute their JavaScript from the local Metro server.
- * The product manifest remains offline-only; this variant-only permission is
- * required solely by Expo's development client and is never part of release.
- */
-function injectAndroidDebugMetroPermission(source) {
-  if (source.includes("android.permission.INTERNET")) return source;
-  const closingTag = "</manifest>";
-  if (!source.includes(closingTag)) throw new Error("Patternly debug Android manifest has no closing manifest element.");
-  return source.replace(closingTag, `${DEBUG_METRO_PERMISSION}${closingTag}`);
-}
-
 function withPrivacyBoundary(config) {
   config = withAndroidManifest(config, withAndroidBackupPolicy);
   config = withDangerousMod(config, ["android", async (nextConfig) => {
@@ -82,8 +70,6 @@ function withPrivacyBoundary(config) {
     mkdirSync(xmlDirectory, { recursive: true });
     writeFileSync(join(xmlDirectory, "backup_rules.xml"), LEGACY_BACKUP_RULES);
     writeFileSync(join(xmlDirectory, "data_extraction_rules.xml"), DATA_EXTRACTION_RULES);
-    const debugManifestPath = join(nextConfig.modRequest.platformProjectRoot, "app", "src", "debug", "AndroidManifest.xml");
-    writeFileSync(debugManifestPath, injectAndroidDebugMetroPermission(readFileSync(debugManifestPath, "utf8")));
     return nextConfig;
   }]);
   return withDangerousMod(config, ["ios", async (nextConfig) => {
@@ -95,5 +81,4 @@ function withPrivacyBoundary(config) {
 
 module.exports = withPrivacyBoundary;
 module.exports.injectIosBackupPolicy = injectIosBackupPolicy;
-module.exports.injectAndroidDebugMetroPermission = injectAndroidDebugMetroPermission;
 module.exports.withAndroidBackupPolicy = withAndroidBackupPolicy;
