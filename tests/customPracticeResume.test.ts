@@ -4,18 +4,18 @@ import test from "node:test";
 import { createTrainingSession } from "../src/domain";
 import { feedbackTimingFromDurableSession } from "../src/features/home/resumeFeedbackTiming";
 import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
-import { ALGORITHM_MODE_IDS } from "../src/tracks/algorithms";
+import { ALGORITHM_MODE_IDS } from "../src/tracks/coding-interview";
 
 test("Custom Practice resume preserves the selected durable at-session-end timing", () => {
   const session = createTrainingSession({
-    id: "algorithms:algorithms-custom-practice:1",
-    trackId: "algorithms",
+    id: "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1",
+    trackId: "coding-interview-dsa-problem-solving",
     modeId: ALGORITHM_MODE_IDS.customPractice,
     configurationSnapshot: { feedbackMode: "atSessionEnd", kind: "algorithmsPractice" },
     requestedLength: 10,
     actualLength: 10,
     currentItemIndex: 1,
-    itemOrder: Array.from({ length: 10 }, (_, index) => ({ occurrenceId: `occurrence:${index}`, item: { trackId: "algorithms" as const, itemId: `item-${index}`, contentVersion: "algorithms-core-0002" } })),
+    itemOrder: Array.from({ length: 10 }, (_, index) => ({ occurrenceId: `occurrence:${index}`, item: { trackId: "coding-interview-dsa-problem-solving" as const, itemId: `item-${index}`, contentVersion: "algorithms-core-0002" } })),
     optionOrderByOccurrence: {},
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
@@ -32,13 +32,13 @@ test("Custom Practice resume preserves the selected durable at-session-end timin
     feedbackMode,
     mode: ALGORITHM_MODE_IDS.customPractice,
     topicId: "complexity_and_constraints",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   }).feedbackMode, "atSessionEnd");
 });
 
 test("resume rejects an active session that lacks a canonical feedback timing", () => {
   assert.throws(
-    () => feedbackTimingFromDurableSession({ configurationSnapshot: {}, trackId: "algorithms" } as never),
+    () => feedbackTimingFromDurableSession({ configurationSnapshot: {}, trackId: "coding-interview-dsa-problem-solving" } as never),
     /missing its canonical feedback timing/,
   );
 });

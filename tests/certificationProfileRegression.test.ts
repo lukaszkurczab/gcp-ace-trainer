@@ -26,7 +26,7 @@ import {
   getTrainingSessions,
   saveTrainingSessionDraft,
 } from "../src/storage/repositories";
-import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
+import { CertificationContentCatalog } from "../src/tracks/certification/certificationContentCatalog";
 import { installMemoryStorage } from "./journalTestSupport";
 
 class MutableClock {
@@ -62,11 +62,11 @@ function createProfileRegressionHarness(clock: MutableClock) {
     sourceCatalog.getFocusPractice(),
     profile(),
   );
-  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const runtime = new CertificationFamilyRuntime(catalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
   let finalizationCount = 0;
 
   const assertProfileSession = (session: TrainingSession) => {
-    if (session.trackId !== "cloud-certification" || session.modeId !== "certification-exam-simulation" || session.contentVersion !== catalog.getContentVersion()) {
+    if (session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== "certification-exam-simulation" || session.contentVersion !== catalog.getContentVersion()) {
       throw new Error("Certification profile regression accepted a session outside its installed profile.");
     }
   };
@@ -100,7 +100,7 @@ function createProfileRegressionHarness(clock: MutableClock) {
     },
     content: {
       async requireAvailable(trackId, modeId) {
-        if (trackId !== "cloud-certification" || modeId !== "certification-exam-simulation") {
+        if (trackId !== "google-cloud-associate-cloud-engineer" || modeId !== "certification-exam-simulation") {
           throw new Error("Certification profile regression exposes only its declared exam mode.");
         }
       },
@@ -154,7 +154,7 @@ test("Certification profile lifecycle resumes early, mid, and late; rejects plan
   const harness = createProfileRegressionHarness(clock);
   const lifecycle = harness.createLifecycle();
   const started = await lifecycle.startSession({
-    trackId: "cloud-certification",
+    trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-exam-simulation",
     request: { requestedLength: 4 },
   });

@@ -13,7 +13,7 @@ import type { BundledContentRelease, PublishedAlgorithmsBank } from "../src/cont
 import { validateAlgorithmsBank } from "../src/content/validation";
 import { createTrainingSession } from "../src/domain";
 import { contentHasher } from "../src/infrastructure/identity/contentHasher";
-import { prepareAlgorithmsInterviewSimulation, submitAlgorithmInteraction } from "../src/tracks/algorithms";
+import { prepareAlgorithmsInterviewSimulation, submitAlgorithmInteraction } from "../src/tracks/coding-interview";
 
 const commit = "1".repeat(40);
 const itemIds = Array.from({ length: 40 }, (_, index) => `contract-item-${index + 1}`);
@@ -34,15 +34,15 @@ function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "un
   const resolvedItemIds = items.map((item) => item.id);
   const poolItemIds = resolvedItemIds.slice(0, input.poolCount ?? count);
   return {
-    formatVersion: 1, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", feedbackAssets: [], items: items as PublishedAlgorithmsBank["items"],
-    practiceBlueprints: [{ blueprintId: "interview", blueprintVersion: "1", modeId: "algorithms-interview-simulation", requestedLengths: [40], defaultRequestedLength: 40, shortening: "prohibited", minimumActualLength: 40, composition: { kind: "simulation_pool", ids: ["interview-pool"] }, resolvedItemIds }],
+    formatVersion: 1, trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", contentVersion: "algorithms-contract-v1", feedbackAssets: [], items: items as PublishedAlgorithmsBank["items"],
+    practiceBlueprints: [{ blueprintId: "interview", blueprintVersion: "1", modeId: "coding-interview-simulation", requestedLengths: [40], defaultRequestedLength: 40, shortening: "prohibited", minimumActualLength: 40, composition: { kind: "simulation_pool", ids: ["interview-pool"] }, resolvedItemIds }],
     recognitionSets: [], contrastSets: [], interleavedScopes: [], compatibilitySets: [],
     simulationPools: [{ poolId: "interview-pool", poolVersion: "1", itemIds: poolItemIds }],
     simulationProfiles: [{ profileId: "interview-profile", profileVersion: "1", profileKind: "internal_learning_profile", totalOccurrences: 40, foregroundDurationMs: 2_700_000, poolId: "interview-pool", distributions: [], selectionPolicy: { uniqueItems: true, replacement: false, deterministic: true, algorithmVersion: "sha256-ranked-constraints-v1" } }],
   };
 }
 
-const taxonomyManifest = { formatVersion: 1 as const, trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", itemCount: 40, bankPath: "algorithms.json", sha256: "0".repeat(64) };
+const taxonomyManifest = { formatVersion: 1 as const, trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", contentVersion: "algorithms-contract-v1", itemCount: 40, bankPath: "algorithms.json", sha256: "0".repeat(64) };
 
 test("validates explicit Algorithms hierarchy links and rejects every broken child relation", () => {
   assert.doesNotThrow(() => validateAlgorithmsBank(bank(), taxonomyManifest));
@@ -89,8 +89,8 @@ async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?:
   const bytes = JSON.stringify({ envelopeVersion: 1, schemaVersion: input.schemaVersion ?? "published-bank-v1", contentVersion: input.contentVersion ?? "algorithms-contract-v1", taxonomyVersion: input.taxonomyVersion ?? "algorithms-taxonomy-v1", bank: payload });
   const actualChecksum = await contentHasher.sha256(bytes);
   return {
-    manifest: { envelopeVersion: 1, releaseId: "contract-cutover", sourceRepositoryCommit: commit },
-    artifacts: [{ trackId: "algorithms", familyId: "algorithms", contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", schemaVersion: "published-bank-v1", checksumSha256: input.checksum ?? actualChecksum, sourceRepositoryCommit: input.sourceRepositoryCommit ?? commit, declaredModes: input.declaredModes ?? ["algorithms-interview-simulation"], artifactBytes: bytes, ...input.referenceExtras }],
+    manifest: { envelopeVersion: 1, bundleId: "contract-cutover" },
+    artifacts: [{ releaseId: "contract-track-release", trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", schemaVersion: "published-bank-v1", checksumSha256: input.checksum ?? actualChecksum, sourceRepositoryCommit: input.sourceRepositoryCommit ?? commit, declaredModes: input.declaredModes ?? ["coding-interview-simulation"], artifactBytes: bytes, ...input.referenceExtras }],
   };
 }
 
@@ -102,8 +102,8 @@ function track(result: Awaited<ReturnType<typeof validateBundledContent>>, id: s
 
 test("consumes a canonical, track-scoped Algorithms artifact while Certification remains unavailable", async () => {
   const result = await validateBundledContent(await release());
-  assert.equal(track(result, "algorithms").kind, "available");
-  const certification = track(result, "cloud-certification");
+  assert.equal(track(result, "coding-interview-dsa-problem-solving").kind, "available");
+  const certification = track(result, "google-cloud-associate-cloud-engineer");
   assert.equal(certification.kind, "unavailable");
   if (certification.kind === "unavailable") assert.equal(certification.reason, "missing_artifact");
   assert.equal(getAlgorithmContentCatalog().getItems().length, 40);
@@ -113,16 +113,16 @@ test("consumes a canonical, track-scoped Algorithms artifact while Certification
 });
 
 test("projects missing, malformed, checksum, schema/version, fixed-pool, interaction, taxonomy, and retired-field failures per track", async () => {
-  const missing = await validateBundledContent({ manifest: { envelopeVersion: 1, releaseId: "missing", sourceRepositoryCommit: commit }, artifacts: [] });
-  assert.equal(track(missing, "algorithms").kind, "unavailable");
-  const malformed = await validateBundledContent({ manifest: { envelopeVersion: 2, releaseId: "malformed", sourceRepositoryCommit: commit }, artifacts: [] });
-  const malformedAlgorithms = track(malformed, "algorithms");
+  const missing = await validateBundledContent({ manifest: { envelopeVersion: 1, bundleId: "missing" }, artifacts: [] });
+  assert.equal(track(missing, "coding-interview-dsa-problem-solving").kind, "unavailable");
+  const malformed = await validateBundledContent({ manifest: { envelopeVersion: 2, bundleId: "malformed" }, artifacts: [] });
+  const malformedAlgorithms = track(malformed, "coding-interview-dsa-problem-solving");
   if (malformedAlgorithms.kind === "unavailable") assert.equal(malformedAlgorithms.reason, "invalid_envelope");
   const cases: readonly [string, Promise<BundledContentRelease>, string][] = [
     ["checksum", release({ checksum: "0".repeat(64) }), "checksum_mismatch"],
     ["schema", release({ schemaVersion: "published-bank-v2" }), "schema_mismatch"],
     ["version", release({ contentVersion: "algorithms-contract-v2" }), "version_mismatch"],
-    ["source commit", release({ sourceRepositoryCommit: "2".repeat(40) }), "invalid_envelope"],
+    ["source commit format", release({ sourceRepositoryCommit: "invalid" }), "invalid_envelope"],
     ["retired reference field", release({ referenceExtras: { approvalCoverage: { identity: "retired", itemIds: itemIds } } }), "invalid_envelope"],
     ["retired bank field", release({ artifactBank: { ...bank(), approvalActivationIdentity: "retired" } }), "invalid_taxonomy_reference"],
     ["pool", release({ artifactBank: bank({ poolCount: 39 }) }), "insufficient_fixed_pool"],
@@ -130,21 +130,21 @@ test("projects missing, malformed, checksum, schema/version, fixed-pool, interac
     ["taxonomy", release({ artifactBank: bank({ taxonomyId: "unknown-node" }) }), "invalid_taxonomy_reference"],
   ];
   for (const [label, candidate, reason] of cases) {
-    const projection = track(await validateBundledContent(await candidate), "algorithms");
+    const projection = track(await validateBundledContent(await candidate), "coding-interview-dsa-problem-solving");
     assert.equal(projection.kind, "unavailable", label);
     if (projection.kind === "unavailable") assert.equal(projection.reason, reason, label);
   }
 });
 
 test("rejects duplicate identity, unsupported modes, and a session whose immutable content plan changed", async () => {
-  const duplicate = track(await validateBundledContent(await release({ artifactBank: bank({ duplicateId: true }) })), "algorithms");
+  const duplicate = track(await validateBundledContent(await release({ artifactBank: bank({ duplicateId: true }) })), "coding-interview-dsa-problem-solving");
   assert.equal(duplicate.kind, "unavailable");
-  const mode = track(await validateBundledContent(await release({ declaredModes: ["not-a-mode"] })), "algorithms");
+  const mode = track(await validateBundledContent(await release({ declaredModes: ["not-a-mode"] })), "coding-interview-dsa-problem-solving");
   if (mode.kind === "unavailable") assert.equal(mode.reason, "declared_mode_unsupported");
-  const available = track(await validateBundledContent(await release()), "algorithms");
+  const available = track(await validateBundledContent(await release()), "coding-interview-dsa-problem-solving");
   assert.equal(available.kind, "available");
   if (available.kind !== "available") return;
-  const base = { id: "immutable-plan", trackId: "algorithms", modeId: "algorithms-interview-simulation", configurationSnapshot: { kind: "simulation" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "one", item: { trackId: "algorithms", contentVersion: "algorithms-contract-v1", itemId: "contract-item-1" } }], optionOrderByOccurrence: { one: ["correct", "wrong"] }, activeForegroundMs: 0, contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", status: "active" as const, startedAt: "2026-07-17T00:00:00.000Z" };
+  const base = { id: "immutable-plan", trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-simulation", configurationSnapshot: { kind: "simulation" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "one", item: { trackId: "coding-interview-dsa-problem-solving", contentVersion: "algorithms-contract-v1", itemId: "contract-item-1" } }], optionOrderByOccurrence: { one: ["correct", "wrong"] }, activeForegroundMs: 0, contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", status: "active" as const, startedAt: "2026-07-17T00:00:00.000Z" };
   const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base) });
   await assert.doesNotReject(() => assertSessionMatchesBundledTrack(session, available));
   await assert.rejects(() => assertSessionMatchesBundledTrack(createTrainingSession({ ...session, itemOrder: [{ ...session.itemOrder[0]!, item: { ...session.itemOrder[0]!.item, itemId: "contract-item-2" } }] }), available), /fingerprint/);
@@ -156,7 +156,7 @@ test("runtime has no network or test-fixture ingress and Algorithms has no legac
   const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path) && !path.endsWith("content/bundled/generatedArtifacts.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtime, /from\s+["'][^"']*(?:tests\/|fixtures)[^"']*["']/);
   assert.doesNotMatch(runtime, /\b(?:fetch|XMLHttpRequest|axios|HttpContentSource|loadTrackContent)\b/);
-  const algorithms = files("src/tracks/algorithms").map((path) => readFileSync(path, "utf8")).join("\n");
+  const algorithms = files("src/tracks/coding-interview").map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(algorithms, /\bAlgorithmContentGroup\b|\bfeedbackModel\b|\bisCorrect\b|\bcorrectOrder\b|\bsubgoals\b|\bcorrectComplexity\b/);
   assert.doesNotMatch(algorithms, /ALGORITHMS_PRACTICE_BLUEPRINT|createAlgorithmsInterviewSimulationProfile/);
 });

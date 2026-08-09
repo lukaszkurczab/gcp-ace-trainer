@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createAlgorithmsFamilyRuntime } from "../src/application/algorithms";
+import { createCodingInterviewFamilyRuntime } from "../src/application/coding-interview";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
 import { createTrainingAttempt, type TrainingSession } from "../src/domain";
-import { resolveAlgorithmsConditionalReinsertPlan } from "../src/tracks/algorithms";
+import { resolveAlgorithmsConditionalReinsertPlan } from "../src/tracks/coding-interview";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
 async function prepareCustomPractice() {
   await validateBundledContent();
   const catalog = getAlgorithmContentCatalog();
-  const runtime = createAlgorithmsFamilyRuntime();
+  const runtime = createCodingInterviewFamilyRuntime();
   const prepared = await runtime.prepare({
     attempts: [],
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     now: NOW,
     request: {
       feedbackMode: "afterEachAnswer",
@@ -24,7 +24,7 @@ async function prepareCustomPractice() {
       sessionId: "custom-practice-reinsert",
     },
     reviews: [],
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   });
   return { catalog, runtime, session: prepared.session };
 }
@@ -42,7 +42,7 @@ function durableAttempt(session: TrainingSession, index: number, result: "correc
     result: { earnedPoints: result === "correct" ? 1 : 0, kind: result, maxPoints: 1 },
     reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] },
     sessionId: session.id,
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   });
 }
 
@@ -80,10 +80,10 @@ test("Custom Practice rejects learner reinsert overrides before it prepares a se
   const { catalog, runtime } = await prepareCustomPractice();
   const command = {
     attempts: [],
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     now: NOW,
     reviews: [],
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   } as const;
 
   for (const reinsertEnabled of [false, true]) {

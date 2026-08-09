@@ -42,12 +42,12 @@ tags:
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:algorithms"
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: false
     visibilityPercentage: 10
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - extendedWaitUntil:
     visible:
       id: "patternly:home:change-track"

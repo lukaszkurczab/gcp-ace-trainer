@@ -1,31 +1,29 @@
 import { UnknownTrackError, UnknownTrackFamilyError, type TrackFamilyId, type TrackId } from "../learning";
 import type { TrackDisplay, TrackRegistration } from "./trackMetadata";
 
-export const CLOUD_CERTIFICATION_TRACK_ID = "cloud-certification";
-export const ALGORITHMS_TRACK_ID = "algorithms";
+export const GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID = "google-cloud-associate-cloud-engineer";
+export const CODING_INTERVIEW_TRACK_ID = "coding-interview-dsa-problem-solving";
 
 const registrationDefinitions = [
   {
-    id: ALGORITHMS_TRACK_ID,
-    familyId: "algorithms",
+    id: CODING_INTERVIEW_TRACK_ID,
+    familyId: "coding_interview",
     metadata: {
       accentColor: "#7C3AED",
       accentMutedColor: "#F1ECFF",
-      categoryLabel: "Algorithmic problem solving",
       description: "Pattern recognition, strategy choice, and complexity reasoning for algorithmic problem solving.",
       legalNote: "Original training content for algorithmic problem solving.",
-      shortTitle: "Algorithms",
+      shortTitle: "Coding Interview",
       status: "active",
-      title: "Algorithms",
+      title: "Coding Interview: DSA & Problem Solving",
     },
   },
   {
-    id: CLOUD_CERTIFICATION_TRACK_ID,
+    id: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
     familyId: "certification",
     metadata: {
       accentColor: "#0369A1",
       accentMutedColor: "#E7F5FD",
-      categoryLabel: "Certification",
       description: "Scenario practice for Google Cloud Associate Cloud Engineer, with domain review and exam simulation.",
       legalNote: "Independent study content. Not affiliated with or endorsed by Google.",
       shortTitle: "Google Cloud ACE",

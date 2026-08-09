@@ -14,7 +14,7 @@ import { getCertificationContentCatalog } from "../src/content/catalogRepository
 import type { PublishedCertificationExamExperienceProfile } from "../src/content/contracts";
 import type { ReviewQueueEntry } from "../src/domain";
 import { CertificationFamilyRuntime } from "../src/application/certification/CertificationFamilyRuntime";
-import { CertificationContentCatalog } from "../src/tracks/cloud-certification/certificationContentCatalog";
+import { CertificationContentCatalog } from "../src/tracks/certification/certificationContentCatalog";
 import { buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
 import { getActiveForegroundTimer, getActiveTrainingSession, getTrainingSessionResult } from "../src/storage/repositories";
 import { installMemoryStorage } from "./journalTestSupport";
@@ -56,7 +56,7 @@ test("Cloud Exam expected-session handoff resumes only the exact active exam and
   );
   assert.equal(await getActiveTrainingSession(), null);
 
-  const ordinary = await lifecycle.startSession({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: {} });
+  const ordinary = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", request: {} });
   const conflict = await resumeExpectedCertificationExam(prepared.session.id);
   assert.equal(conflict.kind, "active_session_conflict");
   if (conflict.kind === "active_session_conflict") assert.equal(conflict.session.id, ordinary.session.id);
@@ -122,7 +122,7 @@ test("Cloud Exam runtime derives duration, length, and domain selection from a c
   const prepareFrom = async (examProfile: PublishedCertificationExamExperienceProfile, requestedLength: number) => new CertificationFamilyRuntime(
     new CertificationContentCatalog(sourceCatalog.getItems(), sourceCatalog.getContentVersion(), sourceCatalog.getDiagnosticBaseline(), sourceCatalog.getFocusPractice(), examProfile),
     "fixture-taxonomy",
-  ).prepare({ trackId: "cloud-certification", modeId: "certification-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  ).prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation", request: { sessionId: `profile-${requestedLength}`, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
 
   const first = await prepareFrom(profile(30, 4), 4);
   assert.equal(first.session.actualLength, 4);
@@ -138,8 +138,8 @@ test("Cloud Exam runtime derives duration, length, and domain selection from a c
 test("Cloud Exam allocates the published 60-item blueprint without reusing planning questions", async () => {
   await validateBundledContent();
   const catalog = getCertificationContentCatalog();
-  const prepared = await new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1").prepare({
-    trackId: "cloud-certification",
+  const prepared = await new CertificationFamilyRuntime(catalog, "google-cloud-associate-cloud-engineer-taxonomy-v1").prepare({
+    trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-exam-simulation",
     request: { sessionId: "published-profile-60", requestedLength: 60 },
     attempts: [],
@@ -157,8 +157,8 @@ test("Cloud Exam allocates the published 60-item blueprint without reusing plann
 test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and rejects selectors", async () => {
   await validateBundledContent();
   const sourceCatalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(sourceCatalog, "cloud-certification-taxonomy-v1");
-  const prepared = await runtime.prepare({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-baseline" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const runtime = new CertificationFamilyRuntime(sourceCatalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
+  const prepared = await runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-baseline" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(prepared.session.requestedLength, 40);
   assert.equal(prepared.session.actualLength, 40);
   assert.equal(prepared.session.configurationSnapshot.timer, "elapsedForeground");
@@ -166,7 +166,7 @@ test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and
   assert.equal(new Set(prepared.session.itemOrder.map((occurrence) => occurrence.item.itemId)).size, 40);
   assert.deepEqual(prepared.session.itemOrder.map((occurrence) => occurrence.item.itemId), sourceCatalog.getDiagnosticBaseline().itemIds);
   await assert.rejects(
-    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-with-selector", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    () => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", request: { sessionId: "diagnostic-with-selector", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
     /does not accept selectors/,
   );
 });
@@ -174,12 +174,12 @@ test("Certification Diagnostic Baseline uses its immutable 40-item blueprint and
 test("Certification Focus Practice requires a selected domain and never fills from a sibling domain", async () => {
   await validateBundledContent();
   const sourceCatalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(sourceCatalog, "cloud-certification-taxonomy-v1");
+  const runtime = new CertificationFamilyRuntime(sourceCatalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
   await assert.rejects(
-    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-without-domain", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    () => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { sessionId: "focus-without-domain", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
     /requires an explicit topic/,
   );
-  const selected = await runtime.prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-operations", requestedLength: 40, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const selected = await runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { sessionId: "focus-operations", requestedLength: 40, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(selected.session.requestedLength, 40);
   assert.equal(selected.session.actualLength, 40);
   assert.deepEqual(new Set(selected.session.itemOrder.map((occurrence) => sourceCatalog.getItemById(occurrence.item.itemId).domain)), new Set(["operations"]));
@@ -191,7 +191,7 @@ test("Certification Focus Practice requires a selected domain and never fills fr
     { ...sourceCatalog.getFocusPractice(), topicIds: ["setup_environment"] },
     sourceCatalog.getExamExperienceProfile(),
   );
-  const shortened = await new CertificationFamilyRuntime(withinTopicOnly, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-focus-practice", request: { sessionId: "focus-shortened", requestedLength: 40, domain: "setup_environment" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const shortened = await new CertificationFamilyRuntime(withinTopicOnly, "google-cloud-associate-cloud-engineer-taxonomy-v1").prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { sessionId: "focus-shortened", requestedLength: 40, domain: "setup_environment" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(shortened.session.requestedLength, 40);
   assert.equal(shortened.session.actualLength, 12);
   assert.deepEqual(new Set(shortened.session.itemOrder.map((occurrence) => withinTopicOnly.getItemById(occurrence.item.itemId).domain)), new Set(["setup_environment"]));
@@ -200,17 +200,17 @@ test("Certification Focus Practice requires a selected domain and never fills fr
 test("Certification Scenario Practice requires a competency and never widens its approved scenario scope", async () => {
   await validateBundledContent();
   const sourceCatalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(sourceCatalog, "cloud-certification-taxonomy-v1");
+  const runtime = new CertificationFamilyRuntime(sourceCatalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
   await assert.rejects(
-    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-without-competency", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    () => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-scenario-practice", request: { sessionId: "scenario-without-competency", requestedLength: 10 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
     /requires exactly one explicit competency/,
   );
   await assert.rejects(
-    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-with-domain", requestedLength: 10, competency: "iam", domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
+    () => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-scenario-practice", request: { sessionId: "scenario-with-domain", requestedLength: 10, competency: "iam", domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }),
     /requires exactly one explicit competency/,
   );
   const competency = sourceCatalog.getScenarioPractice().competencies.find((entry) => entry.id === "cloud-storage")!;
-  const selected = await runtime.prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-storage", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const selected = await runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-scenario-practice", request: { sessionId: "scenario-storage", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(selected.session.requestedLength, 40);
   assert.equal(selected.session.actualLength, competency.scenarioItemIds.length);
   assert.equal(selected.session.configurationSnapshot.competencyId, competency.id);
@@ -226,7 +226,7 @@ test("Certification Scenario Practice requires a competency and never widens its
     sourceCatalog.getExamExperienceProfile(),
     { ...sourceCatalog.getScenarioPractice(), competencies: [{ ...competency, scenarioItemIds: shortenedIds }] },
   );
-  const shortened = await new CertificationFamilyRuntime(withinCompetencyOnly, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-scenario-practice", request: { sessionId: "scenario-shortened", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const shortened = await new CertificationFamilyRuntime(withinCompetencyOnly, "google-cloud-associate-cloud-engineer-taxonomy-v1").prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-scenario-practice", request: { sessionId: "scenario-shortened", requestedLength: 40, competency: competency.id }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(shortened.session.requestedLength, 40);
   assert.equal(shortened.session.actualLength, 12);
   assert.ok(shortened.session.itemOrder.every((occurrence) => shortenedIds.includes(occurrence.item.itemId)));
@@ -235,13 +235,13 @@ test("Certification Scenario Practice requires a competency and never widens its
 test("Certification Weak Area Review uses only eligible due evidence and resolves it after two due successes", async () => {
   await validateBundledContent();
   const catalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const runtime = new CertificationFamilyRuntime(catalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
   const now = "2026-07-24T10:00:00.000Z";
   const review = (itemId: string, id: string, dueAt: string): ReviewQueueEntry => {
     const question = catalog.getItemById(itemId);
     return {
       id,
-      trackId: "cloud-certification",
+      trackId: "google-cloud-associate-cloud-engineer",
       sourceAttemptId: `${id}:attempt`,
       sourceSessionId: `${id}:source-session`,
       reasons: ["incorrect"],
@@ -253,13 +253,13 @@ test("Certification Weak Area Review uses only eligible due evidence and resolve
       taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }],
     };
   };
-  const prepareWeakReview = (sessionId: string, reviews: readonly ReviewQueueEntry[], requestedLength = 10, currentNow = now) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-weak-area-review", request: { sessionId, requestedLength }, attempts: [], reviews, now: currentNow });
+  const prepareWeakReview = (sessionId: string, reviews: readonly ReviewQueueEntry[], requestedLength = 10, currentNow = now) => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-weak-area-review", request: { sessionId, requestedLength }, attempts: [], reviews, now: currentNow });
 
   await assert.rejects(() => prepareWeakReview("weak-empty", []), /no eligible due items; no substitute practice session was created/);
   await assert.rejects(() => prepareWeakReview("weak-future", [review("ace-q-0001", "future", "2026-07-25T10:00:00.000Z")]), /no eligible due items; no substitute practice session was created/);
   await assert.rejects(() => prepareWeakReview("weak-invalid-length", [review("ace-q-0001", "due", "2026-07-24T09:00:00.000Z")], 40), /supports only its installed 10 or 20 item lengths/);
   await assert.rejects(
-    () => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-weak-area-review", request: { sessionId: "weak-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [review("ace-q-0001", "selector", "2026-07-24T09:00:00.000Z")], now }),
+    () => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-weak-area-review", request: { sessionId: "weak-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [review("ace-q-0001", "selector", "2026-07-24T09:00:00.000Z")], now }),
     /does not accept selectors/,
   );
 
@@ -289,13 +289,13 @@ test("Certification Weak Area Review uses only eligible due evidence and resolve
 test("Certification Quick Review selects only up to ten current due items and never substitutes content", async () => {
   await validateBundledContent();
   const catalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
+  const runtime = new CertificationFamilyRuntime(catalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
   const now = "2026-07-24T10:00:00.000Z";
   const review = (itemId: string, id: string, dueAt: string): ReviewQueueEntry => {
     const question = catalog.getItemById(itemId);
     return {
       id,
-      trackId: "cloud-certification",
+      trackId: "google-cloud-associate-cloud-engineer",
       sourceAttemptId: `${id}:attempt`,
       sourceSessionId: `${id}:source-session`,
       reasons: ["incorrect"],
@@ -307,14 +307,14 @@ test("Certification Quick Review selects only up to ten current due items and ne
       taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }],
     };
   };
-  const prepareQuickReview = (sessionId: string, reviews: readonly ReviewQueueEntry[]) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-quick-review", request: { sessionId }, attempts: [], reviews, now });
+  const prepareQuickReview = (sessionId: string, reviews: readonly ReviewQueueEntry[]) => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-quick-review", request: { sessionId }, attempts: [], reviews, now });
 
-  assert.deepEqual(buildPracticeSessionConfig({ mode: "certification-quick-review", topicId: "", trackId: "cloud-certification" }), { feedbackMode: "afterEachAnswer", mode: "certification-quick-review", reviewBehaviorEnabled: false, sessionLength: 10, source: "practiceHub", topicId: "", trackId: "cloud-certification" });
-  assert.throws(() => buildPracticeSessionConfig({ mode: "certification-quick-review", sessionLength: 10, topicId: "", trackId: "cloud-certification" }), /does not render or accept optional setup controls/);
+  assert.deepEqual(buildPracticeSessionConfig({ mode: "certification-quick-review", topicId: "", trackId: "google-cloud-associate-cloud-engineer" }), { feedbackMode: "afterEachAnswer", mode: "certification-quick-review", reviewBehaviorEnabled: false, sessionLength: 10, source: "practiceHub", topicId: "", trackId: "google-cloud-associate-cloud-engineer" });
+  assert.throws(() => buildPracticeSessionConfig({ mode: "certification-quick-review", sessionLength: 10, topicId: "", trackId: "google-cloud-associate-cloud-engineer" }), /does not render or accept optional setup controls/);
 
   await assert.rejects(() => prepareQuickReview("quick-empty", []), /no eligible due items; no substitute practice session was created/);
   await assert.rejects(() => prepareQuickReview("quick-future", [review("ace-q-0001", "future", "2026-07-25T10:00:00.000Z")]), /no eligible due items; no substitute practice session was created/);
-  await assert.rejects(() => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-quick-review", request: { sessionId: "quick-selector", requestedLength: 10 }, attempts: [], reviews: [review("ace-q-0001", "due", "2026-07-24T09:00:00.000Z")], now }), /fixed maximum of ten due items and does not accept selectors/);
+  await assert.rejects(() => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-quick-review", request: { sessionId: "quick-selector", requestedLength: 10 }, attempts: [], reviews: [review("ace-q-0001", "due", "2026-07-24T09:00:00.000Z")], now }), /fixed maximum of ten due items and does not accept selectors/);
 
   const earliest = review("ace-q-0003", "earliest", "2026-07-24T08:00:00.000Z");
   const later = review("ace-q-0001", "later", "2026-07-24T09:00:00.000Z");
@@ -335,8 +335,8 @@ test("Certification Quick Review selects only up to ten current due items and ne
 test("Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it", async () => {
   await validateBundledContent();
   const catalog = getCertificationContentCatalog();
-  const runtime = new CertificationFamilyRuntime(catalog, "cloud-certification-taxonomy-v1");
-  const prepare = (sessionId: string, requestedLength = 20) => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const runtime = new CertificationFamilyRuntime(catalog, "google-cloud-associate-cloud-engineer-taxonomy-v1");
+  const prepare = (sessionId: string, requestedLength = 20) => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-mixed-practice", request: { sessionId, requestedLength }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   const [first, second] = await Promise.all([prepare("mixed-first"), prepare("mixed-second")]);
   const blueprint = catalog.getMixedPractice();
   assert.equal(first.session.actualLength, 20);
@@ -345,7 +345,7 @@ test("Certification Mixed Practice uses a deterministic unique interleaved bluep
   assert.deepEqual(second.session.itemOrder.map((occurrence) => occurrence.item.itemId), first.session.itemOrder.map((occurrence) => occurrence.item.itemId));
   assert.equal(new Set(first.session.itemOrder.map((occurrence) => occurrence.item.itemId)).size, first.session.actualLength);
   await assert.rejects(() => prepare("mixed-invalid-length", 5), /supports only its installed 10, 20, or 40 item lengths/);
-  await assert.rejects(() => runtime.prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId: "mixed-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }), /does not accept selectors/);
+  await assert.rejects(() => runtime.prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-mixed-practice", request: { sessionId: "mixed-selector", requestedLength: 10, domain: "operations" }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" }), /does not accept selectors/);
 
   const shortenedIds = blueprint.itemIds.slice(0, 12);
   const shortenedCatalog = new CertificationContentCatalog(
@@ -358,7 +358,7 @@ test("Certification Mixed Practice uses a deterministic unique interleaved bluep
     catalog.getWeakAreaReview(),
     { ...blueprint, itemIds: shortenedIds },
   );
-  const shortened = await new CertificationFamilyRuntime(shortenedCatalog, "cloud-certification-taxonomy-v1").prepare({ trackId: "cloud-certification", modeId: "certification-mixed-practice", request: { sessionId: "mixed-shortened", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
+  const shortened = await new CertificationFamilyRuntime(shortenedCatalog, "google-cloud-associate-cloud-engineer-taxonomy-v1").prepare({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-mixed-practice", request: { sessionId: "mixed-shortened", requestedLength: 40 }, attempts: [], reviews: [], now: "2026-07-24T10:00:00.000Z" });
   assert.equal(shortened.session.requestedLength, 40);
   assert.equal(shortened.session.actualLength, 12);
   assert.deepEqual(shortened.session.itemOrder.map((occurrence) => occurrence.item.itemId), shortenedIds);

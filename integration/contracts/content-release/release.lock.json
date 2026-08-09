@@ -1,19 +1,23 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "lukaszkurczab/patternly-content",
-  "producerCommit": "d780204eba858c05b94fdbce8de38ec4c3900a50",
-  "releaseId": "patternly-core-0015",
-  "sourceRepositoryCommit": "9e23b08d051ac473436f27544b0dbfefeda496d6",
+  "bundleId": "patternly-app-content-0017-0016",
   "artifacts": [
     {
-      "trackId": "algorithms",
-      "contentVersion": "algorithms-core-0008",
-      "checksumSha256": "2c6749d68c4c2c9f95bc4b9c4d21350df92776603648b2240fd1da39bb8d9adf"
+      "releaseId": "patternly-core-0017",
+      "producerCommit": "4822bca3469f20f77d46572fb2bbb5e898983549",
+      "sourceRepositoryCommit": "51cd24fd4ba781615e2c56acfa770abf419ad78f",
+      "trackId": "coding-interview-dsa-problem-solving",
+      "contentVersion": "coding-interview-dsa-problem-solving-0003",
+      "checksumSha256": "e0f9f98b0b7c7f9c60caad971e8eb403b1ac86c5f21ab25a9460cccfe5eb72dc"
     },
     {
-      "trackId": "cloud-certification",
-      "contentVersion": "gcp-ace-0014",
-      "checksumSha256": "f692d3878c12907cc1df7922a1eb6e5567757989450063dc9e495cebf4bd4042"
+      "releaseId": "patternly-core-0016",
+      "producerCommit": "6ad68ed4a91af356d9e1149917e66a7a9a55ca8a",
+      "sourceRepositoryCommit": "2a1e705c77d13feef59a8c33c66158ded2a5f6ce",
+      "trackId": "google-cloud-associate-cloud-engineer",
+      "contentVersion": "gcp-ace-0015",
+      "checksumSha256": "3078ee20364858aebb5bb9cb8367ab0185b93c75d4016915450c45df26b19cfa"
     }
   ]
 }

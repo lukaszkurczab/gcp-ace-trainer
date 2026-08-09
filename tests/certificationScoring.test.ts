@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildCertificationExamSummaries, scoreCertificationQuestion } from "../src/tracks/cloud-certification";
+import { buildCertificationExamSummaries, scoreCertificationQuestion } from "../src/tracks/certification";
 import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
 test("Certification single-choice scores correct, incorrect, and unanswered responses", () => {

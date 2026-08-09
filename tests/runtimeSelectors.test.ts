@@ -20,7 +20,7 @@ test("runtime selectors preserve canonical identities without learner-visible co
     runtimeSelectors.session.question(itemId),
     runtimeSelectors.session.option(itemId, "amortized-o1"),
     runtimeSelectors.session.feedback(itemId),
-    runtimeSelectors.resume.card("algorithms:algorithms-guided-practice:1"),
+    runtimeSelectors.resume.card("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"),
   ];
 
   assert.ok(selectors.every((selector) => isRuntimeSelectorId(selector)));
@@ -29,12 +29,12 @@ test("runtime selectors preserve canonical identities without learner-visible co
 });
 
 test("session metadata selectors expose validated lifecycle values without learner copy", () => {
-  const sessionId = "algorithms:algorithms-guided-practice:1";
+  const sessionId = "coding-interview-dsa-problem-solving:coding-interview-guided-practice:1";
   const counter = runtimeSelectors.session.counter(sessionId, 3, 10);
   const configuration = runtimeSelectors.session.configuration(sessionId, 10, "afterEachAnswer");
 
-  assert.equal(counter, "patternly:session:counter:algorithms:algorithms-guided-practice:1:ordinal:3:length:10");
-  assert.equal(configuration, "patternly:session:configuration:algorithms:algorithms-guided-practice:1:length:10:feedback-timing:after-each-answer");
+  assert.equal(counter, "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1:ordinal:3:length:10");
+  assert.equal(configuration, "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1:length:10:feedback-timing:after-each-answer");
   assert.equal(isRuntimeSelectorId(counter), true);
   assert.equal(isRuntimeSelectorId(configuration), true);
 });
@@ -63,10 +63,10 @@ test("complexity selectors encode authored notation without weakening the select
 
 test("runtime selectors keep distinct runtime entities distinct", () => {
   const selectors = new Set([
-    runtimeSelectors.home.trackCard("algorithms"),
+    runtimeSelectors.home.trackCard("coding-interview-dsa-problem-solving"),
     runtimeSelectors.content.ready(),
     runtimeSelectors.content.readyAfterAuditReset(),
-    runtimeSelectors.practice.modeCard("algorithms-guided-practice"),
+    runtimeSelectors.practice.modeCard("coding-interview-guided-practice"),
     runtimeSelectors.practice.declaredScope("hash_map_and_set"),
     runtimeSelectors.practice.openSetup(),
     runtimeSelectors.practice.customEntry(),
@@ -78,17 +78,17 @@ test("runtime selectors keep distinct runtime entities distinct", () => {
     runtimeSelectors.session.submit("alg-complexity-amortized-001"),
     runtimeSelectors.session.continue("alg-complexity-amortized-001"),
     runtimeSelectors.session.complexityValue("alg-complexity-amortized-001", "time", "O(n)"),
-    runtimeSelectors.session.leaveAndResume("algorithms:algorithms-guided-practice:1"),
-    runtimeSelectors.session.counter("algorithms:algorithms-guided-practice:1", 1, 10),
-    runtimeSelectors.session.configuration("algorithms:algorithms-guided-practice:1", 10, "afterEachAnswer"),
-    runtimeSelectors.summary.root("algorithms:algorithms-guided-practice:1"),
-    runtimeSelectors.summary.backToPractice("algorithms:algorithms-guided-practice:1"),
-    runtimeSelectors.summary.configuration("algorithms:algorithms-guided-practice:1", 10, "atSessionEnd"),
-    runtimeSelectors.summary.feedbackItem("algorithms:algorithms-guided-practice:1", "occurrence:1"),
+    runtimeSelectors.session.leaveAndResume("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"),
+    runtimeSelectors.session.counter("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1", 1, 10),
+    runtimeSelectors.session.configuration("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1", 10, "afterEachAnswer"),
+    runtimeSelectors.summary.root("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"),
+    runtimeSelectors.summary.backToPractice("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"),
+    runtimeSelectors.summary.configuration("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1", 10, "atSessionEnd"),
+    runtimeSelectors.summary.feedbackItem("coding-interview-dsa-problem-solving:coding-interview-guided-practice:1", "occurrence:1"),
     runtimeSelectors.progress.root(),
     runtimeSelectors.progress.node("complexity"),
-    runtimeSelectors.simulation.root("algorithms:algorithms-interview-simulation:2"),
-    runtimeSelectors.simulation.navigator("algorithms:algorithms-interview-simulation:2:occurrence:1"),
+    runtimeSelectors.simulation.root("coding-interview-dsa-problem-solving:coding-interview-simulation:2"),
+    runtimeSelectors.simulation.navigator("coding-interview-dsa-problem-solving:coding-interview-simulation:2:occurrence:1"),
   ]);
 
   assert.equal(selectors.size, 26);

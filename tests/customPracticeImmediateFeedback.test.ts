@@ -9,14 +9,14 @@ import {
   retryAlgorithmsPracticeCompletionCheckpoint,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
-} from "../src/application/algorithms";
+} from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { getActiveMutationJournal, getActiveTrainingSession, getTrainingAttempts, getTrainingSessionResult } from "../src/storage/repositories";
-import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
-import type { AlgorithmResponse } from "../src/tracks/algorithms/domain";
+import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
+import type { AlgorithmResponse } from "../src/tracks/coding-interview/domain";
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
@@ -35,7 +35,7 @@ test("Custom Practice afterEachAnswer journals each submitted response, exposes 
   const catalog = getAlgorithmContentCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "afterEachAnswer",
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     requestedLength: 10,
     scope: { roadmapNodeId: catalog.getItems()[0]!.taxonomy.roadmapNodeId },
   });

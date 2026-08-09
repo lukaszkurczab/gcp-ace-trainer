@@ -14,11 +14,11 @@ tags:
           id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:cloud-certification"
+      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:home:select-track:cloud-certification"
+    id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
 - extendedWaitUntil:
     visible:
       id: "main-tab-bar-practice"

@@ -9,7 +9,7 @@ import {
   navigateAlgorithmsSimulationTo, recoverAlgorithmsSimulationOperation, recoverAlgorithmsSimulationSaveAndContinue, resumeAlgorithmsSimulationEditingAfterSaveFailure, saveAlgorithmsSimulationResponse, saveAlgorithmsSimulationResponseAndContinue, saveAlgorithmsSimulationResponseAndNavigate, startAlgorithmsSession,
   subscribeAlgorithmsSimulationProjectionRefresh, type AlgorithmsSimulationProjection,
   type AlgorithmsSimulationScreenProjection,
-} from "../../application/algorithms";
+} from "../../application/coding-interview";
 import { subscribeTrainingOperationProjection, type SimulationDurableOperationState } from "../../application/trainingLifecycle";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
@@ -52,7 +52,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
 
   async function start() {
     try {
-      await startAlgorithmsSession({ modeId: "algorithms-interview-simulation", requestedLength: 40, scope: { simulationProfileId: route.params.profileId }, source: "algorithmsInterviewSimulation" });
+      await startAlgorithmsSession({ modeId: "coding-interview-simulation", requestedLength: 40, scope: { simulationProfileId: route.params.profileId }, source: "algorithmsInterviewSimulation" });
       await enterAlgorithmsSimulationForeground();
     } catch { /* The projection maps canonical application failures. */ }
     await load();

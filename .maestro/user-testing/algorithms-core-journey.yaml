@@ -7,7 +7,7 @@ tags:
 ---
 - scrollUntilVisible:
     element:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: false
     timeout: 30000
@@ -20,11 +20,11 @@ tags:
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:practice:mode-card:algorithms-independent-practice"
+      id: "patternly:practice:mode-card:coding-interview-independent-practice"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-independent-practice"
+    id: "patternly:practice:mode-card:coding-interview-independent-practice"
 - extendedWaitUntil:
     visible: "Choose a scope for Independent Practice"
     timeout: 30000
@@ -35,7 +35,7 @@ tags:
       id: "patternly:session:question:alg-hms-complement-all-pairs-payload"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:mode:algorithms-independent-practice"
+    id: "patternly:session:mode:coding-interview-independent-practice"
 - assertVisible: "Question 1 of 10"
 
 - scrollUntilVisible:
@@ -63,25 +63,25 @@ tags:
       id: "patternly:session:question:alg-hms-complement-check-before-record"
     timeout: 30000
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-independent-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-independent-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
 - killApp
 - launchApp
 - scrollUntilVisible:
     element:
-      id: "patternly:resume:card:algorithms:algorithms-independent-practice:1"
+      id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
     direction: DOWN
     visibilityPercentage: 20
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:resume:continue:algorithms:algorithms-independent-practice:1"
+      id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
     direction: DOWN
     visibilityPercentage: 50
     timeout: 30000
 - tapOn:
-    id: "patternly:resume:continue:algorithms:algorithms-independent-practice:1"
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-hms-complement-check-before-record"
@@ -306,12 +306,12 @@ tags:
 
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-independent-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
     timeout: 30000
 - assertVisible:
-    id: "patternly:summary:configuration:algorithms:algorithms-independent-practice:1:10:after-each-answer"
+    id: "patternly:summary:configuration:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1:10:after-each-answer"
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-independent-practice:1"
+    id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"

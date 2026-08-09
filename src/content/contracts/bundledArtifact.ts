@@ -1,8 +1,7 @@
-/** The only production representation of a content release consumed at runtime. */
+/** The application-owned immutable set of independently published track releases. */
 export type BundledReleaseManifest = Readonly<{
   envelopeVersion: 1;
-  releaseId: string;
-  sourceRepositoryCommit: string;
+  bundleId: string;
 }>;
 
 /**
@@ -11,6 +10,7 @@ export type BundledReleaseManifest = Readonly<{
  * transform or a parsed-object substitute.
  */
 export type BundledTrackArtifactReference = Readonly<{
+  releaseId: string;
   trackId: string;
   familyId: string;
   contentVersion: string;

@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getAlgorithmsDeclaredScopeOptions } from "../src/application/algorithms";
+import { getCodingInterviewDeclaredScopeOptions } from "../src/application/coding-interview";
 import { validateBundledContent } from "../src/content/application";
-import { ALGORITHM_MODE_IDS } from "../src/tracks/algorithms";
+import { ALGORITHM_MODE_IDS } from "../src/tracks/coding-interview";
 
 test("Algorithms declared-scope options expose only validated structures with one roadmap topic", async () => {
   await validateBundledContent();
-  const recognition = getAlgorithmsDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.recognizePatterns });
-  const contrast = getAlgorithmsDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.contrastPractice });
-  const independent = getAlgorithmsDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.independentPractice });
+  const recognition = getCodingInterviewDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.recognizePatterns });
+  const contrast = getCodingInterviewDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.contrastPractice });
+  const independent = getCodingInterviewDeclaredScopeOptions({ modeId: ALGORITHM_MODE_IDS.independentPractice });
 
   assert.ok(recognition.length > 0);
   assert.ok(contrast.length > 0);

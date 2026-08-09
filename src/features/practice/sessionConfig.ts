@@ -1,13 +1,13 @@
-import { ALGORITHMS_TRACK_ID, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, type ContentItemRef, type TrackId, type TrainingSession } from "../../domain";
 import {
   ALGORITHM_MODE_IDS,
   getAlgorithmSessionNodeById,
   getAlgorithmMode,
   isAlgorithmModeId,
   type AlgorithmModeId,
-} from "../../tracks/algorithms";
-import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
-import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/cloud-certification";
+} from "../../tracks/coding-interview";
+import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
+import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
 
 export type PracticeSessionSource =
   | "home"
@@ -58,7 +58,7 @@ const certificationPracticeModes: readonly CertificationPracticeSessionMode[] = 
 export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
 ): PracticeSessionRouteParams {
-  if (input.trackId === ALGORITHMS_TRACK_ID) {
+  if (input.trackId === CODING_INTERVIEW_TRACK_ID) {
     const mode = input.mode ?? ALGORITHM_MODE_IDS.guidedPractice;
     if (!isAlgorithmModeId(mode)) {
       throw new Error(`Unknown Algorithms mode id: ${mode}`);
@@ -150,7 +150,7 @@ export function buildPracticeSessionConfig(
 /** Reconstructs only an exact active ordinary Certification route from its durable immutable snapshot. */
 export function buildCertificationPracticeResumeRoute(session: TrainingSession): PracticeSessionRouteParams {
   if (session.status !== "active") throw new Error("Only an active Certification Practice session can be resumed.");
-  if (session.trackId !== "cloud-certification" || !isCertificationPracticeModeId(session.modeId)) {
+  if (session.trackId !== "google-cloud-associate-cloud-engineer" || !isCertificationPracticeModeId(session.modeId)) {
     throw new Error("Certification Practice resume requires an ordinary Cloud Certification session.");
   }
   if (!session.id.trim()) throw new Error("Certification Practice resume requires an exact session identity.");

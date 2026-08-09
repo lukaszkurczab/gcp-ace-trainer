@@ -306,7 +306,7 @@ export type CanonicalCertificationMode = Readonly<{
   label: CanonicalCertificationModeLabel;
   owner: Readonly<{
     familyId: "certification";
-    trackId: "cloud-certification";
+    trackId: "google-cloud-associate-cloud-engineer";
   }>;
   configuration?: CanonicalCertificationDiagnosticConfiguration | CanonicalCertificationFocusConfiguration | CanonicalCertificationScenarioConfiguration | CanonicalCertificationWeakAreaReviewConfiguration | CanonicalCertificationMixedPracticeConfiguration | CanonicalCertificationQuickReviewConfiguration;
 }>;

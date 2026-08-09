@@ -9,7 +9,7 @@ import {
   recoverAlgorithmsPracticeCompletion,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
-} from "../src/application/algorithms";
+} from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import {
   advanceCertificationPracticeSession,
@@ -32,9 +32,9 @@ import {
   getTrainingSessionResult,
   getTrainingSessions,
 } from "../src/storage/repositories";
-import type { CertificationQuestion } from "../src/tracks/cloud-certification";
-import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
-import type { AlgorithmResponse } from "../src/tracks/algorithms/domain";
+import type { CertificationQuestion } from "../src/tracks/certification";
+import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
+import type { AlgorithmResponse } from "../src/tracks/coding-interview/domain";
 
 const NOW = "2026-08-02T10:00:00.000Z";
 
@@ -138,7 +138,7 @@ class CompletionFaultStorage extends MemoryKeyValueStorage {
 }
 
 type FinalFeedbackHarness = Readonly<{
-  family: "algorithms" | "certification";
+  family: "coding_interview" | "certification";
   storage: CompletionFaultStorage;
   sessionId: string;
   feedbackProjection: Readonly<{ operation: Readonly<{ kind: string }>; response: Readonly<{ source: string }> | null }>;
@@ -175,7 +175,7 @@ async function algorithmsAtFinalFeedback(storage: CompletionFaultStorage, suffix
   const catalog = getAlgorithmContentCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "afterEachAnswer",
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     requestedLength: 10,
     scope: { roadmapNodeId: catalog.getItems()[0]!.taxonomy.roadmapNodeId },
   });
@@ -189,7 +189,7 @@ async function algorithmsAtFinalFeedback(storage: CompletionFaultStorage, suffix
   assert.equal(feedbackProjection.response?.source, "materialized");
   const attemptIds = (await getTrainingAttempts()).value.map((attempt) => attempt.id);
   return Object.freeze({
-    family: "algorithms",
+    family: "coding_interview",
     storage,
     sessionId: prepared.session.id,
     feedbackProjection,
@@ -259,7 +259,7 @@ async function assertCompletionFaultMatrix(
     assert.equal(Boolean(journalResultId), boundary.command === "recover_completion", context);
     if (boundary.command === "retry_completion") {
       assert.equal((await getActiveTrainingSession())?.id, harness.sessionId, context);
-      const retained = await (harness.family === "algorithms" ? getAlgorithmsPracticeProjection() : getCertificationPracticeProjection());
+      const retained = await (harness.family === "coding_interview" ? getAlgorithmsPracticeProjection() : getCertificationPracticeProjection());
       assert.equal(retained.operation.kind, "completion_failed", context);
       assert.equal(retained.response?.source, "materialized", context);
       assert.ok(retained.feedback, context);

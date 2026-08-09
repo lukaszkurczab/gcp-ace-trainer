@@ -80,7 +80,7 @@ export function buildAlgorithmProgressFacts(
   const entries = getKnownRoadmapEntries(items, roadmapNodes);
   const questionIds = new Set(entries.map((entry) => entry.question.id));
   const algorithmAttempts = input.attempts.filter((attempt) =>
-    attempt.trackId === "algorithms" &&
+    attempt.trackId === "coding-interview-dsa-problem-solving" &&
     attempt.item.contentVersion === contentVersion &&
     questionIds.has(attempt.item.itemId),
   );
@@ -130,7 +130,7 @@ export function buildAlgorithmWeakAreaRecommendation(
   const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) =>
-      attempt.trackId === "algorithms" &&
+      attempt.trackId === "coding-interview-dsa-problem-solving" &&
       attempt.item.contentVersion === contentVersion,
     ),
   );
@@ -197,8 +197,8 @@ function buildNodeProgress(
   const coreSkillAtomCount = coreSkillAtomIds.length;
   const questionIds = new Set(questions.map((question) => question.id));
   const dueReviews = reviewQueueItems.filter((item) =>
-    item.trackId === "algorithms" &&
-    item.sourceItem.trackId === "algorithms" &&
+    item.trackId === "coding-interview-dsa-problem-solving" &&
+    item.sourceItem.trackId === "coding-interview-dsa-problem-solving" &&
     item.sourceItem.contentVersion === contentVersion &&
     questionIds.has(item.sourceItem.itemId) &&
     item.dueAt <= now,

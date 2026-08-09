@@ -1,2 +1,2 @@
-export * from "./algorithms";
-export * from "./cloud-certification";
+export * from "./coding-interview";
+export * from "./certification";

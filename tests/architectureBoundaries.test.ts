@@ -13,14 +13,14 @@ test("learning kernel and registry boundaries exclude family content and platfor
     assert.doesNotMatch(source, /from\s+["'][^"']*(?:tracks\/|react(?:-native)?|mmkv|storage\/repositories)[^"']*["']/,
       `kernel import boundary violated by ${path}`);
   }
-  assert.doesNotMatch(kernel, /tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion|ValidatedBank|TrainingItem\s*=/);
+  assert.doesNotMatch(kernel, /tracks\/algorithms|google-cloud-associate-cloud-engineer|AlgorithmQuestion|CertificationQuestion|ValidatedBank|TrainingItem\s*=/);
   assert.doesNotMatch(registry, /algorithmContent|questionBank|CertificationQuestion|AlgorithmQuestion/);
 });
 
 test("families do not import one another and source contains no replacement bridge", () => {
-  const algorithms = files("src/tracks/algorithms").map((path) => readFileSync(path, "utf8")).join("\n");
-  const certification = files("src/tracks/cloud-certification").map((path) => readFileSync(path, "utf8")).join("\n");
-  assert.doesNotMatch(algorithms, /cloud-certification/); assert.doesNotMatch(certification, /tracks\/algorithms/);
+  const algorithms = files("src/tracks/coding-interview").map((path) => readFileSync(path, "utf8")).join("\n");
+  const certification = files("src/tracks/certification").map((path) => readFileSync(path, "utf8")).join("\n");
+  assert.doesNotMatch(algorithms, /certification/); assert.doesNotMatch(certification, /tracks\/coding-interview/);
   const sourcePaths = files("src");
   assert.equal(sourcePaths.some((path) => /Adapter|Compatibility/.test(path)), false);
   const source = sourcePaths.map((path) => readFileSync(path, "utf8")).join("\n");

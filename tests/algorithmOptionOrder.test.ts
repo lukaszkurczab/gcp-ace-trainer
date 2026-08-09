@@ -7,7 +7,7 @@ import {
   buildAlgorithmInteractionViewModel,
   createAlgorithmOptionOrder,
   isAlgorithmChoiceQuestion,
-} from "../src/tracks/algorithms";
+} from "../src/tracks/coding-interview";
 
 test("choice display order is shuffled once from stable IDs and remains reproducible for resume", async () => {
   await validateBundledContent();

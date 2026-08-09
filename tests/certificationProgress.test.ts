@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createTrainingAttempt, type ReviewQueueEntry } from "../src/domain";
-import { buildCloudCertificationProgressViewModel } from "../src/tracks/cloud-certification";
+import { buildCloudCertificationProgressViewModel } from "../src/tracks/certification";
 import { makeQuestion } from "./fixtures";
 
 const question = makeQuestion({ id: "fixture-certification-progress" });
-const ref = { trackId: "cloud-certification" as const, itemId: question.id, contentVersion: "fixture" };
-function attempt(kind: "correct" | "partial" | "incorrect", id: string, modeId = "certification-focus-practice") { return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId: id, trackId: "cloud-certification", modeId, item: ref, response: { kind: "option_selection", selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, { axisId: "mistake_type", nodeId: "confused_services" }] }, answeredAt: `2026-01-0${id.length}T00:00:00.000Z`, committedAt: `2026-01-0${id.length}T00:00:00.000Z` }); }
-function review(): ReviewQueueEntry { return { id: "review", trackId: "cloud-certification", sourceAttemptId: "bad", sourceSessionId: "bad", reasons: ["repeated_mistake"], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2025-12-31T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }; }
+const ref = { trackId: "google-cloud-associate-cloud-engineer" as const, itemId: question.id, contentVersion: "fixture" };
+function attempt(kind: "correct" | "partial" | "incorrect", id: string, modeId = "certification-focus-practice") { return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId: id, trackId: "google-cloud-associate-cloud-engineer", modeId, item: ref, response: { kind: "option_selection", selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }, { axisId: "mistake_type", nodeId: "confused_services" }] }, answeredAt: `2026-01-0${id.length}T00:00:00.000Z`, committedAt: `2026-01-0${id.length}T00:00:00.000Z` }); }
+function review(): ReviewQueueEntry { return { id: "review", trackId: "google-cloud-associate-cloud-engineer", sourceAttemptId: "bad", sourceSessionId: "bad", reasons: ["repeated_mistake"], dueAt: "2026-01-01T00:00:00.000Z", createdAt: "2025-12-31T00:00:00.000Z", consecutiveAfterDueSuccesses: 0, persistent: true, sourceItem: ref, taxonomyOrSkillRefs: [{ axisId: "cloud-domain", nodeId: question.domain }] }; }
 
 test("Certification progress derives practice, exam, outcome, taxonomy, review, and repeated-mistake signals", () => {
   const progress = buildCloudCertificationProgressViewModel({ attempts: [attempt("correct", "one"), attempt("incorrect", "three", "certification-exam-simulation")], reviewQueueItems: [review()], now: "2026-01-02T00:00:00.000Z" });

@@ -1,4 +1,4 @@
-import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
+import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 
 /**
  * Presentation-only contract for the canonical Algorithms Interview

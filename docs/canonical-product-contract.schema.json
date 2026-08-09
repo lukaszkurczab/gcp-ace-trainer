@@ -955,7 +955,7 @@
           "required": ["familyId", "trackId"],
           "properties": {
             "familyId": { "const": "certification" },
-            "trackId": { "const": "cloud-certification" }
+            "trackId": { "const": "google-cloud-associate-cloud-engineer" }
           }
         },
         "configuration": {

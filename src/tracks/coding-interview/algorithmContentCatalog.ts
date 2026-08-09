@@ -1,5 +1,5 @@
 import { MissingContentItemError, type ContentItemRef } from "../../domain/learning";
-import { ALGORITHMS_TRACK_ID } from "../../domain/tracks";
+import { CODING_INTERVIEW_TRACK_ID } from "../../domain/tracks";
 import type { PublishedAlgorithmsBank } from "../../content/contracts";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import type { AlgorithmRoadmapNodeId } from "./algorithmRoadmap";
@@ -19,9 +19,9 @@ export class AlgorithmContentCatalog {
   getItemsForMentalUnit(mentalUnitId: string): readonly AlgorithmQuestion[] { return this.itemsByMentalUnitId.get(mentalUnitId) ?? []; }
   getItemsForRoadmapNode(nodeId: AlgorithmRoadmapNodeId): readonly AlgorithmQuestion[] { return this.itemsByRoadmapNodeId.get(nodeId) ?? []; }
   getItemsForMode(modeId: string): readonly AlgorithmQuestion[] { const blueprint = this.bank.practiceBlueprints.find((entry) => entry.modeId === modeId); return blueprint ? blueprint.resolvedItemIds.map((id) => this.getItemById(id)) : []; }
-  getItemById(itemId: string): AlgorithmQuestion { const item = this.itemsById.get(itemId); if (!item) throw new MissingContentItemError(ALGORITHMS_TRACK_ID, itemId); return item; }
+  getItemById(itemId: string): AlgorithmQuestion { const item = this.itemsById.get(itemId); if (!item) throw new MissingContentItemError(CODING_INTERVIEW_TRACK_ID, itemId); return item; }
   getCompatibilitySet(id: string) { return this.bank.compatibilitySets.find((entry) => entry.id === id); }
   getSimulationPool(poolId: string) { return this.bank.simulationPools.find((entry) => entry.poolId === poolId); }
   getSimulationProfile(profileId: string) { return this.bank.simulationProfiles.find((entry) => entry.profileId === profileId); }
-  toContentItemRef(item: AlgorithmQuestion): ContentItemRef { return { contentVersion: this.bank.contentVersion, itemId: item.id, trackId: ALGORITHMS_TRACK_ID }; }
+  toContentItemRef(item: AlgorithmQuestion): ContentItemRef { return { contentVersion: this.bank.contentVersion, itemId: item.id, trackId: CODING_INTERVIEW_TRACK_ID }; }
 }

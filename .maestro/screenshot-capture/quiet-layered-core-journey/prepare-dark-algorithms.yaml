@@ -39,11 +39,11 @@ tags:
     id: "patternly:home:change-track"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:select-track:algorithms"
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000

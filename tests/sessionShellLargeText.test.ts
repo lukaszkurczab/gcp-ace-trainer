@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const source = readFileSync("src/features/algorithms/session/SessionShell.tsx", "utf8");
+const source = readFileSync("src/features/coding-interview/session/SessionShell.tsx", "utf8");
 const practiceSurface = readFileSync("src/features/practice/PracticeSessionSurface.tsx", "utf8");
 const buttonSource = readFileSync("src/components/Button.tsx", "utf8");
 

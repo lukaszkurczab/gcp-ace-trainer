@@ -1,6 +1,6 @@
 import {
-  ALGORITHMS_TRACK_ID,
-  CLOUD_CERTIFICATION_TRACK_ID,
+  CODING_INTERVIEW_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplay,
   type EvidenceRef,
   type ReviewQueueEntry,
@@ -29,8 +29,8 @@ function buildReviewViewItem(entry: ReviewQueueEntry, now: string): ReviewQueueV
   return { dueAt: entry.dueAt, id: entry.id, isDue: entry.dueAt <= now, isOverdue: entry.dueAt < now, itemId: entry.sourceItem.itemId, mistakeTypeRefs: dedupeRefs(entry.taxonomyOrSkillRefs.filter((ref) => ref.axisId === "mistake_type")), prompt: resolvePrompt(entry), reasons: [...entry.reasons], sourceAttemptId: entry.sourceAttemptId, taxonomyRefs: dedupeRefs(entry.taxonomyOrSkillRefs) };
 }
 function resolvePrompt(entry: ReviewQueueEntry): string {
-  if (entry.trackId === ALGORITHMS_TRACK_ID) return getAlgorithmContentCatalog().getItemById(entry.sourceItem.itemId).prompt;
-  if (entry.trackId === CLOUD_CERTIFICATION_TRACK_ID) return getCertificationContentCatalog().getItemById(entry.sourceItem.itemId).question;
+  if (entry.trackId === CODING_INTERVIEW_TRACK_ID) return getAlgorithmContentCatalog().getItemById(entry.sourceItem.itemId).prompt;
+  if (entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) return getCertificationContentCatalog().getItemById(entry.sourceItem.itemId).question;
   return getTrackDisplay(entry.trackId).title;
 }
 function dedupeRefs(refs: readonly EvidenceRef[]): EvidenceRef[] { return [...new Map(refs.map((ref) => [`${ref.axisId}:${ref.nodeId}:${ref.role ?? ""}`, ref])).values()]; }

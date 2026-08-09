@@ -1,5 +1,5 @@
 import {
-  CLOUD_CERTIFICATION_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type ReviewQueueEntry,
 } from "../../domain";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
@@ -8,7 +8,7 @@ import {
   commitReviewEntryChange,
   commitReviewEntryRemoval,
 } from "../learningMutations";
-import type { CertificationQuestion } from "../../tracks/cloud-certification";
+import type { CertificationQuestion } from "../../tracks/certification";
 
 export async function setQuestionNeedsReview(
   question: CertificationQuestion,
@@ -16,7 +16,7 @@ export async function setQuestionNeedsReview(
 ): Promise<void> {
   const now = new Date().toISOString();
   const existing = (await getReviewQueueItems()).value.find(
-    (entry) => entry.trackId === CLOUD_CERTIFICATION_TRACK_ID && entry.sourceItem.itemId === question.id,
+    (entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && entry.sourceItem.itemId === question.id,
   );
   if (!needsReview) {
     if (existing) await commitReviewEntryRemoval(existing, now);
@@ -24,7 +24,7 @@ export async function setQuestionNeedsReview(
   }
   const created = {
     id: `review:manual:${question.id}`,
-    trackId: CLOUD_CERTIFICATION_TRACK_ID,
+    trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
     sourceAttemptId: `manual-mark:${question.id}:${now}`,
     sourceSessionId: `manual-mark:${question.id}`,
     reasons: ["manual_mark"],

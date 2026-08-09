@@ -8,8 +8,8 @@ import { buildProgressTabModel } from "../src/features/home/tabs/progressTabMode
 import {
   ALGORITHM_MODE_IDS,
   getAlgorithmItems,
-} from "../src/tracks/algorithms";
-import { buildCloudCertificationProgressViewModel } from "../src/tracks/cloud-certification";
+} from "../src/tracks/coding-interview";
+import { buildCloudCertificationProgressViewModel } from "../src/tracks/certification";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 
@@ -24,7 +24,7 @@ function algorithmAttempt(
   const itemRef = {
     contentVersion: getAlgorithmContentCatalog().getContentVersion(),
     itemId: item.id,
-    trackId: "algorithms" as const,
+    trackId: "coding-interview-dsa-problem-solving" as const,
   };
 
   return {
@@ -49,7 +49,7 @@ function algorithmAttempt(
       }],
     },
     sessionId: "session-1",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   };
 }
 
@@ -69,12 +69,12 @@ function dueAlgorithmReview(
     sourceItem: attempt.item,
     sourceSessionId: attempt.sessionId,
     taxonomyOrSkillRefs: attempt.reviewEvidence.taxonomyOrSkillRefs,
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   };
 }
 
 test("Home projection exposes a stable empty-state focus without inventing evidence", () => {
-  const model = buildHomeTabModel({ activeTrack: getTrackDisplay("cloud-certification"), algorithmsDashboard: null, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] });
+  const model = buildHomeTabModel({ activeTrack: getTrackDisplay("google-cloud-associate-cloud-engineer"), algorithmsDashboard: null, analytics: buildAnalyticsData([], []), dashboardError: null, trainingAttempts: [] });
   assert.equal(model.focusTitle, "Google Cloud Associate Cloud Engineer");
   assert.equal(model.primaryLabel, "Start learning");
 });
@@ -91,14 +91,14 @@ test("Home prioritizes one exact ordinary Certification resume action and exclud
       submission: "perItem",
       timer: "elapsedForeground",
     },
-    id: "cloud-certification:certification-focus-practice:resume-1",
+    id: "google-cloud-associate-cloud-engineer:certification-focus-practice:resume-1",
     modeId: "certification-focus-practice",
     requestedLength: 10,
     status: "active",
-    trackId: "cloud-certification",
+    trackId: "google-cloud-associate-cloud-engineer",
   } as unknown as TrainingSession;
   const input = {
-    activeTrack: getTrackDisplay("cloud-certification"),
+    activeTrack: getTrackDisplay("google-cloud-associate-cloud-engineer"),
     algorithmsDashboard: null,
     analytics: buildAnalyticsData([], []),
     dashboardError: null,
@@ -116,7 +116,7 @@ test("Home prioritizes one exact ordinary Certification resume action and exclud
   assert.match(model.recommendations[0]?.detail ?? "", /exact saved Focus Practice session/);
 
   assert.equal(buildHomeTabModel({ ...input, activeSession: { ...activeSession, modeId: "certification-exam-simulation" } }).recommendations.length, 0);
-  assert.equal(buildHomeTabModel({ ...input, activeSession: { ...activeSession, trackId: "algorithms" } }).recommendations.length, 0);
+  assert.equal(buildHomeTabModel({ ...input, activeSession: { ...activeSession, trackId: "coding-interview-dsa-problem-solving" } }).recommendations.length, 0);
 
   const stale = buildHomeTabModel({
     ...input,
@@ -130,10 +130,10 @@ test("Home prioritizes one exact ordinary Certification resume action and exclud
 
 test("Progress tab projects Certification empty state and due review availability", () => {
   const analytics = buildAnalyticsData([], []);
-  const empty = buildProgressTabModel({ activeTrackId: "cloud-certification", analytics, attempts: [], practiceHistory: [], cloudProgress: buildCloudCertificationProgressViewModel({ attempts: [] }) });
+  const empty = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: buildCloudCertificationProgressViewModel({ attempts: [] }) });
   assert.equal(empty.hasData, false);
   assert.equal(empty.reviewActionEnabled, false);
-  const due = buildProgressTabModel({ activeTrackId: "cloud-certification", analytics, attempts: [], practiceHistory: [], cloudProgress: { ...buildCloudCertificationProgressViewModel({ attempts: [] }), dueReviewCount: 2, scheduledReviewCount: 2 } });
+  const due = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: { ...buildCloudCertificationProgressViewModel({ attempts: [] }), dueReviewCount: 2, scheduledReviewCount: 2 } });
   assert.equal(due.reviewQueueCount, 2);
   assert.deepEqual(due.reviewAction, { kind: "canonicalReviewQueue" });
 });
@@ -145,7 +145,7 @@ test("Progress projection rejects an unknown track instead of selecting a defaul
 test("Algorithms Progress first use states the evidence limit and offers one useful start action", async () => {
   await validateBundledContent();
   const model = buildProgressTabModel({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     practiceHistory: [],
@@ -172,7 +172,7 @@ test("Algorithms Progress keeps due review evidence honest and recommendations o
   await validateBundledContent();
   const attempt = algorithmAttempt("incorrect");
   const model = buildProgressTabModel({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     now: NOW,
@@ -193,7 +193,7 @@ test("Algorithms Progress derives a deterministic continuation from recorded evi
   await validateBundledContent();
   const attempt = algorithmAttempt("correct");
   const model = buildProgressTabModel({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     practiceHistory: [],
@@ -223,7 +223,7 @@ test("Algorithms Progress excludes due review from a stale content bank", async 
     },
   };
   const model = buildProgressTabModel({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     now: NOW,
@@ -250,7 +250,7 @@ test("Algorithms Progress uses neutral copy when due review spans multiple topic
   const firstAttempt = algorithmAttempt("correct", first);
   const secondAttempt = algorithmAttempt("correct", second);
   const model = buildProgressTabModel({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
     attempts: [],
     now: NOW,

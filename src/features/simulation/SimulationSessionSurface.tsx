@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
 import { radius, spacing, typography } from "../../theme";
-import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../algorithms/session/sessionAccessibility";
-import { SessionShell } from "../algorithms/session/SessionShell";
+import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
+import { SessionShell } from "../coding-interview/session/SessionShell";
 import type { SimulationAction, SimulationResponseChange, SimulationResponseControl, SimulationSurfaceProjection } from "./simulationProjection";
 import { mayRenderSimulationCompletion } from "./simulationViewModel";
 import { useAppPreferences, useThemedStyles } from "../../preferences";

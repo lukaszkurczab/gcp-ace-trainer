@@ -6,7 +6,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -29,7 +29,7 @@ tags:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:at-session-end"
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:10:feedback-timing:at-session-end"
 
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
@@ -192,64 +192,64 @@ tags:
     id: "patternly:session:continue:alg-complexity-amortized-010"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-custom-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     timeout: 30000
 - assertVisible:
-    id: "patternly:summary:configuration:algorithms:algorithms-custom-practice:1:10:at-session-end"
+    id: "patternly:summary:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:10:at-session-end"
 - assertNotVisible:
     id: "patternly:session:question:alg-complexity-amortized-011"
 
 - scrollUntilVisible:
     element:
-      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
     direction: UP
     centerElement: true
 - assertVisible:
-    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:0"
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
 - scrollUntilVisible:
     element:
-      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:0"
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:0"
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
 - assertVisible:
-    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:0"
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:0"
 - scrollUntilVisible:
     element:
-      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:3"
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
     direction: DOWN
     centerElement: true
 - assertVisible:
-    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:3"
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
 - scrollUntilVisible:
     element:
-      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:3"
-    direction: DOWN
-    centerElement: true
-- tapOn:
-    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:3"
-- assertVisible:
-    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:3"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:6"
-    direction: DOWN
-    centerElement: true
-- assertVisible:
-    id: "patternly:session:reason:algorithms:algorithms-custom-practice:1:occurrence:6"
-- scrollUntilVisible:
-    element:
-      id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:6"
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:session:details-toggle:algorithms:algorithms-custom-practice:1:occurrence:6"
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
 - assertVisible:
-    id: "patternly:session:details:algorithms:algorithms-custom-practice:1:occurrence:6"
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:3"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
+- assertVisible:
+    id: "patternly:session:details:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:occurrence:6"
 
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
+    id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - assertVisible:
     id: "patternly:practice:hub:root"
 - tapOn:
@@ -259,12 +259,12 @@ tags:
 - tapOn:
     id: "main-tab-bar-home"
 - assertVisible:
-    id: "patternly:home:track-card:algorithms"
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 - killApp
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - assertNotVisible:
-    id: "patternly:resume:card:algorithms:algorithms-custom-practice:1"
+    id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"

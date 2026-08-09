@@ -28,7 +28,7 @@ async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
 }
 
 async function seedResettableLearningState() {
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: active.startedAt }));
   await addTrainingAttempt(attempt());

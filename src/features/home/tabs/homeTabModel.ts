@@ -1,7 +1,7 @@
 import type { IconName } from "../../../components";
 import type { TrackDisplay, TrainingAttempt, TrainingSession } from "../../../domain";
-import type { AlgorithmsRecommendationAction, AlgorithmsDashboard } from "../../../application/algorithms";
-import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/cloud-certification";
+import type { AlgorithmsRecommendationAction, CodingInterviewDashboard } from "../../../application/coding-interview";
+import { getCertificationMode, isCertificationPracticeModeId, type CertificationPracticeModeId } from "../../../tracks/certification";
 import { buildCertificationPracticeResumeRoute } from "../../practice/sessionConfig";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
@@ -46,7 +46,7 @@ export type BuildHomeTabModelInput = {
   activeTrack: TrackDisplay;
   activeSession?: TrainingSession | null;
   analytics: AnalyticsData;
-  algorithmsDashboard: AlgorithmsDashboard | null;
+  algorithmsDashboard: CodingInterviewDashboard | null;
   dashboardError: string | null;
   trainingAttempts: readonly TrainingAttempt[];
 };
@@ -70,7 +70,7 @@ export function buildHomeTabModel(input: BuildHomeTabModelInput): HomeTabModel {
 
 function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): HomeRecommendationModel | null {
   const session = input.activeSession;
-  if (input.activeTrack.id !== "cloud-certification" || !session || session.status !== "active" || session.trackId !== "cloud-certification" || !isCertificationPracticeModeId(session.modeId)) return null;
+  if (input.activeTrack.id !== "google-cloud-associate-cloud-engineer" || !session || session.status !== "active" || session.trackId !== "google-cloud-associate-cloud-engineer" || !isCertificationPracticeModeId(session.modeId)) return null;
   const modeTitle = getCertificationMode(session.modeId).title;
   try {
     buildCertificationPracticeResumeRoute(session);
@@ -101,7 +101,7 @@ function buildCertificationResumeRecommendation(input: BuildHomeTabModelInput): 
 }
 
 function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeRecommendationModel[] {
-  if (input.activeTrack.id !== "algorithms") return [];
+  if (input.activeTrack.id !== "coding-interview-dsa-problem-solving") return [];
   if (input.dashboardError) {
     return [{ action: { kind: "unavailable", reason: input.dashboardError }, detail: input.dashboardError, enabled: false, icon: "alert-triangle", label: "Unavailable", primaryLabel: "Unavailable", title: "Recommendation unavailable", tone: "warning", unavailableReason: input.dashboardError }];
   }
@@ -121,7 +121,7 @@ function buildAlgorithmsRecommendations(input: BuildHomeTabModelInput): HomeReco
   }];
 }
 
-function primaryLabelFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): string {
+function primaryLabelFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
   if (reason === "active_session") return "Continue session";
   if (reason === "overdue_review" || reason === "repeated_mistake") return "Start review";
   if (reason === "learn_approach") return "Start learning";
@@ -131,20 +131,20 @@ function primaryLabelFor(reason: AlgorithmsDashboard["recommendation"]["reason"]
   return "Choose practice scope";
 }
 
-function iconFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): IconName {
+function iconFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): IconName {
   if (reason === "active_session") return "practice";
   if (reason === "overdue_review" || reason === "repeated_mistake") return "rotate-ccw";
   return "route";
 }
 
-function labelFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): string {
+function labelFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
   if (reason === "active_session") return "Continue";
   if (reason === "overdue_review") return "Due review";
   if (reason === "repeated_mistake") return "Priority review";
   return "Recommended";
 }
 
-function titleFor(reason: AlgorithmsDashboard["recommendation"]["reason"]): string {
+function titleFor(reason: CodingInterviewDashboard["recommendation"]["reason"]): string {
   if (reason === "active_session") return "Continue active session";
   if (reason === "overdue_review" || reason === "repeated_mistake") return "Weak Area Review";
   if (reason === "learn_approach") return "Learn Approach";

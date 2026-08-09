@@ -57,7 +57,7 @@ test("route coverage has one native or inline shell owner and preserves active-s
     assert.match(source(path), /<AppShellHeader\b/);
   }
 
-  assert.match(source("src/features/algorithms/session/SessionShell.tsx"), /<Screen edges=\{\["top", "bottom"\]\}/);
+  assert.match(source("src/features/coding-interview/session/SessionShell.tsx"), /<Screen edges=\{\["top", "bottom"\]\}/);
   assert.match(source("src/features/practice/PracticeSessionSurface.tsx"), /<SessionShell\b/);
   assert.match(source("src/features/simulation/SimulationSessionSurface.tsx"), /<SessionShell\b/);
 });
@@ -121,7 +121,7 @@ test("Screen and SessionShell remain the only general and active-session page ow
   assert.deepEqual(scrollViewOwners, ["src/features/simulation/navigator/SimulationQuestionNavigator.tsx"]);
   assert.match(screen, /<SafeAreaView[\s\S]*<ScrollView/);
   assert.match(header, /placement === "stack"[\s\S]*<SafeAreaView edges=\{\["top"\]\}/);
-  assert.doesNotMatch(source("src/features/algorithms/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);
+  assert.doesNotMatch(source("src/features/coding-interview/session/SessionShell.tsx"), /SafeAreaView|ScrollView/);
 });
 
 test("representative Home, Settings, setup, session, and result routes keep canonical ownership", () => {
@@ -130,7 +130,7 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   const settings = source("src/features/home/AppearanceSettingsScreen.tsx");
   const preferenceSelection = source("src/features/home/PreferenceSelectionScreen.tsx");
   const setup = source("src/features/practice/PracticeSetupScreen.tsx");
-  const session = source("src/features/algorithms/session/SessionShell.tsx");
+  const session = source("src/features/coding-interview/session/SessionShell.tsx");
   const result = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
 
   assert.match(home, /<Screen[\s\S]*<AppShellHeader \/>/);

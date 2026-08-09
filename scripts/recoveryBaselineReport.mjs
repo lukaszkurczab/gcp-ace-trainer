@@ -18,8 +18,8 @@ const testCaseCount = testPaths.reduce(
 const packageScripts = Object.keys(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).scripts ?? {}).sort();
 const activeContent = {
   contentBoundary: relative(root, join(root, "src/content")),
-  productionContentPresent: existsSync(join(root, "src/tracks/algorithms/content")) || existsSync(join(root, "data/question-bank")),
-  certificationCatalog: relative(root, join(root, "src/tracks/cloud-certification/certificationContentCatalog.ts")),
+  productionContentPresent: existsSync(join(root, "src/tracks/coding-interview/content")) || existsSync(join(root, "data/question-bank")),
+  certificationCatalog: relative(root, join(root, "src/tracks/certification/certificationContentCatalog.ts")),
 };
 
 const commands = [

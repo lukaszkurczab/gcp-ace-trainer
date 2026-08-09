@@ -93,7 +93,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
   selection.items.forEach(validateAlgorithmInteractionItem);
   const sessionInput = {
     id: input.sessionId,
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
     modeId: ALGORITHM_MODE_IDS.interviewSimulation,
     configurationSnapshot: {
       answerChanges: "untilFinalSubmission",
@@ -111,7 +111,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     requestedLength: 40,
     actualLength: 40,
     currentItemIndex: 0,
-    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: input.contentVersion, itemId: item.id, trackId: "algorithms" } })),
+    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: input.contentVersion, itemId: item.id, trackId: "coding-interview-dsa-problem-solving" } })),
     optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => {
       const occurrenceId = `${input.sessionId}:occurrence:${index}`;
       return [occurrenceId, createAlgorithmOptionOrder(item, occurrenceId)];
@@ -192,7 +192,7 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
     const attempt = createTrainingAttempt({
       id: `${input.session.id}:attempt:${occurrence.occurrenceId}`,
       sessionId: input.session.id,
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
       modeId: input.session.modeId,
       occurrenceId: occurrence.occurrenceId,
       item: occurrence.item,
@@ -218,18 +218,18 @@ export function finalizeAlgorithmsInterviewSimulation(input: Readonly<{
   const result = createTrainingSessionResult({
     id: `${input.session.id}:result`,
     sessionId: input.session.id,
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
     totalOccurrences: input.session.itemOrder.length,
     answeredOccurrenceIds,
     unansweredOccurrenceIds,
     completedAt: input.completedAt,
-    evidence: createFamilyEnvelope({ familyId: "algorithms", details: { activeForegroundMs: input.session.activeForegroundMs, correctCount, incorrectCount, maxPoints, partialCount, pointsEarned, unansweredCount: unansweredOccurrenceIds.length } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { activeForegroundMs: input.session.activeForegroundMs, correctCount, incorrectCount, maxPoints, partialCount, pointsEarned, unansweredCount: unansweredOccurrenceIds.length } }),
   });
   return Object.freeze({ attempts: Object.freeze(attempts), frozenDraft: input.frozenDraft, result, reviewMutations: Object.freeze(reviewMutations), session });
 }
 
 function assertAlgorithmsInterviewSimulationSession(session: TrainingSession): void {
-  if (session.trackId !== "algorithms" || session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || !session.taxonomyVersion || !session.planFingerprint || session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "countdownForeground" || session.configurationSnapshot.timerDurationMs !== 2_700_000 || session.conditionalReinsertSlots?.length) {
+  if (session.trackId !== "coding-interview-dsa-problem-solving" || session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation || !session.taxonomyVersion || !session.planFingerprint || session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "countdownForeground" || session.configurationSnapshot.timerDurationMs !== 2_700_000 || session.conditionalReinsertSlots?.length) {
     throw new Error("Training session is not a canonical Algorithms Interview Simulation.");
   }
 }

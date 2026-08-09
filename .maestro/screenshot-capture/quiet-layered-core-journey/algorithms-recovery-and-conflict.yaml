@@ -9,7 +9,7 @@ tags:
 - openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -25,31 +25,31 @@ tags:
     timeout: 30000
 
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__010__session-exit__pause-or-end__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 
 - killApp
 - launchApp
 - scrollUntilVisible:
     element:
-      id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+      id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     direction: DOWN
     visibilityPercentage: 20
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__020__resume-card__after-relaunch__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - scrollUntilVisible:
     element:
-      id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+      id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     direction: DOWN
     visibilityPercentage: 50
     timeout: 30000
 - tapOn:
-    id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-001"
@@ -57,9 +57,9 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/11__algorithms__030__session__recovered-after-relaunch__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
       id: "main-tab-bar-practice"
@@ -72,12 +72,12 @@ tags:
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:practice:mode-card:algorithms-independent-practice"
+      id: "patternly:practice:mode-card:coding-interview-independent-practice"
     direction: DOWN
     centerElement: true
     visibilityPercentage: 50
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-independent-practice"
+    id: "patternly:practice:mode-card:coding-interview-independent-practice"
 - extendedWaitUntil:
     visible: "Choose a scope for Independent Practice"
     timeout: 30000

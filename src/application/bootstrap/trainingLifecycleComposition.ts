@@ -1,4 +1,4 @@
-import { createAlgorithmsFamilyRuntime } from "../algorithms";
+import { createCodingInterviewFamilyRuntime } from "../coding-interview";
 import { createCertificationFamilyRuntime } from "../certification";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
@@ -87,7 +87,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     tracks: { getTrackRegistration },
     runtimes: {
       resolve(familyId) {
-        if (familyId === "algorithms") return createAlgorithmsFamilyRuntime();
+        if (familyId === "coding_interview") return createCodingInterviewFamilyRuntime();
         if (familyId === "certification") return createCertificationFamilyRuntime();
         throw new Error(`No family runtime is installed for ${familyId}.`);
       },

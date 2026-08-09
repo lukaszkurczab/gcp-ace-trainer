@@ -1,13 +1,13 @@
 
 export const ALGORITHM_MODE_IDS = {
-  learnApproach: "algorithms-learn-approach",
-  guidedPractice: "algorithms-guided-practice",
-  customPractice: "algorithms-custom-practice",
-  recognizePatterns: "algorithms-recognize-patterns",
-  contrastPractice: "algorithms-contrast-practice",
-  weakAreaReview: "algorithms-weak-area-review",
-  independentPractice: "algorithms-independent-practice",
-  interviewSimulation: "algorithms-interview-simulation",
+  learnApproach: "coding-interview-learn-approach",
+  guidedPractice: "coding-interview-guided-practice",
+  customPractice: "coding-interview-custom-practice",
+  recognizePatterns: "coding-interview-recognize-patterns",
+  contrastPractice: "coding-interview-contrast-practice",
+  weakAreaReview: "coding-interview-weak-area-review",
+  independentPractice: "coding-interview-independent-practice",
+  interviewSimulation: "coding-interview-simulation",
 } as const;
 
 export type AlgorithmModeId = typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS];

@@ -18,16 +18,16 @@ import {
   subscribeAlgorithmsPracticeProjectionRefresh,
   type AlgorithmsPracticeProjection,
   submitAlgorithmsPracticeResponse,
-} from "../../application/algorithms";
+} from "../../application/coding-interview";
 import { TrainingApplicationFailure, type PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
-import { ALGORITHMS_TRACK_ID, type TrainingSession } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
-import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms";
-import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms/domain";
+import { getAlgorithmMode, isAlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview";
+import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain";
 import { spacing } from "../../theme";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
 import {
@@ -54,7 +54,7 @@ type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeAlgorithmsPra
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
-  if (route.params.trackId === "cloud-certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
+  if (route.params.trackId === "google-cloud-associate-cloud-engineer" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
     return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
   }
   const styles = useThemedStyles(createStyles);
@@ -67,10 +67,11 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   const [exit, setExit] = useState<"none" | "leave">("none");
   const permitRouteExit = useRef(false);
 
-  const algorithmsMode = route.params.trackId === ALGORITHMS_TRACK_ID && isAlgorithmModeId(route.params.mode)
+  const algorithmsMode = route.params.trackId === CODING_INTERVIEW_TRACK_ID && isAlgorithmModeId(route.params.mode)
     ? route.params.mode
     : null;
   const requestedMode = algorithmsMode as Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>;
+  const certificationUnavailableDescription = "Certification has no approved bundled artifact yet. Coding Interview sessions remain available.";
 
   useEffect(() => {
     if (!algorithmsMode || algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) return;
@@ -136,7 +137,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   }), [navigation, state]);
 
   if (!algorithmsMode) {
-    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("Certification has no approved bundled artifact yet. Algorithms sessions remain available.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
+    return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t(certificationUnavailableDescription)} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   }
   if (algorithmsMode === ALGORITHM_MODE_IDS.interviewSimulation) {
     return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Interview Simulation unavailable")} description={t("Interview Simulation must start from its validated 40-item profile entry. No topic-based substitute session was created.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
@@ -342,7 +343,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
 async function loadOrStartAlgorithmsPractice(params: PracticeSessionRouteParams, modeId: Exclude<typeof ALGORITHM_MODE_IDS[keyof typeof ALGORITHM_MODE_IDS], typeof ALGORITHM_MODE_IDS.interviewSimulation>) {
   const active = await loadActiveTrainingSession();
   if (active) {
-    if (active.trackId !== ALGORITHMS_TRACK_ID || active.modeId !== modeId) throw new ActiveAlgorithmsSessionConflict(active);
+    if (active.trackId !== CODING_INTERVIEW_TRACK_ID || active.modeId !== modeId) throw new ActiveAlgorithmsSessionConflict(active);
     return getAlgorithmsPracticeProjection();
   }
   try {

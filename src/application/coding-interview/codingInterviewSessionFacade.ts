@@ -18,9 +18,9 @@ import {
   composeCommittedAlgorithmPracticeFeedback,
   getAlgorithmsInterviewSimulationRemainingMs,
   mutateAlgorithmsInterviewSimulationDraft,
-} from "../../tracks/algorithms";
-import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/algorithms/domain";
-import type { AlgorithmsLifecyclePreparationRequest } from "./AlgorithmsFamilyRuntime";
+} from "../../tracks/coding-interview";
+import { ALGORITHM_MODE_IDS, type AlgorithmModeId, type AlgorithmResponse } from "../../tracks/coding-interview/domain";
+import type { AlgorithmsLifecyclePreparationRequest } from "./CodingInterviewFamilyRuntime";
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { AlgorithmFeedbackDocument } from "../../content/contracts";
@@ -94,7 +94,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
 }>;
 
 export type AlgorithmsInterviewSimulationEntry = Readonly<{
-  trackId: "algorithms";
+  trackId: "coding-interview-dsa-problem-solving";
   modeId: typeof ALGORITHM_MODE_IDS.interviewSimulation;
   profileId: string;
   requestedLength: 40;
@@ -108,7 +108,7 @@ type StartAlgorithmsSessionInput = Omit<AlgorithmsLifecyclePreparationRequest, "
 /** UI-facing canonical entry points. No storage, runtime, selection or timer ownership leaks into presentation. */
 export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput): Promise<PreparedSession> {
   const prepared = await startTrainingSession({
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
     modeId: input.modeId,
     source: input.source,
     request: input,
@@ -119,7 +119,7 @@ export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput)
 
 /** Declared profile identity only; presentation never reinterprets a topic as a simulation profile. */
 export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimulationEntry {
-  const availability = getBundledContentAvailability("algorithms");
+  const availability = getBundledContentAvailability("coding-interview-dsa-problem-solving");
   if (availability.kind !== "available" || !availability.declaredModes.includes(ALGORITHM_MODE_IDS.interviewSimulation)) {
     throw new Error("Algorithms Interview Simulation content is unavailable.");
   }
@@ -127,7 +127,7 @@ export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimu
   if (profiles.length !== 1 || profiles[0]?.totalOccurrences !== 40) {
     throw new Error("Algorithms Interview Simulation requires exactly one validated declared profile.");
   }
-  return Object.freeze({ trackId: "algorithms", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: profiles[0].profileId, requestedLength: 40 });
+  return Object.freeze({ trackId: "coding-interview-dsa-problem-solving", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: profiles[0].profileId, requestedLength: 40 });
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {
@@ -447,7 +447,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
     loadTrainingAttempts(),
   ]);
   const session = history.find((candidate) => candidate.id === sessionId);
-  if (!session || session.trackId !== "algorithms" || session.status !== "completed" || result.trackId !== "algorithms") {
+  if (!session || session.trackId !== "coding-interview-dsa-problem-solving" || session.status !== "completed" || result.trackId !== "coding-interview-dsa-problem-solving") {
     throw new Error("The completed session is not an Algorithms result.");
   }
   const feedbackTiming = feedbackTimingFromSession(session);
@@ -475,7 +475,7 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
   const lifecycle = getTrainingLifecycleUseCases();
   const session = await lifecycle.loadSessionRecord(sessionId);
   if (session.status === "completed") return getAlgorithmsPracticeResultProjection(sessionId);
-  if (session.status !== "abandoned" || session.trackId !== "algorithms" || !session.completedAt || session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
+  if (session.status !== "abandoned" || session.trackId !== "coding-interview-dsa-problem-solving" || !session.completedAt || session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) {
     throw new Error("Only a completed or explicitly ended Algorithms practice session has a summary.");
   }
   const attempts = (await loadTrainingAttempts()).value.filter((attempt) => attempt.sessionId === session.id);
@@ -503,7 +503,7 @@ export async function getAlgorithmsPracticeSummaryProjection(sessionId: string):
 
 async function requireAlgorithmsSession(): Promise<TrainingSession> {
   const session = await loadActiveTrainingSession();
-  if (!session || session.trackId !== "algorithms") throw new Error("No active Algorithms session is available.");
+  if (!session || session.trackId !== "coding-interview-dsa-problem-solving") throw new Error("No active Algorithms session is available.");
   return session;
 }
 

@@ -9,7 +9,7 @@ tags:
 - openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -45,21 +45,21 @@ tags:
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - killApp
 - launchApp
 - waitForAnimationToEnd:
     timeout: 30000
 - assertVisible:
-    id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+    id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - tapOn:
-    id: "patternly:resume:continue:algorithms:algorithms-guided-practice:1"
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - waitForAnimationToEnd:
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:root:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - assertVisible:
     id: "patternly:session:question:alg-complexity-amortized-001"
 - scrollUntilVisible:

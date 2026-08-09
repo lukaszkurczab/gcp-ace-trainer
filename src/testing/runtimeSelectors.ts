@@ -1,5 +1,5 @@
 import type { ContentItemRef, TrackId } from "../domain";
-import type { AlgorithmFeedbackMode } from "../tracks/algorithms/domain/algorithmModes";
+import type { AlgorithmFeedbackMode } from "../tracks/coding-interview/domain/algorithmModes";
 
 /**
  * Stable native identifiers for observing product runtime state in development

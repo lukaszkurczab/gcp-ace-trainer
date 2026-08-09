@@ -136,6 +136,8 @@ requirements:
     statement: Primary tabs are Today, Practice, Progress, and Settings, Activity is nested under Progress, and per-track goals affect recommendations and cadence without affecting entitlement, locking, scoring, mastery, streaks, or punitive messaging.
   - id: LEARNING-PRODUCTS-001
     statement: Certification, coding_interview, and design_interview are internal-only families; ten equal-status target track briefs are required, and no track enters the production registry without a real free vertical and complete core loop.
+  - id: TRACK-IDENTITY-CUTOVER-001
+    statement: Active registries and published artifacts use only coding_interview, coding-interview-dsa-problem-solving, and google-cloud-associate-cloud-engineer; algorithms and cloud-certification are not aliases, and persisted former track identities fail explicitly without translation or substitution.
   - id: CONTENT-PACKAGES-001
     statement: Complete Free nodes are bundled and Premium content uses immutable compressed whole-node packages authorized by Cloud Run, checksum and semantic validation, atomic activation, exact session pinning, and active-session-safe cache retention without per-question Firestore fetching or silent substitution.
   - id: ANALYTICS-REPORTS-001
@@ -199,8 +201,12 @@ requirementTestCoverage:
       requirementIds: [CODING-INTERVIEW-PROGRESS-EVIDENCE-001]
     - id: track-presentation-contract
       testPath: tests/trackPresentation.test.ts
-      testName: track presentation separates the Certification category from the concrete Google Cloud track
+      testName: track presentation exposes only the concrete Google Cloud track
       requirementIds: [TRACK-PRESENTATION-001]
+    - id: track-identity-cutover
+      testPath: tests/storageCutover.test.ts
+      testName: the atomic track cutover rejects every persisted former track identity without translating it
+      requirementIds: [TRACK-IDENTITY-CUTOVER-001]
     - id: research-build-settings-contract
       testPath: tests/settingsPresentation.test.ts
       testName: Settings exposes only its five working navigation actions
@@ -1147,7 +1153,7 @@ certification:
       label: Diagnostic Baseline
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: []
         sessionLength: 40
@@ -1163,7 +1169,7 @@ certification:
       label: Focus Practice
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: [topic, sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1179,7 +1185,7 @@ certification:
       label: Scenario Practice
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: [competency, sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1195,7 +1201,7 @@ certification:
       label: Weak Area Review
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: [sessionLength]
         sessionLengths: [10, 20]
@@ -1211,7 +1217,7 @@ certification:
       label: Mixed Practice
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: [sessionLength]
         sessionLengths: [10, 20, 40]
@@ -1227,7 +1233,7 @@ certification:
       label: Quick Review
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer
       configuration:
         setupControls: []
         sessionLength: 10
@@ -1243,4 +1249,4 @@ certification:
       label: Exam Simulation
       owner:
         familyId: certification
-        trackId: cloud-certification
+        trackId: google-cloud-associate-cloud-engineer

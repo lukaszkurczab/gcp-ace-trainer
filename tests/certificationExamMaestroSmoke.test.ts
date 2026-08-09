@@ -7,14 +7,14 @@ test("RC Certification Maestro smoke traverses only the canonical product flow",
   const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "utf8");
 
   for (const selector of [
-    "patternly:home:select-track:cloud-certification",
+    "patternly:home:select-track:google-cloud-associate-cloud-engineer",
     "main-tab-bar-practice",
     "patternly:practice:mode-card:certification-exam-simulation",
   ]) assert.match(flow, new RegExp(selector));
   assert.match(listener, /patternly:content:audit-command-listener:ready/);
   assert.match(flow, /visible:\n        id: "patternly:home:change-track"/);
   assert.match(flow, /tapOn:\n          id: "patternly:home:change-track"/);
-  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:cloud-certification"/);
+  assert.match(flow, /scrollUntilVisible:\n    element:\n      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"/);
   assert.match(flow, /id: "main-tab-bar-practice"/);
   assert.match(flow, /Question 1 of 50/);
   assert.match(flow, /scrollUntilVisible:\n    element:\n      text: "Question 50, unanswered"/);

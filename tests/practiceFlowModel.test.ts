@@ -29,7 +29,7 @@ import {
   ALGORITHM_MODE_IDS,
   getAlgorithmItems,
   getRoadmapNodesWithActiveItems,
-} from "../src/tracks/algorithms";
+} from "../src/tracks/coding-interview";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { translate } from "../src/preferences/translations";
@@ -41,7 +41,7 @@ function attemptForItem(
   const itemRef = {
     contentVersion: getAlgorithmContentCatalog().getContentVersion(),
     itemId: item.id,
-    trackId: "algorithms" as const,
+    trackId: "coding-interview-dsa-problem-solving" as const,
   };
 
   return {
@@ -62,12 +62,12 @@ function attemptForItem(
       }],
     },
     sessionId: `session-${item.id}`,
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   };
 }
 
 test("Algorithms practice hub exposes only the three deliberate alternatives to Continue practice", () => {
-  const modes = buildPracticeModes(getTrackDisplay("algorithms"));
+  const modes = buildPracticeModes(getTrackDisplay("coding-interview-dsa-problem-solving"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
@@ -84,7 +84,7 @@ test("Algorithms Independent Practice keeps its canonical title in the Polish pr
 });
 
 test("Certification practice hub exposes every declared mode, including the canonical Exam Simulation", () => {
-  const modes = buildPracticeModes(getTrackDisplay("cloud-certification"));
+  const modes = buildPracticeModes(getTrackDisplay("google-cloud-associate-cloud-engineer"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
@@ -101,7 +101,7 @@ test("Certification practice hub exposes every declared mode, including the cano
 });
 
 test("Certification practice presentation composes the concrete Google Cloud name through Polish translation", () => {
-  const track = getTrackDisplay("cloud-certification");
+  const track = getTrackDisplay("google-cloud-associate-cloud-engineer");
   const analytics = buildAnalyticsData([], []);
   const topic = getCurrentPracticeTopic(track);
   const stats = buildPracticeStatsSummary({
@@ -139,7 +139,7 @@ test("Certification practice presentation composes the concrete Google Cloud nam
 
 test("Algorithms practice topic and statistics compose through Polish translation", async () => {
   await validateBundledContent();
-  const track = getTrackDisplay("algorithms");
+  const track = getTrackDisplay("coding-interview-dsa-problem-solving");
   const stats = buildPracticeStatsSummary({
     activeTrack: track,
     analytics: buildAnalyticsData([], []),
@@ -152,7 +152,7 @@ test("Algorithms practice topic and statistics compose through Polish translatio
     formatPracticeTopicDetail(topic.detail, pl),
     "Ćwiczenia z rozwiązywania problemów algorytmicznych według mapy tematów.",
   );
-  assert.equal(formatPracticeStatsTitle(stats, pl), "Algorytmy — Statystyki");
+  assert.equal(formatPracticeStatsTitle(stats, pl), "Rozmowa techniczna — Statystyki");
   assert.equal(
     formatPracticeStatsDetail(stats.detail, pl),
     "0 poprawnych, 0 częściowych, 0 niepoprawnych.",
@@ -162,7 +162,7 @@ test("Algorithms practice topic and statistics compose through Polish translatio
 test("route-selected Algorithms topic preserves authored copy and translates only structured 0/158 and 0/8 labels", async () => {
   await validateBundledContent();
   const roadmapTopic = buildTopicRoadmapNodes({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [],
   }).find((candidate) =>
     candidate.detail.kind === "algorithm-progress" &&
@@ -172,7 +172,7 @@ test("route-selected Algorithms topic preserves authored copy and translates onl
   assert.ok(roadmapTopic);
 
   const topic = resolvePracticeTopic({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     routeTopicId: roadmapTopic.id,
     trainingAttempts: [],
   });
@@ -201,7 +201,7 @@ test("route-selected Algorithms topic preserves authored copy and translates onl
 test("shared practice presentation rejects an unknown track instead of substituting another track", () => {
   const analytics = buildAnalyticsData([], []);
   const unknownTrack = {
-    ...getTrackDisplay("algorithms"),
+    ...getTrackDisplay("coding-interview-dsa-problem-solving"),
     familyId: "unregistered-family",
     id: "unregistered-track",
   };
@@ -235,7 +235,7 @@ test("shared practice presentation rejects an unknown track instead of substitut
 });
 
 test("practice presentation rejects unknown families and unsupported registered family members explicitly", () => {
-  const metadata = getTrackDisplay("cloud-certification");
+  const metadata = getTrackDisplay("google-cloud-associate-cloud-engineer");
   const registration = (
     id: string,
     familyId: string,
@@ -245,7 +245,6 @@ test("practice presentation rejects unknown families and unsupported registered 
     metadata: {
       accentColor: metadata.accentColor,
       accentMutedColor: metadata.accentMutedColor,
-      categoryLabel: metadata.categoryLabel,
       description: metadata.description,
       shortTitle: metadata.shortTitle,
       status: metadata.status,
@@ -270,7 +269,7 @@ test("practice presentation rejects unknown families and unsupported registered 
 test("every Algorithms roadmap topic with active items remains directly selectable", async () => {
   await validateBundledContent();
   const topics = buildTopicRoadmapNodes({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [],
   });
 
@@ -300,7 +299,7 @@ test("Algorithms roadmap distinguishes practiced topics from untouched available
   assert.ok(second);
 
   const topics = buildTopicRoadmapNodes({
-    activeTrackId: "algorithms",
+    activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [
       attemptForItem(first, "2026-07-28T10:00:00.000Z"),
       attemptForItem(second, "2026-07-28T11:00:00.000Z"),

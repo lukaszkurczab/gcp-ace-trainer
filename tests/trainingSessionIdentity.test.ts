@@ -27,10 +27,10 @@ function algorithmsRequest(roadmapNodeId: string) {
 
 test("Node production identity emits validated, distinct track/mode UUIDv4 values", async () => {
   const [first, second] = await Promise.all([
-    trainingSessionIdentity.create({ trackId: "algorithms", modeId: "algorithms-custom-practice" }),
-    trainingSessionIdentity.create({ trackId: "algorithms", modeId: "algorithms-custom-practice" }),
+    trainingSessionIdentity.create({ trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-custom-practice" }),
+    trainingSessionIdentity.create({ trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-custom-practice" }),
   ]);
-  const shape = /^algorithms:algorithms-custom-practice:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+  const shape = /^coding-interview-dsa-problem-solving:coding-interview-custom-practice:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
   assert.match(first, shape);
   assert.match(second, shape);
   assert.notEqual(first, second);
@@ -39,11 +39,11 @@ test("Node production identity emits validated, distinct track/mode UUIDv4 value
 test("identity format rejects malformed scope and non-v4 UUIDs without a fallback", () => {
   const uuid = "00000000-0000-4000-8000-000000000001";
   assert.equal(
-    formatTrainingSessionIdentity({ trackId: "cloud-certification", modeId: "certification-focus-practice", uuid }),
-    `cloud-certification:certification-focus-practice:${uuid}`,
+    formatTrainingSessionIdentity({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", uuid }),
+    `google-cloud-associate-cloud-engineer:certification-focus-practice:${uuid}`,
   );
-  assert.throws(() => formatTrainingSessionIdentity({ trackId: "algorithms", modeId: "bad:mode", uuid }), /valid mode ID/);
-  assert.throws(() => formatTrainingSessionIdentity({ trackId: "algorithms", modeId: "algorithms-custom-practice", uuid: "not-a-uuid" }), /UUIDv4/);
+  assert.throws(() => formatTrainingSessionIdentity({ trackId: "coding-interview-dsa-problem-solving", modeId: "bad:mode", uuid }), /valid mode ID/);
+  assert.throws(() => formatTrainingSessionIdentity({ trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-custom-practice", uuid: "not-a-uuid" }), /UUIDv4/);
 });
 
 test("Node and phone adapters use their platform crypto peer through extensionless resolution", () => {
@@ -69,29 +69,29 @@ test("development audit identity advances from durable history across modes and 
 
     let lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
     const first = await lifecycle.startSession({
-      trackId: "algorithms",
-      modeId: "algorithms-custom-practice",
+      trackId: "coding-interview-dsa-problem-solving",
+      modeId: "coding-interview-custom-practice",
       request: algorithmsRequest(roadmapNodeId),
     });
-    assert.equal(first.session.id, "algorithms:algorithms-custom-practice:1");
+    assert.equal(first.session.id, "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1");
     await lifecycle.abandonActiveSession();
 
     lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
     const second = await lifecycle.startSession({
-      trackId: "algorithms",
-      modeId: "algorithms-guided-practice",
+      trackId: "coding-interview-dsa-problem-solving",
+      modeId: "coding-interview-guided-practice",
       request: algorithmsRequest(roadmapNodeId),
     });
-    assert.equal(second.session.id, "algorithms:algorithms-guided-practice:2");
+    assert.equal(second.session.id, "coding-interview-dsa-problem-solving:coding-interview-guided-practice:2");
 
     await lifecycle.resetLearningState();
     lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
     const afterReset = await lifecycle.startSession({
-      trackId: "algorithms",
-      modeId: "algorithms-custom-practice",
+      trackId: "coding-interview-dsa-problem-solving",
+      modeId: "coding-interview-custom-practice",
       request: algorithmsRequest(roadmapNodeId),
     });
-    assert.equal(afterReset.session.id, "algorithms:algorithms-custom-practice:1");
+    assert.equal(afterReset.session.id, "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1");
   } finally {
     setDevelopment(previous);
   }
@@ -114,21 +114,21 @@ test("one injected identity port forwards exact lifecycle-owned IDs across both 
   });
   const roadmapNodeId = getAlgorithmContentCatalog().getItems()[0]!.taxonomy.roadmapNodeId;
   const algorithms = await lifecycle.startSession({
-    trackId: "algorithms",
-    modeId: "algorithms-custom-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-custom-practice",
     request: { ...algorithmsRequest(roadmapNodeId), sessionId: "caller-id-must-be-overwritten" },
   });
-  assert.equal(algorithms.session.id, "algorithms:algorithms-custom-practice:00000000-0000-4000-8000-000000000001");
+  assert.equal(algorithms.session.id, "coding-interview-dsa-problem-solving:coding-interview-custom-practice:00000000-0000-4000-8000-000000000001");
   await lifecycle.abandonActiveSession();
 
   const certification = await lifecycle.startSession({
-    trackId: "cloud-certification",
+    trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-diagnostic-baseline",
     request: { sessionId: "second-caller-id-must-be-overwritten" },
   });
-  assert.equal(certification.session.id, "cloud-certification:certification-diagnostic-baseline:00000000-0000-4000-8000-000000000002");
+  assert.equal(certification.session.id, "google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:00000000-0000-4000-8000-000000000002");
   assert.deepEqual(calls, [
-    "algorithms:algorithms-custom-practice",
-    "cloud-certification:certification-diagnostic-baseline",
+    "coding-interview-dsa-problem-solving:coding-interview-custom-practice",
+    "google-cloud-associate-cloud-engineer:certification-diagnostic-baseline",
   ]);
 });

@@ -1,4 +1,4 @@
-import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
+import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { calculatePercent, getDomainLabel } from "../../utils";
 
 export type SummaryMetrics = { totalCompletedExams: number; averageExamScore: number; bestExamScore: number; totalPracticeQuestionsAnswered: number };

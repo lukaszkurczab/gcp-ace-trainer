@@ -14,26 +14,26 @@ import {
 import type { PreparedSession, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { createAttemptId } from "../learningMutations/identity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
-import { AlgorithmContentCatalog } from "../../tracks/algorithms/algorithmContentCatalog";
-import { ALGORITHMS_RECOMMENDATION_POLICY, type AlgorithmsRecommendationPolicy } from "../../tracks/algorithms/algorithmsBlueprints";
+import { AlgorithmContentCatalog } from "../../tracks/coding-interview/algorithmContentCatalog";
+import { ALGORITHMS_RECOMMENDATION_POLICY, type AlgorithmsRecommendationPolicy } from "../../tracks/coding-interview/algorithmsBlueprints";
 import {
   selectAlgorithmSessionPlan,
   type AlgorithmReviewSource,
   type AlgorithmSelectionScope,
   type AlgorithmSessionSelection,
-} from "../../tracks/algorithms/algorithmSessionSelection";
-import { prepareAlgorithmsConditionalReinsertPlan } from "../../tracks/algorithms/algorithmConditionalReinsert";
+} from "../../tracks/coding-interview/algorithmSessionSelection";
+import { prepareAlgorithmsConditionalReinsertPlan } from "../../tracks/coding-interview/algorithmConditionalReinsert";
 import {
   finalizeAlgorithmsInterviewSimulation,
   mutateAlgorithmsInterviewSimulationDraft,
   prepareAlgorithmsInterviewSimulation,
-} from "../../tracks/algorithms/algorithmInterviewSimulation";
-import { getAlgorithmQuestionEntries } from "../../tracks/algorithms/algorithmItems";
-import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId, type AlgorithmFeedbackMode, type AlgorithmModeDefinition, type AlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
-import type { AlgorithmResponse } from "../../tracks/algorithms/domain/algorithmResponse";
-import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../../tracks/algorithms/algorithmReview";
-import { getAlgorithmInteractionCompleteness, submitAlgorithmInteraction } from "../../tracks/algorithms/algorithmInteractionHandlers";
-import { createAlgorithmOptionOrder } from "../../tracks/algorithms/algorithmOptionOrder";
+} from "../../tracks/coding-interview/algorithmInterviewSimulation";
+import { getAlgorithmQuestionEntries } from "../../tracks/coding-interview/algorithmItems";
+import { ALGORITHM_MODE_IDS, getAlgorithmMode, isAlgorithmModeId, type AlgorithmFeedbackMode, type AlgorithmModeDefinition, type AlgorithmModeId } from "../../tracks/coding-interview/domain/algorithmModes";
+import type { AlgorithmResponse } from "../../tracks/coding-interview/domain/algorithmResponse";
+import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../../tracks/coding-interview/algorithmReview";
+import { getAlgorithmInteractionCompleteness, submitAlgorithmInteraction } from "../../tracks/coding-interview/algorithmInteractionHandlers";
+import { createAlgorithmOptionOrder } from "../../tracks/coding-interview/algorithmOptionOrder";
 
 export type AlgorithmsPreparationRequest = Readonly<{
   requestedLength: number;
@@ -68,8 +68,8 @@ export type AlgorithmsRecommendationAction =
   | Readonly<{ kind: "choose_declared_scope"; modeId: typeof ALGORITHM_MODE_IDS.contrastPractice | typeof ALGORITHM_MODE_IDS.independentPractice; targetMentalUnitId?: string }>
   | Readonly<{ kind: "unavailable"; reason: string }>;
 
-export type AlgorithmsDashboardRecommendation = AlgorithmsRecommendation & Readonly<{ action: AlgorithmsRecommendationAction }>;
-export type AlgorithmsDashboard = Readonly<{ recommendation: AlgorithmsDashboardRecommendation }>;
+export type CodingInterviewDashboardRecommendation = AlgorithmsRecommendation & Readonly<{ action: AlgorithmsRecommendationAction }>;
+export type CodingInterviewDashboard = Readonly<{ recommendation: CodingInterviewDashboardRecommendation }>;
 
 /**
  * Pure Algorithms-family semantics. Application lifecycle use cases own storage,
@@ -85,8 +85,8 @@ export type AlgorithmsLifecyclePreparationRequest = Readonly<{
   scope?: AlgorithmSelectionScope;
 }>;
 
-export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
-  readonly familyId = "algorithms" as const;
+export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
+  readonly familyId = "coding_interview" as const;
 
   constructor(
     private readonly catalog: AlgorithmContentCatalog,
@@ -99,7 +99,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   async prepare(input: Readonly<{ trackId: string; modeId: string; source?: string; request: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PreparedSession> {
-    if (input.trackId !== "algorithms") throw new Error(`Algorithms runtime cannot prepare track ${input.trackId}.`);
+    if (input.trackId !== "coding-interview-dsa-problem-solving") throw new Error(`Algorithms runtime cannot prepare track ${input.trackId}.`);
     const mode = getAlgorithmMode(input.modeId);
     const request = preparationRequest(input.request);
     if (!mode.profile.supportedLengths.includes(request.requestedLength)) throw new Error(`Algorithms mode ${mode.id} does not support requested length ${request.requestedLength}.`);
@@ -127,7 +127,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     if (!blueprint || selection.actualLength !== selection.items.length || selection.items.length === 0) throw new Error(`Algorithms mode ${mode.id} has no valid declared practice plan.`);
     const base = {
       id: request.sessionId,
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
       modeId: mode.id,
       configurationSnapshot: practiceConfiguration(mode, blueprint, request.feedbackMode, request.reviewSource),
       requestedLength: request.requestedLength,
@@ -148,7 +148,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     const reviewedItemRefs = [...(request.reviewItemRefs ?? []), ...input.reviews.map((review) => review.sourceItem)];
     const planned = this.prepareConditionalReinsertPlan({
       optionOrderByItemId: Object.fromEntries(reviewedItemRefs
-        .filter((ref) => ref.trackId === "algorithms" && ref.contentVersion === this.catalog.getContentVersion())
+        .filter((ref) => ref.trackId === "coding-interview-dsa-problem-solving" && ref.contentVersion === this.catalog.getContentVersion())
         .map((ref) => {
           const item = this.catalog.getItemById(ref.itemId);
           return [item.id, createAlgorithmOptionOrder(item, `${request.sessionId}:reinsert:${item.id}`)];
@@ -271,19 +271,19 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
     }
   }
 
-  async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<AlgorithmsDashboard> {
-    if (input.trackId !== "algorithms") throw new Error("Algorithms dashboard requested for another track.");
+  async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<CodingInterviewDashboard> {
+    if (input.trackId !== "coding-interview-dsa-problem-solving") throw new Error("Algorithms dashboard requested for another track.");
     const recommendation = this.recommend({ evidence: algorithmEvidence(input.attempts, input.reviews, input.now, input.activeSession) });
     return Object.freeze({ recommendation: Object.freeze({ ...recommendation, action: this.actionForRecommendation(recommendation, input.activeSession) }) });
   }
 
   async queryProgress(input: Readonly<{ trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {
-    if (input.trackId !== "algorithms") throw new Error("Algorithms progress requested for another track.");
+    if (input.trackId !== "coding-interview-dsa-problem-solving") throw new Error("Algorithms progress requested for another track.");
     return Object.freeze({ attemptCount: input.attempts.length, dueReviewCount: input.reviews.filter((review) => review.dueAt <= input.now).length });
   }
 
   async queryReview(input: Readonly<{ trackId: string; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {
-    if (input.trackId !== "algorithms") throw new Error("Algorithms review requested for another track.");
+    if (input.trackId !== "coding-interview-dsa-problem-solving") throw new Error("Algorithms review requested for another track.");
     return Object.freeze({ due: Object.freeze(input.reviews.filter((review) => review.dueAt <= input.now)) });
   }
 
@@ -386,7 +386,7 @@ export class AlgorithmsFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private resumeAction(session: TrainingSession | null): AlgorithmsRecommendationAction {
-    if (!session || session.trackId !== "algorithms" || session.status !== "active" || !isAlgorithmModeId(session.modeId)) {
+    if (!session || session.trackId !== "coding-interview-dsa-problem-solving" || session.status !== "active" || !isAlgorithmModeId(session.modeId)) {
       return Object.freeze({ kind: "unavailable", reason: "The active Algorithms session is no longer available to resume." });
     }
     const item = session.itemOrder[session.currentItemIndex]?.item;
@@ -465,7 +465,7 @@ function preparationRequest(value: unknown): AlgorithmsLifecyclePreparationReque
 }
 
 function isAlgorithmsContentItemRef(value: unknown): value is ContentItemRef {
-  return isRecord(value) && value.trackId === "algorithms" &&
+  return isRecord(value) && value.trackId === "coding-interview-dsa-problem-solving" &&
     typeof value.itemId === "string" && Boolean(value.itemId.trim()) &&
     typeof value.contentVersion === "string" && Boolean(value.contentVersion.trim());
 }
@@ -502,7 +502,7 @@ function isAlgorithmsDueQueueReviewSession(session: TrainingSession): boolean {
 }
 
 function assertAlgorithmsSession(session: TrainingSession, contentVersion: string, taxonomyVersion: string): void {
-  if (session.trackId !== "algorithms" || session.contentVersion !== contentVersion || session.taxonomyVersion !== taxonomyVersion || !session.planFingerprint) {
+  if (session.trackId !== "coding-interview-dsa-problem-solving" || session.contentVersion !== contentVersion || session.taxonomyVersion !== taxonomyVersion || !session.planFingerprint) {
     throw new Error("Algorithms session does not match the exact bundled content identity.");
   }
   getAlgorithmMode(session.modeId);
@@ -534,7 +534,7 @@ function algorithmEvidence(attempts: readonly TrainingAttempt<unknown>[], review
     }
   }
   return Object.freeze({
-    ...(activeSession?.trackId === "algorithms" && activeSession.status === "active" ? { activeSessionId: activeSession.id } : {}),
+    ...(activeSession?.trackId === "coding-interview-dsa-problem-solving" && activeSession.status === "active" ? { activeSessionId: activeSession.id } : {}),
     boundedEvidenceByMentalUnit,
     learningStageByMentalUnit,
     overdueReviewByMentalUnit,

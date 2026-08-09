@@ -1,5 +1,5 @@
 import { MissingContentItemError, type ContentItemRef } from "../../domain/learning";
-import { CLOUD_CERTIFICATION_TRACK_ID } from "../../domain/tracks";
+import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID } from "../../domain/tracks";
 import { getCertificationMode, type CertificationQuestion } from "./domain";
 import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationQuickReview, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 
@@ -22,10 +22,10 @@ export class CertificationContentCatalog {
   getItemsForMode(modeId: string): readonly CertificationQuestion[] { getCertificationMode(modeId); return this.questions; }
   getItemById(itemId: string): CertificationQuestion {
     const item = this.questionsById.get(itemId);
-    if (!item) throw new MissingContentItemError(CLOUD_CERTIFICATION_TRACK_ID, itemId);
+    if (!item) throw new MissingContentItemError(GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, itemId);
     return item;
   }
   toContentItemRef(item: CertificationQuestion): ContentItemRef {
-    return { contentVersion: this.contentVersion, itemId: item.id, trackId: CLOUD_CERTIFICATION_TRACK_ID };
+    return { contentVersion: this.contentVersion, itemId: item.id, trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID };
   }
 }

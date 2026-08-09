@@ -1,4 +1,4 @@
-import type { CertificationQuestion } from "../../tracks/cloud-certification/domain";
+import type { CertificationQuestion } from "../../tracks/certification/domain";
 import type { AlgorithmFeedbackDocument } from "./feedbackDocument";
 
 export type PublishedAlgorithmChoiceInteraction = Readonly<{
@@ -89,8 +89,8 @@ export type PublishedAlgorithmsSimulationProfile = Readonly<{ profileId: string;
 
 export type PublishedAlgorithmsBank = Readonly<{
   formatVersion: 1;
-  trackId: "algorithms";
-  familyId: "algorithms";
+  trackId: "coding-interview-dsa-problem-solving";
+  familyId: "coding_interview";
   contentVersion: string;
   feedbackAssets: readonly PublishedAlgorithmFeedbackAsset[];
   items: readonly PublishedAlgorithmItem[];
@@ -194,7 +194,7 @@ export type PublishedCertificationQuickReview = Readonly<{
 
 export type PublishedCertificationBank = {
   formatVersion: 1;
-  trackId: "cloud-certification";
+  trackId: "google-cloud-associate-cloud-engineer";
   familyId: "certification";
   contentVersion: string;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Diagnostic Baseline. */

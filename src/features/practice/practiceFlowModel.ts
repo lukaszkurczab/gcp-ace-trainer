@@ -1,7 +1,7 @@
 import type { IconName } from "../../components";
 import {
-  ALGORITHMS_TRACK_ID,
-  CLOUD_CERTIFICATION_TRACK_ID,
+  CODING_INTERVIEW_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplay,
   getTrackRegistration,
   type TrackDisplay,
@@ -17,9 +17,9 @@ import {
   buildAlgorithmProgressFacts,
   getAlgorithmMode,
   getAlgorithmItemsForRoadmapNode,
-} from "../../tracks/algorithms";
-import type { CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
-import type { CertificationDomain, CertificationModeId } from "../../tracks/cloud-certification";
+} from "../../tracks/coding-interview";
+import type { CloudCertificationProgressViewModel } from "../../tracks/certification";
+import type { CertificationDomain, CertificationModeId } from "../../tracks/certification";
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
@@ -143,17 +143,17 @@ const cloudTopics: readonly TopicRoadmapNodeModel[] = [
 ];
 
 type PracticeFlowTrack =
-  | Readonly<{ display: TrackDisplay; kind: "algorithms" }>
+  | Readonly<{ display: TrackDisplay; kind: "coding_interview" }>
   | Readonly<{ display: TrackDisplay; kind: "certification" }>;
 
 export function resolvePracticeFlowRegistration(
   registration: TrackRegistration,
 ): PracticeFlowTrack["kind"] {
   switch (registration.familyId) {
-    case "algorithms":
+    case "coding_interview":
       switch (registration.id) {
-        case ALGORITHMS_TRACK_ID:
-          return "algorithms";
+        case CODING_INTERVIEW_TRACK_ID:
+          return "coding_interview";
         default:
           throw new UnsupportedTrackError(
             registration.id,
@@ -162,7 +162,7 @@ export function resolvePracticeFlowRegistration(
       }
     case "certification":
       switch (registration.id) {
-        case CLOUD_CERTIFICATION_TRACK_ID:
+        case GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID:
           return "certification";
         default:
           throw new UnsupportedTrackError(
@@ -192,7 +192,7 @@ export function getCurrentPracticeTopic(
   const track = resolvePracticeFlowTrack(activeTrack.id);
 
   switch (track.kind) {
-    case "algorithms": {
+    case "coding_interview": {
       const progress = buildAlgorithmProgressFacts({ attempts: trainingAttempts });
 
       return {
@@ -259,7 +259,7 @@ export function hasTrackProgress(input: {
   const track = resolvePracticeFlowTrack(input.activeTrackId);
 
   switch (track.kind) {
-    case "algorithms":
+    case "coding_interview":
       return input.trainingAttempts.some(
         (attempt) => attempt.trackId === track.display.id,
       );
@@ -275,9 +275,9 @@ export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel
   const track = resolvePracticeFlowTrack(activeTrack.id);
 
   switch (track.kind) {
-    case "algorithms":
+    case "coding_interview":
       return [
-        { detail: "Practice Algorithms review items that are currently due.", enabled: true, icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
+        { detail: "Practice Coding Interview review items that are currently due.", enabled: true, icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
         { detail: "Practice random questions from completed topics without hints or reinsert.", enabled: true, icon: "clipboard", mode: ALGORITHM_MODE_IDS.independentPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.independentPractice).title, tone: "success" },
         { detail: "Forty freely navigable items with feedback after final submission.", enabled: true, icon: "shield-check", mode: ALGORITHM_MODE_IDS.interviewSimulation, title: "Interview Simulation", tone: "warning" },
       ];
@@ -303,7 +303,7 @@ export function buildPracticeStatsSummary(input: {
   const track = resolvePracticeFlowTrack(input.activeTrack.id);
 
   switch (track.kind) {
-    case "algorithms": {
+    case "coding_interview": {
       const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
 
       return {
@@ -343,7 +343,7 @@ export function buildTrackProgressPercent(input: {
   const track = resolvePracticeFlowTrack(input.activeTrackId);
 
   switch (track.kind) {
-    case "algorithms": {
+    case "coding_interview": {
       const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
       const totalItems = progress.nodeProgress.reduce(
         (sum, node) => sum + node.itemCount,
@@ -371,7 +371,7 @@ export function buildTopicRoadmapNodes(input: {
   switch (track.kind) {
     case "certification":
       return [...cloudTopics];
-    case "algorithms": {
+    case "coding_interview": {
       const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
 
       return ALGORITHM_ROADMAP.nodes.flatMap((node) => {

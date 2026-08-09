@@ -6,12 +6,12 @@ import { AppShellHeader, EmptyState, Icon, IconTile, ListRow, LoadingState, Scre
 import { loadAlgorithmsDeclaredScopeOptions } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants/routes";
-import { ALGORITHMS_TRACK_ID } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID } from "../../domain";
 import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing } from "../../theme";
 import { useAppPreferences } from "../../preferences";
-import { getAlgorithmMode } from "../../tracks/algorithms";
+import { getAlgorithmMode } from "../../tracks/coding-interview";
 import { buildPracticeSessionConfig } from "./sessionConfig";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.ALGORITHMS_SCOPE_SELECTION>;
@@ -37,13 +37,14 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
   }, [route.params.modeId, route.params.targetMentalUnitId]);
 
   if (state.kind === "unavailable") {
-    return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} /><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
+    return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><EmptyState title={t("Practice scope unavailable")} description={t(state.reason)} actionLabel={t("Back to practice")} onActionPress={() => goBackOrHome(navigation)} /></Screen>;
   }
-  if (state.kind === "loading") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} /><LoadingState title={t("Loading practice scopes")} description={t("Reading the declared content scopes.")} /></Screen>;
+  if (state.kind === "loading") return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} /><LoadingState title={t("Loading practice scopes")} description={t("Reading the declared content scopes.")} /></Screen>;
+  const codingInterviewTrackId = CODING_INTERVIEW_TRACK_ID;
 
   return (
     <Screen scroll edges={["top"]} style={{ gap: spacing.lg }}>
-      <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Algorithms")} />
+      <AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Coding Interview")} />
       <SectionHeader title={`${t("Choose a scope for")} ${t(modeTitle)}`} subtitle={t("Choose a topic. Questions mix the skills in that topic without hints.")} />
       <View style={{ gap: spacing.sm }}>
         {state.options.map((option) => (
@@ -51,7 +52,7 @@ export function AlgorithmsScopeSelectionScreen({ navigation, route }: Props) {
             detail={t(option.detail)}
             key={JSON.stringify(option.scope)}
             leading={<IconTile name="route" tone="primary" />}
-            onPress={() => navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ algorithmScope: option.scope, mode: route.params.modeId, source: route.params.source, topicId: option.topicId, trackId: ALGORITHMS_TRACK_ID }))}
+            onPress={() => navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ algorithmScope: option.scope, mode: route.params.modeId, source: route.params.source, topicId: option.topicId, trackId: codingInterviewTrackId }))}
             testID={runtimeSelectors.practice.declaredScope(option.topicId)}
             title={option.title}
             trailing={<Icon color={colors.textMuted} name="chevron-right" size={18} />}

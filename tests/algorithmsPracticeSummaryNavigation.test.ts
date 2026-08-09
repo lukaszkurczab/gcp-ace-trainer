@@ -18,7 +18,7 @@ test("completed Algorithms practice replaces its runner with the session-keyed s
 });
 
 test("practice summary reloads the immutable result and runner navigation requires verified completion", () => {
-  const facade = source("src/application/algorithms/algorithmsSessionFacade.ts");
+  const facade = source("src/application/coding-interview/codingInterviewSessionFacade.ts");
   const summary = source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx");
   const session = source("src/features/practice/PracticeSessionScreen.tsx");
 

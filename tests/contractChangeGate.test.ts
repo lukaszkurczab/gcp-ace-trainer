@@ -13,6 +13,13 @@ const contractCompanionPaths = [
 ] as const;
 const requirementId = "CONTRACT-CHANGE-GATE-001";
 const requirementDiff = `+  - id: ${requirementId}\n`;
+const trackIdentityRequirementDiff = "+  - id: TRACK-IDENTITY-CUTOVER-001\n";
+const trackIdentityRequiredPaths = [
+  ...contractCompanionPaths,
+  "integration/contracts/content-release/release.lock.json",
+  "src/domain/tracks/trackRegistry.ts",
+  "tests/storageCutover.test.ts",
+] as const;
 const approvedDesignNeutralPlatformMigrationCommit = "a5eb8ac14b3753bd443486d94853468183605ad7";
 const approvedDesignNeutralPlatformMigrationPaths = [
   "src/components/SettingsBottomSheet.tsx",
@@ -208,6 +215,165 @@ test("accepts only the complete PO-057 design-neutral platform migration", () =>
     "Behavior change requires at least one added canonical requirement ID.",
     `UI change requires a Product Owner APPROVED design reference mapped to ${ordinaryUiChange}.`,
   ]);
+});
+
+test("accepts only documented design-neutral TRACK-01 identity maintenance", () => {
+  const identityUiPath = "src/features/home/HomeScreen.tsx";
+  const exactIdentityDiff = `diff --git a/${identityUiPath} b/${identityUiPath}\n--- a/${identityUiPath}\n+++ b/${identityUiPath}\n@@ -1 +1 @@\n-  const trackId = ALGORITHMS_TRACK_ID;\n+  const trackId = CODING_INTERVIEW_TRACK_ID;\n`;
+  const changedPaths = [identityUiPath, ...trackIdentityRequiredPaths];
+
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: exactIdentityDiff },
+  }), []);
+
+  const exactHomePresentationDiff = `diff --git a/${identityUiPath} b/${identityUiPath}\n--- a/${identityUiPath}\n+++ b/${identityUiPath}\n@@ -1 +1 @@\n-  const unavailable = "Algorithms recommendation is unavailable.";\n+  const unavailable = "Coding Interview recommendation is unavailable.";\n@@ -4 +4 @@\n-  throw new Error("The active Algorithms session changed before it could be resumed.");\n+  throw new Error("The active Coding Interview session changed before it could be resumed.");\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: exactHomePresentationDiff },
+  }), []);
+
+  const categoryPresentationPath = "src/features/home/SelectTrackScreen.tsx";
+  const categoryPresentationDiff = `diff --git a/${categoryPresentationPath} b/${categoryPresentationPath}\n--- a/${categoryPresentationPath}\n+++ b/${categoryPresentationPath}\n@@ -1 +1 @@\n-  return track.categoryLabel;\n+  return track.shortTitle;\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [categoryPresentationPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [categoryPresentationPath]: categoryPresentationDiff },
+  }), []);
+
+  const exactSeparatedSelectTrackDiff = `diff --git a/${categoryPresentationPath} b/${categoryPresentationPath}\n--- a/${categoryPresentationPath}\n+++ b/${categoryPresentationPath}\n@@ -1,3 +1,4 @@\n-  name={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}\n-  tone={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "info" : "primary"}\n-  return track.categoryLabel;\n+  const isCertificationTrack = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;\n+  name={isCertificationTrack ? "cloud" : "route"}\n+  tone={isCertificationTrack ? "info" : "primary"}\n+  return track.shortTitle;\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [categoryPresentationPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [categoryPresentationPath]: exactSeparatedSelectTrackDiff },
+  }), []);
+
+  const changedIconSeparatedSelectTrackDiff = exactSeparatedSelectTrackDiff.replace('? "cloud" : "route"', '? "star" : "route"');
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [categoryPresentationPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [categoryPresentationPath]: changedIconSeparatedSelectTrackDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${categoryPresentationPath}.`,
+  ]);
+
+  const progressPresentationPath = "src/features/home/tabs/ProgressTab.tsx";
+  const exactSeparatedProgressDiff = `diff --git a/${progressPresentationPath} b/${progressPresentationPath}\n--- a/${progressPresentationPath}\n+++ b/${progressPresentationPath}\n@@ -1,2 +1,3 @@\n-  name={activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}\n-  return "Start an Algorithms session to record local roadmap progress.";\n+  const isCertificationTrack = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;\n+  name={isCertificationTrack ? "cloud" : "route"}\n+  return "Start a Coding Interview session to record local roadmap progress.";\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [progressPresentationPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [progressPresentationPath]: exactSeparatedProgressDiff },
+  }), []);
+
+  const changedProgressIconDiff = exactSeparatedProgressDiff.replace('? "cloud" : "route"', '? "star" : "route"');
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [progressPresentationPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [progressPresentationPath]: changedProgressIconDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${progressPresentationPath}.`,
+  ]);
+
+  const identityAndStyleDiff = `${exactIdentityDiff}@@ -4 +4 @@\n-  const cardOpacity = 0.8;\n+  const cardOpacity = 0.9;\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: identityAndStyleDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${identityUiPath}.`,
+  ]);
+
+  const categoryOutsidePresentationPathDiff = `diff --git a/${identityUiPath} b/${identityUiPath}\n--- a/${identityUiPath}\n+++ b/${identityUiPath}\n@@ -1 +1 @@\n-  return track.categoryLabel;\n+  return track.shortTitle;\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: categoryOutsidePresentationPathDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${identityUiPath}.`,
+  ]);
+
+  const arbitraryCopyDiff = `diff --git a/${identityUiPath} b/${identityUiPath}\n--- a/${identityUiPath}\n+++ b/${identityUiPath}\n@@ -1 +1 @@\n-  const unavailable = "Algorithms recommendation is unavailable.";\n+  const unavailable = "Coding Interview dashboard is unavailable.";\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: arbitraryCopyDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${identityUiPath}.`,
+  ]);
+
+  const unrelatedUiPath = "src/features/NewTrackCard.tsx";
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [...changedPaths, unrelatedUiPath],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: {
+      [identityUiPath]: exactIdentityDiff,
+      [unrelatedUiPath]: "+  return <NewTrackCard />;\n",
+    },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${unrelatedUiPath}.`,
+  ]);
+
+  const familyNavigationDiff = `diff --git a/${unrelatedUiPath} b/${unrelatedUiPath}\n--- a/${unrelatedUiPath}\n+++ b/${unrelatedUiPath}\n@@ -1 +1 @@\n-  navigation.navigate("algorithms");\n+  navigation.navigate("coding_interview");\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [unrelatedUiPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [unrelatedUiPath]: familyNavigationDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${unrelatedUiPath}.`,
+  ]);
+
+  const iconCopyDiff = `diff --git a/${identityUiPath} b/${identityUiPath}\n--- a/${identityUiPath}\n+++ b/${identityUiPath}\n@@ -1 +1 @@\n-  return <Icon name="Algorithms" />;\n+  return <Icon name="Coding Interview" />;\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths,
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [identityUiPath]: iconCopyDiff },
+  }), [
+    `UI change requires a Product Owner APPROVED design reference mapped to ${identityUiPath}.`,
+  ]);
+
+  const separatedResultPath = "src/features/exam/ResultScreen.tsx";
+  const removedResultLine = 'export function ResultScreen() { const certification = result.trackId === "cloud-certification"; return <Button onPress={() => navigation.navigate(ROUTES.RESULT)}>{t("Done")}</Button>; }';
+  const exactSeparatedResultDiff = `diff --git a/${separatedResultPath} b/${separatedResultPath}\n--- a/${separatedResultPath}\n+++ b/${separatedResultPath}\n@@ -1 +1,5 @@\n-${removedResultLine}\n+const GOOGLE_CLOUD_TRACK_ID = "google-cloud-associate-cloud-engineer";\n+export function ResultScreen() {\n+  const certification = result.trackId === GOOGLE_CLOUD_TRACK_ID;\n+  return <Button onPress={() => navigation.navigate(ROUTES.RESULT)}>{t("Done")}</Button>;\n+}\n`;
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [separatedResultPath, ...trackIdentityRequiredPaths],
+    canonicalContractDiff: trackIdentityRequirementDiff,
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: { [separatedResultPath]: exactSeparatedResultDiff },
+  }), []);
+
+  for (const unsafeAddedLine of [
+    '  return <Button onPress={() => navigation.navigate(ROUTES.HOME)}>{t("Done")}</Button>;',
+    '  return <Button onPress={() => navigation.navigate(ROUTES.RESULT)} style={styles.changed}>{t("Done")}</Button>;',
+    '  return <Button onPress={() => navigation.navigate(ROUTES.RESULT)}>{t("Continue")}</Button>;',
+  ]) {
+    const unsafeSeparatedResultDiff = exactSeparatedResultDiff.replace(
+      '  return <Button onPress={() => navigation.navigate(ROUTES.RESULT)}>{t("Done")}</Button>;',
+      unsafeAddedLine,
+    );
+    assert.deepEqual(evaluateContractChangeGate({
+      changedPaths: [separatedResultPath, ...trackIdentityRequiredPaths],
+      canonicalContractDiff: trackIdentityRequirementDiff,
+      contract: loadCanonicalProductContract(),
+      sourceDiffs: { [separatedResultPath]: unsafeSeparatedResultDiff },
+    }), [
+      `UI change requires a Product Owner APPROVED design reference mapped to ${separatedResultPath}.`,
+    ], unsafeAddedLine);
+  }
 });
 
 test("prefers a longer exact-file UI owner over a matching directory owner", () => {

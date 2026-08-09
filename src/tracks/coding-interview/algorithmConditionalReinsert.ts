@@ -194,7 +194,7 @@ function getValidatedEntry(
   entryByItemId: ReadonlyMap<string, AlgorithmQuestionEntry>,
   role: "planned" | "source",
 ): AlgorithmQuestionEntry {
-  if (occurrence.item.trackId !== "algorithms") throw new Error(`Algorithms reinsert ${role} occurrence ${occurrence.occurrenceId} belongs to track ${occurrence.item.trackId}.`);
+  if (occurrence.item.trackId !== "coding-interview-dsa-problem-solving") throw new Error(`Algorithms reinsert ${role} occurrence ${occurrence.occurrenceId} belongs to track ${occurrence.item.trackId}.`);
   const entry = entryByItemId.get(occurrence.item.itemId);
   if (!entry) throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} is unavailable in the active catalog.`);
   if (occurrence.item.contentVersion === "") throw new Error(`Algorithms reinsert ${role} item ${occurrence.item.itemId} has no content version.`);
@@ -213,7 +213,7 @@ function branch(occurrence: TrainingSessionItemOccurrence, optionOrder: readonly
 }
 
 function toContentItemRef(entry: AlgorithmQuestionEntry, contentVersion: string): ContentItemRef {
-  return Object.freeze({ contentVersion, itemId: entry.question.id, trackId: "algorithms" });
+  return Object.freeze({ contentVersion, itemId: entry.question.id, trackId: "coding-interview-dsa-problem-solving" });
 }
 
 function contentItemRefKey(ref: ContentItemRef): string {

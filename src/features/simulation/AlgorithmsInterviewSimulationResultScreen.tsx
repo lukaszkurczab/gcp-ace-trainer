@@ -3,7 +3,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCallback, useState } from "react";
 import { View } from "react-native";
 
-import { getAlgorithmsPracticeResultProjection, type AlgorithmsSessionResultProjection } from "../../application/algorithms";
+import { getAlgorithmsPracticeResultProjection, type AlgorithmsSessionResultProjection } from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";

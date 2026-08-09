@@ -14,7 +14,7 @@ import {
   type PracticeFinalization,
   type PreparedSession,
 } from "../trainingLifecycle";
-import { isCertificationPracticeModeId, type CertificationPracticeModeId, type CertificationQuestion, type CertificationResponse } from "../../tracks/cloud-certification";
+import { isCertificationPracticeModeId, type CertificationPracticeModeId, type CertificationQuestion, type CertificationResponse } from "../../tracks/certification";
 
 type CertificationPracticeOpenInput = Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations"; competency?: string; source?: string; expectedSessionId?: string }>;
 export type CertificationPracticeOpenResult = Readonly<{ kind: "ready"; projection: CertificationPracticeProjection }> | Readonly<{ kind: "active_session_conflict"; session: TrainingSession }>;
@@ -60,7 +60,7 @@ export class CertificationExamExpiredError extends Error {
 }
 
 async function startCertificationPracticeSession(input: Readonly<{ modeId: CertificationPracticeModeId; requestedLength?: number; domain?: "setup_environment" | "planning_implementation" | "access_security" | "operations"; competency?: string; source?: string }>): Promise<PreparedSession> {
-  const prepared = await startTrainingSession({ trackId: "cloud-certification", modeId: input.modeId, source: input.source, request: input });
+  const prepared = await startTrainingSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: input.modeId, source: input.source, request: input });
   await getForegroundSessionTimerFacade().initialize(prepared.session);
   return prepared;
 }
@@ -68,7 +68,7 @@ async function startCertificationPracticeSession(input: Readonly<{ modeId: Certi
 export async function openCertificationPracticeSession(input: CertificationPracticeOpenInput): Promise<CertificationPracticeOpenResult> {
   const active = await loadActiveTrainingSession();
   if (input.expectedSessionId) return resumeExpectedCertificationPractice(active, input.expectedSessionId, input.modeId);
-  if (active) return active.trackId === "cloud-certification" && active.modeId === input.modeId
+  if (active) return active.trackId === "google-cloud-associate-cloud-engineer" && active.modeId === input.modeId
     ? resumeCertificationPractice(active)
     : Object.freeze({ kind: "active_session_conflict", session: active });
   try {
@@ -77,7 +77,7 @@ export async function openCertificationPracticeSession(input: CertificationPract
     if (!(cause instanceof TrainingApplicationFailure) || cause.code !== "active_session_conflict") throw cause;
     const raced = await loadActiveTrainingSession();
     if (!raced) throw cause;
-    return raced.trackId === "cloud-certification" && raced.modeId === input.modeId
+    return raced.trackId === "google-cloud-associate-cloud-engineer" && raced.modeId === input.modeId
       ? resumeCertificationPractice(raced)
       : Object.freeze({ kind: "active_session_conflict", session: raced });
   }
@@ -87,17 +87,17 @@ export async function openCertificationPracticeSession(input: CertificationPract
 export async function resumeExpectedCertificationExam(expectedSessionId: string): Promise<CertificationExamResumeResult> {
   const active = await loadActiveTrainingSession();
   if (!active) throw new TrainingApplicationFailure("resume_unavailable", `Expected Cloud exam ${expectedSessionId} is no longer active.`);
-  if (active.id !== expectedSessionId || active.trackId !== "cloud-certification" || active.modeId !== "certification-exam-simulation") {
+  if (active.id !== expectedSessionId || active.trackId !== "google-cloud-associate-cloud-engineer" || active.modeId !== "certification-exam-simulation") {
     return Object.freeze({ kind: "active_session_conflict", session: active });
   }
   const resumed = await getTrainingLifecycleUseCases().resumeActiveSession();
-  if (resumed.id !== expectedSessionId || resumed.trackId !== "cloud-certification" || resumed.modeId !== "certification-exam-simulation") {
+  if (resumed.id !== expectedSessionId || resumed.trackId !== "google-cloud-associate-cloud-engineer" || resumed.modeId !== "certification-exam-simulation") {
     return Object.freeze({ kind: "active_session_conflict", session: resumed });
   }
   return Object.freeze({ kind: "ready", projection: await getCertificationExamProjection() });
 }
 export async function startCertificationExam(source = "practiceHub"): Promise<PreparedSession> {
-  return startTrainingSession({ trackId: "cloud-certification", modeId: "certification-exam-simulation", source, request: {} });
+  return startTrainingSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation", source, request: {} });
 }
 export async function getCertificationPracticeProjection(): Promise<CertificationPracticeProjection> {
   const [session, attempts] = await Promise.all([requireActive(), loadTrainingAttempts()]);
@@ -303,7 +303,7 @@ async function assertCertificationExamIsActive(): Promise<void> {
 
 async function resumeExpectedCertificationPractice(active: TrainingSession | null, expectedSessionId: string, modeId: CertificationPracticeModeId): Promise<CertificationPracticeOpenResult> {
   if (!active) throw new TrainingApplicationFailure("resume_unavailable", `Expected Cloud practice session ${expectedSessionId} is no longer active.`);
-  if (active.id !== expectedSessionId || active.trackId !== "cloud-certification" || active.modeId !== modeId || !isCertificationPracticeModeId(active.modeId)) {
+  if (active.id !== expectedSessionId || active.trackId !== "google-cloud-associate-cloud-engineer" || active.modeId !== modeId || !isCertificationPracticeModeId(active.modeId)) {
     return Object.freeze({ kind: "active_session_conflict", session: active });
   }
   return resumeCertificationPractice(active);
@@ -311,7 +311,7 @@ async function resumeExpectedCertificationPractice(active: TrainingSession | nul
 
 async function resumeCertificationPractice(expected: TrainingSession): Promise<CertificationPracticeOpenResult> {
   const resumed = await getTrainingLifecycleUseCases().resumeActiveSession();
-  if (resumed.id !== expected.id || resumed.trackId !== "cloud-certification" || resumed.modeId !== expected.modeId || !isCertificationPracticeModeId(resumed.modeId)) {
+  if (resumed.id !== expected.id || resumed.trackId !== "google-cloud-associate-cloud-engineer" || resumed.modeId !== expected.modeId || !isCertificationPracticeModeId(resumed.modeId)) {
     return Object.freeze({ kind: "active_session_conflict", session: resumed });
   }
   await getForegroundSessionTimerFacade().restoreForResume(resumed);
@@ -320,7 +320,7 @@ async function resumeCertificationPractice(expected: TrainingSession): Promise<C
 
 async function requireActive(): Promise<TrainingSession> {
   const session = await loadActiveTrainingSession();
-  if (!session || session.trackId !== "cloud-certification") throw new Error("No active Cloud Certification session is available.");
+  if (!session || session.trackId !== "google-cloud-associate-cloud-engineer") throw new Error("No active Cloud Certification session is available.");
   return session;
 }
 

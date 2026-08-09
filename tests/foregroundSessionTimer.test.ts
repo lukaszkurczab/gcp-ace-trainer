@@ -8,10 +8,10 @@ import { installMemoryStorage, session } from "./journalTestSupport";
 
 test("foreground timer checkpoints monotonic segments with an explicit drift bound and never counts closed-app wall time", async () => {
   installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
   await saveTrainingSession(active);
   const initial = await saveActiveForegroundTimer(createForegroundTimerState({
-    schemaVersion: 1, timerVersion: 1, familyId: "algorithms", sessionId: active.id, trackId: active.trackId,
+    schemaVersion: 1, timerVersion: 1, familyId: "coding_interview", sessionId: active.id, trackId: active.trackId,
     accumulatedForegroundMs: 0, checkpointRevision: 1, lastCheckpointAt: "2026-07-16T10:00:00.000Z", running: false,
   }), null);
   let monotonic = 0;
@@ -39,10 +39,10 @@ test("foreground timer checkpoints monotonic segments with an explicit drift bou
 
 test("foreground timer rejects stale checkpoints and retains the previous durable checkpoint", async () => {
   installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } };
   await saveTrainingSession(active);
   const initial = createForegroundTimerState({
-    schemaVersion: 1, timerVersion: 1, familyId: "algorithms", sessionId: active.id, trackId: active.trackId,
+    schemaVersion: 1, timerVersion: 1, familyId: "coding_interview", sessionId: active.id, trackId: active.trackId,
     accumulatedForegroundMs: 100, checkpointRevision: 1, lastCheckpointAt: "2026-07-16T10:00:00.000Z", running: false,
   });
   const durable = await saveActiveForegroundTimer(initial, null);

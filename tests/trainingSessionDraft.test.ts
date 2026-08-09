@@ -14,7 +14,7 @@ import {
 } from "../src/storage/repositories";
 import { installMemoryStorage, session, timestamp } from "./journalTestSupport";
 
-const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
+const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
 
 async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
   return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
@@ -22,7 +22,7 @@ async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
 
 test("an occurrence-keyed draft persists, edits, and resumes without learning side effects", async () => {
   installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
   await saveTrainingSession(active);
   const first = createTrainingSessionDraft({
     sessionId: active.id,
@@ -59,7 +59,7 @@ test("an occurrence-keyed draft persists, edits, and resumes without learning si
 
 test("draft persistence rejects unknown occurrences and mismatched session scope", async () => {
   installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
   await saveTrainingSession(active);
   await assert.rejects(saveTrainingSessionDraft(createTrainingSessionDraft({
     sessionId: active.id,
@@ -84,7 +84,7 @@ test("immediate-feedback sessions cannot persist draft responses", async () => {
 
 test("clear local history removes the resumable draft", async () => {
   installMemoryStorage();
-  const active = { ...session(), modeId: "algorithms-interview-simulation", configurationSnapshot: draftConfiguration };
+  const active = { ...session(), modeId: "coding-interview-simulation", configurationSnapshot: draftConfiguration };
   await saveTrainingSession(active);
   await saveTrainingSessionDraft(createTrainingSessionDraft({ sessionId: active.id, trackId: active.trackId, responsesByOccurrenceId: {}, updatedAt: timestamp }));
   await clearPatternlyLocalHistory();

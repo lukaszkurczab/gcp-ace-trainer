@@ -1,6 +1,6 @@
-import { CLOUD_CERTIFICATION_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, type TrainingAttempt, type TrainingSession } from "../src/domain";
+import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, completeTrainingSession, createTrainingAttempt, createTrainingSession, type TrainingAttempt, type TrainingSession } from "../src/domain";
 import { installCertificationCatalog } from "../src/content/catalogRepository";
-import { scoreCertificationQuestion, type CertificationQuestion } from "../src/tracks/cloud-certification";
+import { scoreCertificationQuestion, type CertificationQuestion } from "../src/tracks/certification";
 
 export function makeQuestion(overrides: Partial<CertificationQuestion> = {}): CertificationQuestion {
   const id = overrides.id ?? "q-1";
@@ -9,15 +9,15 @@ export function makeQuestion(overrides: Partial<CertificationQuestion> = {}): Ce
 
 export function makeCompletedExamProjectionInputs(questions: readonly CertificationQuestion[], selected: Record<string, string[]> = {}): Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[] }> {
   const startedAt = "2026-01-01T10:00:00.000Z";
-  installCertificationCatalog({ formatVersion: 1, trackId: CLOUD_CERTIFICATION_TRACK_ID, familyId: "certification", contentVersion: "test", examExperienceProfile: fixtureProfile, items: questions });
-  const active = createTrainingSession({ id: "exam-1", trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: "certification-exam-simulation", configurationSnapshot: { kind: "certificationSimulation" }, requestedLength: questions.length, actualLength: questions.length, currentItemIndex: 0, itemOrder: questions.map((question, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: CLOUD_CERTIFICATION_TRACK_ID, itemId: question.id, contentVersion: "test" } })), optionOrderByOccurrence: Object.fromEntries(questions.map((question, index) => [`occurrence-${index}`, question.options.map((option) => option.id).reverse()])), activeForegroundMs: 0, contentVersion: "test", status: "active", startedAt });
+  installCertificationCatalog({ formatVersion: 1, trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, familyId: "certification", contentVersion: "test", examExperienceProfile: fixtureProfile, items: questions });
+  const active = createTrainingSession({ id: "exam-1", trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, modeId: "certification-exam-simulation", configurationSnapshot: { kind: "certificationSimulation" }, requestedLength: questions.length, actualLength: questions.length, currentItemIndex: 0, itemOrder: questions.map((question, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, itemId: question.id, contentVersion: "test" } })), optionOrderByOccurrence: Object.fromEntries(questions.map((question, index) => [`occurrence-${index}`, question.options.map((option) => option.id).reverse()])), activeForegroundMs: 0, contentVersion: "test", status: "active", startedAt });
   const session = completeTrainingSession(active, "2026-01-01T12:00:00.000Z");
   const attempts = session.itemOrder.flatMap((occurrence, index) => {
     const question = questions[index]!;
     const selectedOptionIds = selected[question.id];
     if (!selectedOptionIds) return [];
     const response = { kind: "option_selection" as const, selectedOptionIds };
-    return [createTrainingAttempt({ id: `attempt-${index}`, sessionId: session.id, trackId: CLOUD_CERTIFICATION_TRACK_ID, modeId: session.modeId, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result: scoreCertificationQuestion(question, response), reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: index === 0 ? [{ axisId: "exam-state", nodeId: "flagged" }] : [] }, answeredAt: session.completedAt!, committedAt: session.completedAt! })];
+    return [createTrainingAttempt({ id: `attempt-${index}`, sessionId: session.id, trackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, modeId: session.modeId, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response, result: scoreCertificationQuestion(question, response), reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: index === 0 ? [{ axisId: "exam-state", nodeId: "flagged" }] : [] }, answeredAt: session.completedAt!, committedAt: session.completedAt! })];
   });
   return { session, attempts };
 }

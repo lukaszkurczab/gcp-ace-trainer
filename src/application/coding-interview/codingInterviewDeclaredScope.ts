@@ -1,8 +1,8 @@
 import { getBundledContentAvailability } from "../../content/application/validateBundledContent";
 import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
-import { getAlgorithmSessionNodeById } from "../../tracks/algorithms";
-import type { AlgorithmSelectionScope } from "../../tracks/algorithms/algorithmSessionSelection";
-import { ALGORITHM_MODE_IDS } from "../../tracks/algorithms/domain";
+import { getAlgorithmSessionNodeById } from "../../tracks/coding-interview";
+import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
+import { ALGORITHM_MODE_IDS } from "../../tracks/coding-interview/domain";
 
 export type AlgorithmsDeclaredScopeMode =
   | typeof ALGORITHM_MODE_IDS.recognizePatterns
@@ -17,11 +17,11 @@ export type AlgorithmsDeclaredScopeOption = Readonly<{
 }>;
 
 /** Application-owned declared-scope read. Presentation receives choices, never the content catalog. */
-export function getAlgorithmsDeclaredScopeOptions(input: Readonly<{
+export function getCodingInterviewDeclaredScopeOptions(input: Readonly<{
   modeId: AlgorithmsDeclaredScopeMode;
   targetMentalUnitId?: string;
 }>): readonly AlgorithmsDeclaredScopeOption[] {
-  const availability = getBundledContentAvailability("algorithms");
+  const availability = getBundledContentAvailability("coding-interview-dsa-problem-solving");
   if (availability.kind !== "available" || !availability.declaredModes.includes(input.modeId)) {
     throw new Error("Algorithms practice content is unavailable.");
   }

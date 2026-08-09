@@ -1,13 +1,13 @@
 {
   "m3": {
-    "sessionId": "algorithms:algorithms-custom-practice:1",
+    "sessionId": "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1",
     "feedbackTiming": "atSessionEnd",
     "length": 10,
     "itemId": "alg-complexity-amortized-001",
     "selectedOptionId": "sequence_average"
   },
   "m4": {
-    "sessionId": "algorithms:algorithms-custom-practice:1",
+    "sessionId": "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1",
     "feedbackTiming": "afterEachAnswer",
     "length": 10,
     "itemId": "alg-complexity-amortized-001",
@@ -15,6 +15,6 @@
     "expectedResult": "incorrect"
   },
   "m5": {
-    "completedSessionId": "algorithms:algorithms-guided-practice:1"
+    "completedSessionId": "coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
   }
 }

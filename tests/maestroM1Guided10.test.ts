@@ -3,12 +3,12 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled/generatedArtifacts";
-import { AlgorithmContentCatalog, buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/algorithms";
+import { AlgorithmContentCatalog, buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
 
 type M1Manifest = Readonly<{
   release: Readonly<{ checksumSha256: string; releaseId: string; sourceRepositoryCommit: string }>;
-  session: Readonly<{ feedbackTiming: "afterEachAnswer"; length: 10; modeId: "algorithms-custom-practice"; roadmapNodeId: "complexity_and_constraints"; sessionId: string }>;
+  session: Readonly<{ feedbackTiming: "afterEachAnswer"; length: 10; modeId: "coding-interview-custom-practice"; roadmapNodeId: "complexity_and_constraints"; sessionId: string }>;
   detailsOnOrdinals: readonly number[];
   items: readonly Readonly<{ ordinal: number; itemId: string; selectedOptionIds: readonly string[]; expectedResult: "correct" | "incorrect" }>[];
 }>;
@@ -17,7 +17,7 @@ const manifest = JSON.parse(readFileSync(".maestro/m1-guided-10.expected-session
 const flow = readFileSync(".maestro/m1-guided-10.yaml", "utf8");
 
 test("M1 Custom 10 derives real item and option identities from the pinned Algorithms artifact", () => {
-  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
+  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving");
   assert.ok(reference, "Algorithms artifact must be bundled");
   const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
   assert.equal(buildAlgorithmProgressFacts({
@@ -36,7 +36,7 @@ test("M1 Custom 10 derives real item and option identities from the pinned Algor
 
   assert.deepEqual(manifest.release, {
     checksumSha256: reference.checksumSha256,
-    releaseId: GENERATED_BUNDLED_CONTENT_RELEASE.manifest.releaseId,
+    releaseId: reference.releaseId,
     sourceRepositoryCommit: reference.sourceRepositoryCommit,
   });
   assert.equal(plan.actualLength, 10);

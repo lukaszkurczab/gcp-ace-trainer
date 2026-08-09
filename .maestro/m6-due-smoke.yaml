@@ -6,7 +6,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -25,7 +25,7 @@ tags:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:after-each-answer"
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:10:feedback-timing:after-each-answer"
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
 - tapOn:
@@ -38,25 +38,25 @@ tags:
     id: "patternly:session:result:alg-complexity-amortized-001:correct"
 - scrollUntilVisible:
     element:
-      id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+      id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     direction: DOWN
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"
     timeout: 30000
 - openLink: "com.lkurczab.patternly://audit/clock/advance?milliseconds=604800000"
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-weak-area-review"
+    id: "patternly:practice:mode-card:coding-interview-weak-area-review"
 - extendedWaitUntil:
     visible:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:mode:algorithms-weak-area-review"
+    id: "patternly:session:mode:coding-interview-weak-area-review"
 - takeScreenshot: m6-due-item
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
@@ -71,12 +71,12 @@ tags:
 - takeScreenshot: m6-due-correct-feedback
 - scrollUntilVisible:
     element:
-      id: "patternly:session:leave:algorithms:algorithms-weak-area-review:2"
+      id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-weak-area-review:2"
     direction: DOWN
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-weak-area-review:2"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-weak-area-review:2"
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-weak-area-review:2"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-weak-area-review:2"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"
@@ -96,7 +96,7 @@ tags:
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-progress"

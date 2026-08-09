@@ -1,10 +1,10 @@
 import type { TrackId } from "../domain";
 import { getTrainingLifecycleUseCases } from "./trainingLifecycle";
-import type { AlgorithmsDashboard } from "./algorithms/AlgorithmsFamilyRuntime";
+import type { CodingInterviewDashboard } from "./coding-interview/CodingInterviewFamilyRuntime";
 import {
-  getAlgorithmsDeclaredScopeOptions,
+  getCodingInterviewDeclaredScopeOptions,
   type AlgorithmsDeclaredScopeMode,
-} from "./algorithms/algorithmsDeclaredScope";
+} from "./coding-interview/codingInterviewDeclaredScope";
 import {
   getActiveTrackId,
   getActiveTrainingSession,
@@ -18,7 +18,7 @@ import type { StorageIssue } from "../storage/repositories/result";
 import {
   buildCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
-} from "../tracks/cloud-certification";
+} from "../tracks/certification";
 
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
@@ -33,14 +33,14 @@ export async function loadActiveTrainingSession() { return getActiveTrainingSess
 export async function loadActiveTrainingSessionDraft() { return getActiveTrainingSessionDraft(); }
 
 /** Typed Home read. Presentation receives the family dashboard, never its runtime or repositories. */
-export async function loadAlgorithmsDashboard(): Promise<AlgorithmsDashboard> {
-  const dashboard = await getTrainingLifecycleUseCases().queryDashboard("algorithms");
-  if (!isAlgorithmsDashboard(dashboard)) throw new Error("Algorithms dashboard returned an unsupported projection.");
+export async function loadCodingInterviewDashboard(): Promise<CodingInterviewDashboard> {
+  const dashboard = await getTrainingLifecycleUseCases().queryDashboard("coding-interview-dsa-problem-solving");
+  if (!isCodingInterviewDashboard(dashboard)) throw new Error("Algorithms dashboard returned an unsupported projection.");
   return dashboard;
 }
 
 export async function loadAlgorithmsDeclaredScopeOptions(input: Readonly<{ modeId: AlgorithmsDeclaredScopeMode; targetMentalUnitId?: string }>) {
-  return getAlgorithmsDeclaredScopeOptions(input);
+  return getCodingInterviewDeclaredScopeOptions(input);
 }
 
 export async function loadCloudCertificationProgress(input: { now?: string; recentAttemptCount?: number } = {}): Promise<CloudCertificationProgressViewModel> {
@@ -54,7 +54,7 @@ export async function loadCloudCertificationProgress(input: { now?: string; rece
   });
 }
 
-function isAlgorithmsDashboard(value: unknown): value is AlgorithmsDashboard {
+function isCodingInterviewDashboard(value: unknown): value is CodingInterviewDashboard {
   if (!value || typeof value !== "object" || !("recommendation" in value)) return false;
   const recommendation = value.recommendation;
   return Boolean(recommendation && typeof recommendation === "object" && "action" in recommendation && "explanation" in recommendation && "reason" in recommendation);

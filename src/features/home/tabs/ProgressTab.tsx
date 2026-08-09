@@ -12,13 +12,13 @@ import {
   SectionHeader,
 } from "../../../components";
 import {
-  CLOUD_CERTIFICATION_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
 } from "../../../domain";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import { spacing, typography } from "../../../theme";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/cloud-certification";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
@@ -63,6 +63,7 @@ export function ProgressTab({
     trainingAttempts,
   });
   const reviewAction = progress.reviewAction;
+  const isCertificationTrack = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
 
   if (progress.algorithmsProgress) {
     return (
@@ -136,7 +137,7 @@ export function ProgressTab({
               <View key={score.id} style={styles.performanceRow}>
                 <View style={styles.performanceHeader}>
                   <IconTile
-                    name={activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}
+                    name={isCertificationTrack ? "cloud" : "route"}
                     tone="info"
                   />
                   <View style={styles.performanceCopy}>
@@ -371,7 +372,7 @@ function formatDiagnosticFacts(
 }
 
 function getProgressEmptyTitle(trackId: TrackDisplay["id"]): string {
-  return trackId === CLOUD_CERTIFICATION_TRACK_ID
+  return trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID
     ? "No topic samples yet"
     : "No algorithm progress yet";
 }
@@ -380,8 +381,8 @@ function getProgressEmptyDescription(
   trackId: TrackDisplay["id"],
   hasData: boolean,
 ): string {
-  if (trackId !== CLOUD_CERTIFICATION_TRACK_ID) {
-    return "Start an Algorithms session to record local roadmap progress.";
+  if (trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) {
+    return "Start a Coding Interview session to record local roadmap progress.";
   }
 
   return hasData

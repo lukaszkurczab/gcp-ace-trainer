@@ -1,5 +1,5 @@
-import { AlgorithmContentCatalog } from "../tracks/algorithms/algorithmContentCatalog";
-import { CertificationContentCatalog } from "../tracks/cloud-certification/certificationContentCatalog";
+import { AlgorithmContentCatalog } from "../tracks/coding-interview/algorithmContentCatalog";
+import { CertificationContentCatalog } from "../tracks/certification/certificationContentCatalog";
 import type { PublishedAlgorithmsBank, PublishedCertificationBank } from "./contracts";
 import { ContentUnavailableError } from "./errors";
 

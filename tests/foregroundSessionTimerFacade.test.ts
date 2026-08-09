@@ -14,10 +14,10 @@ const startedAt = "2026-07-19T10:00:00.000Z";
 
 function simulationSession(duration = 2_700_000) {
   return createTrainingSession({
-    id: "simulation-1", trackId: "algorithms", modeId: "algorithms-interview-simulation",
+    id: "simulation-1", trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-simulation",
     configurationSnapshot: { kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: duration },
     requestedLength: 40, actualLength: 40, currentItemIndex: 0,
-    itemOrder: Array.from({ length: 40 }, (_, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "algorithms", contentVersion: "algorithms-core-0002", itemId: `item-${index}` } })),
+    itemOrder: Array.from({ length: 40 }, (_, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "coding-interview-dsa-problem-solving", contentVersion: "algorithms-core-0002", itemId: `item-${index}` } })),
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
     contentVersion: "algorithms-core-0002", taxonomyVersion: "algorithms-taxonomy-v2", planFingerprint: "a".repeat(64), status: "active", startedAt,
   });
@@ -27,32 +27,32 @@ function practiceSession() {
   return createTrainingSession({
     ...simulationSession(),
     id: "practice-1",
-    modeId: "algorithms-guided-practice",
+    modeId: "coding-interview-guided-practice",
     configurationSnapshot: { kind: "algorithmsPractice", feedbackMode: "afterEachAnswer", answerChanges: "untilSubmission", navigation: "linear", submission: "perItem", timer: "elapsedForeground" },
   });
 }
 
 function certificationPracticeSession() {
-  const contentVersion = "cloud-certification-core-0002";
+  const contentVersion = "google-cloud-associate-cloud-engineer-core-0002";
   return createTrainingSession({
-    id: "certification-practice-1", trackId: "cloud-certification", modeId: "certification-focus-practice",
+    id: "certification-practice-1", trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice",
     configurationSnapshot: { kind: "certificationFocusPractice", feedbackMode: "afterEachAnswer", answerChanges: "none", navigation: "linear", submission: "perItem", timer: "elapsedForeground" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "certification-occurrence-1", item: { trackId: "cloud-certification", contentVersion, itemId: "certification-item-1" } }],
+    itemOrder: [{ occurrenceId: "certification-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-item-1" } }],
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
-    contentVersion, taxonomyVersion: "cloud-certification-taxonomy-v2", planFingerprint: "b".repeat(64), status: "active", startedAt,
+    contentVersion, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "b".repeat(64), status: "active", startedAt,
   });
 }
 
 function certificationExamSession() {
-  const contentVersion = "cloud-certification-core-0002";
+  const contentVersion = "google-cloud-associate-cloud-engineer-core-0002";
   return createTrainingSession({
-    id: "certification-exam-1", trackId: "cloud-certification", modeId: "certification-exam-simulation",
+    id: "certification-exam-1", trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation",
     configurationSnapshot: { kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000, timerDeadlineAt: "2026-07-19T12:00:00.000Z" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "cloud-certification", contentVersion, itemId: "certification-exam-item-1" } }],
+    itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-exam-item-1" } }],
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
-    contentVersion, taxonomyVersion: "cloud-certification-taxonomy-v2", planFingerprint: "c".repeat(64), status: "active", startedAt,
+    contentVersion, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "c".repeat(64), status: "active", startedAt,
   });
 }
 
@@ -133,7 +133,7 @@ test("one family-neutral timer initializes and restores ordinary Certification f
   const f = fixture(undefined, "elapsed", certificationPracticeSession());
   await f.timer.initialize(f.session);
   assert.equal(f.getState()?.familyId, "certification");
-  assert.equal(f.getState()?.trackId, "cloud-certification");
+  assert.equal(f.getState()?.trackId, "google-cloud-associate-cloud-engineer");
   await f.timer.enterForeground(f.session);
   f.setNow(500);
   await f.timer.leaveForeground(f.getActiveSession());
@@ -158,7 +158,7 @@ test("a durable foreground timer from another family is rejected instead of reus
     assert.match(error.message, /could not be initialized/);
     return true;
   });
-  assert.equal(f.getState()?.familyId, "algorithms");
+  assert.equal(f.getState()?.familyId, "coding_interview");
   assert.equal(f.getState()?.sessionId, f.session.id);
 });
 

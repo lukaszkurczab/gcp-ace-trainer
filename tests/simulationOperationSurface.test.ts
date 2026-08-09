@@ -5,7 +5,7 @@ import test from "node:test";
 const screen = readFileSync("src/features/simulation/AlgorithmsInterviewSimulationScreen.tsx", "utf8");
 const panel = readFileSync("src/features/simulation/operation/SimulationOperationPanel.tsx", "utf8");
 const lifecycle = readFileSync("src/application/trainingLifecycle/TrainingLifecycleUseCases.ts", "utf8");
-const facade = readFileSync("src/application/algorithms/algorithmsSessionFacade.ts", "utf8");
+const facade = readFileSync("src/application/coding-interview/codingInterviewSessionFacade.ts", "utf8");
 
 test("simulation operation surface renders only declared state actions and never a generic retry", () => {
   assert.match(screen, /operation\.kind === "saving"/);

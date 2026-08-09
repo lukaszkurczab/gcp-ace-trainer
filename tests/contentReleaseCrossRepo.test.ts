@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import test from "node:test";
@@ -11,15 +12,26 @@ const appRoot = process.cwd();
 const contentRoot = process.env.PATTERNLY_CONTENT_ROOT ?? resolve(appRoot, "../patternly-content");
 const lock = JSON.parse(readFileSync(join(appRoot, "integration/contracts/content-release/release.lock.json"), "utf8"));
 
-test("the pinned multi-track release exactly matches the producer manifest and application bundle", async () => {
-  assert.equal(lock.schemaVersion, 1); assert.equal(lock.repository, "lukaszkurczab/patternly-content"); assert.match(lock.producerCommit, /^[a-f0-9]{40}$/); assert.match(lock.sourceRepositoryCommit, /^[a-f0-9]{40}$/);
-  const release = JSON.parse(readFileSync(join(contentRoot, "artifacts/releases", lock.releaseId, "release.json"), "utf8"));
-  assert.deepEqual(release.manifest, { envelopeVersion: 1, releaseId: lock.releaseId, sourceRepositoryCommit: lock.sourceRepositoryCommit });
-  const identity = (artifact: { trackId: string; contentVersion: string; checksumSha256: string }) => ({ trackId: artifact.trackId, contentVersion: artifact.contentVersion, checksumSha256: artifact.checksumSha256 });
-  assert.deepEqual(release.artifacts.map(identity), lock.artifacts);
-  assert.deepEqual(GENERATED_BUNDLED_CONTENT_RELEASE.manifest, release.manifest);
-  assert.deepEqual(GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.map(identity), lock.artifacts);
-  for (const artifact of release.artifacts) assert.equal(createHash("sha256").update(artifact.artifactBytes).digest("hex"), artifact.checksumSha256);
+test("every bundled track exactly matches its independently published producer release", async () => {
+  assert.equal(lock.schemaVersion, 2); assert.equal(lock.repository, "lukaszkurczab/patternly-content"); assert.match(lock.bundleId, /^patternly-app-content-/);
+  assert.deepEqual(lock.artifacts.map((pin: { trackId: string }) => pin.trackId).sort(), ["coding-interview-dsa-problem-solving", "google-cloud-associate-cloud-engineer"]);
+  assert.deepEqual(GENERATED_BUNDLED_CONTENT_RELEASE.manifest, { envelopeVersion: 1, bundleId: lock.bundleId });
+  for (const pin of lock.artifacts) {
+    assert.match(pin.producerCommit, /^[a-f0-9]{40}$/); assert.match(pin.sourceRepositoryCommit, /^[a-f0-9]{40}$/);
+    const relativePath = `artifacts/releases/${pin.releaseId}/release.json`;
+    const localBytes = readFileSync(join(contentRoot, relativePath), "utf8");
+    const publishedBytes = execFileSync("git", ["-C", contentRoot, "show", `${pin.producerCommit}:${relativePath}`], { encoding: "utf8", maxBuffer: 20 * 1024 * 1024 });
+    assert.equal(localBytes, publishedBytes);
+    const release = JSON.parse(localBytes);
+    assert.deepEqual(release.manifest, { envelopeVersion: 1, releaseId: pin.releaseId, sourceRepositoryCommit: pin.sourceRepositoryCommit });
+    const producerArtifact = release.artifacts.find((artifact: { trackId: string }) => artifact.trackId === pin.trackId);
+    assert.ok(producerArtifact);
+    assert.equal(producerArtifact.contentVersion, pin.contentVersion);
+    assert.equal(producerArtifact.checksumSha256, pin.checksumSha256);
+    assert.equal(createHash("sha256").update(producerArtifact.artifactBytes).digest("hex"), pin.checksumSha256);
+    const bundledArtifact = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === pin.trackId);
+    assert.deepEqual(bundledArtifact, { ...producerArtifact, releaseId: pin.releaseId });
+  }
   const availability = await validateBundledContent(GENERATED_BUNDLED_CONTENT_RELEASE);
-  assert.deepEqual(Object.fromEntries(availability.tracks.map((track) => [track.trackId, track.kind])), { algorithms: "available", "cloud-certification": "available" });
+  assert.deepEqual(Object.fromEntries(availability.tracks.map((track) => [track.trackId, track.kind])), { "coding-interview-dsa-problem-solving": "available", "google-cloud-associate-cloud-engineer": "available" });
 });

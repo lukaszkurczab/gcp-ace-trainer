@@ -9,7 +9,7 @@ tags:
 - openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__010__home__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 
@@ -21,12 +21,12 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/12__accessibility__020__track-selection__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:algorithms"
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: false
     visibilityPercentage: 20
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - tapOn:
     id: "main-tab-bar-practice"
 - extendedWaitUntil:

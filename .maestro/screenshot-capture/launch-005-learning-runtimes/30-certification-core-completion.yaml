@@ -8,7 +8,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - assertVisible:
     id: "patternly:home:change-track"
@@ -16,17 +16,17 @@ tags:
     id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:cloud-certification"
+      id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
     direction: DOWN
     centerElement: true
     visibilityPercentage: 50
     timeout: 30000
 - tapOn:
-    id: "patternly:home:select-track:cloud-certification"
+    id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
     retryTapIfNoChange: true
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:cloud-certification"
+      id: "patternly:home:track-card:google-cloud-associate-cloud-engineer"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -77,7 +77,7 @@ tags:
       id: "patternly:session:question:ace-q-0001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:counter:cloud-certification:certification-focus-practice:1:ordinal:1:length:10"
+    id: "patternly:session:counter:google-cloud-associate-cloud-engineer:certification-focus-practice:1:ordinal:1:length:10"
 - takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__020__long-single-question-ready__${THEME}__${PLATFORM}-phone"
 - scrollUntilVisible:
     element:
@@ -409,5 +409,5 @@ tags:
     visible: "Session complete"
     timeout: 30000
 - assertVisible:
-    id: "patternly:summary:review-answers:cloud-certification:certification-focus-practice:1"
+    id: "patternly:summary:review-answers:google-cloud-associate-cloud-engineer:certification-focus-practice:1"
 - takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__certification-core-completion__080__verified-result-ready__${THEME}__${PLATFORM}-phone"

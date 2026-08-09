@@ -1,5 +1,5 @@
-import { ALGORITHM_MODES, getAlgorithmContentBlueprintModeId, isAlgorithmModeId } from "../../tracks/algorithms/domain/algorithmModes";
-import { CERTIFICATION_MODES } from "../../tracks/cloud-certification/domain/certificationModes";
+import { ALGORITHM_MODES, getAlgorithmContentBlueprintModeId, isAlgorithmModeId } from "../../tracks/coding-interview/domain/algorithmModes";
+import { CERTIFICATION_MODES } from "../../tracks/certification/domain/certificationModes";
 import { getContentFamilyHandler } from "../../tracks/contentFamilyHandlers";
 import { getTracks, type TrackRegistration } from "../../domain/tracks";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
@@ -28,6 +28,7 @@ export const CONTENT_UNAVAILABLE_REASONS = [
 export type ContentUnavailableReason = (typeof CONTENT_UNAVAILABLE_REASONS)[number];
 export type AvailableBundledTrack = Readonly<{
   kind: "available";
+  releaseId: string;
   trackId: string;
   familyId: string;
   contentVersion: string;
@@ -80,7 +81,7 @@ export async function validateBundledContent(
       unavailableTracks.push(unavailable(track, "missing_artifact", `No pinned artifact is bundled for ${track.id}.`));
       continue;
     }
-    const outcome = await validateTrackArtifact(track, reference, typedRelease.manifest.sourceRepositoryCommit);
+    const outcome = await validateTrackArtifact(track, reference);
     if (outcome.kind === "unavailable") unavailableTracks.push(outcome);
     else validated.push(outcome);
   }
@@ -97,7 +98,7 @@ export function getBundledContentAvailability(trackId: string): BundledTrackAvai
 export function requireBundledTrackMode(trackId: string, modeId: string): AvailableBundledTrack {
   const track = getBundledContentAvailability(trackId);
   if (track.kind !== "available") throw new Error(`Content unavailable for ${trackId}: ${track.reason}.`);
-  const declaredModeId = trackId === "algorithms" && isAlgorithmModeId(modeId)
+  const declaredModeId = trackId === "coding-interview-dsa-problem-solving" && isAlgorithmModeId(modeId)
     ? getAlgorithmContentBlueprintModeId(modeId)
     : modeId;
   if (!track.declaredModes.includes(declaredModeId)) throw new Error(`Content unavailable for ${trackId}: declared_mode_unsupported.`);
@@ -105,9 +106,9 @@ export function requireBundledTrackMode(trackId: string, modeId: string): Availa
 }
 
 function validateReleaseEnvelope(value: unknown): string | null {
-  if (!isRecord(value) || !hasExactKeys(value, ["manifest", "artifacts"]) || !isRecord(value.manifest) || !hasExactKeys(value.manifest, ["envelopeVersion", "releaseId", "sourceRepositoryCommit"]) ||
-    value.manifest.envelopeVersion !== 1 || !nonEmpty(value.manifest.releaseId) || !commit(value.manifest.sourceRepositoryCommit) || !Array.isArray(value.artifacts)) {
-    return "Bundled release manifest is invalid.";
+  if (!isRecord(value) || !hasExactKeys(value, ["manifest", "artifacts"]) || !isRecord(value.manifest) || !hasExactKeys(value.manifest, ["envelopeVersion", "bundleId"]) ||
+    value.manifest.envelopeVersion !== 1 || !nonEmpty(value.manifest.bundleId) || !Array.isArray(value.artifacts)) {
+    return "Bundled content manifest is invalid.";
   }
   return null;
 }
@@ -115,13 +116,9 @@ function validateReleaseEnvelope(value: unknown): string | null {
 async function validateTrackArtifact(
   track: TrackRegistration,
   reference: BundledTrackArtifactReference,
-  releaseSourceRepositoryCommit: string,
 ): Promise<UnavailableBundledTrack | Readonly<{ kind: "available"; availability: AvailableBundledTrack; payload: unknown; reference: BundledTrackArtifactReference }>> {
   const invalid = validateReference(track, reference);
   if (invalid) return unavailable(track, "invalid_envelope", invalid);
-  if (reference.sourceRepositoryCommit !== releaseSourceRepositoryCommit) {
-    return unavailable(track, "invalid_envelope", "Artifact source commit does not match the pinned release manifest.");
-  }
   if (reference.trackId !== track.id || reference.familyId !== track.familyId) {
     return unavailable(track, "invalid_taxonomy_reference", "Artifact track/family identity does not match the canonical registry.");
   }
@@ -146,7 +143,7 @@ async function validateTrackArtifact(
   try {
     const handler = getContentFamilyHandler(track.familyId);
     handler.validate(artifact.bank, { formatVersion: 1, trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, itemCount: itemIds.length, bankPath: "bundled:immutable", sha256: reference.checksumSha256 });
-    if (track.familyId === "algorithms") {
+    if (track.familyId === "coding_interview") {
       const algorithmBank = isRecord(artifact.bank) ? artifact.bank : null;
       const blueprintModes = algorithmBank && Array.isArray(algorithmBank.practiceBlueprints) ? new Set(algorithmBank.practiceBlueprints.filter(isRecord).map((blueprint) => blueprint.modeId).filter(nonEmpty)) : new Set<string>();
       if (reference.declaredModes.some((mode) => !blueprintModes.has(mode))) {
@@ -158,7 +155,7 @@ async function validateTrackArtifact(
   }
   return Object.freeze({
     kind: "available",
-    availability: Object.freeze({ kind: "available", trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, taxonomyVersion: reference.taxonomyVersion, schemaVersion: reference.schemaVersion, checksumSha256: reference.checksumSha256, sourceRepositoryCommit: reference.sourceRepositoryCommit, declaredModes: Object.freeze([...reference.declaredModes]), itemIds: Object.freeze([...itemIds]) }),
+    availability: Object.freeze({ kind: "available", releaseId: reference.releaseId, trackId: track.id, familyId: track.familyId, contentVersion: reference.contentVersion, taxonomyVersion: reference.taxonomyVersion, schemaVersion: reference.schemaVersion, checksumSha256: reference.checksumSha256, sourceRepositoryCommit: reference.sourceRepositoryCommit, declaredModes: Object.freeze([...reference.declaredModes]), itemIds: Object.freeze([...itemIds]) }),
     payload: artifact.bank,
     reference,
   });
@@ -177,8 +174,8 @@ function publish(
 }
 
 function validateReference(track: TrackRegistration, reference: unknown): string | null {
-  if (!isRecord(reference) || !hasExactKeys(reference, ["trackId", "familyId", "contentVersion", "taxonomyVersion", "schemaVersion", "checksumSha256", "sourceRepositoryCommit", "declaredModes", "artifactBytes"]) ||
-    !nonEmpty(reference.trackId) || !nonEmpty(reference.familyId) || !nonEmpty(reference.contentVersion) || !nonEmpty(reference.taxonomyVersion) || reference.schemaVersion !== "published-bank-v1" || !sha256(reference.checksumSha256) || !commit(reference.sourceRepositoryCommit) || !Array.isArray(reference.declaredModes) || reference.declaredModes.length === 0 || !reference.declaredModes.every(nonEmpty) || new Set(reference.declaredModes).size !== reference.declaredModes.length || typeof reference.artifactBytes !== "string") {
+  if (!isRecord(reference) || !hasExactKeys(reference, ["releaseId", "trackId", "familyId", "contentVersion", "taxonomyVersion", "schemaVersion", "checksumSha256", "sourceRepositoryCommit", "declaredModes", "artifactBytes"]) ||
+    !nonEmpty(reference.releaseId) || !nonEmpty(reference.trackId) || !nonEmpty(reference.familyId) || !nonEmpty(reference.contentVersion) || !nonEmpty(reference.taxonomyVersion) || reference.schemaVersion !== "published-bank-v1" || !sha256(reference.checksumSha256) || !commit(reference.sourceRepositoryCommit) || !Array.isArray(reference.declaredModes) || reference.declaredModes.length === 0 || !reference.declaredModes.every(nonEmpty) || new Set(reference.declaredModes).size !== reference.declaredModes.length || typeof reference.artifactBytes !== "string") {
     return `Artifact reference for ${track.id} is malformed.`;
   }
   return null;
@@ -199,7 +196,7 @@ function getItemIds(bank: unknown): readonly string[] | null {
 }
 
 function modesFor(familyId: string): ReadonlySet<string> | null {
-  if (familyId === "algorithms") return new Set(ALGORITHM_MODES.map((mode) => mode.id));
+  if (familyId === "coding_interview") return new Set(ALGORITHM_MODES.map((mode) => mode.id));
   if (familyId === "certification") return new Set(CERTIFICATION_MODES.filter((mode) => mode.enabled).map((mode) => mode.id));
   return null;
 }
@@ -207,11 +204,11 @@ function unavailable(track: Pick<TrackRegistration, "id" | "familyId">, reason: 
   return Object.freeze({ kind: "unavailable", trackId: track.id, familyId: track.familyId, reason, detail });
 }
 function contentValidationFailureReason(track: TrackRegistration, bank: unknown): ContentUnavailableReason {
-  if (track.familyId !== "algorithms" || !isRecord(bank)) return "invalid_taxonomy_reference";
+  if (track.familyId !== "coding_interview" || !isRecord(bank)) return "invalid_taxonomy_reference";
   const items = Array.isArray(bank.items) ? bank.items : [];
   if (items.some((item) => !isRecord(item) || !isRecord(item.interaction) || !["choice", "ordering", "complexity"].includes(item.interaction.type as string))) return "unsupported_interaction";
   const blueprints = Array.isArray(bank.practiceBlueprints) ? bank.practiceBlueprints : [];
-  const simulation = blueprints.find((entry) => isRecord(entry) && entry.modeId === "algorithms-interview-simulation");
+  const simulation = blueprints.find((entry) => isRecord(entry) && entry.modeId === "coding-interview-simulation");
   const poolId = isRecord(simulation) && isRecord(simulation.composition) && Array.isArray(simulation.composition.ids) ? simulation.composition.ids[0] : null;
   const pools = Array.isArray(bank.simulationPools) ? bank.simulationPools : [];
   const pool = pools.find((entry) => isRecord(entry) && entry.poolId === poolId);

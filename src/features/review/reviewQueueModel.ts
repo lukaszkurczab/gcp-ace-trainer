@@ -3,7 +3,7 @@ import type {
   ReviewReason,
 } from "../../domain";
 import type { StorageIssue } from "../../application/learningReadModels";
-import type { CertificationDomain } from "../../tracks/cloud-certification";
+import type { CertificationDomain } from "../../tracks/certification";
 import { getDomainLabel } from "../../utils";
 
 export type ReviewQueueRowStatus = "due" | "overdue" | "unavailable" | "upcoming";

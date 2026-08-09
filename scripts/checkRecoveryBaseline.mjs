@@ -15,8 +15,8 @@ const guardPath = join(root, "src/storage/repositories/trainingModelGuards.ts");
 const activeSourceWithoutDenyList = text(sourceCodePaths.filter((path) => path !== guardPath));
 const kernel = text(walk(join(root, "src/domain/learning")));
 const registry = text(walk(join(root, "src/domain/tracks")));
-const algorithms = text(walk(join(root, "src/tracks/algorithms")));
-const certification = text(walk(join(root, "src/tracks/cloud-certification")));
+const algorithms = text(walk(join(root, "src/tracks/coding-interview")));
+const certification = text(walk(join(root, "src/tracks/certification")));
 
 for (const path of ["src/types/question.ts", "src/types/attempt.ts", "src/tracks/trackAdapters.ts", "src/tracks/types.ts"]) {
   if (existsSync(join(root, path))) fail(`replaced owner still exists: ${path}`);
@@ -68,32 +68,32 @@ for (const [name, pattern] of implementationChecks) {
 }
 
 const journalInternals = /(?:mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal)/;
-for (const path of sourcePaths.filter((path) => /src\/features\/(?:algorithms|practice|exam)\//.test(path))) {
+for (const path of sourcePaths.filter((path) => /src\/features\/(?:coding-interview|practice|exam)\//.test(path))) {
   if (journalInternals.test(readFileSync(path, "utf8"))) fail(`feature imports journal internals: ${path}`);
 }
 
 // Canonical Algorithms routes render application projections only; feature code
 // must not retain the historical runner or a blocking placeholder.
 for (const path of [
-  "src/features/algorithms/AlgorithmsSessionScreen.tsx",
-  "src/features/algorithms/algorithmsSessionModel.ts",
+  "src/features/coding-interview/AlgorithmsSessionScreen.tsx",
+  "src/features/coding-interview/algorithmsSessionModel.ts",
 ]) {
   if (existsSync(join(root, path))) fail(`obsolete Algorithms runner remains: ${path}`);
 }
-const algorithmsPresentationPaths = sourcePaths.filter((path) => /src\/features\/algorithms\/.+\.(?:ts|tsx)$/.test(path));
+const algorithmsPresentationPaths = sourcePaths.filter((path) => /src\/features\/coding-interview\/.+\.(?:ts|tsx)$/.test(path));
 const prohibitedAlgorithmsPresentation = /from\s+["'][^"']*(?:storage|repositories|scoring|learningMutations|trainingSessions)[^"']*["']|\b(?:scoreAlgorithmQuestion|createTrainingAttempt|commitTrainingOutcome|commitMutation)\b/;
 for (const path of algorithmsPresentationPaths) {
   if (prohibitedAlgorithmsPresentation.test(readFileSync(path, "utf8"))) fail(`Algorithms presentation bypasses its application controller: ${path}`);
 }
 const practiceSessionPath = join(root, "src/features/practice/PracticeSessionScreen.tsx");
 const practiceSessionSource = readFileSync(practiceSessionPath, "utf8");
-if (!/from\s+["'][^"']*application\/algorithms["']/.test(practiceSessionSource)) fail("Practice route must use the canonical Algorithms application facade.");
+if (!/from\s+["'][^"']*application\/coding-interview["']/.test(practiceSessionSource)) fail("Practice route must use the canonical Coding Interview application facade.");
 const rootNavigator = readFileSync(join(root, "src/navigation/RootNavigator.tsx"), "utf8");
 if (/CanonicalRuntimeUnavailableScreen/.test(rootNavigator)) fail("Algorithms routes retain the obsolete canonical-runtime blocking screen.");
 if (!/AlgorithmsInterviewSimulationScreen/.test(rootNavigator)) fail("Algorithms Simulation route must use its canonical runner.");
-if (/createAlgorithms(?:ImmediatePractice|InterviewSimulation)Controller|createAlgorithmsFamilyRuntime/.test(rootNavigator)) fail("Algorithms route retains a persistence-owning runner.");
+if (/createAlgorithms(?:ImmediatePractice|InterviewSimulation)Controller|createCodingInterviewFamilyRuntime/.test(rootNavigator)) fail("Algorithms route retains a persistence-owning runner.");
 
-if (/tracks\/algorithms|cloud-certification|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");
+if (/tracks\/coding-interview|google-cloud-associate-cloud-engineer|AlgorithmQuestion|CertificationQuestion|ValidatedBank/.test(kernel)) fail("learning kernel imports family semantics.");
 for (const path of walk(join(root, "src/domain/learning"))) {
   const source = readFileSync(path, "utf8");
   if (/from\s+["'][^"']*(?:tracks\/|react(?:-native)?|mmkv|storage\/repositories)[^"']*["']/.test(source)) {
@@ -101,8 +101,8 @@ for (const path of walk(join(root, "src/domain/learning"))) {
   }
 }
 if (/algorithmContent|questionBank|AlgorithmQuestion|CertificationQuestion/.test(registry)) fail("track registry imports content or concrete items.");
-if (/cloud-certification/.test(algorithms)) fail("Algorithms imports Certification.");
-if (/tracks\/algorithms/.test(certification)) fail("Certification imports Algorithms.");
+if (/certification/.test(algorithms)) fail("Algorithms imports Certification.");
+if (/tracks\/coding-interview/.test(certification)) fail("Certification imports Algorithms.");
 
 const testPaths = walk(join(root, "tests")).filter((path) => path.endsWith(".test.ts"));
 const testSource = text(testPaths);
@@ -111,7 +111,7 @@ if (/\.(?:skip|only)\s*\(/.test(testSource)) fail("a skipped or exclusive test i
 const observedTestCount = (testSource.match(/\btest\s*\(\s*["']/g) ?? []).length;
 if (observedTestCount === 0) fail("no active test cases are present.");
 
-for (const path of ["src/tracks/algorithms/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) fail(`production content remains in application: ${path}`);
+for (const path of ["src/tracks/coding-interview/content", "src/features/questions/defaultQuestionBank.ts", "data/question-bank"]) if (existsSync(join(root, path))) fail(`production content remains in application: ${path}`);
 for (const pattern of [/algorithmContentGroups/, /defaultQuestionBank/, /HttpContentSource/, /ContentCacheRepository/, /loadTrackContent/]) if (pattern.test(activeSource)) fail(`obsolete content storage path remains: ${pattern}`);
 
 if (failures.length) {

@@ -1,10 +1,10 @@
 import type { PublishedAlgorithmsBank, PublishedCertificationBank, PublishedTrackManifest } from "../contracts";
 import { ContentValidationError } from "../errors";
-import { validateAlgorithmInteractionItem } from "../../tracks/algorithms/algorithmInteractionHandlers";
-import { ALGORITHM_ROADMAP } from "../../tracks/algorithms/algorithmRoadmap";
-import { ALGORITHM_PATTERN_FAMILIES, ALGORITHM_PATTERN_VARIANTS, ALGORITHM_PROBLEM_ARCHETYPES, ALGORITHM_SKILL_ATOMS } from "../../tracks/algorithms/algorithmTaxonomy";
-import { ALGORITHM_MENTAL_UNIT_BY_ID } from "../../tracks/algorithms/algorithmMentalUnits";
-import { ALGORITHM_MODES } from "../../tracks/algorithms/domain/algorithmModes";
+import { validateAlgorithmInteractionItem } from "../../tracks/coding-interview/algorithmInteractionHandlers";
+import { ALGORITHM_ROADMAP } from "../../tracks/coding-interview/algorithmRoadmap";
+import { ALGORITHM_PATTERN_FAMILIES, ALGORITHM_PATTERN_VARIANTS, ALGORITHM_PROBLEM_ARCHETYPES, ALGORITHM_SKILL_ATOMS } from "../../tracks/coding-interview/algorithmTaxonomy";
+import { ALGORITHM_MENTAL_UNIT_BY_ID } from "../../tracks/coding-interview/algorithmMentalUnits";
+import { ALGORITHM_MODES } from "../../tracks/coding-interview/domain/algorithmModes";
 import { ALGORITHM_FEEDBACK_CALLOUT_KINDS, ALGORITHM_FEEDBACK_CODE_LANGUAGES } from "../contracts";
 
 export const PUBLISHED_ALGORITHMS_BANK_REQUIRED_KEYS = Object.freeze(["formatVersion", "trackId", "familyId", "contentVersion", "feedbackAssets", "items", "practiceBlueprints", "recognitionSets", "contrastSets", "interleavedScopes", "compatibilitySets", "simulationPools", "simulationProfiles"]);
@@ -19,7 +19,7 @@ function stringValues(value: unknown, label: string): readonly string[] { const 
 
 export function validateAlgorithmsBank(value: unknown, manifest: PublishedTrackManifest): PublishedAlgorithmsBank {
   const bank = record(value, "Algorithms bank"); exact(bank, PUBLISHED_ALGORITHMS_BANK_REQUIRED_KEYS, "Algorithms bank");
-  if (bank.formatVersion !== 1 || bank.trackId !== "algorithms" || bank.familyId !== "algorithms" || bank.contentVersion !== manifest.contentVersion) throw new ContentValidationError("Algorithms bank identity is invalid.");
+  if (bank.formatVersion !== 1 || bank.trackId !== "coding-interview-dsa-problem-solving" || bank.familyId !== "coding_interview" || bank.contentVersion !== manifest.contentVersion) throw new ContentValidationError("Coding Interview bank identity is invalid.");
   const feedbackAssets = validateFeedbackAssets(bank.feedbackAssets);
   const items = values(bank.items, "Algorithms items"); if (items.length !== manifest.itemCount) throw new ContentValidationError("Bank item count does not match manifest.");
   const ids = new Set<string>(); const fingerprints = new Set<string>();
@@ -32,7 +32,7 @@ export function validateAlgorithmsBank(value: unknown, manifest: PublishedTrackM
   validateAlgorithmsModeTaxonomy(recognition, contrast, scopes, items);
   for (const entry of known(structures.compatibilitySets, "id", "compatibility set").values()) { const source = stringValues(entry.sourceItemIds, "compatibility sourceItemIds"); const target = stringValues(entry.targetItemIds, "compatibility targetItemIds"); if (!["same_mechanism", "reviewed_variant", "compatible_contrast", "repair"].includes(text(entry.relation, "compatibility relation")) || !["symmetric", "directed"].includes(text(entry.direction, "compatibility direction")) || new Set([...source, ...target]).size < 2 || [...source, ...target].some((id) => !ids.has(id))) throw new ContentValidationError("Compatibility set is invalid."); }
   const supportedModes = new Set(ALGORITHM_MODES.map((mode) => mode.id)); for (const blueprint of blueprints.values()) { const modeId = text(blueprint.modeId, "blueprint modeId"); if (!supportedModes.has(modeId as never)) throw new ContentValidationError("Algorithms blueprint declares an unsupported mode."); const lengths = stringValues(values(blueprint.requestedLengths, "blueprint requestedLengths").map(String), "blueprint requestedLengths").map(Number); if (!lengths.length || lengths.some((length) => !Number.isInteger(length) || length <= 0) || !Number.isInteger(blueprint.minimumActualLength) || !Number.isInteger(blueprint.defaultRequestedLength)) throw new ContentValidationError("Algorithms blueprint lengths are invalid."); const composition = record(blueprint.composition, "blueprint composition"); const kind = text(composition.kind, "blueprint composition kind"); const refs = stringValues(composition.ids, "blueprint composition ids"); const resolved = stringValues(blueprint.resolvedItemIds, "blueprint resolvedItemIds"); if (!resolved.length || resolved.some((id) => !ids.has(id)) || resolved.length < (blueprint.minimumActualLength as number)) throw new ContentValidationError("Algorithms blueprint cannot satisfy its declared minimum length."); const source = kind === "recognition_sets" ? recognition : kind === "contrast_sets" ? contrast : kind === "interleaved_scope" ? scopes : kind === "simulation_pool" ? pools : null; if (source && refs.some((id) => !source.has(id))) throw new ContentValidationError("Algorithms blueprint references an unknown named set."); }
-  const simulationBlueprint = [...blueprints.values()].find((entry) => entry.modeId === "algorithms-interview-simulation");
+  const simulationBlueprint = [...blueprints.values()].find((entry) => entry.modeId === "coding-interview-simulation");
   if (!simulationBlueprint) throw new ContentValidationError("Algorithms bank lacks Interview Simulation blueprint.");
   const simulationPoolId = stringValues(record(simulationBlueprint.composition, "simulation composition").ids, "simulation blueprint pool IDs");
   if (simulationPoolId.length !== 1 || !pools.has(simulationPoolId[0]!)) throw new ContentValidationError("Interview Simulation requires one explicit pool.");
@@ -97,7 +97,7 @@ function validateModeStructureShapes(structures: Readonly<Record<string, readonl
   for (const unknown of structures.simulationPools ?? []) { const entry = record(unknown, "simulation pool"); exact(entry, ["poolId", "poolVersion", "itemIds"], "simulation pool"); text(entry.poolId, "simulation pool ID"); text(entry.poolVersion, "simulation pool version"); stringValues(entry.itemIds, "simulation pool item IDs"); }
   for (const unknown of structures.simulationProfiles ?? []) { const entry = record(unknown, "simulation profile"); exact(entry, ["profileId", "profileVersion", "profileKind", "totalOccurrences", "foregroundDurationMs", "poolId", "distributions", "selectionPolicy"], "simulation profile"); for (const key of ["profileId", "profileVersion", "profileKind", "poolId"]) text(entry[key], `simulation profile ${key}`); const policy = record(entry.selectionPolicy, "simulation selection policy"); exact(policy, ["uniqueItems", "replacement", "deterministic", "algorithmVersion"], "simulation selection policy"); text(policy.algorithmVersion, "simulation selection algorithm version"); values(entry.distributions, "simulation profile distributions"); }
 }
-function validateFeedbackAssets(value: unknown): ReadonlySet<string> { const assets = values(value, "Algorithms feedback assets"); const ids = new Set<string>(); for (const value of assets) { const asset = record(value, "Algorithms feedback asset"); exact(asset, ["id", "sourcePath", "sha256"], "Algorithms feedback asset"); const id = text(asset.id, "Algorithms feedback asset id"); if (!/^[a-z0-9][a-z0-9/_-]*$/.test(id) || ids.has(id) || !/^manual\/assets\/algorithms\/.+\.svg$/.test(text(asset.sourcePath, "Algorithms feedback asset path")) || !/^[a-f0-9]{64}$/.test(text(asset.sha256, "Algorithms feedback asset checksum"))) throw new ContentValidationError("Algorithms feedback asset is invalid."); ids.add(id); } return ids; }
+function validateFeedbackAssets(value: unknown): ReadonlySet<string> { const assets = values(value, "Coding Interview feedback assets"); const ids = new Set<string>(); for (const value of assets) { const asset = record(value, "Coding Interview feedback asset"); exact(asset, ["id", "sourcePath", "sha256"], "Coding Interview feedback asset"); const id = text(asset.id, "Coding Interview feedback asset id"); if (!/^[a-z0-9][a-z0-9/_-]*$/.test(id) || ids.has(id) || !/^manual\/assets\/coding-interview-dsa-problem-solving\/.+\.svg$/.test(text(asset.sourcePath, "Coding Interview feedback asset path")) || !/^[a-f0-9]{64}$/.test(text(asset.sha256, "Coding Interview feedback asset checksum"))) throw new ContentValidationError("Coding Interview feedback asset is invalid."); ids.add(id); } return ids; }
 function validateFeedbackDocument(value: unknown, feedbackAssets: ReadonlySet<string>): void {
   const document = record(value, "Algorithms feedback details"); exact(document, ["blocks"], "Algorithms feedback details");
   const blocks = values(document.blocks, "Algorithms feedback blocks"); if (!blocks.length) throw new ContentValidationError("Algorithms feedback blocks must not be empty.");
@@ -117,7 +117,7 @@ function validateItemProvenance(value: unknown): void { const provenance = recor
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
   exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "scenarioPractice", "weakAreaReview", "mixedPractice", "quickReview", "examExperienceProfile", "items"], "Certification bank");
-  if (bank.formatVersion !== 1 || bank.trackId !== "cloud-certification" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
+  if (bank.formatVersion !== 1 || bank.trackId !== "google-cloud-associate-cloud-engineer" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
   const items = values(bank.items, "Certification items");

@@ -20,15 +20,15 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/02__onboarding-selection__010__track-selection__light__ios-regular.png"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:algorithms"
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: false
     visibilityPercentage: 20
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/03__entry__010__algorithms-home__light__ios-regular.png"
 
@@ -61,20 +61,20 @@ tags:
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/06__session__010__question__light__ios-regular.png"
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/06__session__020__exit-decision__light__ios-regular.png"
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/07__summary__010__partial-summary__light__ios-regular.png"
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-guided-practice:1"
+    id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"

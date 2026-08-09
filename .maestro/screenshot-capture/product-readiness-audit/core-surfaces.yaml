@@ -8,7 +8,7 @@ tags:
 - openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/01__entry__010__home__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 
@@ -19,10 +19,10 @@ tags:
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/02__track-selection__010__portfolio__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 
 - tapOn:
@@ -54,20 +54,20 @@ tags:
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/05__session__010__recommended-start__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/05__session__020__exit-choice__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/06__summary__010__partial__ready__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-guided-practice:1"
+    id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"

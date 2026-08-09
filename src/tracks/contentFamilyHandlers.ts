@@ -1,9 +1,9 @@
 import type { ContentFamilyHandler } from "../content/application/contentFamilyHandler";
-import { algorithmsContentFamilyHandler } from "./algorithms/contentFamilyHandler";
-import { certificationContentFamilyHandler } from "./cloud-certification/contentFamilyHandler";
+import { codingInterviewContentFamilyHandler } from "./coding-interview/contentFamilyHandler";
+import { certificationContentFamilyHandler } from "./certification/contentFamilyHandler";
 
 const handlers = new Map<string, ContentFamilyHandler>([
-  [algorithmsContentFamilyHandler.familyId, algorithmsContentFamilyHandler],
+  [codingInterviewContentFamilyHandler.familyId, codingInterviewContentFamilyHandler],
   [certificationContentFamilyHandler.familyId, certificationContentFamilyHandler],
 ]);
 

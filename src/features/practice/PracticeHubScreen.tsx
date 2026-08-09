@@ -24,12 +24,12 @@ import {
   loadActiveTrackId as getActiveTrackId,
   loadTrainingAttempts as getTrainingAttempts,
 } from "../../application/learningReadModels";
-import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
+import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
 import { spacing, typography } from "../../theme";
 import {
   ALGORITHM_MODE_IDS,
-} from "../../tracks/algorithms";
-import { type CertificationModeId } from "../../tracks/cloud-certification";
+} from "../../tracks/coding-interview";
+import { type CertificationModeId } from "../../tracks/certification";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -112,6 +112,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   if (readError) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t(readError)} /></Screen>;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
+  const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
@@ -120,28 +121,28 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const modes = buildPracticeModes(activeTrack);
   function startSession(mode?: PracticeSessionMode | CertificationModeId) {
     const resolvedMode = mode ?? (
-      activeTrack.id === "algorithms"
+      isCodingInterviewTrack
         ? ALGORITHM_MODE_IDS.guidedPractice
         : "certification-diagnostic-baseline"
     );
-    if (activeTrack.id === "cloud-certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
+    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", trackId: activeTrack.id });
       return;
     }
-    if (activeTrack.id === "cloud-certification" && resolvedMode === "certification-quick-review") {
+    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && resolvedMode === "certification-quick-review") {
       navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source: "modeShortcut", topicId: "", trackId: activeTrack.id }));
       return;
     }
-    if (activeTrack.id === "cloud-certification" && resolvedMode === "certification-exam-simulation") {
+    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && resolvedMode === "certification-exam-simulation") {
       navigation.navigate(ROUTES.EXAM);
       return;
     }
-    if (activeTrack.id === "algorithms" && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
+    if (isCodingInterviewTrack && resolvedMode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
       return;
     }
-    if (activeTrack.id === "algorithms" && (
+    if (isCodingInterviewTrack && (
       resolvedMode === ALGORITHM_MODE_IDS.recognizePatterns ||
       resolvedMode === ALGORITHM_MODE_IDS.contrastPractice ||
       resolvedMode === ALGORITHM_MODE_IDS.independentPractice
@@ -184,9 +185,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
           <Text style={styles.heroEyebrow}>{t("Recommended session")}</Text>
           <View style={[styles.heroHeading, largeText ? styles.heroHeadingLargeText : null]}>
             <IconTile
-              name={activeTrack.id === "algorithms" ? "route" : "cloud"}
+              name={isCodingInterviewTrack ? "route" : "cloud"}
               size={48}
-              tone={activeTrack.id === "algorithms" ? "primary" : "info"}
+              tone={isCodingInterviewTrack ? "primary" : "info"}
             />
             <Text style={styles.heroTitle}>
               {formatPracticeTopicTitle(topic.title, t)}
@@ -214,7 +215,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(activeTrack.id === "algorithms" ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-diagnostic-baseline" as const }),
+                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-diagnostic-baseline" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,
@@ -226,9 +227,9 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
             >
               <Text
                 style={styles.settingsActionText}
-                testID={activeTrack.id === "algorithms" ? runtimeSelectors.practice.customEntry() : undefined}
+                testID={isCodingInterviewTrack ? runtimeSelectors.practice.customEntry() : undefined}
               >
-                {t(activeTrack.id === "algorithms" ? "Custom Practice" : "Manage settings")}
+                {t(isCodingInterviewTrack ? "Custom Practice" : "Manage settings")}
               </Text>
               <Icon color={palette.accentPurple} name="chevron-right" size={16} />
             </Pressable>

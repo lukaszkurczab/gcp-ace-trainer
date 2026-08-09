@@ -24,22 +24,22 @@ tags:
           id: "patternly:home:change-track"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:select-track:algorithms"
+      id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: true
     timeout: 30000
     visibilityPercentage: 50
 - tapOn:
-    id: "patternly:home:select-track:algorithms"
+    id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
 - scrollUntilVisible:
     element:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     direction: DOWN
     centerElement: false
     timeout: 30000
     visibilityPercentage: 20
 - assertVisible:
-    id: "patternly:home:track-card:algorithms"
+    id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
 
 # Select the requested persisted app theme before taking evidence.
 - tapOn:
@@ -64,7 +64,7 @@ tags:
     id: "main-tab-bar-home"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__010__home-ready__${THEME}__${DEVICE_PROFILE}"
 
@@ -100,27 +100,27 @@ tags:
     id: "patternly:practice:start-session"
 - extendedWaitUntil:
     visible:
-      id: "patternly:session:root:algorithms:algorithms-custom-practice:1"
+      id: "patternly:session:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     timeout: 30000
 - assertVisible:
     id: "patternly:session:question:alg-complexity-amortized-001"
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__030__algorithms-active-session-ready__${THEME}__${DEVICE_PROFILE}"
 
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - extendedWaitUntil:
     visible: "Pause or end this session?"
     timeout: 30000
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-custom-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     timeout: 30000
 - takeScreenshot: "${SCREENSHOT_ROOT}/visual-shell__core__040__partial-session-summary-ready__${THEME}__${DEVICE_PROFILE}"
 
 - tapOn:
-    id: "patternly:summary:back-to-practice:algorithms:algorithms-custom-practice:1"
+    id: "patternly:summary:back-to-practice:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:hub:root"

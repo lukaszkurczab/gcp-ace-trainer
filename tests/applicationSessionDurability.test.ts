@@ -20,13 +20,13 @@ import {
 function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
   return createTrainingSession({
     id: "session-1",
-    trackId: "algorithms",
-    modeId: "algorithms-learn-approach",
-    configurationSnapshot: { feedbackMode: "afterEachAnswer", kind: "practice", mode: "algorithms-learn-approach", timer: "elapsedForeground", topicId: "arrays" },
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-learn-approach",
+    configurationSnapshot: { feedbackMode: "afterEachAnswer", kind: "practice", mode: "coding-interview-learn-approach", timer: "elapsedForeground", topicId: "arrays" },
     requestedLength: 2,
     actualLength: 2,
     currentItemIndex: 0,
-    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "algorithms", itemId, contentVersion: "v1" } })),
+    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId, contentVersion: "v1" } })),
     optionOrderByOccurrence: { "occurrence-one": ["b", "a"], "occurrence-two": ["d", "c"] },
     activeForegroundMs: 100,
     contentVersion: "v1",
@@ -48,14 +48,14 @@ test("configuration snapshot is validated, frozen, and preserved for determinist
   assert.ok(Object.isFrozen(resumed.configurationSnapshot));
   assert.throws(() => createTrainingSession({ ...session(), configurationSnapshot: {} }), InvalidTrainingSessionError);
   await assert.rejects(
-    startOrResumeTrainingSession(session({ configurationSnapshot: { kind: "practice", mode: "algorithms-guided-practice" } }), boundary({ active })),
+    startOrResumeTrainingSession(session({ configurationSnapshot: { kind: "practice", mode: "coding-interview-guided-practice" } }), boundary({ active })),
     TrainingSessionStartError,
   );
 });
 
 test("resume rejects a different mode or durable item and option plan", async () => {
   const active = session();
-  await assert.rejects(startOrResumeTrainingSession(session({ modeId: "algorithms-weak-area-review" }), boundary({ active })), /mode/);
+  await assert.rejects(startOrResumeTrainingSession(session({ modeId: "coding-interview-weak-area-review" }), boundary({ active })), /mode/);
   await assert.rejects(startOrResumeTrainingSession(session({ itemOrder: [...active.itemOrder].reverse() }), boundary({ active })), /item and option plan/);
   await assert.rejects(startOrResumeTrainingSession(session({ optionOrderByOccurrence: { ...active.optionOrderByOccurrence, "occurrence-one": ["a", "b"] } }), boundary({ active })), /item and option plan/);
 });
@@ -90,7 +90,7 @@ test("durable progress hydrates prior attempts and the answered current item in 
 
 test("duplicate exact content items are distinct through immutable occurrence identities", () => {
   const duplicatePlan = session({
-    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "algorithms", itemId: "one", contentVersion: "v1" } })),
+    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId: "one", contentVersion: "v1" } })),
     optionOrderByOccurrence: { "occurrence-first": ["a", "b"], "occurrence-second": ["a", "b"] },
   });
   const makeAttempt = (id: string, occurrenceId: string) => ({ id, occurrenceId, sessionId: duplicatePlan.id, trackId: duplicatePlan.trackId, modeId: duplicatePlan.modeId, item: duplicatePlan.itemOrder[0]!.item, response: {}, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: duplicatePlan.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: duplicatePlan.startedAt, committedAt: duplicatePlan.startedAt });

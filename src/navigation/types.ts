@@ -2,7 +2,7 @@ import { ROUTES } from "../constants/routes";
 import type { TrackId } from "../domain";
 import type { PracticeSessionRouteParams } from "../features/practice/sessionConfig";
 import type { ShellTab } from "../features/home/types";
-import type { AlgorithmsDeclaredScopeMode } from "../application/algorithms";
+import type { AlgorithmsDeclaredScopeMode } from "../application/coding-interview";
 
 export type RootStackParamList = {
   [ROUTES.HOME]: { initialTab?: Exclude<ShellTab, "practice"> } | undefined;

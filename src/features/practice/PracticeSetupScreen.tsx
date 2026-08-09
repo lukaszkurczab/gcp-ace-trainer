@@ -5,14 +5,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppShellHeader, Button, Card, EmptyState, LoadingState, Screen, SectionHeader } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { ALGORITHMS_TRACK_ID, CLOUD_CERTIFICATION_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
+import { CODING_INTERVIEW_TRACK_ID, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
-import { getAlgorithmsInterviewSimulationEntry } from "../../application/algorithms";
+import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
 import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import { radius, spacing, typography } from "../../theme";
-import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/algorithms";
+import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/coding-interview";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
 import {
   buildTopicRoadmapNodes,
@@ -113,12 +113,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const { activeTrackId: resolvedTrackId, trainingAttempts } = readState;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
-  const diagnosticBaseline = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
-  const focusPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-focus-practice";
-  const scenarioPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-scenario-practice";
-  const weakAreaReview = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-weak-area-review";
-  const mixedPractice = activeTrack.id === CLOUD_CERTIFICATION_TRACK_ID && route.params?.mode === "certification-mixed-practice";
-  const algorithmMode = activeTrack.id === ALGORITHMS_TRACK_ID
+  const diagnosticBaseline = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
+  const focusPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-focus-practice";
+  const scenarioPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-scenario-practice";
+  const weakAreaReview = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-weak-area-review";
+  const mixedPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-mixed-practice";
+  const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
     ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
     : null;
   const configuredSessionLength = algorithmMode && !algorithmMode.profile.supportedLengths.includes(sessionLength)
@@ -131,17 +131,17 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     trainingAttempts,
   });
   const focusTopics = focusPractice
-    ? buildTopicRoadmapNodes({ activeTrackId: CLOUD_CERTIFICATION_TRACK_ID, trainingAttempts })
+    ? buildTopicRoadmapNodes({ activeTrackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, trainingAttempts })
     : [];
   const scenarioCompetencies = scenarioPractice ? getCertificationContentCatalog().getScenarioPractice().competencies : [];
 
   function startSession() {
     const mode = route.params?.mode ?? (
-      activeTrack.id === ALGORITHMS_TRACK_ID
+      activeTrack.id === CODING_INTERVIEW_TRACK_ID
         ? ALGORITHM_MODE_IDS.guidedPractice
         : "certification-diagnostic-baseline"
     );
-    if (activeTrack.id === ALGORITHMS_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
+    if (activeTrack.id === CODING_INTERVIEW_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
       const entry = getAlgorithmsInterviewSimulationEntry();
       navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
       return;
@@ -157,7 +157,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
     navigation.navigate(
       ROUTES.PRACTICE_SESSION,
       buildPracticeSessionConfig({
-        ...(activeTrack.id === ALGORITHMS_TRACK_ID
+        ...(activeTrack.id === CODING_INTERVIEW_TRACK_ID
           ? {
               feedbackMode,
               reviewItemRefs: route.params?.reviewItemRefs,

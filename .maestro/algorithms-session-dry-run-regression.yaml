@@ -7,7 +7,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -22,27 +22,27 @@ tags:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 10000
 - assertVisible:
-    id: "patternly:session:mode:algorithms-guided-practice"
+    id: "patternly:session:mode:coding-interview-guided-practice"
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-guided-practice:1:length:20:feedback-timing:after-each-answer"
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1:length:20:feedback-timing:after-each-answer"
 - assertVisible:
-    id: "patternly:session:timer:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:timer:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible: "Active foreground time 00:0[1-9]"
     timeout: 5000
 - scrollUntilVisible:
     element:
-      id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+      id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - assertVisible: "Pause or end this session?"
 - tapOn:
-    id: "patternly:session:abandon:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:abandon:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-guided-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
     timeout: 10000
 - assertVisible: "Partial summary"
 - assertVisible: "0 answered · 20 unanswered"

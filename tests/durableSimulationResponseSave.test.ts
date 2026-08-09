@@ -12,7 +12,7 @@ import {
   saveAlgorithmsSimulationResponseAndContinue,
   saveAlgorithmsSimulationResponseAndNavigate,
   startAlgorithmsSession,
-} from "../src/application/algorithms";
+} from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { validateBundledContent } from "../src/content/application";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
@@ -23,7 +23,7 @@ import {
   isAlgorithmComplexityQuestion,
   isAlgorithmOrderingQuestion,
   type AlgorithmResponse,
-} from "../src/tracks/algorithms";
+} from "../src/tracks/coding-interview";
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-07-23T10:00:00.000Z";

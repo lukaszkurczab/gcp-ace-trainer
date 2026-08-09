@@ -5,7 +5,7 @@ import {
   getAlgorithmsPracticeProjection,
   getAlgorithmsPracticeResultProjection,
   getAlgorithmsPracticeSummaryProjection,
-} from "../src/application/algorithms";
+} from "../src/application/coding-interview";
 import {
   ForegroundSessionTimerFacade,
   installForegroundSessionTimerFacade,
@@ -33,7 +33,7 @@ import {
   isAlgorithmChoiceQuestion,
   submitAlgorithmInteraction,
   type AlgorithmResponse,
-} from "../src/tracks/algorithms";
+} from "../src/tracks/coding-interview";
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-07-22T08:00:00.000Z";
@@ -47,8 +47,8 @@ function deferredSession(status: "active" | "completed" | "abandoned"): Readonly
   const submitted = submitAlgorithmInteraction({ question, response });
   const session = createTrainingSession({
     id: "deferred-practice",
-    trackId: "algorithms",
-    modeId: "algorithms-custom-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-custom-practice",
     configurationSnapshot: {
       answerChanges: "beforeSubmit",
       feedbackMode: "atSessionEnd",
@@ -141,7 +141,7 @@ test("deferred-feedback summary reads timing, length, and authored feedback from
     answeredOccurrenceIds: [attempt.occurrenceId],
     unansweredOccurrenceIds: [],
     completedAt: NOW,
-    evidence: createFamilyEnvelope({ familyId: "algorithms", details: { correctCount: 1, partialCount: 0, incorrectCount: 0, pointsEarned: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints } }),
+    evidence: createFamilyEnvelope({ familyId: "coding_interview", details: { correctCount: 1, partialCount: 0, incorrectCount: 0, pointsEarned: attempt.result.earnedPoints, maxPoints: attempt.result.maxPoints } }),
   });
   await saveTrainingSession(session);
   await addTrainingAttempt(attempt);

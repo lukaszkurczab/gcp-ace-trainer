@@ -17,7 +17,7 @@ appId: com.lkurczab.patternly
 - waitForAnimationToEnd:
     timeout: 12000
 - tapOn:
-    id: "patternly:home:select-track:cloud-certification"
+    id: "patternly:home:select-track:google-cloud-associate-cloud-engineer"
 - waitForAnimationToEnd:
     timeout: 12000
 - tapOn:

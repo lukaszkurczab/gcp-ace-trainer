@@ -10,7 +10,7 @@ export async function commitLearningStateReset(createdAt: string): Promise<void>
   await commitMutation(await buildMutationJournal({
     operation: "reset_learning_state",
     sessionId: "learning-state-reset",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
     identity: ["learning-state-reset", createdAt],
     writes: [{ kind: "clear_learning_state" }],
     createdAt,

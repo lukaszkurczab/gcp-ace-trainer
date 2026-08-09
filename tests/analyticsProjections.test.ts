@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
-import { buildCertificationExamSummaries } from "../src/tracks/cloud-certification";
+import { buildCertificationExamSummaries } from "../src/tracks/certification";
 import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
 test("analytics derives exam trend, raw score summaries, domain performance, and weak tags", () => {

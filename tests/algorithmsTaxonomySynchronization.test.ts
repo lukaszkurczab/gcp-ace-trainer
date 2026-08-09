@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ALGORITHM_MENTAL_UNIT_BY_ID } from "../src/tracks/algorithms/algorithmMentalUnits";
-import { ALGORITHM_ROADMAP, validateAlgorithmRoadmap } from "../src/tracks/algorithms/algorithmRoadmap";
-import { ALGORITHM_ROADMAP_PRESENTATION } from "../src/tracks/algorithms/algorithmRoadmapPresentation";
-import { algorithmTaxonomyStructure, taxonomyFingerprint, taxonomyVersion } from "../src/tracks/algorithms/generated/algorithmTaxonomyStructure.generated";
+import { ALGORITHM_MENTAL_UNIT_BY_ID } from "../src/tracks/coding-interview/algorithmMentalUnits";
+import { ALGORITHM_ROADMAP, validateAlgorithmRoadmap } from "../src/tracks/coding-interview/algorithmRoadmap";
+import { ALGORITHM_ROADMAP_PRESENTATION } from "../src/tracks/coding-interview/algorithmRoadmapPresentation";
+import { algorithmTaxonomyStructure, taxonomyFingerprint, taxonomyVersion } from "../src/tracks/coding-interview/generated/algorithmTaxonomyStructure.generated";
 
 test("Algorithms presentation metadata covers exactly the generated structural roadmap", () => {
   const structuralNodeIds = algorithmTaxonomyStructure.roadmapNodes.map((node) => node.id).sort();

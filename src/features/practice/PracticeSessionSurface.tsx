@@ -2,8 +2,8 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
 import type { TrackId } from "../../domain";
-import type { SessionMetricPresentation } from "../algorithms/session/sessionAccessibility";
-import { SessionShell } from "../algorithms/session/SessionShell";
+import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
+import { SessionShell } from "../coding-interview/session/SessionShell";
 import { radius, spacing, typography } from "../../theme";
 import { PracticeFeedbackBlock } from "./PracticeFeedbackBlock";
 import { PracticeResponseControls } from "./PracticeResponseControls";
@@ -209,8 +209,8 @@ function ExitModal({ onAbandon, onDismiss, onLeave, sessionId, trackId }: Readon
 }
 
 function exitCopy(trackId: TrackId | undefined): Readonly<{ description: string; destructiveLabel: string }> {
-  if (trackId === "algorithms") return Object.freeze({ description: "Pause to resume later, or end the session and view a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
-  if (trackId === "cloud-certification") return Object.freeze({ description: "Pause keeps this exact session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
+  if (trackId === "coding-interview-dsa-problem-solving") return Object.freeze({ description: "Pause to resume later, or end the session and view a partial summary. Saved answers remain available.", destructiveLabel: "End and view summary" });
+  if (trackId === "google-cloud-associate-cloud-engineer") return Object.freeze({ description: "Pause keeps this exact session available to resume later. End session makes it non-resumable and returns to Practice.", destructiveLabel: "End session" });
   throw new Error("Practice exit requires an exact supported track identity.");
 }
 

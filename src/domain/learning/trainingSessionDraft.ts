@@ -26,7 +26,7 @@ export function createTrainingSessionDraft(
     Partial<Pick<TrainingSessionDraft, "schemaVersion" | "familyId" | "draftVersion" | "revision" | "flaggedOccurrenceIds">>,
 ): TrainingSessionDraft {
   const schemaVersion = draft.schemaVersion ?? 1;
-  const familyId = draft.familyId ?? "algorithms";
+  const familyId = draft.familyId ?? "coding_interview";
   const draftVersion = draft.draftVersion ?? 1;
   const revision = draft.revision ?? 1;
   if (schemaVersion !== 1 || draftVersion !== 1) throw new Error("Training session draft schema is unsupported.");

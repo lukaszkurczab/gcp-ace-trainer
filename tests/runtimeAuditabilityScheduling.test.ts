@@ -3,17 +3,17 @@ import test from "node:test";
 
 import { createAdjustableWallClock } from "../src/application/bootstrap/trainingLifecycleComposition";
 import { createTrainingAttempt, type TrainingAttempt } from "../src/domain";
-import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../src/tracks/algorithms";
+import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../src/tracks/coding-interview";
 
 const WEEK = 7 * 24 * 60 * 60 * 1000;
-const item = { trackId: "algorithms" as const, itemId: "alg-complexity-amortized-001", contentVersion: "algorithms-core-0002" };
+const item = { trackId: "coding-interview-dsa-problem-solving" as const, itemId: "alg-complexity-amortized-001", contentVersion: "algorithms-core-0002" };
 
 function attempt(input: Readonly<{ id: string; kind: "correct" | "incorrect" | "partial"; sessionId: string; timestamp: string }>): TrainingAttempt<{ kind: "choice"; selectedOptionIds: readonly string[] }> {
   return createTrainingAttempt({
     id: input.id,
     sessionId: input.sessionId,
-    trackId: "algorithms",
-    modeId: "algorithms-guided-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-guided-practice",
     occurrenceId: `${input.sessionId}:occurrence:0`,
     item,
     response: { kind: "choice", selectedOptionIds: input.kind === "correct" ? ["accepted"] : ["wrong"] },

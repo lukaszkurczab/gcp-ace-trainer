@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled/generatedArtifacts";
-import { AlgorithmContentCatalog, buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/algorithms";
+import { AlgorithmContentCatalog, buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
 
 type M2Manifest = Readonly<{
@@ -11,7 +11,7 @@ type M2Manifest = Readonly<{
   session: Readonly<{
     feedbackTiming: "atSessionEnd";
     length: 10;
-    modeId: "algorithms-custom-practice";
+    modeId: "coding-interview-custom-practice";
     roadmapNodeId: "complexity_and_constraints";
     sessionId: string;
   }>;
@@ -28,7 +28,7 @@ const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.e
 const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
 
 test("M2 Custom 10 at session end derives real item, option, and outcome identities from the pinned Algorithms artifact", () => {
-  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
+  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving");
   assert.ok(reference, "Algorithms artifact must be bundled");
   const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
   assert.equal(buildAlgorithmProgressFacts({
@@ -47,7 +47,7 @@ test("M2 Custom 10 at session end derives real item, option, and outcome identit
 
   assert.deepEqual(manifest.release, {
     checksumSha256: reference.checksumSha256,
-    releaseId: GENERATED_BUNDLED_CONTENT_RELEASE.manifest.releaseId,
+    releaseId: reference.releaseId,
     sourceRepositoryCommit: reference.sourceRepositoryCommit,
   });
   assert.equal(plan.actualLength, 10);

@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 import {
   getAlgorithmsPracticeSummaryProjection,
   type AlgorithmsSessionResultProjection,
-} from "../../application/algorithms";
+} from "../../application/coding-interview";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { Button, Card, EmptyState, LoadingState, Screen } from "../../components";
 import { ROUTES } from "../../constants";

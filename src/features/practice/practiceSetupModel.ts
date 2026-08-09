@@ -1,5 +1,5 @@
 import {
-  ALGORITHMS_TRACK_ID,
+  CODING_INTERVIEW_TRACK_ID,
   type TrackId,
 } from "../../domain";
 
@@ -10,9 +10,9 @@ export type PracticeReviewBehaviorCopy = {
 };
 
 export function getPracticeReviewBehaviorCopy(trackId: TrackId): PracticeReviewBehaviorCopy {
-  if (trackId === ALGORITHMS_TRACK_ID) {
+  if (trackId === CODING_INTERVIEW_TRACK_ID) {
     return {
-      detail: "Reinsert one missed item later in this session. Missed Algorithms items are always saved to the Review queue.",
+      detail: "Reinsert one missed item later in this session. Missed Coding Interview items are always saved to the Review queue.",
       showToggle: true,
       title: "Reinsert missed items",
     };

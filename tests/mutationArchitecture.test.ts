@@ -44,20 +44,20 @@ test("features and track semantics cannot import storage or repository implement
 });
 
 test("Algorithms runtime composition has no persistence binding", () => {
-  const runtime = read("src/application/algorithms/AlgorithmsFamilyRuntime.ts");
-  const composition = read("src/application/algorithms/createAlgorithmsRuntime.ts");
+  const runtime = read("src/application/coding-interview/CodingInterviewFamilyRuntime.ts");
+  const composition = read("src/application/coding-interview/createCodingInterviewRuntime.ts");
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
   assert.doesNotMatch(runtime, /\b(commit|save|getActive|recover|materialize|verify)[A-Z]/);
   assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);
 });
 
-test("Algorithms read projections do not create a barrel cycle through the session facade", () => {
+test("Coding Interview read projections do not create a barrel cycle through the session facade", () => {
   const reads = read("src/application/learningReadModels.ts");
-  assert.doesNotMatch(reads, /from\s+["']\.\/algorithms["']/);
-  assert.match(reads, /from\s+["']\.\/algorithms\/algorithmsDeclaredScope["']/);
+  assert.doesNotMatch(reads, /from\s+["']\.\/coding-interview["']/);
+  assert.match(reads, /from\s+["']\.\/coding-interview\/codingInterviewDeclaredScope["']/);
   assert.doesNotMatch(
-    read("src/application/algorithms/algorithmsDeclaredScope.ts"),
-    /learningReadModels|algorithmsSessionFacade/,
+    read("src/application/coding-interview/codingInterviewDeclaredScope.ts"),
+    /learningReadModels|codingInterviewSessionFacade/,
   );
 });
 
@@ -65,7 +65,7 @@ test("one family-neutral foreground timer is bound only in application compositi
   const timer = read("src/application/trainingLifecycle/ForegroundSessionTimerFacade.ts");
   const runtimeTimer = read("src/application/runtime/ForegroundSessionTimer.ts");
   const composition = read("src/application/bootstrap/trainingLifecycleComposition.ts");
-  assert.equal(existsSync(join(root, "src/application/algorithms/AlgorithmsForegroundTimerFacade.ts")), false);
+  assert.equal(existsSync(join(root, "src/application/coding-interview/AlgorithmsForegroundTimerFacade.ts")), false);
   assert.doesNotMatch(timer, /storage\/repositories|getActiveForegroundTimer|saveActiveForegroundTimer/);
   assert.doesNotMatch(timer, /familyId\s*!==\s*["']algorithms["']|familyId:\s*["']algorithms["']|assertForegroundTimedAlgorithmsSession/);
   assert.match(composition, /getActiveForegroundTimer/);
@@ -80,7 +80,7 @@ test("one family-neutral foreground timer is bound only in application compositi
   assert.doesNotMatch(screen, /setInterval|setTimeout|Date\.now|remainingForegroundMs\s*[-+]/,
     "simulation screen must not own a countdown source");
   const certificationScreen = read("src/features/practice/CertificationPracticeSessionScreen.tsx");
-  const algorithmsFacade = read("src/application/algorithms/algorithmsSessionFacade.ts");
+  const algorithmsFacade = read("src/application/coding-interview/codingInterviewSessionFacade.ts");
   const certificationFacade = read("src/application/certification/certificationSessionFacade.ts");
   const preparationGate = read("src/content/application/ContentPreparationGate.tsx");
   assert.match(certificationFacade, /startCertificationPracticeSession[\s\S]*?getForegroundSessionTimerFacade\(\)\.initialize\(prepared\.session\)/);
@@ -120,11 +120,11 @@ test("one family-neutral foreground timer is bound only in application compositi
 });
 
 test("training-session identity has one lifecycle authority and no obsolete runtime port", () => {
-  assert.equal(existsSync(join(root, "src/application/algorithms/AlgorithmsSessionRuntimePorts.ts")), false);
+  assert.equal(existsSync(join(root, "src/application/coding-interview/AlgorithmsSessionRuntimePorts.ts")), false);
   const lifecycle = read("src/application/trainingLifecycle/TrainingLifecycleUseCases.ts");
-  const algorithmsFacade = read("src/application/algorithms/algorithmsSessionFacade.ts");
+  const algorithmsFacade = read("src/application/coding-interview/codingInterviewSessionFacade.ts");
   const certificationFacade = read("src/application/certification/certificationSessionFacade.ts");
-  const algorithmsBarrel = read("src/application/algorithms/index.ts");
+  const algorithmsBarrel = read("src/application/coding-interview/index.ts");
   const source = files("src/application").map(read).join("\n");
 
   assert.match(lifecycle, /ports\.sessionIds\.create\(\{ trackId: input\.trackId, modeId: input\.modeId \}\)/);
@@ -252,9 +252,9 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
   assert.match(config, /buildCertificationPracticeResumeRoute\(session: TrainingSession\)/);
   assert.match(config, /expectedSessionId: session\.id/);
   assert.match(home, /loadActiveTrainingSession\(\)/);
-  assert.match(home, /session\.id !== action\.sessionId \|\| session\.trackId !== "cloud-certification" \|\| session\.modeId !== action\.modeId/);
+  assert.match(home, /session\.id !== action\.sessionId \|\| session\.trackId !== "google-cloud-associate-cloud-engineer" \|\| session\.modeId !== action\.modeId/);
   assert.match(home, /buildCertificationPracticeResumeRoute\(session\)/);
-  assert.match(homeModel, /session\.trackId !== "cloud-certification" \|\| !isCertificationPracticeModeId\(session\.modeId\)/);
+  assert.match(homeModel, /session\.trackId !== "google-cloud-associate-cloud-engineer" \|\| !isCertificationPracticeModeId\(session\.modeId\)/);
   assert.equal((homeTab.match(/runtimeSelectors\.resume\.card/g) ?? []).length, 1);
   assert.equal((homeTab.match(/styles\.decisionCard/g) ?? []).length, 1);
   assert.doesNotMatch(facade, /catch\([^)]*\)[^{]*\{[^}]*return null|catch\([^)]*\)[^{]*\{[^}]*startCertificationSession/);
@@ -263,8 +263,8 @@ test("Certification route handoffs use exact resume intent and cannot hide failu
 test("presentation routes use application ports without persistence internals", () => {
   const features = files("src/features").map(read).join("\n");
   assert.doesNotMatch(features, /mutationJournalRepository|mutationMaterializer|mutationVerifier|persistMutationJournal|clearMutationJournal/);
-  assert.match(read("src/features/practice/PracticeSessionScreen.tsx"), /application\/algorithms/);
-  assert.match(read("src/features/simulation\/AlgorithmsInterviewSimulationScreen.tsx"), /application\/algorithms/);
+  assert.match(read("src/features/practice/PracticeSessionScreen.tsx"), /application\/coding-interview/);
+  assert.match(read("src/features/simulation\/AlgorithmsInterviewSimulationScreen.tsx"), /application\/coding-interview/);
 });
 
 test("startup recovery uses canonical bootstrap recovery", () => assert.match(read("src/content/application/ContentPreparationGate.tsx"), /bootstrapApplication/));

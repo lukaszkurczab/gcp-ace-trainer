@@ -33,7 +33,7 @@ function certificationSession(input: Readonly<{
     requestedLength: input.requestedLength,
     startedAt: "2026-08-02T10:00:00.000Z",
     status: input.status ?? "active",
-    trackId: input.trackId ?? "cloud-certification",
+    trackId: input.trackId ?? "google-cloud-associate-cloud-engineer",
   } as TrainingSession;
 }
 
@@ -42,13 +42,13 @@ test("Custom Practice accepts every declared length and persists its selected fe
     for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"] as const) {
       const config = buildPracticeSessionConfig({
         feedbackMode,
-        mode: "algorithms-custom-practice",
+        mode: "coding-interview-custom-practice",
         sessionLength,
         source: "practiceSetup",
         topicId: "binary_search",
-        trackId: "algorithms",
+        trackId: "coding-interview-dsa-problem-solving",
       });
-      assert.equal(config.mode, "algorithms-custom-practice");
+      assert.equal(config.mode, "coding-interview-custom-practice");
       assert.equal(config.sessionLength, sessionLength);
       assert.equal(config.feedbackMode, feedbackMode);
       assert.equal(config.reviewBehaviorEnabled, true);
@@ -61,11 +61,11 @@ test("Custom Practice setup rejects every unsupported session length", () => {
     assert.throws(
       () => buildPracticeSessionConfig({
         feedbackMode: "afterEachAnswer",
-        mode: "algorithms-custom-practice",
+        mode: "coding-interview-custom-practice",
         sessionLength: sessionLength as never,
         source: "practiceSetup",
         topicId: "binary_search",
-        trackId: "algorithms",
+        trackId: "coding-interview-dsa-problem-solving",
       }),
       /does not support session length/,
     );
@@ -75,45 +75,45 @@ test("Custom Practice setup rejects every unsupported session length", () => {
 test("Custom Practice requires a selected timing while predefined Algorithms modes retain fixed timings", () => {
   assert.throws(
     () => buildPracticeSessionConfig({
-      mode: "algorithms-custom-practice",
+      mode: "coding-interview-custom-practice",
       sessionLength: 20,
       source: "practiceSetup",
       topicId: "binary_search",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /Custom Practice requires an explicit feedback mode/,
   );
   assert.throws(
     () => buildPracticeSessionConfig({
       feedbackMode: "afterReview" as never,
-      mode: "algorithms-custom-practice",
+      mode: "coding-interview-custom-practice",
       sessionLength: 20,
       source: "practiceSetup",
       topicId: "binary_search",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support feedback mode afterReview/,
   );
   assert.throws(
     () => buildPracticeSessionConfig({
       feedbackMode: "atSessionEnd",
-      mode: "algorithms-guided-practice",
+      mode: "coding-interview-guided-practice",
       sessionLength: 40,
       source: "practiceSetup",
       topicId: "binary_search",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support feedback mode atSessionEnd/,
   );
   assert.throws(
     () => buildPracticeSessionConfig({
-      mode: "algorithms-custom-practice",
+      mode: "coding-interview-custom-practice",
       reviewBehaviorEnabled: false,
       feedbackMode: "afterEachAnswer",
       sessionLength: 20,
       source: "practiceSetup",
       topicId: "binary_search",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /owns reinsert setting true/,
   );
@@ -122,11 +122,11 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
 test("rejects an Algorithms session length that the selected mode does not declare", () => {
   assert.throws(
     () => buildPracticeSessionConfig({
-      mode: "algorithms-weak-area-review",
+      mode: "coding-interview-weak-area-review",
       reviewSource: "due_queue",
       sessionLength: 40,
       topicId: "binary_search",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support session length 40/,
   );
@@ -135,19 +135,19 @@ test("rejects an Algorithms session length that the selected mode does not decla
 test("Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope", () => {
   const config = buildPracticeSessionConfig({
     algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
-    mode: "algorithms-independent-practice",
+    mode: "coding-interview-independent-practice",
     topicId: "hash_map_and_set",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   });
 
   assert.equal(config.sessionLength, 10);
   assert.throws(
     () => buildPracticeSessionConfig({
       algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
-      mode: "algorithms-independent-practice",
+      mode: "coding-interview-independent-practice",
       sessionLength: 40,
       topicId: "hash_map_and_set",
-      trackId: "algorithms",
+      trackId: "coding-interview-dsa-problem-solving",
     }),
     /does not support session length 40/,
   );
@@ -177,6 +177,6 @@ test("Certification resume rejects stale, cross-track, exam, and non-active sess
   const staleFocus = certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice" }, id: "stale-focus", modeId: "certification-focus-practice", requestedLength: 10 });
   assert.throws(() => buildCertificationPracticeResumeRoute(staleFocus), /immutable Cloud domain/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationSimulation" }, id: "exam", modeId: "certification-exam-simulation", requestedLength: 50 })), /ordinary Cloud Certification session/);
-  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "algorithms" })), /ordinary Cloud Certification session/);
+  assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "cross-track", modeId: "certification-focus-practice", requestedLength: 10, trackId: "coding-interview-dsa-problem-solving" })), /ordinary Cloud Certification session/);
   assert.throws(() => buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationFocusPractice", domain: "operations" }, id: "completed", modeId: "certification-focus-practice", requestedLength: 10, status: "completed" })), /Only an active/);
 });

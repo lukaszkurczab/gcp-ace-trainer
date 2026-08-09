@@ -8,12 +8,12 @@ import {
   getAlgorithmsPracticeResultProjection,
   startAlgorithmsSession,
   submitAlgorithmsPracticeResponse,
-} from "../src/application/algorithms";
+} from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
-import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
-import type { AlgorithmResponse } from "../src/tracks/algorithms/domain";
+import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
+import type { AlgorithmResponse } from "../src/tracks/coding-interview/domain";
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
@@ -35,7 +35,7 @@ test("Custom Practice atSessionEnd withholds correctness, Reason, Details, and d
   const catalog = getAlgorithmContentCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "atSessionEnd",
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     requestedLength: 10,
     scope: { roadmapNodeId: catalog.getItems()[0]!.taxonomy.roadmapNodeId },
   });
@@ -63,7 +63,7 @@ test("Custom Practice atSessionEnd reloads its complete feedback from the canoni
   const catalog = getAlgorithmContentCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "atSessionEnd",
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     requestedLength: 10,
     scope: { roadmapNodeId: catalog.getItems()[0]!.taxonomy.roadmapNodeId },
   });

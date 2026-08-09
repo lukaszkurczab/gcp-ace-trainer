@@ -19,7 +19,7 @@ import {
 } from "../src/storage/repositories";
 import { installMemoryStorage, journal, review, session, timestamp } from "./journalTestSupport";
 
-const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "algorithms", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
+const draftConfiguration = { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "coding_interview", submission: "manualOrForegroundTimeout", timer: "countdownForeground" } as const;
 
 async function saveTrainingSessionDraft(draft: TrainingSessionDraft) {
   return persistTrainingSessionDraft(draft, (await getActiveTrainingSessionDraft())?.revision ?? null);
@@ -29,7 +29,7 @@ function setup() {
   const base = session();
   const active = {
     ...base,
-    modeId: "algorithms-interview-simulation",
+    modeId: "coding-interview-simulation",
     configurationSnapshot: draftConfiguration,
     requestedLength: 2,
     actualLength: 2,
@@ -145,7 +145,7 @@ test("duplicate content occurrences keep distinct attempts and consolidate revie
   const base = session();
   const active = {
     ...base,
-    modeId: "algorithms-interview-simulation",
+    modeId: "coding-interview-simulation",
     configurationSnapshot: draftConfiguration,
     requestedLength: 2,
     actualLength: 2,

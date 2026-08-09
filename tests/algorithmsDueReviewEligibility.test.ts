@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createAlgorithmsFamilyRuntime, startAlgorithmsSession } from "../src/application/algorithms";
+import { createCodingInterviewFamilyRuntime, startAlgorithmsSession } from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
 import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { validateBundledContent } from "../src/content/application";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../src/domain";
-import { createAlgorithmReviewEntry } from "../src/tracks/algorithms";
-import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/algorithms/algorithmQuestionTypes";
-import type { AlgorithmResponse } from "../src/tracks/algorithms/domain";
+import { createAlgorithmReviewEntry } from "../src/tracks/coding-interview";
+import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
+import type { AlgorithmResponse } from "../src/tracks/coding-interview/domain";
 import { getActiveTrainingSession } from "../src/storage/repositories";
 import { installMemoryStorage } from "./journalTestSupport";
 
@@ -19,8 +19,8 @@ function reviewFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog
   const attempt = createTrainingAttempt({
     id: `prior-${index}`,
     sessionId: `prior-session-${index}`,
-    trackId: "algorithms",
-    modeId: "algorithms-guided-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-guided-practice",
     occurrenceId: `prior-occurrence-${index}`,
     item: ref,
     response: { kind: "choice", selectedOptionIds: ["wrong"] } as AlgorithmResponse,
@@ -43,11 +43,11 @@ test("Algorithms runtime persists due_queue source and makes only that session e
   await validateBundledContent();
   const catalog = getAlgorithmContentCatalog();
   const dueReviews = catalog.getItems().slice(0, 10).map(reviewFor);
-  const runtime = createAlgorithmsFamilyRuntime();
+  const runtime = createCodingInterviewFamilyRuntime();
 
   const preparedDue = await runtime.prepare({
-    trackId: "algorithms",
-    modeId: "algorithms-weak-area-review",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-weak-area-review",
     request: { sessionId: "due-session", requestedLength: 10, reviewSource: "due_queue" },
     attempts: [],
     reviews: dueReviews,
@@ -62,8 +62,8 @@ test("Algorithms runtime persists due_queue source and makes only that session e
   if (dueMutation?.kind === "upsert") assert.equal(dueMutation.entry.consecutiveAfterDueSuccesses, 1);
 
   const ordinaryPrepared = await runtime.prepare({
-    trackId: "algorithms",
-    modeId: "algorithms-guided-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-guided-practice",
     request: { sessionId: "ordinary-session", requestedLength: 10, scope: { roadmapNodeId: dueItem.taxonomy.roadmapNodeId } },
     attempts: [],
     reviews: [dueReviews.find((review) => review.sourceItem.itemId === dueOccurrence.item.itemId)!],
@@ -82,17 +82,17 @@ test("Algorithms runtime persists due_queue source and makes only that session e
 test("Algorithms Custom Practice persists its chosen timing while consuming the declared Guided blueprint", async () => {
   await validateBundledContent();
   const catalog = getAlgorithmContentCatalog();
-  const runtime = createAlgorithmsFamilyRuntime();
+  const runtime = createCodingInterviewFamilyRuntime();
   const topicId = catalog.getItems()[0]!.taxonomy.roadmapNodeId;
   const prepared = await runtime.prepare({
-    trackId: "algorithms",
-    modeId: "algorithms-custom-practice",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-custom-practice",
     request: { feedbackMode: "atSessionEnd", requestedLength: 10, scope: { roadmapNodeId: topicId }, sessionId: "custom-practice-session" },
     attempts: [],
     reviews: [],
     now: NOW,
   });
-  assert.equal(prepared.session.modeId, "algorithms-custom-practice");
+  assert.equal(prepared.session.modeId, "coding-interview-custom-practice");
   assert.equal(prepared.session.configurationSnapshot.feedbackMode, "atSessionEnd");
   assert.match(String(prepared.session.configurationSnapshot.blueprintId), /guided/);
 });
@@ -106,12 +106,12 @@ test("production lifecycle starts Custom Practice from the pinned Guided bluepri
 
   const prepared = await startAlgorithmsSession({
     feedbackMode: "atSessionEnd",
-    modeId: "algorithms-custom-practice",
+    modeId: "coding-interview-custom-practice",
     requestedLength: 10,
     scope: { roadmapNodeId: topicId },
   });
 
-  assert.equal(prepared.session.modeId, "algorithms-custom-practice");
+  assert.equal(prepared.session.modeId, "coding-interview-custom-practice");
   assert.equal(prepared.session.configurationSnapshot.feedbackMode, "atSessionEnd");
   assert.equal(prepared.session.actualLength, 10);
   assert.equal((await getActiveTrainingSession())?.id, prepared.session.id);
@@ -119,10 +119,10 @@ test("production lifecycle starts Custom Practice from the pinned Guided bluepri
 
 test("Algorithms runtime rejects malformed review requests before selecting or persisting a session", async () => {
   await validateBundledContent();
-  const runtime = createAlgorithmsFamilyRuntime();
+  const runtime = createCodingInterviewFamilyRuntime();
   const input = {
-    trackId: "algorithms",
-    modeId: "algorithms-weak-area-review",
+    trackId: "coding-interview-dsa-problem-solving",
+    modeId: "coding-interview-weak-area-review",
     attempts: [],
     reviews: [],
     now: NOW,
@@ -141,7 +141,7 @@ test("Algorithms runtime rejects malformed review requests before selecting or p
     /review item refs must contain only Algorithms content item references/,
   );
   await assert.rejects(
-    runtime.prepare({ ...input, request: { sessionId: "invalid-ref", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [{ trackId: "algorithms", itemId: "", contentVersion: "algorithms-core-0002" }] } }),
+    runtime.prepare({ ...input, request: { sessionId: "invalid-ref", requestedLength: 10, reviewSource: "session_misses", reviewItemRefs: [{ trackId: "coding-interview-dsa-problem-solving", itemId: "", contentVersion: "algorithms-core-0002" }] } }),
     /review item refs must contain only Algorithms content item references/,
   );
 });

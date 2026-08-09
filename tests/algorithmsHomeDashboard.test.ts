@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  AlgorithmsFamilyRuntime,
-  type AlgorithmsDashboard,
-} from "../src/application/algorithms";
-import type { AlgorithmContentCatalog } from "../src/tracks/algorithms/algorithmContentCatalog";
-import { ALGORITHM_MODE_IDS } from "../src/tracks/algorithms/domain";
+  CodingInterviewFamilyRuntime,
+  type CodingInterviewDashboard,
+} from "../src/application/coding-interview";
+import type { AlgorithmContentCatalog } from "../src/tracks/coding-interview/algorithmContentCatalog";
+import { ALGORITHM_MODE_IDS } from "../src/tracks/coding-interview/domain";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../src/domain";
 import { getTrackDisplay } from "../src/domain";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
@@ -32,7 +32,7 @@ function runtime() {
     },
     getSimulationProfile() { return undefined; },
   } as unknown as AlgorithmContentCatalog;
-  return new AlgorithmsFamilyRuntime(catalog, undefined, "algorithms-taxonomy-v2");
+  return new CodingInterviewFamilyRuntime(catalog, undefined, "algorithms-taxonomy-v2");
 }
 
 function attempt(result: "correct" | "incorrect" = "correct"): TrainingAttempt<unknown> {
@@ -40,14 +40,14 @@ function attempt(result: "correct" | "incorrect" = "correct"): TrainingAttempt<u
     answeredAt: NOW,
     committedAt: NOW,
     id: `attempt-${result}`,
-    item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "algorithms" },
+    item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
     modeId: ALGORITHM_MODE_IDS.guidedPractice,
     occurrenceId: "occurrence-1",
     response: {},
     result: { earnedPoints: result === "correct" ? 1 : 0, kind: result, maxPoints: 1 },
-    reviewEvidence: { sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "algorithms" }, taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }] },
+    reviewEvidence: { sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }] },
     sessionId: "session-1",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   };
 }
 
@@ -60,15 +60,15 @@ function review(input: Readonly<{ dueAt: string; id: string; reason?: "wrong_pat
     persistent: Boolean(input.repeated),
     reasons: input.repeated ? ["repeated_mistake"] : [input.reason ?? "incorrect"],
     sourceAttemptId: `attempt-${input.id}`,
-    sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "algorithms" },
+    sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
     sourceSessionId: "session-1",
     taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }],
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   };
 }
 
-async function dashboard(input: Readonly<{ attempts?: readonly TrainingAttempt<unknown>[]; reviews?: readonly ReviewQueueEntry[] }>): Promise<AlgorithmsDashboard> {
-  return runtime().queryDashboard({ activeSession: null, attempts: input.attempts ?? [], now: NOW, reviews: input.reviews ?? [], trackId: "algorithms" });
+async function dashboard(input: Readonly<{ attempts?: readonly TrainingAttempt<unknown>[]; reviews?: readonly ReviewQueueEntry[] }>): Promise<CodingInterviewDashboard> {
+  return runtime().queryDashboard({ activeSession: null, attempts: input.attempts ?? [], now: NOW, reviews: input.reviews ?? [], trackId: "coding-interview-dsa-problem-solving" });
 }
 
 function activeSession(): TrainingSession {
@@ -76,10 +76,10 @@ function activeSession(): TrainingSession {
     configurationSnapshot: {},
     currentItemIndex: 0,
     id: "active-session",
-    itemOrder: [{ item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "algorithms" }, occurrenceId: "occurrence-1" }],
+    itemOrder: [{ item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, occurrenceId: "occurrence-1" }],
     modeId: ALGORITHM_MODE_IDS.guidedPractice,
     status: "active",
-    trackId: "algorithms",
+    trackId: "coding-interview-dsa-problem-solving",
   } as unknown as TrainingSession;
 }
 
@@ -104,7 +104,7 @@ test("Algorithms dashboard turns bounded evidence into a scoped guided-practice 
 });
 
 test("Algorithms dashboard exposes the exact active session as a resume action", async () => {
-  const value = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: "algorithms" });
+  const value = await runtime().queryDashboard({ activeSession: activeSession(), attempts: [], now: NOW, reviews: [], trackId: "coding-interview-dsa-problem-solving" });
   assert.equal(value.recommendation.reason, "active_session");
   assert.deepEqual(value.recommendation.action, { kind: "resume_active_session", modeId: ALGORITHM_MODE_IDS.guidedPractice, sessionId: "active-session", topicId: TOPIC });
 });
@@ -134,7 +134,7 @@ test("active session stays ahead of every later recommendation condition", () =>
 test("Home disables an incomplete recommendation action instead of choosing a scope", async () => {
   await validateBundledContent();
   const model = buildHomeTabModel({
-    activeTrack: getTrackDisplay("algorithms"),
+    activeTrack: getTrackDisplay("coding-interview-dsa-problem-solving"),
     algorithmsDashboard: { recommendation: { action: { kind: "unavailable", reason: "An explicit scope is required." }, explanation: "Choose a scope.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice" } },
     analytics: buildAnalyticsData([], []),
     dashboardError: null,

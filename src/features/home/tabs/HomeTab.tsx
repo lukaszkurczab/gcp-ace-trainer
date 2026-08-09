@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-na
 import { Button, Card, Icon, IconTile } from "../../../components";
 import type { TrackDisplay, TrainingSession } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
-import type { AlgorithmsDashboard } from "../../../application/algorithms";
+import type { CodingInterviewDashboard } from "../../../application/coding-interview";
 import { spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
@@ -20,7 +20,7 @@ type HomeTabProps = {
   activeTrack: TrackDisplay;
   activeSession: TrainingSession | null;
   analytics: AnalyticsData;
-  algorithmsDashboard: AlgorithmsDashboard | null;
+  algorithmsDashboard: CodingInterviewDashboard | null;
   dashboardError: string | null;
   onChangeTrack: () => void;
   onChooseTopic: () => void;
@@ -55,7 +55,8 @@ export function HomeTab({
     ? t(recommendation.unavailableReason ?? recommendation.detail)
     : formatPracticeTopicDetail(model.heroSubtitle, t);
   const decisionLabel = recommendation?.primaryLabel ?? model.primaryLabel;
-  const decisionIcon = recommendation?.icon ?? (activeTrack.id === "algorithms" ? "route" : "cloud");
+  const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
+  const decisionIcon = recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
   const decisionEnabled = recommendation?.enabled ?? true;
 

@@ -20,7 +20,7 @@ test("abandonment recovers identically after every durable write boundary", asyn
   for (const boundary of boundaries) {
     const storage = installMemoryStorage();
     await saveTrainingSession(session());
-    await saveActiveForegroundTimer(createForegroundTimerState({ schemaVersion: 1, timerVersion: 1, familyId: "algorithms", sessionId: "session-1", trackId: "algorithms", accumulatedForegroundMs: 0, checkpointRevision: 1, lastCheckpointAt: timestamp, running: false }), null);
+    await saveActiveForegroundTimer(createForegroundTimerState({ schemaVersion: 1, timerVersion: 1, familyId: "coding_interview", sessionId: "session-1", trackId: "coding-interview-dsa-problem-solving", accumulatedForegroundMs: 0, checkpointRevision: 1, lastCheckpointAt: timestamp, running: false }), null);
     storage.setFailurePlan(boundary);
     const abandon = () => commitSessionAbandonment(session("abandoned"), timestamp);
     await assert.rejects(abandon());

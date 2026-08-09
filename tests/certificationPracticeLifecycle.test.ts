@@ -33,7 +33,7 @@ import {
   getTrainingSessions,
   saveTrainingSession,
 } from "../src/storage/repositories";
-import type { CertificationQuestion } from "../src/tracks/cloud-certification";
+import type { CertificationQuestion } from "../src/tracks/certification";
 import { buildCertificationPracticeResumeRoute, getCloudDomainForTopicId } from "../src/features/practice/sessionConfig";
 import { installMemoryStorage } from "./journalTestSupport";
 import { STORAGE_KEYS } from "../src/storage/keys";
@@ -79,7 +79,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
   assert.ok(question);
 
   const first = await lifecycle.startSession({
-    trackId: "cloud-certification",
+    trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-focus-practice",
     request: {
       requestedLength: 10,
@@ -108,7 +108,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
   await lifecycle.abandonActiveSession();
   clock.set("2026-07-24T10:02:00.000Z");
   const second = await lifecycle.startSession({
-    trackId: "cloud-certification",
+    trackId: "google-cloud-associate-cloud-engineer",
     modeId: "certification-focus-practice",
     request: {
       requestedLength: 10,
@@ -178,7 +178,7 @@ test("Certification pause checkpoints and resumes the exact active session", asy
   assert.ok(homeSession);
   const homeModel = buildHomeTabModel({
     activeSession: homeSession,
-    activeTrack: getTrackDisplay("cloud-certification"),
+    activeTrack: getTrackDisplay("google-cloud-associate-cloud-engineer"),
     algorithmsDashboard: null,
     analytics: buildAnalyticsData([], []),
     dashboardError: null,
@@ -370,7 +370,7 @@ test("Certification open handles a typed start race with one start and one autho
     wallClock: new MutableClock("2026-07-24T12:30:00.000Z"),
     sessionIds: { async create() { return "raced-certification-session"; } },
   });
-  const prepared = await lifecycle.startSession({ trackId: "cloud-certification", modeId: "certification-diagnostic-baseline", request: {} });
+  const prepared = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", request: {} });
   installMemoryStorage();
   let starts = 0;
   installTrainingLifecycleUseCases({

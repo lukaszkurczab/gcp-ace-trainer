@@ -11,7 +11,7 @@ import {
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  ALGORITHMS_TRACK_ID,
+  CODING_INTERVIEW_TRACK_ID,
   getTrackDisplay,
   type TrackId,
 } from "../../domain";
@@ -19,7 +19,7 @@ import type { RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
   loadActiveTrainingSession,
-  loadAlgorithmsDashboard,
+  loadCodingInterviewDashboard,
   loadCloudCertificationProgress as loadCloudCertificationProgressViewModel,
   loadExamSummaries as getAttempts,
   loadPracticeHistory as getPracticeHistory,
@@ -27,10 +27,10 @@ import {
   loadTrainingAttempts as getTrainingAttempts,
   type StorageIssue,
 } from "../../application/learningReadModels";
-import { type CloudCertificationProgressViewModel } from "../../tracks/cloud-certification";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
+import { type CloudCertificationProgressViewModel } from "../../tracks/certification";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { type ReviewQueueEntry, type TrainingAttempt, type TrainingSession } from "../../domain";
-import type { AlgorithmsDashboard } from "../../application/algorithms";
+import type { CodingInterviewDashboard } from "../../application/coding-interview";
 import { resumeActiveTrainingSession } from "../../application/trainingLifecycle";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { buildAnalyticsData } from "../analytics/analyticsService";
@@ -57,7 +57,7 @@ type HomeScreenProps = NativeStackScreenProps<
 >;
 
 type ShellData = {
-  algorithmsDashboard: AlgorithmsDashboard | null;
+  algorithmsDashboard: CodingInterviewDashboard | null;
   algorithmsDashboardError: string | null;
   activeSession: TrainingSession | null;
   attempts: CertificationExamSummaryViewModel[];
@@ -121,11 +121,11 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             getReviewQueueItems(),
             getTrainingAttempts(),
           ]);
-          let algorithmsDashboard: AlgorithmsDashboard | null = null;
+          let algorithmsDashboard: CodingInterviewDashboard | null = null;
           let algorithmsDashboardError: string | null = null;
-          if (savedTrackId === ALGORITHMS_TRACK_ID) {
-            try { algorithmsDashboard = await loadAlgorithmsDashboard(); }
-            catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Algorithms recommendation is unavailable."); }
+          if (savedTrackId === CODING_INTERVIEW_TRACK_ID) {
+            try { algorithmsDashboard = await loadCodingInterviewDashboard(); }
+            catch (error) { algorithmsDashboardError = describeOperationalFailure(error, "Coding Interview recommendation is unavailable."); }
           }
 
           if (isActive) {
@@ -189,9 +189,9 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
     if (action.kind === "unavailable") return;
     try {
       if (action.kind === "resume_certification_practice") {
-        if (activeTrackId !== "cloud-certification") throw new Error("Certification Practice can resume only from its active track.");
+        if (activeTrackId !== "google-cloud-associate-cloud-engineer") throw new Error("Certification Practice can resume only from its active track.");
         const session = await resumeActiveTrainingSession();
-        if (session.id !== action.sessionId || session.trackId !== "cloud-certification" || session.modeId !== action.modeId) {
+        if (session.id !== action.sessionId || session.trackId !== "google-cloud-associate-cloud-engineer" || session.modeId !== action.modeId) {
           throw new Error("The active Certification Practice session changed before it could be resumed.");
         }
         navigation.navigate(ROUTES.PRACTICE_SESSION, buildCertificationPracticeResumeRoute(session));
@@ -207,15 +207,15 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
       }
       if (action.kind === "resume_active_session") {
         const session = await resumeActiveTrainingSession();
-        if (session.id !== action.sessionId || session.trackId !== ALGORITHMS_TRACK_ID || session.modeId !== action.modeId) {
-          throw new Error("The active Algorithms session changed before it could be resumed.");
+        if (session.id !== action.sessionId || session.trackId !== CODING_INTERVIEW_TRACK_ID || session.modeId !== action.modeId) {
+          throw new Error("The active Coding Interview session changed before it could be resumed.");
         }
-        if (action.modeId === "algorithms-interview-simulation") {
+        if (action.modeId === "coding-interview-simulation") {
           if (!action.simulationProfileId) throw new Error("The active Interview Simulation profile is unavailable.");
           navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: action.simulationProfileId });
           return;
         }
-        if (action.modeId === "algorithms-custom-practice") {
+        if (action.modeId === "coding-interview-custom-practice") {
           navigation.navigate(
             ROUTES.PRACTICE_SESSION,
             buildPracticeSessionConfig({
@@ -223,7 +223,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
               mode: action.modeId,
               source: "home",
               topicId: action.topicId,
-              trackId: ALGORITHMS_TRACK_ID,
+              trackId: CODING_INTERVIEW_TRACK_ID,
             }),
           );
           return;
@@ -237,7 +237,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
           algorithmScope: action.kind === "start_practice" ? action.scope : undefined,
           source: "home",
           topicId: action.topicId,
-          trackId: ALGORITHMS_TRACK_ID,
+          trackId: CODING_INTERVIEW_TRACK_ID,
         }),
       );
     } catch (error) {

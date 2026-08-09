@@ -1,6 +1,6 @@
 import {
-  ALGORITHMS_TRACK_ID,
-  CLOUD_CERTIFICATION_TRACK_ID,
+  CODING_INTERVIEW_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
 } from "../../../domain";
 import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
@@ -10,9 +10,9 @@ import {
   buildAlgorithmWeakAreaRecommendation,
   type AlgorithmModeId,
   type AlgorithmRoadmapNodeProgressStatus,
-} from "../../../tracks/algorithms";
+} from "../../../tracks/coding-interview";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
-import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/cloud-certification";
+import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import {
@@ -151,11 +151,11 @@ export type BuildProgressTabModelInput = {
 };
 
 export function buildProgressTabModel(input: BuildProgressTabModelInput): ProgressTabModel {
-  if (input.activeTrackId === CLOUD_CERTIFICATION_TRACK_ID && input.cloudProgress) {
+  if (input.activeTrackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && input.cloudProgress) {
     return buildCloudProgressTabModel(input.cloudProgress);
   }
 
-  if (input.activeTrackId === ALGORITHMS_TRACK_ID) {
+  if (input.activeTrackId === CODING_INTERVIEW_TRACK_ID) {
     return buildAlgorithmsProgressTabModel(
       input.trainingAttempts ?? [],
       input.reviewQueueItems ?? [],
@@ -228,8 +228,8 @@ function buildAlgorithmsProgressTabModel(
     reviewQueueItems,
   });
   const algorithmsReviewItems = reviewQueueItems.filter((item) =>
-    item.trackId === ALGORITHMS_TRACK_ID &&
-    item.sourceItem.trackId === ALGORITHMS_TRACK_ID &&
+    item.trackId === CODING_INTERVIEW_TRACK_ID &&
+    item.sourceItem.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.contentVersion === facts.contentVersion,
   );
   const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
@@ -259,7 +259,7 @@ function buildAlgorithmsProgressTabModel(
             reviewSource: "due_queue",
             source: "modeShortcut",
             topicId: facts.activeRoadmapNode.id,
-            trackId: ALGORITHMS_TRACK_ID,
+            trackId: CODING_INTERVIEW_TRACK_ID,
           }),
         }
       : undefined,
@@ -461,7 +461,7 @@ function buildLearningPriority(input: {
     primaryAction: buildAlgorithmsAction(ALGORITHM_MODE_IDS.guidedPractice, input.focusNode.nodeId),
     primaryActionLabel: "Start practice",
     primaryActionMode: ALGORITHM_MODE_IDS.guidedPractice,
-    title: "Start your first Algorithms session",
+    title: "Start your first Coding Interview session",
     tone: "info",
   };
 }
@@ -478,7 +478,7 @@ function buildAlgorithmsAction(
       reviewSource,
       source: "modeShortcut",
       topicId,
-      trackId: ALGORITHMS_TRACK_ID,
+      trackId: CODING_INTERVIEW_TRACK_ID,
     }),
   };
 }
@@ -582,14 +582,14 @@ function capitalize(value: string): string {
 
 function formatAlgorithmsReviewQueueCopy(dueCount: number, totalCount: number): string {
   if (dueCount === 0 && totalCount === 0) {
-    return "No Algorithms review items right now.";
+    return "No Coding Interview review items right now.";
   }
 
   if (dueCount === 0) {
-    return `${totalCount} scheduled Algorithms ${totalCount === 1 ? "item is" : "items are"} not due yet.`;
+    return `${totalCount} scheduled Coding Interview ${totalCount === 1 ? "item is" : "items are"} not due yet.`;
   }
 
-  return `${dueCount} due Algorithms ${dueCount === 1 ? "item needs" : "items need"} review.`;
+  return `${dueCount} due Coding Interview ${dueCount === 1 ? "item needs" : "items need"} review.`;
 }
 
 function formatCanonicalReviewQueueCopy(

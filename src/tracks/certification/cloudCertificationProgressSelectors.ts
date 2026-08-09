@@ -1,4 +1,4 @@
-import { CLOUD_CERTIFICATION_TRACK_ID, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
+import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { isCertificationPracticeModeId } from "./domain";
 export type CloudCertificationProgressIssue = { key: string; message: string; operation: "read" | "write" | "remove" | "parse" };
 
@@ -7,8 +7,8 @@ export type CloudCertificationProgressViewModel = { correctCount: number; degrad
 export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly CloudCertificationProgressIssue[]; now?: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
 
 export function buildCloudCertificationProgressViewModel(input: CloudCertificationProgressViewModelInput): CloudCertificationProgressViewModel {
-  const attempts = input.attempts.filter((attempt) => attempt.trackId === CLOUD_CERTIFICATION_TRACK_ID);
-  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === CLOUD_CERTIFICATION_TRACK_ID);
+  const attempts = input.attempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
   const now = input.now ?? new Date().toISOString();
   const recentCount = input.recentAttemptCount ?? 10;
   const taxonomyPerformance = buildTaxonomyPerformance(attempts);

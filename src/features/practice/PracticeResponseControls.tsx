@@ -4,7 +4,7 @@ import { radius, spacing, typography } from "../../theme";
 import {
   complexityValueAccessibilityLabel,
   orderingMoveAccessibilityLabel,
-} from "../algorithms/session/sessionAccessibility";
+} from "../coding-interview/session/sessionAccessibility";
 import { practiceOptionCorrectnessValue, type PracticeResponseControl } from "./practiceSessionPresentation";
 import { useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";

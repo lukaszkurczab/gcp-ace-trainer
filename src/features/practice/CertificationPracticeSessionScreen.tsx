@@ -25,14 +25,14 @@ import { describeOperationalFailure } from "../../application/operationalDiagnos
 import { AppShellHeader, Button, EmptyState, LoadingState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
 import type { RootStackParamList } from "../../navigation";
-import { isCertificationPracticeModeId } from "../../tracks/cloud-certification";
+import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { useAppPreferences } from "../../preferences";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
-import { getCertificationMode } from "../../tracks/cloud-certification";
+import { getCertificationMode } from "../../tracks/certification";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.PRACTICE_SESSION>;
 type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeCertificationPracticeSession>>, { kind: "verified" }>;
@@ -121,8 +121,8 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
 
   if (!mode) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("This route is not a canonical Certification practice mode.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (conflict) {
-    const ordinaryCertification = conflict.trackId === "cloud-certification" && isCertificationPracticeModeId(conflict.modeId);
-    const certificationExam = conflict.trackId === "cloud-certification" && conflict.modeId === "certification-exam-simulation";
+    const ordinaryCertification = conflict.trackId === "google-cloud-associate-cloud-engineer" && isCertificationPracticeModeId(conflict.modeId);
+    const certificationExam = conflict.trackId === "google-cloud-associate-cloud-engineer" && conflict.modeId === "certification-exam-simulation";
     const continueActive = () => {
       if (ordinaryCertification) navigation.replace(ROUTES.PRACTICE_SESSION, { ...route.params, mode: conflict.modeId, expectedSessionId: conflict.id });
       else if (certificationExam) navigation.replace(ROUTES.EXAM, { expectedSessionId: conflict.id });

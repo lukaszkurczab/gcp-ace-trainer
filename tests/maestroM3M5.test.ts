@@ -44,7 +44,7 @@ test("M4 restores the exact Custom Practice durable feedback after leave, kill, 
 
 test("M5 reuses the complete M1 flow and proves a terminal session has no active resume path after relaunch", () => {
   assert.match(m5, /- runFlow: m1-guided-10\.yaml/);
-  assert.match(m5, new RegExp(escape(runtimeSelectors.home.trackCard("algorithms"))));
+  assert.match(m5, new RegExp(escape(runtimeSelectors.home.trackCard("coding-interview-dsa-problem-solving"))));
   assert.match(m5, new RegExp(escape(runtimeSelectors.resume.card(manifest.m5.completedSessionId))));
   assert.match(m5, new RegExp(escape(runtimeSelectors.session.root(manifest.m5.completedSessionId))));
   assert.match(m5, new RegExp(escape(runtimeSelectors.practice.hubRoot())));

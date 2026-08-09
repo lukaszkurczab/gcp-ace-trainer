@@ -8,22 +8,22 @@ import {
   isAlgorithmChoiceQuestion,
   isAlgorithmComplexityQuestion,
   isAlgorithmOrderingQuestion,
-} from "../src/tracks/algorithms";
-import { selectAlgorithmSessionPlan } from "../src/tracks/algorithms/algorithmSessionSelection";
+} from "../src/tracks/coding-interview";
+import { selectAlgorithmSessionPlan } from "../src/tracks/coding-interview/algorithmSessionSelection";
 
 const flow = readFileSync(".maestro/user-testing/algorithms-core-journey.yaml", "utf8");
-const sessionId = "algorithms:algorithms-independent-practice:1";
+const sessionId = "coding-interview-dsa-problem-solving:coding-interview-independent-practice:1";
 
 test("user-testing core journey executes the exact representative session, resume, summary, and progress evidence", async () => {
   await validateBundledContent();
   const selection = selectAlgorithmSessionPlan({
-    mode: "algorithms-independent-practice",
+    mode: "coding-interview-independent-practice",
     sessionLength: 10,
     scope: { interleavedScopeId: "hash-map-and-set-node-v1" },
   });
 
   assert.equal(selection.items.length, 10);
-  assert.match(flow, new RegExp(escape(runtimeSelectors.practice.modeCard("algorithms-independent-practice"))));
+  assert.match(flow, new RegExp(escape(runtimeSelectors.practice.modeCard("coding-interview-independent-practice"))));
   assert.match(flow, new RegExp(escape(runtimeSelectors.practice.declaredScope("hash_map_and_set"))));
   assert.match(flow, /assertVisible: "Question 1 of 10"/);
 

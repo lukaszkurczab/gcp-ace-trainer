@@ -9,7 +9,7 @@ import type { RootStackParamList } from "../../navigation";
 import { loadExamSummaries as getAttempts, loadReviewQueueItems as getReviewQueueItems } from "../../application/learningReadModels";
 import { setQuestionNeedsReview } from "../../application/certification";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
-import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/cloud-certification";
+import type { CertificationAnswerViewModel, CertificationExamSummaryViewModel } from "../../tracks/certification";
 import { radius, spacing, typography } from "../../theme";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";

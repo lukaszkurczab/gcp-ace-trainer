@@ -5,7 +5,6 @@ export type TrackStatus = "active" | "archived";
 export type TrackMetadata = Readonly<{
   title: string;
   shortTitle: string;
-  categoryLabel: string;
   description: string;
   status: TrackStatus;
   accentColor: string;

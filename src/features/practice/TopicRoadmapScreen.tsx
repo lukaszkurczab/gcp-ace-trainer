@@ -13,7 +13,7 @@ import {
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  CLOUD_CERTIFICATION_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplay,
   type TrackId,
 } from "../../domain";
@@ -311,7 +311,7 @@ function DotGrid() {
 }
 
 function getTopicIcon(topic: TopicRoadmapNodeModel, activeTrackId: TrackId): IconName {
-  if (activeTrackId !== CLOUD_CERTIFICATION_TRACK_ID) {
+  if (activeTrackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) {
     return "route";
   }
 

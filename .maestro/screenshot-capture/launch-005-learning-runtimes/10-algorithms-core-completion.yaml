@@ -8,7 +8,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -18,11 +18,11 @@ tags:
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:practice:mode-card:algorithms-independent-practice"
+      id: "patternly:practice:mode-card:coding-interview-independent-practice"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-independent-practice"
+    id: "patternly:practice:mode-card:coding-interview-independent-practice"
 - extendedWaitUntil:
     visible:
       id: "patternly:practice:declared-scope:hash_map_and_set"
@@ -34,7 +34,7 @@ tags:
       id: "patternly:session:question:alg-hms-complement-all-pairs-payload"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:counter:algorithms:algorithms-independent-practice:1:ordinal:1:length:10"
+    id: "patternly:session:counter:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1:ordinal:1:length:10"
 - takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__algorithms-core-completion__010__choice-question-ready__${THEME}__${PLATFORM}-phone"
 
 - scrollUntilVisible:
@@ -277,8 +277,8 @@ tags:
     id: "patternly:session:continue:alg-hms-complexity-expected-versus-worst"
 - extendedWaitUntil:
     visible:
-      id: "patternly:summary:root:algorithms:algorithms-independent-practice:1"
+      id: "patternly:summary:root:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
     timeout: 30000
 - assertVisible:
-    id: "patternly:summary:configuration:algorithms:algorithms-independent-practice:1:10:after-each-answer"
+    id: "patternly:summary:configuration:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1:10:after-each-answer"
 - takeScreenshot: "${SCREENSHOT_ROOT}/learning-runtime__algorithms-core-completion__060__verified-summary-ready__${THEME}__${PLATFORM}-phone"

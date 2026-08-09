@@ -7,23 +7,21 @@ import { buildReviewQueueScreenModel } from "../src/features/review/reviewQueueM
 import { formatReviewTaxonomyLabel } from "../src/features/review/reviewQueuePresentation";
 import { translate } from "../src/preferences/translations";
 
-test("track presentation separates the Certification category from the concrete Google Cloud track", () => {
-  const track = getTrackDisplay("cloud-certification");
+test("track presentation exposes only the concrete Google Cloud track", () => {
+  const track = getTrackDisplay("google-cloud-associate-cloud-engineer");
 
-  assert.equal(track.id, "cloud-certification");
+  assert.equal(track.id, "google-cloud-associate-cloud-engineer");
   assert.equal(track.familyId, "certification");
-  assert.equal(track.categoryLabel, "Certification");
   assert.equal(track.title, "Google Cloud Associate Cloud Engineer");
   assert.equal(track.shortTitle, "Google Cloud ACE");
-  assert.notEqual(track.categoryLabel, track.title);
 });
 
 test("active track naming is complete in the Polish presentation dictionary", () => {
-  for (const trackId of ["algorithms", "cloud-certification"]) {
+  for (const trackId of ["coding-interview-dsa-problem-solving", "google-cloud-associate-cloud-engineer"]) {
     const track = getTrackDisplay(trackId);
 
-    assert.notEqual(translate("pl", track.categoryLabel), track.categoryLabel);
     assert.notEqual(translate("pl", track.description), track.description);
+    if (trackId === "coding-interview-dsa-problem-solving") assert.notEqual(translate("pl", track.shortTitle), track.shortTitle);
   }
 
   assert.equal(
@@ -33,7 +31,7 @@ test("active track naming is complete in the Polish presentation dictionary", ()
 });
 
 test("review presentation uses the concrete track title when taxonomy context is absent", () => {
-  const track = getTrackDisplay("cloud-certification");
+  const track = getTrackDisplay("google-cloud-associate-cloud-engineer");
   const model = buildReviewQueueScreenModel({
     degraded: false,
     dueItems: [
@@ -104,7 +102,7 @@ test("review translates known track and cloud taxonomy labels while preserving a
         reasons: [],
         sourceAttemptId: "attempt-authored",
         taxonomyRefs: [
-          { axisId: "mental_unit", nodeId: "algorithms", role: "primary" },
+          { axisId: "mental_unit", nodeId: "custom_mental_unit", role: "primary" },
         ],
       },
     ],
@@ -112,7 +110,7 @@ test("review translates known track and cloud taxonomy labels while preserving a
     ok: true,
     overdueItems: [],
     totalItems: 2,
-    trackTitle: getTrackDisplay("algorithms").title,
+    trackTitle: getTrackDisplay("coding-interview-dsa-problem-solving").title,
     upcomingItems: [],
   });
   const cloudModel = buildReviewQueueScreenModel({
@@ -141,7 +139,7 @@ test("review translates known track and cloud taxonomy labels while preserving a
     ok: true,
     overdueItems: [],
     totalItems: 1,
-    trackTitle: getTrackDisplay("cloud-certification").title,
+    trackTitle: getTrackDisplay("google-cloud-associate-cloud-engineer").title,
     upcomingItems: [],
   });
   const pl = (value: string) => translate("pl", value);
@@ -156,10 +154,10 @@ test("review translates known track and cloud taxonomy labels while preserving a
   assert.ok(trackLabel);
   assert.ok(authoredLabel);
   assert.ok(cloudLabel);
-  assert.equal(formatReviewTaxonomyLabel(trackLabel, pl), "Algorytmy");
+  assert.equal(formatReviewTaxonomyLabel(trackLabel, pl), "Rozmowa techniczna: DSA i rozwiązywanie problemów");
   assert.equal(formatReviewTaxonomyLabel(cloudLabel, pl), "Planowanie i konfigurowanie rozwiązania chmurowego");
-  assert.deepEqual(authoredLabel, { kind: "authored", value: "Algorithms" });
-  assert.equal(formatReviewTaxonomyLabel(authoredLabel, pl), "Algorithms");
+  assert.deepEqual(authoredLabel, { kind: "authored", value: "Custom Mental Unit" });
+  assert.equal(formatReviewTaxonomyLabel(authoredLabel, pl), "Custom Mental Unit");
 });
 
 test("dynamic track titles cross the translation boundary and long header copy can shrink", () => {

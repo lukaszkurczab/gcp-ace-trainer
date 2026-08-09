@@ -5,7 +5,7 @@ import test from "node:test";
 import {
   complexityValueAccessibilityLabel,
   orderingMoveAccessibilityLabel,
-} from "../src/features/algorithms/session/sessionAccessibility";
+} from "../src/features/coding-interview/session/sessionAccessibility";
 
 const source = (path: string) => readFileSync(path, "utf8");
 
@@ -44,7 +44,7 @@ test("simulation accessibility respects motion, focus, and touch-target constrai
 
 test("canonical session surfaces expose deterministic state and do not group interactive descendants", () => {
   const button = source("src/components/Button.tsx");
-  const shell = source("src/features/algorithms/session/SessionShell.tsx");
+  const shell = source("src/features/coding-interview/session/SessionShell.tsx");
   const practice = source("src/features/practice/PracticeResponseControls.tsx");
   const practiceSurface = source("src/features/practice/PracticeSessionSurface.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
@@ -74,7 +74,7 @@ test("practice exit makes abandonment a single explicit decision in a modal", ()
   assert.match(practiceSurface, /<Text style=\{styles\.exitTitle\}>\{t\("Pause or end this session\?"\)\}<\/Text>/);
   assert.match(practiceSurface, /<Button onPress=\{onLeave\} testID=\{sessionId \? runtimeSelectors\.session\.leaveAndResume\(sessionId\) : undefined\}>\{t\("Pause and resume later"\)\}<\/Button>/);
   assert.match(practiceSurface, /<Button onPress=\{onAbandon\} testID=\{sessionId \? runtimeSelectors\.session\.abandon\(sessionId\) : undefined\} variant="destructive">\{t\(copy\.destructiveLabel\)\}<\/Button>/);
-  assert.match(practiceSurface, /trackId === "algorithms"[\s\S]*?description: "Pause to resume later, or end the session and view a partial summary\. Saved answers remain available\.", destructiveLabel: "End and view summary"/);
+  assert.match(practiceSurface, /trackId === "coding-interview-dsa-problem-solving"[\s\S]*?description: "Pause to resume later, or end the session and view a partial summary\. Saved answers remain available\.", destructiveLabel: "End and view summary"/);
   assert.doesNotMatch(practiceSurface, /abandon_confirmation|onRequestAbandon|AbandonSurface/);
 });
 
@@ -89,7 +89,7 @@ test("standalone practice conflict and unavailable states respect both safe-area
 });
 
 test("large text can grow session chrome and controls without fixed interactive heights", () => {
-  const shell = source("src/features/algorithms/session/SessionShell.tsx");
+  const shell = source("src/features/coding-interview/session/SessionShell.tsx");
   const practice = source("src/features/practice/PracticeResponseControls.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");
 

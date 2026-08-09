@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import test, { beforeEach } from "node:test";
 
@@ -7,15 +7,15 @@ import { bootstrapApplication } from "../src/application/bootstrap";
 import { createTrainingSession } from "../src/domain";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../src/storage/keys";
-import { getActiveTrainingSessionDraftRevision, saveTrainingSessionDraft, saveTrainingSession, validateStorageMetadata } from "../src/storage/repositories";
+import { getActiveTrackId, getActiveTrainingSessionDraftRevision, getTrainingSessions, saveTrainingSessionDraft, saveTrainingSession, validateStorageMetadata } from "../src/storage/repositories";
 import { removeCanonicalValue, writeCanonicalJson } from "../src/storage/repositories/canonicalRecordCodec";
 
 const files = (directory: string): string[] => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? files(join(directory, entry.name)) : [join(directory, entry.name)]);
 const simulation = () => createTrainingSession({
-  id: "bootstrap-session", trackId: "algorithms", modeId: "interview-simulation",
+  id: "bootstrap-session", trackId: "coding-interview-dsa-problem-solving", modeId: "interview-simulation",
   configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "interviewSimulation", submission: "manualOrForegroundTimeout" },
   requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "algorithms", itemId: "item", contentVersion: "content-v1" } }],
+  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "content-v1" } }],
   optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", status: "active", startedAt: "2026-07-16T00:00:00.000Z",
 });
 
@@ -27,10 +27,32 @@ test("canonical storage uses envelopes and rejects an unsupported schema identit
   await assert.rejects(validateStorageMetadata(), /Unsupported canonical storage schema/);
 });
 
+test("the atomic track cutover rejects every persisted former track identity without translating it", async () => {
+  for (const formerTrackId of ["algorithms", "cloud-certification"]) {
+    installKeyValueStorageForTests(new MemoryKeyValueStorage());
+    writeCanonicalJson(STORAGE_KEYS.ACTIVE_TRACK, formerTrackId);
+    await assert.rejects(getActiveTrackId(), /Stored record at .* is unsupported/);
+
+    installKeyValueStorageForTests(new MemoryKeyValueStorage());
+    const formerSession = {
+      ...simulation(),
+      id: `former-${formerTrackId}`,
+      trackId: formerTrackId,
+      itemOrder: simulation().itemOrder.map((occurrence) => ({
+        ...occurrence,
+        item: { ...occurrence.item, trackId: formerTrackId },
+      })),
+    };
+    writeCanonicalJson(STORAGE_KEYS.TRAINING_SESSION_INDEX, [formerSession.id]);
+    writeCanonicalJson(STORAGE_KEYS.trainingSession(formerSession.id), formerSession);
+    await assert.rejects(getTrainingSessions(), /Stored record at .* is unsupported/);
+  }
+});
+
 test("draft replacement verifies its expected revision", async () => {
   const session = simulation();
   await saveTrainingSession(session);
-  const draft = { schemaVersion: 1 as const, familyId: "algorithms", draftVersion: 1 as const, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt } as const;
+  const draft = { schemaVersion: 1 as const, familyId: "coding_interview", draftVersion: 1 as const, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt } as const;
   await saveTrainingSessionDraft(draft, null);
   const revision = await getActiveTrainingSessionDraftRevision();
   assert.equal(revision, 1);
@@ -60,7 +82,7 @@ test("bootstrap runs resolution only after recovery/content validation and expos
   assert.deepEqual(blocked.kind, "ready");
   const session = simulation();
   await saveTrainingSession(session);
-  await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "algorithms", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt }, null);
+  await saveTrainingSessionDraft({ schemaVersion: 1, familyId: "coding_interview", draftVersion: 1, revision: 1, sessionId: session.id, trackId: session.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: session.startedAt }, null);
   const mismatch = await bootstrapApplication(async () => undefined, async () => { throw new Error("content/profile mismatch"); });
   assert.deepEqual(mismatch, { kind: "blocking", reason: "Application bootstrap failed. [LOCAL_OPERATION_FAILED]" });
 });
@@ -76,6 +98,10 @@ test("one MMKV import is infrastructure-owned and only repositories access it", 
 });
 
 test("cutover removes old storage and remote content paths", () => {
-  const source = files("src").map((path) => readFileSync(path, "utf8")).join("\n");
+  const source = files("src").filter((path) => !path.endsWith("src/content/bundled/generatedArtifacts.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(source, /AsyncStorage|patternly:v1:|storageCodec|ContentCacheRepository|HttpContentSource|loadTrackContent|certificationExamRepository/);
+  assert.doesNotMatch(source, /(["'])algorithms\1|(["'])cloud-certification\2/);
+  for (const formerPath of ["src/application/algorithms", "src/features/algorithms", "src/tracks/algorithms", "src/tracks/cloud-certification"]) {
+    assert.equal(existsSync(formerPath), false, formerPath);
+  }
 });

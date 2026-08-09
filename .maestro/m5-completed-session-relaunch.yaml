@@ -9,12 +9,12 @@ tags:
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - assertNotVisible:
-    id: "patternly:resume:card:algorithms:algorithms-guided-practice:1"
+    id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - assertNotVisible:
-    id: "patternly:session:root:algorithms:algorithms-guided-practice:1"
+    id: "patternly:session:root:coding-interview-dsa-problem-solving:coding-interview-guided-practice:1"
 - tapOn:
     id: "main-tab-bar-practice"
 - assertVisible:

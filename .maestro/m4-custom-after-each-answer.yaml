@@ -6,7 +6,7 @@ tags:
 ---
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -27,7 +27,7 @@ tags:
       id: "patternly:session:question:alg-complexity-amortized-001"
     timeout: 30000
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:after-each-answer"
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:10:feedback-timing:after-each-answer"
 - tapOn:
     id: "patternly:session:option:alg-complexity-amortized-001:each_worst_constant"
 - tapOn:
@@ -43,25 +43,25 @@ tags:
 - assertVisible:
     id: "patternly:session:result:alg-complexity-amortized-001:incorrect"
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-custom-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - killApp
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: "patternly:resume:card:algorithms:algorithms-custom-practice:1"
+      id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     timeout: 30000
 - tapOn:
-    id: "patternly:resume:continue:algorithms:algorithms-custom-practice:1"
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
 - extendedWaitUntil:
     visible:
-      id: "patternly:session:root:algorithms:algorithms-custom-practice:1"
+      id: "patternly:session:root:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1"
     timeout: 30000
 - assertVisible:
     id: "patternly:session:question:alg-complexity-amortized-001"
 - assertVisible:
-    id: "patternly:session:configuration:algorithms:algorithms-custom-practice:1:length:10:feedback-timing:after-each-answer"
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-custom-practice:1:length:10:feedback-timing:after-each-answer"
 - scrollUntilVisible:
     element:
       id: "patternly:session:feedback:alg-complexity-amortized-001"

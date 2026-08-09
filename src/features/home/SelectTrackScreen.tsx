@@ -14,7 +14,7 @@ import {
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
 import {
-  CLOUD_CERTIFICATION_TRACK_ID,
+  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplays,
   type TrackDisplay,
   type TrackId,
@@ -29,7 +29,7 @@ import {
   selectActiveTrack as saveActiveTrackId,
 } from "../../application/learningReadModels";
 import { spacing, typography } from "../../theme";
-import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/cloud-certification";
+import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../tracks/certification";
 import { buildAnalyticsData } from "../analytics/analyticsService";
 import { AppBottomNavigation } from "../navigation/AppBottomNavigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
@@ -167,6 +167,7 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
             });
             const topic = getCurrentPracticeTopic(track, data.trainingAttempts);
             const primaryLabel = isActive ? "Continue" : started ? "Select" : "Start track";
+            const isCertificationTrack = track.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID;
 
             return (
               <Card
@@ -181,11 +182,11 @@ export function SelectTrackScreen({ navigation, onboarding = false, onTrackSelec
                 />
                 <View style={[styles.trackMetaRow, largeText ? styles.trackMetaRowLargeText : null]}>
                   <IconTile
-                    name={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "cloud" : "route"}
-                    tone={track.id === CLOUD_CERTIFICATION_TRACK_ID ? "info" : "primary"}
+                    name={isCertificationTrack ? "cloud" : "route"}
+                    tone={isCertificationTrack ? "info" : "primary"}
                   />
                   <View style={styles.trackMetaCopy}>
-                    <Text style={styles.trackCategory}>{t(track.categoryLabel)}</Text>
+                    <Text style={styles.trackCategory}>{t(track.shortTitle)}</Text>
                     <Text style={styles.nextTopic}>{t(onboarding ? "Start with" : "Next")}: {formatPracticeTopicTitle(topic.title, t)}</Text>
                   </View>
                 </View>

@@ -3,12 +3,12 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled/generatedArtifacts";
-import { AlgorithmContentCatalog, selectAlgorithmSessionPlan } from "../src/tracks/algorithms";
+import { AlgorithmContentCatalog, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
 
 const itemId = "alg-complexity-amortized-001";
-const customSessionId = "algorithms:algorithms-custom-practice:1";
-const weakReviewSessionId = "algorithms:algorithms-weak-area-review:2";
+const customSessionId = "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1";
+const weakReviewSessionId = "coding-interview-dsa-problem-solving:coding-interview-weak-area-review:2";
 const nodeId = "complexity_and_constraints";
 const m6 = readFileSync(".maestro/m6-due-smoke.yaml", "utf8");
 const m7 = readFileSync(".maestro/m7-remediation-smoke.yaml", "utf8");
@@ -17,12 +17,12 @@ const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "
 const iosRunner = readFileSync("scripts/runRcAlgorithmsIos.mjs", "utf8");
 
 test("M6 and M7 seed their real first Custom Practice item from the pinned Guided blueprint", () => {
-  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "algorithms");
+  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving");
   assert.ok(reference, "Algorithms artifact must be bundled");
   const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
   const plan = selectAlgorithmSessionPlan({
     contentCatalog: catalog,
-    mode: "algorithms-custom-practice",
+    mode: "coding-interview-custom-practice",
     scope: { roadmapNodeId: nodeId },
     sessionLength: 10,
   });
@@ -40,7 +40,7 @@ test("M6 performs a real scheduled due review after the canonical audit clock ad
   assert.match(m6, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/clock/advance?milliseconds=604800000")));
   assertReviewInteraction(m6, "correct");
   assert.ok(m6.indexOf("sequence_average") < m6.indexOf("clock/advance"));
-  assert.ok(m6.indexOf("clock/advance") < m6.indexOf(runtimeSelectors.practice.modeCard("algorithms-weak-area-review")));
+  assert.ok(m6.indexOf("clock/advance") < m6.indexOf(runtimeSelectors.practice.modeCard("coding-interview-weak-area-review")));
 });
 
 test("M7 materializes remediation through the canonical weak-area review session", () => {
@@ -50,14 +50,14 @@ test("M7 materializes remediation through the canonical weak-area review session
   assert.match(m7, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/clock/advance?milliseconds=86400000")));
   assertReviewInteraction(m7, "correct");
   assert.ok(m7.indexOf("each_worst_constant") < m7.indexOf("clock/advance"));
-  assert.ok(m7.indexOf("clock/advance") < m7.indexOf(runtimeSelectors.practice.modeCard("algorithms-weak-area-review")));
+  assert.ok(m7.indexOf("clock/advance") < m7.indexOf(runtimeSelectors.practice.modeCard("coding-interview-weak-area-review")));
 });
 
 function assertCanonicalPreparation(flow: string, tag: string): void {
   assert.match(flow, new RegExp(`- ${escapeForRegExp(tag)}`));
   assert.match(iosRunner, new RegExp(escapeForRegExp("com.lkurczab.patternly://audit/reset-learning-state")));
   assert.match(listener, new RegExp(escapeForRegExp("patternly:content:audit-command-listener:ready")));
-  assert.match(bootstrap, new RegExp(escapeForRegExp(runtimeSelectors.home.selectTrack("algorithms"))));
+  assert.match(bootstrap, new RegExp(escapeForRegExp(runtimeSelectors.home.selectTrack("coding-interview-dsa-problem-solving"))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.openSetup())));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.sessionLength(10))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.startSession())));
@@ -68,8 +68,8 @@ function assertCanonicalPreparation(flow: string, tag: string): void {
 }
 
 function assertReviewInteraction(flow: string, expectedResult: "correct"): void {
-  assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.modeCard("algorithms-weak-area-review"))));
-  assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.mode("algorithms-weak-area-review"))));
+  assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.practice.modeCard("coding-interview-weak-area-review"))));
+  assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.mode("coding-interview-weak-area-review"))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.option(itemId, "sequence_average"))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.result(itemId, expectedResult))));
   assert.match(flow, new RegExp(escapeForRegExp(runtimeSelectors.session.abandon(weakReviewSessionId))));

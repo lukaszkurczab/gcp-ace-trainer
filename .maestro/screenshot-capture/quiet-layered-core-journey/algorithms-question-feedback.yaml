@@ -8,7 +8,7 @@ tags:
 - openLink: "com.lkurczab.patternly://audit/reset-learning-state"
 - extendedWaitUntil:
     visible:
-      id: "patternly:home:track-card:algorithms"
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
     timeout: 30000
 - tapOn:
     id: "main-tab-bar-practice"
@@ -18,11 +18,11 @@ tags:
     timeout: 30000
 - scrollUntilVisible:
     element:
-      id: "patternly:practice:mode-card:algorithms-independent-practice"
+      id: "patternly:practice:mode-card:coding-interview-independent-practice"
     direction: DOWN
     centerElement: true
 - tapOn:
-    id: "patternly:practice:mode-card:algorithms-independent-practice"
+    id: "patternly:practice:mode-card:coding-interview-independent-practice"
 - extendedWaitUntil:
     visible: "Choose a scope for Independent Practice"
     timeout: 30000
@@ -80,10 +80,10 @@ tags:
 - takeScreenshot: "${SCREENSHOT_ROOT}/10__algorithms__040__feedback-details__lower-content__${PLATFORM}__${THEME}__${LOCALE}__${TEXT_SIZE}"
 - scrollUntilVisible:
     element:
-      id: "patternly:session:leave:algorithms:algorithms-independent-practice:1"
+      id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
     direction: UP
     centerElement: false
 - tapOn:
-    id: "patternly:session:leave:algorithms:algorithms-independent-practice:1"
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
 - tapOn:
-    id: "patternly:session:leave-and-resume:algorithms:algorithms-independent-practice:1"
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-independent-practice:1"
