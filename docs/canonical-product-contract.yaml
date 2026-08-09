@@ -146,6 +146,8 @@ requirements:
     statement: Active registries and published artifacts use only coding_interview, coding-interview-dsa-problem-solving, and google-cloud-associate-cloud-engineer; algorithms and cloud-certification are not aliases, and persisted former track identities fail explicitly without translation or substitution.
   - id: CONTENT-PACKAGES-001
     statement: Complete Free nodes are bundled and Premium content uses immutable compressed whole-node packages authorized by Cloud Run, checksum and semantic validation, atomic activation, exact session pinning, and active-session-safe cache retention without per-question Firestore fetching or silent substitution.
+  - id: CONTENT-PACKAGE-RESOLVER-001
+    statement: Package preparation and exact pin resolution accept only trusted immutable outer bytes, validate compressed payload, family schema, node-local profile and canonical runner mappings, and expose frozen package-local catalogs without mode or version substitution.
   - id: ANALYTICS-REPORTS-001
     statement: Firebase Analytics and Crashlytics are fail-closed behind privacy and consent, events use a closed redacted vocabulary, and content reports are account-unlinked by default with bounded context, explicit linking consent, retention, and offline retry states.
   - id: BACKUP-RESTORE-001
@@ -409,6 +411,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: defines package analytics report backup and platform semantics
       requirementIds: [CONTENT-PACKAGES-001, ANALYTICS-REPORTS-001, BACKUP-RESTORE-001, PLATFORM-RELEASE-001]
+    - id: content-packages-verifier-resolver
+      testPath: tests/contentPackageResolver.test.ts
+      testName: CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and resolves only closed profile modes
+      requirementIds: [CONTENT-PACKAGE-RESOLVER-001]
     - id: canonical-brand-design-authority
       testPath: tests/canonicalProductContract.test.ts
       testName: defines one brand owner approval and repository handoff semantics
