@@ -124,6 +124,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["DEVICE-SESSION-SYNC-001", ["canonical-session-sync-surfaces-products"]],
       ["PRODUCT-SURFACES-GOALS-001", ["canonical-session-sync-surfaces-products"]],
       ["LEARNING-PRODUCTS-001", ["canonical-session-sync-surfaces-products"]],
+      ["TRACK-REGISTRY-ADMISSION-001", ["track-registry-admission"]],
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],

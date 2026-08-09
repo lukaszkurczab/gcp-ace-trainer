@@ -26,8 +26,8 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.producerCommit) || !/^[a-z][a-z0-9-]*$/.test(lock.releaseId) || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "algorithms,cloud-certification") process.exit(1);
-            process.stdout.write(`commit=${lock.producerCommit}\n`);
+            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer" || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
+            process.stdout.write(`commit=${lock.artifacts[0].producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
@@ -35,6 +35,7 @@ jobs:
           repository: lukaszkurczab/patternly-content
           ref: ${{ steps.content-lock.outputs.commit }}
           path: patternly-content
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1
@@ -113,8 +114,8 @@ jobs:
         run: |
           node -e '
             const lock = require("./integration/contracts/content-release/release.lock.json");
-            if (lock.schemaVersion !== 1 || lock.repository !== "lukaszkurczab/patternly-content" || !/^[a-f0-9]{40}$/.test(lock.producerCommit) || !/^[a-f0-9]{40}$/.test(lock.sourceRepositoryCommit) || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "algorithms,cloud-certification") process.exit(1);
-            process.stdout.write(`commit=${lock.producerCommit}\n`);
+            if (lock.schemaVersion !== 2 || lock.repository !== "lukaszkurczab/patternly-content" || !Array.isArray(lock.artifacts) || lock.artifacts.map((artifact) => artifact.trackId).join(",") !== "coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer" || !lock.artifacts.every((artifact) => /^[a-f0-9]{40}$/.test(artifact.producerCommit) && /^[a-f0-9]{40}$/.test(artifact.sourceRepositoryCommit) && /^[a-z][a-z0-9-]*$/.test(artifact.releaseId))) process.exit(1);
+            process.stdout.write(`commit=${lock.artifacts[0].producerCommit}\n`);
           ' >> "$GITHUB_OUTPUT"
       - name: Checkout locked content producer
         uses: actions/checkout@v4
@@ -122,6 +123,7 @@ jobs:
           repository: lukaszkurczab/patternly-content
           ref: ${{ steps.content-lock.outputs.commit }}
           path: patternly-content
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22.13.1

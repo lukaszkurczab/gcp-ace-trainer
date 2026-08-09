@@ -418,6 +418,24 @@ function addedRequirementIds(diff: string): readonly string[] {
 }
 
 /**
+ * Requirement records and their test mappings already have a fixed schema and
+ * parser representation. Changing only those records must still change the
+ * canonical contract test, but does not justify a cosmetic schema/parser edit.
+ */
+function isRequirementOnlyContractDiff(diff: string): boolean {
+  const changedLines = diff.split("\n")
+    .filter((line) => (line.startsWith("+") && !line.startsWith("+++")) || (line.startsWith("-") && !line.startsWith("---")))
+    .map((line) => line.slice(1));
+  if (changedLines.length === 0) return false;
+  return changedLines.every((line) =>
+    /^  - id: [A-Z][A-Z0-9-]*[A-Z0-9]$/u.test(line)
+    || /^    statement: /u.test(line)
+    || /^    - id: [a-z][a-z0-9-]*$/u.test(line)
+    || /^      (?:testPath|testName|requirementIds): /u.test(line),
+  );
+}
+
+/**
  * Rejects behavior changes that do not add a contract requirement with a changed
  * mapped test. UI changes additionally require an approved design reference.
  */
@@ -429,7 +447,10 @@ export function evaluateContractChangeGate(input: ContractChangeGateInput): read
   const behaviorChanged = input.changedPaths.some((path) => isBehaviorPath(path) && !approvedMaintenancePaths.has(path));
   const errors: string[] = [];
   if (input.changedPaths.includes(canonicalContractPath)) {
-    for (const companionPath of canonicalContractCompanionPaths) {
+    const requiredCompanions = isRequirementOnlyContractDiff(input.canonicalContractDiff)
+      ? ["tests/canonicalProductContract.test.ts"]
+      : canonicalContractCompanionPaths;
+    for (const companionPath of requiredCompanions) {
       if (!input.changedPaths.includes(companionPath)) {
         errors.push(`Canonical contract change requires ${companionPath} to change.`);
       }

@@ -35,3 +35,12 @@ test("every bundled track exactly matches its independently published producer r
   const availability = await validateBundledContent(GENERATED_BUNDLED_CONTENT_RELEASE);
   assert.deepEqual(Object.fromEntries(availability.tracks.map((track) => [track.trackId, track.kind])), { "coding-interview-dsa-problem-solving": "available", "google-cloud-associate-cloud-engineer": "available" });
 });
+
+test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
+  const workflow = readFileSync(join(appRoot, ".github", "workflows", "qa.yml"), "utf8");
+  assert.match(workflow, /lock\.schemaVersion !== 2/u);
+  assert.match(workflow, /coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer/u);
+  assert.doesNotMatch(workflow, /algorithms,cloud-certification/u);
+  assert.doesNotMatch(workflow, /lock\.producerCommit/u);
+  assert.doesNotMatch(workflow, /lock\.sourceRepositoryCommit/u);
+});

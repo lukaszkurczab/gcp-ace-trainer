@@ -85,21 +85,31 @@ test("enforces contract changes for behavior changes", () => {
   assert.deepEqual(validNonUiChange, []);
 });
 
-test("requires schema parser and focused tests for every canonical contract change", () => {
+test("requires the canonical test, but not schema/parser churn, for requirement-only contract changes", () => {
   assert.deepEqual(evaluateContractChangeGate({
     changedPaths: [contractPath],
     canonicalContractDiff: requirementDiff,
     contract: loadCanonicalProductContract(),
   }), [
-    "Canonical contract change requires docs/canonical-product-contract.schema.json to change.",
-    "Canonical contract change requires scripts/validateCanonicalProductContract.ts to change.",
     "Canonical contract change requires tests/canonicalProductContract.test.ts to change.",
   ]);
   assert.deepEqual(evaluateContractChangeGate({
-    changedPaths: contractCompanionPaths,
+    changedPaths: [contractPath, "tests/canonicalProductContract.test.ts"],
     canonicalContractDiff: requirementDiff,
     contract: loadCanonicalProductContract(),
   }), []);
+});
+
+test("requires schema and parser companions for structural contract changes", () => {
+  const structuralDiff = "+learningProducts:\n+  additionalAdmissionFact: required\n";
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [contractPath, "tests/canonicalProductContract.test.ts"],
+    canonicalContractDiff: structuralDiff,
+    contract: loadCanonicalProductContract(),
+  }), [
+    "Canonical contract change requires docs/canonical-product-contract.schema.json to change.",
+    "Canonical contract change requires scripts/validateCanonicalProductContract.ts to change.",
+  ]);
 });
 
 test("requires an approved design reference only for UI behavior changes", () => {
