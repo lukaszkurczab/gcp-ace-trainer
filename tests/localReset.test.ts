@@ -14,9 +14,11 @@ import {
   addTrainingAttempt,
   getActiveMutationJournal,
   getActiveTrainingSessionDraft,
+  getGuestInstallation,
   getReviewQueueItems,
   getTrainingAttempts,
   getTrainingSessions,
+  provisionGuestInstallation,
   saveTrainingSession,
   saveTrainingSessionDraft as persistTrainingSessionDraft,
 } from "../src/storage/repositories";
@@ -54,6 +56,21 @@ test("clear local history copy covers progress and review data", () => {
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /review queue/);
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /progress/);
   assert.match(CLEAR_LOCAL_HISTORY_DETAIL, /active sessions/);
+});
+
+test("clear local history preserves the one guest installation and local dataset identity", async () => {
+  installMemoryStorage();
+  const identity = Object.freeze({
+    installationId: "11111111-1111-4111-8111-111111111111",
+    localDatasetId: "22222222-2222-4222-8222-222222222222",
+  });
+  const guestInstallation = await provisionGuestInstallation({ async create() { return identity; } });
+  await seedResettableLearningState();
+
+  await clearPatternlyLocalHistory();
+
+  assert.deepEqual(await getGuestInstallation(), guestInstallation);
+  assert.deepEqual((await getTrainingSessions()).value, []);
 });
 
 test("reset recovers a pending command before deleting its fully materialized learning state", async () => {
