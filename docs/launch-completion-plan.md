@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `ID-01 — Account/security service contracts and composition` (`ACTIVE`)
+**Current task:** `PKG-04A — verified content-package resolver and session-pin contract` (`READY`)
 
-**Next executable task:** `ID-01 — Account/security service contracts and composition`; B-01 is independently partially evidenced and awaits only `X-09` Figma access.
+**Next executable task:** `PKG-04A — verified content-package resolver and session-pin contract`; it is the required code-only foundation for Free-node runtime activation without creating a second runner or package store.
 
 ## 1. Purpose and authority
 
@@ -253,11 +253,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage I — identity and account security
 
-#### ID-01 — Account/security service contracts and composition — `ACTIVE`
+#### ID-01 — Account/security service contracts and composition — `BLOCKED — authenticated approved-client credential and deletion-tombstone authority unresolved`
 
 - **Objective:** expose one composed account API over the compatible Firebase foundation. **Owners:** `IDENTITY-SECURITY-001`, docs 02/04/09. **Dependencies:** `FND-01`, `ARCH-01`. **State:** token verification exists; deletion is not composed; mobile auth absent.
 - **Paths / scope:** server composition/HTTP, account generation, revocation and approved-operation schemas. **Non-goals:** provider console or UI. **Obligations:** keep verifier/HTTP boundary; wire or delete unreachable duplicate primitives.
 - **Acceptance:** clean server tests cover auth/revocation/recent-auth, non-enumerating errors, approved clients and account generation. **Evidence:** endpoint matrix. **Checkpoint:** `X-04` later. **Unlocks:** `ID-02`, adoption and deletion.
+- **Verified boundary / blocker:** the attempted local composition was deliberately not retained. Firebase tokens provide no server-verifiable approved mobile-client/environment claim, so an ordinary request header would be untrusted. Existing deletion proof is request-addressable only and is written after recursive deletion, so identity creation cannot safely distinguish a fresh account from a concurrent/deleted account without a durable UID-addressable tombstone authority. Account revision is currently owned by the dataset head and cannot be copied into a static identity record without a declared consistency rule. This is a security-policy/ownership decision; no partial endpoint is pushed.
 
 #### ID-02 — Email/password mobile vertical and action-handler API — `BLOCKED`
 
@@ -322,6 +323,14 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Paths / scope:** client, versioned store, checksum/schema/semantic validation, active pointer, rollback. **Non-goals:** final Practice UI. **Obligations:** keep free bundle and immutable refs; no fallback to stale/wrong version.
 - **Acceptance:** interruption/corruption/disk-full/restart/min-version tests retain previous verified version; paid download needs backend authority. **Evidence:** filesystem fault harness. **Checkpoint:** sandbox bucket later. **Unlocks:** `PKG-04`, download UI.
 
+#### PKG-04A — Verified content-package resolver and session-pin contract — `READY`
+
+- **Objective:** define and implement one package resolver contract that accepts exact verified bundled packages now and future installed packages later, without a separate Free runner, cache, or compatibility catalog.
+- **Inputs:** `PKG-01` package records/profiles, `CONTENT-PACKAGES-001`, docs 04/08/17, and the current `validateBundledContent`/availability/family-runtime owners.
+- **Scope:** package identity/version/provenance and availability taxonomy; decoder/schema/semantic boundary; profile-only catalog adapter contract; exact session package-pin record; migration map for whole-track generated artifact ownership.
+- **Non-goals:** remote download, Cloud Storage, entitlement authorization, cache eviction, new UI/design, device testing, or activating a Free session before the coordinated cutover is accepted.
+- **Acceptance:** one typed resolver contract supports bundled and future installed packages; malformed/tampered/profile-incompatible bytes fail closed; package identity/version is sufficient for exact resume/review resolution; no full-track mode may be inferred from a Free profile; no second lifecycle or Free-only runner is introduced. **Verification:** parser/negative-contract tests and a replacement map covering existing whole-track owners. **Evidence:** bounded architecture/implementation checkpoint with independent QA. **Risks:** current family runtimes and Practice Hub assume full banks; implementation must replace, not layer beside, those paths.
+
 #### PKG-04 — Session pinning, review resolution and safe eviction — `BLOCKED`
 
 - **Objective:** make runtime/review consume exact package versions safely. **Owners:** `CONTENT-PACKAGES-001`, docs 08/17. **Dependencies:** `PKG-03`, `ENT-02`. **State:** sessions pin bundled content refs; no multi-package cache.
@@ -360,11 +369,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Paths / scope:** mobile queue, server/admin states, retention/de-identification and content correction/new-release link. **Non-goals:** attach response/account/email/full prompt/feedback by default.
 - **Obligations:** explicit account/contact opt-in only; delete hidden context enrichment. **Acceptance:** offline retries idempotently, confirmation only after receipt, forbidden-field tests, deletion/retention workflow and correction provenance. **Evidence:** cross-repo report case. **Checkpoint:** admin access later. **Unlocks:** report UX and content operations.
 
-#### OPS-01 — Production deployment/IAM packet and verification — `BLOCKED`
+#### OPS-01 — Production deployment/IAM packet and verification — `PARTIAL — local digest-pinned definition complete; container/provider evidence pending`
 
 - **Objective:** convert repository server into a reproducible deployable artifact with least privilege. **Owners:** docs 02/09/11; environment requirements. **Dependencies:** `FND-01`, `ARCH-01`. **State:** no proven Docker/Cloud Build/deploy path or current Cloud Run/IAM evidence.
 - **Paths / scope:** container/build/deploy config, service account/IAM manifests, health/logging, rollback; read verification where authorized. **Non-goals:** production mutation without `X-02`.
 - **Obligations:** no owner credentials in repo; remove dead deployment narratives/scripts. **Acceptance:** local container/clean build, least-privilege diff, environment separation and rollback packet. **Evidence:** immutable image provenance. **Checkpoint:** `X-01/X-02`. **Unlocks:** provider-backed staging/production.
+- **Verification:** application `4b595f6` adds the one PO-031 manual Cloud Build route, digest-pinned Node and builder images, separated identities, digest deployment instructions and rollback packet. Static server build/typecheck and focused definition tests pass. Docker/Podman runtime is unavailable locally and no provider read/mutation was authorized, so image-start and current IAM/deployment evidence remain pending `X-01/X-02`.
 
 #### OPS-02 — Seven-day PITR restore safety — `BLOCKED`
 
@@ -650,7 +660,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is partially evidenced at application `d63cb00`: its tracked audit confirms the asset, Storybook and release-boundary inventory, while `X-09` remains unmet because no authenticated Figma write access is available. `ID-01` is the active independent server-security task; no task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is partially evidenced at application `d63cb00`: its tracked audit confirms the asset, Storybook and release-boundary inventory, while `X-09` remains unmet because no authenticated Figma write access is available. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is the next code-only task: it prevents the current whole-track runtime from bypassing the verified Free-node profile and prepares one canonical package path before any runtime activation. No task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
