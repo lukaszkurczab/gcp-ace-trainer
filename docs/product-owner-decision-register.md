@@ -97,6 +97,8 @@ aktywnego planu.
 | PO-053 | Jedna marka Patternly                | `resolved`                 | Jedna marka z podrzędnymi accents/symbols tracków, bez sub-brands.            |
 | PO-054 | Figma i approval właściciela         | `resolved`                 | Jednorazowe 3→2→1; tylko owner oznacza realną pracę `APPROVED`.               |
 | PO-055 | Handoff Storybook/code               | `resolved`                 | `CODE_CANONICAL`, repo authority i brak trwałej płatnej zależności Figma.     |
+| PO-056 | Niedostępny device smoke PLAT-01     | `resolved`                 | Brak środowiska jest wyjątkiem, nie sfabrykowanym wynikiem device testu.       |
+| PO-057 | Design-neutral RN migration PLAT-01  | `resolved`                 | Zamknięty wyjątek dla exact pełnego SHA i pięciu token-only substitutions.     |
 
 ## PO-001 — Architektura marki
 
@@ -1641,3 +1643,56 @@ statycznie wykluczony z release bundle.
 
 **Supersedes:** generic permanent approved-reference/Figma dependency.
 **Status:** `resolved`.
+
+## PO-056 — Niedostępny device smoke dla PLAT-01
+
+**Data:** 2026-08-09
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Brak dostępnego na tym hoście iOS phone simulatora oraz Android phone
+emulatora/device nie jest wynikiem testu urządzeniowego. Dla `PLAT-01` ta
+niedostępność jest `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`.
+Nie wolno przedstawiać jej jako wykonanego debug boot/smoke, signed
+physical-device proof ani zastępować sfabrykowanym rezultatem. Wymóg signed
+physical-device smoke z `PO-052` pozostaje wymaganiem release `REL-07`.
+
+**Status:** `resolved`; środowiskowy wyjątek jest ograniczony do braku
+unsigned iOS/Android device smoke w `PLAT-01`.
+
+## PO-057 — Design-neutral RN platform migration w PLAT-01
+
+**Data:** 2026-08-09
+**Źródło:** bezpośrednia decyzja Product Ownera.
+
+Poniższy zamknięty przypadek jest
+`PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`, a nie
+zmianą wymagającą nowego design reference. Dotyczy wyłącznie commitu
+`a5eb8ac14b3753bd443486d94853468183605ad7` i tylko poniższych pięciu plików:
+
+- `src/components/SettingsBottomSheet.tsx`
+- `src/components/SettingsDialog.tsx`
+- `src/features/practice/PracticeSessionSurface.tsx`
+- `src/features/practice/TopicRoadmapScreen.tsx`
+- `src/features/simulation/navigator/SimulationQuestionNavigator.tsx`
+
+Wyjątek obowiązuje wyłącznie, gdy łącznie spełnione są wszystkie sześć
+kryteriów Product Ownera:
+
+1. Jest to dokładnie zatwierdzona migracja usuniętego API React Native 0.86 z
+   commitu `a5eb8ac14b3753bd443486d94853468183605ad7`.
+2. Zmiana obejmuje wszystkie i wyłącznie pięć wskazanych wyżej ścieżek UI.
+3. W każdej ścieżce diff ma dokładnie jedną usuniętą i jedną dodaną linię
+   źródłową.
+4. Dodana linia jest identyczna z usuniętą poza pojedynczym zastąpieniem
+   `StyleSheet.absoluteFillObject` przez `StyleSheet.absoluteFill`.
+5. Diff nie zmienia layoutu, copy, interakcji, stanu ani innej semantyki
+   user-facing; spełnienie jest dowodzone kryterium token-only, nie deklaracją.
+6. Decyzja pozostaje jawnie udokumentowana jako `PO-057`; nie powstaje design
+   artifact, source metadata ani ogólne zwolnienie dla style paths.
+
+Każda przyszła zmiana któregokolwiek z tych plików, niepełny batch albo
+dodatkowa zmiana w tym samym diffie podlega zwykłemu canonical contract gate,
+w tym wymaganiu Product Owner `APPROVED` design reference dla user-facing UI.
+
+**Status:** `resolved`; historyczny wyjątek nie zmienia authority design
+references dla rzeczywistych zmian designu lub interakcji.

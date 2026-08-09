@@ -13,6 +13,22 @@ const contractCompanionPaths = [
 ] as const;
 const requirementId = "CONTRACT-CHANGE-GATE-001";
 const requirementDiff = `+  - id: ${requirementId}\n`;
+const approvedDesignNeutralPlatformMigrationCommit = "a5eb8ac14b3753bd443486d94853468183605ad7";
+const approvedDesignNeutralPlatformMigrationPaths = [
+  "src/components/SettingsBottomSheet.tsx",
+  "src/components/SettingsDialog.tsx",
+  "src/features/practice/PracticeSessionSurface.tsx",
+  "src/features/practice/TopicRoadmapScreen.tsx",
+  "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
+] as const;
+
+function exactAbsoluteFillMigrationDiff(path: string): string {
+  return `diff --git a/${path} b/${path}\n--- a/${path}\n+++ b/${path}\n@@ -1 +1 @@\n-  target: { ...StyleSheet.absoluteFillObject },\n+  target: { ...StyleSheet.absoluteFill },\n`;
+}
+
+function approvedDesignNeutralPlatformMigrationDiffs(): Readonly<Record<string, string>> {
+  return Object.fromEntries(approvedDesignNeutralPlatformMigrationPaths.map((path) => [path, exactAbsoluteFillMigrationDiff(path)]));
+}
 
 function contractWithGateEvidence(approvedDesignReference = false, sourcePathPrefix = "src/features/"): CanonicalProductContract {
   const contract = loadCanonicalProductContract();
@@ -130,6 +146,68 @@ test("requires an approved design reference only for UI behavior changes", () =>
     canonicalContractDiff: requirementDiff,
     contract: contractWithGateEvidence(true, "src/features/foo/"),
   }), ["UI change requires a Product Owner APPROVED design reference mapped to src/features/foobar/Screen.tsx."]);
+});
+
+test("accepts only the complete PO-057 design-neutral platform migration", () => {
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: approvedDesignNeutralPlatformMigrationPaths,
+    canonicalContractDiff: "",
+    contract: loadCanonicalProductContract(),
+    commitIds: [approvedDesignNeutralPlatformMigrationCommit],
+    sourceDiffs: approvedDesignNeutralPlatformMigrationDiffs(),
+  }), []);
+
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: approvedDesignNeutralPlatformMigrationPaths,
+    canonicalContractDiff: "",
+    contract: loadCanonicalProductContract(),
+    commitIds: ["a5eb8ac"],
+    sourceDiffs: approvedDesignNeutralPlatformMigrationDiffs(),
+  }), [
+    "Behavior change requires docs/canonical-product-contract.yaml to change.",
+    "Behavior change requires at least one added canonical requirement ID.",
+    `UI change requires a Product Owner APPROVED design reference mapped to ${approvedDesignNeutralPlatformMigrationPaths[0]}.`,
+  ]);
+
+  const incompletePaths = approvedDesignNeutralPlatformMigrationPaths.slice(0, -1);
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: incompletePaths,
+    canonicalContractDiff: "",
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: approvedDesignNeutralPlatformMigrationDiffs(),
+  }), [
+    "Behavior change requires docs/canonical-product-contract.yaml to change.",
+    "Behavior change requires at least one added canonical requirement ID.",
+    `UI change requires a Product Owner APPROVED design reference mapped to ${incompletePaths[0]}.`,
+  ]);
+
+  const arbitraryStyleChange = {
+    ...approvedDesignNeutralPlatformMigrationDiffs(),
+    [approvedDesignNeutralPlatformMigrationPaths[0]]: `${exactAbsoluteFillMigrationDiff(approvedDesignNeutralPlatformMigrationPaths[0])}+  unrelated: true\n`,
+  };
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: approvedDesignNeutralPlatformMigrationPaths,
+    canonicalContractDiff: "",
+    contract: loadCanonicalProductContract(),
+    sourceDiffs: arbitraryStyleChange,
+  }), [
+    "Behavior change requires docs/canonical-product-contract.yaml to change.",
+    "Behavior change requires at least one added canonical requirement ID.",
+    `UI change requires a Product Owner APPROVED design reference mapped to ${approvedDesignNeutralPlatformMigrationPaths[0]}.`,
+  ]);
+
+  const ordinaryUiChange = "src/features/NewScreen.tsx";
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [...approvedDesignNeutralPlatformMigrationPaths, ordinaryUiChange],
+    canonicalContractDiff: "",
+    contract: loadCanonicalProductContract(),
+    commitIds: [approvedDesignNeutralPlatformMigrationCommit],
+    sourceDiffs: approvedDesignNeutralPlatformMigrationDiffs(),
+  }), [
+    "Behavior change requires docs/canonical-product-contract.yaml to change.",
+    "Behavior change requires at least one added canonical requirement ID.",
+    `UI change requires a Product Owner APPROVED design reference mapped to ${ordinaryUiChange}.`,
+  ]);
 });
 
 test("prefers a longer exact-file UI owner over a matching directory owner", () => {

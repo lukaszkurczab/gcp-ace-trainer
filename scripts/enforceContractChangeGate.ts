@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 import {
   loadCanonicalProductContract,
@@ -9,6 +10,8 @@ export type ContractChangeGateInput = Readonly<{
   changedPaths: readonly string[];
   canonicalContractDiff: string;
   contract: CanonicalProductContract;
+  commitIds?: readonly string[];
+  sourceDiffs?: Readonly<Record<string, string>>;
 }>;
 
 const uiRoots = [
@@ -27,6 +30,51 @@ const canonicalContractCompanionPaths = [
   "scripts/validateCanonicalProductContract.ts",
   "tests/canonicalProductContract.test.ts",
 ] as const;
+
+const productOwnerDecisionRegisterPath = "docs/product-owner-decision-register.md";
+const productOwnerDesignNeutralPlatformMigrationDecision = "PO-057";
+const productOwnerDesignNeutralPlatformMigrationCommit = "a5eb8ac14b3753bd443486d94853468183605ad7";
+const approvedDesignNeutralPlatformMigrationPaths = [
+  "src/components/SettingsBottomSheet.tsx",
+  "src/components/SettingsDialog.tsx",
+  "src/features/practice/PracticeSessionSurface.tsx",
+  "src/features/practice/TopicRoadmapScreen.tsx",
+  "src/features/simulation/navigator/SimulationQuestionNavigator.tsx",
+] as const;
+
+function isExactAbsoluteFillMigration(diff: string | undefined): boolean {
+  if (!diff) return false;
+  const changedLines = diff.split("\n").filter((line) =>
+    (line.startsWith("+") && !line.startsWith("+++")) || (line.startsWith("-") && !line.startsWith("---")),
+  );
+  if (changedLines.length !== 2) return false;
+  const removed = changedLines.find((line) => line.startsWith("-"));
+  const added = changedLines.find((line) => line.startsWith("+"));
+  return Boolean(removed && added
+    && removed.includes("StyleSheet.absoluteFillObject")
+    && !removed.includes("StyleSheet.absoluteFillObject", removed.indexOf("StyleSheet.absoluteFillObject") + 1)
+    && added === removed
+      .replace(/^-/, "+")
+      .replace("StyleSheet.absoluteFillObject", "StyleSheet.absoluteFill"));
+}
+
+/**
+ * PO-057 is a closed historical exception for the React Native 0.86 API removal.
+ * It deliberately recognizes only the complete, exact five-file token migration.
+ */
+function approvedDesignNeutralPlatformMigrationPathsFor(input: ContractChangeGateInput): ReadonlySet<string> {
+  const decisionIsDocumented = readFileSync(productOwnerDecisionRegisterPath, "utf8").includes(
+    `## ${productOwnerDesignNeutralPlatformMigrationDecision} —`,
+  );
+  const isExactHistoricalCommit = input.commitIds?.length === 1
+    && input.commitIds[0] === productOwnerDesignNeutralPlatformMigrationCommit;
+  if (!decisionIsDocumented || !isExactHistoricalCommit || !input.sourceDiffs) return new Set();
+
+  const matchesCompleteApprovedMigration = approvedDesignNeutralPlatformMigrationPaths.every((path) =>
+    input.changedPaths.includes(path) && isExactAbsoluteFillMigration(input.sourceDiffs![path]),
+  );
+  return matchesCompleteApprovedMigration ? new Set(approvedDesignNeutralPlatformMigrationPaths) : new Set();
+}
 
 function isBehaviorPath(path: string): boolean {
   return path.startsWith("src/")
@@ -54,7 +102,8 @@ function addedRequirementIds(diff: string): readonly string[] {
  * mapped test. UI changes additionally require an approved design reference.
  */
 export function evaluateContractChangeGate(input: ContractChangeGateInput): readonly string[] {
-  const behaviorChanged = input.changedPaths.some(isBehaviorPath);
+  const approvedMaintenancePaths = approvedDesignNeutralPlatformMigrationPathsFor(input);
+  const behaviorChanged = input.changedPaths.some((path) => isBehaviorPath(path) && !approvedMaintenancePaths.has(path));
   const errors: string[] = [];
   if (input.changedPaths.includes(canonicalContractPath)) {
     for (const companionPath of canonicalContractCompanionPaths) {
@@ -85,7 +134,7 @@ export function evaluateContractChangeGate(input: ContractChangeGateInput): read
     }
   }
 
-  for (const changedPath of input.changedPaths.filter(isUiPath)) {
+  for (const changedPath of input.changedPaths.filter((path) => isUiPath(path) && !approvedMaintenancePaths.has(path))) {
     const mappedReference = input.contract.designReferences.uiOwnership
       .filter((ownership) => matchesUiOwnership(changedPath, ownership.sourcePathPrefix))
       .sort((left, right) => right.sourcePathPrefix.length - left.sourcePathPrefix.length)[0];
@@ -120,7 +169,13 @@ function main(): void {
   const diffPrefix = staged ? ["diff", "--cached"] : ["diff", range];
   const changedPaths = changedPathsFromNameStatus(git([...diffPrefix, "--name-status", "--find-renames"]));
   const canonicalContractDiff = git([...diffPrefix, "--unified=0", "--", canonicalContractPath]);
-  const errors = evaluateContractChangeGate({ changedPaths, canonicalContractDiff, contract: loadCanonicalProductContract() });
+  const commitIds = staged
+    ? []
+    : git(["rev-list", "--reverse", range]).trim().split("\n").filter(Boolean);
+  const sourceDiffs = Object.fromEntries(
+    approvedDesignNeutralPlatformMigrationPaths.map((path) => [path, git([...diffPrefix, "--unified=0", "--", path])]),
+  );
+  const errors = evaluateContractChangeGate({ changedPaths, canonicalContractDiff, contract: loadCanonicalProductContract(), commitIds, sourceDiffs });
 
   if (errors.length > 0) {
     console.error("CONTRACT_CHANGE_GATE=failed");
