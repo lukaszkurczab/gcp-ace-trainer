@@ -2,13 +2,13 @@
 
 **Status:** active; sole implementation-order and repository-status authority
 
-**Audit date:** 2026-08-08
+**Audit date:** 2026-08-09 (reconciled against pushed implementation evidence)
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** `GUEST-01 — Installation guest identity and local dataset` (started from `28a97ad436cc8fb910843372d3ee10ad8755b331`)
+**Current task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (started from `3690df756daf34e1fa0b26f676c9785fa2180997`)
 
-**Next executable task:** `GUEST-01 — Installation guest identity and local dataset` (`ACTIVE`)
+**Next executable task:** `TRACK-01 — Atomic Coding Interview and GCP identity migration` (`ACTIVE`)
 
 ## 1. Purpose and authority
 
@@ -22,20 +22,20 @@ Task status is one of `READY`, `ACTIVE`, `BLOCKED`, `PARTIAL`, `VERIFIED`, or `S
 
 | Repository | Branch and HEAD | State at audit | Upstream |
 | --- | --- | --- | --- |
-| application | `main @ f4dcc0008b428b056f4e2d1d6197b57a7fa77883` | clean | `origin/main`, ahead/behind `0/0` |
+| application | `main @ 3690df756daf34e1fa0b26f676c9785fa2180997` | clean before this documentation reconciliation | `origin/main`, ahead/behind `0/0` |
 | content/publishing | `master @ ddaeae0607d672b0f3b4eb8c8243055cee257bb` | clean | `origin/master`, ahead/behind `0/0` |
 
 ### Current implementation facts
 
-- Mobile is Expo 54 / React Native 0.81.5. `App.tsx` enters `ContentPreparationGate` and then the local shell without an account gate. The shell is `Home`, `Practice`, `Progress`, `Settings`; `LanguageSettings` is live; Activity is only a small Progress projection.
-- MMKV has one canonical repository owner for active track, session, draft, foreground timer, attempts, results, review, settings, and a journal-first mutation record. Exactly one active session per device is enforced. There is no installation guest identity, account binding, mobile auth/API client, compact sync outbox, goals record, or Activity pagination.
+- Mobile is Expo 57.0.11 / React Native 0.86.2. `App.tsx` enters `ContentPreparationGate` and then the local shell without an account gate. The shell is `Home`, `Practice`, `Progress`, `Settings`; `LanguageSettings` is live; Activity is only a small Progress projection.
+- MMKV has one canonical repository owner for active track, session, draft, foreground timer, attempts, results, review, settings, a journal-first mutation record, and the local installation/dataset identity. Exactly one active session per device is enforced. There is no account binding implementation, mobile auth/API client, compact sync outbox, goals record, or Activity pagination.
 - The shared learning kernel, Certification runtime, current Algorithms strategy-first runtime, deterministic scoring/review, immutable content references, corruption handling, and restart recovery are substantial compatible foundations.
 - The server has Firebase Admin token verification, auth-before-body HTTP validation, deny-all direct Firestore rules, environment isolation, revisioned/idempotent account writes, paginated snapshots, adoption staging, and deletion primitives. Its account dataset still synchronizes active-session reference, draft, position and timer, and therefore conflicts with device ownership.
 - The content repository has canonical manual source, schemas, provenance, deterministic serialization, fingerprints, immutable releases, checksums, and exact-byte cross-repository verification. Current production data is 2,375 Algorithms items in 213 batches and 360 GCP ACE items.
 - The app lock is `patternly-core-0015`, produced from content HEAD `d780204eba858c05b94fdbce8de38ec4c3900a50`, with source commit `9e23b08d`, `algorithms-core-0008`, and `gcp-ace-0014`.
 - Current content delivery bundles two whole-track artifacts. It has no `freeNodeId`, immutable compressed node packages, locale/evidence identity contract, Cloud Storage object generation, entitlement authorization, atomic package cache, or Design Interview family.
 - `firebase` and `expo-secure-store` are declared in the app but unused by `src`. RevenueCat, Firebase Analytics/Crashlytics clients, reports, Storybook, canonical brand assets/fonts/licensing, universal/app links, and production public surfaces are absent.
-- `app.json` is portrait but Light-only and tablet-capable. The canonical privacy plugin correctly excludes learning data from OS backup, but it also removes release networking, vibration, and notification permissions. Tracked Maestro flows are simulator/dev-client evidence, not signed physical-device proof.
+- `app.json` is portrait, iPhone-only, and uses the automatic theme. Android min/compile/target are 28/36/36 and iOS is 16.4+. The canonical privacy plugin excludes learning data from OS backup. Tracked Maestro flows are simulator/dev-client evidence, not signed physical-device proof; the unsigned device-smoke requirement for `PLAT-01` is instead a documented Product Owner environment exception.
 
 ### Verified gates and limitations
 
@@ -197,7 +197,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Implications/checkpoint:** security review of permissions; no external mutation. **Output:** platform migration report. **Unlocks:** `ARCH-01`, native identity/entitlement, Storybook foundation and final device work.
 - **Verification and exact decisions:** clean `npm ci` completed for root and `server`; root/server typechecks and server build passed; root `qa:static` passed with 560 tests; the cross-repository release-lock test, content/privacy boundaries, `git diff --check`, and a clean generated-native Expo prebuild with iOS/Android/backup assertions all passed. The canonical contract gate passed for both `a5eb8ac14b3753bd443486d94853468183605ad7^..a5eb8ac14b3753bd443486d94853468183605ad7` and current `HEAD`; focused gate tests passed 7/7. The five exact RN 0.86 `StyleSheet.absoluteFillObject` → `StyleSheet.absoluteFill` substitutions in `a5eb8ac14b3753bd443486d94853468183605ad7` are `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION` under the closed six-criterion `PO-057` exception; no design reference was fabricated. This host has neither an iOS phone simulator nor Android phone emulator/device, and no unsigned debug boot/smoke was performed. That unavailable smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION` under `PO-056`, not device-test evidence; signed physical-device proof remains a `REL-07` release requirement. No signing or provider authority is required.
 
-#### ARCH-01 — Approved clients, environment and public-origin boundary — `BLOCKED`
+#### ARCH-01 — Approved clients, environment and public-origin boundary — `READY`
 
 - **Objective:** replace the old no-network rule with one closed, testable client registry. **Owners:** `ENVIRONMENT-PUBLIC-LINKS-001`, `IDENTITY-SECURITY-001`, docs 02/09/11. **Dependencies:** `PLAT-01`. **State:** privacy check bans app networking; server environment isolation is strong.
 - **Paths / scope:** environment schema, network/secure-storage adapters, privacy static checks, link origin configuration; register only auth/account, entitlement, package, analytics/crash and report clients. **Non-goals:** implement provider flows or public deployment.
@@ -206,12 +206,12 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage G — guest, device ownership, synchronization and goals
 
-#### GUEST-01 — Installation guest identity and local dataset — `ACTIVE`
+#### GUEST-01 — Installation guest identity and local dataset — `PARTIAL`
 
 - **Objective:** make existing local-first entry explicitly guest-owned. **Owners:** `GUEST-FREE-001`, docs 01/04/08. **Dependencies:** `FND-01`. **State:** learning works without auth but data has no installation identity/account binding.
 - **Paths / scope:** bootstrap, storage keys/repositories, installation identity, guest dataset metadata/reset tests. **Non-goals:** account UI, adoption, Premium. **Obligations:** keep kernel/journal; rewrite bootstrap ownership; delete any first-value auth assumption encountered.
 - **Acceptance:** first launch reaches a complete bundled free node offline; restart preserves identity/data; reset is explicit; no Firebase Anonymous Auth; failure injection cannot orphan data. **Evidence:** focused Maestro after existing UI only, storage migration report. **Checkpoint:** none. **Unlocks:** `SESSION-01`, `ADOPT-01`, `UX-01D`.
-- **Active checkpoint:** the canonical local installation/dataset record is now provisioned and verified before journal recovery or content navigation. It begins in `guest` state, preserves valid later binding states without adopting or regenerating, rejects corrupt/unsupported identities without replacement, and blocks before first value on identity or durable-write failure. Focused behavioral/contract tests, typecheck, the staged canonical contract gate, and independent QA passed. This is not whole-task completion: explicit dataset reset, account binding/adoption and bundled-free-node capability remain in the active `GUEST-01` scope.
+- **Checkpoint / remaining boundary:** the canonical local installation/dataset record is provisioned and verified before journal recovery or content navigation. It begins in `guest` state, preserves valid later binding states without adopting or regenerating, rejects corrupt/unsupported identities without replacement, and blocks before first value on identity or durable-write failure. Focused behavioral/contract tests, typecheck, the staged canonical contract gate, and independent QA passed at `3690df756daf34e1fa0b26f676c9785fa2180997`. Existing explicit local-history reset behavior remains to be reconciled with the guest-dataset contract. Complete bundled `freeNodeId` first value is not present in source and is owned by the downstream `TRACK-01` → `TRACK-02` → `PKG-01` path; it cannot be claimed here or satisfied by a fallback. `GUEST-01` therefore remains partial without blocking independent `TRACK-01`.
 
 #### SESSION-01 — Device-session cutover across server contracts — `BLOCKED`
 
@@ -419,7 +419,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 
 ### Stage T — product identities, briefs and representative content proofs
 
-#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `READY`
+#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `ACTIVE`
 
 - **Objective:** remove old target IDs across app/content without an alias. **Owners:** `LEARNING-PRODUCTS-001`, docs 04/07/16. **Dependencies:** `FND-01`. **State:** `algorithms`/`cloud-certification`, hard-coded two-family branches; eight candidate filenames; stale planning ledger.
 - **Paths / scope:** app registry/runtime/persistence/content lock/tests; content configs/taxonomy/source/publisher/evidence; migrate to `coding_interview`, `coding-interview-dsa-problem-solving`, and `google-cloud-associate-cloud-engineer` while retaining stable item/evidence identities.
@@ -644,9 +644,9 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 ## 8. Current and next executable task
 
-`GUEST-01` is the sole active implementation task, started from application `28a97ad436cc8fb910843372d3ee10ad8755b331`. `PLAT-01` remains partial: its repository configuration and clean generated-native gates are complete, but its canonical contract gate requires Product Owner design/requirement evidence for five RN compatibility substitutions, and iOS/Android unsigned debug-boot smoke evidence cannot be produced on this host because no phone simulator/emulator/device is available. `FND-01` remains verified.
+`PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is now ready. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-The dependency graph keeps `TRACK-01` and `B-01` ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; `ARCH-01` remains blocked until `PLAT-01` is verified. No other ready task is started in this execution window.
+`TRACK-01` is the sole active implementation task because it is independent, ready, and begins the canonical path that supplies the missing free-node/package prerequisites. `B-01` and `ARCH-01` are also ready but inactive. `ID-01` and `OPS-01` remain blocked by `ARCH-01`; no task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
