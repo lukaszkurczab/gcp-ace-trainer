@@ -148,6 +148,8 @@ requirements:
     statement: Complete Free nodes are bundled and Premium content uses immutable compressed whole-node packages authorized by Cloud Run, checksum and semantic validation, atomic activation, exact session pinning, and active-session-safe cache retention without per-question Firestore fetching or silent substitution.
   - id: CONTENT-PACKAGE-RESOLVER-001
     statement: Package preparation and exact pin resolution accept only trusted immutable outer bytes, validate compressed payload, family schema, node-local profile and canonical runner mappings, and expose frozen package-local catalogs without mode or version substitution.
+  - id: FREE-PACKAGE-RUNTIME-CUTOVER-001
+    statement: Bundled Free-node packages are the sole runtime content authority for preparation, exact resume, mutation, review, presentation, and discovery; every durable content identity carries the full immutable package pin, and modes outside the package profile fail without whole-track fallback or substitution.
   - id: CONTENT-PACKAGE-RUNTIME-CATALOG-001
     statement: A verified package exposes only its closed profile's typed family runtime catalog, including package-local items, assets, and configurations; excluded modes and structures are explicitly unavailable. This defines no session cutover, runtime composition switch, cache, or bootstrap activation.
   - id: CONTENT-PACKAGE-NATIVE-RUNTIME-001
@@ -204,8 +206,8 @@ requirementTestCoverage:
       testName: locks the Custom Practice contract required by CODING-INTERVIEW-CUSTOM-PRACTICE-001
       requirementIds: [CODING-INTERVIEW-CUSTOM-PRACTICE-001]
     - id: canonical-independent-practice-contract
-      testPath: tests/practiceSessionConfig.test.ts
-      testName: Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope
+      testPath: tests/fullTrackModeContracts.test.ts
+      testName: Independent Practice uses one declared scope, supports ten or twenty items, and never substitutes a scope
       requirementIds: [CODING-INTERVIEW-INDEPENDENT-PRACTICE-001]
     - id: coding-interview-progress-evidence-contract
       testPath: tests/homeProgressProjections.test.ts
@@ -237,7 +239,7 @@ requirementTestCoverage:
       requirementIds: [APP-IDENTITY-001]
     - id: user-testing-core-journey-contract
       testPath: tests/userTestingCoreJourneyMaestro.test.ts
-      testName: user-testing core journey executes the exact representative session, resume, summary, and progress evidence
+      testName: user-testing core journey preserves durable leave-and-resume alongside summary, progress, and terminal relaunch evidence
       requirementIds: [USER-TESTING-CORE-JOURNEY-001]
     - id: custom-practice-immediate-feedback-flow
       testPath: tests/customPracticeImmediateFeedback.test.ts
@@ -268,28 +270,28 @@ requirementTestCoverage:
       testName: defines exactly the complete declared Certification mode matrix
       requirementIds: [CERTIFICATION-MODE-MATRIX-001]
     - id: certification-diagnostic-baseline
-      testPath: tests/cloudExamLifecycle.test.ts
+      testPath: tests/fullTrackModeContracts.test.ts
       testName: Certification Diagnostic Baseline uses its immutable 40-item blueprint and rejects selectors
       requirementIds: [CERTIFICATION-DIAGNOSTIC-BASELINE-001]
     - id: certification-focus-practice
-      testPath: tests/cloudExamLifecycle.test.ts
-      testName: Certification Focus Practice requires a selected domain and never fills from a sibling domain
+      testPath: tests/fullTrackModeContracts.test.ts
+      testName: Certification Focus Practice requires its package domain and never fills from a sibling domain
       requirementIds: [CERTIFICATION-FOCUS-PRACTICE-001]
     - id: certification-scenario-practice
-      testPath: tests/cloudExamLifecycle.test.ts
+      testPath: tests/fullTrackModeContracts.test.ts
       testName: Certification Scenario Practice requires a competency and never widens its approved scenario scope
       requirementIds: [CERTIFICATION-SCENARIO-PRACTICE-001]
     - id: certification-weak-area-review
-      testPath: tests/cloudExamLifecycle.test.ts
-      testName: Certification Weak Area Review uses only eligible due evidence and resolves it after two due successes
+      testPath: tests/fullTrackModeContracts.test.ts
+      testName: Certification Weak Area Review selects exact-package due evidence and resolves after two due successes
       requirementIds: [CERTIFICATION-WEAK-AREA-REVIEW-001]
     - id: certification-mixed-practice
-      testPath: tests/cloudExamLifecycle.test.ts
+      testPath: tests/fullTrackModeContracts.test.ts
       testName: Certification Mixed Practice uses a deterministic unique interleaved blueprint and may shorten only within it
       requirementIds: [CERTIFICATION-MIXED-PRACTICE-001]
     - id: certification-quick-review
-      testPath: tests/cloudExamLifecycle.test.ts
-      testName: Certification Quick Review selects only up to ten current due items and never substitutes content
+      testPath: tests/fullTrackModeContracts.test.ts
+      testName: Certification Quick Review selects at most ten exact-package current due items without substitution
       requirementIds: [CERTIFICATION-QUICK-REVIEW-001]
     - id: canonical-session-command-model
       testPath: tests/canonicalProductContract.test.ts
@@ -393,7 +395,7 @@ requirementTestCoverage:
       requirementIds: [NARRATIVE-DOCS-CANONICALIZATION-001]
     - id: canonical-design-reference-readiness
       testPath: tests/canonicalProductContract.test.ts
-      testName: requires Product Owner approval and no inherited target design evidence
+      testName: locks the Product Owner-approved Free-package interaction reference and its narrow UI ownership
       requirementIds: [DESIGN-REFERENCE-REGISTRY-001]
     - id: canonical-commercial-guest-identity
       testPath: tests/canonicalProductContract.test.ts
@@ -419,6 +421,10 @@ requirementTestCoverage:
       testPath: tests/contentPackageResolver.test.ts
       testName: CONTENT-PACKAGE-RESOLVER-001 verifies exact bundled node packages and resolves only closed profile modes
       requirementIds: [CONTENT-PACKAGE-RESOLVER-001]
+    - id: free-package-runtime-cutover
+      testPath: tests/contentPackageRuntimeCutover.test.ts
+      testName: PKG-04A makes exact package pins and closed profiles the only runtime content authority
+      requirementIds: [FREE-PACKAGE-RUNTIME-CUTOVER-001]
     - id: content-package-runtime-catalog
       testPath: tests/contentPackageResolver.test.ts
       testName: PKG-04A package catalogs are accepted by family runtimes only for their closed profile paths
@@ -1041,8 +1047,22 @@ simulationTimerCadence:
   lifecycleCheckpoints: [foreground-enter, foreground-leave, draft-save, finalization, expiry]
 designReferences:
   version: 2
-  references: []
-  uiOwnership: []
+  references:
+    - id: pkg-04a-free-package-interactions
+      screenStateTarget: free-package-practice-and-unavailable-states
+      patternPath: docs/designs/pkg-04a-free-package-interactions/DESIGN.md
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
+  uiOwnership:
+    - sourcePathPrefix: src/content/application/ContentPreparationGate.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/practice/
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/review/AnswerReviewScreen.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/exam/ExamReviewScreen.tsx
+      designReferenceId: pkg-04a-free-package-interactions
 simulationOperationStateCtas:
   version: 1
   policies:

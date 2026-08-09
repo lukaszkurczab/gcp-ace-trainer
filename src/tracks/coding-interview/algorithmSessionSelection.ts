@@ -1,6 +1,5 @@
 import type { ContentItemRef, ReviewQueueEntry, TrainingAttempt } from "../../domain";
-import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
-import type { AlgorithmRuntimeCatalog } from "./algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "./algorithmRuntimeCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import { ALGORITHM_ROADMAP, type AlgorithmRoadmapNode } from "./algorithmRoadmap";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode, type AlgorithmModeId } from "./domain/algorithmModes";
@@ -19,7 +18,8 @@ export const getAlgorithmSessionNodeById = resolveAlgorithmSessionNode;
 
 /** Resolves one bank-declared blueprint; it never derives support from all items. */
 export function selectAlgorithmSessionPlan(input: SelectAlgorithmSessionItemsInput): AlgorithmSessionSelection {
-  const mode = getAlgorithmMode(input.mode); const catalog = input.contentCatalog ?? getAlgorithmContentCatalog();
+  const mode = getAlgorithmMode(input.mode); const catalog = input.contentCatalog;
+  if (!catalog) throw new Error("Algorithms selection requires an explicit verified package catalog.");
   if (input.mode === ALGORITHM_MODE_IDS.weakAreaReview) return selectWeakReview(input, catalog);
   const blueprint = catalog.getPracticeBlueprint(mode.contentBlueprintModeId); if (!blueprint) throw new Error(`Algorithms catalog has no blueprint for declared content mode ${mode.contentBlueprintModeId}.`);
   if (!blueprint.requestedLengths.includes(input.sessionLength)) throw new Error(`Algorithms blueprint does not support requested length ${input.sessionLength}.`);

@@ -1,10 +1,11 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { REVIEW_REASONS, createTrainingAttempt, type AttemptResult } from "../src/domain";
 import { createAlgorithmReviewEntry, updateAlgorithmReviewEntry } from "../src/tracks/coding-interview";
 import { createCertificationReviewEntry } from "../src/tracks/certification";
 
-const item = { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "v1" };
+const item = { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN};
 function attempt(kind: AttemptResult["kind"], id: string, sessionId: string, committedAt: string) {
   return createTrainingAttempt({ occurrenceId: "occurrence-1", id, sessionId, trackId: "coding-interview-dsa-problem-solving", modeId: "review", item, response: { kind: "choice" as const, selectedOptionIds: [] }, result: { kind, earnedPoints: kind === "correct" ? 1 : kind === "partial" ? 0.5 : 0, maxPoints: 1 }, reviewEvidence: { sourceItem: item, taxonomyOrSkillRefs: [{ axisId: "skill", nodeId: "two-pointers" }, { axisId: "mistake_type", nodeId: "wrong_pattern" }] }, answeredAt: committedAt, committedAt });
 }

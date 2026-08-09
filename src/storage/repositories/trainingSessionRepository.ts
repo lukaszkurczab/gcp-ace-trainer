@@ -26,12 +26,12 @@ export async function saveTrainingSession(session: TrainingSession): Promise<voi
       const immutableExisting = {
         id: existing.id, trackId: existing.trackId, modeId: existing.modeId, configurationSnapshot: existing.configurationSnapshot, requestedLength: existing.requestedLength,
         actualLength: existing.actualLength, itemOrder: existing.itemOrder, optionOrderByOccurrence: existing.optionOrderByOccurrence, conditionalReinsertSlots: existing.conditionalReinsertSlots,
-        contentVersion: existing.contentVersion, taxonomyVersion: existing.taxonomyVersion, planFingerprint: existing.planFingerprint, startedAt: existing.startedAt,
+        contentVersion: existing.contentVersion, packagePin: existing.packagePin, taxonomyVersion: existing.taxonomyVersion, planFingerprint: existing.planFingerprint, startedAt: existing.startedAt,
       };
       const immutableNext = {
         id: session.id, trackId: session.trackId, modeId: session.modeId, configurationSnapshot: session.configurationSnapshot, requestedLength: session.requestedLength,
         actualLength: session.actualLength, itemOrder: session.itemOrder, optionOrderByOccurrence: session.optionOrderByOccurrence, conditionalReinsertSlots: session.conditionalReinsertSlots,
-        contentVersion: session.contentVersion, taxonomyVersion: session.taxonomyVersion, planFingerprint: session.planFingerprint, startedAt: session.startedAt,
+        contentVersion: session.contentVersion, packagePin: session.packagePin, taxonomyVersion: session.taxonomyVersion, planFingerprint: session.planFingerprint, startedAt: session.startedAt,
       };
       if (JSON.stringify(immutableExisting) !== JSON.stringify(immutableNext)) throw new Error(`Session ${session.id} has conflicting immutable fields.`);
       if (session.activeForegroundMs < existing.activeForegroundMs) throw new Error(`Session ${session.id} foreground time cannot decrease.`);

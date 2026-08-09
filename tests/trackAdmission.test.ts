@@ -12,9 +12,9 @@ import {
   assertTrackDensityDescriptors,
   getTracks,
 } from "../src/domain";
-import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled";
 import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFreeNodePackages";
-import { validateBundledContent } from "../src/content/application/validateBundledContent";
+import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
 test("internal density harness pins exactly ten complete canonical content-brief descriptors", () => {
   const descriptors = assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS);
@@ -65,18 +65,18 @@ test("density harness rejects missing, duplicate, and incomplete descriptors", (
 test("production admission remains closed until exact immutable Free-node package evidence exists", async () => {
   const registrations = getTracks();
   const evaluations = await evaluateProductionTrackAdmissions(registrations);
-  const availability = await validateBundledContent();
+  await prepareBundledTestPackages();
 
   assert.deepEqual(registrations.map((registration) => registration.id).sort(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort());
   assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["package_evidence_verified_catalogue_gate_pending", "package_evidence_verified_catalogue_gate_pending"]);
   for (const fact of CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE) {
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === fact.trackId);
-    const artifact = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((candidate) => candidate.trackId === fact.trackId);
-    const available = availability.tracks.find((candidate) => candidate.trackId === fact.trackId);
+    const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === fact.trackId);
+    const available = contentPackageRuntimeOwner.getPreparedDiscovery(fact.trackId);
     assert.ok(descriptor);
-    assert.ok(artifact);
-    assert.equal(artifact.releaseId, fact.bundledReleaseId);
-    assert.equal(available?.kind, "available");
+    assert.ok(source);
+    assert.equal(available.package.packagePin.contentReleaseId, fact.bundledReleaseId);
+    assert.equal(available.package.trackId, fact.trackId);
   }
 });
 

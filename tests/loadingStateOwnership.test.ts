@@ -135,7 +135,7 @@ test("route-keyed read states block A under B and publish only their captured re
   assert.match(examReview, /const capturedRequestKey = requestKey;[\s\S]*?setReadState\(\{ kind: "pending", requestKey: capturedRequestKey \}\)/);
   assert.match(examReview, /setReadState\(\{ kind: "ready", requestKey: capturedRequestKey, rows \}\)/);
   assert.match(examReview, /kind: "unavailable",\s*requestKey: capturedRequestKey,\s*reason:/);
-  assert.equal((examReview.match(/if \(!live\) return;/g) ?? []).length, 2);
+  assert.equal((examReview.match(/if \(!live\) return;/g) ?? []).length, 3);
   assert.match(examReview, /return \(\) => \{ live = false; \}/);
   const examGuard = examReview.indexOf('if (readState.requestKey !== requestKey || readState.kind === "pending")');
   assert.ok(examGuard < examReview.indexOf('if (readState.kind === "unavailable")'));

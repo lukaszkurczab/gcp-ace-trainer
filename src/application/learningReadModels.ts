@@ -19,6 +19,7 @@ import {
   buildCloudCertificationProgressViewModel,
   type CloudCertificationProgressViewModel,
 } from "../tracks/certification";
+import { contentPackageRuntimeOwner } from "./contentPackageRuntimeOwner";
 
 /** Application-owned read ports consumed by presentation. */
 export type { StorageIssue };
@@ -49,6 +50,7 @@ export async function loadCloudCertificationProgress(input: { now?: string; rece
     attempts: attempts.value,
     issues: [...(attempts.issues ?? []), ...(reviews.issues ?? [])],
     now: input.now,
+    packagePin: contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").package.packagePin,
     recentAttemptCount: input.recentAttemptCount,
     reviewQueueItems: reviews.value,
   });

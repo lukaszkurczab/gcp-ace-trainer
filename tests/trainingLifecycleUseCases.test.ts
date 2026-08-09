@@ -1,4 +1,6 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 import {
   createFamilyEnvelope,
@@ -15,9 +17,36 @@ import {
   type TrainingLifecyclePorts,
 } from "../src/application/trainingLifecycle";
 import { MutationCommitFailure } from "../src/application/mutationBoundary";
+import { canonicalFingerprintPayload } from "../src/infrastructure/identity/canonicalSerialization";
+
+function testPackage(trackId: string) {
+  return {
+    familyId: "coding_interview", packagePin: TEST_CONTENT_PACKAGE_PIN, trackId, freeNodeId: "test-node",
+    contentVersion: "v1", taxonomyVersion: "test-taxonomy", minimumAppVersion: "0.1.0",
+    catalog: { itemIds: ["one", "two"], items: [], assets: [] },
+    profile: { profileId: "test", profileVersion: "1", primaryEntry: { modeId: "practice", requestedLength: 2 }, modes: [], configurations: [] },
+  } as never;
+}
 
 function session(status: "active" | "completed" | "abandoned" = "active", id = "session-1"): TrainingSession {
-  return createTrainingSession({ id, trackId: "test-track", modeId: "practice", configurationSnapshot: { kind: "test" }, requestedLength: 2, actualLength: 2, currentItemIndex: status === "completed" ? 1 : 0, itemOrder: ["one", "two"].map((itemId, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "test-track", itemId, contentVersion: "v1" } })), optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v1", status, startedAt: "2026-07-16T12:00:00.000Z", ...(status === "completed" ? { completedAt: "2026-07-16T12:01:00.000Z" } : {}) });
+  return identifySession(createTrainingSession({ id, trackId: "test-track", modeId: "practice", configurationSnapshot: { kind: "test" }, requestedLength: 2, actualLength: 2, currentItemIndex: status === "completed" ? 1 : 0, itemOrder: ["one", "two"].map((itemId, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "test-track", itemId, contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} })), optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v1", packagePin: TEST_CONTENT_PACKAGE_PIN, status, startedAt: "2026-07-16T12:00:00.000Z", ...(status === "completed" ? { completedAt: "2026-07-16T12:01:00.000Z" } : {}) }));
+}
+
+function identifySession(value: TrainingSession): TrainingSession {
+  const withoutIdentity = createTrainingSession({ ...value, taxonomyVersion: undefined, planFingerprint: undefined });
+  const identified = { ...withoutIdentity, taxonomyVersion: "test-taxonomy" };
+  const planFingerprint = createHash("sha256").update(canonicalFingerprintPayload({
+    trackId: identified.trackId,
+    modeId: identified.modeId,
+    contentVersion: identified.contentVersion,
+    packagePin: identified.packagePin,
+    taxonomyVersion: identified.taxonomyVersion,
+    configurationSnapshot: identified.configurationSnapshot,
+    itemOrder: identified.itemOrder,
+    optionOrderByOccurrence: identified.optionOrderByOccurrence,
+    conditionalReinsertSlots: identified.conditionalReinsertSlots ?? [],
+  }), "utf8").digest("hex");
+  return createTrainingSession({ ...identified, planFingerprint });
 }
 
 function fixture() {
@@ -30,7 +59,7 @@ function fixture() {
   let attempts: readonly import("../src/domain").TrainingAttempt<unknown>[] = [];
   let preparedRequest: unknown = null;
   const runtime: TrainingFamilyRuntime = {
-    familyId: "test-family",
+    familyId: "coding_interview",
     async prepare(input) { calls.push(`prepare:${input.trackId}:${input.modeId}`); preparedRequest = input.request; const value = session("active", (input.request as { sessionId: string }).sessionId); return { session: value, firstOccurrence: value.itemOrder[0]!.item, draft: null }; },
     async validateResume() { calls.push("resume"); },
     async submitPractice(input) { const occurrence = input.session.itemOrder[input.session.currentItemIndex]!; calls.push(`submit:${String(input.response)}`); return { attempt: { id: `attempt-${input.session.currentItemIndex + 1}`, sessionId: input.session.id, trackId: input.session.trackId, modeId: input.session.modeId, occurrenceId: occurrence.occurrenceId, item: occurrence.item, response: { value: input.response }, result: { kind: "correct", earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: occurrence.item, taxonomyOrSkillRefs: [] }, answeredAt: "2026-07-16T12:00:01.000Z", committedAt: "2026-07-16T12:00:01.000Z" }, session: input.session, reviewMutations: [] }; },
@@ -45,9 +74,12 @@ function fixture() {
   const ports: TrainingLifecyclePorts = {
     clock: { now: () => "2026-07-16T12:00:00.000Z" },
     sessionIds: { async create({ trackId, modeId }) { return `${trackId}:${modeId}:00000000-0000-4000-8000-000000000001`; } },
-    tracks: { getTrackRegistration(trackId) { if (trackId !== "test-track") throw new Error("unknown"); return { id: trackId, familyId: "test-family" }; } },
-    runtimes: { resolve(familyId) { if (familyId !== "test-family") throw new Error("unknown family"); calls.push(`resolve:${familyId}`); return runtime; } },
-    content: { async requireAvailable(trackId, modeId) { calls.push(`content:${trackId}:${modeId}`); }, async assertPreparedSession() { calls.push("content-prepared"); }, async assertActiveSession() { calls.push("content-resume"); } },
+    tracks: { getTrackRegistration(trackId) { if (trackId !== "test-track") throw new Error("unknown"); return { id: trackId, familyId: "coding_interview" }; } },
+    packages: {
+      async resolveForPreparation({ trackId, modeId }) { calls.push(`content:${trackId}:${modeId}`); calls.push("resolve:coding_interview"); return { runtime, package: testPackage(trackId) }; },
+      async resolveExact() { calls.push("content-resume"); return { runtime, package: testPackage("test-track") }; },
+      async resolveForDiscovery(trackId) { calls.push("resolve:coding_interview"); return { runtime, package: testPackage(trackId) }; },
+    },
     repositories: {
       async getActiveSession() { calls.push("get-active"); return active; }, async getSession(id) { calls.push(`get-session:${id}`); return persisted; }, async getHistory() { calls.push("history"); return [session("completed"), session("abandoned")]; }, async getAttempts() { calls.push("attempts"); return attempts; }, async getReviews() { calls.push("reviews"); return []; }, async getDraft() { calls.push("draft"); return null; }, async getResult() { calls.push("result"); return result; }, async saveDraft() { calls.push("save-draft"); }, async getPendingMutation() { calls.push("pending"); return pending; },
     },
@@ -62,7 +94,7 @@ test("start resolves the exact family and exposes its first item only after acti
   const f = fixture(); const started = await f.useCases.startSession({ trackId: "test-track", modeId: "practice", request: { sessionId: "caller-must-not-own-this" } });
   assert.equal(started.firstOccurrence.itemId, "one");
   assert.deepEqual(f.preparedRequest(), { sessionId: "test-track:practice:00000000-0000-4000-8000-000000000001" });
-  assert.deepEqual(f.calls.slice(0, 9), ["get-active", "content:test-track:practice", "resolve:test-family", "attempts", "reviews", "prepare:test-track:practice", "content-prepared", "start", "get-active"]);
+  assert.deepEqual(f.calls.slice(0, 8), ["get-active", "content:test-track:practice", "resolve:coding_interview", "attempts", "reviews", "prepare:test-track:practice", "start", "get-active"]);
 });
 
 test("start fails explicitly when the session identity authority fails", async () => {
@@ -83,7 +115,7 @@ test("one active session and unknown identifiers fail explicitly without a subst
 
 test("missing track content blocks preparation and start without selecting another track or mutating a session", async () => {
   const f = fixture();
-  f.ports.content.requireAvailable = async () => { throw new Error("missing_artifact"); };
+  f.ports.packages.resolveForPreparation = async () => { throw new Error("missing_artifact"); };
   await assert.rejects(() => f.useCases.prepareSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
   await assert.rejects(() => f.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
   assert.equal(f.calls.some((call) => call.startsWith("prepare:") || call === "start"), false);
@@ -91,37 +123,37 @@ test("missing track content blocks preparation and start without selecting anoth
 
 test("a prepared or active session with a mismatched artifact identity is never persisted or resumed", async () => {
   const prepared = fixture();
-  prepared.ports.content.assertPreparedSession = async () => { throw new Error("plan fingerprint mismatch"); };
+  prepared.ports.packages.resolveForPreparation = async () => { throw new Error("plan fingerprint mismatch"); };
   await assert.rejects(() => prepared.useCases.startSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
   assert.equal(prepared.calls.includes("start"), false);
   const active = fixture(); active.setActive(session());
-  active.ports.content.assertActiveSession = async () => { throw new Error("content version mismatch"); };
+  active.ports.packages.resolveExact = async () => { throw new Error("content version mismatch"); };
   await assert.rejects(() => active.useCases.resumeActiveSession(), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "resume_unavailable");
   assert.equal(active.calls.includes("resume"), false);
 });
 
 test("runtime resolution rejects an unknown or mismatched family without substituting another runtime", async () => {
   const missing = fixture();
-  (missing.ports.runtimes as { resolve(familyId: string): TrainingFamilyRuntime }).resolve = () => { throw new Error("missing family"); };
-  await assert.rejects(() => missing.useCases.prepareSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_family");
+  missing.ports.packages.resolveForPreparation = async () => { throw new Error("missing family"); };
+  await assert.rejects(() => missing.useCases.prepareSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "missing_content");
   const mismatched = fixture();
-  const resolve = mismatched.ports.runtimes.resolve.bind(mismatched.ports.runtimes);
-  (mismatched.ports.runtimes as { resolve(familyId: string): TrainingFamilyRuntime }).resolve = () => ({ ...resolve("test-family"), familyId: "another-family" });
+  const original = mismatched.ports.packages.resolveForPreparation.bind(mismatched.ports.packages);
+  mismatched.ports.packages.resolveForPreparation = async (input) => { const value = await original(input); return { ...value, runtime: { ...value.runtime, familyId: "certification" } }; };
   await assert.rejects(() => mismatched.useCases.prepareSession({ trackId: "test-track", modeId: "practice", request: {} }), (error: unknown) => error instanceof TrainingApplicationFailure && error.code === "unknown_family");
 });
 
 test("practice response is handed to the family runtime and only its deterministic outcome reaches the coordinator", async () => {
   const f = fixture(); f.setActive(session()); await f.useCases.submitPracticeResponse({ selected: "a" });
-  assert.deepEqual(f.calls, ["get-active", "content-resume", "get-active", "content-resume", "pending", "resolve:test-family", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
+  assert.deepEqual(f.calls, ["get-active", "content-resume", "get-active", "content-resume", "pending", "content-resume", "attempts", "reviews", "submit:[object Object]", "commit-submit"]);
 });
 
 test("submitting the final practice occurrence materializes feedback without completing the session", async () => {
   const f = fixture();
-  const finalActive = createTrainingSession({
+  const finalActive = identifySession(createTrainingSession({
     ...session(),
     currentItemIndex: 1,
     configurationSnapshot: { ...session().configurationSnapshot, submission: "perItem" },
-  });
+  }));
   f.setActive(finalActive);
 
   await f.useCases.submitPracticeResponse({ selected: "a" });
@@ -176,11 +208,11 @@ test("simulation finalization withholds summary until a canonical completed resu
 
 test("practice completion retries only a non-durable Finish and returns one verified result", async () => {
   const f = fixture();
-  const finalActive = createTrainingSession({
+  const finalActive = identifySession(createTrainingSession({
     ...session(),
     currentItemIndex: 1,
     configurationSnapshot: { ...session().configurationSnapshot, submission: "perItem" },
-  });
+  }));
   f.setActive(finalActive);
   const complete = f.ports.mutations.completeWithResult;
   let commands = 0;
@@ -317,7 +349,7 @@ test("dashboard receives the active session only when it belongs to the queried 
 
 test("an expired absolute-deadline simulation finalizes once before it can be resumed", async () => {
   const f = fixture();
-  const expired = createTrainingSession({
+  const expired = identifySession(createTrainingSession({
     ...session(),
     modeId: "certification-exam-simulation",
     configurationSnapshot: {
@@ -330,7 +362,7 @@ test("an expired absolute-deadline simulation finalizes once before it can be re
       timerDeadlineAt: "2026-07-16T11:59:59.999Z",
       timerDurationMs: 120 * 60 * 1000,
     },
-  });
+  }));
   f.setActive(expired);
   f.ports.repositories.getDraft = async () => ({
     schemaVersion: 1,
@@ -352,14 +384,14 @@ test("an expired absolute-deadline simulation finalizes once before it can be re
 
 test("manual finalization and expiry share one durable simulation finalization", async () => {
   const f = fixture();
-  const expired = createTrainingSession({
+  const expired = identifySession(createTrainingSession({
     ...session(),
     modeId: "certification-exam-simulation",
     configurationSnapshot: {
       kind: "certificationSimulation", navigation: "free", submission: "manualOrForegroundTimeout", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission",
       timer: "absoluteDeadline", timerDeadlineAt: "2026-07-16T11:59:59.999Z", timerDurationMs: 120 * 60 * 1000,
     },
-  });
+  }));
   f.setActive(expired);
   f.ports.repositories.getDraft = async () => ({ schemaVersion: 1, familyId: "certification", draftVersion: 1, revision: 1, sessionId: expired.id, trackId: expired.trackId, responsesByOccurrenceId: {}, flaggedOccurrenceIds: [], updatedAt: "2026-07-16T11:00:00.000Z" });
 

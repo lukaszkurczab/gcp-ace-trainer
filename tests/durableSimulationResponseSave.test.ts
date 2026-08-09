@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  getAlgorithmsInterviewSimulationEntry,
   getAlgorithmsSimulationProjection,
   enterAlgorithmsSimulationForeground,
   finalizeAlgorithmsSimulation,
@@ -14,21 +13,23 @@ import {
   startAlgorithmsSession,
 } from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
 import { getActiveForegroundTimer, getActiveTrainingSession, getActiveTrainingSessionDraft, getTrainingAttempts, getTrainingSessionResult, getTrainingSessions } from "../src/storage/repositories";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import {
   isAlgorithmChoiceQuestion,
   isAlgorithmComplexityQuestion,
   isAlgorithmOrderingQuestion,
+  ALGORITHM_MODE_IDS,
+  type AlgorithmQuestion,
   type AlgorithmResponse,
 } from "../src/tracks/coding-interview";
 import { installMemoryStorage } from "./journalTestSupport";
+import { createCodingFullTrackTestRuntime, FULL_TRACK_SIMULATION_PROFILE_ID } from "./fullTrackRuntimeTestSupport";
 
 const NOW = "2026-07-23T10:00:00.000Z";
+const FULL_TRACK_SIMULATION_ENTRY = Object.freeze({ modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: FULL_TRACK_SIMULATION_PROFILE_ID, requestedLength: 40 as const });
 
-function completeResponseFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+function completeResponseFor(item: AlgorithmQuestion): AlgorithmResponse {
   if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
   if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
   if (isAlgorithmComplexityQuestion(item)) {
@@ -41,24 +42,24 @@ function completeResponseFor(item: ReturnType<ReturnType<typeof getAlgorithmCont
 }
 
 test("Algorithms Interview Simulation saves one response durably across lifecycle reload", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
   const clock = { now: () => NOW };
-  composeTrainingLifecycleUseCases({ wallClock: clock });
+  composeTrainingLifecycleUseCases({ packages, wallClock: clock });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   await saveAlgorithmsSimulationResponse({ occurrenceId: occurrence.occurrenceId, response });
   assert.equal((await getActiveTrainingSessionDraft())?.revision, 2);
 
-  const reloadedLifecycle = composeTrainingLifecycleUseCases({ wallClock: clock });
+  const reloadedLifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: clock });
   assert.equal((await reloadedLifecycle.resumeActiveSession()).id, started.session.id);
   const reloadedDraft = await getActiveTrainingSessionDraft();
   const reloadedProjection = await getAlgorithmsSimulationProjection();
@@ -68,20 +69,19 @@ test("Algorithms Interview Simulation saves one response durably across lifecycl
   assert.equal(reloadedProjection.durableDraftRevision, 2);
   assert.equal(reloadedProjection.navigator[0]?.answered, true);
 });
-
 test("Algorithms save-and-continue is one application command for the active non-final occurrence", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   const continued = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
   assert.equal(continued.position.current, 2);
@@ -89,18 +89,18 @@ test("Algorithms save-and-continue is one application command for the active non
 });
 
 test("two concurrent Algorithms save-and-continue commands share one durable save and one advance", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   const [first, second] = await Promise.all([
     saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response }),
@@ -115,13 +115,13 @@ test("two concurrent Algorithms save-and-continue commands share one durable sav
 });
 
 test("concurrent timer checkpoint and save-and-continue retain the draft revision and next position", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   await Promise.all([enterAlgorithmsSimulationForeground(), saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response })]);
   const [draft, projection] = await Promise.all([getActiveTrainingSessionDraft(), getAlgorithmsSimulationProjection()]);
@@ -131,18 +131,18 @@ test("concurrent timer checkpoint and save-and-continue retain the draft revisio
 });
 
 test("Algorithms save-and-continue verifies its durable response revision before publishing occurrence two", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   const projection = await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
   const draft = await getActiveTrainingSessionDraft();
@@ -154,18 +154,18 @@ test("Algorithms save-and-continue verifies its durable response revision before
 });
 
 test("Algorithms save-and-jump durably saves a changed response before publishing the requested occurrence", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   const jumped = await saveAlgorithmsSimulationResponseAndNavigate({ occurrenceId: occurrence.occurrenceId, response, targetIndex: 4 });
   const draft = await getActiveTrainingSessionDraft();
@@ -179,13 +179,13 @@ test("Algorithms save-and-jump durably saves a changed response before publishin
 });
 
 test("a non-durable simulation save failure can explicitly resume local editing without a durable write", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   const storage = installMemoryStorage();
-  const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const lifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({ modeId: entry.modeId, requestedLength: entry.requestedLength, scope: { simulationProfileId: entry.profileId } });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
 
   storage.resetCounters();
   storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.ACTIVE_TRAINING_SESSION_DRAFT, occurrence: 1 });
@@ -200,22 +200,22 @@ test("a non-durable simulation save failure can explicitly resume local editing 
 });
 
 test("Algorithms simulation relaunch after its first answer preserves draft, position, timer checkpoint, and one active session", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
   await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
   const timerBeforeRelaunch = await getActiveForegroundTimer();
 
-  const relaunchedLifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const relaunchedLifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
   const resumed = await relaunchedLifecycle.resumeActiveSession();
   const projection = await getAlgorithmsSimulationProjection();
   const [draft, timerAfterRelaunch, active, sessions] = await Promise.all([
@@ -233,24 +233,24 @@ test("Algorithms simulation relaunch after its first answer preserves draft, pos
 });
 
 test("Algorithms Interview Simulation finalizes its complete immutable forty-occurrence plan", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   installMemoryStorage();
-  composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   for (const occurrence of started.session.itemOrder.slice(0, -1)) {
-    const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+    const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
     await saveAlgorithmsSimulationResponseAndContinue({ occurrenceId: occurrence.occurrenceId, response });
   }
   const finalOccurrence = started.session.itemOrder.at(-1)!;
   await saveAlgorithmsSimulationResponse({
     occurrenceId: finalOccurrence.occurrenceId,
-    response: completeResponseFor(getAlgorithmContentCatalog().getItemById(finalOccurrence.item.itemId)),
+    response: completeResponseFor(catalog.getItemById(finalOccurrence.item.itemId)),
   });
   await finalizeAlgorithmsSimulation();
 
@@ -269,18 +269,18 @@ test("Algorithms Interview Simulation finalizes its complete immutable forty-occ
 });
 
 test("Algorithms save-and-continue recovery advances a durable response without a second draft revision", async () => {
-  await validateBundledContent();
+  const { catalog, packages } = await createCodingFullTrackTestRuntime();
   const storage = installMemoryStorage();
-  const lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
+  const lifecycle = composeTrainingLifecycleUseCases({ packages, wallClock: { now: () => NOW } });
 
-  const entry = getAlgorithmsInterviewSimulationEntry();
+  const entry = FULL_TRACK_SIMULATION_ENTRY;
   const started = await startAlgorithmsSession({
     modeId: entry.modeId,
     requestedLength: entry.requestedLength,
     scope: { simulationProfileId: entry.profileId },
   });
   const occurrence = started.session.itemOrder[0]!;
-  const response = completeResponseFor(getAlgorithmContentCatalog().getItemById(occurrence.item.itemId));
+  const response = completeResponseFor(catalog.getItemById(occurrence.item.itemId));
   storage.resetCounters();
   storage.setFailurePlan({ kind: "fail_on_key_write_occurrence", key: STORAGE_KEYS.trainingSession(started.session.id), occurrence: 2 });
 

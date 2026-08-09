@@ -45,7 +45,8 @@ test("features and track semantics cannot import storage or repository implement
 
 test("Algorithms runtime composition has no persistence binding", () => {
   const runtime = read("src/application/coding-interview/CodingInterviewFamilyRuntime.ts");
-  const composition = read("src/application/coding-interview/createCodingInterviewRuntime.ts");
+  const composition = read("src/application/contentPackageRuntimeOwner.ts");
+  assert.equal(existsSync(join(root, "src/application/coding-interview/createCodingInterviewRuntime.ts")), false);
   assert.doesNotMatch(runtime, /storage\/repositories|react-native-mmkv|from\s+["']react/);
   assert.doesNotMatch(runtime, /\b(commit|save|getActive|recover|materialize|verify)[A-Z]/);
   assert.doesNotMatch(composition, /storage|repositories|saveTrainingSession|saveTrainingSessionDraft|getActiveTrainingSession|commitMutation/);

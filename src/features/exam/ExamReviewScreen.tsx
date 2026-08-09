@@ -4,13 +4,14 @@ import { StyleSheet, Text } from "react-native";
 
 import { loadTrainingAttempts } from "../../application/learningReadModels";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { Button, Card, EmptyState, LoadingState, Screen } from "../../components";
 import { ROUTES } from "../../constants";
-import { getCertificationContentCatalog } from "../../content/catalogRepository";
 import type { RootStackParamList } from "../../navigation";
 import { useAppPreferences, useThemedStyles } from "../../preferences";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { spacing, typography, type AppColors } from "../../theme";
+import type { CertificationQuestion } from "../../tracks/certification";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROUTES.EXAM_REVIEW>;
 
@@ -38,19 +39,20 @@ export function ExamReviewScreen({ navigation, route }: Props) {
     setReadState({ kind: "pending", requestKey: capturedRequestKey });
 
     void loadTrainingAttempts()
-      .then(({ value }) => {
+      .then(async ({ value }) => {
         if (!live) return;
-        const rows = value
+        const rows = await Promise.all(value
           .filter((attempt) => attempt.sessionId === capturedRequestKey)
-          .map((attempt) => {
-            const question = getCertificationContentCatalog().getItemById(attempt.item.itemId);
+          .map(async (attempt) => {
+            const question = await contentPackageRuntimeOwner.resolveItem<CertificationQuestion>(attempt.item);
             return {
               id: attempt.id,
               question: question.question,
               correct: attempt.result.kind === "correct",
               reason: question.feedback.reason,
             };
-          });
+          }));
+        if (!live) return;
         setReadState({ kind: "ready", requestKey: capturedRequestKey, rows });
       })
       .catch((error) => {

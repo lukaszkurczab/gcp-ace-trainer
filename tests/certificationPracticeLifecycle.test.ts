@@ -18,9 +18,9 @@ import {
   retryCertificationAbandonmentAfterCheckpointFailure,
   submitCertificationPracticeResponse,
 } from "../src/application/certification";
-import { installTrainingLifecycleUseCases, resumeActiveTrainingSession, TrainingApplicationFailure, type TrainingLifecycleUseCases } from "../src/application/trainingLifecycle";
-import { validateBundledContent } from "../src/content/application";
-import { getCertificationContentCatalog } from "../src/content/catalogRepository";
+import { getForegroundSessionTimerFacade, installTrainingLifecycleUseCases, resumeActiveTrainingSession, TrainingApplicationFailure, type TrainingLifecycleUseCases } from "../src/application/trainingLifecycle";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
+import { getCertificationPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
 import { getTrackDisplay } from "../src/domain";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
 import { buildHomeTabModel } from "../src/features/home/tabs/homeTabModel";
@@ -61,7 +61,7 @@ function partialResponse(question: CertificationQuestion) {
 }
 
 test("Certification family lifecycle journals one typed attempt and retains remediation identity", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const clock = new MutableClock("2026-07-24T10:00:00.000Z");
   let identitySequence = 0;
@@ -74,7 +74,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
       },
     },
   });
-  const catalog = getCertificationContentCatalog();
+  const catalog = getCertificationPackageTestCatalog();
   const question = catalog.getItems().find((item) => item.domain === "setup_environment");
   assert.ok(question);
 
@@ -132,7 +132,7 @@ test("Certification family lifecycle journals one typed attempt and retains reme
 });
 
 test("Certification open starts once, resumes the exact mode, and never starts for a resume-only disappearance", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   let identitySequence = 0;
   composeTrainingLifecycleUseCases({
@@ -161,7 +161,7 @@ test("Certification open starts once, resumes the exact mode, and never starts f
 });
 
 test("Certification pause checkpoints and resumes the exact active session", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T12:15:00.000Z"),
@@ -215,7 +215,7 @@ test("Certification pause checkpoints and resumes the exact active session", asy
 });
 
 test("Certification resume rejects an old Focus record without its immutable domain", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T12:16:00.000Z"),
@@ -239,7 +239,7 @@ test("Certification resume rejects an old Focus record without its immutable dom
 });
 
 test("Certification end classifies a failed timer checkpoint before it reaches abandonment", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T12:18:00.000Z"),
@@ -269,7 +269,7 @@ test("Certification end classifies a failed timer checkpoint before it reaches a
 });
 
 test("Certification end recovers a durable timer checkpoint before abandonment remains available", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T12:19:00.000Z"),
@@ -318,7 +318,7 @@ test("Certification abandonment boundaries retry only before durability and othe
   ] as const;
 
   for (const boundary of boundaries) {
-    await validateBundledContent();
+    await prepareBundledTestPackages();
     const storage = installMemoryStorage();
     const lifecycle = composeTrainingLifecycleUseCases({
       wallClock: new MutableClock("2026-07-24T12:20:00.000Z"),
@@ -363,31 +363,31 @@ test("Certification abandonment boundaries retry only before durability and othe
   }
 });
 
-test("Certification open handles a typed start race with one start and one authoritative conflict result", async () => {
-  await validateBundledContent();
+test("Certification open handles a typed start race with one start and one authoritative resumed result", async () => {
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const lifecycle = composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T12:30:00.000Z"),
     sessionIds: { async create() { return "raced-certification-session"; } },
   });
-  const prepared = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-diagnostic-baseline", request: {} });
+  const prepared = await lifecycle.startSession({ trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice", request: { requestedLength: 10, domain: "setup_environment" } });
   installMemoryStorage();
   let starts = 0;
-  installTrainingLifecycleUseCases({
-    async startSession() {
-      starts += 1;
-      await saveTrainingSession(prepared.session);
-      throw new TrainingApplicationFailure("active_session_conflict", "Race installed an authoritative active session.");
-    },
-  } as unknown as TrainingLifecycleUseCases);
+  lifecycle.startSession = async () => {
+    starts += 1;
+    await saveTrainingSession(prepared.session);
+    await getForegroundSessionTimerFacade().initialize(prepared.session);
+    throw new TrainingApplicationFailure("active_session_conflict", "Race installed an authoritative active session.");
+  };
+  installTrainingLifecycleUseCases(lifecycle);
   const opened = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
   assert.equal(starts, 1);
-  assert.equal(opened.kind, "active_session_conflict");
-  if (opened.kind === "active_session_conflict") assert.equal(opened.session.id, prepared.session.id);
+  assert.equal(opened.kind, "ready");
+  if (opened.kind === "ready") assert.equal(opened.projection.session.id, prepared.session.id);
 });
 
 test("Certification feedback projects exact materialized attempt results and canonical authored copy", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T10:30:00.000Z"),
@@ -434,7 +434,7 @@ test("Certification feedback projects exact materialized attempt results and can
 });
 
 test("Certification pre-journal failure preserves an editable response and resubmits exactly once", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   const lifecycle = composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T13:00:00.000Z"),
@@ -465,7 +465,7 @@ test("Certification pre-journal failure preserves an editable response and resub
 });
 
 test("Certification journal-committed response locks without feedback and recovers without a duplicate attempt", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   const lifecycle = composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T13:30:00.000Z"),
@@ -501,7 +501,7 @@ test("Certification journal-committed response locks without feedback and recove
 
 test("Certification materialized response and feedback win through verification and journal-clear recovery", async () => {
   for (const boundary of ["verification", "journal_clear"] as const) {
-    await validateBundledContent();
+    await prepareBundledTestPackages();
     const storage = installMemoryStorage();
     const lifecycle = composeTrainingLifecycleUseCases({
       wallClock: new MutableClock("2026-07-24T14:00:00.000Z"),
@@ -536,7 +536,7 @@ test("Certification materialized response and feedback win through verification 
 });
 
 test("Certification advance failure retries only advance and never resubmits the materialized answer", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   composeTrainingLifecycleUseCases({
     wallClock: new MutableClock("2026-07-24T14:30:00.000Z"),
@@ -567,7 +567,7 @@ test("Certification advance failure retries only advance and never resubmits the
 });
 
 test("ordinary Certification facade owns timer start, response and final checkpoints without involving Exam", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   let identitySequence = 0;
   composeTrainingLifecycleUseCases({
@@ -623,7 +623,7 @@ test("ordinary Certification facade owns timer start, response and final checkpo
   if (completed.kind === "verified") assert.equal(completed.value.result.sessionId, projection.session.id);
   assert.equal(await getActiveForegroundTimer(), null);
 
-  const restarted = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "operations" });
+  const restarted = await openCertificationPracticeSession({ modeId: "certification-focus-practice", requestedLength: 10, domain: "setup_environment" });
   assert.equal(restarted.kind, "ready");
   if (restarted.kind === "ready") await abandonCertificationSession(restarted.projection.session.id);
   assert.equal(await getActiveForegroundTimer(), null);

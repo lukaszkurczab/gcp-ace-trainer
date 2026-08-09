@@ -3,7 +3,7 @@ import {
   GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   type TrackDisplay,
 } from "../../../domain";
-import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
+import { contentPackagePinsEqual, type ContentPackagePin, type ReviewQueueEntry, type TrainingAttempt } from "../../../domain";
 import {
   ALGORITHM_MODE_IDS,
   buildAlgorithmProgressFacts,
@@ -15,6 +15,8 @@ import type { CloudCertificationProgressViewModel } from "../../../tracks";
 import type { CertificationDomain, CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import { getDomainLabel } from "../../../utils";
 import type { AnalyticsData } from "../../analytics/analyticsService";
+import { contentPackageRuntimeOwner } from "../../../application/contentPackageRuntimeOwner";
+import type { AlgorithmQuestion } from "../../../tracks/coding-interview/algorithmQuestionTypes";
 import {
   buildPracticeSessionConfig,
   type PracticeSessionMode,
@@ -222,21 +224,32 @@ function buildAlgorithmsProgressTabModel(
   reviewQueueItems: readonly ReviewQueueEntry[],
   now: string,
 ): ProgressTabModel {
+  const packageResolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
+  const packageItems = packageResolution.profile.items as readonly AlgorithmQuestion[];
   const facts = buildAlgorithmProgressFacts({
     attempts: trainingAttempts,
+    content: {
+      contentVersion: packageResolution.package.contentVersion,
+      items: packageItems,
+      packagePin: packageResolution.package.packagePin,
+    },
     now,
     reviewQueueItems,
   });
   const algorithmsReviewItems = reviewQueueItems.filter((item) =>
     item.trackId === CODING_INTERVIEW_TRACK_ID &&
     item.sourceItem.trackId === CODING_INTERVIEW_TRACK_ID &&
-    item.sourceItem.contentVersion === facts.contentVersion,
+    item.sourceItem.contentVersion === facts.contentVersion &&
+    contentPackagePinsEqual(item.sourceItem.packagePin, packageResolution.package.packagePin),
   );
   const dueReviewItems = algorithmsReviewItems.filter((item) => item.dueAt <= now);
   const dueReviewCount = dueReviewItems.length;
   const algorithmsProgress = buildAlgorithmsProgressScreenModel({
     dueReviewItems,
     facts,
+    packageContentVersion: packageResolution.package.contentVersion,
+    packageItems,
+    packagePin: packageResolution.package.packagePin,
     trainingAttempts,
   });
 
@@ -310,6 +323,9 @@ function getAlgorithmsRemediationState(input: {
 function buildAlgorithmsProgressScreenModel(input: {
   dueReviewItems: readonly ReviewQueueEntry[];
   facts: ReturnType<typeof buildAlgorithmProgressFacts>;
+  packageContentVersion: string;
+  packageItems: readonly AlgorithmQuestion[];
+  packagePin: ContentPackagePin;
   trainingAttempts: readonly TrainingAttempt[];
 }): AlgorithmsProgressScreenModel {
   const activeIndex = input.facts.nodeProgress.findIndex(
@@ -330,7 +346,9 @@ function buildAlgorithmsProgressScreenModel(input: {
   });
   const weakRecommendation = buildAlgorithmWeakAreaRecommendation(
     input.trainingAttempts,
-    undefined,
+    input.packageItems,
+    input.packageContentVersion,
+    input.packagePin,
     undefined,
     focusNode.nodeId,
   );

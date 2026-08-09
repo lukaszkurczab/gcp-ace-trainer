@@ -1,5 +1,5 @@
 import type { ContentItemRef, ReviewQueueEntry } from "../../domain";
-import type { AlgorithmRuntimeCatalog } from "./algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "./algorithmRuntimeCatalog";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 export type AlgorithmReviewSource = "due_queue" | "session_misses";
 export type AlgorithmReviewSelectionSource = Readonly<{ kind: "due_queue"; now: string; reviewQueueItems: readonly ReviewQueueEntry[] }> | Readonly<{ itemRefs: readonly ContentItemRef[]; kind: "session_misses" }>;

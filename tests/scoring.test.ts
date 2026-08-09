@@ -4,17 +4,17 @@ import test from "node:test";
 import { buildCertificationExamSummaries } from "../src/tracks/certification";
 import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
-test("scores single choice correct, incorrect, and unanswered answers", () => {
+test("scores single choice correct, incorrect, and unanswered answers", async () => {
   const questions = [
     makeQuestion({ id: "single-correct", domain: "setup_environment", correctOptionIds: ["a"] }),
     makeQuestion({ id: "single-incorrect", domain: "setup_environment", correctOptionIds: ["a"] }),
     makeQuestion({ id: "unanswered", domain: "operations", correctOptionIds: ["a"] })
   ];
-  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
+  const { session, attempts, resolveItem } = makeCompletedExamProjectionInputs(questions, {
     "single-correct": ["a"],
     "single-incorrect": ["b"]
   });
-  const score = buildCertificationExamSummaries([session], attempts)[0]!;
+  const score = (await buildCertificationExamSummaries([session], attempts, resolveItem))[0]!;
 
   assert.equal(score.correctCount, 1);
   assert.equal(score.questionCount, 3);
@@ -23,34 +23,34 @@ test("scores single choice correct, incorrect, and unanswered answers", () => {
   assert.deepEqual(score.unansweredQuestionIds, ["unanswered"]);
 });
 
-test("scores multiple select only on exact option-set match", () => {
+test("scores multiple select only on exact option-set match", async () => {
   const questions = [
     makeQuestion({ id: "multi-exact", type: "multiple", correctOptionIds: ["a", "c"] }),
     makeQuestion({ id: "multi-partial", type: "multiple", correctOptionIds: ["a", "c"] })
   ];
-  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
+  const { session, attempts, resolveItem } = makeCompletedExamProjectionInputs(questions, {
     "multi-exact": ["c", "a"],
     "multi-partial": ["a"]
   });
-  const score = buildCertificationExamSummaries([session], attempts)[0]!;
+  const score = (await buildCertificationExamSummaries([session], attempts, resolveItem))[0]!;
 
   assert.equal(score.correctCount, 1);
   assert.equal(score.answers.find((answer) => answer.questionId === "multi-exact")?.isCorrect, true);
   assert.equal(score.answers.find((answer) => answer.questionId === "multi-partial")?.isCorrect, false);
 });
 
-test("calculates domain and tag scores and preserves flagged ids", () => {
+test("calculates domain and tag scores and preserves flagged ids", async () => {
   const questions = [
     makeQuestion({ id: "domain-a", domain: "operations", tags: ["ops"] }),
     makeQuestion({ id: "domain-b", domain: "operations", tags: ["ops"] }),
     makeQuestion({ id: "domain-c", domain: "access_security", tags: ["iam"] })
   ];
-  const { session, attempts } = makeCompletedExamProjectionInputs(questions, {
+  const { session, attempts, resolveItem } = makeCompletedExamProjectionInputs(questions, {
     "domain-a": ["a"],
     "domain-b": ["b"],
     "domain-c": ["a"]
   });
-  const score = buildCertificationExamSummaries([session], attempts)[0]!;
+  const score = (await buildCertificationExamSummaries([session], attempts, resolveItem))[0]!;
 
   assert.equal(score.domainScores.find((item) => item.domain === "operations")?.percent, 50);
   assert.equal(score.domainScores.find((item) => item.domain === "access_security")?.percent, 100);

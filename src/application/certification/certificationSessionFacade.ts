@@ -1,4 +1,4 @@
-import { getCertificationContentCatalog } from "../../content/catalogRepository";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { AttemptResultKind, TrainingSession, TrainingSessionDraft } from "../../domain";
 import { loadActiveTrainingSession, loadActiveTrainingSessionDraft, loadTrainingAttempts } from "../learningReadModels";
 import {
@@ -109,7 +109,7 @@ export async function getCertificationPracticeProjection(): Promise<Certificatio
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId) ?? null;
   const committedAttempt = pending?.practiceOutcome?.attempt.sessionId === session.id && pending.practiceOutcome.attempt.occurrenceId === occurrence.occurrenceId ? pending.practiceOutcome.attempt : null;
   const responseAttempt = materializedAttempt ?? committedAttempt;
-  const question = getCertificationContentCatalog().getItemById(occurrence.item.itemId);
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as CertificationQuestion;
   const feedback = materializedAttempt ? Object.freeze({ result: materializedAttempt.result.kind, reason: question.feedback.reason, details: question.feedback.details }) : null;
   const [operation, time] = await Promise.all([
     lifecycle.getPracticeOperationState(session, Boolean(materializedAttempt)),
@@ -268,7 +268,7 @@ export async function getCertificationExamProjection(): Promise<CertificationExa
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("Cloud exam occurrence is unavailable.");
   const raw = draft.responsesByOccurrenceId[occurrence.occurrenceId] ?? null;
-  return Object.freeze({ session, draft, question: getCertificationContentCatalog().getItemById(occurrence.item.itemId), occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CertificationResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
+  return Object.freeze({ session, draft, question: await contentPackageRuntimeOwner.resolveItem(occurrence.item) as CertificationQuestion, occurrenceId: occurrence.occurrenceId, ordinal: session.currentItemIndex + 1, total: session.actualLength, response: raw as CertificationResponse | null, flaggedOccurrenceIds: draft.flaggedOccurrenceIds, now: getTrainingLifecycleUseCases().currentTime() });
 }
 export async function saveCertificationExamResponse(input: Readonly<{ occurrenceId: string; response: CertificationResponse }>): Promise<void> {
   await assertCertificationExamIsActive();

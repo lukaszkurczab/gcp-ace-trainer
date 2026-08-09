@@ -11,8 +11,8 @@ import {
   submitAlgorithmsPracticeResponse,
 } from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { validateBundledContent } from "../src/content/application";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { getActiveMutationJournal, getActiveTrainingSession, getTrainingAttempts, getTrainingSessionResult } from "../src/storage/repositories";
 import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
@@ -21,7 +21,7 @@ import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
-function correctResponse(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+function correctResponse(item: ReturnType<ReturnType<typeof getCodingPackageTestCatalog>["getItems"]>[number]): AlgorithmResponse {
   if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
   if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
   if (isAlgorithmComplexityQuestion(item)) return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(item.interaction.checkedDimensions.map((dimension) => [dimension, item.interaction.acceptedValuesByDimension[dimension]![0]!])) };
@@ -29,10 +29,10 @@ function correctResponse(item: ReturnType<ReturnType<typeof getAlgorithmContentC
 }
 
 test("Custom Practice afterEachAnswer journals each submitted response, exposes immediate feedback, advances, and finalizes one summary", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = installMemoryStorage();
   composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "afterEachAnswer",
     modeId: "coding-interview-custom-practice",

@@ -130,6 +130,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
       ["CONTENT-PACKAGES-001", ["canonical-packages-operations-platform"]],
       ["CONTENT-PACKAGE-RESOLVER-001", ["content-packages-verifier-resolver"]],
+      ["FREE-PACKAGE-RUNTIME-CUTOVER-001", ["free-package-runtime-cutover"]],
       ["CONTENT-PACKAGE-RUNTIME-CATALOG-001", ["content-package-runtime-catalog"]],
       ["CONTENT-PACKAGE-NATIVE-RUNTIME-001", ["content-package-native-runtime"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
@@ -526,10 +527,31 @@ test("defines the versioned simulation timer cadence without per-refresh durable
   });
 });
 
-test("requires Product Owner approval and no inherited target design evidence", () => {
+test("locks the Product Owner-approved Free-package interaction reference and its narrow UI ownership", () => {
   const contract = loadCanonicalProductContract();
-  assert.deepEqual(contract.designReferences, { version: 2, references: [], uiOwnership: [] });
+  assert.deepEqual(contract.designReferences, {
+    version: 2,
+    references: [{
+      id: "pkg-04a-free-package-interactions",
+      screenStateTarget: "free-package-practice-and-unavailable-states",
+      patternPath: "docs/designs/pkg-04a-free-package-interactions/DESIGN.md",
+      version: 1,
+      approvalStatus: "APPROVED",
+      owner: "product-owner",
+    }],
+    uiOwnership: [
+      { sourcePathPrefix: "src/content/application/ContentPreparationGate.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/practice/", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/review/AnswerReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/exam/ExamReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+    ],
+  });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(contract, { status: "not-ready" }), undefined);
+  const approvedReference = resolveCanonicalUserFacingTaskDesignReference(contract, {
+    status: "ready",
+    designReferenceId: "pkg-04a-free-package-interactions",
+  });
+  assert.equal(approvedReference?.id, "pkg-04a-free-package-interactions");
   assert.throws(
     () => resolveCanonicalUserFacingTaskDesignReference(contract, { status: "ready", designReferenceId: "historical-reference" }),
     (error: unknown) => error instanceof CanonicalUserFacingTaskReadinessError && /unknown design reference/.test(error.message),
@@ -827,7 +849,7 @@ test("rejects canonical product contracts with unknown fields, missing version, 
     ["reordered lifecycle checkpoints", validContract.replace("[foreground-enter, foreground-leave, draft-save, finalization, expiry]", "[foreground-leave, foreground-enter, draft-save, finalization, expiry]"), /Canonical Simulation timer cadence must declare exactly its lifecycle checkpoints in canonical order/],
     ["missing design reference registry", validContract.replace(/designReferences:[\s\S]*?\ncodingInterview:/, "codingInterview:"), /must have required property 'designReferences'/],
     ["unknown design reference field", validContract.replace("designReferences:\n", "designReferences:\n  extra: value\n"), /must NOT have additional properties/],
-    ["missing design reference UI ownership", validContract.replace("  uiOwnership: []\n", ""), /must have required property 'uiOwnership'/],
+    ["missing design reference UI ownership", validContract.replace(/  uiOwnership:[\s\S]*?\nsimulationOperationStateCtas:/, "simulationOperationStateCtas:"), /must have required property 'uiOwnership'/],
     ["changed design reference registry version", validContract.replace("designReferences:\n  version: 2", "designReferences:\n  version: 1"), /must be equal to constant/],
     ["duplicate Coding Interview mode identifier", validContract.replace("    - id: coding-interview-guided-practice", "    - id: coding-interview-learn-approach"), /Duplicate canonical product contract Coding Interview mode identifier/],
     ["mismatched Coding Interview mode label", validContract.replace("label: Learn Approach", "label: Interview Simulation"), /Coding Interview mode label does not match its identifier/],

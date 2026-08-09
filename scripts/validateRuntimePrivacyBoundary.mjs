@@ -24,8 +24,7 @@ export function validateRuntimePrivacyBoundary(root = process.cwd()) {
     return approvedClientAdapters.get(candidate);
   };
   const excludedSourceFiles = new Set([
-    join(sourceRoot, "content", "bundled", "generatedArtifacts.ts"),
-    join(sourceRoot, "content", "bundled", "generatedAlgorithmFeedbackAssets.ts"),
+    join(sourceRoot, "content", "bundled", "generatedFreeNodePackages.ts"),
   ]);
   const failures = [];
 

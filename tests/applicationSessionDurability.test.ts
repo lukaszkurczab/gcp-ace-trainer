@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -26,10 +27,10 @@ function session(overrides: Partial<TrainingSession> = {}): TrainingSession {
     requestedLength: 2,
     actualLength: 2,
     currentItemIndex: 0,
-    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId, contentVersion: "v1" } })),
+    itemOrder: ["one", "two"].map((itemId) => ({ occurrenceId: `occurrence-${itemId}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId, contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} })),
     optionOrderByOccurrence: { "occurrence-one": ["b", "a"], "occurrence-two": ["d", "c"] },
     activeForegroundMs: 100,
-    contentVersion: "v1",
+    contentVersion: "v1", packagePin: TEST_CONTENT_PACKAGE_PIN,
     status: "active",
     startedAt: "2026-07-15T10:00:00.000Z",
     ...overrides,
@@ -90,7 +91,7 @@ test("durable progress hydrates prior attempts and the answered current item in 
 
 test("duplicate exact content items are distinct through immutable occurrence identities", () => {
   const duplicatePlan = session({
-    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId: "one", contentVersion: "v1" } })),
+    itemOrder: ["first", "second"].map((suffix) => ({ occurrenceId: `occurrence-${suffix}`, item: { trackId: "coding-interview-dsa-problem-solving", itemId: "one", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} })),
     optionOrderByOccurrence: { "occurrence-first": ["a", "b"], "occurrence-second": ["a", "b"] },
   });
   const makeAttempt = (id: string, occurrenceId: string) => ({ id, occurrenceId, sessionId: duplicatePlan.id, trackId: duplicatePlan.trackId, modeId: duplicatePlan.modeId, item: duplicatePlan.itemOrder[0]!.item, response: {}, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: duplicatePlan.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: duplicatePlan.startedAt, committedAt: duplicatePlan.startedAt });

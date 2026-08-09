@@ -1,5 +1,4 @@
-import { createCodingInterviewFamilyRuntime } from "../coding-interview";
-import { createCertificationFamilyRuntime } from "../certification";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import { OperationProjectionStore } from "../trainingLifecycle/operationProjectionStore";
 import {
   commitLearningStateReset,
@@ -17,11 +16,11 @@ import {
   installForegroundSessionTimerFacade,
   TrainingLifecycleUseCases,
   type SimulationFinalization,
+  type ContentPackageRuntimePort,
   type TrainingSessionIdentityPort,
   type TrainingSessionIdentityRequest,
   type TrainingLifecyclePorts,
 } from "../trainingLifecycle";
-import { bundledContentAvailabilityPort } from "../../content/application";
 import { getTrackRegistration, type ReviewMutationCommand, type ReviewQueueEntry, type TrainingSession } from "../../domain";
 import {
   getActiveTrainingSession,
@@ -42,6 +41,7 @@ export type AdjustableWallClock = WallClock & Readonly<{ advanceBy(milliseconds:
 export type TrainingLifecycleCompositionDependencies = Readonly<{
   wallClock?: WallClock;
   sessionIds?: TrainingSessionIdentityPort;
+  packages?: ContentPackageRuntimePort;
 }>;
 
 const realWallClock: WallClock = Object.freeze({ now: () => new Date().toISOString() });
@@ -85,14 +85,7 @@ export function composeTrainingLifecycleUseCases(dependencies: TrainingLifecycle
     clock: wallClock,
     sessionIds,
     tracks: { getTrackRegistration },
-    runtimes: {
-      resolve(familyId) {
-        if (familyId === "coding_interview") return createCodingInterviewFamilyRuntime();
-        if (familyId === "certification") return createCertificationFamilyRuntime();
-        throw new Error(`No family runtime is installed for ${familyId}.`);
-      },
-    },
-    content: bundledContentAvailabilityPort,
+    packages: dependencies.packages ?? contentPackageRuntimeOwner,
     repositories: {
       async getActiveSession() { return getActiveTrainingSession(); },
       async getSession(sessionId) { return (await getTrainingSessions()).value.find((session) => session.id === sessionId) ?? null; },

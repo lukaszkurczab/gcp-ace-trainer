@@ -99,6 +99,9 @@ aktywnego planu.
 | PO-055 | Handoff Storybook/code               | `resolved`                 | `CODE_CANONICAL`, repo authority i brak trwałej płatnej zależności Figma.     |
 | PO-056 | Niedostępny device smoke PLAT-01     | `resolved`                 | Brak środowiska jest wyjątkiem, nie sfabrykowanym wynikiem device testu.       |
 | PO-057 | Design-neutral RN migration PLAT-01  | `resolved`                 | Zamknięty wyjątek dla exact pełnego SHA i pięciu token-only substitutions.     |
+| PO-058 | Reviewed content two pointers         | `resolved`                 | Osiem wskazanych istniejących plików może stać się canonical content.          |
+| PO-059 | Zamknięte profile Free node           | `resolved`                 | Free package zamyka profil, nie pełne `validModes` tracku.                     |
+| PO-060 | Referencje PKG-04A Free experience    | `resolved`                 | Zatwierdzone minimalne stany Practice Hub, Setup i unavailable dla Free.       |
 
 ## PO-001 — Architektura marki
 
@@ -1758,3 +1761,33 @@ authorization.
 
 **Status:** `resolved`; doprecyzowuje PO-037, PO-046 i PO-048 bez zmiany
 Free/Premium boundary albo family runtime.
+
+## PO-060 — Referencje interakcji Free package w PKG-04A
+
+**Data:** 2026-08-10
+**Źródło:** bezpośrednia decyzja Product Ownera oraz adnotacja `Product Owner
+APPROVED` na Figma boardzie `PKG-04A • Free package interaction references v1`
+(TalkToFigma channel `wtk4hp8i`, root `10:2`).
+
+Product Owner zatwierdza minimalne referencje dla już rozstrzygniętego w
+`PO-059` doświadczenia Free. Referencje obejmują wyłącznie:
+
+- Practice Hub Coding Interview Free — primary Learn Approach 10, Guided
+  10/20/40, Custom 10 i evidence-conditioned Weak Area Review;
+- Practice Hub GCP ACE Free — primary Focus Practice 10, Focus 10/20/40 oraz
+  evidence-conditioned Weak Area Review i Quick Review;
+- Practice Setup dla Coding Custom — node-local mental unit, dokładnie 10 oraz
+  `afterEachAnswer` / `atSessionEnd` przez istniejący Guided mapping;
+- prawdziwy stan unavailable dla trybu poza profilem albo pustej kolejki review:
+  bez automatycznego zastępowania zwykłą praktyką, Premium, sibling node'em lub
+  globalnym compatibility fill.
+
+Zatwierdzenie nie wprowadza nowej marki, komponentu, runnera ani lifecycle.
+Widoczne zmiany PKG-04A mają wyłącznie ujawnić już zatwierdzone profile i
+zachować istniejącą gramatykę interakcji. Referencja repozytorium
+`docs/designs/pkg-04a-free-package-interactions/DESIGN.md` zachowuje Figma
+node IDs, zakres i powiązanie z bramką; nie tworzy zależności produkcyjnej od
+Figma.
+
+**Status:** `resolved`; jest konkretnym `APPROVED` design evidence dla
+`PKG-04A`, nie ogólnym zwolnieniem dla przyszłych zmian UI.

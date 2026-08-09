@@ -1,18 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createCodingInterviewFamilyRuntime } from "../src/application/coding-interview";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { validateBundledContent } from "../src/content/application";
+import { CodingInterviewFamilyRuntime } from "../src/application/coding-interview";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 import { createTrainingAttempt, type TrainingSession } from "../src/domain";
 import { resolveAlgorithmsConditionalReinsertPlan } from "../src/tracks/coding-interview";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
 async function prepareCustomPractice() {
-  await validateBundledContent();
-  const catalog = getAlgorithmContentCatalog();
-  const runtime = createCodingInterviewFamilyRuntime();
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
   const prepared = await runtime.prepare({
     attempts: [],
     modeId: "coding-interview-custom-practice",

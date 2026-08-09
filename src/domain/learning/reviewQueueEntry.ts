@@ -1,5 +1,6 @@
 import type { ReviewEvidence } from "./reviewEvidence";
 import type { TrackId } from "./trackIdentity";
+import { contentPackagePinsEqual } from "./contentPackagePin";
 
 export const REVIEW_REASONS = [
   "incorrect", "partial", "hint_used", "wrong_pattern", "wrong_strategy", "complexity_error",
@@ -23,7 +24,7 @@ export type ReviewQueueEntry = ReviewEvidence & Readonly<{
 
 export function retainReviewQueueEntryIdentity(existing: ReviewQueueEntry, updated: ReviewQueueEntry): ReviewQueueEntry {
   if (existing.trackId !== updated.trackId || existing.sourceItem.trackId !== updated.sourceItem.trackId ||
-    existing.sourceItem.itemId !== updated.sourceItem.itemId || existing.sourceItem.contentVersion !== updated.sourceItem.contentVersion) {
+    existing.sourceItem.itemId !== updated.sourceItem.itemId || existing.sourceItem.contentVersion !== updated.sourceItem.contentVersion || !contentPackagePinsEqual(existing.sourceItem.packagePin, updated.sourceItem.packagePin)) {
     throw new Error("A review update must preserve its canonical item identity.");
   }
   return {

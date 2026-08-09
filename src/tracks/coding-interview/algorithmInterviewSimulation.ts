@@ -11,7 +11,7 @@ import {
   type TrainingSessionDraft,
   type TrainingSessionResult,
 } from "../../domain";
-import type { AlgorithmRuntimeCatalog } from "./algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "./algorithmRuntimeCatalog";
 import { deriveAlgorithmReviewReasons, submitAlgorithmInteraction, validateAlgorithmInteractionItem } from "./algorithmInteractionHandlers";
 import { getAlgorithmQuestionEntries } from "./algorithmItems";
 import { ALGORITHM_MODE_IDS } from "./domain/algorithmModes";
@@ -111,7 +111,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     requestedLength: 40,
     actualLength: 40,
     currentItemIndex: 0,
-    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: { contentVersion: input.contentVersion, itemId: item.id, trackId: "coding-interview-dsa-problem-solving" } })),
+    itemOrder: selection.items.map((item, index) => ({ occurrenceId: `${input.sessionId}:occurrence:${index}`, item: input.catalog.toContentItemRef(item) })),
     optionOrderByOccurrence: Object.fromEntries(selection.items.map((item, index) => {
       const occurrenceId = `${input.sessionId}:occurrence:${index}`;
       return [occurrenceId, createAlgorithmOptionOrder(item, occurrenceId)];
@@ -119,6 +119,7 @@ export async function prepareAlgorithmsInterviewSimulation(input: Readonly<{
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
     contentVersion: input.contentVersion,
+    packagePin: input.catalog.getPackagePin(),
     taxonomyVersion: input.taxonomyVersion,
     status: "active",
     startedAt: input.startedAt,

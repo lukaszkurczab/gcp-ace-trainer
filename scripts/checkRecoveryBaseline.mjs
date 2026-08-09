@@ -8,8 +8,8 @@ function walk(directory) { return readdirSync(directory, { withFileTypes: true }
 function text(paths) { return paths.map((path) => readFileSync(path, "utf8")).join("\n"); }
 
 const sourcePaths = walk(join(root, "src")).filter((path) => /\.(?:ts|tsx)$/.test(path));
-const generatedArtifactPath = join(root, "src/content/bundled/generatedArtifacts.ts");
-const sourceCodePaths = sourcePaths.filter((path) => path !== generatedArtifactPath);
+const generatedPackagePath = join(root, "src/content/bundled/generatedFreeNodePackages.ts");
+const sourceCodePaths = sourcePaths.filter((path) => path !== generatedPackagePath);
 const activeSource = text(sourceCodePaths);
 const guardPath = join(root, "src/storage/repositories/trainingModelGuards.ts");
 const activeSourceWithoutDenyList = text(sourceCodePaths.filter((path) => path !== guardPath));

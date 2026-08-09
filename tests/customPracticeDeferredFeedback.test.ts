@@ -10,15 +10,15 @@ import {
   submitAlgorithmsPracticeResponse,
 } from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { validateBundledContent } from "../src/content/application";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
 import type { AlgorithmResponse } from "../src/tracks/coding-interview/domain";
 import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
-function responseFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+function responseFor(item: ReturnType<ReturnType<typeof getCodingPackageTestCatalog>["getItems"]>[number]): AlgorithmResponse {
   if (isAlgorithmChoiceQuestion(item)) {
     const wrong = item.interaction.options.find((option) => !item.interaction.acceptedOptionIds.includes(option.id));
     return { kind: "choice", selectedOptionIds: wrong ? [wrong.id] : item.interaction.acceptedOptionIds };
@@ -29,10 +29,10 @@ function responseFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatal
 }
 
 test("Custom Practice atSessionEnd withholds correctness, Reason, Details, and distractor explanations after every submit", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "atSessionEnd",
     modeId: "coding-interview-custom-practice",
@@ -57,10 +57,10 @@ test("Custom Practice atSessionEnd withholds correctness, Reason, Details, and d
 });
 
 test("Custom Practice atSessionEnd reloads its complete feedback from the canonical result after relaunch", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "atSessionEnd",
     modeId: "coding-interview-custom-practice",

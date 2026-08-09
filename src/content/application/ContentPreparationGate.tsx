@@ -7,7 +7,7 @@ import { composeTrainingLifecycleUseCases } from "../../application/bootstrap";
 import { getForegroundSessionTimerFacade } from "../../application/trainingLifecycle";
 import { handleRuntimeAuditabilityUrl } from "../../application/runtimeAuditability/developmentResetCommand";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
-import { validateBundledContent } from "./validateBundledContent";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
 export type ContentPreparationState =
   | { kind: "loading" }
@@ -33,7 +33,7 @@ export function ContentPreparationGate({ children }: { children: ReactNode }) {
       const initialUrl = __DEV__ && !initialUrlHandled.current ? await Linking.getInitialURL() : null;
       initialUrlHandled.current = true;
       return bootstrapApplication(
-        validateBundledContent,
+        () => contentPackageRuntimeOwner.verifyBundledPackages(),
         async () => {
           if (!lifecycle) throw new Error("Training lifecycle composition was not installed.");
           const session = await lifecycle.resumeActiveSession();

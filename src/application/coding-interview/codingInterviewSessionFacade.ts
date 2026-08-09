@@ -10,8 +10,7 @@ import {
   type PracticeCompletionCommandResult,
   type PracticeFinalization,
 } from "../trainingLifecycle";
-import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
-import { getBundledContentAvailability } from "../../content/application/validateBundledContent";
+import { contentPackageRuntimeOwner } from "../contentPackageRuntimeOwner";
 import type { ContentItemRef, TrainingSession } from "../../domain";
 import {
   buildAlgorithmInteractionViewModel,
@@ -24,6 +23,7 @@ import type { AlgorithmsLifecyclePreparationRequest } from "./CodingInterviewFam
 import type { PracticeDurableOperationState, SimulationDurableOperationState } from "../trainingLifecycle";
 import { TrainingApplicationFailure } from "../trainingLifecycle";
 import type { AlgorithmFeedbackDocument } from "../../content/contracts";
+import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
 
 const saveAndContinueInFlight = new Map<string, Promise<AlgorithmsSimulationProjection>>();
 
@@ -84,6 +84,7 @@ export type AlgorithmsSessionResultProjection = Readonly<{
   feedbackItems: readonly Readonly<{
     correctness: "correct" | "partial" | "incorrect";
     details: AlgorithmFeedbackDocument;
+    item: ContentItemRef;
     itemId: string;
     occurrenceId: string;
     ordinal: number;
@@ -119,15 +120,7 @@ export async function startAlgorithmsSession(input: StartAlgorithmsSessionInput)
 
 /** Declared profile identity only; presentation never reinterprets a topic as a simulation profile. */
 export function getAlgorithmsInterviewSimulationEntry(): AlgorithmsInterviewSimulationEntry {
-  const availability = getBundledContentAvailability("coding-interview-dsa-problem-solving");
-  if (availability.kind !== "available" || !availability.declaredModes.includes(ALGORITHM_MODE_IDS.interviewSimulation)) {
-    throw new Error("Algorithms Interview Simulation content is unavailable.");
-  }
-  const profiles = getAlgorithmContentCatalog().bank.simulationProfiles;
-  if (profiles.length !== 1 || profiles[0]?.totalOccurrences !== 40) {
-    throw new Error("Algorithms Interview Simulation requires exactly one validated declared profile.");
-  }
-  return Object.freeze({ trackId: "coding-interview-dsa-problem-solving", modeId: ALGORITHM_MODE_IDS.interviewSimulation, profileId: profiles[0].profileId, requestedLength: 40 });
+  throw new Error("Algorithms Interview Simulation is excluded from the bundled Free package profile.");
 }
 
 export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPracticeProjection> {
@@ -135,7 +128,7 @@ export async function getAlgorithmsPracticeProjection(): Promise<AlgorithmsPract
   if (session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("The active Algorithms session is an Interview Simulation.");
   const occurrence = session.itemOrder[session.currentItemIndex];
   if (!occurrence) throw new Error("The active Algorithms practice occurrence is unavailable.");
-  const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as AlgorithmQuestion;
   const lifecycle = getTrainingLifecycleUseCases();
   const pending = await lifecycle.getPendingMutationProjection(session.id);
   const materializedAttempt = attempts.value.find((candidate) => candidate.sessionId === session.id && candidate.occurrenceId === occurrence.occurrenceId);
@@ -241,7 +234,7 @@ export async function getAlgorithmsSimulationProjection(): Promise<AlgorithmsSim
   const index = session.currentItemIndex;
   if (!Number.isInteger(index) || index < 0 || index >= session.itemOrder.length) throw new Error("Interview Simulation navigator position is outside the immutable session.");
   const occurrence = session.itemOrder[index]!;
-  const question = getAlgorithmContentCatalog().getItemById(occurrence.item.itemId);
+  const question = await contentPackageRuntimeOwner.resolveItem(occurrence.item) as AlgorithmQuestion;
   const time = await getForegroundSessionTimerFacade().projection(session);
   if (time.remainingForegroundMs === undefined) throw new Error("Interview Simulation countdown projection is unavailable.");
   const operation = await lifecycle.getSimulationOperationState(session);
@@ -307,7 +300,7 @@ export async function saveAlgorithmsSimulationResponse(input: Readonly<{ occurre
   if (session.modeId !== ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Only an Interview Simulation has a persisted response draft.");
   const draft = await requireSimulationDraft(session.id);
   const nextDraft = mutateAlgorithmsInterviewSimulationDraft({
-    entries: getAlgorithmContentCatalog().getItems().map((question) => ({ question, roadmapNodeId: question.taxonomy.roadmapNodeId })),
+    entries: ((await contentPackageRuntimeOwner.resolveExact(session.packagePin)).profile.items as readonly AlgorithmQuestion[]).map((question) => ({ question, roadmapNodeId: question.taxonomy.roadmapNodeId })),
     occurrenceId: input.occurrenceId,
     response: input.response,
     session,
@@ -465,7 +458,7 @@ export async function getAlgorithmsPracticeResultProjection(sessionId: string): 
       requestedLength: session.requestedLength,
     }),
     feedbackItems: feedbackTiming === "atSessionEnd"
-      ? completedFeedbackItems(session, attempts.value)
+      ? await completedFeedbackItems(session, attempts.value)
       : Object.freeze([]),
     score: resultScore(result.evidence.details),
   });
@@ -548,18 +541,18 @@ function feedbackTimingFromSession(session: TrainingSession): "afterEachAnswer" 
   throw new Error("Algorithms session is missing its canonical feedback timing.");
 }
 
-function completedFeedbackItems(session: TrainingSession, attempts: readonly import("../../domain").TrainingAttempt<unknown>[]): AlgorithmsSessionResultProjection["feedbackItems"] {
+async function completedFeedbackItems(session: TrainingSession, attempts: readonly import("../../domain").TrainingAttempt<unknown>[]): Promise<AlgorithmsSessionResultProjection["feedbackItems"]> {
   const attemptsByOccurrenceId = new Map<string, import("../../domain").TrainingAttempt<unknown>>();
   for (const attempt of attempts) {
     if (attempt.sessionId !== session.id) continue;
     if (attemptsByOccurrenceId.has(attempt.occurrenceId)) throw new Error("Completed Algorithms session has duplicate attempts for one occurrence.");
     attemptsByOccurrenceId.set(attempt.occurrenceId, attempt);
   }
-  const catalog = getAlgorithmContentCatalog();
+  const questions = await Promise.all(session.itemOrder.map((occurrence) => contentPackageRuntimeOwner.resolveItem(occurrence.item) as Promise<AlgorithmQuestion>));
   return Object.freeze(session.itemOrder.flatMap((occurrence, index) => {
     const attempt = attemptsByOccurrenceId.get(occurrence.occurrenceId);
     if (!attempt) return [];
-    const question = catalog.getItemById(occurrence.item.itemId);
+    const question = questions[index]!;
     const feedback = composeCommittedAlgorithmPracticeFeedback({
       question,
       attempt: attempt as import("../../domain").TrainingAttempt<AlgorithmResponse>,
@@ -567,6 +560,7 @@ function completedFeedbackItems(session: TrainingSession, attempts: readonly imp
     return [Object.freeze({
       correctness: feedback.correctness,
       details: feedback.details,
+      item: occurrence.item,
       itemId: occurrence.item.itemId,
       occurrenceId: occurrence.occurrenceId,
       ordinal: index + 1,

@@ -7,9 +7,10 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { AlgorithmFeedbackDocumentBlock } from "./AlgorithmFeedbackDocumentBlock";
+import type { ContentItemRef } from "../../domain";
 
 
-export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback: PracticeFeedback; itemId: string }>) {
+export function PracticeFeedbackBlock({ feedback, item, itemId }: Readonly<{ feedback: PracticeFeedback; item: ContentItemRef; itemId: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -30,7 +31,7 @@ export function PracticeFeedbackBlock({ feedback, itemId }: Readonly<{ feedback:
         <Text style={styles.detailsLabel}>{t("Details")}</Text>
         <Text style={styles.detailsIndicator}>{detailsOpen ? "−" : "+"}</Text>
       </Pressable>
-      {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} /></View> : null}
+      {detailsOpen ? <View style={styles.details} testID={runtimeSelectors.session.details(itemId)}><AlgorithmFeedbackDocumentBlock document={feedback.details} item={item} /></View> : null}
     </View>
   );
 }

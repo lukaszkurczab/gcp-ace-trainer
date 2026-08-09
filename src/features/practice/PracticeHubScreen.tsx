@@ -17,12 +17,13 @@ import {
   SectionHeader,
 } from "../../components";
 import { ROUTES } from "../../constants/routes";
-import { getTrackDisplay, type TrackId } from "../../domain";
+import { contentPackagePinsEqual, getTrackDisplay, type TrackId } from "../../domain";
 import type { TrainingAttempt } from "../../domain";
 import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import {
   loadActiveTrackId as getActiveTrackId,
   loadTrainingAttempts as getTrainingAttempts,
+  loadReviewQueueItems,
 } from "../../application/learningReadModels";
 import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
 import { spacing, typography } from "../../theme";
@@ -36,6 +37,7 @@ import { useAppPreferences, useThemedStyles } from "../../preferences";
 import type { AppColors } from "../../theme";
 import { runtimeSelectors } from "../../testing/runtimeSelectors";
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
 import {
   buildPracticeModes,
@@ -58,6 +60,7 @@ type PracticeHubScreenProps = NativeStackScreenProps<
 
 type PracticeHubData = {
   trainingAttempts: TrainingAttempt[];
+  hasReviewEvidence: boolean;
 };
 
 const TAB_BAR_RESERVED_HEIGHT = 128;
@@ -72,6 +75,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   const [readError, setReadError] = useState<string | null>(null);
   const [data, setData] = useState<PracticeHubData>({
     trainingAttempts: [],
+    hasReviewEvidence: false,
   });
 
   useFocusEffect(
@@ -82,14 +86,26 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
 
       async function loadData() {
         try {
-          const [savedTrackId, trainingAttemptsResult] = await Promise.all([
+          const [savedTrackId, trainingAttemptsResult, reviewResult] = await Promise.all([
             getActiveTrackId(),
             getTrainingAttempts(),
+            loadReviewQueueItems(),
           ]);
 
           if (isActive) {
+            const packagePin = savedTrackId
+              ? contentPackageRuntimeOwner.getPreparedDiscovery(savedTrackId).package.packagePin
+              : null;
+            const now = Date.now();
             setActiveTrackId(savedTrackId ?? null);
-            setData({ trainingAttempts: trainingAttemptsResult.value });
+            setData({
+              trainingAttempts: trainingAttemptsResult.value,
+              hasReviewEvidence: packagePin !== null && reviewResult.value.some((entry) =>
+                entry.trackId === savedTrackId &&
+                contentPackagePinsEqual(entry.sourceItem.packagePin, packagePin) &&
+                Date.parse(entry.dueAt) <= now
+              ),
+            });
             setHasLoadedData(true);
           }
         } catch (error) {
@@ -112,21 +128,23 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
   if (readError) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t(readError)} /></Screen>;
   if (!activeTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(activeTrackId);
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice Hub")} /><EmptyState title={t("Practice is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
   const topic = resolvePracticeTopic({
     activeTrackId: activeTrack.id,
     routeTopicId: route.params?.topicId,
     trainingAttempts: data.trainingAttempts,
   });
-  const modes = buildPracticeModes(activeTrack);
+  const modes = buildPracticeModes(activeTrack, data.hasReviewEvidence);
   function startSession(mode?: PracticeSessionMode | CertificationModeId) {
     const resolvedMode = mode ?? (
       isCodingInterviewTrack
-        ? ALGORITHM_MODE_IDS.guidedPractice
-        : "certification-diagnostic-baseline"
+        ? ALGORITHM_MODE_IDS.learnApproach
+        : "certification-focus-practice"
     );
     if (activeTrack.id === "google-cloud-associate-cloud-engineer" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
-      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", trackId: activeTrack.id });
+      navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
       return;
     }
     if (activeTrack.id === "google-cloud-associate-cloud-engineer" && resolvedMode === "certification-quick-review") {
@@ -215,7 +233,7 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
                 navigation.navigate(
                   ROUTES.PRACTICE_SETUP,
                   buildPracticeSessionConfig({
-                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-diagnostic-baseline" as const }),
+                    ...(isCodingInterviewTrack ? { feedbackMode: "afterEachAnswer" as const, mode: ALGORITHM_MODE_IDS.customPractice } : { mode: "certification-focus-practice" as const }),
                     source: "practiceHub",
                     topicId: topic.id,
                     trackId: activeTrack.id,

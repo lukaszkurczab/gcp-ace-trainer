@@ -20,8 +20,8 @@ import {
   submitCertificationPracticeResponse,
 } from "../src/application/certification";
 import type { PracticeCompletionCommandResult, PracticeFinalization } from "../src/application/trainingLifecycle";
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
 import { STORAGE_KEYS } from "../src/storage/keys";
 import {
@@ -147,7 +147,7 @@ type FinalFeedbackHarness = Readonly<{
   recover(expectedSessionId: string): Promise<PracticeFinalization>;
 }>;
 
-function correctAlgorithmResponse(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+function correctAlgorithmResponse(item: ReturnType<ReturnType<typeof getCodingPackageTestCatalog>["getItems"]>[number]): AlgorithmResponse {
   if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
   if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
   if (isAlgorithmComplexityQuestion(item)) return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(item.interaction.checkedDimensions.map((dimension) => [dimension, item.interaction.acceptedValuesByDimension[dimension]![0]!])) };
@@ -172,7 +172,7 @@ function installCompletionFixture(storage: CompletionFaultStorage, suffix: numbe
 
 async function algorithmsAtFinalFeedback(storage: CompletionFaultStorage, suffix: number): Promise<FinalFeedbackHarness> {
   installCompletionFixture(storage, suffix);
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const prepared = await startAlgorithmsSession({
     feedbackMode: "afterEachAnswer",
     modeId: "coding-interview-custom-practice",
@@ -284,17 +284,17 @@ async function assertCompletionFaultMatrix(
 }
 
 test("Algorithms completion handoff classifies and recovers every real storage boundary", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   await assertCompletionFaultMatrix(algorithmsAtFinalFeedback, 100);
 });
 
 test("Certification completion handoff classifies and recovers every real storage boundary", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   await assertCompletionFaultMatrix(certificationAtFinalFeedback, 200);
 });
 
 test("Algorithms verified handoff survives the first summary projection read failure without a cache or completion fallback", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const storage = new CompletionFaultStorage();
   const harness = await algorithmsAtFinalFeedback(storage, 300);
   storage.armPostClearResultRead(harness.sessionId);

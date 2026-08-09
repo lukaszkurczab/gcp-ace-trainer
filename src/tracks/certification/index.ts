@@ -1,4 +1,4 @@
-export * from "./certificationContentCatalog";
+export * from "./certificationRuntimeCatalog";
 export * from "./certificationReview";
 export * from "./certificationScoring";
 export * from "./certificationProjections";

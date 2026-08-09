@@ -8,6 +8,7 @@ import {
 } from "../../tracks/coding-interview";
 import type { AlgorithmSelectionScope } from "../../tracks/coding-interview/algorithmSessionSelection";
 import { CERTIFICATION_PRACTICE_MODE_IDS, getCertificationMode, isCertificationPracticeModeId, type CertificationDomain, type CertificationPracticeModeId } from "../../tracks/certification";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 
 export type PracticeSessionSource =
   | "home"
@@ -59,14 +60,16 @@ export function buildPracticeSessionConfig(
   input: PracticeSessionConfigInput,
 ): PracticeSessionRouteParams {
   if (input.trackId === CODING_INTERVIEW_TRACK_ID) {
-    const mode = input.mode ?? ALGORITHM_MODE_IDS.guidedPractice;
+    const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).profile;
+    const mode = input.mode ?? packageProfile.primaryEntry.modeId as AlgorithmModeId;
     if (!isAlgorithmModeId(mode)) {
       throw new Error(`Unknown Algorithms mode id: ${mode}`);
     }
 
     const profile = getAlgorithmMode(mode).profile;
-    const sessionLength = input.sessionLength ?? profile.sessionLength;
-    if (!profile.supportedLengths.includes(sessionLength)) {
+    const packageMode = packageProfile.getMode(mode);
+    const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
+    if (!packageMode.requestedLengths.includes(sessionLength)) {
       throw new Error(`Algorithms mode ${mode} does not support session length ${sessionLength}.`);
     }
     if (mode === ALGORITHM_MODE_IDS.customPractice && input.feedbackMode === undefined) {
@@ -104,12 +107,14 @@ export function buildPracticeSessionConfig(
     };
   }
 
-  const mode = input.mode ?? "certification-diagnostic-baseline";
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(input.trackId).profile;
+  const mode = input.mode ?? packageProfile.primaryEntry.modeId as CertificationPracticeSessionMode;
   if (!certificationPracticeModes.some((candidate) => candidate === mode)) {
     throw new Error(`Unknown Certification practice mode id: ${mode}`);
   }
 
   const definition = getCertificationMode(mode);
+  const packageMode = packageProfile.getMode(mode);
   if (mode === "certification-diagnostic-baseline") {
     if (input.sessionLength !== undefined || input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Diagnostic Baseline does not render or accept optional setup controls.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength: 40, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
@@ -117,26 +122,26 @@ export function buildPracticeSessionConfig(
   if (mode === "certification-focus-practice") {
     if (!isCloudTopicId(input.topicId)) throw new Error("Certification Focus Practice requires an explicitly selected Cloud domain.");
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Focus Practice does not render or accept undeclared setup controls.");
-    const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
-    if (!sessionLength || ![10, 20, 40].includes(sessionLength)) throw new Error("Certification Focus Practice supports 10, 20, or 40 questions.");
+    const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
+    if (!sessionLength || !packageMode.requestedLengths.includes(sessionLength)) throw new Error("Certification Focus Practice length is unavailable in this package.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-scenario-practice") {
     if (!input.competencyId?.trim()) throw new Error("Certification Scenario Practice requires an explicitly selected competency.");
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined) throw new Error("Certification Scenario Practice does not render or accept undeclared setup controls.");
-    const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
+    const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || ![10, 20, 40].includes(sessionLength)) throw new Error("Certification Scenario Practice supports 10, 20, or 40 questions.");
     return { competencyId: input.competencyId, feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: input.topicId, trackId: input.trackId };
   }
   if (mode === "certification-weak-area-review") {
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Weak Area Review does not render or accept undeclared setup controls.");
-    const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
+    const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || ![10, 20].includes(sessionLength)) throw new Error("Certification Weak Area Review supports 10 or 20 questions.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
   if (mode === "certification-mixed-practice") {
     if (input.feedbackMode !== undefined || input.reviewBehaviorEnabled !== undefined || input.reviewItemRefs !== undefined || input.reviewSource !== undefined || input.algorithmScope !== undefined || input.competencyId !== undefined || input.topicId) throw new Error("Certification Mixed Practice does not render or accept undeclared setup controls.");
-    const sessionLength = input.sessionLength ?? (definition.defaultQuestionCount as PracticeSessionLength | undefined);
+    const sessionLength = input.sessionLength ?? packageMode.defaultRequestedLength as PracticeSessionLength;
     if (!sessionLength || ![10, 20, 40].includes(sessionLength)) throw new Error("Certification Mixed Practice supports 10, 20, or 40 questions.");
     return { feedbackMode: "afterEachAnswer", mode, reviewBehaviorEnabled: false, sessionLength, source: input.source ?? "practiceHub", topicId: "", trackId: input.trackId };
   }
@@ -154,6 +159,7 @@ export function buildCertificationPracticeResumeRoute(session: TrainingSession):
     throw new Error("Certification Practice resume requires an ordinary Cloud Certification session.");
   }
   if (!session.id.trim()) throw new Error("Certification Practice resume requires an exact session identity.");
+  contentPackageRuntimeOwner.getPreparedDiscovery(session.trackId).profile.getMode(session.modeId);
   assertOrdinaryCertificationConfiguration(session);
 
   const exact = (params: PracticeSessionRouteParams): PracticeSessionRouteParams => Object.freeze({

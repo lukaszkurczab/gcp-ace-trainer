@@ -77,13 +77,13 @@ export function prepareAlgorithmsConditionalReinsertPlan(input: AlgorithmsCondit
     }));
     const reviewedVariant = sortedEntries
       .find((candidate) => candidate.question.id !== sourceEntry.question.id && compatibleIds.has(candidate.question.id) &&
-        reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate, input.session.contentVersion))) &&
+        reviewedKeys.has(contentItemRefKey(toContentItemRef(candidate, input.session))) &&
         !planItemIds.has(candidate.question.id) && !reservedReviewedVariantIds.has(candidate.question.id));
     const slotId = `${input.session.id}:conditional:${sourceIndex + 4}`;
     const ordinaryBranch = branch(ordinaryOccurrence, input.session.optionOrderByOccurrence[ordinaryOccurrence.occurrenceId] ?? []);
     const alternativeOccurrenceId = reviewedVariant ? `${slotId}:reviewed` : `${slotId}:exact`;
     const alternativeBranch = reviewedVariant
-      ? branch({ occurrenceId: alternativeOccurrenceId, item: toContentItemRef(reviewedVariant, input.session.contentVersion) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
+      ? branch({ occurrenceId: alternativeOccurrenceId, item: toContentItemRef(reviewedVariant, input.session) }, requiredOptionOrder(reviewedVariant.question.id, input.optionOrderByItemId))
       : branch({ occurrenceId: alternativeOccurrenceId, item: sourceOccurrence.item }, input.session.optionOrderByOccurrence[sourceOccurrence.occurrenceId] ?? []);
     if (reviewedVariant) reservedReviewedVariantIds.add(reviewedVariant.question.id);
     slots.push(Object.freeze({
@@ -212,12 +212,12 @@ function branch(occurrence: TrainingSessionItemOccurrence, optionOrder: readonly
   return Object.freeze({ occurrence: freezeOccurrence(occurrence), optionOrder: Object.freeze([...optionOrder]) });
 }
 
-function toContentItemRef(entry: AlgorithmQuestionEntry, contentVersion: string): ContentItemRef {
-  return Object.freeze({ contentVersion, itemId: entry.question.id, trackId: "coding-interview-dsa-problem-solving" });
+function toContentItemRef(entry: AlgorithmQuestionEntry, session: TrainingSession): ContentItemRef {
+  return Object.freeze({ contentVersion: session.contentVersion, itemId: entry.question.id, trackId: "coding-interview-dsa-problem-solving", packagePin: session.packagePin });
 }
 
 function contentItemRefKey(ref: ContentItemRef): string {
-  return `${ref.trackId}:${ref.contentVersion}:${ref.itemId}`;
+  return `${ref.trackId}:${ref.packagePin.packageIdentity}:${ref.packagePin.packageVersion}:${ref.packagePin.contentReleaseId}:${ref.contentVersion}:${ref.itemId}`;
 }
 
 function compareEntries(left: AlgorithmQuestionEntry, right: AlgorithmQuestionEntry): number {

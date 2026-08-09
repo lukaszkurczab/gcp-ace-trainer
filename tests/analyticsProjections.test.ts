@@ -4,10 +4,10 @@ import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
 import { buildCertificationExamSummaries } from "../src/tracks/certification";
 import { makeCompletedExamProjectionInputs, makeQuestion } from "./fixtures";
 
-test("analytics derives exam trend, raw score summaries, domain performance, and weak tags", () => {
+test("analytics derives exam trend, raw score summaries, domain performance, and weak tags", async () => {
   const questions = [makeQuestion({ id: "one", domain: "operations", tags: ["logging"] }), makeQuestion({ id: "two", domain: "operations", tags: ["logging"] }), makeQuestion({ id: "three", domain: "operations", tags: ["logging"] })];
-  const { session, attempts } = makeCompletedExamProjectionInputs(questions, { one: ["a"], two: ["b"], three: ["b"] });
-  const summary = buildCertificationExamSummaries([session], attempts)[0]!;
+  const { session, attempts, resolveItem } = makeCompletedExamProjectionInputs(questions, { one: ["a"], two: ["b"], three: ["b"] });
+  const summary = (await buildCertificationExamSummaries([session], attempts, resolveItem))[0]!;
   const analytics = buildAnalyticsData([summary], []);
   assert.equal(analytics.summary.totalCompletedExams, 1);
   assert.equal(analytics.summary.averageExamScore, 33);

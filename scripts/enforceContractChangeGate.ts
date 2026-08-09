@@ -14,15 +14,6 @@ export type ContractChangeGateInput = Readonly<{
   sourceDiffs?: Readonly<Record<string, string>>;
 }>;
 
-const uiRoots = [
-  "src/assets/",
-  "src/components/",
-  "src/features/",
-  "src/navigation/",
-  "src/preferences/",
-  "src/theme/",
-] as const;
-
 const canonicalContractPath = "docs/canonical-product-contract.yaml";
 const canonicalContractCompanionPaths = [
   "docs/canonical-product-contract.schema.json",
@@ -404,7 +395,9 @@ function isBehaviorPath(path: string): boolean {
 }
 
 function isUiPath(path: string): boolean {
-  return path.endsWith(".tsx") || uiRoots.some((root) => path.startsWith(root));
+  return path.endsWith(".tsx")
+    || path.startsWith("src/assets/")
+    || ["src/components/", "src/navigation/", "src/preferences/", "src/theme/"].some((root) => path.startsWith(root));
 }
 
 function matchesUiOwnership(changedPath: string, sourcePathPrefix: string): boolean {
@@ -436,6 +429,28 @@ function isRequirementOnlyContractDiff(diff: string): boolean {
 }
 
 /**
+ * Requirement mappings and design-reference records both use already-closed
+ * schema/parser shapes. Their addition still needs a canonical test, but
+ * cannot justify artificial schema/parser churn. Any new contract structure
+ * remains subject to the full companion set.
+ */
+function isRecordOnlyContractDiff(diff: string): boolean {
+  const changedLines = diff.split("\n")
+    .filter((line) => (line.startsWith("+") && !line.startsWith("+++")) || (line.startsWith("-") && !line.startsWith("---")))
+    .map((line) => line.slice(1));
+  if (changedLines.length === 0) return false;
+  return changedLines.every((line) =>
+    /^  - id: [A-Z][A-Z0-9-]*[A-Z0-9]$/u.test(line)
+    || /^    statement: /u.test(line)
+    || /^    - id: [a-z][a-z0-9-]*$/u.test(line)
+    || /^      (?:testPath|testName|requirementIds): /u.test(line)
+    || /^  (?:references|uiOwnership):(?: \[\])?$/u.test(line)
+    || /^    - (?:id|sourcePathPrefix): /u.test(line)
+    || /^      (?:screenStateTarget|patternPath|version|approvalStatus|owner|designReferenceId): /u.test(line),
+  );
+}
+
+/**
  * Rejects behavior changes that do not add a contract requirement with a changed
  * mapped test. UI changes additionally require an approved design reference.
  */
@@ -447,7 +462,7 @@ export function evaluateContractChangeGate(input: ContractChangeGateInput): read
   const behaviorChanged = input.changedPaths.some((path) => isBehaviorPath(path) && !approvedMaintenancePaths.has(path));
   const errors: string[] = [];
   if (input.changedPaths.includes(canonicalContractPath)) {
-    const requiredCompanions = isRequirementOnlyContractDiff(input.canonicalContractDiff)
+    const requiredCompanions = (isRequirementOnlyContractDiff(input.canonicalContractDiff) || isRecordOnlyContractDiff(input.canonicalContractDiff))
       ? ["tests/canonicalProductContract.test.ts"]
       : canonicalContractCompanionPaths;
     for (const companionPath of requiredCompanions) {

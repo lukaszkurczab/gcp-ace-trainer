@@ -1,4 +1,6 @@
 import {
+  contentPackagePinsEqual,
+  type ContentPackagePin,
   type EvidenceRef,
   type ReviewQueueEntry,
   type TrainingAttempt,
@@ -8,7 +10,6 @@ import {
   getRoadmapNodesWithActiveItems,
   type AlgorithmQuestionEntry,
 } from "./algorithmItems";
-import { getAlgorithmContentCatalog } from "../../content/catalogRepository";
 import type { AlgorithmQuestion } from "./algorithmQuestionTypes";
 import {
   ALGORITHM_ROADMAP,
@@ -59,9 +60,10 @@ export type AlgorithmWeakAreaRecommendation = {
 
 export type BuildAlgorithmProgressFactsInput = Readonly<{
   attempts: readonly TrainingAttempt[];
-  content?: Readonly<{
+  content: Readonly<{
     contentVersion: string;
     items: readonly AlgorithmQuestion[];
+    packagePin: ContentPackagePin;
   }>;
   now?: string;
   reviewQueueItems?: readonly ReviewQueueEntry[];
@@ -71,7 +73,7 @@ export type BuildAlgorithmProgressFactsInput = Readonly<{
 export function buildAlgorithmProgressFacts(
   input: BuildAlgorithmProgressFactsInput,
 ): AlgorithmProgressFacts {
-  const content = input.content ?? getInstalledAlgorithmProgressContent();
+  const content = input.content;
   const items = content.items;
   const contentVersion = content.contentVersion;
   const roadmapNodes = input.roadmapNodes ?? ALGORITHM_ROADMAP.nodes;
@@ -82,6 +84,7 @@ export function buildAlgorithmProgressFacts(
   const algorithmAttempts = input.attempts.filter((attempt) =>
     attempt.trackId === "coding-interview-dsa-problem-solving" &&
     attempt.item.contentVersion === contentVersion &&
+    contentPackagePinsEqual(attempt.item.packagePin, content.packagePin) &&
     questionIds.has(attempt.item.itemId),
   );
   const latestAttemptByItemId = getLatestAttemptByItemId(algorithmAttempts);
@@ -93,6 +96,7 @@ export function buildAlgorithmProgressFacts(
       latestAttemptByItemId,
       reviewQueueItems,
       contentVersion,
+      content.packagePin,
       now,
     ));
   const activeNode = getActiveNode(nodeProgress, entries, algorithmAttempts);
@@ -110,28 +114,21 @@ export function buildAlgorithmProgressFacts(
   };
 }
 
-function getInstalledAlgorithmProgressContent(): NonNullable<BuildAlgorithmProgressFactsInput["content"]> {
-  const catalog = getAlgorithmContentCatalog();
-
-  return {
-    contentVersion: catalog.getContentVersion(),
-    items: catalog.getItems(),
-  };
-}
-
 export function buildAlgorithmWeakAreaRecommendation(
   attempts: readonly TrainingAttempt[],
-  items: readonly AlgorithmQuestion[] = getAlgorithmContentCatalog().getItems(),
+  items: readonly AlgorithmQuestion[],
+  contentVersion: string,
+  packagePin: ContentPackagePin,
   roadmapNodes: readonly AlgorithmRoadmapNode[] = ALGORITHM_ROADMAP.nodes,
   preferredRoadmapNodeId?: AlgorithmRoadmapNodeId,
 ): AlgorithmWeakAreaRecommendation {
   const entries = getKnownRoadmapEntries(items, roadmapNodes);
-  const contentVersion = getAlgorithmContentCatalog().getContentVersion();
   const defaultNodeId = getDefaultRoadmapNodeId(entries, roadmapNodes, preferredRoadmapNodeId);
   const latestAttemptByItemId = getLatestAttemptByItemId(
     attempts.filter((attempt) =>
       attempt.trackId === "coding-interview-dsa-problem-solving" &&
-      attempt.item.contentVersion === contentVersion,
+      attempt.item.contentVersion === contentVersion &&
+      contentPackagePinsEqual(attempt.item.packagePin, packagePin),
     ),
   );
   const statsByNodeId = buildWeakAreaStats(entries, latestAttemptByItemId);
@@ -179,6 +176,7 @@ function buildNodeProgress(
   latestAttemptByItemId: ReadonlyMap<string, TrainingAttempt>,
   reviewQueueItems: readonly ReviewQueueEntry[],
   contentVersion: string,
+  packagePin: ContentPackagePin,
   now: string,
 ): AlgorithmRoadmapNodeProgress {
   const questions = entries
@@ -200,6 +198,7 @@ function buildNodeProgress(
     item.trackId === "coding-interview-dsa-problem-solving" &&
     item.sourceItem.trackId === "coding-interview-dsa-problem-solving" &&
     item.sourceItem.contentVersion === contentVersion &&
+    contentPackagePinsEqual(item.sourceItem.packagePin, packagePin) &&
     questionIds.has(item.sourceItem.itemId) &&
     item.dueAt <= now,
   );

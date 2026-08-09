@@ -9,7 +9,9 @@ import type {
   TrainingSessionDraft,
   TrainingSessionResult,
   JournalOperation,
+  ContentPackagePin,
 } from "../../domain";
+import type { VerifiedContentPackage } from "../../content/contracts";
 
 export const APPLICATION_FAILURE_CODES = [
   "unknown_track",
@@ -94,13 +96,16 @@ export interface TrainingFamilyRuntime {
   queryReview(input: Readonly<{ trackId: TrackId; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown>;
 }
 
-export interface FamilyRuntimeRegistryPort { resolve(familyId: TrackFamilyId): TrainingFamilyRuntime; }
+export type ContentPackageRuntimeResolution = Readonly<{
+  package: VerifiedContentPackage;
+  runtime: TrainingFamilyRuntime;
+}>;
 
-/** Content ownership stays outside family runtimes and is checked per track. */
-export interface BundledContentAvailabilityPort {
-  requireAvailable(trackId: TrackId, modeId: string): Promise<void>;
-  assertPreparedSession(session: TrainingSession): Promise<void>;
-  assertActiveSession(session: TrainingSession): Promise<void>;
+/** Sole verified package-to-family-runtime authority for preparation, exact resume, review, and discovery. */
+export interface ContentPackageRuntimePort {
+  resolveForPreparation(input: Readonly<{ trackId: TrackId; familyId: TrackFamilyId; modeId: string }>): Promise<ContentPackageRuntimeResolution>;
+  resolveExact(pin: ContentPackagePin): Promise<ContentPackageRuntimeResolution>;
+  resolveForDiscovery(trackId: TrackId, familyId: TrackFamilyId): Promise<ContentPackageRuntimeResolution>;
 }
 
 export interface TrainingLifecycleRepositoryPort {
@@ -153,8 +158,7 @@ export type TrainingLifecyclePorts = Readonly<{
   clock: Readonly<{ now(): string }>;
   sessionIds: TrainingSessionIdentityPort;
   tracks: TrackRegistryPort;
-  runtimes: FamilyRuntimeRegistryPort;
-  content: BundledContentAvailabilityPort;
+  packages: ContentPackageRuntimePort;
   repositories: TrainingLifecycleRepositoryPort;
   mutations: TrainingMutationCoordinatorPort;
   runtimeAuditability?: RuntimeAuditabilityPort;

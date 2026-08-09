@@ -16,6 +16,8 @@ import {
   type TrainingSessionDraftResponse,
   type TrainingSessionResult,
   type ForegroundTimerState,
+  type ContentPackagePin,
+  contentPackagePinsEqual,
 } from "../../domain";
 
 export function isTrainingSessionArray(value: unknown): value is TrainingSession[] {
@@ -89,14 +91,14 @@ export function isReviewQueueEntryArray(value: unknown): value is ReviewQueueEnt
 
 export function isTrainingSession(value: unknown): value is TrainingSession {
   if (!isRecord(value)) return false;
-  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
+  if (!hasOnlyKeys(value, ["id", "trackId", "modeId", "configurationSnapshot", "requestedLength", "actualLength", "currentItemIndex", "itemOrder", "optionOrderByOccurrence", "conditionalReinsertSlots", "activeForegroundMs", "contentVersion", "packagePin", "taxonomyVersion", "planFingerprint", "status", "startedAt", "completedAt"])) return false;
   if ("itemRefs" in value || value.status === "expired") return false;
   if (!(isNonEmptyString(value.id) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
     isNonEmptyString(value.modeId) && isConfigurationSnapshot(value.configurationSnapshot) && typeof value.requestedLength === "number" &&
     typeof value.actualLength === "number" && typeof value.currentItemIndex === "number" && isTimestamp(value.startedAt) &&
     (value.completedAt === undefined || isTimestamp(value.completedAt)) &&
     isOptionOrderByOccurrence(value.optionOrderByOccurrence) && Array.isArray(value.conditionalReinsertSlots) && value.conditionalReinsertSlots.every(isConditionalReinsertSlot) && typeof value.activeForegroundMs === "number" &&
-    typeof value.contentVersion === "string" && (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
+    typeof value.contentVersion === "string" && isContentPackagePin(value.packagePin) && (value.taxonomyVersion === undefined || isNonEmptyString(value.taxonomyVersion)) &&
     (value.planFingerprint === undefined || (typeof value.planFingerprint === "string" && /^[a-f0-9]{64}$/.test(value.planFingerprint))) &&
     (value.status === "active" || value.status === "completed" || value.status === "abandoned") &&
     Array.isArray(value.itemOrder) && value.itemOrder.every(isSessionItemOccurrence))) return false;
@@ -114,6 +116,7 @@ export function isTrainingSession(value: unknown): value is TrainingSession {
       conditionalReinsertSlots: value.conditionalReinsertSlots,
       activeForegroundMs: value.activeForegroundMs,
       contentVersion: value.contentVersion,
+      packagePin: value.packagePin,
       taxonomyVersion: value.taxonomyVersion,
       planFingerprint: typeof value.planFingerprint === "string" ? value.planFingerprint : undefined,
       status: value.status,
@@ -148,7 +151,8 @@ export function isTrainingAttempt(value: unknown): value is TrainingAttempt<unkn
     return value.item.trackId === value.trackId &&
       value.reviewEvidence.sourceItem.trackId === value.trackId &&
       value.reviewEvidence.sourceItem.itemId === value.item.itemId &&
-      value.reviewEvidence.sourceItem.contentVersion === value.item.contentVersion;
+      value.reviewEvidence.sourceItem.contentVersion === value.item.contentVersion &&
+      contentPackagePinsEqual(value.reviewEvidence.sourceItem.packagePin, value.item.packagePin);
   } catch {
     return false;
   }
@@ -176,8 +180,14 @@ function isReviewEvidence(value: unknown): boolean {
 }
 
 function isContentItemRef(value: unknown): value is ContentItemRef {
-  return isRecord(value) && hasOnlyKeys(value, ["trackId", "itemId", "contentVersion"]) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
-    isNonEmptyString(value.itemId) && isNonEmptyString(value.contentVersion);
+  return isRecord(value) && hasOnlyKeys(value, ["trackId", "itemId", "contentVersion", "packagePin"]) && typeof value.trackId === "string" && isRegisteredTrackId(value.trackId) &&
+    isNonEmptyString(value.itemId) && isNonEmptyString(value.contentVersion) && isContentPackagePin(value.packagePin);
+}
+
+function isContentPackagePin(value: unknown): value is ContentPackagePin {
+  return isRecord(value) && hasOnlyKeys(value, ["packageIdentity", "packageVersion", "contentReleaseId"]) &&
+    typeof value.packageIdentity === "string" && /^[a-f0-9]{64}$/.test(value.packageIdentity) &&
+    isNonEmptyString(value.packageVersion) && isNonEmptyString(value.contentReleaseId);
 }
 
 function isEvidenceRef(value: unknown): value is EvidenceRef {

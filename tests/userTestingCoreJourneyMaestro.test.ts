@@ -2,77 +2,35 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { validateBundledContent } from "../src/content/application";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
-import {
-  isAlgorithmChoiceQuestion,
-  isAlgorithmComplexityQuestion,
-  isAlgorithmOrderingQuestion,
-} from "../src/tracks/coding-interview";
-import { selectAlgorithmSessionPlan } from "../src/tracks/coding-interview/algorithmSessionSelection";
+import { selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
+import { getCodingPackageTestCatalog, prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
-const flow = readFileSync(".maestro/user-testing/algorithms-core-journey.yaml", "utf8");
-const sessionId = "coding-interview-dsa-problem-solving:coding-interview-independent-practice:1";
+const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
+const resumeFlow = readFileSync(".maestro/m4-custom-after-each-answer.yaml", "utf8");
+const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.expected-session.json", "utf8")) as Readonly<{
+  session: Readonly<{ modeId: "coding-interview-custom-practice"; roadmapNodeId: string; sessionId: string }>;
+  items: readonly Readonly<{ itemId: string }>[];
+}>;
 
-test("user-testing core journey executes the exact representative session, resume, summary, and progress evidence", async () => {
-  await validateBundledContent();
-  const selection = selectAlgorithmSessionPlan({
-    mode: "coding-interview-independent-practice",
-    sessionLength: 10,
-    scope: { interleavedScopeId: "hash-map-and-set-node-v1" },
-  });
-
-  assert.equal(selection.items.length, 10);
-  assert.match(flow, new RegExp(escape(runtimeSelectors.practice.modeCard("coding-interview-independent-practice"))));
-  assert.match(flow, new RegExp(escape(runtimeSelectors.practice.declaredScope("hash_map_and_set"))));
-  assert.match(flow, /assertVisible: "Question 1 of 10"/);
-
-  let priorQuestionIndex = -1;
-  for (const item of selection.items) {
-    const questionSelector = runtimeSelectors.session.question(item.id);
-    const questionIndex = flow.indexOf(questionSelector);
-    assert.ok(questionIndex > priorQuestionIndex, `${item.id} must appear in canonical session order`);
-    priorQuestionIndex = questionIndex;
-
-    assert.match(flow, new RegExp(escape(runtimeSelectors.session.submit(item.id))));
-    assert.match(flow, new RegExp(escape(runtimeSelectors.session.result(item.id, "correct"))));
-    assert.match(flow, new RegExp(escape(runtimeSelectors.session.continue(item.id))));
-
-    if (isAlgorithmChoiceQuestion(item)) {
-      for (const acceptedOptionId of item.interaction.acceptedOptionIds) {
-        assert.match(flow, new RegExp(escape(runtimeSelectors.session.option(item.id, acceptedOptionId))));
-      }
-    } else if (isAlgorithmComplexityQuestion(item)) {
-      for (const dimensionId of item.interaction.checkedDimensions) {
-        const acceptedValue = item.interaction.acceptedValuesByDimension[dimensionId]?.[0];
-        assert.ok(acceptedValue, `${item.id} must declare an accepted ${dimensionId} value`);
-        assert.match(flow, new RegExp(escape(runtimeSelectors.session.complexityValue(item.id, dimensionId, acceptedValue))));
-      }
-    } else {
-      assert.equal(isAlgorithmOrderingQuestion(item), true);
-      assert.match(flow, new RegExp(escape(runtimeSelectors.session.option(item.id, item.interaction.elements[0]!.id))));
-    }
-  }
-
-  assert.ok(
-    flow.indexOf(runtimeSelectors.session.question(selection.items[0]!.id))
-      < flow.indexOf(runtimeSelectors.session.leave(sessionId)),
-  );
-  assert.ok(
-    flow.indexOf(runtimeSelectors.session.leave(sessionId))
-      < flow.indexOf(runtimeSelectors.resume.card(sessionId)),
-  );
-  assert.ok(
-    flow.indexOf(runtimeSelectors.resume.continue(sessionId))
-      < flow.lastIndexOf(runtimeSelectors.session.question(selection.items[1]!.id)),
-  );
-  assert.match(flow, new RegExp(escape(runtimeSelectors.summary.root(sessionId))));
-  assert.match(flow, new RegExp(escape(runtimeSelectors.summary.configuration(sessionId, 10, "afterEachAnswer"))));
-  assert.match(flow, new RegExp(escape(runtimeSelectors.summary.backToPractice(sessionId))));
+test("user-testing core journey preserves durable leave-and-resume alongside summary, progress, and terminal relaunch evidence", async () => {
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const selection = selectAlgorithmSessionPlan({ contentCatalog: catalog, mode: manifest.session.modeId, sessionLength: 10, scope: { roadmapNodeId: manifest.session.roadmapNodeId } });
+  assert.deepEqual(selection.items.map((item) => item.id), manifest.items.map((item) => item.itemId));
+  assert.match(flow, new RegExp(escape(runtimeSelectors.practice.customEntry())));
+  const sessionId = manifest.session.sessionId;
+  const leaveIndex = resumeFlow.indexOf(runtimeSelectors.session.leave(sessionId));
+  const leaveAndResumeIndex = resumeFlow.indexOf(runtimeSelectors.session.leaveAndResume(sessionId));
+  const resumeCardIndex = resumeFlow.indexOf(runtimeSelectors.resume.card(sessionId));
+  const resumeContinueIndex = resumeFlow.indexOf(runtimeSelectors.resume.continue(sessionId));
+  const resumedSessionIndex = resumeFlow.lastIndexOf(runtimeSelectors.session.root(sessionId));
+  assert.ok(leaveIndex >= 0 && leaveAndResumeIndex > leaveIndex, "the durable leave choice must follow the session leave command");
+  assert.ok(resumeCardIndex > leaveAndResumeIndex && resumeContinueIndex > resumeCardIndex, "relaunch must expose the exact resumable session before continuation");
+  assert.ok(resumedSessionIndex > resumeContinueIndex, "the exact session must be restored after the Resume CTA");
+  assert.match(flow, new RegExp(escape(runtimeSelectors.summary.root(manifest.session.sessionId))));
+  assert.match(flow, new RegExp(`assertNotVisible:\\s+id: "${escape(runtimeSelectors.resume.card(manifest.session.sessionId))}"`));
   assert.match(flow, new RegExp(escape(runtimeSelectors.progress.root())));
-  assert.match(flow, new RegExp(escape(runtimeSelectors.progress.node("hash_map_and_set"))));
 });
 
-function escape(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+function escape(value: string): string { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }

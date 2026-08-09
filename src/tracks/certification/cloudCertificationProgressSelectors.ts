@@ -1,14 +1,14 @@
-import { GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
+import { contentPackagePinsEqual, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, type ContentPackagePin, type EvidenceRef, type ReviewQueueEntry, type TrainingAttempt } from "../../domain";
 import { isCertificationPracticeModeId } from "./domain";
 export type CloudCertificationProgressIssue = { key: string; message: string; operation: "read" | "write" | "remove" | "parse" };
 
 export type CloudCertificationTaxonomyPerformance = { axisId: string; correctCount: number; incorrectCount: number; label: string; nodeId: string; partialCount: number; percent: number; taxonomyRef: EvidenceRef; totalAttempts: number };
 export type CloudCertificationProgressViewModel = { correctCount: number; degraded: boolean; dueReviewCount: number; examAttemptCount: number; firstAttemptAccuracy: { correct: number; percent: number; total: number }; highPriorityReviewCount: number; incorrectCount: number; issues: CloudCertificationProgressIssue[]; ok: boolean; partialCount: number; practiceAttemptCount: number; recentAccuracy: { correct: number; percent: number; total: number; windowAttemptCount: number }; repeatedMistakeTypes: { count: number; taxonomyRef: EvidenceRef }[]; scheduledReviewCount: number; taxonomyPerformance: CloudCertificationTaxonomyPerformance[]; totalAttempts: number; weakTaxonomyNodes: CloudCertificationTaxonomyPerformance[] };
-export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly CloudCertificationProgressIssue[]; now?: string; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
+export type CloudCertificationProgressViewModelInput = { attempts: readonly TrainingAttempt<unknown>[]; issues?: readonly CloudCertificationProgressIssue[]; now?: string; packagePin: ContentPackagePin; recentAttemptCount?: number; reviewQueueItems?: readonly ReviewQueueEntry[] };
 
 export function buildCloudCertificationProgressViewModel(input: CloudCertificationProgressViewModelInput): CloudCertificationProgressViewModel {
-  const attempts = input.attempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
-  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID);
+  const attempts = input.attempts.filter((attempt) => attempt.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && contentPackagePinsEqual(attempt.item.packagePin, input.packagePin));
+  const reviews = (input.reviewQueueItems ?? []).filter((entry) => entry.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && contentPackagePinsEqual(entry.sourceItem.packagePin, input.packagePin));
   const now = input.now ?? new Date().toISOString();
   const recentCount = input.recentAttemptCount ?? 10;
   const taxonomyPerformance = buildTaxonomyPerformance(attempts);

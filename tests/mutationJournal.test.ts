@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test, { beforeEach } from "node:test";
 import { MemoryKeyValueStorage, installKeyValueStorageForTests } from "../src/infrastructure/storage/mmkvClient";
@@ -6,7 +7,7 @@ import { clearMutationJournal, getActiveMutationJournal, getReviewQueueItems, ge
 import { STORAGE_KEYS } from "../src/storage/keys";
 import { buildMutationJournal, commitTrainingOutcome, recoverPendingMutation } from "../src/application/learningMutations";
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
-const session = createTrainingSession({ id: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "i", contentVersion: "v" } }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v", status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" });
+const session = createTrainingSession({ id: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", configurationSnapshot: { kind: "practice" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "occurrence-1", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "i", contentVersion: "v" , packagePin: TEST_CONTENT_PACKAGE_PIN} }], optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "v", packagePin: TEST_CONTENT_PACKAGE_PIN, status: "active" as const, startedAt: "2026-01-01T00:00:00.000Z" });
 const attempt = { id: "a", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", modeId: "m", occurrenceId: "occurrence-1", item: session.itemOrder[0]!.item, response: { ids: ["x"] }, result: { kind: "correct" as const, earnedPoints: 1, maxPoints: 1 }, reviewEvidence: { sourceItem: session.itemOrder[0]!.item, taxonomyOrSkillRefs: [] }, answeredAt: session.startedAt, committedAt: session.startedAt };
 test("journal durability precedes idempotent materialization and recovery", async () => { const record = await buildMutationJournal({ operation: "submit_training_outcome", sessionId: "s", trackId: "coding-interview-dsa-problem-solving", identity: attempt.response, writes: [{ kind: "put_attempt", record: attempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }); await persistMutationJournal(record); assert.equal((await getTrainingAttempts()).value.length, 0); await recoverPendingMutation(); assert.equal((await getActiveMutationJournal()), null); assert.equal((await getTrainingAttempts()).value.length, 1); assert.equal((await getTrainingSessions()).value.length, 1); await recoverPendingMutation(); assert.equal((await getTrainingAttempts()).value.length, 1); });
 test("journal phase advances only one immutable step at a time", async () => {
@@ -28,6 +29,18 @@ test("journal has a versioned SHA-256 command identity and rejects stale expecte
   assert.ok(record.expectedRevisions.some((condition) => condition.target === "session:s" && condition.revision === null));
   await saveTrainingSession(session);
   await assert.rejects(persistMutationJournal(record), (error: Error & { cause?: unknown }) => error.cause instanceof Error && /expected revisions are stale/.test(error.cause.message));
+});
+test("journal construction rejects writes that cross exact content package pins", async () => {
+  const otherPin = { ...TEST_CONTENT_PACKAGE_PIN, contentReleaseId: "different-release" };
+  const crossPinAttempt = {
+    ...attempt,
+    item: { ...attempt.item, packagePin: otherPin },
+    reviewEvidence: { ...attempt.reviewEvidence, sourceItem: { ...attempt.reviewEvidence.sourceItem, packagePin: otherPin } },
+  };
+  await assert.rejects(
+    () => buildMutationJournal({ operation: "submit_training_outcome", sessionId: session.id, trackId: session.trackId, identity: "cross-pin", writes: [{ kind: "put_attempt", record: crossPinAttempt }, { kind: "put_session", record: session }], createdAt: session.startedAt }),
+    /cannot cross content package pins/u,
+  );
 });
 test("practice submission recovers identically after every durable write boundary", async () => {
   const submittedAttempt = { ...attempt, id: "practice-failure-attempt", result: { kind: "incorrect" as const, earnedPoints: 0, maxPoints: 1 } };

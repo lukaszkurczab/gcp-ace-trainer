@@ -29,7 +29,7 @@ test("practice summary reloads the immutable result and runner navigation requir
   assert.match(summary, /runtimeSelectors\.summary\.configuration\(result\.sessionId, result\.configuration\.actualLength, result\.configuration\.feedbackTiming\)/);
   assert.match(summary, /result\.feedbackItems\.map/);
   assert.match(summary, /PracticeFeedbackBlock/);
-  assert.match(summary, /<PracticeFeedbackBlock itemId=\{item\.occurrenceId\}/);
+  assert.match(summary, /<PracticeFeedbackBlock item=\{item\.item\} itemId=\{item\.occurrenceId\}/);
   assert.doesNotMatch(summary, /itemId=\{`\$\{result\.sessionId\}:\$\{item\.occurrenceId\}`\}/);
   assert.match(summary, /result\.score\.correctCount\} \{t\("correct"\)\} · \{missedCount\} \{t\("Missed"\)\}/);
   assert.doesNotMatch(summary, /result\.score\.partialCount\} \{t\("partial"\)\}|result\.score\.incorrectCount\} \{t\("incorrect"\)\}/);

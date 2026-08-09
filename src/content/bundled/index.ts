@@ -1,1 +1,1 @@
-export * from "./generatedArtifacts";
+export * from "./generatedFreeNodePackages";

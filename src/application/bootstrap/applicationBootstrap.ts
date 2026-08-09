@@ -20,7 +20,7 @@ export type ApplicationBootstrapDependencies = Readonly<{ repositories?: Canonic
  * repository validation parallel with navigation or content resolution.
  */
 export async function bootstrapApplication(
-  validateBundledContent: () => Promise<unknown>,
+  prepareContentPackages: () => Promise<unknown>,
   resolveActiveSession: (sessionId: string) => Promise<void>,
   prepareLifecycle?: () => Promise<void>,
   dependencies: ApplicationBootstrapDependencies = {},
@@ -37,7 +37,7 @@ export async function bootstrapApplication(
       // Test-only/headless bootstrap has no lifecycle composition to install.
       await recoverPendingMutation();
     }
-    await validateBundledContent();
+    await prepareContentPackages();
     // A Cloud Exam may pass its absolute deadline while the process is not
     // running. Resolve that terminal state before deciding whether there is a
     // resumable active session.

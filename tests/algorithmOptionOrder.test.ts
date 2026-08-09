@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
 import {
   buildAlgorithmInteractionViewModel,
   createAlgorithmOptionOrder,
@@ -10,8 +10,8 @@ import {
 } from "../src/tracks/coding-interview";
 
 test("choice display order is shuffled once from stable IDs and remains reproducible for resume", async () => {
-  await validateBundledContent();
-  const question = getAlgorithmContentCatalog().getItemById("alg-complexity-amortized-001");
+  await prepareBundledTestPackages();
+  const question = getCodingPackageTestCatalog().getItemById("alg-complexity-amortized-001");
   assert.ok(isAlgorithmChoiceQuestion(question));
   const authoredOrder = question.interaction.options.map((option) => option.id);
   const orders = Array.from({ length: 8 }, (_, index) =>
@@ -24,8 +24,8 @@ test("choice display order is shuffled once from stable IDs and remains reproduc
 });
 
 test("interaction rendering follows the persisted order while correctness remains keyed by option ID", async () => {
-  await validateBundledContent();
-  const question = getAlgorithmContentCatalog().getItemById("alg-complexity-amortized-001");
+  await prepareBundledTestPackages();
+  const question = getCodingPackageTestCatalog().getItemById("alg-complexity-amortized-001");
   assert.ok(isAlgorithmChoiceQuestion(question));
   const reversed = question.interaction.options.map((option) => option.id).reverse();
   const selectedOptionIds = [...question.interaction.acceptedOptionIds];

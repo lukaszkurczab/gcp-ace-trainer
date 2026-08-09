@@ -3,20 +3,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
-import {
-  assertSessionMatchesBundledTrack,
-  createContentSessionPlanFingerprint,
-  validateBundledContent,
-} from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import type { BundledContentRelease, PublishedAlgorithmsBank } from "../src/content/contracts";
+import type { PublishedAlgorithmsBank } from "../src/content/contracts";
 import { validateAlgorithmsBank } from "../src/content/validation";
-import { createTrainingSession } from "../src/domain";
-import { contentHasher } from "../src/infrastructure/identity/contentHasher";
-import { prepareAlgorithmsInterviewSimulation, submitAlgorithmInteraction } from "../src/tracks/coding-interview";
-
-const commit = "1".repeat(40);
-const itemIds = Array.from({ length: 40 }, (_, index) => `contract-item-${index + 1}`);
+import { submitAlgorithmInteraction } from "../src/tracks/coding-interview";
 
 function bank(input: Readonly<{ itemCount?: number; interaction?: "choice" | "unsupported"; taxonomyId?: string; taxonomy?: Readonly<Record<string, unknown>>; duplicateId?: boolean; poolCount?: number }> = {}): PublishedAlgorithmsBank {
   const count = input.itemCount ?? 40;
@@ -84,76 +73,10 @@ test("uses mandatory Details when a single-choice response omits the correct opt
   assert.deepEqual(submitted.feedback.omittedCorrectOptionExplanations, [{ optionId: "correct", text: "This payload exists only to exercise the consumer contract." }]);
 });
 
-async function release(input: Readonly<{ artifactBank?: unknown; declaredModes?: readonly string[]; checksum?: string; schemaVersion?: string; contentVersion?: string; taxonomyVersion?: string; sourceRepositoryCommit?: string; referenceExtras?: Readonly<Record<string, unknown>> }> = {}): Promise<BundledContentRelease> {
-  const payload = input.artifactBank ?? bank();
-  const bytes = JSON.stringify({ envelopeVersion: 1, schemaVersion: input.schemaVersion ?? "published-bank-v1", contentVersion: input.contentVersion ?? "algorithms-contract-v1", taxonomyVersion: input.taxonomyVersion ?? "algorithms-taxonomy-v1", bank: payload });
-  const actualChecksum = await contentHasher.sha256(bytes);
-  return {
-    manifest: { envelopeVersion: 1, bundleId: "contract-cutover" },
-    artifacts: [{ releaseId: "contract-track-release", trackId: "coding-interview-dsa-problem-solving", familyId: "coding_interview", contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", schemaVersion: "published-bank-v1", checksumSha256: input.checksum ?? actualChecksum, sourceRepositoryCommit: input.sourceRepositoryCommit ?? commit, declaredModes: input.declaredModes ?? ["coding-interview-simulation"], artifactBytes: bytes, ...input.referenceExtras }],
-  };
-}
-
-function track(result: Awaited<ReturnType<typeof validateBundledContent>>, id: string) {
-  const projection = result.tracks.find((candidate) => candidate.trackId === id);
-  assert.ok(projection, `missing ${id} projection`);
-  return projection;
-}
-
-test("consumes a canonical, track-scoped Algorithms artifact while Certification remains unavailable", async () => {
-  const result = await validateBundledContent(await release());
-  assert.equal(track(result, "coding-interview-dsa-problem-solving").kind, "available");
-  const certification = track(result, "google-cloud-associate-cloud-engineer");
-  assert.equal(certification.kind, "unavailable");
-  if (certification.kind === "unavailable") assert.equal(certification.reason, "missing_artifact");
-  assert.equal(getAlgorithmContentCatalog().getItems().length, 40);
-  const prepared = await prepareAlgorithmsInterviewSimulation({ catalog: getAlgorithmContentCatalog(), contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", profileId: "interview-profile", sessionId: "identity-bound-simulation", startedAt: "2026-07-17T00:00:00.000Z" });
-  assert.equal(prepared.session.taxonomyVersion, "algorithms-taxonomy-v1");
-  assert.match(prepared.session.planFingerprint ?? "", /^[a-f0-9]{64}$/);
-});
-
-test("projects missing, malformed, checksum, schema/version, fixed-pool, interaction, taxonomy, and retired-field failures per track", async () => {
-  const missing = await validateBundledContent({ manifest: { envelopeVersion: 1, bundleId: "missing" }, artifacts: [] });
-  assert.equal(track(missing, "coding-interview-dsa-problem-solving").kind, "unavailable");
-  const malformed = await validateBundledContent({ manifest: { envelopeVersion: 2, bundleId: "malformed" }, artifacts: [] });
-  const malformedAlgorithms = track(malformed, "coding-interview-dsa-problem-solving");
-  if (malformedAlgorithms.kind === "unavailable") assert.equal(malformedAlgorithms.reason, "invalid_envelope");
-  const cases: readonly [string, Promise<BundledContentRelease>, string][] = [
-    ["checksum", release({ checksum: "0".repeat(64) }), "checksum_mismatch"],
-    ["schema", release({ schemaVersion: "published-bank-v2" }), "schema_mismatch"],
-    ["version", release({ contentVersion: "algorithms-contract-v2" }), "version_mismatch"],
-    ["source commit format", release({ sourceRepositoryCommit: "invalid" }), "invalid_envelope"],
-    ["retired reference field", release({ referenceExtras: { approvalCoverage: { identity: "retired", itemIds: itemIds } } }), "invalid_envelope"],
-    ["retired bank field", release({ artifactBank: { ...bank(), approvalActivationIdentity: "retired" } }), "invalid_taxonomy_reference"],
-    ["pool", release({ artifactBank: bank({ poolCount: 39 }) }), "insufficient_fixed_pool"],
-    ["interaction", release({ artifactBank: bank({ interaction: "unsupported" }) }), "unsupported_interaction"],
-    ["taxonomy", release({ artifactBank: bank({ taxonomyId: "unknown-node" }) }), "invalid_taxonomy_reference"],
-  ];
-  for (const [label, candidate, reason] of cases) {
-    const projection = track(await validateBundledContent(await candidate), "coding-interview-dsa-problem-solving");
-    assert.equal(projection.kind, "unavailable", label);
-    if (projection.kind === "unavailable") assert.equal(projection.reason, reason, label);
-  }
-});
-
-test("rejects duplicate identity, unsupported modes, and a session whose immutable content plan changed", async () => {
-  const duplicate = track(await validateBundledContent(await release({ artifactBank: bank({ duplicateId: true }) })), "coding-interview-dsa-problem-solving");
-  assert.equal(duplicate.kind, "unavailable");
-  const mode = track(await validateBundledContent(await release({ declaredModes: ["not-a-mode"] })), "coding-interview-dsa-problem-solving");
-  if (mode.kind === "unavailable") assert.equal(mode.reason, "declared_mode_unsupported");
-  const available = track(await validateBundledContent(await release()), "coding-interview-dsa-problem-solving");
-  assert.equal(available.kind, "available");
-  if (available.kind !== "available") return;
-  const base = { id: "immutable-plan", trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-simulation", configurationSnapshot: { kind: "simulation" }, requestedLength: 1, actualLength: 1, currentItemIndex: 0, itemOrder: [{ occurrenceId: "one", item: { trackId: "coding-interview-dsa-problem-solving", contentVersion: "algorithms-contract-v1", itemId: "contract-item-1" } }], optionOrderByOccurrence: { one: ["correct", "wrong"] }, activeForegroundMs: 0, contentVersion: "algorithms-contract-v1", taxonomyVersion: "algorithms-taxonomy-v1", status: "active" as const, startedAt: "2026-07-17T00:00:00.000Z" };
-  const session = createTrainingSession({ ...base, planFingerprint: await createContentSessionPlanFingerprint(base) });
-  await assert.doesNotReject(() => assertSessionMatchesBundledTrack(session, available));
-  await assert.rejects(() => assertSessionMatchesBundledTrack(createTrainingSession({ ...session, itemOrder: [{ ...session.itemOrder[0]!, item: { ...session.itemOrder[0]!.item, itemId: "contract-item-2" } }] }), available), /fingerprint/);
-});
-
 function files(root: string): readonly string[] { return readdirSync(root, { withFileTypes: true }).flatMap((entry) => entry.isDirectory() ? files(join(root, entry.name)) : [join(root, entry.name)]); }
 
 test("runtime has no network or test-fixture ingress and Algorithms has no legacy group/item contract", () => {
-  const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path) && !path.endsWith("content/bundled/generatedArtifacts.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
+  const runtime = files("src").filter((path) => /\.(ts|tsx)$/.test(path) && !path.endsWith("content/bundled/generatedFreeNodePackages.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtime, /from\s+["'][^"']*(?:tests\/|fixtures)[^"']*["']/);
   assert.doesNotMatch(runtime, /\b(?:fetch|XMLHttpRequest|axios|HttpContentSource|loadTrackContent)\b/);
   const algorithms = files("src/tracks/coding-interview").map((path) => readFileSync(path, "utf8")).join("\n");

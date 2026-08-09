@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled/generatedArtifacts";
-import { AlgorithmContentCatalog, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
+import { selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
+import { getCodingPackageTestCatalog, prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
 const itemId = "alg-complexity-amortized-001";
 const customSessionId = "coding-interview-dsa-problem-solving:coding-interview-custom-practice:1";
@@ -16,10 +16,9 @@ const bootstrap = readFileSync(".maestro/rc-algorithms-bootstrap.yaml", "utf8");
 const listener = readFileSync(".maestro/rc-runtime-audit-listener-ready.yaml", "utf8");
 const iosRunner = readFileSync("scripts/runRcAlgorithmsIos.mjs", "utf8");
 
-test("M6 and M7 seed their real first Custom Practice item from the pinned Guided blueprint", () => {
-  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving");
-  assert.ok(reference, "Algorithms artifact must be bundled");
-  const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
+test("M6 and M7 seed their real first Custom Practice item from the pinned package", async () => {
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
   const plan = selectAlgorithmSessionPlan({
     contentCatalog: catalog,
     mode: "coding-interview-custom-practice",

@@ -1,3 +1,4 @@
+import type { ContentItemRef } from "../../domain";
 import type { CertificationDomain, CertificationQuestion } from "./domain/certificationQuestion";
 
 export type CertificationAnswerViewModel = Readonly<{
@@ -9,7 +10,9 @@ export type CertificationAnswerViewModel = Readonly<{
   isCorrect: boolean;
   wasFlagged: boolean;
   answeredAt: string;
+  attemptId?: string;
   elapsedSeconds?: number;
+  item: ContentItemRef;
   questionSnapshot: CertificationQuestion;
 }>;
 

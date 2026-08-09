@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -15,7 +16,7 @@ type TestReasoningEvidence = Readonly<{ concepts: readonly string[] }>;
 
 test("a new family carries payload, response, result, and evidence without a global union", () => {
   const familyId: TrackFamilyId = "test-reasoning";
-  const item = createContentItemRef({ trackId: "test-reasoning-track", itemId: "item-1", contentVersion: "v1" });
+  const item = createContentItemRef({ trackId: "test-reasoning-track", itemId: "item-1", contentVersion: "v1" , packagePin: TEST_CONTENT_PACKAGE_PIN});
   const payload: TestReasoningPayload = { prompt: "Order operands", operands: [1, 2] };
   const response: TestReasoningResponse = { orderedOperandIds: ["left", "right"] };
   const evidence: TestReasoningEvidence = { concepts: ["evaluation-order"] };

@@ -1,6 +1,7 @@
 import type { ContentItemRef } from "./contentItemRef";
 import { InvalidTrainingSessionError } from "./errors";
 import type { TrackId } from "./trackIdentity";
+import { contentPackagePinsEqual, createContentPackagePin, type ContentPackagePin } from "./contentPackagePin";
 
 export type TrainingSessionStatus = "active" | "completed" | "abandoned";
 export type TrainingSessionConfigurationValue = string | number | boolean | readonly string[];
@@ -43,6 +44,7 @@ export type TrainingSession = Readonly<{
   conditionalReinsertSlots?: readonly TrainingSessionConditionalReinsertSlot[];
   activeForegroundMs: number;
   contentVersion: string;
+  packagePin: ContentPackagePin;
   /** Required for resumability against a bundled artifact; old records remain explicitly unavailable. */
   taxonomyVersion?: string;
   planFingerprint?: string;
@@ -87,7 +89,8 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   if (session.status === "completed" && session.currentItemIndex !== session.actualLength - 1) {
     throw new InvalidTrainingSessionError("A completed session must remain positioned at its final item.");
   }
-  if (session.itemOrder.some((occurrence) => !occurrence.occurrenceId.trim() || occurrence.item.trackId !== session.trackId || occurrence.item.contentVersion !== session.contentVersion)) {
+  const packagePin = createContentPackagePin(session.packagePin);
+  if (session.itemOrder.some((occurrence) => !occurrence.occurrenceId.trim() || occurrence.item.trackId !== session.trackId || occurrence.item.contentVersion !== session.contentVersion || !contentPackagePinsEqual(occurrence.item.packagePin, packagePin))) {
     throw new InvalidTrainingSessionError("Every item reference must match the session track and content version.");
   }
   if ((session.taxonomyVersion === undefined) !== (session.planFingerprint === undefined) || (session.taxonomyVersion !== undefined && !session.taxonomyVersion.trim()) || (session.planFingerprint !== undefined && !/^[a-f0-9]{64}$/.test(session.planFingerprint))) {
@@ -107,6 +110,7 @@ export function createTrainingSession(session: TrainingSession): TrainingSession
   validateConditionalReinsertSlots(session, conditionalReinsertSlots, occurrenceIds);
   return Object.freeze({
     ...session,
+    packagePin,
     configurationSnapshot: freezeConfigurationSnapshot(session.configurationSnapshot),
     itemOrder: Object.freeze(session.itemOrder.map((occurrence) => Object.freeze({ ...occurrence, item: Object.freeze({ ...occurrence.item }) }))),
     optionOrderByOccurrence: Object.freeze(Object.fromEntries(Object.entries(session.optionOrderByOccurrence).map(([occurrenceId, optionIds]) => [occurrenceId, Object.freeze([...optionIds])]))),
@@ -240,7 +244,7 @@ function sameOccurrence(left: TrainingSessionItemOccurrence, right: TrainingSess
 }
 
 function sameContentItem(left: ContentItemRef, right: ContentItemRef): boolean {
-  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion;
+  return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion && contentPackagePinsEqual(left.packagePin, right.packagePin);
 }
 
 function sameOptionOrder(left: readonly string[], right: readonly string[]): boolean {

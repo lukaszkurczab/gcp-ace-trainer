@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
 import { formatTrainingSessionIdentity } from "../src/infrastructure/identity/trainingSessionIdentityFormat";
 import { trainingSessionIdentity } from "../src/infrastructure/identity/trainingSessionIdentity";
 import { installMemoryStorage } from "./journalTestSupport";
@@ -63,9 +63,9 @@ test("development audit identity advances from durable history across modes and 
   const previous = developmentFlag.__DEV__;
   setDevelopment(true);
   try {
-    await validateBundledContent();
+    await prepareBundledTestPackages();
     installMemoryStorage();
-    const roadmapNodeId = getAlgorithmContentCatalog().getItems()[0]!.taxonomy.roadmapNodeId;
+    const roadmapNodeId = getCodingPackageTestCatalog().getItems()[0]!.taxonomy.roadmapNodeId;
 
     let lifecycle = composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
     const first = await lifecycle.startSession({
@@ -98,7 +98,7 @@ test("development audit identity advances from durable history across modes and 
 });
 
 test("one injected identity port forwards exact lifecycle-owned IDs across both families", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const calls: string[] = [];
   let sequence = 0;
@@ -112,7 +112,7 @@ test("one injected identity port forwards exact lifecycle-owned IDs across both 
       },
     },
   });
-  const roadmapNodeId = getAlgorithmContentCatalog().getItems()[0]!.taxonomy.roadmapNodeId;
+  const roadmapNodeId = getCodingPackageTestCatalog().getItems()[0]!.taxonomy.roadmapNodeId;
   const algorithms = await lifecycle.startSession({
     trackId: "coding-interview-dsa-problem-solving",
     modeId: "coding-interview-custom-practice",
@@ -123,12 +123,12 @@ test("one injected identity port forwards exact lifecycle-owned IDs across both 
 
   const certification = await lifecycle.startSession({
     trackId: "google-cloud-associate-cloud-engineer",
-    modeId: "certification-diagnostic-baseline",
-    request: { sessionId: "second-caller-id-must-be-overwritten" },
+    modeId: "certification-focus-practice",
+    request: { domain: "setup_environment", requestedLength: 10, sessionId: "second-caller-id-must-be-overwritten" },
   });
-  assert.equal(certification.session.id, "google-cloud-associate-cloud-engineer:certification-diagnostic-baseline:00000000-0000-4000-8000-000000000002");
+  assert.equal(certification.session.id, "google-cloud-associate-cloud-engineer:certification-focus-practice:00000000-0000-4000-8000-000000000002");
   assert.deepEqual(calls, [
     "coding-interview-dsa-problem-solving:coding-interview-custom-practice",
-    "google-cloud-associate-cloud-engineer:certification-diagnostic-baseline",
+    "google-cloud-associate-cloud-engineer:certification-focus-practice",
   ]);
 });

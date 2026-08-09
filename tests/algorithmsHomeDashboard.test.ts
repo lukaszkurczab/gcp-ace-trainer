@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -5,14 +6,14 @@ import {
   CodingInterviewFamilyRuntime,
   type CodingInterviewDashboard,
 } from "../src/application/coding-interview";
-import type { AlgorithmRuntimeCatalog } from "../src/tracks/coding-interview/algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "../src/tracks/coding-interview/algorithmRuntimeCatalog";
 import type { AlgorithmQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
 import { ALGORITHM_MODE_IDS } from "../src/tracks/coding-interview/domain";
 import type { ReviewQueueEntry, TrainingAttempt, TrainingSession } from "../src/domain";
 import { getTrackDisplay } from "../src/domain";
 import { buildAnalyticsData } from "../src/features/analytics/analyticsService";
 import { buildHomeTabModel } from "../src/features/home/tabs/homeTabModel";
-import { validateBundledContent } from "../src/content/application";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
 const NOW = "2026-07-20T12:00:00.000Z";
 const MENTAL_UNIT = "binary_search_signal";
@@ -28,6 +29,7 @@ function runtime() {
   };
   const catalog: AlgorithmRuntimeCatalog = {
     getContentVersion() { return "algorithms-core-0002"; },
+    getPackagePin() { return TEST_CONTENT_PACKAGE_PIN; },
     getItems() { return [item]; },
     getRecognitionSets() { return [{
         itemIds: ["item-1"],
@@ -40,9 +42,9 @@ function runtime() {
     getItemsForMentalUnit(mentalUnitId: string) {
       return mentalUnitId === MENTAL_UNIT ? [item] : [];
     },
-    toContentItemRef(question) { return { contentVersion: "algorithms-core-0002", itemId: question.id, trackId: "coding-interview-dsa-problem-solving" }; },
+    toContentItemRef(question) { return { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: question.id, trackId: "coding-interview-dsa-problem-solving" }; },
     getPracticeBlueprint() { return undefined; },
-    assertModeAvailable() { throw new Error("Unavailable in dashboard fixture."); },
+    assertModeAvailable() {},
     getCompatibilitySets() { return []; },
     getCompatibilitySet() { return undefined; },
     getContrastSets() { return []; },
@@ -58,12 +60,12 @@ function attempt(result: "correct" | "incorrect" = "correct"): TrainingAttempt<u
     answeredAt: NOW,
     committedAt: NOW,
     id: `attempt-${result}`,
-    item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
+    item: { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
     modeId: ALGORITHM_MODE_IDS.guidedPractice,
     occurrenceId: "occurrence-1",
     response: {},
     result: { earnedPoints: result === "correct" ? 1 : 0, kind: result, maxPoints: 1 },
-    reviewEvidence: { sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }] },
+    reviewEvidence: { sourceItem: { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }] },
     sessionId: "session-1",
     trackId: "coding-interview-dsa-problem-solving",
   };
@@ -78,7 +80,7 @@ function review(input: Readonly<{ dueAt: string; id: string; reason?: "wrong_pat
     persistent: Boolean(input.repeated),
     reasons: input.repeated ? ["repeated_mistake"] : [input.reason ?? "incorrect"],
     sourceAttemptId: `attempt-${input.id}`,
-    sourceItem: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
+    sourceItem: { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" },
     sourceSessionId: "session-1",
     taxonomyOrSkillRefs: [{ axisId: "mental_unit", nodeId: MENTAL_UNIT, role: "primary" }],
     trackId: "coding-interview-dsa-problem-solving",
@@ -94,7 +96,7 @@ function activeSession(): TrainingSession {
     configurationSnapshot: {},
     currentItemIndex: 0,
     id: "active-session",
-    itemOrder: [{ item: { contentVersion: "algorithms-core-0002", itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, occurrenceId: "occurrence-1" }],
+    itemOrder: [{ item: { contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: "item-1", trackId: "coding-interview-dsa-problem-solving" }, occurrenceId: "occurrence-1" }],
     modeId: ALGORITHM_MODE_IDS.guidedPractice,
     status: "active",
     trackId: "coding-interview-dsa-problem-solving",
@@ -150,7 +152,7 @@ test("active session stays ahead of every later recommendation condition", () =>
 });
 
 test("Home disables an incomplete recommendation action instead of choosing a scope", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   const model = buildHomeTabModel({
     activeTrack: getTrackDisplay("coding-interview-dsa-problem-solving"),
     algorithmsDashboard: { recommendation: { action: { kind: "unavailable", reason: "An explicit scope is required." }, explanation: "Choose a scope.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice" } },

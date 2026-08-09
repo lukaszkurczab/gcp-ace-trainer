@@ -100,6 +100,41 @@ test("requires the canonical test, but not schema/parser churn, for requirement-
   }), []);
 });
 
+test("requires the canonical test, but not schema/parser churn, for existing-shape approved design reference records", () => {
+  const designReferenceRecordDiff = [
+    "+  references:",
+    "+    - id: free-package-interactions",
+    "+      screenStateTarget: free-package-practice",
+    "+      patternPath: docs/designs/free-package-interactions/DESIGN.md",
+    "+      version: 1",
+    "+      approvalStatus: APPROVED",
+    "+      owner: product-owner",
+    "+  uiOwnership:",
+    "+    - sourcePathPrefix: src/features/practice/",
+    "+      designReferenceId: free-package-interactions",
+  ].join("\n");
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [contractPath],
+    canonicalContractDiff: designReferenceRecordDiff,
+    contract: loadCanonicalProductContract(),
+  }), [
+    "Canonical contract change requires tests/canonicalProductContract.test.ts to change.",
+  ]);
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: [contractPath, "tests/canonicalProductContract.test.ts"],
+    canonicalContractDiff: designReferenceRecordDiff,
+    contract: loadCanonicalProductContract(),
+  }), []);
+});
+
+test("does not classify a feature model as a render-owned UI path", () => {
+  assert.deepEqual(evaluateContractChangeGate({
+    changedPaths: ["src/features/home/tabs/progressTabModel.ts", ...contractCompanionPaths, "tests/contractChangeGate.test.ts"],
+    canonicalContractDiff: requirementDiff,
+    contract: contractWithGateEvidence(),
+  }), []);
+});
+
 test("requires schema and parser companions for structural contract changes", () => {
   const structuralDiff = "+learningProducts:\n+  additionalAdmissionFact: required\n";
   assert.deepEqual(evaluateContractChangeGate({

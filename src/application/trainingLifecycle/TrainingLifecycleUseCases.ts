@@ -7,7 +7,9 @@ import {
   type TrainingSession,
   type TrainingSessionDraft,
   StaleDraftRevisionError,
+  contentPackagePinsEqual,
 } from "../../domain";
+import { assertSessionMatchesContentPackage } from "../../content/application/contentSessionIdentity";
 import {
   TrainingApplicationFailure,
   type ApplicationFailureCode,
@@ -146,29 +148,29 @@ export class TrainingLifecycleUseCases {
   }
 
   async prepareSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
-    await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
-    const runtime = this.resolveRuntime(input.trackId);
+    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
+    const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts, reviews, now: this.ports.clock.now() }));
-    await this.run("missing_content", () => this.ports.content.assertPreparedSession(prepared.session));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, attempts: this.forPackage(attempts, resolution.package.packagePin), reviews: this.forPackage(reviews, resolution.package.packagePin), now: this.ports.clock.now() }));
+    await this.assertSessionPackage(prepared.session, resolution.package);
     return prepared;
   }
 
   async startSession(input: Readonly<{ trackId: TrackId; modeId: string; source?: string; request: unknown }>): Promise<PreparedSession> {
     const existing = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (existing) throw new TrainingApplicationFailure("active_session_conflict", `Active session ${existing.id} must be resumed or abandoned first.`);
-    await this.run("missing_content", () => this.ports.content.requireAvailable(input.trackId, input.modeId));
     const sessionId = await this.run("persistence_failure", () => this.ports.sessionIds.create({ trackId: input.trackId, modeId: input.modeId }));
     if (typeof sessionId !== "string" || !sessionId.trim()) throw new TrainingApplicationFailure("persistence_failure", "Training session identity generation returned an invalid identity.");
     const request = input.request && typeof input.request === "object" && !Array.isArray(input.request)
       ? { ...input.request, sessionId }
       : { sessionId };
-    const runtime = this.resolveRuntime(input.trackId);
+    const resolution = await this.resolveRuntimeForPreparation(input.trackId, input.modeId);
+    const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts, reviews, now: this.ports.clock.now() }));
+    const prepared = await this.run("unknown_mode", () => runtime.prepare({ ...input, request, attempts: this.forPackage(attempts, resolution.package.packagePin), reviews: this.forPackage(reviews, resolution.package.packagePin), now: this.ports.clock.now() }));
     if (prepared.session.id !== sessionId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime changed the lifecycle-owned session identity.");
     if (prepared.session.trackId !== input.trackId || prepared.firstOccurrence.trackId !== input.trackId) throw new TrainingApplicationFailure("persistence_failure", "Family runtime prepared a session outside the requested track.");
-    await this.run("missing_content", () => this.ports.content.assertPreparedSession(prepared.session));
+    await this.assertSessionPackage(prepared.session, resolution.package);
     await this.run("persistence_failure", () => this.ports.mutations.start(prepared));
     const verified = await this.run("verification_failure", () => this.ports.repositories.getActiveSession());
     if (!verified || verified.id !== prepared.session.id || verified.status !== "active") throw new TrainingApplicationFailure("verification_failure", "The active session was not verified before its first occurrence could be exposed.");
@@ -187,11 +189,11 @@ export class TrainingLifecycleUseCases {
       throw new TrainingApplicationFailure("commit_verification_failed", "A durable practice command must recover before another response can be submitted.");
     }
     this.operationStates.set(session.id, practice("submitting_before_journal"));
-    const runtime = this.resolveRuntime(session.trackId);
+    const runtime = await this.resolveRuntimeForSession(session);
     let outcome;
     try {
       const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts, reviews, now: this.ports.clock.now() }));
+      outcome = await this.run("invalid_response", () => runtime.submitPractice({ session, response, attempts: this.forPackage(attempts, session.packagePin), reviews: this.forPackage(reviews, session.packagePin), now: this.ports.clock.now() }));
     } catch (error) {
       this.operationStates.set(session.id, error instanceof TrainingApplicationFailure && error.code === "invalid_response" ? practice("unanswered") : practiceRecovery("submit_journal_failed"));
       throw error;
@@ -289,8 +291,8 @@ export class TrainingLifecycleUseCases {
     this.operationStates.publish(session.id, practice("completing"));
     try {
       const attempts = await this.run("persistence_failure", () => this.ports.repositories.getAttempts());
-      const runtime = this.resolveRuntime(session.trackId);
-      const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts, now: this.ports.clock.now() }));
+      const runtime = await this.resolveRuntimeForSession(session);
+      const finalized = await this.run("persistence_failure", () => runtime.finalizePractice({ session, attempts: this.forPackage(attempts, session.packagePin), now: this.ports.clock.now() }));
       if (finalized.session.id !== session.id || finalized.result.sessionId !== session.id) throw new TrainingApplicationFailure("verification_failure", "Practice completion changed the expected session identity.");
       await this.ports.mutations.completeWithResult(finalized);
       this.operationStates.publish(session.id, practice("completed"));
@@ -309,7 +311,7 @@ export class TrainingLifecycleUseCases {
     const session = await this.requireActive();
     this.operationStates.set(session.id, simulation("saving"));
     if (session.id !== input.draft.sessionId) throw new TrainingApplicationFailure("no_active_session", "The simulation draft does not belong to the active session.");
-    const runtime = this.resolveRuntime(session.trackId);
+    const runtime = await this.resolveRuntimeForSession(session);
     try {
       await this.run("invalid_response", () => runtime.validateDraftCommand({ session, ...input }));
       await this.ports.repositories.saveDraft(input);
@@ -334,7 +336,7 @@ export class TrainingLifecycleUseCases {
   async finalizeExpiredSimulationIfDue(): Promise<string | null> {
     const session = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
     if (!session || session.configurationSnapshot.timer !== "absoluteDeadline") return null;
-    await this.run("resume_unavailable", () => this.ports.content.assertActiveSession(session));
+    await this.resolveRuntimeForSession(session);
     const deadline = session.configurationSnapshot.timerDeadlineAt;
     if (typeof deadline !== "string" || Number.isNaN(Date.parse(deadline))) {
       throw new TrainingApplicationFailure("resume_unavailable", "An absolute-deadline simulation has no valid immutable deadline.");
@@ -355,11 +357,11 @@ export class TrainingLifecycleUseCases {
 
   private async finalizeSimulationSnapshot(session: TrainingSession): Promise<void> {
     this.operationStates.set(session.id, simulation("frozen"));
-    const runtime = this.resolveRuntime(session.trackId);
+    const runtime = await this.resolveRuntimeForSession(session);
     const draft = await this.run("resume_unavailable", () => this.ports.repositories.getDraft(session.id));
     if (!draft) throw new TrainingApplicationFailure("resume_unavailable", "Simulation finalization requires the exact active draft.");
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts, reviews, now: this.ports.clock.now() }));
+    const outcome = await this.run("persistence_failure", () => runtime.finalizeSimulation({ session, draft, attempts: this.forPackage(attempts, session.packagePin), reviews: this.forPackage(reviews, session.packagePin), now: this.ports.clock.now() }));
     if (outcome.session.id !== session.id) throw new TrainingApplicationFailure("persistence_failure", "Simulation finalization changed session identity.");
     try {
       this.operationStates.set(session.id, simulation("finalization_journal_pending", operationError("simulation_finalization", "not_durable", "retry_same_command")));
@@ -377,7 +379,7 @@ export class TrainingLifecycleUseCases {
     let session: TrainingSession;
     try { session = await this.requireActive(); }
     catch (error) { throw error; }
-    const runtime = this.resolveRuntime(session.trackId);
+    const runtime = await this.resolveRuntimeForSession(session);
     const draft = await this.run("persistence_failure", () => this.ports.repositories.getDraft(session.id));
     try { await this.run("resume_unavailable", () => runtime.validateResume({ session, draft })); }
     catch (error) {
@@ -446,9 +448,11 @@ export class TrainingLifecycleUseCases {
   async queryHistory(): Promise<readonly TrainingSession[]> { return (await this.run("persistence_failure", () => this.ports.repositories.getHistory())).filter((session) => session.status === "completed"); }
 
   private async query(trackId: TrackId, method: "queryDashboard" | "queryProgress" | "queryReview"): Promise<unknown> {
-    const runtime = this.resolveRuntime(trackId);
+    const registration = this.trackRegistration(trackId);
+    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForDiscovery(trackId, registration.familyId));
+    const runtime = resolution.runtime;
     const [attempts, reviews] = await Promise.all([this.ports.repositories.getAttempts(), this.ports.repositories.getReviews()]);
-    const input = { trackId, attempts: attempts.filter((attempt) => attempt.trackId === trackId), reviews: reviews.filter((review) => review.trackId === trackId), now: this.ports.clock.now() };
+    const input = { trackId, attempts: this.forPackage(attempts.filter((attempt) => attempt.trackId === trackId), resolution.package.packagePin), reviews: this.forPackage(reviews.filter((review) => review.trackId === trackId), resolution.package.packagePin), now: this.ports.clock.now() };
     if (method === "queryDashboard") {
       const activeSession = await this.run("persistence_failure", () => this.ports.repositories.getActiveSession());
       return this.run("persistence_failure", () => runtime.queryDashboard({ ...input, activeSession: activeSession?.trackId === trackId && activeSession.status === "active" ? activeSession : null }));
@@ -478,7 +482,7 @@ export class TrainingLifecycleUseCases {
   private async requireActive(): Promise<TrainingSession> {
     const session = await this.run("no_active_session", () => this.ports.repositories.getActiveSession());
     if (!session || session.status !== "active") throw new TrainingApplicationFailure("no_active_session", "No active session is available.");
-    await this.run("resume_unavailable", () => this.ports.content.assertActiveSession(session));
+    await this.resolveRuntimeForSession(session);
     return session;
   }
 
@@ -487,22 +491,41 @@ export class TrainingLifecycleUseCases {
     return pending?.sessionId === sessionId ? pending : null;
   }
 
-  private resolveRuntime(trackId: TrackId): TrainingFamilyRuntime {
-    let registration;
+  private trackRegistration(trackId: TrackId) {
     try {
-      registration = this.ports.tracks.getTrackRegistration(trackId);
+      return this.ports.tracks.getTrackRegistration(trackId);
     } catch (error) {
       if (error instanceof TrainingApplicationFailure) throw error;
       throw new TrainingApplicationFailure("unknown_track", `Unknown track ${trackId}.`, error);
     }
-    try {
-      const runtime = this.ports.runtimes.resolve(registration.familyId);
-      if (runtime.familyId !== registration.familyId) throw new TrainingApplicationFailure("unknown_family", `Resolved runtime ${runtime.familyId} does not own family ${registration.familyId}.`);
-      return runtime;
-    } catch (error) {
-      if (error instanceof TrainingApplicationFailure) throw error;
-      throw new TrainingApplicationFailure("unknown_family", `Unable to resolve family runtime ${registration.familyId}.`, error);
+  }
+
+  private async resolveRuntimeForPreparation(trackId: TrackId, modeId: string) {
+    const registration = this.trackRegistration(trackId);
+    const resolution = await this.run("missing_content", () => this.ports.packages.resolveForPreparation({ trackId, familyId: registration.familyId, modeId }));
+    if (resolution.runtime.familyId !== registration.familyId || resolution.package.trackId !== trackId || resolution.package.familyId !== registration.familyId) {
+      throw new TrainingApplicationFailure("unknown_family", "Resolved content package runtime does not own the requested track family.");
     }
+    return resolution;
+  }
+
+  private async resolveRuntimeForSession(session: TrainingSession): Promise<TrainingFamilyRuntime> {
+    const registration = this.trackRegistration(session.trackId);
+    const resolution = await this.run("resume_unavailable", () => this.ports.packages.resolveExact(session.packagePin));
+    if (resolution.runtime.familyId !== registration.familyId || resolution.package.trackId !== session.trackId || resolution.package.familyId !== registration.familyId) {
+      throw new TrainingApplicationFailure("resume_unavailable", "Exact package pin resolved outside the session track family.");
+    }
+    await this.assertSessionPackage(session, resolution.package);
+    return resolution.runtime;
+  }
+
+  private async assertSessionPackage(session: TrainingSession, pkg: Awaited<ReturnType<TrainingLifecyclePorts["packages"]["resolveExact"]>>["package"]): Promise<void> {
+    if (!contentPackagePinsEqual(session.packagePin, pkg.packagePin)) throw new TrainingApplicationFailure("version_mismatch", "Session changed its exact content package pin.");
+    await this.run("resume_unavailable", () => assertSessionMatchesContentPackage(session, pkg));
+  }
+
+  private forPackage<T extends { item: { packagePin: TrainingSession["packagePin"] } } | { sourceItem: { packagePin: TrainingSession["packagePin"] } }>(records: readonly T[], pin: TrainingSession["packagePin"]): readonly T[] {
+    return records.filter((record) => contentPackagePinsEqual("item" in record ? record.item.packagePin : record.sourceItem.packagePin, pin));
   }
 
   private serializeSessionMutation<T>(sessionId: string, operation: () => Promise<T>): Promise<T> {

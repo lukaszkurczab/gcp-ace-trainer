@@ -1,9 +1,6 @@
 /** Immutable identity persisted by sessions and used for exact package lookup. */
-export type ContentPackagePin = Readonly<{
-  packageIdentity: string;
-  packageVersion: string;
-  contentReleaseId: string;
-}>;
+export type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
+import type { ContentPackagePin } from "../../domain/learning/contentPackagePin";
 
 export type ContentPackageErrorCode =
   | "package_record_invalid"

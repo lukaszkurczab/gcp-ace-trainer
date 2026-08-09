@@ -9,8 +9,7 @@ import { CODING_INTERVIEW_TRACK_ID, GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_
 import type { TrainingAttempt } from "../../domain";
 import { goBackOrHome, type RootStackParamList } from "../../navigation";
 import { loadActiveTrackId as getActiveTrackId, loadTrainingAttempts as getTrainingAttempts } from "../../application/learningReadModels";
-import { getAlgorithmsInterviewSimulationEntry } from "../../application/coding-interview";
-import { getCertificationContentCatalog } from "../../content/catalogRepository";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
 import { radius, spacing, typography } from "../../theme";
 import { ALGORITHM_MODE_IDS, getAlgorithmMode } from "../../tracks/coding-interview";
 import { SelectTrackScreen } from "../home/SelectTrackScreen";
@@ -28,6 +27,7 @@ import {
   DEFAULT_PRACTICE_SESSION_LENGTH,
   isCloudTopicId,
   type PracticeFeedbackMode,
+  type PracticeSessionMode,
   type PracticeSessionLength,
 } from "./sessionConfig";
 import { getPracticeReviewBehaviorCopy } from "./practiceSetupModel";
@@ -113,16 +113,21 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const { activeTrackId: resolvedTrackId, trainingAttempts } = readState;
   if (!resolvedTrackId) return <SelectTrackScreen navigation={navigation} onboarding />;
   const activeTrack = getTrackDisplay(resolvedTrackId);
+  const packageProfile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  if (route.params?.topicId !== undefined && route.params.topicId !== packageProfile.freeNodeId) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => goBackOrHome(navigation) }} context={t("Practice setup")} /><EmptyState title={t("Practice setup is unavailable")} description={t("This topic is not available in the installed Free package.")} /></Screen>;
+  const selectedMode = (route.params?.mode ?? packageProfile.primaryEntry.modeId) as PracticeSessionMode;
+  packageProfile.getMode(selectedMode);
   const diagnosticBaseline = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-diagnostic-baseline";
   const focusPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-focus-practice";
   const scenarioPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-scenario-practice";
   const weakAreaReview = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-weak-area-review";
   const mixedPractice = activeTrack.id === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && route.params?.mode === "certification-mixed-practice";
   const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
-    ? getAlgorithmMode(route.params?.mode ?? ALGORITHM_MODE_IDS.guidedPractice)
+    ? getAlgorithmMode(selectedMode)
     : null;
-  const configuredSessionLength = algorithmMode && !algorithmMode.profile.supportedLengths.includes(sessionLength)
-    ? algorithmMode.profile.sessionLength
+  const selectedPackageMode = packageProfile.getMode(selectedMode);
+  const configuredSessionLength = !selectedPackageMode.requestedLengths.includes(sessionLength)
+    ? selectedPackageMode.defaultRequestedLength as PracticeSessionLength
     : sessionLength;
   const reviewBehaviorCopy = getPracticeReviewBehaviorCopy(activeTrack.id);
   const topic = resolvePracticeTopicModel({
@@ -133,20 +138,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const focusTopics = focusPractice
     ? buildTopicRoadmapNodes({ activeTrackId: GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID, trainingAttempts })
     : [];
-  const scenarioCompetencies = scenarioPractice ? getCertificationContentCatalog().getScenarioPractice().competencies : [];
+  const selectedFocusTopicId = focusPractice
+    ? focusTopicId ?? packageProfile.freeNodeId
+    : null;
+  const scenarioCompetencies: readonly Readonly<{ id: string; label: string; scenarioItemIds: readonly string[] }>[] = [];
 
   function startSession() {
-    const mode = route.params?.mode ?? (
-      activeTrack.id === CODING_INTERVIEW_TRACK_ID
-        ? ALGORITHM_MODE_IDS.guidedPractice
-        : "certification-diagnostic-baseline"
-    );
-    if (activeTrack.id === CODING_INTERVIEW_TRACK_ID && mode === ALGORITHM_MODE_IDS.interviewSimulation) {
-      const entry = getAlgorithmsInterviewSimulationEntry();
-      navigation.navigate(ROUTES.ALGORITHMS_INTERVIEW_SIMULATION, { profileId: entry.profileId });
-      return;
-    }
-    if (focusPractice && !focusTopicId) {
+    const mode = selectedMode;
+    if (focusPractice && !selectedFocusTopicId) {
       setSetupError("Choose a Cloud domain before starting Focus Practice.");
       return;
     }
@@ -168,7 +167,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         competencyId: scenarioPractice ? scenarioCompetencyId! : undefined,
         mode,
         source: "practiceSetup",
-        topicId: focusPractice ? focusTopicId! : weakAreaReview || mixedPractice ? "" : topic.id,
+        topicId: focusPractice ? selectedFocusTopicId! : weakAreaReview || mixedPractice ? "" : topic.id,
         trackId: activeTrack.id,
       }),
     );
@@ -196,7 +195,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 
         {focusPractice ? <View style={styles.section}>
           <SectionHeader title={t("Cloud domain")} subtitle={t("Required for Focus Practice")} tight />
-          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={focusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
+          {focusTopics.map((focusTopic) => <SelectablePanel key={focusTopic.id} detail={formatPracticeTopicDetail(focusTopic.detail, t)} label={focusTopic.title} onPress={() => { setFocusTopicId(focusTopic.id); setSetupError(null); }} selected={selectedFocusTopicId === focusTopic.id} testID={runtimeSelectors.practice.focusTopic(focusTopic.id)} />)}
         </View> : null}
 
         {scenarioPractice ? <View style={styles.section}>

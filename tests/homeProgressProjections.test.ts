@@ -7,22 +7,31 @@ import { buildHomeTabModel } from "../src/features/home/tabs/homeTabModel";
 import { buildProgressTabModel } from "../src/features/home/tabs/progressTabModel";
 import {
   ALGORITHM_MODE_IDS,
-  getAlgorithmItems,
+  type AlgorithmQuestion,
 } from "../src/tracks/coding-interview";
 import { buildCloudCertificationProgressViewModel } from "../src/tracks/certification";
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
 
 const NOW = "2026-07-28T12:00:00.000Z";
 
+function codingPackage() {
+  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving");
+  return {
+    contentVersion: resolution.package.contentVersion,
+    items: resolution.profile.items as readonly AlgorithmQuestion[],
+    packagePin: resolution.package.packagePin,
+  };
+}
+
 function algorithmAttempt(
   result: "correct" | "incorrect" = "correct",
-  itemOverride?: ReturnType<typeof getAlgorithmItems>[number],
+  itemOverride?: AlgorithmQuestion,
 ): TrainingAttempt {
-  const item = itemOverride ?? getAlgorithmItems()[0];
+  const content = codingPackage();
+  const item = itemOverride ?? content.items[0];
   assert.ok(item);
   const itemRef = {
-    contentVersion: getAlgorithmContentCatalog().getContentVersion(),
+    contentVersion: content.contentVersion, packagePin: content.packagePin,
     itemId: item.id,
     trackId: "coding-interview-dsa-problem-solving" as const,
   };
@@ -79,7 +88,8 @@ test("Home projection exposes a stable empty-state focus without inventing evide
   assert.equal(model.primaryLabel, "Start learning");
 });
 
-test("Home prioritizes one exact ordinary Certification resume action and excludes exam or cross-track sessions", () => {
+test("Home prioritizes one exact ordinary Certification resume action and excludes exam or cross-track sessions", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const activeSession = {
     actualLength: 10,
     configurationSnapshot: {
@@ -130,10 +140,11 @@ test("Home prioritizes one exact ordinary Certification resume action and exclud
 
 test("Progress tab projects Certification empty state and due review availability", () => {
   const analytics = buildAnalyticsData([], []);
-  const empty = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: buildCloudCertificationProgressViewModel({ attempts: [] }) });
+  const packagePin = contentPackageRuntimeOwner.getPreparedDiscovery("google-cloud-associate-cloud-engineer").package.packagePin;
+  const empty = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: buildCloudCertificationProgressViewModel({ attempts: [], packagePin }) });
   assert.equal(empty.hasData, false);
   assert.equal(empty.reviewActionEnabled, false);
-  const due = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: { ...buildCloudCertificationProgressViewModel({ attempts: [] }), dueReviewCount: 2, scheduledReviewCount: 2 } });
+  const due = buildProgressTabModel({ activeTrackId: "google-cloud-associate-cloud-engineer", analytics, attempts: [], practiceHistory: [], cloudProgress: { ...buildCloudCertificationProgressViewModel({ attempts: [], packagePin }), dueReviewCount: 2, scheduledReviewCount: 2 } });
   assert.equal(due.reviewQueueCount, 2);
   assert.deepEqual(due.reviewAction, { kind: "canonicalReviewQueue" });
 });
@@ -143,7 +154,7 @@ test("Progress projection rejects an unknown track instead of selecting a defaul
 });
 
 test("Algorithms Progress first use states the evidence limit and offers one useful start action", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const model = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
@@ -161,7 +172,7 @@ test("Algorithms Progress first use states the evidence limit and offers one use
   assert.equal(model.currentFocus.showProgress, false);
   assert.equal(model.roadmapSummary.allNodes[0]?.showProgress, false);
   assert.doesNotMatch(JSON.stringify(model.currentFocus), /score|%/i);
-  assert.equal(model.nextTopic?.detail, "All roadmap topics are available. Choose this topic whenever it fits your practice goal.");
+  assert.equal(model.nextTopic, null);
   assert.doesNotMatch(
     JSON.stringify(model),
     /\b(?:locked|mastery|retention|readiness)\b|score at least|to unlock/i,
@@ -169,7 +180,7 @@ test("Algorithms Progress first use states the evidence limit and offers one use
 });
 
 test("Algorithms Progress keeps due review evidence honest and recommendations overridable", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const attempt = algorithmAttempt("incorrect");
   const model = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
@@ -190,7 +201,7 @@ test("Algorithms Progress keeps due review evidence honest and recommendations o
 });
 
 test("Algorithms Progress derives a deterministic continuation from recorded evidence", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const attempt = algorithmAttempt("correct");
   const model = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
@@ -204,7 +215,7 @@ test("Algorithms Progress derives a deterministic continuation from recorded evi
   assert.equal(model.priority.label, "Recommended from recent practice");
   assert.equal(model.priority.primaryActionMode, ALGORITHM_MODE_IDS.guidedPractice);
   assert.equal(model.currentFocus.showProgress, true);
-  const itemCount = getAlgorithmItems().filter((item) =>
+  const itemCount = codingPackage().items.filter((item) =>
     item.taxonomy.roadmapNodeId === model.currentFocus.nodeId,
   ).length;
   assert.equal(model.currentFocus.practicedLabel, `1 of ${itemCount}`);
@@ -213,13 +224,14 @@ test("Algorithms Progress derives a deterministic continuation from recorded evi
 });
 
 test("Algorithms Progress excludes due review from a stale content bank", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const attempt = algorithmAttempt("incorrect");
   const staleReview = {
     ...dueAlgorithmReview(attempt),
     sourceItem: {
       ...attempt.item,
       contentVersion: "algorithms-stale-bank",
+      packagePin: { ...attempt.item.packagePin, contentReleaseId: "stale-release" },
     },
   };
   const model = buildProgressTabModel({
@@ -238,17 +250,44 @@ test("Algorithms Progress excludes due review from a stale content bank", async 
   assert.equal(model.algorithmsProgress?.currentFocus.statusLabel, "Practicing");
 });
 
-test("Algorithms Progress uses neutral copy when due review spans multiple topics", async () => {
-  await validateBundledContent();
-  const items = getAlgorithmItems();
+test("Algorithms Progress ignores same-version evidence from another exact content package", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const attempt = algorithmAttempt("incorrect");
+  const foreignAttempt = {
+    ...attempt,
+    item: { ...attempt.item, packagePin: { ...attempt.item.packagePin, packageIdentity: "a".repeat(64) } },
+    reviewEvidence: { ...attempt.reviewEvidence, sourceItem: { ...attempt.item, packagePin: { ...attempt.item.packagePin, packageIdentity: "a".repeat(64) } } },
+  };
+  const foreignReview = dueAlgorithmReview(foreignAttempt);
+  const model = buildProgressTabModel({
+    activeTrackId: "coding-interview-dsa-problem-solving",
+    analytics: buildAnalyticsData([], []),
+    attempts: [],
+    now: NOW,
+    practiceHistory: [],
+    reviewQueueItems: [foreignReview],
+    trainingAttempts: [foreignAttempt],
+  });
+
+  assert.equal(model.hasData, false);
+  assert.equal(model.reviewQueueCount, 0);
+  assert.equal(model.algorithmsProgress?.currentFocus.practicedLabel, "No attempts");
+});
+
+test("Algorithms Progress keeps due review copy scoped to the bundled package Free node", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const items = codingPackage().items;
   const first = items[0];
   assert.ok(first);
-  const second = items.find((item) =>
-    item.taxonomy.roadmapNodeId !== first.taxonomy.roadmapNodeId,
-  );
+  const second = items[1];
   assert.ok(second);
   const firstAttempt = algorithmAttempt("correct", first);
-  const secondAttempt = algorithmAttempt("correct", second);
+  const secondAttempt = {
+    ...algorithmAttempt("correct", second),
+    id: "attempt-correct-second",
+    occurrenceId: "occurrence-2",
+    sessionId: "session-2",
+  };
   const model = buildProgressTabModel({
     activeTrackId: "coding-interview-dsa-problem-solving",
     analytics: buildAnalyticsData([], []),
@@ -264,14 +303,7 @@ test("Algorithms Progress uses neutral copy when due review spans multiple topic
 
   assert.ok(model);
   assert.equal(model.priority.title, "Return to due review");
-  assert.match(model.priority.detail, /2 review items are due from earlier practice across multiple topics/i);
-  const dueTopicTitles = model.roadmapSummary.allNodes
-    .filter((node) =>
-      node.id === first.taxonomy.roadmapNodeId ||
-      node.id === second.taxonomy.roadmapNodeId,
-    )
-    .map((node) => node.title);
-  for (const title of dueTopicTitles) {
-    assert.doesNotMatch(model.priority.detail, new RegExp(title, "i"));
-  }
+  assert.match(model.priority.detail, /2 items are due from earlier .* practice/i);
+  assert.equal(first.taxonomy.roadmapNodeId, second.taxonomy.roadmapNodeId);
+  assert.equal(model.roadmapSummary.allNodes.length, 1);
 });

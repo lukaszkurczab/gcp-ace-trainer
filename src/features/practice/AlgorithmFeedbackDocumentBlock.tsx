@@ -1,7 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SvgXml } from "react-native-svg";
 
-import { resolveAlgorithmFeedbackAsset } from "../../content/algorithmsFeedbackAssets";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import type { ContentItemRef } from "../../domain";
 import type { AlgorithmFeedbackBlock, AlgorithmFeedbackCalloutKind, AlgorithmFeedbackDocument } from "../../content/contracts";
 import type { AppColors } from "../../theme";
 import { radius, spacing, typography } from "../../theme";
@@ -18,17 +19,17 @@ const CALLOUT_LABEL: Readonly<Record<AlgorithmFeedbackCalloutKind, string>> = {
   key_takeaway: "Key takeaway",
 };
 
-export function AlgorithmFeedbackDocumentBlock({ document }: Readonly<{ document: AlgorithmFeedbackDocument }>) {
+export function AlgorithmFeedbackDocumentBlock({ document, item }: Readonly<{ document: AlgorithmFeedbackDocument; item: ContentItemRef }>) {
   const styles = useThemedStyles(createStyles);
-  return <View style={styles.document}>{document.blocks.map((block, index) => <FeedbackBlock block={block} index={index} key={`${block.type}-${index}`} styles={styles} />)}</View>;
+  return <View style={styles.document}>{document.blocks.map((block, index) => <FeedbackBlock block={block} index={index} item={item} key={`${block.type}-${index}`} styles={styles} />)}</View>;
 }
 
-function FeedbackBlock({ block, index, styles }: Readonly<{ block: AlgorithmFeedbackBlock; index: number; styles: ReturnType<typeof createStyles> }>) {
+function FeedbackBlock({ block, index, item, styles }: Readonly<{ block: AlgorithmFeedbackBlock; index: number; item: ContentItemRef; styles: ReturnType<typeof createStyles> }>) {
   if (block.type === "paragraph") return <Text style={styles.paragraph}>{block.text}</Text>;
   if (block.type === "heading") return <Text accessibilityRole="header" style={block.level === 2 ? styles.headingTwo : styles.headingThree}>{block.text}</Text>;
   if (block.type === "bullet_list" || block.type === "ordered_list") return <View accessibilityLabel={`${block.type === "bullet_list" ? "Bullet" : "Numbered"} list`} style={styles.list}>{block.items.map((item, itemIndex) => <View key={`${index}-${itemIndex}`} style={styles.listRow}><Text style={styles.listMarker}>{block.type === "bullet_list" ? "•" : `${itemIndex + 1}.`}</Text><Text style={styles.listText}>{item}</Text></View>)}</View>;
   if (block.type === "code") return <View accessible accessibilityLabel={`Code sample in ${block.language}`} style={styles.codeShell}><Text style={styles.codeLanguage}>{block.language}</Text><Text selectable style={styles.code}>{tokenizeFeedbackCode(block.language, block.code).map((token, tokenIndex) => <Text key={`${index}-${tokenIndex}`} style={styles[`code${token.kind[0]!.toUpperCase()}${token.kind.slice(1)}` as keyof ReturnType<typeof createStyles>]}>{token.text}</Text>)}</Text></View>;
-  if (block.type === "image") return <View accessible accessibilityLabel={block.alt} style={styles.image}><SvgXml height="100%" width="100%" xml={resolveAlgorithmFeedbackAsset(block.assetId).xml} /></View>;
+  if (block.type === "image") return <View accessible accessibilityLabel={block.alt} style={styles.image}><SvgXml height="100%" width="100%" xml={contentPackageRuntimeOwner.resolveTextAsset(item, block.assetId).text} /></View>;
   return <View accessible accessibilityLabel={`${CALLOUT_LABEL[block.kind]}. ${block.title ? `${block.title}. ` : ""}${block.text}`} style={styles.callout}><Text style={styles.calloutKind}>{CALLOUT_LABEL[block.kind]}</Text>{block.title ? <Text style={styles.calloutTitle}>{block.title}</Text> : null}<Text style={styles.calloutText}>{block.text}</Text></View>;
 }
 

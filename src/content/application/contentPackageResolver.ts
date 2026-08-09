@@ -27,6 +27,12 @@ export class ContentPackageResolver {
     return verified;
   }
 
+  async resolveForDiscovery(trackId: string, familyId: "coding_interview" | "certification", appVersion: string): Promise<VerifiedContentPackage> {
+    const candidates = this.sources.filter((candidate) => candidate.trackId === trackId);
+    if (candidates.length !== 1) fail("package_pin_not_found", `Track ${trackId} must have exactly one bundled Free package.`);
+    return verify(candidates[0]!, appVersion, this.runtime, this.trustIndex, familyId);
+  }
+
   async resolveExact(pin: ContentPackagePin, appVersion: string): Promise<VerifiedContentPackage> {
     const sameVersion = this.sources.filter((candidate) => candidate.packageVersion === pin.packageVersion);
     if (sameVersion.length === 0) fail("package_pin_not_found", `No exact package version exists for ${pin.packageIdentity}.`);

@@ -1,7 +1,7 @@
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button, Card } from "../../components";
-import type { TrackId } from "../../domain";
+import type { ContentItemRef, TrackId } from "../../domain";
 import type { SessionMetricPresentation } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
 import { radius, spacing, typography } from "../../theme";
@@ -46,6 +46,7 @@ export type PracticeSessionSurfaceProps = Readonly<{
   allowLeave?: boolean;
   exit: PracticeExitPresentation;
   feedback?: PracticeFeedback;
+  feedbackItem?: ContentItemRef;
   isFinalPosition: boolean;
   modeLabel?: string;
   notice?: PracticeNotice;
@@ -113,7 +114,7 @@ export function PracticeSessionSurface(props: PracticeSessionSurfaceProps) {
         </View>
       ) : controls ? <View style={styles.questionAndResponse}>{controls}</View> : null}
       {props.notice ? <DurabilityNotice notice={props.notice} /> : null}
-      {visibleFeedback && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} itemId={itemId} /> : null}
+      {visibleFeedback && props.feedbackItem && itemId ? <PracticeFeedbackBlock feedback={visibleFeedback} item={props.feedbackItem} itemId={itemId} /> : null}
       {props.exit.kind === "leave" ? <ExitModal onAbandon={props.onAbandon} onDismiss={props.onDismissExit} onLeave={props.onConfirmLeave} sessionId={props.runtimeIdentity?.sessionId} trackId={props.runtimeIdentity?.trackId} /> : null}
     </SessionShell>
   );

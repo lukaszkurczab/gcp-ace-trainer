@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { GENERATED_BUNDLED_CONTENT_RELEASE } from "../src/content/bundled/generatedArtifacts";
-import { AlgorithmContentCatalog, buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
+import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFreeNodePackages";
+import { buildAlgorithmProgressFacts, selectAlgorithmSessionPlan } from "../src/tracks/coding-interview";
 import { runtimeSelectors } from "../src/testing/runtimeSelectors";
+import { getCodingPackageTestCatalog, prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
 type M2Manifest = Readonly<{
   release: Readonly<{ checksumSha256: string; releaseId: string; sourceRepositoryCommit: string }>;
@@ -27,15 +28,16 @@ type M2Manifest = Readonly<{
 const manifest = JSON.parse(readFileSync(".maestro/m2-custom-10-at-session-end.expected-session.json", "utf8")) as M2Manifest;
 const flow = readFileSync(".maestro/m2-custom-10-at-session-end.yaml", "utf8");
 
-test("M2 Custom 10 at session end derives real item, option, and outcome identities from the pinned Algorithms artifact", () => {
-  const reference = GENERATED_BUNDLED_CONTENT_RELEASE.artifacts.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving");
-  assert.ok(reference, "Algorithms artifact must be bundled");
-  const catalog = new AlgorithmContentCatalog(JSON.parse(reference.artifactBytes).bank);
+test("M2 Custom 10 at session end derives real item, option, and outcome identities from the pinned Algorithms package", async () => {
+  await prepareBundledTestPackages();
+  const reference = GENERATED_FREE_NODE_PACKAGES.find((artifact) => artifact.trackId === "coding-interview-dsa-problem-solving")!;
+  const catalog = getCodingPackageTestCatalog();
   assert.equal(buildAlgorithmProgressFacts({
     attempts: [],
     content: {
       contentVersion: catalog.getContentVersion(),
       items: catalog.getItems(),
+      packagePin: catalog.getPackagePin(),
     },
   }).activeRoadmapNode.id, manifest.session.roadmapNodeId);
   const plan = selectAlgorithmSessionPlan({
@@ -46,9 +48,9 @@ test("M2 Custom 10 at session end derives real item, option, and outcome identit
   });
 
   assert.deepEqual(manifest.release, {
-    checksumSha256: reference.checksumSha256,
-    releaseId: reference.releaseId,
-    sourceRepositoryCommit: reference.sourceRepositoryCommit,
+    checksumSha256: reference.manifest.provenance.sourceArtifactChecksumSha256,
+    releaseId: reference.manifest.provenance.releaseId,
+    sourceRepositoryCommit: reference.manifest.provenance.sourceRepositoryCommit,
   });
   assert.equal(plan.actualLength, 10);
   assert.deepEqual(manifest.items.map((item) => item.itemId), plan.items.map((item) => item.id));

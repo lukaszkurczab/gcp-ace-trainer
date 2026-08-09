@@ -4,6 +4,7 @@ import {
   createFamilyEnvelope,
   createTrainingSession,
   createTrainingSessionResult,
+  contentPackagePinsEqual,
   type ContentItemRef,
   type ReviewMutationCommand,
   type ReviewQueueEntry,
@@ -14,7 +15,7 @@ import {
 import type { PreparedSession, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
 import { createAttemptId } from "../learningMutations/identity";
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
-import type { AlgorithmRuntimeCatalog } from "../../tracks/coding-interview/algorithmContentCatalog";
+import type { AlgorithmRuntimeCatalog } from "../../tracks/coding-interview/algorithmRuntimeCatalog";
 import { ALGORITHMS_RECOMMENDATION_POLICY, type AlgorithmsRecommendationPolicy } from "../../tracks/coding-interview/algorithmsBlueprints";
 import {
   selectAlgorithmSessionPlan,
@@ -142,6 +143,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
       conditionalReinsertSlots: [],
       activeForegroundMs: 0,
       contentVersion: this.catalog.getContentVersion(),
+      packagePin: this.catalog.getPackagePin(),
       status: "active" as const,
       startedAt: input.now,
     };
@@ -164,7 +166,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   async validateResume(input: Readonly<{ session: TrainingSession; draft: TrainingSessionDraft | null }>): Promise<void> {
-    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion);
+    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion, this.catalog.getPackagePin());
     const simulation = input.session.modeId === ALGORITHM_MODE_IDS.interviewSimulation;
     if (simulation && (!input.draft || input.draft.sessionId !== input.session.id || input.draft.trackId !== input.session.trackId || input.draft.familyId !== this.familyId)) {
       throw new Error("Algorithms Interview Simulation requires its exact persisted draft.");
@@ -173,7 +175,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   async submitPractice(input: Readonly<{ session: TrainingSession; response: unknown; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<PracticeSubmission> {
-    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion);
+    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion, this.catalog.getPackagePin());
     if (input.session.modeId === ALGORITHM_MODE_IDS.interviewSimulation) throw new Error("Algorithms Interview Simulation does not submit per-item responses.");
     const occurrence = input.session.itemOrder[input.session.currentItemIndex];
     if (!occurrence) throw new Error("Algorithms practice has no current occurrence.");
@@ -236,7 +238,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   async finalizePractice(input: Readonly<{ session: TrainingSession; attempts: readonly TrainingAttempt<unknown>[]; now: string }>) {
-    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion);
+    assertAlgorithmsSession(input.session, this.catalog.getContentVersion(), this.taxonomyVersion, this.catalog.getPackagePin());
     if (input.session.modeId === ALGORITHM_MODE_IDS.interviewSimulation || input.session.configurationSnapshot.submission !== "perItem") {
       throw new Error("Algorithms Interview Simulation does not use ordinary practice finalization.");
     }
@@ -356,14 +358,18 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
     const bounded = firstBelow(evidence.boundedEvidenceByMentalUnit, this.recommendationPolicy.minimumBoundedEvidence);
     if (bounded) return Object.freeze({ explanation: `Practice ${learnerMentalUnitLabel(bounded)} with guidance before moving on.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId: bounded });
     const contrast = firstPositive(evidence.performanceSignals.strategyConfusionByMentalUnit);
-    if (contrast) return Object.freeze({ explanation: `Compare strategies for ${learnerMentalUnitLabel(contrast)}.`, modeId: ALGORITHM_MODE_IDS.contrastPractice, reason: "contrast_practice", targetMentalUnitId: contrast });
+    if (contrast && this.isModeAvailable(ALGORITHM_MODE_IDS.contrastPractice, 10)) return Object.freeze({ explanation: `Compare strategies for ${learnerMentalUnitLabel(contrast)}.`, modeId: ALGORITHM_MODE_IDS.contrastPractice, reason: "contrast_practice", targetMentalUnitId: contrast });
     const recognition = firstPositive(evidence.performanceSignals.recognitionBottleneckByMentalUnit);
-    if (recognition) return Object.freeze({ explanation: `Practice recognizing when to use ${learnerMentalUnitLabel(recognition)}.`, modeId: ALGORITHM_MODE_IDS.recognizePatterns, reason: "recognize_patterns", targetMentalUnitId: recognition });
-    return Object.freeze({ explanation: "Choose a topic for independent practice.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice" });
+    if (recognition && this.isModeAvailable(ALGORITHM_MODE_IDS.recognizePatterns, 10)) return Object.freeze({ explanation: `Practice recognizing when to use ${learnerMentalUnitLabel(recognition)}.`, modeId: ALGORITHM_MODE_IDS.recognizePatterns, reason: "recognize_patterns", targetMentalUnitId: recognition });
+    const targetMentalUnitId = this.catalog.getItems()[0]?.taxonomy.primaryMentalUnitId;
+    if (targetMentalUnitId && this.isModeAvailable(ALGORITHM_MODE_IDS.independentPractice, 10)) return Object.freeze({ explanation: "Choose a topic for independent practice.", modeId: ALGORITHM_MODE_IDS.independentPractice, reason: "independent_practice", targetMentalUnitId });
+    if (targetMentalUnitId && this.isModeAvailable(ALGORITHM_MODE_IDS.guidedPractice, 10)) return Object.freeze({ explanation: `Continue with guided practice for ${learnerMentalUnitLabel(targetMentalUnitId)}.`, modeId: ALGORITHM_MODE_IDS.guidedPractice, reason: "guided_practice", targetMentalUnitId });
+    return Object.freeze({ explanation: "No executable Algorithms practice mode is available in this package.", modeId: ALGORITHM_MODE_IDS.learnApproach, reason: "learn_approach" });
   }
 
   private actionForRecommendation(recommendation: AlgorithmsRecommendation, activeSession: TrainingSession | null): AlgorithmsRecommendationAction {
     if (recommendation.reason === "active_session") return this.resumeAction(activeSession);
+    if (!this.isModeAvailable(recommendation.modeId, 10)) return Object.freeze({ kind: "unavailable", reason: "This recommendation is unavailable in the installed Free package." });
     if (recommendation.modeId === ALGORITHM_MODE_IDS.weakAreaReview) return this.practiceAction(recommendation.modeId, recommendation.targetMentalUnitId, { reviewSource: recommendation.source });
     if (recommendation.modeId === ALGORITHM_MODE_IDS.learnApproach || recommendation.modeId === ALGORITHM_MODE_IDS.guidedPractice) {
       return this.practiceAction(recommendation.modeId, recommendation.targetMentalUnitId);
@@ -392,6 +398,7 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
     }
     const item = session.itemOrder[session.currentItemIndex]?.item;
     if (!item) return Object.freeze({ kind: "unavailable", reason: "The active Algorithms session has no current item." });
+    if (!this.isModeAvailable(session.modeId, session.requestedLength)) return Object.freeze({ kind: "unavailable", reason: "The active Algorithms session mode is unavailable in the installed Free package." });
     let topicId: string;
     try { topicId = this.catalog.getItemById(item.itemId).taxonomy.roadmapNodeId; }
     catch { return Object.freeze({ kind: "unavailable", reason: "The active Algorithms session item is unavailable in the current content artifact." }); }
@@ -401,6 +408,15 @@ export class CodingInterviewFamilyRuntime implements TrainingFamilyRuntime {
       return Object.freeze({ kind: "unavailable", reason: "The active Interview Simulation profile is unavailable." });
     }
     return Object.freeze({ kind: "resume_active_session", modeId: session.modeId, sessionId: session.id, simulationProfileId: profileId, topicId });
+  }
+
+  private isModeAvailable(modeId: string, requestedLength: number): boolean {
+    try {
+      this.catalog.assertModeAvailable(modeId, requestedLength);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private topicForMentalUnit(mentalUnitId: string): string | null {
@@ -502,15 +518,15 @@ function isAlgorithmsDueQueueReviewSession(session: TrainingSession): boolean {
   return session.modeId === ALGORITHM_MODE_IDS.weakAreaReview && session.configurationSnapshot.reviewSource === "due_queue";
 }
 
-function assertAlgorithmsSession(session: TrainingSession, contentVersion: string, taxonomyVersion: string): void {
-  if (session.trackId !== "coding-interview-dsa-problem-solving" || session.contentVersion !== contentVersion || session.taxonomyVersion !== taxonomyVersion || !session.planFingerprint) {
+function assertAlgorithmsSession(session: TrainingSession, contentVersion: string, taxonomyVersion: string, packagePin: TrainingSession["packagePin"]): void {
+  if (session.trackId !== "coding-interview-dsa-problem-solving" || session.contentVersion !== contentVersion || !contentPackagePinsEqual(session.packagePin, packagePin) || session.taxonomyVersion !== taxonomyVersion || !session.planFingerprint) {
     throw new Error("Algorithms session does not match the exact bundled content identity.");
   }
   getAlgorithmMode(session.modeId);
 }
 
 function sameContent(left: ContentItemRef, right: ContentItemRef): boolean {
-  return left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.itemId === right.itemId;
+  return left.trackId === right.trackId && left.contentVersion === right.contentVersion && left.itemId === right.itemId && contentPackagePinsEqual(left.packagePin, right.packagePin);
 }
 
 function algorithmEvidence(attempts: readonly TrainingAttempt<unknown>[], reviews: readonly ReviewQueueEntry[], now: string, activeSession: TrainingSession | null): AlgorithmsEvidence {

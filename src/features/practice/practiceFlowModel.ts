@@ -23,6 +23,13 @@ import type { CertificationDomain, CertificationModeId } from "../../tracks/cert
 import { getDomainLabel } from "../../utils";
 import type { AnalyticsData } from "../analytics/analyticsService";
 import type { PracticeSessionMode } from "./sessionConfig";
+import { contentPackageRuntimeOwner } from "../../application/contentPackageRuntimeOwner";
+import type { AlgorithmQuestion } from "../../tracks/coding-interview/algorithmQuestionTypes";
+
+function codingPackageContent() {
+  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(CODING_INTERVIEW_TRACK_ID);
+  return { contentVersion: resolution.package.contentVersion, items: resolution.profile.items as readonly AlgorithmQuestion[], packagePin: resolution.package.packagePin };
+}
 
 export type PracticeTopic = {
   detail: PracticeTopicDetail;
@@ -193,17 +200,19 @@ export function getCurrentPracticeTopic(
 
   switch (track.kind) {
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: trainingAttempts });
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const freeNode = ALGORITHM_ROADMAP.nodes.find((node) => node.id === freeNodeId);
+      if (!freeNode) throw new Error("Coding Interview Free package node is absent from the roadmap.");
 
       return {
         detail: {
           key: "Roadmap item practice for algorithmic problem solving.",
           kind: "key",
         },
-        id: progress.activeRoadmapNode.id,
+        id: freeNode.id,
         title: {
           kind: "authored",
-          value: progress.activeRoadmapNode.label,
+          value: freeNode.label,
         },
       };
     }
@@ -214,9 +223,9 @@ export function getCurrentPracticeTopic(
           kind: "track-context",
           trackTitle: track.display.shortTitle,
         },
-        id: "planning_implementation",
+        id: "setup_environment",
         title: {
-          key: "Planning & implementation",
+          key: "Cloud fundamentals",
           kind: "translation-key",
         },
       };
@@ -271,25 +280,27 @@ export function hasTrackProgress(input: {
   }
 }
 
-export function buildPracticeModes(activeTrack: TrackDisplay): PracticeModeModel[] {
+export function buildPracticeModes(activeTrack: TrackDisplay, hasReviewEvidence = false): PracticeModeModel[] {
   const track = resolvePracticeFlowTrack(activeTrack.id);
+  const profile = contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile;
+  const availability = (modeId: string) => {
+    const mode = profile.getMode(modeId);
+    return mode.availability === "immediate" || hasReviewEvidence;
+  };
 
   switch (track.kind) {
     case "coding_interview":
       return [
-        { detail: "Practice Coding Interview review items that are currently due.", enabled: true, icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
-        { detail: "Practice random questions from completed topics without hints or reinsert.", enabled: true, icon: "clipboard", mode: ALGORITHM_MODE_IDS.independentPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.independentPractice).title, tone: "success" },
-        { detail: "Forty freely navigable items with feedback after final submission.", enabled: true, icon: "shield-check", mode: ALGORITHM_MODE_IDS.interviewSimulation, title: "Interview Simulation", tone: "warning" },
+        { detail: "Learn the approach through the bundled Free node.", enabled: availability(ALGORITHM_MODE_IDS.learnApproach), icon: "practice", mode: ALGORITHM_MODE_IDS.learnApproach, title: getAlgorithmMode(ALGORITHM_MODE_IDS.learnApproach).title, tone: "primary" },
+        { detail: "Practice the bundled Free node with guided feedback.", enabled: availability(ALGORITHM_MODE_IDS.guidedPractice), icon: "practice", mode: ALGORITHM_MODE_IDS.guidedPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.guidedPractice).title, tone: "success" },
+        { detail: "Choose a mental unit and feedback timing within the bundled Free node.", enabled: availability(ALGORITHM_MODE_IDS.customPractice), icon: "clipboard", mode: ALGORITHM_MODE_IDS.customPractice, title: getAlgorithmMode(ALGORITHM_MODE_IDS.customPractice).title, tone: "info" },
+        { detail: "Practice Coding Interview review items that are currently due.", enabled: availability(ALGORITHM_MODE_IDS.weakAreaReview), unavailableReason: hasReviewEvidence ? undefined : "No eligible review evidence is available in this Free node.", icon: "rotate-ccw", mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review", tone: "danger" },
       ];
     case "certification":
       return [
-        { detail: "A fixed 40-question baseline across Google Cloud domains, with feedback after each saved answer.", enabled: true, icon: "clipboard", mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline", tone: "success" },
-        { detail: "Choose one Google Cloud domain and practice 10, 20, or 40 questions without mixing domains.", enabled: true, icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
-        { detail: "Choose one competency and practice only its approved scenario questions.", enabled: true, icon: "practice", mode: "certification-scenario-practice", title: "Scenario Practice", tone: "warning" },
-        { detail: "Review only saved weak areas whose review time has arrived.", enabled: true, icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
-        { detail: "Practice the approved interleaved Google Cloud question set.", enabled: true, icon: "practice", mode: "certification-mixed-practice", title: "Mixed Practice", tone: "success" },
-        { detail: "Review up to 10 saved weak areas whose review time has arrived.", enabled: true, icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
-        { detail: "A freely navigable exam simulation with final feedback after verified submission.", enabled: true, icon: "shield-check", mode: "certification-exam-simulation", title: "Exam Simulation", tone: "warning" },
+        { detail: "Practice the bundled setup-environment node in 10, 20, or 40 questions.", enabled: availability("certification-focus-practice"), icon: "practice", mode: "certification-focus-practice", title: "Focus Practice", tone: "primary" },
+        { detail: "Review only saved weak areas whose review time has arrived.", enabled: availability("certification-weak-area-review"), unavailableReason: hasReviewEvidence ? undefined : "No eligible review evidence is available in this Free node.", icon: "rotate-ccw", mode: "certification-weak-area-review", title: "Weak Area Review", tone: "danger" },
+        { detail: "Review up to 10 saved weak areas whose review time has arrived.", enabled: availability("certification-quick-review"), unavailableReason: hasReviewEvidence ? undefined : "No due review evidence is available in this Free node.", icon: "rotate-ccw", mode: "certification-quick-review", title: "Quick Review", tone: "danger" },
       ];
   }
 }
@@ -304,7 +315,7 @@ export function buildPracticeStatsSummary(input: {
 
   switch (track.kind) {
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
+      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content: codingPackageContent() });
 
       return {
         detail: {
@@ -344,7 +355,7 @@ export function buildTrackProgressPercent(input: {
 
   switch (track.kind) {
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
+      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content: codingPackageContent() });
       const totalItems = progress.nodeProgress.reduce(
         (sum, node) => sum + node.itemCount,
         0,
@@ -369,13 +380,17 @@ export function buildTopicRoadmapNodes(input: {
   const track = resolvePracticeFlowTrack(input.activeTrackId);
 
   switch (track.kind) {
-    case "certification":
-      return [...cloudTopics];
+    case "certification": {
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      return cloudTopics.filter((topic) => topic.id === freeNodeId);
+    }
     case "coding_interview": {
-      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts });
+      const content = codingPackageContent();
+      const progress = buildAlgorithmProgressFacts({ attempts: input.trainingAttempts, content });
 
-      return ALGORITHM_ROADMAP.nodes.flatMap((node) => {
-        const itemCount = getAlgorithmItemsForRoadmapNode(node.id).length;
+      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      return ALGORITHM_ROADMAP.nodes.filter((node) => node.id === freeNodeId).flatMap((node) => {
+        const itemCount = getAlgorithmItemsForRoadmapNode(node.id, content.items).length;
         if (itemCount === 0) return [];
 
         const nodeProgress = progress.nodeProgress.find(

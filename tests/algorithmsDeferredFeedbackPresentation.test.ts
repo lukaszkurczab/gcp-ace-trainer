@@ -12,8 +12,8 @@ import {
   installTrainingLifecycleUseCases,
   type TrainingLifecycleUseCases,
 } from "../src/application/trainingLifecycle";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { validateBundledContent } from "../src/content/application";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 import {
   createFamilyEnvelope,
   createForegroundTimerState,
@@ -39,7 +39,7 @@ import { installMemoryStorage } from "./journalTestSupport";
 const NOW = "2026-07-22T08:00:00.000Z";
 
 function deferredSession(status: "active" | "completed" | "abandoned"): Readonly<{ attempt: TrainingAttempt<AlgorithmResponse>; session: TrainingSession }> {
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const question = catalog.getItems().find(isAlgorithmChoiceQuestion);
   if (!question) throw new Error("Deferred feedback fixture requires a choice question.");
   const item = catalog.toContentItemRef(question);
@@ -64,7 +64,7 @@ function deferredSession(status: "active" | "completed" | "abandoned"): Readonly
     optionOrderByOccurrence: { "deferred-practice:occurrence:0": question.interaction.options.map((option) => option.id) },
     conditionalReinsertSlots: [],
     activeForegroundMs: 0,
-    contentVersion: item.contentVersion,
+    contentVersion: item.contentVersion, packagePin: item.packagePin,
     taxonomyVersion: "algorithms-taxonomy-v2",
     planFingerprint: "a".repeat(64),
     status,
@@ -91,7 +91,7 @@ function deferredSession(status: "active" | "completed" | "abandoned"): Readonly
 }
 
 test("deferred-feedback practice projection withholds correctness and authored feedback after a durable per-item attempt", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const { attempt, session } = deferredSession("active");
   await saveTrainingSession(session);
@@ -130,7 +130,7 @@ test("deferred-feedback practice projection withholds correctness and authored f
 });
 
 test("deferred-feedback summary reads timing, length, and authored feedback from completed durable records", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const { attempt, session } = deferredSession("completed");
   const result = createTrainingSessionResult({
@@ -160,7 +160,7 @@ test("deferred-feedback summary reads timing, length, and authored feedback from
 });
 
 test("explicitly ended practice exposes a partial summary without inventing a completed score", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   const { attempt, session } = deferredSession("abandoned");
   await saveTrainingSession(session);

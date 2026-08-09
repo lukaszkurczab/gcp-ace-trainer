@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { before } from "node:test";
 
 import type { TrackRegistration, TrainingAttempt } from "../src/domain";
 import {
@@ -27,19 +27,29 @@ import {
 } from "../src/features/practice/practiceFlowPresentation";
 import {
   ALGORITHM_MODE_IDS,
-  getAlgorithmItems,
   getRoadmapNodesWithActiveItems,
+  type AlgorithmQuestion,
 } from "../src/tracks/coding-interview";
-import { validateBundledContent } from "../src/content/application";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
+import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
 import { translate } from "../src/preferences/translations";
 
+function codingPackage() {
+  const resolution = contentPackageRuntimeOwner.getPreparedDiscovery("coding-interview-dsa-problem-solving");
+  return {
+    contentVersion: resolution.package.contentVersion,
+    items: resolution.profile.items as readonly AlgorithmQuestion[],
+    packagePin: resolution.package.packagePin,
+  };
+}
+
+before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
+
 function attemptForItem(
-  item: ReturnType<typeof getAlgorithmItems>[number],
+  item: AlgorithmQuestion,
   answeredAt: string,
 ): TrainingAttempt {
   const itemRef = {
-    contentVersion: getAlgorithmContentCatalog().getContentVersion(),
+    contentVersion: codingPackage().contentVersion, packagePin: codingPackage().packagePin,
     itemId: item.id,
     trackId: "coding-interview-dsa-problem-solving" as const,
   };
@@ -66,15 +76,16 @@ function attemptForItem(
   };
 }
 
-test("Algorithms practice hub exposes only the three deliberate alternatives to Continue practice", () => {
+test("Algorithms practice hub exposes exactly the four bundled Free-package modes", () => {
   const modes = buildPracticeModes(getTrackDisplay("coding-interview-dsa-problem-solving"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
     [
+      { mode: ALGORITHM_MODE_IDS.learnApproach, title: "Learn Approach" },
+      { mode: ALGORITHM_MODE_IDS.guidedPractice, title: "Guided Practice" },
+      { mode: ALGORITHM_MODE_IDS.customPractice, title: "Custom Practice" },
       { mode: ALGORITHM_MODE_IDS.weakAreaReview, title: "Weak Area Review" },
-      { mode: ALGORITHM_MODE_IDS.independentPractice, title: "Independent Practice" },
-      { mode: ALGORITHM_MODE_IDS.interviewSimulation, title: "Interview Simulation" },
     ],
   );
 });
@@ -83,19 +94,15 @@ test("Algorithms Independent Practice keeps its canonical title in the Polish pr
   assert.equal(translate("pl", "Independent Practice"), "Samodzielne ćwiczenia");
 });
 
-test("Certification practice hub exposes every declared mode, including the canonical Exam Simulation", () => {
+test("Certification practice hub exposes exactly Focus, Weak, and Quick from the bundled Free package", () => {
   const modes = buildPracticeModes(getTrackDisplay("google-cloud-associate-cloud-engineer"));
 
   assert.deepEqual(
     modes.map(({ mode, title }) => ({ mode, title })),
     [
-      { mode: "certification-diagnostic-baseline", title: "Diagnostic Baseline" },
       { mode: "certification-focus-practice", title: "Focus Practice" },
-      { mode: "certification-scenario-practice", title: "Scenario Practice" },
       { mode: "certification-weak-area-review", title: "Weak Area Review" },
-      { mode: "certification-mixed-practice", title: "Mixed Practice" },
       { mode: "certification-quick-review", title: "Quick Review" },
-      { mode: "certification-exam-simulation", title: "Exam Simulation" },
     ],
   );
 });
@@ -121,7 +128,7 @@ test("Certification practice presentation composes the concrete Google Cloud nam
   );
   assert.equal(
     formatPracticeTopicTitle(topic.title, (value) => translate("pl", value)),
-    "Planowanie i wdrażanie",
+    "Cloud fundamentals",
   );
   assert.equal(
     formatPracticeStatsTitle(stats, (value) => translate("pl", value)),
@@ -138,7 +145,7 @@ test("Certification practice presentation composes the concrete Google Cloud nam
 });
 
 test("Algorithms practice topic and statistics compose through Polish translation", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const track = getTrackDisplay("coding-interview-dsa-problem-solving");
   const stats = buildPracticeStatsSummary({
     activeTrack: track,
@@ -160,7 +167,7 @@ test("Algorithms practice topic and statistics compose through Polish translatio
 });
 
 test("route-selected Algorithms topic preserves authored copy and translates only structured 0/158 and 0/8 labels", async () => {
-  await validateBundledContent();
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const roadmapTopic = buildTopicRoadmapNodes({
     activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [],
@@ -266,8 +273,8 @@ test("practice presentation rejects unknown families and unsupported registered 
   );
 });
 
-test("every Algorithms roadmap topic with active items remains directly selectable", async () => {
-  await validateBundledContent();
+test("Algorithms roadmap exposes only the bundled package Free node", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
   const topics = buildTopicRoadmapNodes({
     activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [],
@@ -275,9 +282,9 @@ test("every Algorithms roadmap topic with active items remains directly selectab
 
   assert.deepEqual(
     topics.map((topic) => topic.id),
-    getRoadmapNodesWithActiveItems().map((node) => node.id),
+    getRoadmapNodesWithActiveItems(codingPackage().items).map((node) => node.id),
   );
-  assert.ok(topics.length > 1);
+  assert.equal(topics.length, 1);
   assert.ok(topics.every((topic) =>
     topic.status === "current" || topic.status === "available",
   ));
@@ -288,35 +295,24 @@ test("every Algorithms roadmap topic with active items remains directly selectab
   assert.doesNotMatch(JSON.stringify(topics), /\b(?:locked|mastery|retention|readiness)\b/i);
 });
 
-test("Algorithms roadmap distinguishes practiced topics from untouched available topics", async () => {
-  await validateBundledContent();
-  const items = getAlgorithmItems();
+test("Algorithms roadmap records practice inside the bundled package Free node", async () => {
+  await contentPackageRuntimeOwner.verifyBundledPackages();
+  const items = codingPackage().items;
   const first = items[0];
   assert.ok(first);
-  const second = items.find((item) =>
-    item.taxonomy.roadmapNodeId !== first.taxonomy.roadmapNodeId,
-  );
-  assert.ok(second);
-
   const topics = buildTopicRoadmapNodes({
     activeTrackId: "coding-interview-dsa-problem-solving",
     trainingAttempts: [
       attemptForItem(first, "2026-07-28T10:00:00.000Z"),
-      attemptForItem(second, "2026-07-28T11:00:00.000Z"),
     ],
   });
-  const earlierTopic = topics.find((topic) =>
+  const practicedTopic = topics.find((topic) =>
     topic.id === first.taxonomy.roadmapNodeId,
   );
-  const currentTopic = topics.find((topic) =>
-    topic.id === second.taxonomy.roadmapNodeId,
-  );
 
-  assert.equal(earlierTopic?.status, "available");
-  assert.equal(earlierTopic?.label, "Practiced");
-  assert.equal(currentTopic?.status, "current");
-  assert.equal(currentTopic?.label, "Recommended");
-  assert.ok(topics.some((topic) =>
-    topic.status === "available" && topic.label === "Available",
-  ));
+  assert.equal(topics.length, 1);
+  assert.equal(practicedTopic?.status, "current");
+  assert.equal(practicedTopic?.label, "Recommended");
+  assert.equal(practicedTopic?.detail.kind, "algorithm-progress");
+  assert.equal(practicedTopic?.detail.practicedItemCount, 1);
 });

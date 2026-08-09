@@ -17,10 +17,10 @@ test("Certification multiple-choice distinguishes exact, proper subset, and wron
   assert.equal(scoreCertificationQuestion(question, { kind: "option_selection", selectedOptionIds: ["a", "b"] }).kind, "incorrect");
 });
 
-test("exam scoring reports raw count and percentage with unanswered diagnostics and no pass inference", () => {
+test("exam scoring reports raw count and percentage with unanswered diagnostics and no pass inference", async () => {
   const questions = [makeQuestion({ id: "one" }), makeQuestion({ id: "two" }), makeQuestion({ id: "three" })];
-  const { session, attempts } = makeCompletedExamProjectionInputs(questions, { one: ["a"], two: ["b"] });
-  const summary = buildCertificationExamSummaries([session], attempts)[0]!;
+  const { session, attempts, resolveItem } = makeCompletedExamProjectionInputs(questions, { one: ["a"], two: ["b"] });
+  const summary = (await buildCertificationExamSummaries([session], attempts, resolveItem))[0]!;
   assert.equal(summary.correctCount, 1);
   assert.equal(summary.questionCount, 3);
   assert.equal(summary.scorePercent, 33);

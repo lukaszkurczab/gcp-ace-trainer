@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -17,9 +18,9 @@ function simulationSession(duration = 2_700_000) {
     id: "simulation-1", trackId: "coding-interview-dsa-problem-solving", modeId: "coding-interview-simulation",
     configurationSnapshot: { kind: "algorithmsInterviewSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "countdownForeground", timerDurationMs: duration },
     requestedLength: 40, actualLength: 40, currentItemIndex: 0,
-    itemOrder: Array.from({ length: 40 }, (_, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "coding-interview-dsa-problem-solving", contentVersion: "algorithms-core-0002", itemId: `item-${index}` } })),
+    itemOrder: Array.from({ length: 40 }, (_, index) => ({ occurrenceId: `occurrence-${index}`, item: { trackId: "coding-interview-dsa-problem-solving", contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, itemId: `item-${index}` } })),
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
-    contentVersion: "algorithms-core-0002", taxonomyVersion: "algorithms-taxonomy-v2", planFingerprint: "a".repeat(64), status: "active", startedAt,
+    contentVersion: "algorithms-core-0002", packagePin: TEST_CONTENT_PACKAGE_PIN, taxonomyVersion: "algorithms-taxonomy-v2", planFingerprint: "a".repeat(64), status: "active", startedAt,
   });
 }
 
@@ -38,9 +39,9 @@ function certificationPracticeSession() {
     id: "certification-practice-1", trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-focus-practice",
     configurationSnapshot: { kind: "certificationFocusPractice", feedbackMode: "afterEachAnswer", answerChanges: "none", navigation: "linear", submission: "perItem", timer: "elapsedForeground" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "certification-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-item-1" } }],
+    itemOrder: [{ occurrenceId: "certification-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-item-1", packagePin: TEST_CONTENT_PACKAGE_PIN } }],
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
-    contentVersion, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "b".repeat(64), status: "active", startedAt,
+    contentVersion, packagePin: TEST_CONTENT_PACKAGE_PIN, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "b".repeat(64), status: "active", startedAt,
   });
 }
 
@@ -50,9 +51,9 @@ function certificationExamSession() {
     id: "certification-exam-1", trackId: "google-cloud-associate-cloud-engineer", modeId: "certification-exam-simulation",
     configurationSnapshot: { kind: "certificationSimulation", feedbackMode: "atSessionEnd", answerChanges: "untilFinalSubmission", navigation: "free", submission: "manualOrForegroundTimeout", timer: "absoluteDeadline", timerDurationMs: 7_200_000, timerDeadlineAt: "2026-07-19T12:00:00.000Z" },
     requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-    itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-exam-item-1" } }],
+    itemOrder: [{ occurrenceId: "certification-exam-occurrence-1", item: { trackId: "google-cloud-associate-cloud-engineer", contentVersion, itemId: "certification-exam-item-1", packagePin: TEST_CONTENT_PACKAGE_PIN } }],
     optionOrderByOccurrence: {}, conditionalReinsertSlots: [], activeForegroundMs: 0,
-    contentVersion, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "c".repeat(64), status: "active", startedAt,
+    contentVersion, packagePin: TEST_CONTENT_PACKAGE_PIN, taxonomyVersion: "google-cloud-associate-cloud-engineer-taxonomy-v2", planFingerprint: "c".repeat(64), status: "active", startedAt,
   });
 }
 

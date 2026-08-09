@@ -1,6 +1,6 @@
 export * from "./algorithmApproaches";
 export * from "./algorithmsBlueprints";
-export * from "./algorithmContentCatalog";
+export * from "./algorithmRuntimeCatalog";
 export * from "./algorithmContentTypes";
 export * from "./algorithmConditionalReinsert";
 export * from "./algorithmItems";

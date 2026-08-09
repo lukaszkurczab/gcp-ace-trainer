@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createCodingInterviewFamilyRuntime, startAlgorithmsSession } from "../src/application/coding-interview";
+import { CodingInterviewFamilyRuntime, startAlgorithmsSession } from "../src/application/coding-interview";
 import { composeTrainingLifecycleUseCases } from "../src/application/bootstrap";
-import { getAlgorithmContentCatalog } from "../src/content/catalogRepository";
-import { validateBundledContent } from "../src/content/application";
+import { getCodingPackageTestCatalog } from "./contentPackageRuntimeTestSupport";
+import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 import { createTrainingAttempt, type ReviewQueueEntry, type TrainingAttempt } from "../src/domain";
 import { createAlgorithmReviewEntry } from "../src/tracks/coding-interview";
 import { isAlgorithmChoiceQuestion, isAlgorithmComplexityQuestion, isAlgorithmOrderingQuestion } from "../src/tracks/coding-interview/algorithmQuestionTypes";
@@ -14,8 +14,8 @@ import { installMemoryStorage } from "./journalTestSupport";
 
 const NOW = "2026-01-08T00:00:00.000Z";
 
-function reviewFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number], index: number): ReviewQueueEntry {
-  const ref = getAlgorithmContentCatalog().toContentItemRef(item);
+function reviewFor(item: ReturnType<ReturnType<typeof getCodingPackageTestCatalog>["getItems"]>[number], index: number): ReviewQueueEntry {
+  const ref = getCodingPackageTestCatalog().toContentItemRef(item);
   const attempt = createTrainingAttempt({
     id: `prior-${index}`,
     sessionId: `prior-session-${index}`,
@@ -32,7 +32,7 @@ function reviewFor(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog
   return createAlgorithmReviewEntry(attempt, NOW);
 }
 
-function correctResponse(item: ReturnType<ReturnType<typeof getAlgorithmContentCatalog>["getItems"]>[number]): AlgorithmResponse {
+function correctResponse(item: ReturnType<ReturnType<typeof getCodingPackageTestCatalog>["getItems"]>[number]): AlgorithmResponse {
   if (isAlgorithmChoiceQuestion(item)) return { kind: "choice", selectedOptionIds: item.interaction.acceptedOptionIds };
   if (isAlgorithmOrderingQuestion(item)) return { kind: "ordering", orderedSubgoalIds: item.interaction.canonicalOrder };
   if (isAlgorithmComplexityQuestion(item)) return { kind: "complexity", selectedValuesByDimension: Object.fromEntries(item.interaction.checkedDimensions.map((dimension) => [dimension, item.interaction.acceptedValuesByDimension[dimension]![0]!])) };
@@ -40,10 +40,10 @@ function correctResponse(item: ReturnType<ReturnType<typeof getAlgorithmContentC
 }
 
 test("Algorithms runtime persists due_queue source and makes only that session eligible for review retention", async () => {
-  await validateBundledContent();
-  const catalog = getAlgorithmContentCatalog();
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
   const dueReviews = catalog.getItems().slice(0, 10).map(reviewFor);
-  const runtime = createCodingInterviewFamilyRuntime();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
 
   const preparedDue = await runtime.prepare({
     trackId: "coding-interview-dsa-problem-solving",
@@ -80,9 +80,9 @@ test("Algorithms runtime persists due_queue source and makes only that session e
 });
 
 test("Algorithms Custom Practice persists its chosen timing while consuming the declared Guided blueprint", async () => {
-  await validateBundledContent();
-  const catalog = getAlgorithmContentCatalog();
-  const runtime = createCodingInterviewFamilyRuntime();
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
   const topicId = catalog.getItems()[0]!.taxonomy.roadmapNodeId;
   const prepared = await runtime.prepare({
     trackId: "coding-interview-dsa-problem-solving",
@@ -98,10 +98,10 @@ test("Algorithms Custom Practice persists its chosen timing while consuming the 
 });
 
 test("production lifecycle starts Custom Practice from the pinned Guided blueprint", async () => {
-  await validateBundledContent();
+  await prepareBundledTestPackages();
   installMemoryStorage();
   composeTrainingLifecycleUseCases({ wallClock: { now: () => NOW } });
-  const catalog = getAlgorithmContentCatalog();
+  const catalog = getCodingPackageTestCatalog();
   const topicId = catalog.getItems()[0]!.taxonomy.roadmapNodeId;
 
   const prepared = await startAlgorithmsSession({
@@ -118,8 +118,9 @@ test("production lifecycle starts Custom Practice from the pinned Guided bluepri
 });
 
 test("Algorithms runtime rejects malformed review requests before selecting or persisting a session", async () => {
-  await validateBundledContent();
-  const runtime = createCodingInterviewFamilyRuntime();
+  await prepareBundledTestPackages();
+  const catalog = getCodingPackageTestCatalog();
+  const runtime = new CodingInterviewFamilyRuntime(catalog, undefined, "coding-interview-taxonomy-v2");
   const input = {
     trackId: "coding-interview-dsa-problem-solving",
     modeId: "coding-interview-weak-area-review",

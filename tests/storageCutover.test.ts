@@ -1,3 +1,4 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -15,8 +16,8 @@ const simulation = () => createTrainingSession({
   id: "bootstrap-session", trackId: "coding-interview-dsa-problem-solving", modeId: "interview-simulation",
   configurationSnapshot: { answerChanges: "untilFinalSubmission", feedbackMode: "atSessionEnd", kind: "interviewSimulation", submission: "manualOrForegroundTimeout" },
   requestedLength: 1, actualLength: 1, currentItemIndex: 0,
-  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "content-v1" } }],
-  optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", status: "active", startedAt: "2026-07-16T00:00:00.000Z",
+  itemOrder: [{ occurrenceId: "bootstrap-session:0", item: { trackId: "coding-interview-dsa-problem-solving", itemId: "item", contentVersion: "content-v1" , packagePin: TEST_CONTENT_PACKAGE_PIN} }],
+  optionOrderByOccurrence: {}, activeForegroundMs: 0, contentVersion: "content-v1", packagePin: TEST_CONTENT_PACKAGE_PIN, status: "active", startedAt: "2026-07-16T00:00:00.000Z",
 });
 
 beforeEach(() => installKeyValueStorageForTests(new MemoryKeyValueStorage()));
@@ -98,7 +99,7 @@ test("one MMKV import is infrastructure-owned and only repositories access it", 
 });
 
 test("cutover removes old storage and remote content paths", () => {
-  const source = files("src").filter((path) => !path.endsWith("src/content/bundled/generatedArtifacts.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
+  const source = files("src").filter((path) => !path.endsWith("src/content/bundled/generatedFreeNodePackages.ts")).map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(source, /AsyncStorage|patternly:v1:|storageCodec|ContentCacheRepository|HttpContentSource|loadTrackContent|certificationExamRepository/);
   assert.doesNotMatch(source, /(["'])algorithms\1|(["'])cloud-certification\2/);
   for (const formerPath of ["src/application/algorithms", "src/features/algorithms", "src/tracks/algorithms", "src/tracks/cloud-certification"]) {

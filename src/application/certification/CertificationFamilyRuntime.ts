@@ -7,6 +7,8 @@ import {
   createTrainingSessionDraft,
   createTrainingSessionResult,
   retainReviewQueueEntryIdentity,
+  contentPackagePinsEqual,
+  type ContentItemRef,
   type ReviewMutationCommand,
   type ReviewQueueEntry,
   type TrainingAttempt,
@@ -16,7 +18,7 @@ import {
 import { createContentSessionPlanFingerprint } from "../../content/application/contentSessionIdentity";
 import { createAttemptId } from "../learningMutations/identity";
 import type { PreparedSession, PracticeFinalization, PracticeSubmission, SimulationFinalization, TrainingFamilyRuntime } from "../trainingLifecycle";
-import type { CertificationRuntimeCatalog } from "../../tracks/certification/certificationContentCatalog";
+import type { CertificationRuntimeCatalog } from "../../tracks/certification/certificationRuntimeCatalog";
 import type { PublishedCertificationDiagnosticBaseline, PublishedCertificationExamExperienceProfile, PublishedCertificationFocusPractice, PublishedCertificationMixedPractice, PublishedCertificationQuickReview, PublishedCertificationScenarioPractice, PublishedCertificationWeakAreaReview } from "../../content/contracts";
 import {
   buildCloudCertificationProgressViewModel,
@@ -104,6 +106,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       conditionalReinsertSlots: [],
       activeForegroundMs: 0,
       contentVersion: this.catalog.getContentVersion(),
+      packagePin: this.catalog.getPackagePin(),
       taxonomyVersion: this.taxonomyVersion,
       status: "active" as const,
       startedAt: input.now,
@@ -190,11 +193,11 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
 
   async queryDashboard(input: Readonly<{ activeSession: TrainingSession | null; trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {
     if (input.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) throw new Error("Cloud dashboard requested for another track.");
-    return Object.freeze({ activeSessionId: input.activeSession?.id, progress: buildCloudCertificationProgressViewModel({ attempts: input.attempts, reviewQueueItems: input.reviews, now: input.now }) });
+    return Object.freeze({ activeSessionId: input.activeSession?.id, progress: buildCloudCertificationProgressViewModel({ attempts: input.attempts, reviewQueueItems: input.reviews, now: input.now, packagePin: this.catalog.getPackagePin() }) });
   }
   async queryProgress(input: Readonly<{ trackId: string; attempts: readonly TrainingAttempt<unknown>[]; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {
     if (input.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) throw new Error("Cloud progress requested for another track.");
-    return buildCloudCertificationProgressViewModel({ attempts: input.attempts, reviewQueueItems: input.reviews, now: input.now });
+    return buildCloudCertificationProgressViewModel({ attempts: input.attempts, reviewQueueItems: input.reviews, now: input.now, packagePin: this.catalog.getPackagePin() });
   }
   async queryReview(input: Readonly<{ trackId: string; reviews: readonly ReviewQueueEntry[]; now: string }>): Promise<unknown> {
     if (input.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID) throw new Error("Cloud review requested for another track.");
@@ -211,7 +214,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
       return selected as readonly (typeof all)[number][];
     }
     if (weakAreaReview) {
-      const due = reviews.filter((review) => review.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && review.dueAt <= now).sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.sourceItem.itemId.localeCompare(right.sourceItem.itemId));
+      const due = reviews.filter((review) => review.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && contentPackagePinsEqual(review.sourceItem.packagePin, this.catalog.getPackagePin()) && review.dueAt <= now).sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.sourceItem.itemId.localeCompare(right.sourceItem.itemId));
       const byId = new Map(all.map((question) => [question.id, question]));
       const selected = due.reduce<(typeof all)[number][]>((questions, review) => {
         const question = byId.get(review.sourceItem.itemId);
@@ -229,7 +232,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
     }
     if (quickReview) {
       const due = reviews
-        .filter((review) => review.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && review.dueAt <= now)
+        .filter((review) => review.trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID && review.sourceItem.contentVersion === this.catalog.getContentVersion() && contentPackagePinsEqual(review.sourceItem.packagePin, this.catalog.getPackagePin()) && review.dueAt <= now)
         .sort((left, right) => left.dueAt.localeCompare(right.dueAt) || left.sourceItem.itemId.localeCompare(right.sourceItem.itemId));
       const byId = new Map(all.map((question) => [question.id, question]));
       const selected = due.reduce<(typeof all)[number][]>((questions, review) => {
@@ -268,7 +271,7 @@ export class CertificationFamilyRuntime implements TrainingFamilyRuntime {
   }
 
   private assertSession(session: TrainingSession): void {
-    if (session.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !CERTIFICATION_MODE_IDS.includes(session.modeId as typeof CERTIFICATION_MODE_IDS[number])) throw new Error("Cloud session does not match its validated immutable artifact.");
+    if (session.trackId !== GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID || session.contentVersion !== this.catalog.getContentVersion() || !contentPackagePinsEqual(session.packagePin, this.catalog.getPackagePin()) || session.taxonomyVersion !== this.taxonomyVersion || !session.planFingerprint || !CERTIFICATION_MODE_IDS.includes(session.modeId as typeof CERTIFICATION_MODE_IDS[number])) throw new Error("Cloud session does not match its validated immutable artifact.");
     if (session.modeId === "certification-exam-simulation" && (typeof session.configurationSnapshot.timerDeadlineAt !== "string" || Number.isNaN(Date.parse(session.configurationSnapshot.timerDeadlineAt)) || typeof session.configurationSnapshot.timerDurationMs !== "number" || session.configurationSnapshot.timerDurationMs <= 0 || session.configurationSnapshot.simulationPolicyId !== "patternly-certification-simulation-v1" || session.configurationSnapshot.simulationPolicyVersion !== "1" || session.configurationSnapshot.feedbackMode !== "atSessionEnd" || new Set(session.itemOrder.map((occurrence) => occurrence.item.itemId)).size !== session.actualLength)) throw new Error("Cloud exam simulation does not match its immutable Patternly interaction policy.");
     if (session.modeId === "certification-diagnostic-baseline" && (session.actualLength !== 40 || session.requestedLength !== 40 || session.configurationSnapshot.timer !== "elapsedForeground" || session.configurationSnapshot.feedbackMode !== "afterEachAnswer" || session.configurationSnapshot.answerChanges !== "none")) throw new Error("Certification Diagnostic Baseline does not match its immutable fixed-session contract.");
     if (session.modeId === "certification-focus-practice") {
@@ -383,7 +386,7 @@ function certificationResponse(value: unknown): CertificationResponse {
 function validateResponseForQuestion(response: CertificationResponse, optionIds: readonly string[]) {
   if (!response.selectedOptionIds.length || new Set(response.selectedOptionIds).size !== response.selectedOptionIds.length || response.selectedOptionIds.some((id) => !optionIds.includes(id))) throw new Error("Cloud response must select unique declared options.");
 }
-function sameItem(left: { trackId: string; itemId: string; contentVersion: string }, right: { trackId: string; itemId: string; contentVersion: string }) { return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion; }
+function sameItem(left: ContentItemRef, right: ContentItemRef) { return left.trackId === right.trackId && left.itemId === right.itemId && left.contentVersion === right.contentVersion && contentPackagePinsEqual(left.packagePin, right.packagePin); }
 function updateCertificationReviewEntry(entry: ReviewQueueEntry, attempt: TrainingAttempt<CertificationResponse>): ReviewQueueEntry | undefined {
   if (attempt.id === entry.sourceAttemptId || attempt.committedAt < entry.dueAt) return entry;
   if (attempt.result.kind !== "correct") return { ...entry, consecutiveAfterDueSuccesses: 0, lastReviewedAt: attempt.committedAt, persistent: true, reasons: [attempt.result.kind] };

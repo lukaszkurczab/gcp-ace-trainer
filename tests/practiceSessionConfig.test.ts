@@ -1,8 +1,12 @@
+import { TEST_CONTENT_PACKAGE_PIN } from "./contentPackagePinFixture";
 import assert from "node:assert/strict";
-import test from "node:test";
+import test, { before } from "node:test";
 
 import type { TrainingSession } from "../src/domain";
 import { buildCertificationPracticeResumeRoute, buildPracticeSessionConfig } from "../src/features/practice/sessionConfig";
+import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
+
+before(async () => { await contentPackageRuntimeOwner.verifyBundledPackages(); });
 
 const ordinaryConfiguration = {
   answerChanges: "none",
@@ -24,7 +28,7 @@ function certificationSession(input: Readonly<{
     activeForegroundMs: 0,
     actualLength: input.requestedLength,
     configurationSnapshot: input.configuration,
-    contentVersion: "gcp-ace-test",
+    contentVersion: "gcp-ace-test", packagePin: TEST_CONTENT_PACKAGE_PIN,
     currentItemIndex: 0,
     id: input.id,
     itemOrder: [],
@@ -37,8 +41,8 @@ function certificationSession(input: Readonly<{
   } as TrainingSession;
 }
 
-test("Custom Practice accepts every declared length and persists its selected feedback timing", () => {
-  for (const sessionLength of [10, 20, 40] as const) {
+test("Custom Practice accepts its package-declared length and persists its selected feedback timing", () => {
+  for (const sessionLength of [10] as const) {
     for (const feedbackMode of ["afterEachAnswer", "atSessionEnd"] as const) {
       const config = buildPracticeSessionConfig({
         feedbackMode,
@@ -57,7 +61,7 @@ test("Custom Practice accepts every declared length and persists its selected fe
 });
 
 test("Custom Practice setup rejects every unsupported session length", () => {
-  for (const sessionLength of [0, 1, 9, 11, 15, 21, 39, 41] as const) {
+  for (const sessionLength of [0, 1, 9, 11, 15, 20, 21, 39, 40, 41] as const) {
     assert.throws(
       () => buildPracticeSessionConfig({
         feedbackMode: "afterEachAnswer",
@@ -76,7 +80,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
   assert.throws(
     () => buildPracticeSessionConfig({
       mode: "coding-interview-custom-practice",
-      sessionLength: 20,
+      sessionLength: 10,
       source: "practiceSetup",
       topicId: "binary_search",
       trackId: "coding-interview-dsa-problem-solving",
@@ -87,7 +91,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
     () => buildPracticeSessionConfig({
       feedbackMode: "afterReview" as never,
       mode: "coding-interview-custom-practice",
-      sessionLength: 20,
+      sessionLength: 10,
       source: "practiceSetup",
       topicId: "binary_search",
       trackId: "coding-interview-dsa-problem-solving",
@@ -110,7 +114,7 @@ test("Custom Practice requires a selected timing while predefined Algorithms mod
       mode: "coding-interview-custom-practice",
       reviewBehaviorEnabled: false,
       feedbackMode: "afterEachAnswer",
-      sessionLength: 20,
+      sessionLength: 10,
       source: "practiceSetup",
       topicId: "binary_search",
       trackId: "coding-interview-dsa-problem-solving",
@@ -132,43 +136,28 @@ test("rejects an Algorithms session length that the selected mode does not decla
   );
 });
 
-test("Independent Practice defaults to the research-sized 10-item contract and supports no impossible 40-item scope", () => {
-  const config = buildPracticeSessionConfig({
-    algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
-    mode: "coding-interview-independent-practice",
-    topicId: "hash_map_and_set",
-    trackId: "coding-interview-dsa-problem-solving",
-  });
-
-  assert.equal(config.sessionLength, 10);
+test("Independent Practice direct entry fails because it is excluded from the bundled Free package", () => {
   assert.throws(
     () => buildPracticeSessionConfig({
       algorithmScope: { interleavedScopeId: "hash-map-and-set-node-v1" },
       mode: "coding-interview-independent-practice",
-      sessionLength: 40,
       topicId: "hash_map_and_set",
       trackId: "coding-interview-dsa-problem-solving",
     }),
-    /does not support session length 40/,
+    /unavailable in package/,
   );
 });
 
-test("Certification resume routes preserve the exact immutable configuration for all six ordinary modes", () => {
+test("Certification resume routes preserve exact immutable configuration for the three package modes", () => {
   const routes = [
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationDiagnosticBaseline" }, id: "diagnostic", modeId: "certification-diagnostic-baseline", requestedLength: 40 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, domain: "operations", kind: "certificationFocusPractice" }, id: "focus", modeId: "certification-focus-practice", requestedLength: 20 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, competencyId: "iam", kind: "certificationScenarioPractice" }, id: "scenario", modeId: "certification-scenario-practice", requestedLength: 20 })),
+    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, domain: "setup_environment", kind: "certificationFocusPractice" }, id: "focus", modeId: "certification-focus-practice", requestedLength: 20 })),
     buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationWeakAreaReview" }, id: "weak", modeId: "certification-weak-area-review", requestedLength: 20 })),
-    buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationMixedPractice" }, id: "mixed", modeId: "certification-mixed-practice", requestedLength: 40 })),
     buildCertificationPracticeResumeRoute(certificationSession({ configuration: { ...ordinaryConfiguration, kind: "certificationQuickReview", maximumLength: 10 }, id: "quick", modeId: "certification-quick-review", requestedLength: 10 })),
   ];
 
   assert.deepEqual(routes.map((route) => ({ competencyId: route.competencyId, expectedSessionId: route.expectedSessionId, mode: route.mode, sessionLength: route.sessionLength, topicId: route.topicId })), [
-    { competencyId: undefined, expectedSessionId: "diagnostic", mode: "certification-diagnostic-baseline", sessionLength: 40, topicId: "" },
-    { competencyId: undefined, expectedSessionId: "focus", mode: "certification-focus-practice", sessionLength: 20, topicId: "operations" },
-    { competencyId: "iam", expectedSessionId: "scenario", mode: "certification-scenario-practice", sessionLength: 20, topicId: "" },
+    { competencyId: undefined, expectedSessionId: "focus", mode: "certification-focus-practice", sessionLength: 20, topicId: "setup_environment" },
     { competencyId: undefined, expectedSessionId: "weak", mode: "certification-weak-area-review", sessionLength: 20, topicId: "" },
-    { competencyId: undefined, expectedSessionId: "mixed", mode: "certification-mixed-practice", sessionLength: 40, topicId: "" },
     { competencyId: undefined, expectedSessionId: "quick", mode: "certification-quick-review", sessionLength: 10, topicId: "" },
   ]);
 });
