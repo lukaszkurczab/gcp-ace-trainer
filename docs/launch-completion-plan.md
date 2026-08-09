@@ -6,9 +6,9 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** B-02 landscape and anti-reference audit. It is independent of the concurrent content work and provides the evidence needed before any later visual direction is proposed.
+**Current task:** B-03 three Figma directions. It is independent of the concurrent content work and must create three editable alternatives without selecting or approving one.
 
-**Next executable tasks:** B-02 may proceed now; independently, reconcile the next pushed canonical content checkpoint with the app’s exact brief/package locks before changing any cross-repository lock. `PKG-02`/`PKG-03` remain external-infrastructure work and are not started by this checkpoint.
+**Next executable tasks:** create the three B-03 Figma drafts and obtain the Product Owner's `X-09A` 3→2 choice; independently, reconcile the next pushed canonical content checkpoint with the app’s exact brief/package locks before changing any cross-repository lock. `PKG-02`/`PKG-03` remain external-infrastructure work and are not started by this checkpoint.
 
 ## 1. Purpose and authority
 
@@ -391,13 +391,13 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Paths / scope:** read-only design registry, tokens/components/icons/fonts/screenshots/Maestro/build graph audit. **Non-goals:** create visual directions or install Storybook. **Obligations:** classify and later delete unapproved alternatives; no metadata placeholder.
 - **Acceptance:** evidence-backed technical choices, license gaps and risk-based state inventory; Figma write capability verified. **Evidence:** tracked audit `docs/audits/2026-08-09-b01-design-tooling-asset-audit.md`; authenticated Figma board `10:2` and owner annotation read-back on 2026-08-10. **Unlocks:** `B-02`.
 
-#### B-02 — Landscape and anti-reference audit — `ACTIVE`
+#### B-02 — Landscape and anti-reference audit — `VERIFIED`
 
 - **Objective:** define collision/cliché constraints for the one Patternly brand. **Owners:** docs 06 and brand PO decisions. **Dependencies:** `B-01`. **State:** no current formal territory study.
 - **Paths / scope:** repository design evidence plus referenced primary visual sources; technical learning/developer/cloud/P marks/nodes/branches/negative space. **Non-goals:** trademark opinion or final choice.
-- **Obligations:** evidence-only output, no approval label. **Acceptance:** explicit anti-reference/collision matrix and solo-maintainability constraints. **Manual:** owner can inspect sources. **Checkpoint:** none. **Unlocks:** `B-03`.
+- **Obligations:** evidence-only output, no approval label. **Acceptance:** explicit anti-reference/collision matrix and solo-maintainability constraints. **Evidence:** tracked audit `docs/audits/2026-08-10-b02-landscape-anti-reference-audit.md`; it contains primary-source links and no selected direction. **Unlocks:** `B-03`.
 
-#### B-03 — Three Figma directions — `BLOCKED`
+#### B-03 — Three Figma directions — `ACTIVE`
 
 - **Objective:** create three structurally distinct editable proof sets. **Owners:** docs 05/06. **Dependencies:** `B-02`. **State:** no approved current direction.
 - **Scope:** required mark/icon/wordmark/color/type/track symbol/hero/product-state/public-store proofs in Figma. **Non-goals:** production code or self-approval. **Obligations:** retire rejected explorations after durable decision/provenance retention.
@@ -661,7 +661,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is partial after the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`; its remaining complete-Free-node requirement belongs to the package path and is not hidden or declared complete.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is `VERIFIED` at application `b6b969b`: the tracked audit confirms the asset, Storybook and release-boundary inventory, and `X-09` is satisfied by authenticated Figma board `10:2` plus its Product Owner approval read-back on 2026-08-10. B-02 is active and does not alter app or content behavior. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. The next cross-repository application action waits for a pushed canonical content checkpoint before changing an exact lock. No task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` is `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits the existing guest/runtime/package-activation gates. B-01 is `VERIFIED` at application `b6b969b`: the tracked audit confirms the asset, Storybook and release-boundary inventory, and `X-09` is satisfied by authenticated Figma board `10:2` plus its Product Owner approval read-back on 2026-08-10. B-02 is `VERIFIED` by its tracked evidence-only collision audit; B-03 is active and does not select or approve a visual direction. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. The next cross-repository application action waits for a pushed canonical content checkpoint before changing an exact lock. No task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
