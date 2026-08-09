@@ -430,7 +430,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 #### TRACK-02 — Ten complete track briefs and registry admission contract — `BLOCKED`
 
 - **Objective:** define production-shaped briefs without empty registry cards or filler. **Owners:** `LEARNING-PRODUCTS-001`, docs 01/07/15/16. **Dependencies:** `TRACK-01`. **State:** two configs, no Design Interview or admission/free-node fields; canonical goal semantics already exist in `PRODUCT-SURFACES-GOALS-001`, so brief definition does not wait for their runtime implementation.
-- **Repositories / scope:** canonical content briefs and app internal density/admission tests for GCP ACE, AWS SAA, Azure AZ-104, AI-900, Terraform Associate, KCNA, Coding Interview, Backend System Design, Frontend System Design, Object-Oriented Design; each owns learner/JTBD, internal family, taxonomy, freeNodeId, modes, goals, Progress, package/provenance and admission gate.
+- **Repositories / scope:** canonical content briefs and app internal density/admission tests for GCP ACE, AWS SAA, Azure AZ-104, AI-901, Terraform Associate, KCNA, Coding Interview, Backend System Design, Frontend System Design, Object-Oriented Design; each owns learner/JTBD, internal family, taxonomy, freeNodeId, modes, goals, Progress, package/provenance and admission gate.
 - **Non-goals:** registry placeholders or bulk questions. **Obligations:** generic internal families only; delete public family/category metadata. **Acceptance:** ten real briefs validate; production registry admits only complete free/core-loop tracks; density harness remains non-production. **Evidence:** cross-repo schema tests. **Unlocks:** package schema and proofs.
 
 #### PROOF-01 — GCP Certification free/package vertical — `BLOCKED`
@@ -464,9 +464,9 @@ The remaining population work is deliberately split by track. Each task below ow
 
 - **Objective/state/scope:** add the absent Azure Certification product through the proven Certification runtime. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** Azure brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract above plus no Google/AWS-specific branch. **Checkpoint:** Microsoft source/licensing freshness. **Unlocks:** catalogue release gate contribution.
 
-#### TRACK-04 — Azure AI Fundamentals AI-900 production track — `BLOCKED`
+#### TRACK-04 — Azure AI Fundamentals AI-901 production track — `BLOCKED`
 
-- **Objective/state/scope:** add the absent AI-900 Certification product through the same family owner. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** AI-900 brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus AI terminology/provenance review without vendor affiliation claim. **Checkpoint:** Microsoft source/licensing freshness. **Unlocks:** catalogue release gate contribution.
+- **Objective/state/scope:** add the absent AI-901 Certification product through the same family owner. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** AI-901 brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus AI terminology/provenance review without vendor affiliation claim. **Checkpoint:** Microsoft source/licensing freshness. **Unlocks:** catalogue release gate contribution.
 
 #### TRACK-05 — Terraform Associate production track — `BLOCKED`
 
