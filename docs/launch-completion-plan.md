@@ -418,7 +418,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 #### B-05 — Final visual system approval — `ACTIVE`
 
 - **Objective:** establish one owner-approved final visual authority for A — Boundary Signal. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `X-09B` satisfied by `PO-062`. **Scope:** final mark/icon/wordmark/type/palette/track accents/symbols/illustration/motion/haptics/public-store applications and reference states.
-- **Non-goals:** Codex approval or code handoff completion. **Obligations:** no duplicate finalist authority. **Acceptance:** real frames/components have owner-only `APPROVED`, provenance and version. **Checkpoint:** `X-09C`. **Evidence:** decision record and approved references. **Unlocks:** `DS-01` and all `UX-*D`.
+- **Non-goals:** Codex approval or code handoff completion. **Obligations:** no duplicate finalist authority. **Acceptance:** real frames/components have owner-only `APPROVED`, provenance and version. **Evidence in progress:** sole editable A authority candidate Figma `16:323` with mobile reference `15:307` and scoped record `docs/designs/b05-boundary-signal-final-authority/DESIGN.md`; it is explicitly `DRAFT`, while B/C remain decision provenance. **Checkpoint:** `X-09C`. **Unlocks:** `DS-01` and all `UX-*D`.
 
 #### DS-01 — Repository token, asset and licensing authority — `BLOCKED`
 
