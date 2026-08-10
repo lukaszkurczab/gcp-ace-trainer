@@ -7,7 +7,9 @@
 - Product Owner selection: `PO-061`, `X-09A`, 2026-08-10.
 - Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`.
 - Finalist proof sets: A — Boundary Signal `14:163`; C — Focus Frame `14:186`.
-- Composition comparison: A `14:242`; C `14:243`.
+- Active mobile composition comparison: A `15:307`; C `14:243`.
+- Superseded A desktop-like exploration retained only as iteration provenance:
+  `14:242`.
 - Optical icon studies (1024 / 180 / 60 px): A `14:274`; C `14:275`.
 - Rejected provenance only: B — Resolved Group `10:94`.
 
@@ -58,11 +60,12 @@ The cobalt contour carries Coding Interview, amber marks a decisive boundary,
 and the optional `P` reading stays secondary to the structure. The system uses
 quiet technical contrast rather than provider, terminal or graph symbolism.
 
-Its composition is deliberately asymmetric: a compact left route retains the
-node-local sequence; a larger right panel prepares the one bounded session;
-feedback forms a seam below it; and the terminal next action crosses the
+Its composition is deliberately mobile-first and vertical: a compact horizontal
+route retains the node-local sequence; a full-width session prepares one
+bounded action; feedback follows; and the terminal next action crosses the
 boundary in a high-contrast light panel. The decision cue is **progress along
-a bounded path**, not a centred card with a different colour.
+a bounded path**, not a desktop side rail or a centred card with a different
+colour.
 
 The proof set shows the mark/icon, wordmark, two track accents, Learn Approach
 10 primary entry, Guided continuation, authored feedback, terminal next action,
