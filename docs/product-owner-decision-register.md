@@ -103,6 +103,7 @@ aktywnego planu.
 | PO-059 | Zamknięte profile Free node           | `resolved`                 | Free package zamyka profil, nie pełne `validModes` tracku.                     |
 | PO-060 | Referencje PKG-04A Free experience    | `resolved`                 | Zatwierdzone minimalne stany Practice Hub, Setup i unavailable dla Free.       |
 | PO-061 | Finaliści systemu wizualnego B-03      | `resolved`                 | A — Boundary Signal i C — Focus Frame przechodzą do B-04; B zostaje tylko dowodem decyzji. |
+| PO-062 | Wybór systemu wizualnego B-04          | `resolved`                 | A — Boundary Signal jest jedynym kierunkiem B-05; C zostaje tylko dowodem decyzji. |
 
 ## PO-001 — Architektura marki
 
@@ -1816,3 +1817,25 @@ referencje. Dopiero `X-09B` wybiera jeden z nich dla B-05. Wszystkie ograniczeni
 jednej marki i anti-collision z PO-053/PO-054 pozostają bez zmian.
 
 **Status:** `resolved`; odblokowuje wyłącznie B-04 dla A i C.
+
+## PO-062 — Wybór systemu wizualnego B-04
+
+**Data:** 2026-08-10
+**Źródło:** bezpośrednia decyzja Product Ownera; TalkToFigma channel
+`wtk4hp8i`, board `10:92`.
+
+Product Owner kończy checkpoint `X-09B` i wybiera **A — Boundary Signal** jako
+jedyny system, który przechodzi do B-05. Wiążący mobile-first materiał A jest
+na Figma node `15:307`; pozostałe dowody A mogą wspierać jego dopracowanie.
+
+**C — Focus Frame** oraz wcześniej odrzucony **B — Resolved Group** zostają
+zachowane wyłącznie jako audytowalna proweniencja wyborów 3→2→1. Nie wolno ich
+używać jako aktywnej referencji, eksportu lub źródła implementacji.
+
+Decyzja wybiera kierunek, ale nie jest jeszcze zatwierdzeniem finalnej marki,
+assetów, tokenów, komponentów ani produkcyjnego UI. B-05 ma zbudować jedną
+pełną authority A; tylko późniejszy `X-09C` może oznaczyć rzeczywistą pracę
+`APPROVED`.
+
+**Status:** `resolved`; zastępuje aktywny wybór dwóch finalistów z PO-061 i
+odblokowuje wyłącznie B-05 dla A.

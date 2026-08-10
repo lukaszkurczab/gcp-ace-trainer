@@ -2,8 +2,8 @@
 
 ## Status and authority
 
-- Status: `X-09B READY` — comparable proof sets are ready for Product Owner
-  selection; no direction is approved visual authority.
+- Status: `X-09B RECORDED` — A — Boundary Signal is selected for B-05; no
+  direction is approved visual authority.
 - Product Owner selection: `PO-061`, `X-09A`, 2026-08-10.
 - Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`.
 - Finalist proof sets: A — Boundary Signal `14:163`; C — Focus Frame `14:186`.
@@ -13,10 +13,11 @@
 - Optical icon studies (1024 / 180 / 60 px): A `14:274`; C `14:275`.
 - Rejected provenance only: B — Resolved Group `10:94`.
 
-This record makes the two systems comparable without granting either one an
-implementation, export or production-token authority. The Product Owner alone
-selects one system at `X-09B`; B-05 is the only place that may mark an actual
-visual system `APPROVED`.
+This record made the two systems comparable without granting either one an
+implementation, export or production-token authority. `PO-062` records the
+Product Owner's X-09B selection of A — Boundary Signal. C — Focus Frame is
+retained only as decision provenance. B-05 is the only place that may prepare
+the selected system for the later owner-only `APPROVED` authority at X-09C.
 
 ## Shared product boundary
 
@@ -93,9 +94,14 @@ explicit 1024 → 180 → 60 px optical-legibility check.
 At the three editable study scales, its distinct reading remains an outer frame
 and one resolved focus group.
 
-## X-09B decision boundary
+## X-09B decision record
 
-Choose one complete system — not a single colour, icon or screen — based on:
+Product Owner selected **A — Boundary Signal**. The comparison remains durable
+evidence, but only A may proceed to B-05. C and B must not be used as current
+design authority.
+
+The selection was made from complete systems — not a single colour, icon or
+screen — using these criteria:
 
 1. distinctiveness without collision or implied provider affiliation;
 2. recognisability at small icon scale and as a monochrome mark;
@@ -103,5 +109,6 @@ Choose one complete system — not a single colour, icon or screen — based on:
 4. accessible contrast and type hierarchy in Dark and Light;
 5. solo-maintainability across app and public/store use.
 
-Until `X-09B`, neither finalist may become repository tokens, assets,
-components, app icon, Store material or final target UI.
+The selection itself does not permit repository tokens, assets, components, app
+icon, Store material or final target UI. Those remain locked until B-05 and
+owner checkpoint X-09C.
