@@ -102,6 +102,7 @@ aktywnego planu.
 | PO-058 | Reviewed content two pointers         | `resolved`                 | Osiem wskazanych istniejących plików może stać się canonical content.          |
 | PO-059 | Zamknięte profile Free node           | `resolved`                 | Free package zamyka profil, nie pełne `validModes` tracku.                     |
 | PO-060 | Referencje PKG-04A Free experience    | `resolved`                 | Zatwierdzone minimalne stany Practice Hub, Setup i unavailable dla Free.       |
+| PO-061 | Finaliści systemu wizualnego B-03      | `resolved`                 | A — Boundary Signal i C — Focus Frame przechodzą do B-04; B zostaje tylko dowodem decyzji. |
 
 ## PO-001 — Architektura marki
 
@@ -1791,3 +1792,27 @@ Figma.
 
 **Status:** `resolved`; jest konkretnym `APPROVED` design evidence dla
 `PKG-04A`, nie ogólnym zwolnieniem dla przyszłych zmian UI.
+
+## PO-061 — Finaliści systemu wizualnego B-03
+
+**Data:** 2026-08-10
+**Źródło:** bezpośrednia decyzja Product Ownera; TalkToFigma channel
+`wtk4hp8i`, board `10:92`.
+
+Product Owner kończy checkpoint `X-09A` i wybiera dokładnie dwa kierunki do
+dalszego, porównywalnego opracowania w B-04:
+
+- **A — Boundary Signal** (`10:93`);
+- **C — Focus Frame** (`10:95`).
+
+**B — Resolved Group** (`10:94`) nie jest finalistą. Pozostaje w Figma tylko
+jako trwały dowód decyzji 3→2; nie wolno go traktować jako aktywnej referencji,
+eksportować ani implementować.
+
+Decyzja nie zatwierdza żadnego kierunku jako finalnego systemu wizualnego i nie
+stanowi `APPROVED` authority dla kodu, tokenów, assetów, ikon Store ani
+produkcji. B-04 ma rozwinąć oba finalistyczne systemy w pełne, porównywalne
+referencje. Dopiero `X-09B` wybiera jeden z nich dla B-05. Wszystkie ograniczenia
+jednej marki i anti-collision z PO-053/PO-054 pozostają bez zmian.
+
+**Status:** `resolved`; odblokowuje wyłącznie B-04 dla A i C.
