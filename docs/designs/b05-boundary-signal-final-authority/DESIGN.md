@@ -1,64 +1,92 @@
-# B-05 — Boundary Signal final authority candidate v1
+# B-05 — Boundary Signal mobile authority candidate v4
 
 ## Status and authority
 
 - Status: `DRAFT — X-09C REQUIRED`.
 - Product Owner direction selection: `PO-062`, X-09B, 2026-08-10.
-- Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`, final-system
-  candidate `16:323`.
-- Mobile reference owned by this candidate: `15:307`.
+- Active Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`, candidate
+  `16:533`.
+- Active application reference frames: first Free value `16:536`, Practice Hub
+  `16:537`, and GCP Free-mode setup/unavailable state `16:538`.
 
-This is the sole active candidate following X-09B. It consolidates A —
-Boundary Signal into one editable review surface. It is not `APPROVED`, not a
-production-token source, and not an export authority. Only Product Owner X-09C
-can promote this exact authority.
+This is the sole active B-05 candidate. Every application reference frame is
+`390 × 844`; the hard maximum application width is `460 px`. The former wide
+composition `16:323` is `SUPERSEDED` decision provenance only. It must not be
+exported, implemented, or treated as the design authority.
+
+Only Product Owner X-09C can approve this exact candidate. Until then it is not
+a production-token source, an asset-export authority, or a UI implementation
+approval.
+
+## Mobile product expression
+
+Boundary Signal means that a useful path becomes legible when its scope is
+bounded. On phone, that is expressed as one vertically ordered route, one
+executable first session, its authored feedback, and the next action—never as a
+desktop side rail or a compressed web landing page.
+
+The active frames prove the three product-critical states without pretending
+that unavailable content can run:
+
+| Frame | What it proves |
+| --- | --- |
+| `16:536` | Coding Interview first value: Learn Approach, exactly 10, node-local route, authored Reason → Details, and a clear next Guided 10 action. |
+| `16:537` | Practice Hub distinguishes the executable Coding Free profile from Simulation, which remains visible but explicitly unavailable with no substitute session. |
+| `16:538` | GCP ACE defaults to executable Focus Practice 10 in `setup_environment`; cross-domain Diagnostic baseline is explicit unavailable, followed by the safe Focus action. |
+
+Dark and Light are surface variants of the same information hierarchy. Accent
+colour never communicates availability alone: the name and the reason remain
+readable at every state.
 
 ## System definition
 
-Boundary Signal means that a useful path becomes legible when its scope is
-bounded. The primary mark is two cobalt modules, a light-blue route and an
-amber boundary. Structure is read first; any `P` reading is secondary.
+Boundary Signal uses a cobalt structural field, a light-blue route and an amber
+decision boundary. The primary mark may carry a secondary `P` reading, but
+structure is read first. There is one Patternly brand; Coding Interview and GCP
+ACE may use subordinate orientation symbols only and must not become
+sub-brands, provider marks, badges, terminal glyphs or mascots.
 
-The system has one Patternly brand. Coding Interview uses a subordinate cobalt
-contour; GCP ACE uses an amber boundary. Neither is a sub-brand, provider mark,
-cloud/service glyph, badge, certificate, terminal or mascot.
-
-There is no separate decorative illustration language: explanatory visuals use
-only bounded diagrams assembled from the same modules, route and boundary as
-the mark. This keeps product, Store and public material recognisably one system.
-
-| Token role | Editable Figma value | Use |
+| Token role | Draft value | Mobile use |
 | --- | --- | --- |
-| Ink | `#0D121F` | Dark surface and mark field |
-| Cobalt | `#3373F2` | Structural module/contour |
+| Ink | `#0D121F` | Dark field, terminal action, primary text on light |
+| Cobalt | `#3373F2` | Structural orientation |
 | Signal | `#80CCFF` | Route and primary action |
-| Boundary | `#F5A333` | Bounded decision/accent |
-| Light surface | `#F5F7FC` | High-contrast terminal action / Light background |
+| Boundary | `#F5A333` | Decision/accent, always with wording |
+| Light surface | `#F5F7FC` | Light screen surface |
 
-The current readable key pairs are: dark primary `17.38:1`, dark action
-`10.68:1`, dark boundary `8.46:1`, and light primary `16.31:1`. Accent colour
-never carries a state without wording and a border/icon cue.
+The readable key pairs are dark primary `17.38:1`, dark action `10.68:1`, dark
+boundary `8.46:1`, and light primary `16.31:1`.
 
-## Mobile, Store and response behavior
+## Vector and asset rule
 
-The selected mobile composition is vertical: compact node-local route,
-full-width primary session, authored feedback, then explicit next action. It
-does not reuse the earlier desktop-like side-rail exploration.
+Every icon, primary mark, track symbol and launcher/adaptive/monochrome master
+must be an editable SVG source and be imported into Figma as that SVG. It must
+not be reconstructed from Figma rectangles or approximated as a raster image.
 
-Store/public use keeps the pattern first and wordmark second. The editable
-1024/180/60 px studies use the same Boundary Signal mark—not an empty colour
-field or a reduced monogram—and prove that modules, route and boundary remain
-separate at icon scale. No final binary icon, Store submission asset or public
-claim is created yet.
+The currently connected TalkToFigma API has no SVG-import operation. A native
+paste attempt produced a blank frame rather than a vector and was removed; it
+is not evidence of an asset import. Therefore no imported mark or icon is
+claimed by this candidate yet. SVG import is still required before X-09C can
+approve asset masters or any post-approval export handoff.
 
-One state transition resolves in 160 ms. With reduced motion it becomes
-instant. One light haptic occurs only after a committed answer. Unavailable
-states remain explicit and never substitute ordinary practice, Premium content
-or another node.
+The illustration language is sparse and diagrammatic: the same signal, route
+and boundary primitives explain first entry and important empty states. It is
+not a stock scene, people illustration, mascot or a separate editorial style.
+
+## Interaction rule
+
+The visual system does not change the learning lifecycle. After submission,
+the action locks; durable persistence and verification must finish; then the
+resolved boundary, feedback and next action appear. Reduced motion shows the
+same result immediately. A light haptic may occur only after durable
+verification, never for navigation, ordinary taps, saving or failure.
 
 ## X-09C decision boundary
 
-X-09C must approve or reject this exact Figma authority as a whole: mark,
-wordmark, palette, type, track accents, mobile composition, Store legibility,
-motion, reduced motion and haptics. Until then there is no permitted repository
-asset, token, component or production UI implementation based on it.
+X-09C must approve or reject the active mobile authority as a whole: the
+phone-scale hierarchy, mark/wordmark once its SVG sources are truly imported,
+palette, type, track orientation, unavailable-state wording, diagrammatic
+illustration, reduced-motion/haptic semantics, and all needed mobile asset
+masters. Approval cannot be inferred from this document or from Figma DRAFT
+frames. Until then no repository asset, token, component or production UI may
+derive from it.
