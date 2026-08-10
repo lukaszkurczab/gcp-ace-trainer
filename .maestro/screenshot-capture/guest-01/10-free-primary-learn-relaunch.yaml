@@ -1,0 +1,85 @@
+appId: com.lkurczab.patternly
+name: Patternly GUEST-01 — Free Learn 10 persists through relaunch
+tags:
+  - screenshot
+  - guest-01
+  - runtime-auditability
+---
+- extendedWaitUntil:
+    visible:
+      id: "patternly:home:track-card:coding-interview-dsa-problem-solving"
+    timeout: 30000
+- tapOn:
+    id: "main-tab-bar-practice"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:practice:hub:root"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/guest-01__010__free-primary-entry__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:practice:start-session"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:question:alg-complexity-amortized-001"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1:length:10:feedback-timing:after-each-answer"
+- tapOn:
+    id: "patternly:session:option:alg-complexity-amortized-001:sequence_average"
+- tapOn:
+    id: "patternly:session:submit:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- takeScreenshot: "${SCREENSHOT_ROOT}/guest-01__020__authored-feedback-and-details__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:session:leave:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1"
+- tapOn:
+    id: "patternly:session:leave-and-resume:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1"
+- killApp
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "patternly:resume:card:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1"
+    timeout: 30000
+- takeScreenshot: "${SCREENSHOT_ROOT}/guest-01__030__durable-resume-offered__${THEME}__${PLATFORM}-phone"
+- tapOn:
+    id: "patternly:resume:continue:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1"
+- extendedWaitUntil:
+    visible:
+      id: "patternly:session:root:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1"
+    timeout: 30000
+- assertVisible:
+    id: "patternly:session:question:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:configuration:coding-interview-dsa-problem-solving:coding-interview-learn-approach:1:length:10:feedback-timing:after-each-answer"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:feedback:alg-complexity-amortized-001"
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: "patternly:session:reason:alg-complexity-amortized-001"
+- scrollUntilVisible:
+    element:
+      id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: "patternly:session:details-toggle:alg-complexity-amortized-001"
+- assertVisible:
+    id: "patternly:session:details:alg-complexity-amortized-001"
+- takeScreenshot: "${SCREENSHOT_ROOT}/guest-01__040__exact-session-resumed__${THEME}__${PLATFORM}-phone"

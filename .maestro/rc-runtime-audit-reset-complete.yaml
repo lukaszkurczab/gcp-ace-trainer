@@ -3,6 +3,16 @@ name: Patternly RC — audit reset complete
 tags:
   - rc-evidence
 ---
+- runFlow:
+    when:
+      visible: "Otwórz"
+    commands:
+      - tapOn: "Otwórz"
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
 - extendedWaitUntil:
     visible:
       id: "patternly:content:ready-after-audit-reset"
