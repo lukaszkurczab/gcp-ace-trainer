@@ -413,7 +413,7 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 #### B-04 — Two finalist systems — `ACTIVE`
 
 - **Objective:** deepen the two selected directions, A — Boundary Signal and C — Focus Frame, across required product states. **Owners:** docs 05/06. **Dependencies:** owner checkpoint `X-09A` satisfied by `PO-061`. **Scope:** hero, track, first entry, feedback, summary/next action, store/public, motion/reduced motion, haptic semantics.
-- **Non-goals:** implementation or final approval. **Obligations:** delete rejected third current-looking surface from active references. **Acceptance:** comparable complete proof sets, accessibility contrast/type evidence, optical icon exports. **Checkpoint:** `X-09B` owner selects one. **Output/unlocks:** finalist evidence; `B-05`.
+- **Non-goals:** implementation or final approval. **Obligations:** delete rejected third current-looking surface from active references. **Acceptance:** comparable complete proof sets, accessibility contrast/type evidence, optical icon exports. **Evidence in progress:** Figma B-04 proof sets A `14:163` and C `14:186`, plus their materially distinct composition comparison A `14:242` and C `14:243`, on board `10:92`; scoped record `docs/designs/b04-two-finalist-systems/DESIGN.md`; B `10:94` remains only rejected decision provenance. **Checkpoint:** `X-09B` owner selects one. **Output/unlocks:** finalist evidence; `B-05`.
 
 #### B-05 — Final visual system approval — `BLOCKED`
 
