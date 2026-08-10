@@ -2,8 +2,8 @@
 
 ## Status and authority
 
-- Status: `DRAFT` — comparable proof sets are ready for `X-09B`; no direction
-  is approved visual authority.
+- Status: `X-09B READY` — comparable proof sets are ready for Product Owner
+  selection; no direction is approved visual authority.
 - Product Owner selection: `PO-061`, `X-09A`, 2026-08-10.
 - Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`.
 - Finalist proof sets: A — Boundary Signal `14:163`; C — Focus Frame `14:186`.

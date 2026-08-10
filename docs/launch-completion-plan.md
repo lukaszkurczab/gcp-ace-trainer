@@ -6,16 +6,16 @@
 
 **Target:** release-ready commercial Patternly from the pushed Directive 2 contract
 
-**Current task:** B-04 — deepen the two Product Owner-selected visual
-finalists, A — Boundary Signal and C — Focus Frame, into comparable complete
-Figma proof sets. The current GCP content-admission contradiction remains
-isolated to the content lane; application and brand work do not change content.
+**Current task:** `X-09B` — Product Owner selects one of the two complete,
+editable B-04 visual finalist systems: A — Boundary Signal or C — Focus Frame.
+The current GCP content-admission contradiction remains isolated to the content
+lane; application and brand work do not change content.
 
-**Next executable tasks:** complete B-04 for only A and C, then present their
-comparable evidence at `X-09B` for the Product Owner's one-of-two decision.
-Before changing any content lock or GCP runtime/registry state, resolve the
-current content-admission contradiction below. `PKG-02`/`PKG-03` remain
-external-infrastructure work and are not started by this checkpoint.
+**Next executable tasks:** after `X-09B` selects one finalist, establish its
+single approved visual authority in B-05. Before changing any content lock or
+GCP runtime/registry state, resolve the current content-admission contradiction
+below. `PKG-02`/`PKG-03` remain external-infrastructure work and are not
+started by this checkpoint.
 
 ## 1. Purpose and authority
 
@@ -410,10 +410,10 @@ Every card inherits the fields below; card-specific text overrides or narrows th
 - **Scope:** required mark/icon/wordmark/color/type/track symbol/hero/product-state/public-store proofs in Figma. **Non-goals:** production code or self-approval. **Obligations:** retire rejected explorations after durable decision/provenance retention.
 - **Acceptance:** actual editable frames/components, Light/Dark, motion/reduced-motion intent and rationale; no sub-brands. **Evidence:** Figma board `10:92`, selected editable finalist frames `10:93` and `10:95`, rejected provenance frame `10:94`, `PO-061`, and tracked record `docs/designs/b03-three-patternly-directions/DESIGN.md`; application checkpoint `12f340b6347daf01e3ee0e5824d521d4f01b3fcd` is pushed. **Checkpoint:** `X-09A` complete. **Unlocks:** `B-04`.
 
-#### B-04 — Two finalist systems — `ACTIVE`
+#### B-04 — Two finalist systems — `PARTIAL — X-09B Product Owner 2→1 choice required`
 
 - **Objective:** deepen the two selected directions, A — Boundary Signal and C — Focus Frame, across required product states. **Owners:** docs 05/06. **Dependencies:** owner checkpoint `X-09A` satisfied by `PO-061`. **Scope:** hero, track, first entry, feedback, summary/next action, store/public, motion/reduced motion, haptic semantics.
-- **Non-goals:** implementation or final approval. **Obligations:** delete rejected third current-looking surface from active references. **Acceptance:** comparable complete proof sets, accessibility contrast/type evidence, optical icon exports. **Evidence in progress:** Figma B-04 proof sets A `14:163` and C `14:186`, materially distinct composition comparison A `14:242` and C `14:243`, and editable 1024/180/60 px icon studies A `14:274` and C `14:275`, all on board `10:92`; scoped record `docs/designs/b04-two-finalist-systems/DESIGN.md`; B `10:94` remains only rejected decision provenance. **Checkpoint:** `X-09B` owner selects one. **Output/unlocks:** finalist evidence; `B-05`.
+- **Non-goals:** implementation or final approval. **Obligations:** delete rejected third current-looking surface from active references. **Acceptance:** comparable complete proof sets, accessibility contrast/type evidence, optical icon exports. **Evidence:** Figma B-04 proof sets A `14:163` and C `14:186`, materially distinct composition comparison A `14:242` and C `14:243`, and editable 1024/180/60 px icon studies A `14:274` and C `14:275`, all on board `10:92`; scoped record `docs/designs/b04-two-finalist-systems/DESIGN.md`; B `10:94` remains only rejected decision provenance. Application checkpoint `6fd8999275f32b63e15b366fa73192358519b74b` is pushed. **Checkpoint:** `X-09B` owner selects one. **Output/unlocks:** finalist evidence; `B-05`.
 
 #### B-05 — Final visual system approval — `BLOCKED`
 
@@ -668,7 +668,7 @@ Product release-ready exit requires every applicable gate above, all ten admitte
 
 `PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is `VERIFIED`: the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`, local-history identity proof `2beb979`, and PKG-04A complete Free-node activation are now complemented by a passing iPhone 16 Pro Simulator/iOS 18.6 Maestro Learn Approach first-value/relaunch journey. Its durable summary is `docs/reports/guest-01-ios-simulator-maestro-2026-08-10.md`; its ignored capture manifest supplies exact screenshot hashes. This does not claim or waive signed physical-device `REL-07` evidence.
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` and `GUEST-01` are `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits `PKG-03` and downstream product proof. B-01 is `VERIFIED` at application `b6b969b`: the tracked audit confirms the asset, Storybook and release-boundary inventory, and `X-09` is satisfied by authenticated Figma board `10:2` plus its Product Owner approval read-back on 2026-08-10. B-02 is `VERIFIED` at application `051778d` by its tracked evidence-only collision audit. B-03 is `VERIFIED` at application `12f340b`: `PO-061` records X-09A and Figma board `10:92` marks A (`10:93`) and C (`10:95`) as the two editable B-04 finalists, while B (`10:94`) is retained solely as rejected decision provenance. B-04 is now the active brand lane. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. Content `c5ef483` retains both historical immutable Free-node package artifacts, but its current package/inventory records contain only Coding Interview and its curriculum audit classifies GCP as `planned_coverage_only_not_admitted`; the application still exposes the historical GCP Free runtime. This is a material content-admission contradiction: retaining GCP conflicts with the current content classification, while removing it changes the Product Owner-approved offering. Do not sync, rewrite the exact lock, or change the registry until an owner resolves it. No task is blocked by the accepted PLAT-01 device-smoke exception.
+`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` and `GUEST-01` are `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits `PKG-03` and downstream product proof. B-01 is `VERIFIED` at application `b6b969b`: the tracked audit confirms the asset, Storybook and release-boundary inventory, and `X-09` is satisfied by authenticated Figma board `10:2` plus its Product Owner approval read-back on 2026-08-10. B-02 is `VERIFIED` at application `051778d` by its tracked evidence-only collision audit. B-03 is `VERIFIED` at application `12f340b`: `PO-061` records X-09A and Figma board `10:92` marks A (`10:93`) and C (`10:95`) as the two editable B-04 finalists, while B (`10:94`) is retained solely as rejected decision provenance. B-04 is `PARTIAL` at application `6fd8999`: its two complete, editable proof sets, materially distinct composition comparisons and optical icon studies are ready for the Product Owner's `X-09B` one-of-two choice; neither is final authority. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. Content `c5ef483` retains both historical immutable Free-node package artifacts, but its current package/inventory records contain only Coding Interview and its curriculum audit classifies GCP as `planned_coverage_only_not_admitted`; the application still exposes the historical GCP Free runtime. This is a material content-admission contradiction: retaining GCP conflicts with the current content classification, while removing it changes the Product Owner-approved offering. Do not sync, rewrite the exact lock, or change the registry until an owner resolves it. No task is blocked by the accepted PLAT-01 device-smoke exception.
 
 ## 9. Old-to-new mapping and plan maintenance
 
