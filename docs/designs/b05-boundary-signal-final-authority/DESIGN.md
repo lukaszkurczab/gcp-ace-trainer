@@ -42,9 +42,10 @@ full-width primary session, authored feedback, then explicit next action. It
 does not reuse the earlier desktop-like side-rail exploration.
 
 Store/public use keeps the pattern first and wordmark second. The editable
-1024/180/60 px studies prove that modules, route and boundary remain separate
-at icon scale. No final binary icon, Store submission asset or public claim is
-created yet.
+1024/180/60 px studies use the same Boundary Signal mark—not an empty colour
+field or a reduced monogram—and prove that modules, route and boundary remain
+separate at icon scale. No final binary icon, Store submission asset or public
+claim is created yet.
 
 One state transition resolves in 160 ms. With reduced motion it becomes
 instant. One light haptic occurs only after a committed answer. Unavailable
