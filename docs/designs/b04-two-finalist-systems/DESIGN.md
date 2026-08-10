@@ -8,6 +8,7 @@
 - Figma source: TalkToFigma channel `wtk4hp8i`, board `10:92`.
 - Finalist proof sets: A — Boundary Signal `14:163`; C — Focus Frame `14:186`.
 - Composition comparison: A `14:242`; C `14:243`.
+- Optical icon studies (1024 / 180 / 60 px): A `14:274`; C `14:275`.
 - Rejected provenance only: B — Resolved Group `10:94`.
 
 This record makes the two systems comparable without granting either one an
@@ -67,6 +68,8 @@ The proof set shows the mark/icon, wordmark, two track accents, Learn Approach
 10 primary entry, Guided continuation, authored feedback, terminal next action,
 unavailable Weak Review, light/reduced-motion/haptic semantics, and public /
 Store hierarchy with an explicit 1024 → 180 → 60 px optical-legibility check.
+At the three editable study scales, its distinct reading remains separate
+modules, one route and an amber boundary.
 
 ## C — Focus Frame
 
@@ -84,6 +87,8 @@ The proof set shows the mark/icon, wordmark, two track accents, Focus Practice
 10 primary entry, authored feedback, terminal next action, unavailable review,
 light/reduced-motion/haptic semantics, and public / Store hierarchy with an
 explicit 1024 → 180 → 60 px optical-legibility check.
+At the three editable study scales, its distinct reading remains an outer frame
+and one resolved focus group.
 
 ## X-09B decision boundary
 
