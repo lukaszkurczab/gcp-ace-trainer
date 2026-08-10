@@ -23,6 +23,10 @@ The system has one Patternly brand. Coding Interview uses a subordinate cobalt
 contour; GCP ACE uses an amber boundary. Neither is a sub-brand, provider mark,
 cloud/service glyph, badge, certificate, terminal or mascot.
 
+There is no separate decorative illustration language: explanatory visuals use
+only bounded diagrams assembled from the same modules, route and boundary as
+the mark. This keeps product, Store and public material recognisably one system.
+
 | Token role | Editable Figma value | Use |
 | --- | --- | --- |
 | Ink | `#0D121F` | Dark surface and mark field |
