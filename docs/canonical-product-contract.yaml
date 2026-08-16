@@ -156,6 +156,8 @@ requirements:
     statement: Bundled Free-node packages are the sole runtime content authority for preparation, exact resume, mutation, review, presentation, and discovery; every durable content identity carries the full immutable package pin, and modes outside the package profile fail without whole-track fallback or substitution.
   - id: CONTENT-PACKAGE-RUNTIME-CATALOG-001
     statement: A verified package exposes only its closed profile's typed family runtime catalog, including package-local items, assets, and configurations; excluded modes and structures are explicitly unavailable. This defines no session cutover, runtime composition switch, cache, or bootstrap activation.
+  - id: CONTENT-PACKAGE-FAMILY-DISPATCH-001
+    statement: Package-to-family runtime dispatch is explicit for every admitted family; an unsupported family fails closed and is never routed through another family's runtime.
   - id: CONTENT-PACKAGE-NATIVE-RUNTIME-001
     statement: Native package verification uses platform-supported SHA-256, canonical RFC 4648 base64, strict UTF-8, and deterministic gzip decoding; malformed package bytes fail closed before package-local content is exposed, without a Node-only runtime dependency in the mobile bundle.
   - id: ANALYTICS-REPORTS-001
@@ -428,7 +430,7 @@ requirementTestCoverage:
     - id: free-package-runtime-cutover
       testPath: tests/contentPackageRuntimeCutover.test.ts
       testName: PKG-04A makes exact package pins and closed profiles the only runtime content authority
-      requirementIds: [FREE-PACKAGE-RUNTIME-CUTOVER-001]
+      requirementIds: [FREE-PACKAGE-RUNTIME-CUTOVER-001, CONTENT-PACKAGE-FAMILY-DISPATCH-001]
     - id: content-package-runtime-catalog
       testPath: tests/contentPackageResolver.test.ts
       testName: PKG-04A package catalogs are accepted by family runtimes only for their closed profile paths

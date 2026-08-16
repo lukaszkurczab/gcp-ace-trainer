@@ -134,6 +134,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CONTENT-PACKAGE-RESOLVER-001", ["content-packages-verifier-resolver"]],
       ["FREE-PACKAGE-RUNTIME-CUTOVER-001", ["free-package-runtime-cutover"]],
       ["CONTENT-PACKAGE-RUNTIME-CATALOG-001", ["content-package-runtime-catalog"]],
+      ["CONTENT-PACKAGE-FAMILY-DISPATCH-001", ["free-package-runtime-cutover"]],
       ["CONTENT-PACKAGE-NATIVE-RUNTIME-001", ["content-package-native-runtime"]],
       ["ANALYTICS-REPORTS-001", ["canonical-packages-operations-platform"]],
       ["BACKUP-RESTORE-001", ["canonical-packages-operations-platform"]],
