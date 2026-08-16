@@ -347,9 +347,11 @@ Resolve the existing `ID-01` security blocker with a server-verifiable client as
 
 **Verification (2026-08-16):** the API now verifies Firebase App Check with the Firebase Admin adapter, checks the returned app ID against an explicit environment allow-list, rejects missing/invalid assertions before parsing request bodies, and maps provider failures to closed 401 responses. `PATTERNLY_APPCHECK_MODE` is required and production rejects `debug`; `PATTERNLY_APPCHECK_APP_IDS` is required, unique, and passed from startup into every protected account route. The full local suite passes (602 tests), including authentication, HTTP, snapshot, adoption, environment, server build, and release-gate coverage; exact pushed commit `3c74a5f8700300f4666f2e6a4ac6666aa89e95a2` passed application QA run `31972610341`. Mobile provider registration and production attestation evidence remain an external OPS-02/provider gate, so this slice is not marked fully verified.
 
-#### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
+#### DATA-01 — Durable account lifecycle/tombstone authority — `PARTIAL`
 
 Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
+
+**Verification (2026-08-16):** the server now persists an immutable UID-addressable tombstone in `accountLifecycles/{uid}` before revocation/data/identity deletion, derives a separate tombstone generation without copying dataset revision, keeps the tombstone outside recursive `accounts/{uid}` deletion, and rejects tombstoned sync/snapshot/adoption requests with a closed 410 response before body handling. Intent writes are transactionally idempotent and conflicting request identities are rejected. The full local suite passes (604 tests), including lifecycle adapter, deletion-order, HTTP boundary, typecheck, and server build coverage. Mobile account creation/restore orchestration is not present in this server slice and remains part of the broader account vertical, so DATA-01 is not marked fully verified.
 
 #### DATA-02 — Device-session server cutover — `READY`
 
