@@ -76,9 +76,9 @@ The green CI proves the current contracts, not the target launch catalogue:
 
 - Application CI explicitly requires a two-artifact lock containing only Coding Interview and historical GCP.
 - The production track registry contains only Coding Interview and GCP.
-- The content workflow validates seven candidate banks, not eight.
+- The content workflow validates the eight-track readiness report and all current authoring validators.
 - The content release gate still treats Coding Interview as the sole release candidate.
-- AZ-104 has a brief/descriptor in application planning but no pushed authoring registration, canonical source bank, validator result, readiness row, Free-node package, immutable release, or admission evidence in content `master`.
+- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, and passing authoring validation; its Free-node package, immutable release, human review, publishing admission, and runtime admission remain open.
 - Every existing candidate bank is human-unapproved or pending and is not admitted for publishing or runtime.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/seven-bank-candidate-readiness.json` at content `758b6a8…` and the current application registry/lock at `6953c9f…`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` at content report commit `0dcb63e…` and the current application registry/lock at `229071f…`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -96,7 +96,7 @@ Content facts below come from `evidence/readiness/seven-bank-candidate-readiness
 | GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | unapproved | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
 | AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
 | Azure AI-901 | present | 752 choice items; 5 nodes | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
-| Azure AZ-104 | **absent** | no pushed canonical bank/readiness row | absent | not possible | not admitted | descriptor/brief only; not registered | `BLOCKED — CONTENT ABSENT` |
+| Azure AZ-104 | present | 1,288 choice items; 9 nodes; 75 blocks | absent | unapproved | not admitted | descriptor only; no runtime admission | `PARTIAL / TECHNICALLY SOURCED` |
 | Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
 | Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
 | Object-Oriented Design | present | 1,413 choice items; 9 nodes; 79 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
@@ -106,7 +106,7 @@ Content facts below come from `evidence/readiness/seven-bank-candidate-readiness
 - “Prepared track” and “launch-admitted track” are different states. Candidate presence does not authorize production exposure.
 - No release lock update is allowed until a track has an approved source bank, complete Free node, immutable release, package proof, family/runtime proof, and explicit publishing/runtime admission.
 - The historical GCP artifact must never be silently relabelled as the current 2,981-item GCP source. Either publish a new current GCP release and migrate atomically, or retain the old release as immutable history only.
-- AZ-104 is the only launch track whose learner bank is absent from pushed source. It is the first content blocker to close.
+- AZ-104 source ingress is now technically closed; its remaining blockers are the same explicit human-review, package, publishing, and runtime-admission chain required for every track.
 
 ---
 
@@ -124,7 +124,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-TRACK-01` canonical Coding/GCP IDs | retired `algorithms`/old cloud IDs are not production aliases; persisted retired IDs fail explicitly |
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
-| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history, and the current eight-track readiness report, including explicit AZ-104 source absence |
+| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history, and the current eight-track readiness report with AZ-104 source counts and explicit non-admission |
 | `S-CI-HEAD` exact-SHA CI | application run `31956559706` succeeded on `229071feff211dddb805aa0a1694eeadd5adaf8c`; content run `31956610099` succeeded on `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07` |
 
 **LR-02 rebaseline (2026-08-16):** `S-FND-01`, `S-PLAT-01`, and `S-ARCH-01` were re-exercised by the application recovery gate in run `31956559706`: it installed application and server locks, built the server, regenerated and checked the native platform contract, ran the canonical contract gate, and ran `qa:static`. `S-GUEST-01` and `S-LEARN-01` are covered by that same static suite; the committed iOS first-value/relaunch evidence remains `docs/reports/guest-01-ios-simulator-maestro-2026-08-10.md` and is not represented as a new device run. `S-TRACK-01`, `S-PKG-01`, and `S-PKG-04A` were re-exercised by the focused scope tests and the pinned multi-track release round-trip in the same application run. `S-CONTENT-01` was re-exercised by content run `31956610099`, which installed from the content lock, ran the authoring and per-track validators, regenerated the eight-track report without a diff, validated the bundled Free node, and passed the content publishing gate. `S-CI-HEAD` is the pair of successful exact-SHA runs recorded above. No sentinel was reclassified as a launch admission, and no device, provider, editorial, store, or runtime proof was inferred.
@@ -153,7 +153,7 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 | ID | Severity | Blocker | Required closure |
 | --- | --- | --- | --- |
 | `BLK-01` | Critical | canonical plan/contract still targets ten tracks while owner launch scope is eight | add exact launch-scope contract; move Terraform/KCNA to post-launch; update all gates and docs |
-| `BLK-02` | Critical | AZ-104 bank absent from pushed content source | canonical authoring registration, bank, validator, readiness evidence, review packet, packages and admission |
+| `BLK-02` | Critical | AZ-104 source was absent from pushed content source | closed by source ingress and technical readiness evidence; review packet, packages, and admission remain under `CNT-04`–`CNT-06` |
 | `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
 | `BLK-04` | Critical | app registry/CI/release lock are two-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
 | `BLK-05` | Critical | Design Interview runtime not production-proven | generic family contract; Backend reference proof; OOP independence proof; Frontend proof |
@@ -162,7 +162,7 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 | `BLK-08` | Critical | account/session/sync/adoption/deletion contracts incomplete | remove remote session ownership; compact idempotent sync; safe adoption; durable tombstones and non-resurrection |
 | `BLK-09` | Critical | prepared Figma is not yet repository-owned production UI | exact Figma node map; tokens/assets/licenses; canonical components; all verticals; parity and accessibility proof |
 | `BLK-10` | Critical | no complete public/store/signed release chain | legal/support/deletion/auth surfaces, professional origins, store records, EAS/signing, TestFlight/Play and signed smoke |
-| `BLK-11` | High | current CI does not enforce eight-track launch readiness | deterministic eight-track readiness report and final fail-closed launch gate |
+| `BLK-11` | High | final launch gate still reports content/admission blockers | deterministic eight-track readiness report and fail-closed `release:gate` now exist; gate remains intentionally non-passing |
 | `BLK-12` | High | provider/operations state is not freshly evidenced | least-privilege deployment, App Check/Firebase apps, package bucket, PITR, RevenueCat and domain evidence |
 | `BLK-13` | High | accessibility/performance/usability closure absent | 200% text, screen reader, reduced motion, haptics, budgets, first-use review and both physical platforms |
 | `BLK-14` | High | app release configuration is incomplete | release versioning, icons/splash/privacy/link config, `eas.json`, build profiles, secrets boundary and declarations |
@@ -212,14 +212,14 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 - add one canonical `LAUNCH_TRACK_IDS`/release-scope owner containing exactly the eight IDs;
 - keep Terraform and KCNA only as post-launch briefs, never shipping registry entries or release dependencies;
 - reconcile `canonical-product-contract.yaml`, overview/product/roadmap/testing/risk documentation, track admission tests, launch surface inventory, and plan references;
-- replace “seven-bank” and “ten-track launch” assumptions with a deterministic eight-track readiness model that may truthfully show AZ-104 as absent until `CNT-01`;
+- replace “seven-bank” and “ten-track launch” assumptions with a deterministic eight-track readiness model that reports AZ-104 source counts and explicit non-admission;
 - preserve current immutable releases and the two-track lock until replacement artifacts are valid.
 
 **Acceptance:** exact-scope tests reject missing, extra, duplicated, aliased, or visible-family tracks; docs and tests agree; current CI remains green; no production placeholder is added.
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-16):** the application scope contract is `229071feff211dddb805aa0a1694eeadd5adaf8c`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31956559706` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content scope/report is `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07`; `npm test` (135 tests), authoring validation, deterministic readiness generation, and the publishing release gate passed locally, while GitHub Actions run `31956610099` passed the same content checks from a clean checkout. The report names exactly eight launch tracks, carries AZ-104 as explicit source absence, removes the superseded seven-bank report, and retains the existing two-track runtime lock. No human editorial, provider, package, or runtime admission was inferred.
+**Verification (2026-08-16):** the application scope contract is `229071feff211dddb805aa0a1694eeadd5adaf8c`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31956559706` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content scope/report source is `49b30e481800f2512ecb4e50ebd8725b35dda626`, recorded in report commit `0dcb63eb9e7244fd994d4d199f21a716f412e54d`; AZ-104 now has 75 source files and 1,288 canonical items. `npm test`, authoring validation, all track validators, deterministic readiness generation, and the publishing release gate passed locally, while GitHub Actions run `31971157753` passed the same content checks from a clean checkout. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records AZ-104 as technically sourced but still not human-reviewed, publishing-admitted, or runtime-admitted. No human editorial, provider, package, or runtime admission was inferred.
 
 **Unlocks:** every remaining lane.
 
@@ -237,21 +237,21 @@ Add a deterministic non-passing-yet launch-readiness report that lists every blo
 
 ### Stage CNT — eight-track content completion and admission
 
-#### CNT-01 — AZ-104 canonical ingress — `READY`
+#### CNT-01 — AZ-104 canonical ingress — `VERIFIED`
 
 Use the existing `microsoft-azure-administrator-associate-az-104` authoring registration to add its missing canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
 **Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
 
-#### CNT-02 — Eight-track deterministic readiness report — `BLOCKED by CNT-01`
+#### CNT-02 — Eight-track deterministic readiness report — `VERIFIED`
 
 Replace `seven-bank-candidate-readiness-v1` with an eight-track launch readiness schema. For every track report source root, family, nodes, mental units/blocks, interaction inventory, Free node, source/provenance freshness, technical validation, human review, immutable release, publishing admission, runtime admission, package evidence, and explicit blockers. Generate twice and require byte identity in CI.
 
-#### CNT-03 — Technical and provenance closure for all eight — `BLOCKED by CNT-02`
+#### CNT-03 — Technical and provenance closure for all eight — `VERIFIED`
 
 Run or create uniform validators for every track. Track-specific validators may inspect domain-specific constraints, but the result envelope and gate semantics must be generic. Close broken citations, unsupported technical claims, duplicate identities, missing Reason/Details, distractor explanations, interaction-contract mismatches, stale official objectives, and deterministic serialization errors. Do not edit content merely to satisfy fixed quotas.
 
-#### CNT-04 — Human review packets — `BLOCKED by CNT-03`
+#### CNT-04 — Human review packets — `READY`
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
