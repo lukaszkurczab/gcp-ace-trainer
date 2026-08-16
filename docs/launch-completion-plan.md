@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `e2f78a331a1d0e368572a60b5e7725b584920e62` | QA run `31979457170` — success |
+| application | `main` | `2047e6579a41c6142ac26c92e5c5ee594a3bb66f` | QA run `31979778320` — success |
 | content/publishing | `master` | `7ad31b74c107e7cab215ab16e7c532d811c5ff68` | Content publishing run `31979631355` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `e2f78a331a1d0e368572a60b5e7725b584920e62`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `2047e6579a41c6142ac26c92e5c5ee594a3bb66f`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `e2f78a331a1d0e368572a60b5e7725b584920e62` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; `npm run typecheck`, focused AZ/package/contract tests, and the full 604-test suite pass locally. QA run `31979457170` passed the recovery/static and multi-track release jobs. Content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d` and carries refreshed Coding technical evidence; content `npm test` passes 140/140 and publishing run `31979631355` passes the complete content gate. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
+**Verification (2026-08-17):** application commit `2047e6579a41c6142ac26c92e5c5ee594a3bb66f` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; `npm run typecheck`, focused AZ/package/contract tests, and the full 604-test suite pass locally. QA run `31979778320` passed the recovery/static and multi-track release jobs. Content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d` and carries refreshed Coding technical evidence; content `npm test` passes 140/140 and publishing run `31979631355` passes the complete content gate. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
 
 **Unlocks:** every remaining lane.
 
@@ -277,7 +277,7 @@ Publish new immutable releases and per-node package manifests without mutating h
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
-**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; the application QA run `31976817513` passed the corresponding runtime and contract checks. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
+**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; the application QA run `31979778320` passed the corresponding runtime and contract checks. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
 
 #### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
 
