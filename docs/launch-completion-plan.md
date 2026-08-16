@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `cf60ad32610e61ff648e4095dd7b7adbc87bd1c7` | QA run `31976441769` — success |
+| application | `main` | `9a42d609c342ac2bf5c829c6eaf0d28c15bb7b25` | QA run `31976817513` — success |
 | content/publishing | `master` | `7f11c6b6e6382a560641a669429a967efc20ab8e` | Content publishing run `31975680636` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** the application scope contract is `cf60ad32610e61ff648e4095dd7b7adbc87bd1c7`; the canonical brief source is now pinned to content `7f11c6b6e6382a560641a669429a967efc20ab8e`, with all eight descriptor hashes and Free-node IDs synchronized to the current brief bytes. The admission test explicitly leaves the historical GCP package unverified instead of relabeling it. Focused descriptor/admission and canonical-contract tests pass locally, and GitHub Actions run `31976441769` passed recovery/static, native-platform, server, contract, and pinned multi-track release round-trip gates. Content source identity remains `49b30e481800f2512ecb4e50ebd8725b35dda626`, with approval/readiness and regenerated technical evidence at `7f11c6b6e6382a560641a669429a967efc20ab8e`; AZ-104 has 75 source files and 1,288 canonical items. Content `npm test` passes 140/140 and GitHub Actions run `31975680636` passed the clean-checkout content gate. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records every track as approved but not package-complete, publishing-admitted, or runtime-admitted.
+**Verification (2026-08-17):** the application scope contract is `9a42d609c342ac2bf5c829c6eaf0d28c15bb7b25`; the canonical brief source is pinned to content `7f11c6b6e6382a560641a669429a967efc20ab8e`, with all eight descriptor hashes and Free-node IDs synchronized to the current brief bytes. The admission test explicitly leaves the historical GCP package unverified instead of relabeling it. Package-to-family runtime dispatch now names each admitted family explicitly and fails closed for any unsupported family under `CONTENT-PACKAGE-FAMILY-DISPATCH-001`; focused package/canonical-contract tests and typecheck pass locally, and GitHub Actions run `31976817513` passed recovery/static, native-platform, server, contract, and pinned multi-track release round-trip gates. Content source identity remains `49b30e481800f2512ecb4e50ebd8725b35dda626`, with approval/readiness and regenerated technical evidence at `7f11c6b6e6382a560641a669429a967efc20ab8e`; AZ-104 has 75 source files and 1,288 canonical items. Content `npm test` passes 140/140 and GitHub Actions run `31975680636` passed the clean-checkout content gate. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records every track as approved but not package-complete, publishing-admitted, or runtime-admitted.
 
 **Unlocks:** every remaining lane.
 
@@ -261,9 +261,9 @@ Generate one bounded review packet per track: coverage map, node/mental-unit cou
 
 The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and remain bound to source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
 
-#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by RUN-01 + family package contracts`
+#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by canonical family package inputs`
 
-Package construction may proceed after technical closure and family/package contract closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes only the Coding Free profile, track config, inventory pin, and package input; the publisher has no complete canonical package inputs for the other seven launch tracks. Do not fabricate packages or relabel historical GCP artifacts; `RUN-01` must establish the family-owned contracts and the package builder must then add exact inputs for every approved track.
+Package construction may proceed after technical closure and the explicit family dispatch contract, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes only the Coding Free profile, track config, inventory pin, and package input; the publisher has no complete canonical package inputs for the other seven launch tracks. Do not fabricate packages or relabel historical GCP artifacts; the package builder must add exact family-owned inputs for every approved track.
 
 #### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05`
 
@@ -276,6 +276,8 @@ Publish new immutable releases and per-node package manifests without mutating h
 #### RUN-01 — Canonical family contract closure — `READY`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
+
+**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; the application QA run `31976817513` passed the corresponding runtime and contract checks. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
 
 #### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
 
