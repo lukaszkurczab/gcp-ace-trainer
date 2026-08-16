@@ -1,5 +1,6 @@
 import { getApps, initializeApp, type App } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
+import { getAppCheck, type AppCheck } from "firebase-admin/app-check";
 import { FieldPath, getFirestore, type Firestore } from "firebase-admin/firestore";
 
 import {
@@ -31,7 +32,12 @@ import {
   type AccountRecordPageDocument,
   type PersistedAccountRecordDocument,
 } from "./accountService.js";
-import type { FirebaseIdTokenVerifier, VerifiedFirebaseIdToken } from "./authentication.js";
+import type {
+  FirebaseAppCheckTokenVerifier,
+  FirebaseIdTokenVerifier,
+  VerifiedFirebaseAppCheckToken,
+  VerifiedFirebaseIdToken,
+} from "./authentication.js";
 
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
 
@@ -127,6 +133,15 @@ export class FirebaseAdminIdTokenVerifier implements FirebaseIdTokenVerifier {
       sub: decoded.sub,
       uid: decoded.uid,
     };
+  }
+}
+
+export class FirebaseAdminAppCheckTokenVerifier implements FirebaseAppCheckTokenVerifier {
+  constructor(private readonly appCheck: AppCheck) {}
+
+  async verifyToken(token: string): Promise<VerifiedFirebaseAppCheckToken> {
+    const decoded = await this.appCheck.verifyToken(token);
+    return { appId: decoded.appId };
   }
 }
 
@@ -533,12 +548,14 @@ const sameDeletionProof = (left: DeletionProof, right: DeletionProof): boolean =
   && left.resultCode === right.resultCode;
 
 export type FirebaseAdminAccountRuntime = Readonly<{
+  appCheckVerifier: FirebaseAdminAppCheckTokenVerifier;
   store: FirestoreAccountDatasetStore;
   verifier: FirebaseAdminIdTokenVerifier;
 }>;
 
 export type FirebaseAdminInitializationDependencies = Readonly<{
   getApps: () => readonly App[];
+  getAppCheck: (app: App) => AppCheck;
   getAuth: (app: App) => Auth;
   getFirestore: (app: App) => Firestore;
   initializeApp: (options: Readonly<{ projectId: string }>) => App;
@@ -546,6 +563,7 @@ export type FirebaseAdminInitializationDependencies = Readonly<{
 
 const firebaseAdminInitializationDependencies: FirebaseAdminInitializationDependencies = {
   getApps,
+  getAppCheck,
   getAuth,
   getFirestore,
   initializeApp,
@@ -558,6 +576,7 @@ export const initializeFirebaseAdminAccountRuntime = (
   if (dependencies.getApps().length !== 0) throw new Error("firebase_admin_app_already_initialized");
   const app = dependencies.initializeApp({ projectId });
   return {
+    appCheckVerifier: new FirebaseAdminAppCheckTokenVerifier(dependencies.getAppCheck(app)),
     store: new FirestoreAccountDatasetStore(dependencies.getFirestore(app)),
     verifier: new FirebaseAdminIdTokenVerifier(dependencies.getAuth(app)),
   };

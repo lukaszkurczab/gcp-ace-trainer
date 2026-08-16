@@ -1,4 +1,6 @@
 export type ServerEnvironment = Readonly<{
+  appCheckAppIds: readonly string[];
+  appCheckMode: "debug" | "production";
   apiOrigin: string;
   environment: "sandbox" | "production";
   firebaseProjectId: "patternly-app-sandbox" | "patternly-app-production";
@@ -32,6 +34,16 @@ const exactHttpsOrigin = (value: string, name: string): string => {
   return value;
 };
 
+const appCheckAppIds = (value: string): readonly string[] => {
+  const ids = value.split(",").map((entry) => entry.trim());
+  if (ids.length === 0 || ids.some((entry) => !/^[A-Za-z0-9:_-]{1,256}$/u.test(entry))) {
+    throw new Error("invalid_environment:PATTERNLY_APPCHECK_APP_IDS");
+  }
+  const unique = new Set(ids);
+  if (unique.size !== ids.length) throw new Error("invalid_environment:PATTERNLY_APPCHECK_APP_IDS");
+  return ids;
+};
+
 export function loadServerEnvironment(source: NodeJS.ProcessEnv): ServerEnvironment {
   if (source.GOOGLE_APPLICATION_CREDENTIALS !== undefined) {
     throw new Error("service_account_key_path_prohibited");
@@ -41,6 +53,14 @@ export function loadServerEnvironment(source: NodeJS.ProcessEnv): ServerEnvironm
     throw new Error("invalid_environment:PATTERNLY_ENVIRONMENT");
   }
   const environment = environmentValue;
+  const appCheckMode = requireValue(source, "PATTERNLY_APPCHECK_MODE");
+  if (appCheckMode !== "debug" && appCheckMode !== "production") {
+    throw new Error("invalid_environment:PATTERNLY_APPCHECK_MODE");
+  }
+  if (environment === "production" && appCheckMode !== "production") {
+    throw new Error("production_app_check_debug_prohibited");
+  }
+  const configuredAppCheckIds = appCheckAppIds(requireValue(source, "PATTERNLY_APPCHECK_APP_IDS"));
   const firebaseProjectId = requireValue(source, "FIREBASE_PROJECT_ID");
   if (firebaseProjectId !== expectedProject(environment)) throw new Error("cross_environment_project");
 
@@ -65,6 +85,15 @@ export function loadServerEnvironment(source: NodeJS.ProcessEnv): ServerEnvironm
   const schedulerSubject = requireValue(source, "PATTERNLY_SCHEDULER_SUBJECT");
   if (!/^\d{10,30}$/u.test(schedulerSubject)) throw new Error("invalid_scheduler_subject");
 
-  return { apiOrigin, environment, firebaseProjectId, port, schedulerAudience, schedulerEmail, schedulerSubject };
+  return {
+    apiOrigin,
+    appCheckAppIds: configuredAppCheckIds,
+    appCheckMode,
+    environment,
+    firebaseProjectId,
+    port,
+    schedulerAudience,
+    schedulerEmail,
+    schedulerSubject,
+  };
 }
-

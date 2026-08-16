@@ -12,6 +12,14 @@ export interface FirebaseIdTokenVerifier {
   verifyIdToken(token: string, checkRevoked: boolean): Promise<VerifiedFirebaseIdToken>;
 }
 
+export type VerifiedFirebaseAppCheckToken = Readonly<{
+  appId: string;
+}>;
+
+export interface FirebaseAppCheckTokenVerifier {
+  verifyToken(token: string): Promise<VerifiedFirebaseAppCheckToken>;
+}
+
 export type AccountRequestAuthenticationInput = Readonly<{
   headers: Readonly<Record<string, string | undefined>>;
   suppliedUid?: string;
@@ -19,8 +27,10 @@ export type AccountRequestAuthenticationInput = Readonly<{
 
 export type AccountRequestAuthenticationDependencies = Readonly<{
   expectedProjectId: string;
+  expectedAppCheckAppIds: readonly string[];
   nowSeconds: () => number;
   requireRecentAuthentication?: boolean;
+  appCheckVerifier: FirebaseAppCheckTokenVerifier;
   verifier: FirebaseIdTokenVerifier;
 }>;
 
@@ -60,6 +70,13 @@ export async function authenticateAccountRequest(
     || now - claims.auth_time > RECENT_AUTHENTICATION_SECONDS
   )) {
     throw new Error("recent_authentication_required");
+  }
+
+  const appCheckToken = request.headers["x-firebase-appcheck"];
+  if (appCheckToken === undefined || appCheckToken.trim() === "") throw new Error("missing_app_check");
+  const appCheckClaims = await dependencies.appCheckVerifier.verifyToken(appCheckToken);
+  if (!dependencies.expectedAppCheckAppIds.includes(appCheckClaims.appId)) {
+    throw new Error("wrong_app_check_app");
   }
 
   return { uid: claims.uid };

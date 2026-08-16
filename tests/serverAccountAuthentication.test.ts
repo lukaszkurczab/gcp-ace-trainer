@@ -7,6 +7,7 @@ import {
 } from "../server/src/authentication.js";
 
 const PROJECT_ID = "patternly-app-sandbox";
+const APP_ID = "test-app-id";
 const NOW_SECONDS = 1_785_528_000;
 
 const validClaims = {
@@ -20,9 +21,11 @@ const validClaims = {
 } as const;
 
 const request = (authorization?: string, suppliedUid?: string) => ({
-  headers: authorization === undefined ? {} : { authorization },
+  headers: authorization === undefined ? {} : { authorization, "x-firebase-appcheck": "valid-app-check" },
   suppliedUid,
 });
+
+const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
 
 test("rejects invalid account authentication before any repository access", async () => {
   const cases = [
@@ -44,7 +47,9 @@ test("rejects invalid account authentication before any repository access", asyn
     await assert.rejects(
       authenticateAccountRequest(entry.input, {
         expectedProjectId: PROJECT_ID,
+        expectedAppCheckAppIds: [APP_ID],
         nowSeconds: () => NOW_SECONDS,
+        appCheckVerifier,
         verifier,
       }).then(() => {
         repositoryCalls += 1;
@@ -74,7 +79,9 @@ test("rejects invalid verified claims and caller-selected UID before repository 
     await assert.rejects(
       authenticateAccountRequest(request("Bearer valid-id-token"), {
         expectedProjectId: PROJECT_ID,
+        expectedAppCheckAppIds: [APP_ID],
         nowSeconds: () => NOW_SECONDS,
+        appCheckVerifier,
         verifier,
       }).then(() => {
         repositoryCalls += 1;
@@ -89,7 +96,9 @@ test("rejects invalid verified claims and caller-selected UID before repository 
   await assert.rejects(
     authenticateAccountRequest(request("Bearer valid-id-token", "caller-selected-user"), {
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
+      appCheckVerifier,
       verifier: { verifyIdToken: async () => validClaims },
     }).then(() => {
       repositoryCalls += 1;
@@ -110,12 +119,16 @@ test("derives UID only from a verified token and requests revocation checks for 
 
   const ordinary = await authenticateAccountRequest(request("Bearer ordinary-token"), {
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
+    appCheckVerifier,
     verifier,
   });
   const sensitive = await authenticateAccountRequest(request("Bearer sensitive-token", validClaims.uid), {
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
+    appCheckVerifier,
     requireRecentAuthentication: true,
     verifier,
   });
@@ -130,8 +143,10 @@ test("rejects stale authentication for sensitive routes", async () => {
     await assert.rejects(
       authenticateAccountRequest(request("Bearer valid-id-token"), {
         expectedProjectId: PROJECT_ID,
+        expectedAppCheckAppIds: [APP_ID],
         nowSeconds: () => NOW_SECONDS,
         requireRecentAuthentication: true,
+        appCheckVerifier,
         verifier: {
           verifyIdToken: async () => ({ ...validClaims, auth_time: authTime } as unknown as typeof validClaims),
         },
@@ -140,4 +155,28 @@ test("rejects stale authentication for sensitive routes", async () => {
       String(authTime),
     );
   }
+});
+
+test("requires a verified App Check token and an allow-listed app identity", async () => {
+  await assert.rejects(
+    authenticateAccountRequest({ headers: { authorization: "Bearer valid-id-token" } }, {
+      expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
+      nowSeconds: () => NOW_SECONDS,
+      appCheckVerifier,
+      verifier: { verifyIdToken: async () => validClaims },
+    }),
+    (error: unknown) => error instanceof Error && error.message === "missing_app_check",
+  );
+
+  await assert.rejects(
+    authenticateAccountRequest({ headers: { authorization: "Bearer valid-id-token", "x-firebase-appcheck": "other" } }, {
+      expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
+      nowSeconds: () => NOW_SECONDS,
+      appCheckVerifier: { verifyToken: async () => ({ appId: "unregistered-app" }) },
+      verifier: { verifyIdToken: async () => validClaims },
+    }),
+    (error: unknown) => error instanceof Error && error.message === "wrong_app_check_app",
+  );
 });

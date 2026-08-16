@@ -88,7 +88,11 @@ The actual service environment must be supplied only after the Cloud Run origin
 is known and must satisfy the server's fail-closed contract:
 `PATTERNLY_ENVIRONMENT`, `FIREBASE_PROJECT_ID`, `PATTERNLY_API_ORIGIN`,
 `PATTERNLY_SCHEDULER_AUDIENCE`, `PATTERNLY_SCHEDULER_EMAIL`, and
-`PATTERNLY_SCHEDULER_SUBJECT`. No value may be blank, cross-environment, a
+`PATTERNLY_SCHEDULER_SUBJECT`, `PATTERNLY_APPCHECK_MODE`, and
+`PATTERNLY_APPCHECK_APP_IDS`. App Check mode must be `production` in the
+production environment; `debug` is permitted only in sandbox. App IDs are
+comma-separated Firebase App Check app identifiers and must be unique. No value
+may be blank, cross-environment, a
 placeholder, local address, secret, or credential path. The current server has
 no declared secret inventory. A future secret must use its exact resource and
 numeric version according to the keyless policy; `latest` and ordinary
@@ -96,7 +100,8 @@ environment-variable secret injection are prohibited.
 
 `--no-invoker-iam-check` is the only public-transport mechanism. Do not also
 grant `roles/run.invoker` to `allUsers`. All protected application routes still
-require the verified Firebase token boundary.
+require both the verified Firebase ID token and the allow-listed Firebase App
+Check assertion before request-body handling.
 
 ## Health and logging allowlist
 

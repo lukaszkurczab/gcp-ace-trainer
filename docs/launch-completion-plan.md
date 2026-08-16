@@ -341,9 +341,11 @@ Replace the two-track registry with generic admission records for exactly eight 
 
 ### Stage SEC/DATA — identity, session ownership, sync, adoption, and deletion
 
-#### SEC-01 — Approved mobile-client and environment proof — `READY`
+#### SEC-01 — Approved mobile-client and environment proof — `PARTIAL`
 
 Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling.
+
+**Verification (2026-08-16):** the API now verifies Firebase App Check with the Firebase Admin adapter, checks the returned app ID against an explicit environment allow-list, rejects missing/invalid assertions before parsing request bodies, and maps provider failures to closed 401 responses. `PATTERNLY_APPCHECK_MODE` is required and production rejects `debug`; `PATTERNLY_APPCHECK_APP_IDS` is required, unique, and passed from startup into every protected account route. Focused authentication, HTTP, snapshot, adoption, environment, server build, and release-gate tests pass locally. Mobile provider registration and production attestation evidence remain an external OPS-02/provider gate, so this slice is not marked fully verified.
 
 #### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
 

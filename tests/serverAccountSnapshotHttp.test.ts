@@ -30,6 +30,7 @@ import {
 } from "../server/src/http.js";
 
 const PROJECT_ID = "patternly-app-sandbox";
+const APP_ID = "test-app-id";
 const UID = "snapshot-user";
 const NOW_SECONDS = 1_785_700_000;
 const GENERATION = "a".repeat(64);
@@ -52,6 +53,7 @@ const claims: VerifiedFirebaseIdToken = {
 const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () => claims): FirebaseIdTokenVerifier => ({
   verifyIdToken: verify,
 });
+const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
 
 const makeRecord = (index: number, value = `value-${index}`): AccountRecord => {
   const input = {
@@ -138,6 +140,7 @@ const sendRequest = (
   headers: Readonly<Record<string, string>> = {
     authorization: "Bearer snapshot-token",
     "content-type": "application/json",
+    "x-firebase-appcheck": "valid-app-check",
   },
 ): Promise<HttpResult> => new Promise((resolvePromise, rejectPromise) => {
   const outgoing = request({
@@ -166,7 +169,9 @@ const sendRequest = (
 
 const withServer = async (service: AccountHttpService, operation: (port: number) => Promise<void>, tokenVerifier = verifier()): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service,
     verifier: tokenVerifier,

@@ -14,6 +14,7 @@ export interface ListeningHttpServer {
 
 export type ServerStartupDependencies = Readonly<{
   createFirebaseRuntime: (projectId: string) => Readonly<{
+    appCheckVerifier: import("./authentication.js").FirebaseAppCheckTokenVerifier;
     store: AccountDatasetStore;
     verifier: FirebaseIdTokenVerifier;
   }>;
@@ -37,7 +38,9 @@ export const startServer = (
   const firebase = dependencies.createFirebaseRuntime(environment.firebaseProjectId);
   const service = new AccountDataService(firebase.store);
   const server = dependencies.createHttpServer(createAccountHttpHandler({
+    appCheckVerifier: firebase.appCheckVerifier,
     expectedProjectId: environment.firebaseProjectId,
+    expectedAppCheckAppIds: environment.appCheckAppIds,
     nowSeconds: dependencies.nowSeconds,
     service,
     verifier: firebase.verifier,

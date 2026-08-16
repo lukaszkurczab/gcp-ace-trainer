@@ -35,6 +35,7 @@ import {
 import { startServer, type ServerStartupDependencies } from "../server/src/index.js";
 
 const PROJECT_ID = "patternly-app-sandbox";
+const APP_ID = "test-app-id";
 const NOW_SECONDS = 1_785_700_000;
 const UID = "verified-http-user";
 
@@ -51,6 +52,7 @@ const validClaims: VerifiedFirebaseIdToken = {
 const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () => validClaims): FirebaseIdTokenVerifier => ({
   verifyIdToken: verify,
 });
+const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
 
 const httpService = (
   applySync: (...parameters: Parameters<AccountHttpService["applySync"]>) => Promise<unknown>,
@@ -140,6 +142,7 @@ const withLoopbackServer = async (
 const jsonHeaders = (authorization = "Bearer valid-token"): Readonly<Record<string, string>> => ({
   authorization,
   "content-type": "application/json",
+  "x-firebase-appcheck": "valid-app-check",
 });
 
 const parseJson = (result: HttpResult): unknown => JSON.parse(result.body.toString("utf8")) as unknown;
@@ -154,7 +157,9 @@ test("exposes only the exact account routes and their POST method", async () => 
   let verifierCalls = 0;
   let serviceCalls = 0;
   const dependencies: AccountHttpDependencies = {
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service: httpService(async () => { serviceCalls += 1; }),
     verifier: verifier(async () => { verifierCalls += 1; return validClaims; }),
@@ -180,7 +185,9 @@ test("authenticates before entity parsing and routes only the verified UID", asy
   let verifierCalls = 0;
   const semantic = putSemantic();
   await withLoopbackServer({
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service: httpService(async (uid) => { routedUids.push(uid); }),
     verifier: verifier(async (_token, checkRevoked) => {
@@ -234,7 +241,9 @@ test("enforces the raw streamed four-MiB boundary at minus one, equal, and plus 
     return chunks;
   };
   await withLoopbackServer({
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service: httpService(async () => { serviceCalls += 1; }),
     verifier: verifier(),
@@ -265,7 +274,7 @@ test("rejects unsupported entity forms, fatal UTF-8, BOM, malformed JSON and inv
   const valid = requestBody(putSemantic());
   const duplicateRecord = record("duplicate-http-record", "same", 1);
   const cases = [
-    { body: JSON.stringify(valid), headers: { authorization: "Bearer valid-token", "content-type": "text/json" }, status: 415, code: "unsupported_media_type" },
+    { body: JSON.stringify(valid), headers: { authorization: "Bearer valid-token", "content-type": "text/json", "x-firebase-appcheck": "valid-app-check" }, status: 415, code: "unsupported_media_type" },
     { body: JSON.stringify(valid), headers: { ...jsonHeaders(), "content-encoding": "gzip" }, status: 415, code: "unsupported_content_encoding" },
     { body: Buffer.from([0xc3, 0x28]), headers: jsonHeaders(), status: 400, code: "invalid_request" },
     { body: Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(JSON.stringify(valid))]), headers: jsonHeaders(), status: 400, code: "invalid_request" },
@@ -303,7 +312,9 @@ test("rejects unsupported entity forms, fatal UTF-8, BOM, malformed JSON and inv
     }), headers: jsonHeaders(), status: 400, code: "invalid_request" },
   ] as const;
   await withLoopbackServer({
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service: httpService(async () => { serviceCalls += 1; }),
     verifier: verifier(),
@@ -338,7 +349,9 @@ test("maps every authentication row without allowing service access", async () =
   const payload = JSON.stringify(requestBody(putSemantic()));
   for (const malformed of [undefined, "Token invalid"]) {
     await withLoopbackServer({
+      appCheckVerifier,
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
       service: httpService(async () => { serviceCalls += 1; }),
       verifier: verifier(),
@@ -351,7 +364,9 @@ test("maps every authentication row without allowing service access", async () =
   }
   for (const entry of localCases) {
     await withLoopbackServer({
+      appCheckVerifier,
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
       service: httpService(async () => { serviceCalls += 1; }),
       verifier: verifier(async () => entry.claims),
@@ -363,7 +378,9 @@ test("maps every authentication row without allowing service access", async () =
   }
   for (const entry of providerCases) {
     await withLoopbackServer({
+      appCheckVerifier,
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
       service: httpService(async () => { serviceCalls += 1; }),
       verifier: verifier(async () => { throw entry.error; }),
@@ -389,7 +406,9 @@ test("an unknown coded Auth error cannot borrow the local expired-token message"
   console.log = (...values: unknown[]) => { logged.push(values); };
   try {
     await withLoopbackServer({
+      appCheckVerifier,
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
       service: httpService(async () => { serviceCalls += 1; }),
       verifier: verifier(async () => { throw providerError; }),
@@ -434,7 +453,9 @@ test("keeps service error mapping closed, non-leaking, and phase-sensitive", asy
     for (const entry of cases) {
       const service = httpService(async () => { throw new Error(entry.message); });
       await withLoopbackServer({
+        appCheckVerifier,
         expectedProjectId: PROJECT_ID,
+        expectedAppCheckAppIds: [APP_ID],
         nowSeconds: () => NOW_SECONDS,
         service,
         verifier: verifier(),
@@ -464,7 +485,9 @@ test("a coded Firestore error cannot borrow the local stale-revision message", a
   console.log = (...values: unknown[]) => { logged.push(values); };
   try {
     await withLoopbackServer({
+      appCheckVerifier,
       expectedProjectId: PROJECT_ID,
+      expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
       service: httpService(async () => {
         serviceCalls += 1;
@@ -500,7 +523,9 @@ test("maps a boundary-valid oversized record to 413 before service", async () =>
   const largeRecord = { ...largeInput, fingerprint: computeRecordFingerprint(largeInput) };
   const semantic = putSemantic(0, largeRecord);
   await withLoopbackServer({
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service: httpService(async () => { serviceCalls += 1; }),
     verifier: verifier(),
@@ -618,7 +643,9 @@ test("supports exact put, delete, immediate replay, and replay after an interven
     }],
   };
   await withLoopbackServer({
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service,
     verifier: verifier(),
@@ -635,7 +662,7 @@ test("supports exact put, delete, immediate replay, and replay after an interven
 
     const deletion = await sendRequest(port, {
       body: JSON.stringify(requestBody(deleteSemantic)),
-      headers: { authorization: "Bearer valid-token", "content-type": "application/json; charset=UTF-8" },
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json; charset=UTF-8", "x-firebase-appcheck": "valid-app-check" },
     });
     assert.equal(deletion.status, 200);
     assert.deepEqual(parseJson(deletion), {
@@ -660,6 +687,7 @@ test("Firebase initialization is explicit, project-bound, single-app, and reject
   const app = { name: "[DEFAULT]", options: { projectId: PROJECT_ID } } as never;
   const dependencies: FirebaseAdminInitializationDependencies = {
     getApps: () => { calls.push("getApps"); return []; },
+    getAppCheck: (received) => { assert.equal(received, app); calls.push("app-check"); return {} as never; },
     initializeApp: (options) => { calls.push(`initialize:${options.projectId}`); return app; },
     getAuth: (received) => { assert.equal(received, app); calls.push("auth"); return {} as never; },
     getFirestore: (received) => { assert.equal(received, app); calls.push("firestore"); return {} as never; },
@@ -667,7 +695,7 @@ test("Firebase initialization is explicit, project-bound, single-app, and reject
   const runtime = initializeFirebaseAdminAccountRuntime(PROJECT_ID, dependencies);
   assert.ok(runtime.store);
   assert.ok(runtime.verifier);
-  assert.deepEqual(calls, ["getApps", `initialize:${PROJECT_ID}`, "firestore", "auth"]);
+  assert.deepEqual(calls, ["getApps", `initialize:${PROJECT_ID}`, "app-check", "firestore", "auth"]);
 
   let initializes = 0;
   assert.throws(() => initializeFirebaseAdminAccountRuntime(PROJECT_ID, {
@@ -694,7 +722,7 @@ test("startup validates environment before one Firebase initialization and one l
   let listeners = 0;
   const base: ServerStartupDependencies = {
     loadEnvironment: loadServerEnvironment,
-    createFirebaseRuntime: () => { initializations += 1; return { store, verifier: verifier() }; },
+    createFirebaseRuntime: () => { initializations += 1; return { appCheckVerifier, store, verifier: verifier() }; },
     createHttpServer: () => ({ listen: () => { listeners += 1; } }),
     nowSeconds: () => NOW_SECONDS,
   };
@@ -709,6 +737,8 @@ test("startup validates environment before one Firebase initialization and one l
       order.push("environment");
       return {
         apiOrigin: "https://sandbox.patternly.invalid",
+        appCheckAppIds: [APP_ID],
+        appCheckMode: "debug",
         environment: "sandbox",
         firebaseProjectId: PROJECT_ID,
         port: 8_765,
@@ -719,7 +749,7 @@ test("startup validates environment before one Firebase initialization and one l
     },
     createFirebaseRuntime: (projectId) => {
       order.push(`firebase:${projectId}`);
-      return { store, verifier: verifier() };
+      return { appCheckVerifier, store, verifier: verifier() };
     },
     createHttpServer: (handler: RequestListener) => {
       assert.equal(typeof handler, "function");
@@ -729,6 +759,33 @@ test("startup validates environment before one Firebase initialization and one l
   };
   startServer({ NODE_ENV: "test" }, valid);
   assert.deepEqual(order, ["environment", `firebase:${PROJECT_ID}`, "server", "listen:0.0.0.0:8765"]);
+});
+
+test("server environment requires explicit App Check IDs and gates debug mode to sandbox", () => {
+  const source = {
+    NODE_ENV: "test",
+    PATTERNLY_ENVIRONMENT: "sandbox",
+    FIREBASE_PROJECT_ID: PROJECT_ID,
+    FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9099",
+    FIRESTORE_EMULATOR_HOST: "127.0.0.1:8080",
+    PATTERNLY_API_ORIGIN: "https://sandbox.patternly.invalid",
+    PATTERNLY_SCHEDULER_AUDIENCE: "https://sandbox.patternly.invalid",
+    PATTERNLY_SCHEDULER_EMAIL: `patternly-scheduler@${PROJECT_ID}.iam.gserviceaccount.com`,
+    PATTERNLY_SCHEDULER_SUBJECT: "1234567890",
+    PATTERNLY_APPCHECK_MODE: "debug",
+    PATTERNLY_APPCHECK_APP_IDS: APP_ID,
+  } as const;
+  const environment = loadServerEnvironment(source);
+  assert.deepEqual(environment.appCheckAppIds, [APP_ID]);
+  assert.equal(environment.appCheckMode, "debug");
+  assert.throws(() => loadServerEnvironment({
+    ...source,
+    PATTERNLY_ENVIRONMENT: "production",
+    FIREBASE_PROJECT_ID: "patternly-app-production",
+    PATTERNLY_APPCHECK_MODE: "debug",
+    K_SERVICE: "patternly-api",
+  }), /production_app_check_debug_prohibited/u);
+  assert.throws(() => loadServerEnvironment({ ...source, PATTERNLY_APPCHECK_APP_IDS: `${APP_ID},${APP_ID}` }), /invalid_environment:PATTERNLY_APPCHECK_APP_IDS/u);
 });
 
 test("production scripts build and start only the emitted JavaScript entrypoint", () => {

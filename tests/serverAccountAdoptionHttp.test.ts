@@ -15,6 +15,7 @@ import {
 } from "../server/src/http.js";
 
 const PROJECT_ID = "patternly-app-sandbox";
+const APP_ID = "test-app-id";
 const NOW_SECONDS = 1_785_700_000;
 const UID = "verified-adoption-http-user";
 const HASH_A = "a".repeat(64);
@@ -34,6 +35,7 @@ const validClaims: VerifiedFirebaseIdToken = {
 const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () => validClaims): FirebaseIdTokenVerifier => ({
   verifyIdToken: verify,
 });
+const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
 
 const unexpected = (name: string): (() => Promise<never>) => async () => { throw new Error(`unexpected_${name}_call`); };
 
@@ -108,7 +110,7 @@ const sendRequest = (
   }>,
 ): Promise<HttpResult> => new Promise((resolvePromise, rejectPromise) => {
   const outgoing = request({
-    headers: options.headers ?? { authorization: "Bearer valid-token", "content-type": "application/json" },
+    headers: options.headers ?? { authorization: "Bearer valid-token", "content-type": "application/json", "x-firebase-appcheck": "valid-app-check" },
     host: "127.0.0.1",
     method: options.method ?? "POST",
     path: options.path,
@@ -133,7 +135,9 @@ const withServer = async (
   tokenVerifier = verifier(),
 ): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
+    appCheckVerifier,
     expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
     service,
     verifier: tokenVerifier,
@@ -455,10 +459,10 @@ test("enforces exact four-KiB control and two-MiB upload streamed request limits
 test("reuses strict media, encoding, BOM and fatal UTF-8 boundaries", async () => {
   await withServer(serviceFor(), async (port) => {
     const cases = [
-      { body: JSON.stringify(startBody), headers: { authorization: "Bearer valid-token", "content-type": "text/plain" }, status: 415, code: "unsupported_media_type" },
-      { body: JSON.stringify(startBody), headers: { authorization: "Bearer valid-token", "content-encoding": "gzip", "content-type": "application/json" }, status: 415, code: "unsupported_content_encoding" },
-      { body: Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(JSON.stringify(startBody))]), headers: { authorization: "Bearer valid-token", "content-type": "application/json" }, status: 400, code: "invalid_request" },
-      { body: Buffer.from([0xc3, 0x28]), headers: { authorization: "Bearer valid-token", "content-type": "application/json" }, status: 400, code: "invalid_request" },
+      { body: JSON.stringify(startBody), headers: { authorization: "Bearer valid-token", "content-type": "text/plain", "x-firebase-appcheck": "valid-app-check" }, status: 415, code: "unsupported_media_type" },
+      { body: JSON.stringify(startBody), headers: { authorization: "Bearer valid-token", "content-encoding": "gzip", "content-type": "application/json", "x-firebase-appcheck": "valid-app-check" }, status: 415, code: "unsupported_content_encoding" },
+      { body: Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(JSON.stringify(startBody))]), headers: { authorization: "Bearer valid-token", "content-type": "application/json", "x-firebase-appcheck": "valid-app-check" }, status: 400, code: "invalid_request" },
+      { body: Buffer.from([0xc3, 0x28]), headers: { authorization: "Bearer valid-token", "content-type": "application/json", "x-firebase-appcheck": "valid-app-check" }, status: 400, code: "invalid_request" },
     ] as const;
     for (const boundary of cases) {
       const response = await sendRequest(port, {

@@ -10,6 +10,7 @@ import {
 } from "./accountService.js";
 import {
   authenticateAccountRequest,
+  type FirebaseAppCheckTokenVerifier,
   type FirebaseIdTokenVerifier,
 } from "./authentication.js";
 
@@ -45,6 +46,7 @@ type AdoptionPath = (typeof ADOPTION_PATHS)[number];
 
 type PublicErrorCode =
   | "account_data_retryable"
+  | "app_check_required"
   | "adoption_conflict"
   | "adoption_in_progress"
   | "adoption_not_ready"
@@ -59,6 +61,7 @@ type PublicErrorCode =
   | "immutable_integrity_conflict"
   | "internal_error"
   | "invalid_id_token"
+  | "invalid_app_check"
   | "invalid_request"
   | "method_not_allowed"
   | "not_found"
@@ -86,7 +89,9 @@ export type AccountHttpService = Pick<AccountDataService,
 >;
 
 export type AccountHttpDependencies = Readonly<{
+  appCheckVerifier: FirebaseAppCheckTokenVerifier;
   expectedProjectId: string;
+  expectedAppCheckAppIds: readonly string[];
   nowSeconds: () => number;
   service: AccountHttpService;
   verifier: FirebaseIdTokenVerifier;
@@ -122,6 +127,9 @@ const hasErrorCode = (error: unknown): error is Readonly<{ code?: unknown }> =>
 
 const authenticationError = (error: unknown): ErrorResponse => {
   if (hasErrorCode(error)) {
+    if (typeof error.code === "string" && error.code.startsWith("app-check/")) {
+      return publicError(401, "invalid_app_check");
+    }
     switch (error.code) {
       case "auth/id-token-expired":
         return publicError(401, "id_token_expired");
@@ -138,6 +146,8 @@ const authenticationError = (error: unknown): ErrorResponse => {
   if (message === "missing_authorization" || message === "malformed_authorization") {
     return publicError(401, "authentication_required");
   }
+  if (message === "missing_app_check") return publicError(401, "app_check_required");
+  if (message === "wrong_app_check_app") return publicError(401, "invalid_app_check");
   if (message === "expired_id_token") return publicError(401, "id_token_expired");
   if (
     message === "wrong_firebase_project"
@@ -425,6 +435,11 @@ const authorizationHeader = (request: IncomingMessage): string | undefined => {
   return typeof value === "string" ? value : undefined;
 };
 
+const appCheckHeader = (request: IncomingMessage): string | undefined => {
+  const value = request.headers["x-firebase-appcheck"];
+  return typeof value === "string" ? value : undefined;
+};
+
 const handleSyncRequest = async (
   request: IncomingMessage,
   response: ServerResponse,
@@ -433,9 +448,11 @@ const handleSyncRequest = async (
   let uid: string;
   try {
     ({ uid } = await authenticateAccountRequest({
-      headers: { authorization: authorizationHeader(request) },
+      headers: { authorization: authorizationHeader(request), "x-firebase-appcheck": appCheckHeader(request) },
     }, {
+      appCheckVerifier: dependencies.appCheckVerifier,
       expectedProjectId: dependencies.expectedProjectId,
+      expectedAppCheckAppIds: dependencies.expectedAppCheckAppIds,
       nowSeconds: dependencies.nowSeconds,
       verifier: dependencies.verifier,
     }));
@@ -521,9 +538,11 @@ const handleSnapshotPageRequest = async (
   let uid: string;
   try {
     ({ uid } = await authenticateAccountRequest({
-      headers: { authorization: authorizationHeader(request) },
+      headers: { authorization: authorizationHeader(request), "x-firebase-appcheck": appCheckHeader(request) },
     }, {
+      appCheckVerifier: dependencies.appCheckVerifier,
       expectedProjectId: dependencies.expectedProjectId,
+      expectedAppCheckAppIds: dependencies.expectedAppCheckAppIds,
       nowSeconds: dependencies.nowSeconds,
       verifier: dependencies.verifier,
     }));
@@ -561,9 +580,11 @@ const handleAdoptionRequest = async (
   let uid: string;
   try {
     ({ uid } = await authenticateAccountRequest({
-      headers: { authorization: authorizationHeader(request) },
+      headers: { authorization: authorizationHeader(request), "x-firebase-appcheck": appCheckHeader(request) },
     }, {
+      appCheckVerifier: dependencies.appCheckVerifier,
       expectedProjectId: dependencies.expectedProjectId,
+      expectedAppCheckAppIds: dependencies.expectedAppCheckAppIds,
       nowSeconds: dependencies.nowSeconds,
       verifier: dependencies.verifier,
     }));
