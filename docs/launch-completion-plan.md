@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` | exact-SHA CI evidence pending for this head; prior QA run `31976817513` covers `9a42d60` |
-| content/publishing | `master` | `c9014d6e42ee6df832393d3b9a1baf05320b2c5a` | exact-SHA CI evidence pending for this head; prior content run `31975680636` covers the preceding source/release state |
+| application | `main` | `e2f78a331a1d0e368572a60b5e7725b584920e62` | QA run `31979457170` — success |
+| content/publishing | `master` | `7ad31b74c107e7cab215ab16e7c532d811c5ff68` | Content publishing run `31979631355` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `c9014d6e42ee6df832393d3b9a1baf05320b2c5a`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `e2f78a331a1d0e368572a60b5e7725b584920e62`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; `npm run typecheck` and focused AZ/package/contract tests pass locally. Content commit `c9014d6e42ee6df832393d3b9a1baf05320b2c5a` binds all eight approvals and review packets to source `159037c531842842c64758634a1d513b98826b2d`; content `npm test` passes 140/140. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets. Exact-SHA CI for these two latest commits is still pending.
+**Verification (2026-08-17):** application commit `e2f78a331a1d0e368572a60b5e7725b584920e62` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; `npm run typecheck`, focused AZ/package/contract tests, and the full 604-test suite pass locally. QA run `31979457170` passed the recovery/static and multi-track release jobs. Content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d` and carries refreshed Coding technical evidence; content `npm test` passes 140/140 and publishing run `31979631355` passes the complete content gate. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
 
 **Unlocks:** every remaining lane.
 
@@ -255,7 +255,7 @@ Run or create uniform validators for every track. Track-specific validators may 
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-17):** content commit `c9014d6e42ee6df832393d3b9a1baf05320b2c5a` carries deterministic approval records at `evidence/content-approvals/<trackId>.json` and review packets bound to source `159037c531842842c64758634a1d513b98826b2d`; records include source/item manifests, scope, date, automated checks, and accepted limitations. Local `npm test` passes 140/140, readiness and packet regeneration are deterministic, and `git diff --check` passes. Exact-SHA CI for this latest content commit remains pending.
+**Verification (2026-08-17):** content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, and refreshed Coding technical/simulation evidence for that publisher input. Local `npm test` passes 140/140; readiness and packet regeneration are deterministic; `git diff --check` passes; publishing run `31979631355` passes the exact content gate.
 
 #### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
 
