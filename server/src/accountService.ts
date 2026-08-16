@@ -30,10 +30,8 @@ export const TRANSITION_LEASE_MS = 15 * 60 * 1000;
 const MAX_OPERATION_FINGERPRINTS = 100;
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
 const REMOVABLE_RECORD_TYPES = new Set<AccountRecordType>([
-  "activeSessionReference",
-  "foregroundTimer",
   "reviewQueueEntry",
-  "simulationDraft",
+  "trainingSession",
 ]);
 
 export type AccountDatasetManifest = Readonly<{
@@ -116,7 +114,6 @@ type AdoptionLastUpload = Readonly<{
   startRecordIndex: number;
 }> | null;
 
-type ActiveSessionSummary = Readonly<{ fingerprint: string; id: string }> | null;
 type CleanupCursor = Readonly<{ documentId: string }> | null;
 type DiscardCleanup = Readonly<{
   cursor: CleanupCursor;
@@ -145,11 +142,11 @@ type AdoptionBase = Readonly<{
 
 export type ActiveAdoptionOperation = AdoptionBase & (
   | Readonly<{ stage: "uploading"; nextRecordIndex: number; lastRecordType: AccountRecordType | null; lastRecordId: string | null; localDigestState: Sha256State }>
-  | Readonly<{ stage: "preparing"; localAfterSequenceId: string | null; remoteAfterCursor: AccountRecordSemanticCursor | null; localProcessedCount: number; remoteProcessedCount: number; nextConflictIndex: number; localActiveSessionSummary: ActiveSessionSummary; remoteActiveSessionSummary: ActiveSessionSummary }>
-  | Readonly<{ stage: "hashingPlan"; conflictAfterSequenceId: string | null; planDigestState: Sha256State; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; localActiveSessionSummary: ActiveSessionSummary; remoteActiveSessionSummary: ActiveSessionSummary }>
-  | Readonly<{ stage: "previewReady"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; localActiveSessionSummary: ActiveSessionSummary; remoteActiveSessionSummary: ActiveSessionSummary }>
-  | Readonly<{ stage: "hashingConfirmation"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; localActiveSessionSummary: ActiveSessionSummary; remoteActiveSessionSummary: ActiveSessionSummary; confirmation: AdoptionConfirmation; confirmationFingerprint: string; localAfterSequenceId: string | null; operationDigestState: Sha256State }>
-  | Readonly<{ stage: "buildingCandidate"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; confirmation: AdoptionConfirmation; confirmationFingerprint: string; operationFingerprint: string; localAfterSequenceId: string | null; remoteAfterCursor: AccountRecordSemanticCursor | null; localProcessedCount: number; remoteProcessedCount: number; candidateRecordCount: number; candidateDigestState: Sha256State; rejectedActiveSessionId: string | null }>
+  | Readonly<{ stage: "preparing"; localAfterSequenceId: string | null; remoteAfterCursor: AccountRecordSemanticCursor | null; localProcessedCount: number; remoteProcessedCount: number; nextConflictIndex: number }>
+  | Readonly<{ stage: "hashingPlan"; conflictAfterSequenceId: string | null; planDigestState: Sha256State; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string }>
+  | Readonly<{ stage: "previewReady"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string }>
+  | Readonly<{ stage: "hashingConfirmation"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; confirmation: AdoptionConfirmation; confirmationFingerprint: string; localAfterSequenceId: string | null; operationDigestState: Sha256State }>
+  | Readonly<{ stage: "buildingCandidate"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; confirmation: AdoptionConfirmation; confirmationFingerprint: string; operationFingerprint: string; localAfterSequenceId: string | null; remoteAfterCursor: AccountRecordSemanticCursor | null; localProcessedCount: number; remoteProcessedCount: number; candidateRecordCount: number; candidateDigestState: Sha256State }>
   | Readonly<{ stage: "checkingCandidate"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; confirmationFingerprint: string; operationFingerprint: string; candidateManifestFingerprint: string; candidateRecordCount: number; candidateAfterDocumentId: string | null; candidateObservedDocumentCount: number }>
   | Readonly<{ stage: "hashingCandidateManifest"; conflictCount: number; caseId: AdoptionCase; result: AdoptionResult; localFingerprint: string; remoteFingerprint: string; planId: string; confirmationFingerprint: string; operationFingerprint: string; candidateManifestFingerprint: string; candidateRecordCount: number; candidateAfterCursor: AccountRecordSemanticCursor | null; candidateVerifiedRecordCount: number; candidateVerificationDigestState: Sha256State }>
   | Readonly<{ stage: "activatedCleaning"; caseId: AdoptionCase; adoptionResult: AdoptionResult; confirmationFingerprint: string; operationFingerprint: string; committedAccountRevision: number; previousGeneration: string | null; cleanup: ActivatedCleanup }>
@@ -467,17 +464,6 @@ const validShaState = (value: unknown): value is Sha256State => {
   }
 };
 
-const validActiveSummary = (value: unknown): value is ActiveSessionSummary => value === null || (
-  isObject(value)
-  && exactKeys(value, ["fingerprint", "id"])
-  && typeof value.fingerprint === "string"
-  && HASH_PATTERN.test(value.fingerprint)
-  && typeof value.id === "string"
-  && value.id.length > 0
-  && value.id.length <= 256
-  && isWellFormedUnicodeScalarString(value.id)
-);
-
 const validAdvanceReceipt = (value: unknown): value is AdoptionAdvanceReceipt => isObject(value)
   && exactKeys(value, ["adoptionId", "result", "stage", "stepToken"])
   && typeof value.adoptionId === "string" && HASH_PATTERN.test(value.adoptionId)
@@ -513,25 +499,19 @@ const validLastUpload = (value: unknown): value is AdoptionLastUpload => value =
 
 const validConfirmation = (value: unknown): value is AdoptionConfirmation => {
   if (!isObject(value)) return false;
-  const allowed = ["abandonOtherActiveSessionConfirmed", "confirmed", "planId", "selectedActiveSessionSide"];
+  const allowed = ["confirmed", "planId"];
   if (!Object.keys(value).every((key) => allowed.includes(key))
     || !Object.prototype.hasOwnProperty.call(value, "confirmed")
     || !Object.prototype.hasOwnProperty.call(value, "planId")
     || typeof value.confirmed !== "boolean"
     || typeof value.planId !== "string"
     || !HASH_PATTERN.test(value.planId)) return false;
-  if (Object.prototype.hasOwnProperty.call(value, "abandonOtherActiveSessionConfirmed")
-    && typeof value.abandonOtherActiveSessionConfirmed !== "boolean") return false;
-  return !Object.prototype.hasOwnProperty.call(value, "selectedActiveSessionSide")
-    || value.selectedActiveSessionSide === "local"
-    || value.selectedActiveSessionSide === "remote";
+  return Object.keys(value).length === 2;
 };
 
 const canonicalConfirmationFingerprint = (confirmation: AdoptionConfirmation): string => computeCanonicalSha256({
-  abandonOtherActiveSessionConfirmed: confirmation.abandonOtherActiveSessionConfirmed ?? false,
   confirmed: confirmation.confirmed,
   planId: confirmation.planId,
-  selectedActiveSessionSide: confirmation.selectedActiveSessionSide ?? null,
 });
 
 const ACTIVE_COMMON_KEYS = [
@@ -542,11 +522,11 @@ const ACTIVE_COMMON_KEYS = [
 
 const ADOPTION_STAGE_KEYS: Readonly<Record<AdoptionStage, readonly string[]>> = {
   uploading: ["lastRecordId", "lastRecordType", "localDigestState", "nextRecordIndex"],
-  preparing: ["localActiveSessionSummary", "localAfterSequenceId", "localProcessedCount", "nextConflictIndex", "remoteActiveSessionSummary", "remoteAfterCursor", "remoteProcessedCount"],
-  hashingPlan: ["caseId", "conflictAfterSequenceId", "conflictCount", "localActiveSessionSummary", "localFingerprint", "planDigestState", "remoteActiveSessionSummary", "remoteFingerprint", "result"],
-  previewReady: ["caseId", "conflictCount", "localActiveSessionSummary", "localFingerprint", "planId", "remoteActiveSessionSummary", "remoteFingerprint", "result"],
-  hashingConfirmation: ["caseId", "confirmation", "confirmationFingerprint", "conflictCount", "localActiveSessionSummary", "localAfterSequenceId", "localFingerprint", "operationDigestState", "planId", "remoteActiveSessionSummary", "remoteFingerprint", "result"],
-  buildingCandidate: ["candidateDigestState", "candidateRecordCount", "caseId", "confirmation", "confirmationFingerprint", "conflictCount", "localAfterSequenceId", "localFingerprint", "localProcessedCount", "operationFingerprint", "planId", "rejectedActiveSessionId", "remoteAfterCursor", "remoteFingerprint", "remoteProcessedCount", "result"],
+  preparing: ["localAfterSequenceId", "localProcessedCount", "nextConflictIndex", "remoteAfterCursor", "remoteProcessedCount"],
+  hashingPlan: ["caseId", "conflictAfterSequenceId", "conflictCount", "localFingerprint", "planDigestState", "remoteFingerprint", "result"],
+  previewReady: ["caseId", "conflictCount", "localFingerprint", "planId", "remoteFingerprint", "result"],
+  hashingConfirmation: ["caseId", "confirmation", "confirmationFingerprint", "conflictCount", "localAfterSequenceId", "localFingerprint", "operationDigestState", "planId", "remoteFingerprint", "result"],
+  buildingCandidate: ["candidateDigestState", "candidateRecordCount", "caseId", "confirmation", "confirmationFingerprint", "conflictCount", "localAfterSequenceId", "localFingerprint", "localProcessedCount", "operationFingerprint", "planId", "remoteAfterCursor", "remoteFingerprint", "remoteProcessedCount", "result"],
   checkingCandidate: ["candidateAfterDocumentId", "candidateManifestFingerprint", "candidateObservedDocumentCount", "candidateRecordCount", "caseId", "confirmationFingerprint", "conflictCount", "localFingerprint", "operationFingerprint", "planId", "remoteFingerprint", "result"],
   hashingCandidateManifest: ["candidateAfterCursor", "candidateManifestFingerprint", "candidateRecordCount", "candidateVerificationDigestState", "candidateVerifiedRecordCount", "caseId", "confirmationFingerprint", "conflictCount", "localFingerprint", "operationFingerprint", "planId", "remoteFingerprint", "result"],
   activatedCleaning: ["adoptionResult", "caseId", "cleanup", "committedAccountRevision", "confirmationFingerprint", "operationFingerprint", "previousGeneration"],
@@ -555,12 +535,11 @@ const ADOPTION_STAGE_KEYS: Readonly<Record<AdoptionStage, readonly string[]>> = 
 
 const validCase = (value: unknown): value is AdoptionCase => typeof value === "string" && [
   "emptyLocalEmptyRemote", "populatedLocalEmptyRemote", "emptyLocalPopulatedRemote",
-  "populatedLocalPopulatedRemote", "activeSessionOnOneSide", "divergentActiveSessions", "divergentRecord",
+  "populatedLocalPopulatedRemote", "divergentRecord",
 ].includes(value);
 const validResult = (value: unknown): value is AdoptionResult => typeof value === "string" && [
   "createBoundEmptyDataset", "previewThenUploadExactLocalDataset", "previewThenRestoreExactRemoteDataset",
-  "previewThenReconcileByRecordPolicy", "preserveThatSessionAndRejectSecondActiveSession",
-  "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft", "applyRecordPolicyOrBlockWithoutMutation",
+  "previewThenReconcileByRecordPolicy", "applyRecordPolicyOrBlockWithoutMutation",
 ].includes(value);
 
 const adoptionStepToken = (adoptionId: string, stepNumber: number, stage: string): string =>
@@ -626,13 +605,11 @@ export function validateAdoptionOperation(value: unknown): asserts value is Adop
           || (active.localProcessedCount === 0) !== (active.localAfterSequenceId === null)
           || (active.localAfterSequenceId !== null && Number(active.localAfterSequenceId) + 1 !== active.localProcessedCount)
           || (active.remoteProcessedCount === 0) !== (active.remoteAfterCursor === null)
-          || !Number.isSafeInteger(active.nextConflictIndex) || active.nextConflictIndex < 0 || !validActiveSummary(active.localActiveSessionSummary)
-          || !validActiveSummary(active.remoteActiveSessionSummary)) throw new Error("corrupt_adoption_operation");
+          || !Number.isSafeInteger(active.nextConflictIndex) || active.nextConflictIndex < 0) throw new Error("corrupt_adoption_operation");
         break;
       case "hashingPlan": case "previewReady": case "hashingConfirmation":
         if (!validCase(active.caseId) || !validResult(active.result)
           || !Number.isSafeInteger(active.conflictCount) || active.conflictCount < 0
-          || !validActiveSummary(active.localActiveSessionSummary) || !validActiveSummary(active.remoteActiveSessionSummary)
           || typeof active.localFingerprint !== "string" || !HASH_PATTERN.test(active.localFingerprint)
           || typeof active.remoteFingerprint !== "string" || !HASH_PATTERN.test(active.remoteFingerprint)) throw new Error("corrupt_adoption_operation");
         if (active.stage === "hashingPlan" && ((active.conflictAfterSequenceId !== null && !validSequenceId(active.conflictAfterSequenceId)) || !validShaState(active.planDigestState))) throw new Error("corrupt_adoption_operation");
@@ -660,11 +637,7 @@ export function validateAdoptionOperation(value: unknown): asserts value is Adop
           || typeof active.confirmationFingerprint !== "string"
           || active.confirmationFingerprint !== canonicalConfirmationFingerprint(active.confirmation)
           || active.confirmation.planId !== active.planId
-          || typeof active.operationFingerprint !== "string" || !HASH_PATTERN.test(active.operationFingerprint)
-          || (active.rejectedActiveSessionId !== null && (
-            typeof active.rejectedActiveSessionId !== "string" || active.rejectedActiveSessionId.length === 0
-          ))
-          || (active.caseId === "divergentActiveSessions") !== (active.rejectedActiveSessionId !== null)) throw new Error("corrupt_adoption_operation");
+          || typeof active.operationFingerprint !== "string" || !HASH_PATTERN.test(active.operationFingerprint)) throw new Error("corrupt_adoption_operation");
         break;
       case "checkingCandidate":
         if (!validCase(active.caseId) || !validResult(active.result)
@@ -855,10 +828,8 @@ const canonicalSyncMutation = (mutation: SyncMutation): Readonly<Record<string, 
 };
 
 const canonicalConfirmation = (confirmation: AdoptionConfirmation): Readonly<Record<string, unknown>> => ({
-  abandonOtherActiveSessionConfirmed: confirmation.abandonOtherActiveSessionConfirmed ?? false,
   confirmed: confirmation.confirmed,
   planId: confirmation.planId,
-  selectedActiveSessionSide: confirmation.selectedActiveSessionSide ?? null,
 });
 
 export const computeAdoptionOperationFingerprint = (input: AdoptionOperationSemanticInput): string => {
@@ -1264,18 +1235,9 @@ const terminalAdvance = (
 
 const classifyAdoption = (input: Readonly<{
   conflictCount: number;
-  localActive: ActiveSessionSummary;
   localCount: number;
-  remoteActive: ActiveSessionSummary;
   remoteCount: number;
 }>): Readonly<{ caseId: AdoptionCase; result: AdoptionResult }> => {
-  if (input.localActive !== null && input.remoteActive !== null
-    && input.localActive.fingerprint !== input.remoteActive.fingerprint) {
-    return { caseId: "divergentActiveSessions", result: "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft" };
-  }
-  if ((input.localActive !== null) !== (input.remoteActive !== null)) {
-    return { caseId: "activeSessionOnOneSide", result: "preserveThatSessionAndRejectSecondActiveSession" };
-  }
   if (input.conflictCount > 0) return { caseId: "divergentRecord", result: "applyRecordPolicyOrBlockWithoutMutation" };
   if (input.localCount === 0 && input.remoteCount === 0) return { caseId: "emptyLocalEmptyRemote", result: "createBoundEmptyDataset" };
   if (input.localCount > 0 && input.remoteCount === 0) return { caseId: "populatedLocalEmptyRemote", result: "previewThenUploadExactLocalDataset" };
@@ -1284,10 +1246,8 @@ const classifyAdoption = (input: Readonly<{
 };
 
 const confirmationValue = (confirmation: AdoptionConfirmation): Readonly<Record<string, unknown>> => ({
-  abandonOtherActiveSessionConfirmed: confirmation.abandonOtherActiveSessionConfirmed ?? false,
   confirmed: confirmation.confirmed,
   planId: confirmation.planId,
-  selectedActiveSessionSide: confirmation.selectedActiveSessionSide ?? null,
 });
 
 const compareDescriptorIdentity = (
@@ -1438,7 +1398,7 @@ export class AccountDataService {
         localDigestState: Sha256Accumulator.create().update(canonicalBytes({ records: [] }).slice(0, 12)).exportState(),
       } : {
         ...base, stage, localAfterSequenceId: null, remoteAfterCursor: null, localProcessedCount: 0,
-        remoteProcessedCount: 0, nextConflictIndex: 0, localActiveSessionSummary: null, remoteActiveSessionSummary: null,
+        remoteProcessedCount: 0, nextConflictIndex: 0,
       };
       transaction.writeAdoptionOperation(created);
       return { adoptionId: created.adoptionId, result: "started" as const, stage: created.stage, stepToken: created.stepToken };
@@ -1521,7 +1481,6 @@ export class AccountDataService {
         remoteGeneration: operation.remoteGeneration, remoteRecordCount: operation.remoteRecordCount,
         stage: "preparing", stepNumber, stepToken, version: 1, localAfterSequenceId: null,
         remoteAfterCursor: null, localProcessedCount: 0, remoteProcessedCount: 0, nextConflictIndex: 0,
-        localActiveSessionSummary: null, remoteActiveSessionSummary: null,
       } : {
         ...operation, leaseExpiresAt: leaseExpiry(commandNow), localDigestState: digest.exportState(),
         nextRecordIndex: nextIndex, lastRecordType: input.records.at(-1)!.type,
@@ -1611,11 +1570,7 @@ export class AccountDataService {
     }
     if (operation.stage !== "previewReady") throw new Error("adoption_not_ready");
     if (!input.confirmation.confirmed || input.confirmation.planId !== operation.planId) throw new Error("adoption_not_ready");
-    if (operation.caseId !== "divergentActiveSessions" && operation.conflictCount > 0) throw new Error("adoption_conflict");
-    if (operation.caseId === "divergentActiveSessions" && (
-      input.confirmation.abandonOtherActiveSessionConfirmed !== true
-      || (input.confirmation.selectedActiveSessionSide !== "local" && input.confirmation.selectedActiveSessionSide !== "remote")
-    )) throw new Error("active_session_conflict");
+    if (operation.conflictCount > 0) throw new Error("adoption_conflict");
     return this.store.runTransaction(uid, async (transaction) => {
       const head = await transaction.readHead();
       const current = await transaction.readAdoptionOperation();
@@ -1627,8 +1582,7 @@ export class AccountDataService {
         {
           stage: "hashingConfirmation", conflictCount: operation.conflictCount, caseId: operation.caseId,
           result: operation.result, localFingerprint: operation.localFingerprint, remoteFingerprint: operation.remoteFingerprint,
-          planId: operation.planId, localActiveSessionSummary: operation.localActiveSessionSummary,
-          remoteActiveSessionSummary: operation.remoteActiveSessionSummary, confirmation: input.confirmation,
+          planId: operation.planId, confirmation: input.confirmation,
           confirmationFingerprint: fingerprint, localAfterSequenceId: null,
           operationDigestState: Sha256Accumulator.create().update(textBytes(prefix)).exportState(),
         },
@@ -1765,8 +1719,6 @@ export class AccountDataService {
       let localIndex = 0;
       let remoteIndex = 0;
       let consumed = 0;
-      let localActive = operation.localActiveSessionSummary;
-      let remoteActive = operation.remoteActiveSessionSummary;
       const consumedLocal: AdoptionLocalRecordDocument[] = [];
       const consumedRemote: AccountRecordDescriptor[] = [];
       const conflicts: AdoptionConflictDocument[] = [];
@@ -1779,20 +1731,10 @@ export class AccountDataService {
         if (comparison <= 0 && local) {
           consumedLocal.push(local);
           localIndex += 1;
-          if (local.record.type === "activeSessionReference") {
-            const summary = { id: local.record.id, fingerprint: local.record.fingerprint };
-            if (localActive && localActive.fingerprint !== summary.fingerprint) throw new Error("multiple_active_session_references");
-            localActive = summary;
-          }
         }
         if (comparison >= 0 && remote) {
           consumedRemote.push(remote);
           remoteIndex += 1;
-          if (remote.type === "activeSessionReference") {
-            const summary = { id: remote.id, fingerprint: remote.fingerprint };
-            if (remoteActive && remoteActive.fingerprint !== summary.fingerprint) throw new Error("multiple_active_session_references");
-            remoteActive = summary;
-          }
         }
         if (comparison === 0 && local && remote && local.record.fingerprint !== remote.fingerprint) {
           const conflict: AdoptionConflict = {
@@ -1817,13 +1759,11 @@ export class AccountDataService {
           {
             stage: "hashingPlan",
             conflictAfterSequenceId: null,
-            planDigestState: Sha256Accumulator.create().update(textBytes(`{"caseId":${JSON.stringify(classifyAdoption({ conflictCount: operation.nextConflictIndex + conflicts.length, localActive, localCount: operation.localRecordCount, remoteActive, remoteCount: operation.remoteRecordCount }).caseId)},"conflicts":[`)).exportState(),
+            planDigestState: Sha256Accumulator.create().update(textBytes(`{"caseId":${JSON.stringify(classifyAdoption({ conflictCount: operation.nextConflictIndex + conflicts.length, localCount: operation.localRecordCount, remoteCount: operation.remoteRecordCount }).caseId)},"conflicts":[`)).exportState(),
             conflictCount: operation.nextConflictIndex + conflicts.length,
-            ...classifyAdoption({ conflictCount: operation.nextConflictIndex + conflicts.length, localActive, localCount: operation.localRecordCount, remoteActive, remoteCount: operation.remoteRecordCount }),
+            ...classifyAdoption({ conflictCount: operation.nextConflictIndex + conflicts.length, localCount: operation.localRecordCount, remoteCount: operation.remoteRecordCount }),
             localFingerprint: operation.localDatasetFingerprint,
             remoteFingerprint: operation.remoteDatasetFingerprint,
-            localActiveSessionSummary: localActive,
-            remoteActiveSessionSummary: remoteActive,
           }, expectedStepToken, commandNow,
         )
         : nextAdvanceState<Extract<ActiveAdoptionOperation, { stage: "preparing" }>>(
@@ -1836,7 +1776,6 @@ export class AccountDataService {
             },
             localProcessedCount, remoteProcessedCount,
             nextConflictIndex: operation.nextConflictIndex + conflicts.length,
-            localActiveSessionSummary: localActive, remoteActiveSessionSummary: remoteActive,
           }, expectedStepToken, commandNow,
         );
       for (const conflict of conflicts) transaction.putAdoptionConflict(conflict);
@@ -1881,8 +1820,6 @@ export class AccountDataService {
               stage: "previewReady", conflictCount: operation.conflictCount, caseId: operation.caseId,
               result: operation.result, localFingerprint: operation.localFingerprint,
               remoteFingerprint: operation.remoteFingerprint, planId: digest.digestHex(),
-              localActiveSessionSummary: operation.localActiveSessionSummary,
-              remoteActiveSessionSummary: operation.remoteActiveSessionSummary,
             }, expectedStepToken, commandNow,
           );
         })()
@@ -1926,12 +1863,6 @@ export class AccountDataService {
       if (finished) {
         digest.update(textBytes("]}}"));
         const operationFingerprint = digest.digestHex();
-        const rejectedActiveSessionId = operation.caseId === "divergentActiveSessions"
-          ? operation.confirmation.selectedActiveSessionSide === "local"
-            ? operation.remoteActiveSessionSummary?.id ?? null
-            : operation.localActiveSessionSummary?.id ?? null
-          : null;
-        if (operation.caseId === "divergentActiveSessions" && rejectedActiveSessionId === null) throw new Error("corrupt_adoption_operation");
         next = nextAdvanceState<Extract<ActiveAdoptionOperation, { stage: "buildingCandidate" }>>(
           operation,
           {
@@ -1942,7 +1873,6 @@ export class AccountDataService {
             localAfterSequenceId: null, remoteAfterCursor: null, localProcessedCount: 0, remoteProcessedCount: 0,
             candidateRecordCount: 0,
             candidateDigestState: Sha256Accumulator.create().update(textBytes("{\"records\":[")).exportState(),
-            rejectedActiveSessionId,
           }, expectedStepToken, commandNow,
         );
       } else {
@@ -1992,26 +1922,11 @@ export class AccountDataService {
       if (remoteDocuments.some((entry, index) => !descriptorMatchesDocument(remotePage[index]!, entry))) throw new Error("corrupt_account_record_document");
       const remoteRecords = remoteDocuments.map((entry, index) => decodePersistedAccountRecordDocument(entry!, remotePage[index]!.documentId));
       const localDecoded = localPage.map((entry) => decodePersistedAccountRecordDocument(entry.record, entry.record.keyHash));
-      const selectedSide = operation.confirmation.selectedActiveSessionSide;
-      const skipRejected = (record: AccountRecord, side: "local" | "remote"): boolean => {
-        if (operation.caseId !== "divergentActiveSessions" || side === selectedSide) return false;
-        if (record.type === "activeSessionReference") return true;
-        return record.type === "simulationDraft" && record.payload.sessionId === operation.rejectedActiveSessionId;
-      };
       let localIndex = 0;
       let remoteIndex = 0;
       let consumed = 0;
       const output: AccountRecord[] = [];
       while (consumed < MAX_ADOPTION_PAGE_RECORDS && (localIndex < localDecoded.length || remoteIndex < remoteRecords.length)) {
-        while (localIndex < localDecoded.length && skipRejected(localDecoded[localIndex]!, "local")) {
-          localIndex += 1;
-          consumed += 1;
-          if (consumed === MAX_ADOPTION_PAGE_RECORDS) break;
-        }
-        while (consumed < MAX_ADOPTION_PAGE_RECORDS && remoteIndex < remoteRecords.length && skipRejected(remoteRecords[remoteIndex]!, "remote")) {
-          remoteIndex += 1;
-          consumed += 1;
-        }
         if (consumed === MAX_ADOPTION_PAGE_RECORDS) break;
         const local = localDecoded[localIndex];
         const remote = remoteRecords[remoteIndex];

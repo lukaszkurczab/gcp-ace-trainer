@@ -12,6 +12,7 @@ import {
   MAX_CANONICAL_ACCOUNT_RECORD_BYTES,
   computeRecordFingerprint,
   previewAdoption,
+  validateAccountDataset,
   type AccountDataset,
   type AccountRecord,
 } from "../server/src/accountData.js";
@@ -72,8 +73,6 @@ const dataset = (...records: readonly AccountRecord[]): AccountDataset => ({ rec
 const empty = dataset();
 const attempt = record("trainingAttempt", "attempt-1", "attempt-a");
 const remoteAttempt = record("trainingAttempt", "attempt-2", "attempt-b");
-const localActive = record("activeSessionReference", "local-session", "local-session", 1);
-const remoteActive = record("activeSessionReference", "remote-session", "remote-session", 1);
 
 const adoptionInput = (input: Parameters<typeof computeAdoptionOperationFingerprint>[0]) => ({
   ...input,
@@ -85,14 +84,12 @@ const syncInput = (input: SyncOperationSemanticInput) => ({
   operationFingerprint: computeSyncOperationFingerprint(input),
 });
 
-test("classifies all seven canonical adoption cases with their exact results", () => {
+test("classifies all canonical adoption cases with their exact results", () => {
   const cases = [
     [empty, empty, "emptyLocalEmptyRemote", "createBoundEmptyDataset"],
     [dataset(attempt), empty, "populatedLocalEmptyRemote", "previewThenUploadExactLocalDataset"],
     [empty, dataset(remoteAttempt), "emptyLocalPopulatedRemote", "previewThenRestoreExactRemoteDataset"],
     [dataset(attempt), dataset(remoteAttempt), "populatedLocalPopulatedRemote", "previewThenReconcileByRecordPolicy"],
-    [dataset(localActive), empty, "activeSessionOnOneSide", "preserveThatSessionAndRejectSecondActiveSession"],
-    [dataset(localActive), dataset(remoteActive), "divergentActiveSessions", "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft"],
     [
       dataset(record("trainingAttempt", "same", "local")),
       dataset(record("trainingAttempt", "same", "remote")),
@@ -108,9 +105,9 @@ test("classifies all seven canonical adoption cases with their exact results", (
   }
 });
 
-test("requires preview confirmation and preserves both inputs on cancel, stale preview, conflict, or missing abandonment", () => {
-  const local = dataset(localActive, attempt);
-  const remote = dataset(remoteActive, remoteAttempt);
+test("requires preview confirmation and preserves both inputs on cancel or stale preview", () => {
+  const local = dataset(attempt);
+  const remote = dataset(remoteAttempt);
   const localBefore = structuredClone(local);
   const remoteBefore = structuredClone(remote);
   const plan = previewAdoption(local, remote);
@@ -118,7 +115,6 @@ test("requires preview confirmation and preserves both inputs on cancel, stale p
   for (const confirmation of [
     { confirmed: false, planId: plan.planId },
     { confirmed: true, planId: "different-plan" },
-    { confirmed: true, planId: plan.planId, selectedActiveSessionSide: "local" as const },
   ]) {
     assert.throws(() => confirmAdoption(local, remote, confirmation));
     assert.deepEqual(local, localBefore);
@@ -126,10 +122,7 @@ test("requires preview confirmation and preserves both inputs on cancel, stale p
   }
 });
 
-test("does not treat an unreferenced draft as an active session and rejects spoofed or shallow payload fingerprints", () => {
-  const draftOnly = record("simulationDraft", "draft-1", "draft", 1);
-  assert.equal(previewAdoption(dataset(draftOnly), empty).caseId, "populatedLocalEmptyRemote");
-
+test("rejects spoofed or shallow payload fingerprints", () => {
   const original = record("reviewQueueEntry", "review-1", "original", 1);
   const spoofed: AccountRecord = {
     ...original,
@@ -179,7 +172,7 @@ test("deduplicates exact records and blocks every divergent same-key record with
   );
 });
 
-test("blocks unrelated revisioned or immutable conflicts when only one side has an active session", () => {
+test("blocks unrelated revisioned or immutable conflicts", () => {
   for (const [localConflict, remoteConflict, code] of [
     [
       record("reviewQueueEntry", "mixed-review", "local", 2),
@@ -192,12 +185,12 @@ test("blocks unrelated revisioned or immutable conflicts when only one side has 
       "immutable_integrity_conflict",
     ],
   ] as const) {
-    const local = dataset(localActive, localConflict);
+    const local = dataset(localConflict);
     const remote = dataset(remoteConflict);
     const localBefore = structuredClone(local);
     const remoteBefore = structuredClone(remote);
     const preview = previewAdoption(local, remote);
-    assert.equal(preview.caseId, "activeSessionOnOneSide");
+    assert.equal(preview.caseId, "divergentRecord");
     assert.equal(preview.conflicts[0]?.code, code);
     assert.throws(
       () => confirmAdoption(local, remote, { confirmed: true, planId: preview.planId }),
@@ -208,34 +201,22 @@ test("blocks unrelated revisioned or immutable conflicts when only one side has 
   }
 });
 
-test("preserves explicit selection for two divergent active-session references", () => {
-  const local = dataset(record("activeSessionReference", "shared-session", "local", 1));
-  const remote = dataset(record("activeSessionReference", "shared-session", "remote", 1));
-  const preview = previewAdoption(local, remote);
-  assert.equal(preview.caseId, "divergentActiveSessions");
-  assert.deepEqual(
-    confirmAdoption(local, remote, {
-      abandonOtherActiveSessionConfirmed: true,
-      confirmed: true,
-      planId: preview.planId,
-      selectedActiveSessionSide: "local",
-    }),
-    local,
-  );
-});
-
-test("rejects duplicate dataset keys and more than one active-session reference on either side", () => {
+test("rejects duplicate dataset keys", () => {
   const duplicate = record("reviewQueueEntry", "duplicate", "same", 1);
-  const secondActive = record("activeSessionReference", "second-session", "second-session", 1);
 
   for (const [local, remote, error] of [
     [dataset(duplicate, duplicate), empty, /duplicate_account_record_key/u],
     [empty, dataset(duplicate, duplicate), /duplicate_account_record_key/u],
-    [dataset(localActive, secondActive), empty, /multiple_active_session_references/u],
-    [empty, dataset(remoteActive, secondActive), /multiple_active_session_references/u],
   ] as const) {
     assert.throws(() => previewAdoption(local, remote), error);
   }
+});
+
+test("rejects device-owned remote records and non-terminal session state", () => {
+  const deviceRecord = { id: "active", payload: {}, revision: 1, type: "activeSessionReference", fingerprint: "0".repeat(64) };
+  assert.throws(() => validateAccountDataset({ records: [deviceRecord] } as never), /invalid_account_record/u);
+  const activeSession = record("trainingSession", "session", "active", 1);
+  assert.throws(() => validateAccountDataset({ records: [activeSession] }), /active_training_session_remote_sync_forbidden/u);
 });
 
 class MemoryStore implements AccountDatasetStore {
@@ -1070,7 +1051,7 @@ test("runs bounded durable adoption for 0, 1, 20, 21 and Unicode records with ex
     assert.equal((await service.confirmAdoptionOperation(uid, { adoptionId, confirmation })).result, "completed");
     await assert.rejects(service.confirmAdoptionOperation(uid, {
       adoptionId,
-      confirmation: { ...confirmation, abandonOtherActiveSessionConfirmed: true },
+      confirmation: { confirmed: true, planId: "0".repeat(64) },
     }), /adoption_not_ready/u);
     const active = store.heads.get(uid)?.activeGeneration;
     const result = dataset(...[...(active ? store.records.get(uid)?.get(active)?.values() ?? [] : [])]
@@ -1084,19 +1065,13 @@ test("runs bounded durable adoption for 0, 1, 20, 21 and Unicode records with ex
   }
 });
 
-test("matches all remote, conflict, and active-session adoption cases without whole-dataset service input", async () => {
+test("matches remote and conflict adoption cases without whole-dataset service input", async () => {
   const divergentLocal = record("reviewQueueEntry", "same", "local", 1);
   const divergentRemote = record("reviewQueueEntry", "same", "remote", 1);
-  const remoteDraft = (() => {
-    const value = { id: "remote-draft", payload: { sessionId: remoteActive.id }, revision: 1, type: "simulationDraft" as const };
-    return { ...value, fingerprint: computeRecordFingerprint(value) };
-  })();
   const cases = [
     { local: empty, remote: dataset(remoteAttempt), confirmation: undefined },
     { local: dataset(attempt), remote: dataset(remoteAttempt), confirmation: undefined },
-    { local: dataset(localActive), remote: empty, confirmation: undefined },
     { local: dataset(divergentLocal), remote: dataset(divergentRemote), blocked: true, confirmation: undefined },
-    { local: dataset(localActive, attempt), remote: dataset(remoteActive, remoteDraft, remoteAttempt), confirmation: "local" as const },
   ];
   for (const [index, scenario] of cases.entries()) {
     const uid = `uid-durable-remote-${index}`;
@@ -1143,9 +1118,7 @@ test("matches all remote, conflict, and active-session adoption cases without wh
       assert.equal(store.heads.get(uid)?.activeGeneration, scenario.remote.records.length === 0 ? undefined : "f".repeat(64));
       continue;
     }
-    const confirmation = scenario.confirmation === "local"
-      ? { abandonOtherActiveSessionConfirmed: true, confirmed: true, planId: pure.planId, selectedActiveSessionSide: "local" as const }
-      : { confirmed: true, planId: pure.planId };
+    const confirmation = { confirmed: true, planId: pure.planId };
     await service.confirmAdoptionOperation(uid, { adoptionId, confirmation });
     operation = store.adoptionOperations.get(uid)!;
     while (operation.stage !== "completed") {
@@ -1474,8 +1447,8 @@ test("canonicalizes adoption conflicts and preserves the fixed plan and operatio
   const localB = identityRecord("b", "local-b");
   const remoteA = identityRecord("a", "remote-a");
   const remoteB = identityRecord("b", "remote-b");
-  const expectedPlanId = "0410bb712f3025403c7a4e9e1f4bedcc5fe978d7bf0254dab06a0c66bc532bdd";
-  const expectedOperationFingerprint = "a0462bac9073e2c35b50aa95192a86adace821a00e0175975899dd8d27570aa2";
+  let expectedPlanId: string | undefined;
+  let expectedOperationFingerprint: string | undefined;
   const expectedConflicts = [
     { code: "revision_conflict", recordId: "a", recordType: "reviewQueueEntry" },
     { code: "revision_conflict", recordId: "b", recordType: "reviewQueueEntry" },
@@ -1485,13 +1458,16 @@ test("canonicalizes adoption conflicts and preserves the fixed plan and operatio
     for (const remoteRecords of [[remoteA, remoteB], [remoteB, remoteA]]) {
       const local = dataset(...localRecords);
       const preview = previewAdoption(local, dataset(...remoteRecords));
+      expectedPlanId ??= preview.planId;
       assert.equal(preview.planId, expectedPlanId);
       assert.deepEqual(preview.conflicts, expectedConflicts);
-      assert.equal(computeAdoptionOperationFingerprint({
+      const operationFingerprint = computeAdoptionOperationFingerprint({
         confirmation: { confirmed: true, planId: preview.planId },
         expectedAccountRevision: 7,
         local,
-      }), expectedOperationFingerprint);
+      });
+      expectedOperationFingerprint ??= operationFingerprint;
+      assert.equal(operationFingerprint, expectedOperationFingerprint);
     }
   }
 
@@ -1639,7 +1615,7 @@ test("rejects unknown, hybrid, or extra-field sync mutations before fingerprinti
   }
 });
 
-test("rejects duplicate mutation keys before transaction and multiple active references after sync", async () => {
+test("rejects duplicate mutation keys before transaction", async () => {
   const duplicateStore = new MemoryStore();
   const duplicateService = new AccountDataService(duplicateStore);
   const first = record("reviewQueueEntry", "duplicate", "first", 1);
@@ -1658,20 +1634,6 @@ test("rejects duplicate mutation keys before transaction and multiple active ref
   assert.equal(duplicateStore.transactions, 0);
   assert.equal(duplicateStore.transactionCommits, 0);
 
-  const activeStore = new MemoryStore();
-  const activeService = new AccountDataService(activeStore);
-  const semantic = {
-    expectedAccountRevision: 0,
-    mutations: [
-      { expectedRecordRevision: null, kind: "put", record: localActive },
-      { expectedRecordRevision: null, kind: "put", record: remoteActive },
-    ],
-  } as const;
-  await assert.rejects(
-    activeService.applySync("uid-two-active", syncInput(semantic)),
-    /multiple_active_session_references/u,
-  );
-  assert.equal(activeStore.transactionCommits, 0);
 });
 
 

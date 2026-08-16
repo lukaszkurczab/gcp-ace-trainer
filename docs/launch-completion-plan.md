@@ -353,9 +353,11 @@ Create a UID-addressable lifecycle record outside recursive account-data deletio
 
 **Verification (2026-08-16):** the server now persists an immutable UID-addressable tombstone in `accountLifecycles/{uid}` before revocation/data/identity deletion, derives a separate tombstone generation without copying dataset revision, keeps the tombstone outside recursive `accounts/{uid}` deletion, and rejects tombstoned sync/snapshot/adoption requests with a closed 410 response before body handling. Intent writes are transactionally idempotent and conflicting request identities are rejected. The full local suite passes (604 tests), including lifecycle adapter, deletion-order, HTTP boundary, typecheck, and server build coverage; implementation commit `d6dd3cc` passed exact-SHA application QA run `31973221280`. Mobile account creation/restore orchestration is not present in this server slice and remains part of the broader account vertical, so DATA-01 is not marked fully verified.
 
-#### DATA-02 — Device-session server cutover — `READY`
+#### DATA-02 — Device-session server cutover — `PARTIAL`
 
 Delete remote active-session pointer, draft, item position, timer, conflict selection, and cross-device resume from account schemas/services/tests. Each device owns at most one local active session. Server sync contains compact terminal learning facts and projections only.
+
+**Verification (2026-08-16):** the server account schema no longer accepts `activeSessionReference`, `simulationDraft`, or `foregroundTimer`; adoption no longer classifies or resolves active-session conflicts, and confirmation carries no session-selection or abandonment fields. Full durable adoption, sync, HTTP, typecheck, and build coverage passes locally for the cutover. `trainingSession` records are accepted only when terminal (`completed` or `abandoned`), while local active-session ownership remains in the device learning kernel. The implementation is therefore a pushed server-side partial: mobile outbox projection, account creation/restore orchestration, and two-physical-device proof remain open under DATA-03–DATA-05.
 
 #### DATA-03 — Incremental account operations and projections — `BLOCKED by DATA-02 + SEC-01`
 

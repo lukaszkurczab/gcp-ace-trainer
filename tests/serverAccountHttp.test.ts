@@ -466,7 +466,6 @@ test("keeps service error mapping closed, non-leaking, and phase-sensitive", asy
     { message: "stale_account_revision", status: 409, code: "stale_account_revision" },
     { message: "record_revision_conflict", status: 409, code: "record_revision_conflict" },
     { message: "immutable_integrity_conflict", status: 409, code: "immutable_integrity_conflict" },
-    { message: "multiple_active_session_references", status: 409, code: "active_session_conflict" },
     { message: "account_snapshot_changed_retryable", status: 503, code: "account_data_retryable" },
     { message: "account_record_too_large", status: 500, code: "internal_error" },
     { message: "corrupt_account_dataset_head:secret", status: 500, code: "internal_error" },

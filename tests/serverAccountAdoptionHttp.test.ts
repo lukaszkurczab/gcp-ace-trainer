@@ -502,7 +502,6 @@ test("uses the closed adoption service error map without leaking provider or exc
     ["adoption_not_ready", 409, "adoption_not_ready"],
     ["adoption_conflict", 409, "adoption_conflict"],
     ["active_session_conflict", 409, "active_session_conflict"],
-    ["multiple_active_session_references", 409, "active_session_conflict"],
     ["account_data_retryable", 503, "account_data_retryable"],
     ["account_snapshot_changed_retryable", 503, "account_data_retryable"],
     ["candidate_generation_mismatch", 500, "internal_error"],

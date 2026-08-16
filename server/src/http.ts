@@ -178,6 +178,12 @@ const lifecycleError = (error: unknown): ErrorResponse => {
 const syncServiceError = (error: unknown): ErrorResponse => {
   if (hasErrorCode(error)) return publicError(500, "internal_error");
   switch (errorMessage(error)) {
+    case "invalid_account_dataset":
+    case "invalid_account_record":
+    case "invalid_record_payload":
+    case "record_fingerprint_mismatch":
+    case "active_training_session_remote_sync_forbidden":
+      return publicError(400, "invalid_request");
     case "sync_operation_too_large":
       return publicError(413, "request_too_large");
     case "stale_account_revision":
@@ -186,8 +192,6 @@ const syncServiceError = (error: unknown): ErrorResponse => {
       return publicError(409, "record_revision_conflict");
     case "immutable_integrity_conflict":
       return publicError(409, "immutable_integrity_conflict");
-    case "multiple_active_session_references":
-      return publicError(409, "active_session_conflict");
     case "account_snapshot_changed_retryable":
       return publicError(503, "account_data_retryable");
     default:
@@ -240,7 +244,6 @@ const adoptionServiceError = (error: unknown): ErrorResponse => {
     case "adoption_conflict":
       return publicError(409, "adoption_conflict");
     case "active_session_conflict":
-    case "multiple_active_session_references":
       return publicError(409, "active_session_conflict");
     case "account_data_retryable":
     case "account_snapshot_changed_retryable":

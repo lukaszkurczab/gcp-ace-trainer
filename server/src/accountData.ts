@@ -2,13 +2,10 @@ import { Sha256Accumulator } from "./sha256.js";
 
 export const ACCOUNT_RECORD_TYPES = [
   "activeTrack",
-  "activeSessionReference",
   "trainingSession",
   "trainingSessionResult",
   "trainingAttempt",
   "reviewQueueEntry",
-  "simulationDraft",
-  "foregroundTimer",
 ] as const;
 
 export type AccountRecordType = (typeof ACCOUNT_RECORD_TYPES)[number];
@@ -32,8 +29,6 @@ export type AdoptionCase =
   | "populatedLocalEmptyRemote"
   | "emptyLocalPopulatedRemote"
   | "populatedLocalPopulatedRemote"
-  | "activeSessionOnOneSide"
-  | "divergentActiveSessions"
   | "divergentRecord";
 
 export type AdoptionResult =
@@ -41,8 +36,6 @@ export type AdoptionResult =
   | "previewThenUploadExactLocalDataset"
   | "previewThenRestoreExactRemoteDataset"
   | "previewThenReconcileByRecordPolicy"
-  | "preserveThatSessionAndRejectSecondActiveSession"
-  | "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft"
   | "applyRecordPolicyOrBlockWithoutMutation";
 
 export type AdoptionConflict = Readonly<{
@@ -61,14 +54,11 @@ export type AdoptionPreview = Readonly<{
 }>;
 
 export type AdoptionConfirmation = Readonly<{
-  abandonOtherActiveSessionConfirmed?: boolean;
   confirmed: boolean;
   planId: string;
-  selectedActiveSessionSide?: "local" | "remote";
 }>;
 
 const IMMUTABLE_TYPES = new Set<AccountRecordType>(["trainingSessionResult", "trainingAttempt"]);
-const ACTIVE_SESSION_REFERENCE_TYPE: AccountRecordType = "activeSessionReference";
 
 const canonicalize = (value: unknown): unknown => {
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
@@ -100,6 +90,9 @@ export const computeRecordFingerprint = (record: Omit<AccountRecord, "fingerprin
 export const validateAccountRecord = (record: AccountRecord): void => {
   const expected = computeRecordFingerprint(record);
   if (record.fingerprint !== expected) throw new Error("record_fingerprint_mismatch");
+  if (record.type === "trainingSession" && record.payload.status !== "completed" && record.payload.status !== "abandoned") {
+    throw new Error("active_training_session_remote_sync_forbidden");
+  }
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
@@ -147,7 +140,6 @@ export function validateAccountDataset(value: unknown): asserts value is Account
     throw new Error("invalid_account_dataset");
   }
   const keys = new Set<string>();
-  let activeSessionReferences = 0;
   for (const candidate of value.records) {
     if (!isObject(candidate)) throw new Error("invalid_account_record");
     const allowedKeys = candidate.revision === undefined
@@ -173,9 +165,7 @@ export function validateAccountDataset(value: unknown): asserts value is Account
     const key = recordKey(record);
     if (keys.has(key)) throw new Error("duplicate_account_record_key");
     keys.add(key);
-    if (record.type === ACTIVE_SESSION_REFERENCE_TYPE) activeSessionReferences += 1;
   }
-  if (activeSessionReferences > 1) throw new Error("multiple_active_session_references");
 }
 
 const canonicalRecord = (record: AccountRecord) => ({
@@ -225,9 +215,6 @@ export const canonicalAccountDatasetValue = (dataset: AccountDataset): unknown =
 export const fingerprintDataset = (dataset: AccountDataset): string =>
   computeCanonicalSha256(canonicalAccountDatasetValue(dataset));
 
-const activeSessionRecords = (dataset: AccountDataset): readonly AccountRecord[] =>
-  dataset.records.filter((record) => record.type === ACTIVE_SESSION_REFERENCE_TYPE);
-
 const compareRecords = (
   local: AccountDataset,
   remote: AccountDataset,
@@ -261,13 +248,6 @@ const compareRecords = (
   };
 };
 
-const hasDivergentActiveSessions = (local: AccountDataset, remote: AccountDataset): boolean => {
-  const localActive = activeSessionRecords(local);
-  const remoteActive = activeSessionRecords(remote);
-  if (localActive.length === 0 || remoteActive.length === 0) return false;
-  return fingerprintDataset({ records: localActive }) !== fingerprintDataset({ records: remoteActive });
-};
-
 export function previewAdoption(local: AccountDataset, remote: AccountDataset): AdoptionPreview {
   validateAccountDataset(local);
   validateAccountDataset(remote);
@@ -276,18 +256,9 @@ export function previewAdoption(local: AccountDataset, remote: AccountDataset): 
   const comparison = compareRecords(local, remote);
   const localEmpty = local.records.length === 0;
   const remoteEmpty = remote.records.length === 0;
-  const localHasActive = activeSessionRecords(local).length > 0;
-  const remoteHasActive = activeSessionRecords(remote).length > 0;
-
   let caseId: AdoptionCase;
   let result: AdoptionResult;
-  if (hasDivergentActiveSessions(local, remote)) {
-    caseId = "divergentActiveSessions";
-    result = "requireExplicitSessionChoiceAndConfirmedAbandonmentOfOtherDraft";
-  } else if (localHasActive !== remoteHasActive) {
-    caseId = "activeSessionOnOneSide";
-    result = "preserveThatSessionAndRejectSecondActiveSession";
-  } else if (comparison.conflicts.length > 0) {
+  if (comparison.conflicts.length > 0) {
     caseId = "divergentRecord";
     result = "applyRecordPolicyOrBlockWithoutMutation";
   } else if (localEmpty && remoteEmpty) {
@@ -322,29 +293,11 @@ export function confirmAdoption(
 ): AccountDataset {
   const preview = previewAdoption(local, remote);
   if (!confirmation.confirmed || confirmation.planId !== preview.planId) throw new Error("adoption_not_confirmed");
-  if (preview.caseId !== "divergentActiveSessions" && preview.conflicts.length > 0) {
+  if (preview.conflicts.length > 0) {
     throw new Error("adoption_conflict");
   }
 
   const comparison = compareRecords(local, remote);
-  if (preview.caseId === "divergentActiveSessions") {
-    if (!confirmation.selectedActiveSessionSide || confirmation.abandonOtherActiveSessionConfirmed !== true) {
-      throw new Error("active_session_choice_required");
-    }
-    const selected = confirmation.selectedActiveSessionSide === "local" ? local : remote;
-    const rejected = confirmation.selectedActiveSessionSide === "local" ? remote : local;
-    const rejectedSessionIds = new Set(activeSessionRecords(rejected).map((record) => record.id));
-    const withoutRejectedActive = { records: rejected.records.filter((record) => {
-      if (record.type === ACTIVE_SESSION_REFERENCE_TYPE) return false;
-      if (record.type !== "simulationDraft") return true;
-      const sessionId = record.payload.sessionId;
-      return typeof sessionId !== "string" || !rejectedSessionIds.has(sessionId);
-    }) };
-    const selectedComparison = compareRecords(selected, withoutRejectedActive);
-    if (selectedComparison.conflicts.length > 0) throw new Error("adoption_conflict");
-    validateAccountDataset(selectedComparison.merged);
-    return selectedComparison.merged;
-  }
   validateAccountDataset(comparison.merged);
   return comparison.merged;
 }
