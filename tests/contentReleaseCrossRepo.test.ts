@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import test from "node:test";
 
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
@@ -20,7 +21,11 @@ test("every bundled Free-node package exactly matches its producer artifact and 
     const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === pin.trackId);
     assert.ok(source);
     const packagePath = join(contentRoot, "artifacts", "bundled-free-nodes", pin.trackId, source.packageVersion, "package.json");
-    const producerBytes = readFileSync(packagePath, "utf8");
+    const producerBytes = execFileSync(
+      "git",
+      ["-C", contentRoot, "show", `${pin.producerCommit}:${relative(contentRoot, packagePath)}`],
+      { encoding: "utf8" },
+    );
     assert.equal(source.packageBytes, producerBytes);
     assert.equal(createHash("sha256").update(source.packageBytes).digest("hex"), source.packageSha256);
     const resolution = contentPackageRuntimeOwner.getPreparedDiscovery(pin.trackId);
@@ -32,7 +37,8 @@ test("every bundled Free-node package exactly matches its producer artifact and 
 test("CI reads the current per-artifact content lock instead of retired aggregate lock fields", () => {
   const workflow = readFileSync(join(appRoot, ".github", "workflows", "qa.yml"), "utf8");
   assert.match(workflow, /lock\.schemaVersion !== 2/u);
-  assert.match(workflow, /coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer/u);
+  assert.match(workflow, /coding-interview-dsa-problem-solving,google-cloud-associate-cloud-engineer,microsoft-azure-administrator-associate-az-104/u);
+  assert.match(workflow, /lock\.artifacts\.at\(-1\)\.producerCommit/u);
   assert.doesNotMatch(workflow, /algorithms,cloud-certification/u);
   assert.doesNotMatch(workflow, /lock\.producerCommit/u);
   assert.doesNotMatch(workflow, /lock\.sourceRepositoryCommit/u);
