@@ -6,6 +6,7 @@ import test from "node:test";
 import {
   CANONICAL_TRACK_BRIEF_SOURCE,
   CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE,
+  LAUNCH_TRACK_IDS,
   TRACK_DENSITY_DESCRIPTORS,
   evaluateProductionTrackAdmissions,
   assertTrackDensityDescriptors,
@@ -15,14 +16,15 @@ import { GENERATED_FREE_NODE_PACKAGES } from "../src/content/bundled/generatedFr
 import { contentPackageRuntimeOwner } from "../src/application/contentPackageRuntimeOwner";
 import { prepareBundledTestPackages } from "./contentPackageRuntimeTestSupport";
 
-test("internal density harness pins exactly ten complete canonical content-brief descriptors", () => {
+test("internal density harness pins exactly eight complete canonical launch content-brief descriptors", () => {
   const descriptors = assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS);
 
   assert.equal(CANONICAL_TRACK_BRIEF_SOURCE.repository, "patternly-content");
   assert.match(CANONICAL_TRACK_BRIEF_SOURCE.commit, /^[a-f0-9]{40}$/u);
-  assert.equal(descriptors.length, 10);
-  assert.equal(new Set(descriptors.map((descriptor) => descriptor.trackId)).size, 10);
-  assert.equal(new Set(descriptors.map((descriptor) => descriptor.freeNodeId)).size, 10);
+  assert.deepEqual(LAUNCH_TRACK_IDS, ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"]);
+  assert.equal(descriptors.length, 8);
+  assert.equal(new Set(descriptors.map((descriptor) => descriptor.trackId)).size, 8);
+  assert.equal(new Set(descriptors.map((descriptor) => descriptor.freeNodeId)).size, 8);
   assert.deepEqual(new Set(descriptors.map((descriptor) => descriptor.internalFamily)), new Set(["certification", "coding_interview", "design_interview"]));
 
   for (const descriptor of descriptors) {
@@ -50,10 +52,14 @@ test("internal density harness pins exactly ten complete canonical content-brief
 });
 
 test("density harness rejects missing, duplicate, and incomplete descriptors", () => {
-  assert.throws(() => assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS.slice(1)), /exactly the ten canonical/u);
+  assert.throws(() => assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS.slice(1)), /exactly the eight canonical/u);
   assert.throws(
-    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 9), { ...TRACK_DENSITY_DESCRIPTORS[0]! }]),
+    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 7), { ...TRACK_DENSITY_DESCRIPTORS[0]! }]),
     /unique track IDs/u,
+  );
+  assert.throws(
+    () => assertTrackDensityDescriptors([...TRACK_DENSITY_DESCRIPTORS.slice(0, 7), { ...TRACK_DENSITY_DESCRIPTORS[0]!, trackId: "hashicorp-terraform-associate-004" }]),
+    /not canonical launch scope/u,
   );
   assert.throws(
     () => assertTrackDensityDescriptors(TRACK_DENSITY_DESCRIPTORS.map((descriptor, index) => index === 0 ? { ...descriptor, jobToBeDone: "" } : descriptor)),

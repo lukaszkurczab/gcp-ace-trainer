@@ -3,7 +3,8 @@ import type { TrackRegistration } from "./trackMetadata";
 import { GENERATED_FREE_NODE_PACKAGES } from "../../content/bundled/generatedFreeNodePackages";
 import { contentHasher } from "../../infrastructure/identity/contentHasher";
 
-const REQUIRED_TRACK_IDS = [
+/** The sole application owner of learner-visible launch scope. */
+export const LAUNCH_TRACK_IDS = Object.freeze([
   "coding-interview-dsa-problem-solving",
   "backend-system-design-interview",
   "object-oriented-design-interview",
@@ -12,9 +13,7 @@ const REQUIRED_TRACK_IDS = [
   "aws-certified-solutions-architect-associate",
   "microsoft-azure-administrator-associate-az-104",
   "microsoft-azure-ai-fundamentals-ai-901",
-  "hashicorp-terraform-associate-004",
-  "kubernetes-cloud-native-associate-kcna",
-] as const;
+] as const);
 
 export const CANONICAL_TRACK_BRIEF_SOURCE = Object.freeze({
   repository: "patternly-content",
@@ -49,7 +48,7 @@ const certificationModes = ["certification-diagnostic-baseline", "certification-
 const certificationGoals = ["prepare_for_a_certification", "build_foundations", "refresh_and_maintain_skills", "learn_at_own_pace"] as const;
 
 /**
- * A pinned, non-production projection of the ten content-owned briefs.
+ * A pinned, non-production projection of the eight launch content-owned briefs.
  * It exists to keep the application registry scalable without presenting
  * descriptors as user-selectable tracks. The SHA-256 values identify the
  * exact canonical brief files at CANONICAL_TRACK_BRIEF_SOURCE.commit.
@@ -63,8 +62,6 @@ export const TRACK_DENSITY_DESCRIPTORS: readonly TrackBriefDescriptor[] = Object
   descriptor("aws-certified-solutions-architect-associate", "certification", "Practice choosing and explaining AWS architecture decisions under stated reliability, security, performance, operations, and cost constraints without treating practice results as an official certification outcome.", "A cloud practitioner who wants structured scenario practice for associate-level AWS solution architecture and evidence-based review of recurring decision errors.", ["official_exam_domain", "architecture_competency", "scenario_constraint", "service_decision", "skill_atom"], "cloud_architecture_foundations", certificationModes, certificationGoals, ["requirements_analysis", "reliability_decisions", "security_decisions", "performance_decisions", "cost_tradeoffs", "due_review"], packagePlan("cloud_architecture_foundations", ["Complete cloud-architecture foundations node covering requirement extraction, service-boundary reasoning, and explicit tradeoffs.", "Whole-node packages organized by reviewed exam domains, scenario competencies, remediation needs, and a sourced simulation profile."], ["AWS-specific facts and exam behavior require current attributable AWS public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim AWS affiliation or an official score."]), "af0b749d50a33be5863ea0b76851942d0f1d029346c188535fd898197271a128"),
   descriptor("microsoft-azure-administrator-associate-az-104", "certification", "Practice Azure administration decisions across identity, governance, storage, compute, networking, and monitoring while keeping Patternly evidence separate from official certification results.", "An Azure administrator or cloud practitioner who wants scenario-based preparation, precise feedback, and durable review of associate-level administration decisions.", ["official_exam_domain", "administration_competency", "operational_scenario", "resource_decision", "skill_atom"], "azure_administration_foundations", certificationModes, certificationGoals, ["identity_governance", "storage_administration", "compute_administration", "networking_administration", "monitoring_recovery", "due_review"], packagePlan("azure_administration_foundations", ["Complete administration-foundations node covering resource scope, identity, safe change, and operational verification.", "Whole-node packages aligned to reviewed exam domains, competency remediation, mixed practice, and a sourced simulation profile."], ["Azure-specific facts and exam behavior require current attributable Microsoft public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim Microsoft affiliation or an official score."]), "f8e565b44310c7ba36a8e906981048e36cee1a13f7ed8f41060c15aa30d770ed"),
   descriptor("microsoft-azure-ai-fundamentals-ai-901", "certification", "Practice distinguishing foundational AI workload, responsible-use, and Azure service decisions while keeping Patternly learning evidence separate from any official certification outcome.", "A technical or non-technical learner who wants structured foundations practice for identifying AI workload requirements, limits, and responsible solution choices in an Azure context.", ["official_exam_domain", "ai_workload_category", "responsible_use_constraint", "service_capability_decision", "skill_atom"], "ai_workload_foundations", certificationModes, certificationGoals, ["ai_workload_recognition", "responsible_ai_reasoning", "machine_learning_foundations", "vision_language_workloads", "service_boundary_reasoning", "due_review"], packagePlan("ai_workload_foundations", ["Complete AI-workload foundations node covering requirement recognition, capability boundaries, and responsible-use constraints.", "Whole-node packages based on reviewed public objectives, scenario competencies, remediation needs, and a sourced simulation profile."], ["Azure AI and exam-specific facts require current attributable Microsoft public sources before content release.", "Content is independently authored, avoids capability overclaims, excludes exam dumps, and does not claim Microsoft affiliation or an official score."]), "5dc73b1def9c49772fee07014573e24528c1f6b846ff78cab73e195055c7e645"),
-  descriptor("hashicorp-terraform-associate-004", "certification", "Practice reasoning about Terraform configuration, state, workflow, modules, and safe infrastructure changes while distinguishing learning evidence from any official certification outcome.", "An infrastructure practitioner who wants structured preparation in infrastructure-as-code concepts, Terraform workflows, state reasoning, and operational tradeoffs.", ["official_exam_domain", "terraform_competency", "workflow_stage", "state_or_configuration_decision", "skill_atom"], "infrastructure_as_code_foundations", certificationModes, certificationGoals, ["infrastructure_as_code_reasoning", "configuration_workflow", "state_management", "module_reuse", "safe_change_analysis", "due_review"], packagePlan("infrastructure_as_code_foundations", ["Complete infrastructure-as-code foundations node covering configuration intent, plan and apply boundaries, state, and safe change review.", "Whole-node packages organized by reviewed objectives, workflow competencies, remediation needs, and a sourced simulation profile."], ["Terraform and exam-specific facts require current attributable HashiCorp public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim HashiCorp affiliation or an official score."]), "21f5cff195644b807080873a2a288ec86129029bdeb2b4020e81f8949a2adc0d"),
-  descriptor("kubernetes-cloud-native-associate-kcna", "certification", "Practice foundational Kubernetes and cloud-native decisions across architecture, orchestration, delivery, observability, and security without treating Patternly practice as an official certification outcome.", "A learner entering cloud-native operations or development who wants scenario-based foundations practice and durable review of Kubernetes and ecosystem decisions.", ["official_exam_domain", "cloud_native_competency", "operational_scenario", "platform_decision", "skill_atom"], "cloud_native_foundations", certificationModes, certificationGoals, ["kubernetes_architecture", "workload_orchestration", "cloud_native_delivery", "observability_reasoning", "security_boundaries", "due_review"], packagePlan("cloud_native_foundations", ["Complete cloud-native foundations node covering cluster roles, workload intent, declarative operation, and observable outcomes.", "Whole-node packages based on reviewed objectives, operational competencies, remediation needs, and a sourced simulation profile."], ["Kubernetes, cloud-native, and exam-specific facts require current attributable CNCF or project public sources before content release.", "Content is independently authored, excludes exam dumps, and does not claim CNCF affiliation or an official score."]), "e60c2ec20e1d8a5d9fd86a507baf28d424b655a664d12435f70f571b6f17945d"),
 ]);
 
 function packagePlan(bundledFreeNodeId: string, contentScopes: readonly string[], provenanceRules: readonly string[]): TrackBriefDescriptor["packageContentPlan"] {
@@ -92,11 +89,11 @@ export type ProductionTrackAdmissionEvaluation = Readonly<{
 }>;
 
 export function assertTrackDensityDescriptors(descriptors: readonly TrackBriefDescriptor[]): readonly TrackBriefDescriptor[] {
-  if (descriptors.length !== REQUIRED_TRACK_IDS.length) throw new Error("Track density descriptors must contain exactly the ten canonical track IDs.");
+  if (descriptors.length !== LAUNCH_TRACK_IDS.length) throw new Error("Track density descriptors must contain exactly the eight canonical launch track IDs.");
   const ids = new Set<string>();
   const freeNodes = new Set<string>();
   for (const descriptor of descriptors) {
-    if (!REQUIRED_TRACK_IDS.includes(descriptor.trackId as (typeof REQUIRED_TRACK_IDS)[number])) throw new Error(`Track density descriptor is not canonical: ${descriptor.trackId}.`);
+    if (!LAUNCH_TRACK_IDS.includes(descriptor.trackId as (typeof LAUNCH_TRACK_IDS)[number])) throw new Error(`Track density descriptor is not canonical launch scope: ${descriptor.trackId}.`);
     if (ids.has(descriptor.trackId)) throw new Error(`Track density descriptors must have unique track IDs: ${descriptor.trackId}.`);
     if (freeNodes.has(descriptor.freeNodeId)) throw new Error(`Track density descriptors must have unique free node IDs: ${descriptor.freeNodeId}.`);
     if (!nonEmpty(descriptor.jobToBeDone) || !nonEmpty(descriptor.targetLearner) || !nonEmpty(descriptor.freeNodeId) || !sha256(descriptor.sourceBriefSha256) || descriptor.launchCommercialGate !== "realFreeVerticalAndCompleteCoreLoop") throw new Error(`Track density descriptor is incomplete: ${descriptor.trackId}.`);
@@ -104,7 +101,7 @@ export function assertTrackDensityDescriptors(descriptors: readonly TrackBriefDe
     ids.add(descriptor.trackId);
     freeNodes.add(descriptor.freeNodeId);
   }
-  for (const trackId of REQUIRED_TRACK_IDS) if (!ids.has(trackId)) throw new Error(`Track density descriptor is missing: ${trackId}.`);
+  for (const trackId of LAUNCH_TRACK_IDS) if (!ids.has(trackId)) throw new Error(`Track density descriptor is missing: ${trackId}.`);
   return Object.freeze([...descriptors]);
 }
 

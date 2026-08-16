@@ -135,9 +135,9 @@ requirements:
   - id: PRODUCT-SURFACES-GOALS-001
     statement: Primary tabs are Today, Practice, Progress, and Settings, Activity is nested under Progress, and per-track goals affect recommendations and cadence without affecting entitlement, locking, scoring, mastery, streaks, or punitive messaging.
   - id: LEARNING-PRODUCTS-001
-    statement: Certification, coding_interview, and design_interview are internal-only families; ten equal-status target track briefs are required, and no track enters the production registry without a real free vertical and complete core loop.
+    statement: Certification, coding_interview, and design_interview are internal-only families; eight equal-status launch track briefs are required, while Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) remain post-launch briefs only, and no track enters the production registry without a real free vertical and complete core loop.
   - id: TRACK-REGISTRY-ADMISSION-001
-    statement: The non-production density harness pins exactly the ten canonical track briefs, and the admission evaluator rejects every registration that lacks descriptor-backed factual evidence of its bundled free node and complete core loop.
+    statement: The non-production density harness pins exactly the eight canonical launch track briefs at its source commit; Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are excluded from launch scope, and the admission evaluator rejects every registration that lacks descriptor-backed factual evidence of its bundled free node and complete core loop.
   - id: FREE-NODE-EXPERIENCE-PROFILE-001
     statement: "Every implemented production track owns exactly one versioned closed Free-node experience profile: it is a subset of the track's complete validModes, uses only existing family mode IDs and canonical runners, defines only node-local configuration, and never creates a Free-only mode, runner, scoring path, or lifecycle."
   - id: FREE-NODE-PACKAGE-ADMISSION-001
@@ -223,7 +223,7 @@ requirementTestCoverage:
       requirementIds: [TRACK-IDENTITY-CUTOVER-001]
     - id: track-registry-admission
       testPath: tests/trackAdmission.test.ts
-      testName: internal density harness pins exactly ten complete canonical content-brief descriptors
+      testName: internal density harness pins exactly eight complete canonical launch content-brief descriptors
       requirementIds: [TRACK-REGISTRY-ADMISSION-001]
     - id: free-node-package-admission
       testPath: tests/trackAdmission.test.ts
@@ -553,8 +553,6 @@ learningProducts:
     - aws-certified-solutions-architect-associate
     - microsoft-azure-administrator-associate-az-104
     - microsoft-azure-ai-fundamentals-ai-901
-    - hashicorp-terraform-associate-004
-    - kubernetes-cloud-native-associate-kcna
   targetTrackBriefRequiredFields: [jobToBeDone, targetLearner, internalFamily, taxonomyOutline, freeNodeId, validModes, goalTemplates, progressDimensions, packageContentPlan, launchCommercialGate]
   productionRegistryAdmission: realFreeVerticalAndCompleteCoreLoop
   emptyPlaceholderOrComingSoonTracks: prohibited

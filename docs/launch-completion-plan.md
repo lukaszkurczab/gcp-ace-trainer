@@ -1,691 +1,590 @@
-# Patternly — Working Execution Plan
+# Patternly — Launch Completion Plan
 
-**Status:** active; sole implementation-order and repository-status authority
+**Document role:** replacement candidate for `docs/launch-completion-plan.md`
+**Authority state:** this file becomes sequencing authority only after it is committed and pushed to application `main`; until then the pushed repository document remains authoritative.
+**Audit date:** 2026-08-16
+**Target:** commercial launch readiness for the exact eight-track launch catalogue defined below.
+**Execution model:** controller → bounded worker → independent QA; all agents use **Luna max reasoning**, without exceptions or silent downgrade.
 
-**Audit date:** 2026-08-16 (reconciled against pushed implementation evidence)
+---
 
-**Target:** release-ready commercial Patternly from the pushed Directive 2 contract
+## 1. Canonical source-of-truth rule
 
-**Current task:** B-05 — establish one complete, editable final visual-system
-authority from the Product Owner-selected A — Boundary Signal direction. The
-reconciled seven-bank candidate-content baseline remains isolated to the
-content lane; application and brand work do not change content.
+Only pushed canonical branches count as implementation or status evidence:
 
-**Next executable tasks:** develop the selected A — Boundary Signal system in
-B-05, then obtain the owner-only `X-09C` final approval. Before changing any
-content lock or GCP runtime/registry state, resolve the current content-admission
-contradiction below. `PKG-02`/`PKG-03` remain external-infrastructure work and
-are not started by this checkpoint.
-
-## 1. Purpose and authority
-
-This file owns implementation order and current task status only. Product behavior is owned by [`canonical-product-contract.yaml`](canonical-product-contract.yaml), the [`Product Owner decision register`](product-owner-decision-register.md), and the narrative owners listed in [`README.md`](README.md). This plan links those owners and records implementation consequences; it does not redefine them.
-
-No parallel roadmap, recovery plan, design plan, commercial plan, task ledger, or current-status document is permitted. ADRs, reports, audits, screenshots, Figma files, Storybook stories, CI output, and Git history are evidence, never product or sequencing authority. Historical reports may be retained but may not select work.
-
-Task status is one of `READY`, `ACTIVE`, `BLOCKED`, `PARTIAL`, `VERIFIED`, or `SUPERSEDED`. A task becomes `VERIFIED` only after its change is pushed, all applicable gates pass, obsolete paths are deleted, required evidence is linked, and this file names the next task. Only one task may be `ACTIVE`. `BLOCKED` below normally means a listed dependency or owner/external checkpoint is not yet satisfied; it is not a claim that unrelated lanes cannot proceed.
-
-## 2. Audited repository baseline
-
-| Repository | Branch and HEAD | State at audit | Upstream |
+| Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main @ 3c33b55747b0ae5fa13c98396c049be19d76bf06` | clean before this documentation reconciliation | `origin/main`, ahead/behind `0/0` |
-| content/publishing | `master @ 758b6a8a980b7c2f1398c603bb0afaa431b14f83` | clean after FND-01R | `origin/master`, ahead/behind `0/0` |
+| application | `main` | `6953c9f4ebdc30a938588c8d3a37dd1a47138a9b` | QA run `31951798705` — success |
+| content/publishing | `master` | `758b6a8a980b7c2f1398c603bb0afaa431b14f83` | Content publishing run `31951668152` — success |
 
-### Current implementation facts
+A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
-- Mobile is Expo 57.0.11 / React Native 0.86.2. `App.tsx` enters `ContentPreparationGate` and then the local shell without an account gate. The shell is `Home`, `Practice`, `Progress`, `Settings`; `LanguageSettings` is live; Activity is only a small Progress projection.
-- MMKV has one canonical repository owner for active track, session, draft, foreground timer, attempts, results, review, settings, a journal-first mutation record, and the local installation/dataset identity. Exactly one active session per device is enforced. There is no account binding implementation, mobile auth/API client, compact sync outbox, goals record, or Activity pagination.
-- The shared learning kernel, Certification runtime, current Algorithms strategy-first runtime, deterministic scoring/review, immutable content references, corruption handling, and restart recovery are substantial compatible foundations.
-- The server has Firebase Admin token verification, auth-before-body HTTP validation, deny-all direct Firestore rules, environment isolation, revisioned/idempotent account writes, paginated snapshots, adoption staging, and deletion primitives. Its account dataset still synchronizes active-session reference, draft, position and timer, and therefore conflicts with device ownership.
-- The content repository has canonical manual source, schemas, provenance, deterministic serialization, fingerprints, immutable releases, checksums, and exact-byte cross-repository verification. Its restored candidate baseline has seven non-empty registered learner-item ingress banks: Coding Interview (3,404), current GCP ACE (2,981), AWS SAA (2,568), AI-901 (752), Backend System Design (1,569), Frontend System Design (1,766), and Object-Oriented Design (1,413). The deterministic report is `evidence/readiness/seven-bank-candidate-readiness.json` at content commit `758b6a8a980b7c2f1398c603bb0afaa431b14f83`, source commit `17b3db59746c502496df57c65317e52a0cba5996`, SHA-256 `ba24c5fe11bfc0a29ad566bdcdcdeb73b0956817a82c9c871eef11a96ea98326`.
-- All seven are candidate-only: no human approval, runtime admission, publishing admission, or new immutable production artifact was created. AWS and AI-901 are complete source banks but remain unapproved and not admitted. Backend, Frontend, and OOD are present candidate banks; Frontend inventory is 601 choice, 147 decision-matrix, and 1,018 ordering interactions. Only Coding has a current bundled Free-node package; the content repository retains a historical GCP package as immutable history.
-- The app release lock is unchanged: `patternly-app-content-0018` contains Coding Interview `coding-interview-dsa-problem-solving-0004` and historical GCP `gcp-ace-0016`, both from content source commit `4db6020429a1da67387eec2bcfe4fad80af15dfd`. The app's generated Free-node configuration contains Coding only; its active registry and lock still expose Coding and historical GCP. That historical GCP artifact is distinct from the current GCP candidate source and was not rewritten by FND-01R.
-- Current content delivery bundles two whole-track artifacts. It has no `freeNodeId`, immutable compressed node packages, locale/evidence identity contract, Cloud Storage object generation, entitlement authorization, atomic package cache, or Design Interview family.
-- `firebase` and `expo-secure-store` are declared in the app but unused by `src`. RevenueCat, Firebase Analytics/Crashlytics clients, reports, Storybook, canonical brand assets/fonts/licensing, universal/app links, and production public surfaces are absent.
-- `app.json` is portrait, iPhone-only, and uses the automatic theme. Android min/compile/target are 28/36/36 and iOS is 16.4+. The canonical privacy plugin excludes learning data from OS backup. Tracked Maestro flows are simulator/dev-client evidence, not signed physical-device proof; the unsigned device-smoke requirement for `PLAT-01` is instead a documented Product Owner environment exception.
+1. the implementation is committed and pushed to the canonical branch;
+2. applicable CI passes against the exact pushed SHA;
+3. required device, provider, content, visual, or human evidence is linked;
+4. obsolete paths and hidden fallbacks are removed;
+5. this plan is updated on the canonical branch and names the next executable task.
 
-### Verified gates and limitations
+If either canonical branch advances after this audit, the controller must re-resolve both HEADs and reconcile changed facts before editing.
 
-- Application Directive 2 baseline: `npm run qa:static` passed with 557 tests; canonical contract focused suite passed 26/26; cross-repository lock passed 1/1. FND-01R will re-run the app gates after this documentation-only change.
-- Content FND-01R: `npm test` passed 135/135; `authoring:validate`, curricula and family-specific candidate validators passed; the isolated `ci-release-gate.mjs` passed with Coding as the sole release candidate. Coding technical and simulation evidence was regenerated for the reconciled source inputs. The readiness report generated twice with identical bytes.
-- Server typecheck passed. Focused server tests produced 65 passes and 23 loopback `EPERM` environment blocks, with no assertion failure. Root CI does not install `server/package-lock.json`; local success currently relies on ignored `server/node_modules`, so clean-checkout server QA is not proven.
-- Repository evidence dated 2026-08-01 says sandbox/production Firebase projects and Firestore Standard in `europe-central2` exist, direct rules deny all, delete protection is on, PITR is off, email/password is enabled, hosting sites are reserved but undeployed, sandbox has billing controls, and production is unbilled. Directive 3 did not re-query providers.
-- No repository proof establishes current Cloud Run deployment, Artifact Registry image, service-account/IAM state, Scheduler, registered Firebase apps, RevenueCat products, Premium bucket, Apple/Google provider configuration, professional domain/DNS/sender, PITR, signing, store records, or signed builds.
+### Authority precedence
 
-## 3. Architecture verdict and impact map
+1. Pushed Product Owner decisions and canonical product contract in application `main`.
+2. This plan after it is pushed as `docs/launch-completion-plan.md`.
+3. Pushed application and server implementation.
+4. Pushed content source, schemas, validators, evidence, and immutable releases in content `master`.
+5. Product Owner-designated final Figma file/nodes for presentation only.
+6. CI, device, provider, and store evidence tied to exact SHAs/builds.
+7. Historical reports and superseded designs as evidence only.
 
-**Verdict:** Patternly is not a greenfield application. Preserve the learning kernel, local durability, certification behavior, server security boundary, and content provenance. Migrate the commercial/account delivery edges and delete their superseded semantics. The highest-risk transitions are device-versus-account ownership, guest adoption without loss, entitlement authority, immutable package activation, account deletion/restore tombstones, atomic content identities, and Figma-to-code authority.
+The final Figma work is an implementation authority, not permission for Codex to design, reinterpret, simplify, or self-approve missing states. A missing Figma state blocks only the affected visual slice; it does not block unrelated architecture, data, content, or infrastructure work.
 
-Each row has exactly one action. `Current / action` states verified evidence first, then the required migration. `Depends / proof` names the first relevant task and gate.
+---
 
-| ID | Action | Current owner/path | Current / action | Depends / proof |
-| --- | --- | --- | --- | --- |
-| IMP-01 | KEEP | `src/domain/learning/**` | Family-neutral session, attempt, result, review and immutable refs fit target; extend through existing owners only. | runtime and learning gates |
-| IMP-02 | KEEP | `src/storage/repositories/**`, `src/application/learningMutations/**` | Single MMKV owner, journal-first durability, recovery and revisions remain canonical. | persistence failure injection |
-| IMP-03 | KEEP | device session/draft/timer repositories | Already enforces one active session per device; never move these records to account data. | `SESSION-01` |
-| IMP-04 | KEEP | `src/application/certification/**`, GCP runtime | Certification modes and shared-kernel use are compatible. | representative GCP proof |
-| IMP-05 | KEEP | server authentication/HTTP/environment/Firestore rules | Token checks, auth-before-body, non-leaking errors, deny-all direct access and environment isolation remain. | `FND-01`, security gate |
-| IMP-06 | KEEP | content canonical source, schemas, validators, fingerprints, immutable history | Preserve source/provenance and release `0015` as evidence; do not mutate published bytes. | content gate |
-| IMP-07 | KEEP | app/content exact-byte lock | Current release-lock verification is reusable and must be extended to node packages. | `PKG-01` |
-| IMP-08 | KEEP | OS backup exclusion | Canonical learning data/cache remain excluded from platform backup. | `PLAT-01` device proof |
-| IMP-09 | MOVE | `src/tracks/algorithms/**`, content `algorithms` IDs | Strategy-first semantics move atomically to `coding_interview` and visible Coding Interview ID; no alias. | `TRACK-01` |
-| IMP-10 | MOVE | `src/features/analytics/analyticsService.ts` | This is a local Progress projection, not telemetry; rename/move to Progress before adding Analytics. | `OBS-01` |
-| IMP-11 | MOVE | server deletion/scheduler primitives | Compose one durable account-lifecycle owner; remove split/unreachable execution paths. | `DEL-01` |
-| IMP-12 | MOVE | content `*.candidate.json` and taxonomy rationale | Rename eight ingested sources canonically and preserve durable rationale in content owners during ID migration. | `TRACK-01` |
-| IMP-13 | REWRITE | `App.tsx`, `ContentPreparationGate` | Keep no-auth first value; add installation/guest identity and validate bundled free vertical without blocking on Premium banks. | `GUEST-01`, `PKG-03` |
-| IMP-14 | REWRITE | `RootNavigator`, shell models | `Home` becomes Today; preserve four tabs and add Activity below Progress with non-overlapping jobs. | `UX-02D/I`, `UX-06D/I` |
-| IMP-15 | REWRITE | track registry and selection | Replace two-track/family-visible branches with internal families, complete admitted tracks and scalable descriptors. | `TRACK-01`, `TRACK-02` |
-| IMP-16 | REWRITE | server account dataset/sync | Remove active pointer/session/draft/position/timer; retain revisions/idempotency and add compact incremental operations/cursors/projections. | `SESSION-01`, `SYNC-01` |
-| IMP-17 | REWRITE | server adoption | Retain staged upload/preview/confirm/recovery; remove cross-device session arbitration and require local finish/abandon. | `ADOPT-01` |
-| IMP-18 | REWRITE | content/app whole-track artifact boundary | Move from all-bundled whole tracks to bundled complete free nodes plus immutable compressed Premium node packages. | `PKG-01..04` |
-| IMP-19 | REWRITE | `plugins/withPrivacyBoundary.js` | Preserve backup exclusion; permit only approved network, link, haptic and notification clients with static checks. | `ARCH-01`, `PLAT-01` |
-| IMP-20 | REWRITE | `app.json` and generated-native contract | Expo 54, Light-only, iPad support and implicit Android levels become Expo 57 and exact phone matrix. | `PLAT-01` |
-| IMP-21 | REWRITE | theme/components/design references | Replace old presentation through approved Figma→tokens/components/Storybook verticals; do not create parallel UI. | `B-05`, `DS-01..03` |
-| IMP-22 | REWRITE | legal/data/settings copy | Replace local-only/no-account claims with truthful target behavior only in approved surface cycles. | `UX-07D/I`, `UX-12D/I` |
-| IMP-23 | REWRITE | notifications | Bind reminders to per-track goals, consent and platform policy; no generic ingress. | `GOAL-01`, `UX-07I` |
-| IMP-24 | REWRITE | content publisher | Remove two-family conditionals; publish generic internal families/nodes/locales and reproducible evidence. | `FND-01`, `PKG-01` |
-| IMP-25 | REWRITE | account deletion implementation | Current immediate primitives lack subscription detachment, public token and restore tombstone reconciliation. | `DEL-01..03`, `OPS-02` |
-| IMP-26 | REWRITE | current Maestro/RC evidence | Retain reusable kernel flows, replace stale route/copy/two-track flows, delete superseded flows after coverage moves. | each `UX-*I`, `REL-04` |
-| IMP-27 | DELETE | Language route/screen and launch Polish UI plumbing | English-only launch has no one-option Language surface; keep locale-neutral content identity only. | `UX-07I` |
-| IMP-28 | DELETE | visible `categoryLabel`/family copy | Families are internal; tracks are the only user-visible products. | `TRACK-01`, `UX-01I` |
-| IMP-29 | DELETE | server remote-session conflict/resume cases | Account-wide active-session selection and cross-device resume are forbidden target behavior. | `SESSION-01` negative tests |
-| IMP-30 | DELETE | content `planning/algorithms/**`, generator, commands and test | Current-looking planned ledger contradicts completed source; extract durable rationale, then remove all 243 generated files and dead consumers. | `TRACK-01` |
-| IMP-31 | ADD | mobile identity/data boundary | Installation ID, guest dataset, account binding and secure credential owner are absent. | `GUEST-01`, `ID-01` |
-| IMP-32 | ADD | mobile/server sync | Add journal-after-durability compact outbox, cursors, pagination, recent Activity, due review and exact-history loading. | `SYNC-01/02` |
-| IMP-33 | ADD | goals | Add per-track goal templates/data and bounded recommendation/reminder effects. | `GOAL-01` |
-| IMP-34 | ADD | identity/security lifecycle | Email/password, Apple, Google, linking proof, reauth, recovery codes, Terms and revocation surfaces are absent. | `ID-01..05` |
-| IMP-35 | ADD | RevenueCat/backend entitlement | Add one Premium entitlement, webhook projection, opaque ID, bounded cache, seven-day grace, purchase/restore/downgrade. | `ENT-01..03` |
-| IMP-36 | ADD | remote package system | Add manifests, immutable object identity, signed URL auth, download validation, atomic cache, version pinning and eviction. | `PKG-01..04` |
-| IMP-37 | ADD | Analytics/Crashlytics/reporting | Add fail-closed consent, closed events/redaction and account-unlinked content reports/correction workflow. | `OBS-01`, `REP-01` |
-| IMP-38 | ADD | backup/restore operations | Add seven-day PITR runbook, sandbox drill and deletion-tombstone reconciliation. | `OPS-02`, `X-07` |
-| IMP-39 | ADD | Activity | Add nested Progress route, recent projection and on-demand exact history. | `SYNC-01`, `UX-06D/I` |
-| IMP-40 | ADD | internal product catalogue | Add ten briefs and design_interview contracts; admit no empty production track. | `TRACK-02`, representative proofs |
-| IMP-41 | ADD | design authority/tooling | Add Brand Lab 3→2→1, owner approval, repository tokens/assets, dev-only Storybook and CODE_CANONICAL handoff. | `B-*`, `DS-*`, `REL-03` |
-| IMP-42 | ADD | public/release surfaces | Add canonical web artifact, auth/action/legal/support/deletion, links, brand/store assets and signed releases. | `UX-12D/I`, `REL-*` |
-| IMP-43 | VERIFY | operation dedupe | Current operation-fingerprint replay window is bounded to 100; prove it satisfies cursor/outbox retry behavior. | `SYNC-01` |
-| IMP-44 | VERIFY | Coding Interview pedagogy | Prove implementation-planning objective and copy never imply executable-code verification. | `PROOF-02` |
-| IMP-45 | VERIFY | content editorial/provenance | Technical evidence is stronger than explicit release editorial approval; add auditable review admission and source freshness. | `FND-01`, `TRACK-02` |
-| IMP-46 | VERIFY | Storybook/native/build boundaries | Prove Storybook absent from release graph and exact Expo/platform configuration in clean signed artifacts. | `DS-02`, `REL-04` |
-| IMP-47 | VERIFY | retained visual/device evidence | Historical PNGs and 32 Maestro flows are evidence only; revalidate applicability, licensing and physical-device gaps. | `B-01`, verticals, `REL-04` |
-| IMP-48 | EXTERNAL_GATE | provider/project state | Cloud Run/IAM, apps, buckets, Apple/Google, RevenueCat, PITR and current Firebase state require authorized read/mutation checkpoints. | `X-01..X-10` |
-| IMP-49 | EXTERNAL_GATE | domain/store/signing | Domain/DNS/sender, App Store/Play products, signing identities, distribution and submissions require owner/provider action. | `X-03`, `X-08..X-12` |
+## 2. Fixed Product Owner decisions
 
-### Invariants every task preserves
+The launch catalogue contains exactly these eight learner-visible tracks:
 
-1. Local learning writes are durable before any account operation; active session, pointer, draft, position, timer and journal remain device-owned.
-2. Store transactions, RevenueCat normalization and backend projection are distinct; a local SDK result never authorizes paid download.
-3. Published package bytes are immutable, checksum/schema/semantic validated and pinned per prepared session; no per-question Firestore fetch or silent substitution.
-4. One responsibility has one owner. Replacements delete old imports, routes, tests, scripts, branches and misleading docs in the same task.
-5. Significant presentation waits for an applicable owner-approved Figma reference. Nonvisual kernel/backend/content work does not wait for branding.
-6. Families remain internal; no production track appears without a complete free vertical and core loop.
-7. Consent/privacy fails closed. Deletion and restore cannot resurrect a deleted account.
+1. `coding-interview-dsa-problem-solving` — Coding Interview / Algorithms
+2. `google-cloud-associate-cloud-engineer` — GCP ACE
+3. `aws-certified-solutions-architect-associate` — AWS SAA
+4. `microsoft-azure-ai-fundamentals-ai-901` — Azure AI Fundamentals AI-901
+5. `microsoft-azure-administrator-associate-az-104` — Azure Administrator AZ-104
+6. `backend-system-design-interview` — Backend System Design
+7. `frontend-system-design-interview` — Frontend System Design
+8. `object-oriented-design-interview` — Object-Oriented Design
 
-## 4. Dependency graph and parallel lanes
+`hashicorp-terraform-associate-004` and `kubernetes-cloud-native-associate-kcna` may remain as post-launch briefs or roadmap material, but they are not launch tracks, may not appear as production cards, and may not be required by launch gates.
+
+Additional fixed decisions:
+
+- Internal families are implementation details. Users see tracks, not `coding_interview`, `certification`, or `design_interview` labels.
+- The first complete node of every admitted track is Free. Premium is one cross-platform entitlement, not slots, tiers, or per-track purchases.
+- All eight launch banks require real human editorial approval. No agent may grant, infer, or simulate it.
+- Design is already prepared in Figma. Codex implements the Product Owner-designated final references; it does not run a new brand or visual-direction exercise.
+- All agent and subagent invocations are capped at and must use Luna max reasoning. No lower model is allowed for workers, QA, research, content, design implementation, or release verification.
+- Pushed canonical branches are the only truth. Progress that is not pushed does not exist for status purposes.
+- The app is brought to full launch readiness, not a placeholder MVP. No `Coming soon`, empty track cards, hidden feature flags, fake success, compatibility aliases, silent fallback, or temporary duplicate architecture.
+
+---
+
+## 3. Audit verdict
+
+**Current verdict: NO-GO.** The repositories contain a strong learning kernel, durable local storage, exact content identity work, a usable guest/free-package foundation, content authoring infrastructure, and green exact-SHA CI. They do not contain a release-ready commercial product.
+
+The green CI proves the current contracts, not the target launch catalogue:
+
+- Application CI explicitly requires a two-artifact lock containing only Coding Interview and historical GCP.
+- The production track registry contains only Coding Interview and GCP.
+- The content workflow validates seven candidate banks, not eight.
+- The content release gate still treats Coding Interview as the sole release candidate.
+- AZ-104 has a brief/descriptor in application planning but no pushed authoring registration, canonical source bank, validator result, readiness row, Free-node package, immutable release, or admission evidence in content `master`.
+- Every existing candidate bank is human-unapproved or pending and is not admitted for publishing or runtime.
+- RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
+
+The correct strategy is not a rewrite. Preserve the verified kernel and cut over the incomplete commercial, content-admission, account, package-delivery, presentation, and release edges.
+
+---
+
+## 4. Current eight-track evidence matrix
+
+Content facts below come from `evidence/readiness/seven-bank-candidate-readiness.json` at content `758b6a8…` and the current application registry/lock at `6953c9f…`.
+
+| Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
+| --- | --- | ---: | --- | --- | --- | --- | --- |
+| Coding Interview | present | 3,404 items; 2,827 choice, 279 complexity, 298 ordering | present; 158-item `complexity_and_constraints` package | `pending` | not admitted in current readiness report | registered; pinned historical immutable release | `PARTIAL` |
+| GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | unapproved | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
+| AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
+| Azure AI-901 | present | 752 choice items; 5 nodes | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
+| Azure AZ-104 | **absent** | no pushed canonical bank/readiness row | absent | not possible | not admitted | descriptor/brief only; not registered | `BLOCKED — CONTENT ABSENT` |
+| Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Object-Oriented Design | present | 1,413 choice items; 9 nodes; 79 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+
+### Consequences
+
+- “Prepared track” and “launch-admitted track” are different states. Candidate presence does not authorize production exposure.
+- No release lock update is allowed until a track has an approved source bank, complete Free node, immutable release, package proof, family/runtime proof, and explicit publishing/runtime admission.
+- The historical GCP artifact must never be silently relabelled as the current 2,981-item GCP source. Either publish a new current GCP release and migrate atomically, or retain the old release as immutable history only.
+- AZ-104 is the only launch track whose learner bank is absent from pushed source. It is the first content blocker to close.
+
+---
+
+## 5. Verified foundations retained as regression sentinels
+
+The following work is not reopened merely because the plan is regenerated. It remains `VERIFIED` only while its tests continue to pass on every subsequent canonical SHA.
+
+| Sentinel | Retained evidence / invariant |
+| --- | --- |
+| `S-FND-01` clean-checkout gates | both repositories install from locks; application CI installs/builds server and runs recovery/static gates; content CI installs and validates deterministically |
+| `S-PLAT-01` platform contract | Expo `57.0.11`, RN `0.86.2`, iOS 16.4+ phone-only, Android min/compile/target 28/36/36, portrait, system theme, backup exclusion |
+| `S-ARCH-01` approved-client boundary | closed client/environment registry, direct transport restrictions, no raw Firestore client path, privacy static checks |
+| `S-GUEST-01` guest identity | durable installation/local-dataset identity before first value; reset preserves identity; corruption fails closed; iOS simulator first-value/relaunch evidence |
+| `S-LEARN-01` shared learning kernel | deterministic sessions, attempts/results/review, journal-first mutation, one local active session, restart recovery, immutable content references |
+| `S-TRACK-01` canonical Coding/GCP IDs | retired `algorithms`/old cloud IDs are not production aliases; persisted retired IDs fail explicitly |
+| `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
+| `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
+| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current seven-bank readiness report |
+| `S-CI-HEAD` exact-SHA CI | application run `31951798705` and content run `31951668152` succeeded on the audited HEADs |
+
+A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
+
+---
+
+## 6. Mandatory status vocabulary
+
+Use only:
+
+- `READY` — every dependency is satisfied; implementation may start.
+- `ACTIVE` — the controller-selected current slice.
+- `BLOCKED` — a named dependency or authority is missing.
+- `PARTIAL` — bounded compatible implementation exists, but the task acceptance boundary is not met.
+- `VERIFIED` — pushed exact-SHA implementation plus all required evidence and CI.
+- `SUPERSEDED` — replaced by a named canonical task/decision; retained only as history.
+
+Human and provider gates are represented as blockers on a task, not as fake implementation tasks. Only one controller task may be `ACTIVE`; workers may execute dependency-independent slices explicitly delegated by that controller.
+
+---
+
+## 7. Critical launch blockers
+
+| ID | Severity | Blocker | Required closure |
+| --- | --- | --- | --- |
+| `BLK-01` | Critical | canonical plan/contract still targets ten tracks while owner launch scope is eight | add exact launch-scope contract; move Terraform/KCNA to post-launch; update all gates and docs |
+| `BLK-02` | Critical | AZ-104 bank absent from pushed content source | canonical authoring registration, bank, validator, readiness evidence, review packet, packages and admission |
+| `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
+| `BLK-04` | Critical | app registry/CI/release lock are two-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
+| `BLK-05` | Critical | Design Interview runtime not production-proven | generic family contract; Backend reference proof; OOP independence proof; Frontend proof |
+| `BLK-06` | Critical | current GCP candidate conflicts with historical locked artifact | new immutable GCP publication and explicit atomic lock/runtime migration |
+| `BLK-07` | Critical | Premium entitlement and package authorization absent | backend RevenueCat authority, App Check/auth boundary, signed URL manifest API and verified client store |
+| `BLK-08` | Critical | account/session/sync/adoption/deletion contracts incomplete | remove remote session ownership; compact idempotent sync; safe adoption; durable tombstones and non-resurrection |
+| `BLK-09` | Critical | prepared Figma is not yet repository-owned production UI | exact Figma node map; tokens/assets/licenses; canonical components; all verticals; parity and accessibility proof |
+| `BLK-10` | Critical | no complete public/store/signed release chain | legal/support/deletion/auth surfaces, professional origins, store records, EAS/signing, TestFlight/Play and signed smoke |
+| `BLK-11` | High | current CI does not enforce eight-track launch readiness | deterministic eight-track readiness report and final fail-closed launch gate |
+| `BLK-12` | High | provider/operations state is not freshly evidenced | least-privilege deployment, App Check/Firebase apps, package bucket, PITR, RevenueCat and domain evidence |
+| `BLK-13` | High | accessibility/performance/usability closure absent | 200% text, screen reader, reduced motion, haptics, budgets, first-use review and both physical platforms |
+| `BLK-14` | High | app release configuration is incomplete | release versioning, icons/splash/privacy/link config, `eas.json`, build profiles, secrets boundary and declarations |
+
+No Critical or High item may be silently waived. A Product Owner launch decision may accept a residual High risk only when the risk, impact, mitigation, expiry, and rollback are recorded. Critical risks require closure.
+
+---
+
+## 8. Execution DAG
 
 ```text
-FND-01 ─┬─ PLAT-01 ─ ARCH-01
-        ├─ GUEST-01 ─ SESSION-01
-        ├─ ID-01 ─ ID-02 ─ ID-03 ─ ID-04/ID-05
-        ├─ TRACK-01 ─ TRACK-02 ─ PKG-01
-        └─ B-01 ─ B-02 ─ B-03 ─ B-04 ─ B-05 ─ DS-01 ─ DS-02 ─ DS-03
+LR-01 ─┬─ CNT-01 ─ CNT-02 ─ CNT-03 ─ CNT-04 ─ H-CONTENT ─ CNT-05 ─ CNT-06
+       ├─ RUN-01 ─ RUN-02 ─ RUN-03 ─ RUN-04
+       ├─ SEC-01 ─ DATA-01 ─ DATA-02 ─ DATA-03 ─ DATA-04 ─ DATA-05
+       ├─ DES-01 ─ DES-02 ─ DES-03 ─ DES-04..DES-12
+       └─ OPS-01 ─ OPS-02
 
-SESSION-01 + ARCH-01 ─ SYNC-01; SYNC-01 + ID-02 ─ SYNC-02
-SESSION-01 + SYNC-01 + ID-01 ─ ADOPT-01
-ADOPT-01 + SYNC-02 + ID-02 + UX-08D ─ ADOPT-02
-SYNC-01 + GUEST-01 + TRACK-02 ─ GOAL-01
-ID-01 + ARCH-01 ─ ENT-01
-ENT-01 + ID-02 + PLAT-01 ─ ENT-02; ENT-02 + ADOPT-02 ─ ENT-03
-PKG-01 + ENT-01 + ARCH-01 ─ PKG-02; PKG-01 + PKG-02 + PLAT-01 ─ PKG-03 ─ PKG-04
-ID-01 + SYNC-01 ─ DEL-01 ─ DEL-02; DEL-02 + ENT-01 + SYNC-02 ─ DEL-03
-ARCH-01 + PLAT-01 ─ OBS-01; ARCH-01 + PKG-01 ─ REP-01
-FND-01 + ARCH-01 ─ OPS-01; OPS-01 + DEL-01 ─ OPS-02
-PKG-04 + TRACK-02 ─ PROOF-01/02/03; PROOF-01 ─ PROOF-04; PROOF-03 ─ PROOF-05
-PROOF-02 + PROOF-04 + PROOF-05 ─ TRACK-03..07
-runtime + approved design + DS-03 ─ approved UX implementation cycles
-UX-12I + OPS-01 ─ REL-01
-all UX-I + proofs + PLAT-01/PKG-04 ─ REL-02A and REL-02B
-REL-02A + REL-02B + all UX-I/proofs ─ REL-02C
-REL-02A/B/C + DS-01/02/03 + implemented verticals ─ REL-03
-REL-01 + REL-02A/B/C + REL-03 + OPS-02 + track admissions ─ REL-04
-REL-04 ─ REL-05 and REL-06 ─ REL-07
+CNT-06 + RUN family proofs + RUN-06 ─ TRK-01..TRK-08 ─ CAT-01
+SEC-01 + DATA-02 ─ ENT-01 ─ ENT-02 ─ PKG-01 ─ PKG-02 ─ ENT-03
+DATA-05 + ENT-03 ─ complete account/commercial UX
+DES verticals + runtime/data/commercial owners ─ QA-01..QA-06
+CAT-01 + QA gates + OPS gates ─ REL-01 ─ REL-02 ─ REL-03 ─ REL-04
 ```
 
-The graph shows the dependency-defining convergences; each task card's `Dependencies` field is the exhaustive machine-checkable edge list. An omitted edge in the visual does not create a prerequisite, and no visual edge may contradict a card.
+Independent local lanes may proceed in parallel after `LR-01`, but no lane may fabricate another lane’s acceptance evidence. In particular:
 
-Parallel lanes after `FND-01`:
+- content authoring may proceed before Figma;
+- backend/account/package work may proceed before visual implementation;
+- design-system extraction may proceed from final Figma before provider setup;
+- provider mutations require explicit authority;
+- human editorial review may occur in parallel by track, but production admission waits for all required sign-offs for that track;
+- final catalogue and release gates require all eight tracks.
 
-| Lane | Can proceed independently | Must wait for |
-| --- | --- | --- |
-| runtime/backend/data | guest, device-session, sync, identity APIs, entitlement model, package auth, deletion, privacy | only its data/security dependencies; not Figma |
-| brand/Figma | landscape and 3→2→1 actual editable work | owner review at `B-03`, `B-04`, `B-05` |
-| Storybook/design system | technical audit may happen in `B-01`; implementation starts after `B-05` | final visual direction; Expo baseline |
-| vertical product/UI | state contracts may be prepared; significant production UI does not start | applicable `UX-*D` owner approval and runtime dependency |
-| content/package/track | ID migration, briefs, schemas, representative proofs | evidence gate; package runtime for production admission |
-| platform/public/release | Expo migration and local web work can proceed early | credentials/mutations only at explicit checkpoints |
-| external owner/provider | read verification and authorized mutations | Product Owner approval/credentials; never silently inferred |
+---
 
-## 5. Stage and task register
+## 9. Task register
 
-The register contains 82 dependency-derived tasks. Every task below is one coherent execution window. “Paths” are expected owners, not permission for unrelated refactors. “Delete” is mandatory proof: search imports, routes, tests, commands, CI, docs and generated outputs before marking verified.
+### Stage LR — canonical baseline and plan reconciliation
 
-### Mandatory task-field contract
+#### LR-01 — Eight-track launch contract and plan cutover — `ACTIVE` after this file is pushed
 
-Every card inherits the fields below; card-specific text overrides or narrows the default. This inheritance is part of each task, including non-UX work.
+**Objective:** make the repository unambiguously target the confirmed eight-track release and make this document the sole implementation-order authority.
 
-- **Why now:** the task is at the earliest point allowed by the DAG; its listed dependencies are the complete prerequisites and its objective is the bounded acceptance boundary.
-- **Canonical owners:** the stated requirement IDs and narrative documents; where a card names only documents, the matching top-level canonical requirement from the impact map is also mandatory.
-- **Confirmed repository state and paths:** the card's stated current state/paths plus its referenced `IMP-*` rows. Expected paths authorize only the named responsibility in the named repository.
-- **Implementation requirements:** the card's scope, keep/move/rewrite/delete obligations and the seven architecture invariants in section 3. **Out of scope** includes all unrelated task cards, product-contract changes, unlisted provider mutations and compatibility/fallback scaffolding.
-- **Acceptance and automated verification:** the card's explicit checks plus every applicable gate in section 7, typecheck/focused tests, dead-reference scan, `git diff --check`, clean worktree and pushed commit evidence.
-- **Manual/device/visual evidence:** the evidence named by the card. For a purely nonvisual/server/content task this is `NOT_APPLICABLE` with a completion-report reason; it never becomes invented UI/device proof. A device/visual task cannot use that exception.
-- **Security/privacy/content implications:** every completion report must state the assessed effect on all three, including `none` with evidence; closed schemas, redaction, provenance and data-loss boundaries remain mandatory where applicable.
-- **External/owner checkpoint:** only the checkpoint explicitly listed by the card/section 6; otherwise `none`. Older authorization reports never imply a mutation.
-- **Completion report target:** update the existing narrowly relevant report when durable evidence needs a repository owner; otherwise use pushed commit/CI/device links and the plan status update. Never create a second plan or raw-log diary.
-- **Next task unlocked:** exactly the card's `Unlocks`; if it says a gate contribution, the remaining named dependencies still apply.
+**Scope:**
 
-### Stage F — trustworthy foundation and platform
+- replace `docs/launch-completion-plan.md` with this reconciled plan;
+- add one canonical `LAUNCH_TRACK_IDS`/release-scope owner containing exactly the eight IDs;
+- keep Terraform and KCNA only as post-launch briefs, never shipping registry entries or release dependencies;
+- reconcile `canonical-product-contract.yaml`, overview/product/roadmap/testing/risk documentation, track admission tests, launch surface inventory, and plan references;
+- replace “seven-bank” and “ten-track launch” assumptions with a deterministic eight-track readiness model that may truthfully show AZ-104 as absent until `CNT-01`;
+- preserve current immutable releases and the two-track lock until replacement artifacts are valid.
 
-#### FND-01 — Clean-checkout gate integrity — `VERIFIED`
+**Acceptance:** exact-scope tests reject missing, extra, duplicated, aliased, or visible-family tracks; docs and tests agree; current CI remains green; no production placeholder is added.
 
-- **Objective / why now:** make both repositories’ claimed gates reproducible before architectural implementation relies on them.
-- **Canonical owners:** contract authority; docs 11–12. **Prerequisites:** pushed D2 baseline. **Confirmed state:** root CI omits `server/npm ci`; server tests depend on ignored modules; content release gate fails `MISSING_TECHNICAL_EVIDENCE` although release 0015 byte-lock passes.
-- **Repositories / paths:** app `.github/workflows/qa.yml`, root/server package scripts and focused tests; content evidence envelopes, publishing validation scripts/tests. **Scope:** install/test server from its lock in CI; diagnose and repair the technical-evidence manifest mismatch without question changes; make isolated release gate reproducible.
-- **Out of scope:** feature work, provider mutation, content edits, ID/package migration. **Keep/move/rewrite/delete:** keep current gates and immutable release; rewrite dependency/evidence ownership; delete no evidence unless proven duplicate and replaced.
-- **Acceptance / automated verification:** clean dependency installs; server typecheck/tests use only declared locks; content `npm test`, both `validate:real:*`, isolated `ci-release-gate`, app `qa:static`, contract gate and cross-repo lock pass; loopback blockers are reported, never passed. **Manual evidence:** CI run/clean-clone command matrix.
-- **Security/privacy/content:** no semantic or provider change. **Checkpoint:** none. **Output:** `docs/reports/fnd-01-clean-checkout-gates.md` only if repository convention needs durable blockers; otherwise commit/CI links. **Unlocks:** all implementation lanes.
-- **Verification and evidence:** application gate-integrity commit `f4dcc0008b428b056f4e2d1d6197b57a7fa77883` passed [QA run 31276876009](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/31276876009), including both locked installs, server typecheck/build before root QA, recovery and contract gates. Content FND-01R ends at `758b6a8a980b7c2f1398c603bb0afaa431b14f83`: `npm test` passed 135/135, the canonical candidate validators and `ci-release-gate.mjs` passed, and Coding evidence was regenerated without altering learner-facing semantics, admissions, the app registry, or the app release lock. Its seven-bank evidence is `evidence/readiness/seven-bank-candidate-readiness.json`, SHA-256 `ba24c5fe11bfc0a29ad566bdcdcdeb73b0956817a82c9c871eef11a96ea98326`, generated deterministically from source commit `17b3db59746c502496df57c65317e52a0cba5996`.
+**Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-#### PLAT-01 — Expo 57 and target native matrix — `VERIFIED`
+**Unlocks:** every remaining lane.
 
-- **Objective / why now:** establish the supported runtime before native Firebase, RevenueCat, Storybook and final design integrations. **Owners:** `PLATFORM-RELEASE-001`, docs 02/09/12. **Dependencies:** `FND-01`. **State:** Expo 54, Light-only, tablet-capable, implicit Android levels; native folders ignored.
-- **Paths / scope:** package/lock, `app.json`, canonical plugins, build config, CI; migrate to Expo 57, iOS 16.4+ iPhone-only, Android 28/36, portrait, Light/Dark/System, 200% text basis and backup exclusion. **Non-goals:** UI redesign, provider registration, signed release.
-- **Obligations:** keep backup exclusion; rewrite permission and native target config; delete obsolete tablet/Light-only assertions and unused migration residue. **Acceptance:** clean install/prebuild/typecheck/unit/architecture checks and debug boot on iOS/Android; exact generated-native assertions. **Evidence:** unsigned phone simulator/emulator smoke and config report.
-- **Implications/checkpoint:** security review of permissions; no external mutation. **Output:** platform migration report. **Unlocks:** `ARCH-01`, native identity/entitlement, Storybook foundation and final device work.
-- **Verification and exact decisions:** clean `npm ci` completed for root and `server`; root/server typechecks and server build passed; root `qa:static` passed with 560 tests; the cross-repository release-lock test, content/privacy boundaries, `git diff --check`, and a clean generated-native Expo prebuild with iOS/Android/backup assertions all passed. The canonical contract gate passed for both `a5eb8ac14b3753bd443486d94853468183605ad7^..a5eb8ac14b3753bd443486d94853468183605ad7` and current `HEAD`; focused gate tests passed 7/7. The five exact RN 0.86 `StyleSheet.absoluteFillObject` → `StyleSheet.absoluteFill` substitutions in `a5eb8ac14b3753bd443486d94853468183605ad7` are `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION` under the closed six-criterion `PO-057` exception; no design reference was fabricated. This host has neither an iOS phone simulator nor Android phone emulator/device, and no unsigned debug boot/smoke was performed. That unavailable smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION` under `PO-056`, not device-test evidence; signed physical-device proof remains a `REL-07` release requirement. No signing or provider authority is required.
+#### LR-02 — Verified-sentinel rebaseline — `BLOCKED by LR-01`
 
-#### ARCH-01 — Approved clients, environment and public-origin boundary — `VERIFIED`
+Record each sentinel in section 5 against the post-`LR-01` exact SHAs. Do not reimplement it. Any failure becomes a regression owned by the slice that caused it.
 
-- **Objective:** replace the old no-network rule with one closed, testable client registry. **Owners:** `ENVIRONMENT-PUBLIC-LINKS-001`, `IDENTITY-SECURITY-001`, docs 02/09/11. **Dependencies:** `PLAT-01`. **State:** privacy check bans app networking; server environment isolation is strong.
-- **Paths / scope:** environment schema, network/secure-storage adapters, privacy static checks, link origin configuration; register only auth/account, entitlement, package, analytics/crash and report clients. **Non-goals:** implement provider flows or public deployment.
-- **Obligations:** keep fail-closed environments and deny-all Firestore; rewrite privacy plugin/check; delete direct/unregistered transport paths. **Acceptance:** secrets absent from bundles/logs, default Firebase domains restricted to sandbox, closed-schema tests, no raw Firestore client. **Evidence:** clean release graph/config audit.
-- **Checkpoint:** production values remain `X-03/X-04`; local safe defaults explicit. **Output/unlocks:** architecture evidence; unlocks networked lanes.
-- **Verification:** pushed application `59cefd9`; closed `APPROVED-CLIENT-ENVIRONMENT-001` schema/parser/registry mapping passed staged contract gate and independent QA. The transport allowlist is registry-derived; direct Firebase/raw transport, raw error diagnostics and console output remain blocked. Android retains only required `INTERNET`; backup and unnecessary-ingress exclusions remain enforced.
+#### LR-03 — Final gate automation skeleton — `BLOCKED by LR-01`
 
-### Stage G — guest, device ownership, synchronization and goals
+Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
-#### GUEST-01 — Installation guest identity and local dataset — `VERIFIED`
+---
 
-- **Objective:** make existing local-first entry explicitly guest-owned. **Owners:** `GUEST-FREE-001`, docs 01/04/08. **Dependencies:** `FND-01`. **State:** learning works without auth but data has no installation identity/account binding.
-- **Paths / scope:** bootstrap, storage keys/repositories, installation identity, guest dataset metadata/reset tests. **Non-goals:** account UI, adoption, Premium. **Obligations:** keep kernel/journal; rewrite bootstrap ownership; delete any first-value auth assumption encountered.
-- **Acceptance:** first launch reaches a complete bundled free node offline; restart preserves identity/data; reset is explicit; no Firebase Anonymous Auth; failure injection cannot orphan data. **Evidence:** focused Maestro after existing UI only, storage migration report. **Checkpoint:** none. **Unlocks:** `SESSION-01`, `ADOPT-01`, `UX-01D`.
-- **Verification:** the canonical local installation/dataset record is provisioned before journal recovery or content navigation. It begins in `guest` state, preserves valid later binding states without adopting or regenerating, rejects corrupt/unsupported identities without replacement, and blocks before first value on identity or durable-write failure. Focused behavioral/contract tests, typecheck, the staged canonical contract gate, and independent QA passed at `3690df756daf34e1fa0b26f676c9785fa2180997`. The explicit local-history reset is proven to delete learning records while preserving the exact guest installation and local-dataset identity. Complete bundled `freeNodeId` activation is verified by `PKG-04A`. On iPhone 16 Pro Simulator / iOS 18.6, the final Maestro journey passed listener 5/5, reset 3/3, Coding bootstrap 9/9 and the 33/33 Learn Approach 10 first-value/relaunch flow: authored feedback, Reason and Details rendered from the Free package, then the exact session/configuration/feedback resumed after process restart. Durable run metadata is [guest-01-ios-simulator-maestro-2026-08-10.md](reports/guest-01-ios-simulator-maestro-2026-08-10.md); ignored capture bytes are addressed by its hashed manifest. This is GUEST-01 simulator evidence, not a signed physical-device `REL-07` claim.
+### Stage CNT — eight-track content completion and admission
 
-#### SESSION-01 — Device-session cutover across server contracts — `BLOCKED`
+#### CNT-01 — AZ-104 canonical ingress — `READY`
 
-- **Objective:** make account schema incapable of storing/resolving active session state. **Owners:** `DEVICE-SESSION-SYNC-001`, docs 04/08/17. **Dependencies:** `GUEST-01`. **State:** local ownership is compatible; server types/adoption synchronize session/draft/timer.
-- **Paths / scope:** server account types, sync/adoption records, schema/tests; preserve local repositories. **Non-goals:** incremental sync client. **Obligations:** keep local session lifecycle; delete remote pointer/session/draft/position/timer, conflict selection and cross-device resume tests with no alias.
-- **Acceptance:** negative tests reject forbidden remote fields; two devices can each hold one local session; account operations contain only compact terminal facts; migration behavior is explicit and loss-safe. **Evidence:** schema diff and dead-path scan. **Checkpoint:** none. **Unlocks:** `SYNC-01`, `ADOPT-01`.
+Create the missing `microsoft-azure-administrator-associate-az-104` authoring registration and canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
-#### SYNC-01 — Incremental account operation and projection API — `BLOCKED`
+**Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
 
-- **Objective:** preserve revision/idempotency while replacing full account snapshots as ordinary sync. **Owners:** `DEVICE-SESSION-SYNC-001`, docs 02/04/08/09. **Dependencies:** `SESSION-01`, `ARCH-01`. **State:** bounded mutation and paginated canonical snapshots exist; operation replay window needs proof.
-- **Paths / scope:** server account service/store/HTTP/tests; operations for current track, goals, attempts/results/review and terminal summaries; cursors, due review, recent Activity, on-demand exact history. **Non-goals:** mobile UI.
-- **Obligations:** keep fingerprints/revisions/transactions; rewrite projection ownership; delete O(n) ordinary-sync assumptions and remote device state. **Acceptance:** pagination/cursor conflicts, retry/replay-window, restart and concurrent-device tests; projections rebuild from compact facts. **Evidence:** API contract and load bounds.
-- **Checkpoint:** none. **Output/unlocks:** sync report; unlocks `SYNC-02`, `GOAL-01`, Activity runtime.
+#### CNT-02 — Eight-track deterministic readiness report — `BLOCKED by CNT-01`
 
-#### SYNC-02 — Mobile journal-to-outbox synchronization — `BLOCKED`
+Replace `seven-bank-candidate-readiness-v1` with an eight-track launch readiness schema. For every track report source root, family, nodes, mental units/blocks, interaction inventory, Free node, source/provenance freshness, technical validation, human review, immutable release, publishing admission, runtime admission, package evidence, and explicit blockers. Generate twice and require byte identity in CI.
 
-- **Objective:** enqueue idempotent account operations only after local durability. **Owners:** `DEVICE-SESSION-SYNC-001`, docs 08/11/12. **Dependencies:** `GUEST-01`, `SYNC-01`, `ID-02`. **State:** local journal exists; no mobile account client/outbox/cursor.
-- **Paths / scope:** application services, MMKV outbox/cursors, account API adapter, triggers and retry states. **Non-goals:** background-sync promise or UI redesign. **Obligations:** keep journal as local authority; add one outbox; delete duplicate direct network writes/fallbacks.
-- **Acceptance:** offline/restart/failure/concurrency tests, bounded pagination, explicit sync states, no session draft/timer payload, no silent data loss. **Evidence:** two-device convergence harness. **Checkpoint:** provider test project only when `X-04` authorized. **Unlocks:** adoption, sync UI, Progress/Activity.
+#### CNT-03 — Technical and provenance closure for all eight — `BLOCKED by CNT-02`
 
-#### ADOPT-01 — Server guest-adoption semantics — `BLOCKED`
+Run or create uniform validators for every track. Track-specific validators may inspect domain-specific constraints, but the result envelope and gate semantics must be generic. Close broken citations, unsupported technical claims, duplicate identities, missing Reason/Details, distractor explanations, interaction-contract mismatches, stale official objectives, and deterministic serialization errors. Do not edit content merely to satisfy fixed quotas.
 
-- **Objective:** retain durable staging while making adoption deterministic and session-free. **Owners:** `ACCOUNT-DATA-ADOPTION-001`, `GUEST-FREE-001`, docs 03/08/09. **Dependencies:** `SESSION-01`, `SYNC-01`, `ID-01`. **State:** start/upload/advance/preview/confirm/cancel and lease recovery exist; current conflict model chooses active sessions.
-- **Paths / scope:** server adoption service/store/HTTP/tests. **Non-goals:** mobile presentation. **Obligations:** keep leases, preview, idempotency and crash recovery; rewrite plan cases; delete active-session arbitration.
-- **Acceptance:** new-empty default preserves guest; explicit discard; existing-account deterministic plan; account cannot silently merge/discard; confirm is convergent/restart-safe. **Evidence:** truth-table and failure tests. **Checkpoint:** none. **Unlocks:** `ADOPT-02`.
+#### CNT-04 — Human review packets — `BLOCKED by CNT-03`
 
-#### ADOPT-02 — Mobile adoption boundary and binding — `BLOCKED`
+Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-- **Objective:** bind guest data only after truthful preview and confirmation. **Owners:** `ACCOUNT-DATA-ADOPTION-001`, docs 03/08. **Dependencies:** `ADOPT-01`, `SYNC-02`, `ID-02`, approved `UX-08D` for final UI. **State:** no mobile client/binding.
-- **Paths / scope:** guest/account repositories, adoption coordinator, secure binding, state model; presentation in `UX-08I`. **Non-goals:** social linking. **Obligations:** finish-or-abandon active guest session; delete hidden merge/reset paths.
-- **Acceptance:** all preview choices, relaunch boundaries and remote/local failure matrices preserve recoverability; binding only after converged confirmation. **Evidence:** device restart harness. **Checkpoint:** none. **Unlocks:** account continuity and entitlement UI.
+#### H-CONTENT — Human editorial approval for all eight — `BLOCKED — HUMAN AUTHORITY`
 
-#### GOAL-01 — Per-track goals and recommendation inputs — `BLOCKED`
+The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
 
-- **Objective:** add synchronized per-track goals without coupling them to entitlement or scoring. **Owners:** `PRODUCT-SURFACES-GOALS-001`, docs 01/04/08/17. **Dependencies:** `SYNC-01`, `GUEST-01`, `TRACK-02`. **State:** goals absent.
-- **Paths / scope:** goal types/templates, local/account repos, recommendation/reminder adapters/tests. **Non-goals:** final UI. **Obligations:** one owner; delete ad-hoc cadence flags if found.
-- **Acceptance:** only valid per-track templates; manual choice outranks recommendation; goals never lock content/change mastery/streak or punish; guest offline and sync cases pass. **Evidence:** decision-table tests. **Checkpoint:** none. **Unlocks:** first-run, Today, Settings design/implementation.
+#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by CNT-03`
 
-### Stage I — identity and account security
+Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
 
-#### ID-01 — Account/security service contracts and composition — `BLOCKED — authenticated approved-client credential and deletion-tombstone authority unresolved`
+#### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05 + H-CONTENT`
 
-- **Objective:** expose one composed account API over the compatible Firebase foundation. **Owners:** `IDENTITY-SECURITY-001`, docs 02/04/09. **Dependencies:** `FND-01`, `ARCH-01`. **State:** token verification exists; deletion is not composed; mobile auth absent.
-- **Paths / scope:** server composition/HTTP, account generation, revocation and approved-operation schemas. **Non-goals:** provider console or UI. **Obligations:** keep verifier/HTTP boundary; wire or delete unreachable duplicate primitives.
-- **Acceptance:** clean server tests cover auth/revocation/recent-auth, non-enumerating errors, approved clients and account generation. **Evidence:** endpoint matrix. **Checkpoint:** `X-04` later. **Unlocks:** `ID-02`, adoption and deletion.
-- **Verified boundary / blocker:** the attempted local composition was deliberately not retained. Firebase tokens provide no server-verifiable approved mobile-client/environment claim, so an ordinary request header would be untrusted. Existing deletion proof is request-addressable only and is written after recursive deletion, so identity creation cannot safely distinguish a fresh account from a concurrent/deleted account without a durable UID-addressable tombstone authority. Account revision is currently owned by the dataset head and cannot be copied into a static identity record without a declared consistency rule. This is a security-policy/ownership decision; no partial endpoint is pushed.
+Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate receives a new version; historical `gcp-ace-0016` remains history.
 
-#### ID-02 — Email/password mobile vertical and action-handler API — `BLOCKED`
+---
 
-- **Objective:** implement verified email/password registration/sign-in/reset transport without blocking guest first value. **Owners:** `IDENTITY-SECURITY-001`, `ENVIRONMENT-PUBLIC-LINKS-001`, docs 03/09. **Dependencies:** `ID-01`, `PLAT-01`. **State:** Firebase packages unused; no action handler.
-- **Paths / scope:** auth adapter, secure token storage, app account state, server/public action result taxonomy; UI waits for `UX-08D`. **Non-goals:** Apple/Google/recovery codes.
-- **Obligations:** provider-controlled ordinary expiry/single use; delete exact-30-minute ordinary assumptions. **Acceptance:** verify/reset/retry/restart/revocation/non-enumeration tests; guest learning unaffected. **Evidence:** sandbox test only after checkpoint. **Checkpoint:** `X-04`. **Unlocks:** mobile sync/adoption and account UI.
+### Stage RUN — generic family and package runtime
 
-#### ID-03 — Reauthentication, email/password change and sign-out — `BLOCKED`
+#### RUN-01 — Canonical family contract closure — `BLOCKED by LR-01`
 
-- **Objective:** complete current-device/all-device security lifecycle. **Owners:** `IDENTITY-SECURITY-001`, docs 03/09. **Dependencies:** `ID-02`, `ID-01`. **State:** verifier supports recent-auth and revoked-token checks; no client flows.
-- **Paths / scope:** server/mobile commands and secure-state cleanup. **Non-goals:** visual implementation before `UX-08D`. **Obligations:** keep recent-auth; delete token-survives-all-device-signout paths.
-- **Acceptance:** reauth required for sensitive changes; email change verified; all-device sign-out enforced at API; local guest/account data boundaries truthful. **Evidence:** revocation/restart matrix. **Checkpoint:** sandbox provider config. **Unlocks:** account/security implementation.
+Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
-#### ID-04 — Apple/Google linking and method safety — `BLOCKED`
+#### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
 
-- **Objective:** add providers to one UID/account with explicit proof and collision handling. **Owners:** `IDENTITY-SECURITY-001`, docs 03/09. **Dependencies:** `ID-03`, `PLAT-01`. **State:** provider foundation off/unconfigured; no client flows.
-- **Paths / scope:** provider adapters, link/unlink service, method inventory/tests. **Non-goals:** console mutation without `X-05`. **Obligations:** no automatic email merge; never unlink last usable method; remove parallel provider accounts.
-- **Acceptance:** link collision, cancelled proof, revoked credential, relaunch and last-method negative tests. **Evidence:** sandbox iOS/Android device proof. **Checkpoint:** `X-05`. **Unlocks:** complete account vertical.
+Implement Backend System Design as the first Design Interview proof through the shared kernel. Support the interaction shapes actually present in approved content, including choice, ordering, and decision-matrix where applicable. Do not force Design content through Certification semantics or create a backend-only lifecycle.
 
-#### ID-05 — Recovery codes and Terms acceptance — `BLOCKED`
+#### RUN-03 — Design Interview independence proof — `BLOCKED by RUN-02`
 
-- **Objective:** add eight one-time codes, narrow recovery session and versioned Terms. **Owners:** `IDENTITY-SECURITY-001`, docs 04/09. **Dependencies:** `ID-01`, `ID-03`. **State:** absent.
-- **Paths / scope:** hashing/storage/API/client coordinator; generate/regenerate/use and Terms record. **Non-goals:** support takeover. **Obligations:** no plaintext persistence/logging; revoke sessions after recovery; delete broad recovery tokens.
-- **Acceptance:** exactly eight single-use codes, replay/race/rate-limit tests, last recovery path safety, Terms separate from optional analytics consent. **Evidence:** redaction/security review. **Checkpoint:** none. **Unlocks:** complete account/security UX.
+Admit OOP through the same family owner and remove any backend-specific generic assumptions. Then admit Frontend and prove its rich ordering/decision-matrix inventory without a second family or fallback transformation.
 
-### Stage C — commercial entitlement, packages and lifecycle
+#### RUN-04 — Provider-neutral Certification proof — `BLOCKED by RUN-01 + per-track approved package inputs`
 
-#### ENT-01 — Backend Premium authority and webhook projection — `BLOCKED`
+Use GCP as the current-source reference and AWS as the second proof. Remove provider-hardcoded branches. Then prove AZ-104 and AI-901 use the unchanged Certification lifecycle, with track-specific content and official-source profiles only.
 
-- **Objective:** establish store→RevenueCat→backend authority for one entitlement. **Owners:** `COMMERCIAL-ENTITLEMENT-001`, docs 02/04/09. **Dependencies:** `ID-01`, `ARCH-01`. **State:** no billing code.
-- **Paths / scope:** server entitlement records, environment, webhook verification/idempotency, account projection/tests. **Non-goals:** product creation or UI. **Obligations:** opaque Patternly account ID, no email; one monthly/annual entitlement; no slots/tiers; delete local-authority assumptions.
-- **Acceptance:** duplicate/out-of-order/refund/revoke/expiry/product-mismatch tests and bounded projection; guest denied. **Evidence:** threat/model contract. **Checkpoint:** sandbox credentials `X-06`. **Unlocks:** package authorization and clients.
+#### RUN-05 — Installed package resolver and atomic store — `BLOCKED by package delivery contract`
 
-#### ENT-02 — Mobile entitlement cache and seven-day grace — `BLOCKED`
+Extend the verified bundled resolver to installed immutable node packages. Temporary download → checksum/schema/semantic validation → atomic activation; retain previous verified version on interruption, disk-full, corruption, incompatibility, or restart. Never substitute “latest” for the session-pinned version.
 
-- **Objective:** consume backend projection with bounded cache and safe offline behavior. **Owners:** `COMMERCIAL-ENTITLEMENT-001`, docs 04/08/09. **Dependencies:** `ENT-01`, `ID-02`, `PLAT-01`. **State:** absent.
-- **Paths / scope:** RevenueCat adapter, identity binding, backend verification cache/clock/retry tests. **Non-goals:** paywall presentation. **Obligations:** SDK result never authorizes package; delete email/device entitlement identity.
-- **Acceptance:** exact seven-day grace, clock/restart/revoke/refund/unknown states, cross-platform account identity and safe completion of already-started entitled session. **Evidence:** sandbox trace. **Checkpoint:** `X-06`. **Unlocks:** purchase/restore and Premium sessions.
+#### RUN-06 — Session pin, review resolution, and safe eviction — `BLOCKED by RUN-05`
 
-#### ENT-03 — Purchase, restore, conflict and downgrade coordinator — `BLOCKED`
+Protect package bytes referenced by active session, draft, result, review, and exact history. Entitlement loss must not corrupt an already-started session. Missing historical bytes produce an explicit unavailable state, not a different package.
 
-- **Objective:** implement commercial commands after first value. **Owners:** `COMMERCIAL-ENTITLEMENT-001`, docs 03/09. **Dependencies:** `ENT-02`, `ADOPT-02`; presentation waits `UX-09D`. **State:** absent.
-- **Paths / scope:** purchase/restore/manage/downgrade state machine; final UI in `UX-09I`. **Non-goals:** store production setup.
-- **Obligations:** verified account required; guest purchase prohibited; historical learning independent; Free alternative explicit. **Acceptance:** restore conflicts, cancellation, network/store/backend disagreement and cross-platform cases are explicit; no fake success. **Evidence:** sandbox/device flow. **Checkpoint:** `X-06`, later `X-10`. **Unlocks:** Premium UX and release products.
+### Stage TRK — per-track production proofs
 
-#### PKG-01 — Generic node package and release format — `VERIFIED`
+Each task below is independently reviewable and may progress as soon as that track's approved immutable package inputs and the relevant family/runtime dependencies exist. `TRK-*` proves content-to-runtime correctness; it does not waive final visual, provider, signed-build, or cross-product QA gates. Every task must preserve the shared kernel and package owners, delete track/provider hard-coding it exposes, and publish one exact cross-repository evidence packet.
 
-- **Objective:** produce immutable compressed whole-node artifacts and a bundled complete free node. **Owners:** `CONTENT-PACKAGES-001`, docs 04/07. **Dependencies:** `FND-01`, `TRACK-01`, `TRACK-02`. **State:** deterministic whole-track pipeline only.
-- **Repositories / paths:** content schemas/config/publisher/tests; app contract fixtures. **Non-goals:** cloud upload or mobile download. **Obligations:** keep canonical source/evidence/checksums/history; rewrite publisher generically; never mutate 0015.
-- **Acceptance:** local bundled package records include exact track/node/version/checksum/minimum app/evidence/compressed size; reproducible bytes; complete freeNodeId; negative tests reject mutation/substitution/partial output. Remote object identity/generation belongs only to `PKG-02`, not a bundled package. **Evidence:** exact-byte cross-repository fixture. **Unlocks:** server auth, mobile package store and representative proofs.
-- **Verification:** `PO-059` selects closed, versioned Free-node experience profiles instead of treating full-track `validModes` as Free modes. Content `955159c` publishes immutable `patternly-core-0018`, validates both profiles and emits deterministic `bundled-free-node-v2` records: Coding Interview `complexity_and_constraints` (158 items; Learn/Guided/Custom/Weak) and GCP ACE `setup_environment` (82 items; Focus/Weak/Quick). Both bind release, source, technical evidence, inventory, brief, profile and payload checksums; empty review evidence is explicitly unavailable. App `9fc20e5` verifies exact bytes and provenance, rejects tampering, and preserves no remote-delivery, entitlement, or runtime fallback claim.
+#### TRK-01 — Coding Interview production proof — `BLOCKED by per-track CNT-06 + RUN-01 + RUN-06`
 
-#### PKG-02 — Entitled package manifest and signed-URL API — `BLOCKED`
+Prove the complete Coding product from the approved current source: Free node, Premium nodes, Learn/Guided/Custom/Weak and other admitted modes, due review, progress, simulation, package pinning, restart and downgrade continuity. Preserve the strategy-first contract and implementation-planning objective; reject executable-judge/pass claims. No `algorithms` alias or legacy whole-track path.
 
-- **Objective:** authorize immutable package downloads using backend entitlement. **Owners:** `CONTENT-PACKAGES-001`, `COMMERCIAL-ENTITLEMENT-001`, docs 02/09. **Dependencies:** `PKG-01`, `ENT-01`, `ARCH-01`. **State:** no endpoint/bucket contract.
-- **Paths / scope:** server manifest metadata, authorization, signed URL adapter, rate/redaction tests. **Non-goals:** bucket upload without `X-07`.
-- **Obligations:** Cloud Run verifies identity/entitlement; Firestore metadata only; delete any per-question fetch. **Acceptance:** guest/unentitled/stale/min-version/checksum/object-generation negatives; short-lived URLs; no object enumeration. **Evidence:** emulator/adapter tests. **Checkpoint:** `X-07`. **Unlocks:** `PKG-03`.
+#### TRK-02 — GCP ACE production proof and current-source cutover — `BLOCKED by per-track CNT-06 + RUN-04 + RUN-06`
 
-#### PKG-03 — Mobile verified package store and atomic activation — `BLOCKED`
+Publish and prove the approved current GCP source as a new immutable release. Migrate the app lock/runtime atomically from historical `gcp-ace-0016`; retain the old bytes only as immutable history. Prove Free/Premium practice, remediation, Quick Review, exam simulation, exact review resolution, current official-source provenance, and no silent old/new substitution.
 
-- **Objective:** download to temporary storage, validate and atomically activate a version. **Owners:** `CONTENT-PACKAGES-001`, docs 04/08/17. **Dependencies:** `PKG-01`, `PKG-02`, `PLAT-01`. **State:** bundled in-memory catalogs only.
-- **Paths / scope:** client, versioned store, checksum/schema/semantic validation, active pointer, rollback. **Non-goals:** final Practice UI. **Obligations:** keep free bundle and immutable refs; no fallback to stale/wrong version.
-- **Acceptance:** interruption/corruption/disk-full/restart/min-version tests retain previous verified version; paid download needs backend authority. **Evidence:** filesystem fault harness. **Checkpoint:** sandbox bucket later. **Unlocks:** `PKG-04`, download UI.
+#### TRK-03 — AWS SAA production proof — `BLOCKED by per-track CNT-06 + RUN-04 + RUN-06`
 
-#### PKG-04A — Verified content-package resolver and session-pin contract — `VERIFIED`
+Prove AWS through the unchanged provider-neutral Certification runtime. Include complete Free/Premium packages, scenario feedback, review/progress/simulation, exact provenance and affiliation-safe copy. Any GCP-specific branch found in a shared owner must be removed rather than copied.
 
-- **Objective:** define and implement one package resolver contract that accepts exact verified bundled packages now and future installed packages later, without a separate Free runner, cache, or compatibility catalog.
-- **Inputs:** `PKG-01` package records/profiles, `CONTENT-PACKAGES-001`, docs 04/08/17, and the retired whole-track validator/availability/family-runtime owners.
-- **Scope:** package identity/version/provenance and availability taxonomy; decoder/schema/semantic boundary; profile-only catalog adapter contract; exact session package-pin record; atomic replacement of whole-track generated-artifact ownership.
-- **Non-goals:** remote download, Cloud Storage, entitlement authorization, cache eviction, or any claim of Premium delivery. PO-060 supplies the narrow approved Practice Hub, Setup, and unavailable-mode references; no device result is claimed.
-- **Acceptance:** one typed resolver contract supports bundled and future installed packages; malformed/tampered/profile-incompatible bytes fail closed; package identity/version is sufficient for exact resume/review/progress resolution; only profile modes are discoverable; no second lifecycle or Free-only runner is introduced; retired whole-track owners have no production import.
-- **Pushed evidence:** application `dd7b8cc` introduces the verified exact-byte resolver; `2a15d14` adds profile-closed package catalogs; `e7821e0` adds the React Native decoder using Expo Crypto and `fflate`; `02c47aa` completes the atomic cutover. At `02c47aa`, bootstrap/lifecycle/review/progress use exact `ContentPackagePin`, Coding exposes Learn/Guided/Custom/Weak and GCP exposes Focus/Weak/Quick, unavailable modes and foreign-package evidence are explicit, and whole-track runtime owners are deleted. Independent QA passed after adversarial profile, pin, default-entry, malformed-route and presentation checks. Typecheck, the staged contract gate, recovery/content/privacy boundaries, cross-repository package checks and focused 88-test verification pass. The density harness now reads each brief from the immutable content commit it declares rather than the mutable current content worktree; this preserves its exact-pin purpose. The full local suite passed 597/597 without synchronizing, rewriting, or otherwise changing the GCP lock.
+#### TRK-04 — Azure AI-901 production proof — `BLOCKED by per-track CNT-06 + RUN-04 + RUN-06`
 
-#### PKG-04 — Session pinning, review resolution and safe eviction — `BLOCKED`
+Prove AI-901 through the unchanged Certification runtime with accurate AI workload/responsible-use/service-boundary semantics, complete Free/Premium packages, review/progress/simulation, current Microsoft provenance and no official-score or provider-affiliation implication.
 
-- **Objective:** make runtime/review consume exact package versions safely. **Owners:** `CONTENT-PACKAGES-001`, docs 08/17. **Dependencies:** `PKG-03`, `ENT-02`. **State:** sessions pin bundled content refs; no multi-package cache.
-- **Paths / scope:** preparation, review resolver, cache policy and recovery tests. **Non-goals:** bulk content. **Obligations:** keep immutable session identity; protect active/draft/review dependencies; delete silent latest substitution.
-- **Acceptance:** active session survives entitlement change; review resolves exact installed package or explicit unavailable state; eviction never removes pinned bytes. **Evidence:** multi-version fault matrix. **Checkpoint:** none. **Unlocks:** Premium content verticals and track admission.
+#### TRK-05 — Azure AZ-104 production proof — `BLOCKED by CNT-01 + per-track CNT-06 + RUN-04 + RUN-06`
 
-#### DEL-01 — Durable deletion intent, tombstone and composition — `BLOCKED`
+Prove the newly ingested AZ-104 bank through the same Certification owner. Cover identity/governance, storage, compute, networking, monitoring/recovery and the reviewed official objective map; include complete Free/Premium packages, simulation and exact package/history behavior. No workbook-only runtime source or Azure-specific lifecycle fork.
 
-- **Objective:** make deletion restart-safe and non-resurrecting. **Owners:** `ACCOUNT-SIGNOUT-DELETION-001`, `BACKUP-RESTORE-001`, docs 04/09. **Dependencies:** `ID-01`, `SYNC-01`. **State:** deletion/proof primitives exist but are not composed and identity/proof ordering is unsafe.
-- **Paths / scope:** server lifecycle service/store/HTTP, tombstones, session revocation, recursive data/identity deletion tests. **Non-goals:** subscription UI/public token. **Obligations:** move one owner; delete unreachable/split paths.
-- **Acceptance:** every crash point resumes safely; sync/snapshot/restore reject tombstoned account; proof retention bounded; no resurrection. **Evidence:** failure-injection matrix. **Checkpoint:** provider sandbox later. **Unlocks:** `DEL-02`, `OPS-02`.
+#### TRK-06 — Backend System Design production proof — `BLOCKED by per-track CNT-06 + RUN-02 + RUN-06`
 
-#### DEL-02 — Public and authenticated deletion APIs — `BLOCKED`
+Prove Backend as the first Design Interview vertical: requirements, capacity, data/service boundaries, tradeoffs, reliability, evolution, authored feedback, review/progress/simulation and exact packages. Shared Design contracts must not encode backend-only assumptions.
 
-- **Objective:** provide immediate Delete now and possession-verified public flow. **Owners:** `ACCOUNT-SIGNOUT-DELETION-001`, `ENVIRONMENT-PUBLIC-LINKS-001`, docs 03/09. **Dependencies:** `DEL-01`, `ID-02`. **State:** no public route/action handler.
-- **Paths / scope:** authenticated endpoint, exact 30-minute custom possession token, non-enumerating public handler. **Non-goals:** production deployment/UI before approval.
-- **Obligations:** ordinary Firebase action expiry remains provider-controlled; delete shared 30-minute assumptions. **Acceptance:** single-use/expiry/replay/non-enumeration/rate tests and revocation. **Evidence:** local web integration. **Checkpoint:** domain `X-03`. **Unlocks:** deletion UI/public release.
+#### TRK-07 — Object-Oriented Design production proof — `BLOCKED by per-track CNT-06 + RUN-03 + RUN-06`
 
-#### DEL-03 — Subscription-aware deletion and bound-device cleanup — `BLOCKED`
+Prove OOP through the same Design Interview owner, with domain responsibilities, state/invariants, collaboration, extensibility, testing and communication. Remove backend-specific generic assumptions; do not reward pattern-name recall without design justification.
 
-- **Objective:** separate Patternly deletion from store cancellation/refund and detach processor association. **Owners:** `COMMERCIAL-ENTITLEMENT-001`, `ACCOUNT-SIGNOUT-DELETION-001`, docs 03/09. **Dependencies:** `DEL-02`, `ENT-01`, `SYNC-02`; UI waits `UX-11D`.
-- **Paths / scope:** lifecycle coordinator, RevenueCat association, immediate/supported scheduled modes, device tombstone handling. **Non-goals:** promise store cancellation/refund.
-- **Obligations:** truthful Manage subscription; delete account even if paid period remains; prevent stale device upload. **Acceptance:** active/expired/refunded/offline/multi-device cases; processor detached; previously bound device returns explicit deleted state. **Evidence:** sandbox matrix. **Checkpoint:** `X-06`. **Unlocks:** deletion vertical.
+#### TRK-08 — Frontend System Design production proof — `BLOCKED by per-track CNT-06 + RUN-03 + RUN-06`
 
-### Stage O — privacy, reporting and recovery operations
+Prove Frontend through the unchanged Design Interview owner and its actual choice, ordering and decision-matrix interactions. Cover state/data flow, client boundaries, delivery/performance, accessibility/resilience, security and evolution. No fallback conversion to simpler interaction types and no backend lifecycle fork.
 
-#### OBS-01 — Consent-gated Analytics and Crashlytics — `BLOCKED`
+#### CAT-01 — Exact eight-track production catalogue — `BLOCKED by TRK-01..TRK-08`
 
-- **Objective:** add operational visibility without widening data collection. **Owners:** `ANALYTICS-REPORTS-001`, docs 04/09/12. **Dependencies:** `ARCH-01`, `PLAT-01`. **State:** current “analyticsService” is local Progress logic; no telemetry.
-- **Paths / scope:** first move/rename local projection; then consent state, closed event registry, adapters, redaction and crash sanitization. **Non-goals:** broad experimentation platform.
-- **Obligations:** fail closed; no raw per-event Firestore stream; delete ambiguous analytics naming/direct calls. **Acceptance:** consent-off emits nothing, forbidden fields fail tests, revoke/reinstall/restart cases and release client registry pass. **Evidence:** proxy/log inspection. **Checkpoint:** Firebase app config `X-04`. **Unlocks:** release observability and consent UI.
+Replace the two-track registry with generic admission records for exactly eight launch tracks only after all eight `TRK-*` proofs pass. A track appears only when its complete Free vertical, full core loop, human approval, immutable package set, runtime proof, and current lock are present. Terraform/KCNA remain non-production. Update the cross-repository lock and CI atomically; no descriptor-only track is registered.
 
-#### REP-01 — Account-unlinked content report lifecycle — `BLOCKED`
+---
 
-- **Objective:** support bounded offline report→review→correction without automatic learner data. **Owners:** `ANALYTICS-REPORTS-001`, docs 04/07/09. **Dependencies:** `ARCH-01`, `PKG-01`; UI waits `UX-10D`. **State:** absent in both repos.
-- **Paths / scope:** mobile queue, server/admin states, retention/de-identification and content correction/new-release link. **Non-goals:** attach response/account/email/full prompt/feedback by default.
-- **Obligations:** explicit account/contact opt-in only; delete hidden context enrichment. **Acceptance:** offline retries idempotently, confirmation only after receipt, forbidden-field tests, deletion/retention workflow and correction provenance. **Evidence:** cross-repo report case. **Checkpoint:** admin access later. **Unlocks:** report UX and content operations.
+### Stage SEC/DATA — identity, session ownership, sync, adoption, and deletion
 
-#### OPS-01 — Production deployment/IAM packet and verification — `PARTIAL — local digest-pinned definition complete; container/provider evidence pending`
+#### SEC-01 — Approved mobile-client and environment proof — `READY`
 
-- **Objective:** convert repository server into a reproducible deployable artifact with least privilege. **Owners:** docs 02/09/11; environment requirements. **Dependencies:** `FND-01`, `ARCH-01`. **State:** no proven Docker/Cloud Build/deploy path or current Cloud Run/IAM evidence.
-- **Paths / scope:** container/build/deploy config, service account/IAM manifests, health/logging, rollback; read verification where authorized. **Non-goals:** production mutation without `X-02`.
-- **Obligations:** no owner credentials in repo; remove dead deployment narratives/scripts. **Acceptance:** local container/clean build, least-privilege diff, environment separation and rollback packet. **Evidence:** immutable image provenance. **Checkpoint:** `X-01/X-02`. **Unlocks:** provider-backed staging/production.
-- **Verification:** application `4b595f6` adds the one PO-031 manual Cloud Build route, digest-pinned Node and builder images, separated identities, digest deployment instructions and rollback packet. Static server build/typecheck and focused definition tests pass. Docker/Podman runtime is unavailable locally and no provider read/mutation was authorized, so image-start and current IAM/deployment evidence remain pending `X-01/X-02`.
+Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling.
 
-#### OPS-02 — Seven-day PITR restore safety — `BLOCKED`
+#### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
 
-- **Objective:** prove disaster recovery without account resurrection. **Owners:** `BACKUP-RESTORE-001`, docs 09/12. **Dependencies:** `DEL-01`, `OPS-01`. **State:** repo says PITR off; no runbook/drill.
-- **Paths / scope:** configuration packet, restore runbook, sanitized sandbox drill tooling, tombstone/proof reconciliation. **Non-goals:** user account recovery or scheduled export.
-- **Obligations:** preserve OS-backup exclusion; delete claims that backup restores user accounts. **Acceptance:** seven-day target documented against verified provider capability; drill detects/re-removes tombstoned records; sanitized evidence and rollback. **Checkpoint:** `X-08` explicit mutation/drill authorization. **Unlocks:** recovery gate.
+Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
 
-### Stage B/D — Brand Lab and repository design authority
+#### DATA-02 — Device-session server cutover — `READY`
 
-#### B-01 — Design/tooling capability and asset audit — `VERIFIED`
+Delete remote active-session pointer, draft, item position, timer, conflict selection, and cross-device resume from account schemas/services/tests. Each device owns at most one local active session. Server sync contains compact terminal learning facts and projections only.
 
-- **Objective:** establish actual Figma access, Expo-compatible Storybook approach, visual tooling, assets/licensing and release boundaries. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `FND-01`; Storybook compatibility uses `PLAT-01` result. **State:** historical references only, no Storybook/canonical brand assets.
-- **Paths / scope:** read-only design registry, tokens/components/icons/fonts/screenshots/Maestro/build graph audit. **Non-goals:** create visual directions or install Storybook. **Obligations:** classify and later delete unapproved alternatives; no metadata placeholder.
-- **Acceptance:** evidence-backed technical choices, license gaps and risk-based state inventory; Figma write capability verified. **Evidence:** tracked audit `docs/audits/2026-08-09-b01-design-tooling-asset-audit.md`; authenticated Figma board `10:2` and owner annotation read-back on 2026-08-10. **Unlocks:** `B-02`.
+#### DATA-03 — Incremental account operations and projections — `BLOCKED by DATA-02 + SEC-01`
 
-#### B-02 — Landscape and anti-reference audit — `VERIFIED`
+Retain revision/idempotency/transactions; add bounded operations, cursors, due review, goals, recent Activity, and on-demand exact history. Prove retry-window behavior, pagination, concurrent devices, restart, and projection rebuild. Ordinary sync may not require O(n) account snapshots.
 
-- **Objective:** define collision/cliché constraints for the one Patternly brand. **Owners:** docs 06 and brand PO decisions. **Dependencies:** `B-01`. **State:** no current formal territory study.
-- **Paths / scope:** repository design evidence plus referenced primary visual sources; technical learning/developer/cloud/P marks/nodes/branches/negative space. **Non-goals:** trademark opinion or final choice.
-- **Obligations:** evidence-only output, no approval label. **Acceptance:** explicit anti-reference/collision matrix and solo-maintainability constraints. **Evidence:** tracked audit `docs/audits/2026-08-10-b02-landscape-anti-reference-audit.md`; it contains primary-source links and no selected direction. **Unlocks:** `B-03`.
+#### DATA-04 — Mobile journal-to-outbox sync — `BLOCKED by DATA-03 + email/password account vertical`
 
-#### B-03 — Three Figma directions — `VERIFIED`
+Enqueue idempotent operations only after local journal durability. One outbox owner; explicit offline/retry/conflict states; no direct duplicate network write. Two-device convergence and failure injection are required.
 
-- **Objective:** create three structurally distinct editable proof sets. **Owners:** docs 05/06. **Dependencies:** `B-02`. **State:** X-09A selected A and C; no final visual authority exists.
-- **Scope:** required mark/icon/wordmark/color/type/track symbol/hero/product-state/public-store proofs in Figma. **Non-goals:** production code or self-approval. **Obligations:** retire rejected explorations after durable decision/provenance retention.
-- **Acceptance:** actual editable frames/components, Light/Dark, motion/reduced-motion intent and rationale; no sub-brands. **Evidence:** Figma board `10:92`, selected editable finalist frames `10:93` and `10:95`, rejected provenance frame `10:94`, `PO-061`, and tracked record `docs/designs/b03-three-patternly-directions/DESIGN.md`; application checkpoint `12f340b6347daf01e3ee0e5824d521d4f01b3fcd` is pushed. **Checkpoint:** `X-09A` complete. **Unlocks:** `B-04`.
+#### DATA-05 — Guest adoption and account binding — `BLOCKED by DATA-03 + account vertical`
 
-#### B-04 — Two finalist systems — `VERIFIED`
+Retain staged upload/preview/confirm/recovery, remove active-session arbitration, and require local finish/abandon before binding. New empty account preserves guest data by default; existing account requires explicit deterministic choice. Binding occurs only after converged confirmation; no silent merge/discard.
 
-- **Objective:** deepen the two selected directions, A — Boundary Signal and C — Focus Frame, across required product states. **Owners:** docs 05/06. **Dependencies:** owner checkpoint `X-09A` satisfied by `PO-061`. **Scope:** hero, track, first entry, feedback, summary/next action, store/public, motion/reduced motion, haptic semantics.
-- **Non-goals:** implementation or final approval. **Obligations:** delete rejected third current-looking surface from active references. **Acceptance:** comparable complete proof sets, accessibility contrast/type evidence, optical icon exports. **Evidence:** Figma B-04 proof sets A `14:163` and C `14:186`, materially distinct active mobile composition comparison A `15:307` and C `14:243`, and editable 1024/180/60 px icon studies A `14:274` and C `14:275`, all on board `10:92`; prior A `14:242`, B `10:94` and all C frames are retained only as rejected or superseded decision provenance; scoped record `docs/designs/b04-two-finalist-systems/DESIGN.md`; `PO-062` records A as the selected direction. **Checkpoint:** `X-09B` complete. **Output/unlocks:** B-05.
+#### DATA-06 — Goals, Progress, and Activity projections — `BLOCKED by DATA-03`
 
-#### B-05 — Final visual system approval — `ACTIVE`
+Add per-track goals that never alter mastery, entitlement, or content access. Progress remains a learning projection; Activity is nested under Progress, paginated, and resolves exact history on demand. Four tabs remain Today, Practice, Progress, Settings.
 
-- **Objective:** establish one owner-approved final visual authority for A — Boundary Signal. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `X-09B` satisfied by `PO-062`. **Scope:** final mark/icon/wordmark/type/palette/track accents/symbols/illustration/motion/haptics/public-store applications and reference states.
-- **Non-goals:** Codex approval or code handoff completion. **Obligations:** no duplicate finalist authority; active application references are phone-sized at no more than `460 px`; icons and marks arrive as imported editable SVG, never reconstructed Figma geometry. **Acceptance:** real frames/components have owner-only `APPROVED`, provenance and version. **Evidence in progress:** sole editable A authority candidate Figma `16:533`, DRAFT revision `v4`, with `390×844` first-value, Practice Hub and GCP unavailable-mode references `16:536`/`16:537`/`16:538`; the prior wide candidate `16:323` is explicitly superseded provenance only. Native SVG import is not yet evidenced—the connected API has no SVG-import path and its blank native-paste result was removed—so no mark/icon asset master is claimed. Scoped record: `docs/designs/b05-boundary-signal-final-authority/DESIGN.md`. **Checkpoint:** `X-09C`. **Unlocks:** `DS-01` and all `UX-*D`.
+#### DATA-07 — Complete identity/security lifecycle — `BLOCKED by SEC-01 + DATA-01`
 
-#### DS-01 — Repository token, asset and licensing authority — `BLOCKED`
+Implement email/password without blocking guest first value; verified action handler; reauthentication; email/password change; current/all-device sign-out; Apple/Google explicit linking without email auto-merge; never unlink last method; eight one-time recovery codes; versioned Terms acceptance; secure storage and redaction.
 
-- **Objective:** encode approved system once in platform-neutral repository sources. **Owners:** docs 05/06/11. **Dependencies:** `B-05`, `PLAT-01`. **State:** old tokens/components, no canonical brand package.
-- **Paths / scope:** tokens, typed generated theme, vectors/fonts/illustration/motion/haptic metadata and licenses. **Non-goals:** parallel redesign. **Obligations:** replace/delete superseded tokens/assets/literals, no hidden overrides.
-- **Acceptance:** Light/Dark/System, accents, semantic response/status colors, type/spacing/surface/motion/haptic values generated deterministically; lint blocks unsafe literals. **Evidence:** source/export parity. **Checkpoint:** none. **Unlocks:** `DS-02/03`.
+#### DATA-08 — Account deletion end-to-end — `BLOCKED by DATA-01 + DATA-04 + entitlement authority`
 
-#### DS-02 — Development-only React Native Storybook — `BLOCKED`
+Immediate authenticated deletion and possession-verified public deletion; subscription handling is truthful and separate from cancellation/refund; processor association is detached; stale devices cannot resurrect data; PITR restore re-applies tombstones.
 
-- **Objective:** render production components through deterministic typed fixtures without entering release. **Owners:** docs 05/11/12. **Dependencies:** `DS-01`, `PLAT-01`. **State:** absent.
-- **Paths / scope:** separate dev entry/target, fixture/view-model boundary, local visual regression and coverage manifest. **Non-goals:** repositories/MMKV/account/payment/session lifecycle in stories or hosted paid service.
-- **Obligations:** no parallel story components or mock architecture; NOT_APPLICABLE only with reason. **Acceptance:** static proof Storybook packages/entry/assets absent from release graph/bundle; production components only; deterministic screenshots. **Evidence:** bundle graph and catalog. **Checkpoint:** none. **Unlocks:** `DS-03`, vertical implementations.
+---
 
-#### DS-03 — Canonical primitives, shells and complete states — `BLOCKED`
+### Stage ENT/PKG — subscription and Premium delivery
 
-- **Objective:** replace the old visual component path with approved production primitives and state shells. **Owners:** docs 05/06/11. **Dependencies:** `DS-01`, `DS-02`. **Scope:** controls, response interactions, learning/session shells, loading/empty/offline/error/saving/frozen/finalizing/recovery/destructive states, motion/reduced-motion, haptics and large text.
-- **Non-goals:** screen-specific product logic. **Obligations:** use production components in stories; delete duplicate old primitives/tests after consumers migrate. **Acceptance:** interaction/accessibility/visual regression and Figma comparison pass on iOS/Android. **Evidence:** Storybook baselines. **Checkpoint:** visual parity review. **Unlocks:** all `UX-*I`.
+#### ENT-01 — Backend Premium authority — `BLOCKED by SEC-01 + DATA-01`
 
-### Stage T — product identities, briefs and representative content proofs
+Implement store → RevenueCat → backend projection with one opaque Patternly account identifier and one Premium entitlement. Verify webhook signatures and idempotency; handle out-of-order, duplicate, refund, revoke, expiry, and product mismatch. Email and device identifiers are not entitlement authority.
 
-#### TRACK-01 — Atomic Coding Interview and GCP identity migration — `VERIFIED`
+#### ENT-02 — Mobile verified entitlement cache — `BLOCKED by ENT-01 + account vertical`
 
-- **Objective:** remove old target IDs across app/content without an alias. **Owners:** `LEARNING-PRODUCTS-001`, docs 04/07/16. **Dependencies:** `FND-01`. **State:** `algorithms`/`cloud-certification`, hard-coded two-family branches; eight candidate filenames; stale planning ledger.
-- **Paths / scope:** app registry/runtime/persistence/content lock/tests; content configs/taxonomy/source/publisher/evidence; migrate to `coding_interview`, `coding-interview-dsa-problem-solving`, and `google-cloud-associate-cloud-engineer` while retaining stable item/evidence identities.
-- **Non-goals:** new questions or permanent alias. **Obligations:** move candidate paths/rationale, delete old IDs/branches and 243-file planning ledger plus generator/scripts/tests after consumers move. **Acceptance:** whole-repo/cross-repo old-ID scan, storage migration failure tests, byte/provenance gates and no user-visible family. **Evidence:** migration map. **Checkpoint:** `PO-058` approves exactly the eight existing `two-pointers/*.candidate.json` items as reviewed canonical content; promotion must preserve their payload, item, option, taxonomy and evidence identities and still pass immutable release verification. **Unlocks:** briefs/packages/proofs.
-- **Verification:** content source/evidence/artifacts/releases are pushed through `patternly-core-0017` at content `4822bca`; independent QA preserved all item payloads and stable identities. Application `afe8f8e` pins each track to its immutable verified producer, removes retired active paths and aliases, rejects persisted retired IDs explicitly, and passes the closed contract gate with independent QA.
+The RevenueCat SDK result never directly authorizes packages. Consume backend projection with server timestamps, known-negative precedence, exact seven-day offline grace, restart/clock/refund/revoke tests, and safe completion of an already-started entitled session.
 
-#### TRACK-02 — Ten complete track briefs and registry admission contract — `PARTIAL — package evidence verified; production catalogue gate remains intentionally pending`
+#### PKG-01 — Entitled manifest and signed-URL API — `BLOCKED by ENT-01 + CNT-06 + provider authorization`
 
-- **Objective:** define production-shaped briefs without empty registry cards or filler. **Owners:** `LEARNING-PRODUCTS-001`, docs 01/07/15/16. **Dependencies:** `TRACK-01`. **State:** two configs, no Design Interview or admission/free-node fields; canonical goal semantics already exist in `PRODUCT-SURFACES-GOALS-001`, so brief definition does not wait for their runtime implementation.
-- **Repositories / scope:** canonical content briefs and app internal density/admission tests for GCP ACE, AWS SAA, Azure AZ-104, AI-901, Terraform Associate, KCNA, Coding Interview, Backend System Design, Frontend System Design, Object-Oriented Design; each owns learner/JTBD, internal family, taxonomy, freeNodeId, modes, goals, Progress, package/provenance and admission gate.
-- **Non-goals:** registry placeholders or bulk questions. **Obligations:** generic internal families only; delete public family/category metadata. **Acceptance:** ten real briefs validate; production registry admits only complete free/core-loop tracks; density harness remains non-production. **Evidence:** cross-repo schema tests. **Unlocks:** package schema and proofs.
-- **Verification / remaining boundary:** content `955159c` validates all ten canonical briefs and packages factual evidence only for the two real tracks. App `9fc20e5` pins every brief exactly, rejects duplicate/orphan/missing evidence, and verifies the two immutable Free-node package records against their bytes, profile mode closure and producer provenance. They report `package_evidence_verified_catalogue_gate_pending`; no descriptor-only track receives package evidence or registry admission. `GUEST-01` is now verified by the focused iOS Simulator/Maestro first-value journey; shipping-catalogue admission remains truthfully pending `PKG-03` and downstream product proof, rather than being inferred from a brief or bundle alone.
+Cloud Run verifies identity, App Check, entitlement, track/node/version, minimum app version, object generation, and rate bounds before returning a short-lived signed URL. Firestore stores metadata only. No object enumeration or per-question fetch.
 
-#### PROOF-01 — GCP Certification free/package vertical — `BLOCKED`
+#### PKG-02 — Cloud package publication and verified mobile installation — `BLOCKED by PKG-01`
 
-- **Objective:** prove the reference Certification product on node packages. **Owners:** certification doc 15, package/content requirements. **Dependencies:** `PKG-04`, `TRACK-02`, approved applicable UX cycles. **State:** strong runtime/content, whole-track bundled.
-- **Scope:** complete free node, Premium nodes, goals/progress/review/simulation, provenance and immutable publication. **Non-goals:** other certifications. **Obligations:** keep authored semantics; delete old full-bank runtime path after exact coverage moves. **Acceptance:** complete guest and entitled loops, package/review/version/device tests, editorial/technical approval. **Evidence:** cross-repo release and device pack. **Checkpoint:** sandbox package infrastructure. **Unlocks:** `PROOF-04`.
+Publish immutable compressed node objects, verify generation/checksum, and integrate the atomic store from `RUN-05`. Prove interruption, corruption, wrong account/track/version, stale URL, low storage, offline, rollback, and eviction behavior.
 
-#### PROOF-02 — Coding Interview migrated product proof — `BLOCKED`
+#### ENT-03 — Purchase, restore, conflict, and downgrade — `BLOCKED by ENT-02 + DATA-05 + PKG-02`
 
-- **Objective:** prove strategy-first Coding Interview after atomic ID migration. **Owners:** doc 16/17. **Dependencies:** `PKG-04`, `TRACK-02`, approved UX cycles. **State:** substantial Algorithms semantics/content.
-- **Scope:** free and Premium nodes, required modes, implementation-planning learning objective, goals/progress/review/simulation. **Non-goals:** executable judge claim. **Obligations:** no Algorithms alias/copy; retain stable evidence IDs. **Acceptance:** canonical mode/scoring/reinsert tests, package/version/device proof, copy negative tests. **Evidence:** release/device pack. **Checkpoint:** none beyond package sandbox. **Unlocks:** broader Coding content.
+Verified account required; guest purchase prohibited; Free alternative explicit. Implement monthly/annual purchase, restore, cross-platform account conflict, cancellation/pending/error, manage subscription, downgrade, and historical-learning continuity. No fake success when store, RevenueCat, backend, or network disagree.
 
-#### PROOF-03 — Backend System Design family proof — `BLOCKED`
+---
 
-- **Objective:** create the first Design Interview runtime/content vertical. **Owners:** `LEARNING-PRODUCTS-001`, docs 07/17. **Dependencies:** `TRACK-02`, `PKG-04`, shared runner UX approval. **State:** family/runtime/content absent.
-- **Scope:** canonical mental-model taxonomy, complete free node, authored Premium packages, family runtime adapter and complete loop. **Non-goals:** shallow placeholder bank. **Obligations:** extend shared kernel rather than fork lifecycle/persistence. **Acceptance:** content quality/provenance, package/review/simulation/device proof and no backend-only assumptions in generic family contract. **Evidence:** representative release. **Unlocks:** `PROOF-05` and Frontend Design.
+### Stage DES — implementation of the prepared Figma authority
 
-#### PROOF-04 — AWS SAA second Certification proof — `BLOCKED`
+The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work. Their evidence may remain historical. The current lane begins from the Product Owner-designated final Figma references.
 
-- **Objective:** prove Certification runtime is provider-neutral before copying. **Owners:** doc 15, AWS brief. **Dependencies:** `PROOF-01`. **State:** only GCP production content.
-- **Scope:** reviewed free/Premium vertical using unchanged shared Certification runtime. **Non-goals:** runtime fork or provider affiliation implication. **Obligations:** delete provider-hardcoded branches exposed by proof. **Acceptance:** no new lifecycle/persistence owner; content/provenance/package/device gates pass. **Evidence:** immutable release pack. **Checkpoint:** source license/freshness verification. **Unlocks:** remaining certifications.
+#### DES-01 — Final Figma authority inventory — `READY`
 
-#### PROOF-05 — Object-Oriented Design second Design proof — `BLOCKED`
+Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-- **Objective:** prove Design Interview is not backend-system-design-hardcoded. **Owners:** OOD brief, docs 07/17. **Dependencies:** `PROOF-03`. **Scope:** complete free/Premium OOD loop through shared Design runtime. **Non-goals:** duplicate family.
-- **Obligations:** remove backend-specific generic branches; no placeholder topics. **Acceptance:** independent taxonomy/feedback/simulation, package/provenance/device gates and unchanged shared kernel ownership. **Evidence:** immutable release pack. **Unlocks:** remaining Design track.
+#### DES-02 — Repository tokens, assets, and licensing — `BLOCKED by DES-01`
 
-The remaining population work is deliberately split by track. Each task below owns exactly one complete free vertical, full core loop, reviewed immutable package set and production registry admission. All share owners docs 07/15/17 and their canonical brief; non-goals are fixed filler counts, batch placeholders, empty cards and family-runtime forks. Each must delete any provider/track hard-coding it exposes, pass coverage/editorial/technical/provenance/cross-repo/device gates, verify source freshness/licensing where applicable, and emit one separately reviewable release commit.
+Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
-#### TRACK-03 — Azure Administrator AZ-104 production track — `BLOCKED`
+#### DES-03 — Development-only Storybook and canonical primitives — `BLOCKED by DES-02`
 
-- **Objective/state/scope:** add the absent Azure Certification product through the proven Certification runtime. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** Azure brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract above plus no Google/AWS-specific branch. **Checkpoint:** Microsoft source/licensing freshness. **Unlocks:** catalogue release gate contribution.
+Use production React Native components with typed deterministic fixtures. Storybook has a separate dev entry and is statically absent from release bundles. Implement controls, response interactions, shells, loading/empty/offline/error/saving/frozen/finalizing/recovery/destructive states, reduced motion, haptics, and large text.
 
-#### TRACK-04 — Azure AI Fundamentals AI-901 production track — `BLOCKED`
+#### DES-04 — Guest bootstrap and first value — `BLOCKED by DES-03 + guest/package owners`
 
-- **Objective/state/scope:** add the absent AI-901 Certification product through the same family owner. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** AI-901 brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus AI terminology/provenance review without vendor affiliation claim. **Checkpoint:** Microsoft source/licensing freshness. **Unlocks:** catalogue release gate contribution.
+Implement the approved first-launch, invalid/unsupported identity, track selection, Free-node entry, goal, offline, recovery, and first completion states without an account wall or family labels.
 
-#### TRACK-05 — Terraform Associate production track — `BLOCKED`
+#### DES-05 — Today and Practice — `BLOCKED by DES-03 + goals/package/entitlement owners`
 
-- **Objective/state/scope:** add the absent Terraform Certification product without a new lifecycle. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** Terraform brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus provider-neutral Certification proof. **Checkpoint:** HashiCorp source/licensing freshness. **Unlocks:** catalogue release gate contribution.
+Replace Home with Today. Implement recommendation priority, local resume, due review, manual-choice precedence, roadmap, setup, downloads, package states, Free/Premium locks, downgrade, and explicit unavailable states.
 
-#### TRACK-06 — Kubernetes and Cloud Native Associate production track — `BLOCKED`
+#### DES-06 — Ordinary runner and feedback — `BLOCKED by DES-03 + RUN family proofs`
 
-- **Objective/state/scope:** add the absent KCNA Certification product through canonical family semantics. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** KCNA brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus CNCF terminology/provenance review. **Checkpoint:** CNCF source/licensing freshness. **Unlocks:** catalogue release gate contribution.
+Implement all approved interaction types over one lifecycle. Preserve color-only correctness, timer/counter placement, authored Reason visible and Details collapsed, immediate/deferred feedback, saving/error/frozen/recovery, accessibility, motion, and haptics.
 
-#### TRACK-07 — Frontend System Design production track — `BLOCKED`
+#### DES-07 — Simulation, finalization, summary, and review — `BLOCKED by DES-03 + RUN-06`
 
-- **Objective/state/scope:** add the absent Frontend System Design product through the proven non-backend-hardcoded Design Interview runtime. **Dependencies:** `PROOF-02`, `PROOF-04`, `PROOF-05`, `PKG-04`, applicable approved UX cycles. **Paths:** frontend-design brief/source/config/packages/app admission/tests. **Acceptance/evidence:** common per-track contract plus distinct frontend architecture objectives and no backend fallback. **Checkpoint:** source/licensing review. **Unlocks:** complete ten-track catalogue release gate.
+Preserve deterministic timer/background/restart/finalization semantics and exact package resolution. Remove account-wide resume copy and old shells only after coverage moves.
 
-### Stage UX — vertical design-to-device cycles
+#### DES-08 — Progress and nested Activity — `BLOCKED by DES-03 + DATA-06`
 
-Each `D` task creates a complete state inventory and actual Figma references, ending at owner `APPROVED`; it does not implement significant UI. Each matching `I` task requires `DS-03`, the `D` approval and listed runtime, implements production components, Storybook canonical states, interaction/accessibility tests, screenshot comparison, iOS/Android phone verification, and deletes the replaced route/components/tests. This is the mandatory cycle, not a generic polish pass.
+Implement track-specific Progress and paginated nested Activity, including exact result/history, package unavailable, multi-track, empty/offline/loading/error states. No fifth tab.
 
-The following fields apply to every `UX-*D` and `UX-*I` card in addition to its stated deltas: **confirmed state** is the audited old production route/components plus absent target states in the impact map; **paths** are that vertical's existing feature/navigation tests and approved Figma/production/Storybook owners; **non-goals** exclude unrelated runtime, provider and content work; **canonical requirements** are the named narrative owners plus `PRODUCT-SURFACES-GOALS-001`, `BRAND-DESIGN-AUTHORITY-001` and the vertical-specific requirement; **obligations** include keep compatible domain behavior, move one owner, rewrite approved presentation and delete every replaced route/component/test/flow with reference proof; **automated verification** includes typecheck, focused interaction/state/accessibility tests, Storybook release exclusion and applicable architecture/privacy/content gates; **manual evidence** includes Figma comparison, 200% text, screen reader, Light/Dark/System, reduced motion/haptics and both phone platforms; **security/privacy/content** must be explicitly assessed in the completion report even when no impact exists; **output** is a pushed vertical evidence packet or existing report update, never another plan; **unlocks** are the named successor and applicable release gates.
+#### DES-09 — Settings, consent, reminders, and storage — `BLOCKED by DES-03 + observability/goals`
 
-#### UX-01D — First value, track, goal and guest design — `BLOCKED`
-- **Objective/state:** first launch, loading/error, track choice without family, complete free node, goal, guest continuity, offline. **Owners:** docs 01/03/05. **Dependencies:** `B-05`, `GUEST-01`, `TRACK-02`, `GOAL-01`. **Paths:** entry/selection/onboarding Figma only. **Non-goals:** code/account gate. **Acceptance/evidence:** all states and 200% text/reduced motion approved by owner. **Checkpoint:** owner visual approval. **Unlocks:** `UX-01I`.
+Implement theme, goals/reminders, analytics consent, package storage, support/legal, account/no-account and destructive states. Remove the one-option Language route and stale local-only claims.
 
-#### UX-01I — First value production vertical — `BLOCKED`
-- **Objective/scope:** implement approved entry through first completed free learning value. **Dependencies:** `UX-01D`, `DS-03`, `PKG-03`, `GUEST-01`, `GOAL-01`. **State:** current selection is family-visible and full-bank-gated. **Paths:** bootstrap/selection/goals/runner shell. **Delete:** old category presentation/full-bank entry and stale flows. **Acceptance:** offline/restart/free-only/no-account, Storybook states, accessibility/screenshots/two-phone OS smoke. **Security/content:** no Premium filler. **Output:** vertical evidence. **Unlocks:** acquisition core loop.
+#### DES-10 — Account, security, and adoption — `BLOCKED by DES-03 + DATA-05 + DATA-07`
 
-#### UX-02D — Today design — `BLOCKED`
-- **Objective/state:** recommendation priority, manual-choice precedence, resume local session, due review, goal cadence, offline/error/empty. **Owners:** product surfaces and docs 03/05. **Dependencies:** `B-05`, `GOAL-01`, `SYNC-01`. **Paths:** Today Figma. **Non-goals:** Home compatibility. **Acceptance:** owner approval and job non-overlap with Practice/Progress. **Unlocks:** `UX-02I`.
+Implement registration/verification/sign-in/reset, linking/collision, reauth, recovery codes, Terms, sign-out, adoption preview/choices/progress/recovery. First value stays outside account.
 
-#### UX-02I — Today production vertical — `BLOCKED`
-- **Scope:** replace Home with Today using approved components and canonical recommendation inputs. **Dependencies:** `UX-02D`, `DS-03`, `SYNC-02`. **State:** Home route exists. **Delete:** HOME route/name/copy/tests and duplicate projections. **Acceptance:** manual choice wins, device resume stays local, guest/offline/account states, Storybook/accessibility/screenshots/iOS+Android. **Implications:** no remote draft. **Output:** route migration proof. **Unlocks:** canonical shell.
+#### DES-11 — Premium and purchase — `BLOCKED by DES-03 + ENT-03`
 
-#### UX-03D — Practice, roadmap, downloads and entitlement design — `BLOCKED`
-- **State inventory:** discovery, track roadmap, setup, free/Premium, downloading/validating/ready/stale/incompatible/no-space/offline, locked/downgraded. **Owners:** docs 03/05/08. **Dependencies:** `B-05`, `TRACK-02`, `ENT-02`, `PKG-04`. **Non-goals:** paywall details. **Acceptance:** owner approval, families invisible. **Unlocks:** `UX-03I`.
+Implement value-first offer, monthly/annual, verified-account requirement, purchase/restore/conflict, grace, downgrade, manage subscription, and Free alternative. No slots or tiers.
 
-#### UX-03I — Practice/package production vertical — `BLOCKED`
-- **Scope:** approved discovery/setup/download/entitlement states. **Dependencies:** `UX-03D`, `DS-03`, `PKG-04`, `ENT-02`. **Delete:** full-bank assumptions, categoryLabel, silent package fallback and obsolete flows. **Acceptance:** free/Premium filtering, atomic package states, Storybook/accessibility/screenshots/two-platform devices. **Security/content:** backend auth only. **Output:** package UX evidence. **Unlocks:** remote content usability.
+#### DES-12 — Reports, deletion, public/auth/legal/support/store surfaces — `BLOCKED by DES-03 + report/deletion/public owners`
 
-#### UX-04D — Ordinary runner and feedback design — `BLOCKED`
-- **State inventory:** prompt, selection/input, submit, immediate/deferred feedback, saving, frozen, error/recovery, reduced motion/haptics, large text. **Owners:** docs 05/16/17. **Dependencies:** `B-05`, `PKG-04`. **Acceptance:** owner approval across Certification/Coding/Design examples; no executable-code claim. **Unlocks:** `UX-04I`.
+Implement content report queue/confirmation, mobile/public deletion, landing, Privacy, Terms, support, auth action results, affiliation-safe track presentation, store icon/screens/feature graphics, and responsive accessibility.
 
-#### UX-04I — Ordinary runner production vertical — `BLOCKED`
-- **Scope:** migrate production runner/feedback to approved canonical components without forking family lifecycle. **Dependencies:** `UX-04D`, `DS-03`, `PKG-04`. **Delete:** superseded controls/styles/screenshot flows after coverage. **Acceptance:** scoring/journal/recovery unchanged, exact package pin, Storybook state matrix, screen reader/200%/motion/haptics, iOS+Android proof. **Output:** cross-family evidence. **Unlocks:** representative proofs.
+---
 
-#### UX-05D — Simulation, finalization and review design — `BLOCKED`
-- **State inventory:** timed/untimed, save/jump/background, frozen/finalizing/recovery, summary, review, unavailable exact package, next action. **Owners:** docs 05/17. **Dependencies:** `B-05`, `SESSION-01`, `PKG-04`. **Acceptance:** owner approval; device-owned boundary visible but not alarming. **Unlocks:** `UX-05I`.
+### Stage OBS/OPS — privacy, observability, providers, and operations
 
-#### UX-05I — Simulation/review production vertical — `BLOCKED`
-- **Scope:** approved shells/states over existing tested lifecycle. **Dependencies:** `UX-05D`, `DS-03`, `PKG-04`. **Keep:** timer/journal/finalization semantics. **Delete:** old shells, account-resume copy and superseded Maestro flows. **Acceptance:** lifecycle/concurrency/relaunch/package-resolution tests, accessibility/motion/haptics, screenshots and iOS/Android background/force-close evidence. **Output:** simulation gate pack. **Unlocks:** track proofs.
+#### OBS-01 — Consent-gated Analytics and Crashlytics — `BLOCKED by SEC-01`
 
-#### UX-06D — Progress and nested Activity design — `BLOCKED`
-- **State inventory:** track Progress dimensions, recent Activity, filters/pagination, exact history/result, empty/offline/loading/error, multiple packages/tracks. **Owners:** product surfaces, docs 03/04/05. **Dependencies:** `B-05`, `SYNC-01`, `GOAL-01`. **Acceptance:** owner approval; Activity is nested, not fifth tab. **Unlocks:** `UX-06I`.
+Rename the existing local Progress projection that is incorrectly called analytics. Add a closed event registry, fail-closed consent, forbidden-field tests, sanitized crashes, revocation/reinstall behavior, and zero emission before consent. No raw per-event Firestore stream.
 
-#### UX-06I — Progress/Activity production vertical — `BLOCKED`
-- **Scope:** build distinct Progress and nested Activity using compact projections/on-demand history. **Dependencies:** `UX-06D`, `DS-03`, `SYNC-02`. **Delete:** embedded summary pretending to be Activity and duplicated Home analytics owner. **Acceptance:** pagination/cursor/offline/exact-history, Storybook/accessibility/screenshots/two platforms; four tabs only. **Output:** navigation and data proof. **Unlocks:** complete shell.
+#### OBS-02 — Account-unlinked content reports — `BLOCKED by CNT-06 + RUN-06`
 
-#### UX-07D — Settings, consent and reminders design — `BLOCKED`
-- **State inventory:** Light/Dark/System, goals/reminders, analytics consent, support/legal, account/no-account, package storage, destructive states; no Language route. **Owners:** docs 03/05/09. **Dependencies:** `B-05`, `GOAL-01`, `OBS-01`. **Acceptance:** owner approval and truthful external destinations. **Unlocks:** `UX-07I`.
+Queue offline, submit idempotently, attach only bounded content/package identity by default, and require explicit opt-in for account/contact. Add review/correction/new-release provenance and retention/de-identification tests.
 
-#### UX-07I — Settings production vertical — `BLOCKED`
-- **Scope:** approved settings, theme, consent/reminders/support/legal entry. **Dependencies:** `UX-07D`, `DS-03`, `OBS-01`. **Delete:** Language route/screen, launch Polish presentation, Light-only/local-only claims and dead tests. **Acceptance:** four-tab navigation, consent fail-closed, 200%/screen reader/theme/device screenshots. **Output:** dead-route scan. **Unlocks:** release settings.
+#### OPS-01 — Reproducible Cloud Run artifact and least-privilege IAM — `PARTIAL`
 
-#### UX-08D — Account, security and adoption design — `BLOCKED`
-- **State inventory:** register/verify/sign-in/reset, Apple/Google/linking collisions, reauth, recovery codes, Terms, sign-out, adoption preview/choices/progress/recovery. **Owners:** docs 03/05/09. **Dependencies:** `B-05`, `ID-05`, `ADOPT-01`. **Acceptance:** owner approval; first value remains outside account. **Unlocks:** `UX-08I`.
+Preserve the digest-pinned build/deploy definition already present. Complete local container boot, current read-only provider inventory, service-account/IAM diff, health/logging, rollback, Artifact Registry provenance, and deployed sandbox evidence before production mutation.
 
-#### UX-08I — Account/security/adoption production vertical — `BLOCKED`
-- **Scope:** connect approved UI to `ID-*` and `ADOPT-02`. **Dependencies:** `UX-08D`, `DS-03`, `ID-05`, `ADOPT-02`. **Delete:** any account-gated bootstrap, auto-merge/hidden-discard paths, obsolete account-wide-session cases. **Acceptance:** all auth/provider/recovery/adoption/restart/accessibility states, Storybook, screenshots and physical provider flow evidence where configured. **Checkpoint:** `X-05`. **Output:** security/device pack. **Unlocks:** commercial continuity.
+#### OPS-02 — Firebase mobile apps and App Check — `BLOCKED by provider authority`
 
-#### UX-09D — Premium/paywall/purchase/restore design — `BLOCKED`
-- **State inventory:** value-first offer, monthly/annual, verified-account requirement, purchasing/pending/cancel/error, restore conflict, cross-platform, offline grace, downgrade, Manage subscription, Free alternative. **Owners:** docs 01/03/05/09. **Dependencies:** `B-05`, `ENT-01`. **Rationale:** the stable backend state contract is sufficient for design before coordinator implementation. **Acceptance:** owner approval; no slots/tiers. **Unlocks:** `UX-09I` and later coordinator presentation integration.
+Register/configure iOS and Android apps per environment; email/password/action settings; App Check production providers; debug tokens only in sandbox; deny-all direct Firestore remains. Record identifiers without secrets.
 
-#### UX-09I — Premium production vertical — `BLOCKED`
-- **Scope:** approved commercial UI over backend-authoritative coordinator. **Dependencies:** `UX-09D`, `DS-03`, `ENT-03`, `PKG-04`. **Delete:** local entitlement/fake success paths. **Acceptance:** guest prohibition, restore/conflict/offline/downgrade/started-session, Storybook/accessibility/screenshots/device sandbox flows. **Checkpoint:** `X-06`, production `X-10`. **Output:** entitlement gate pack. **Unlocks:** paid release.
+#### OPS-03 — RevenueCat and package storage — `BLOCKED by provider/store authority`
 
-#### UX-10D — Sync/offline/package/report states design — `BLOCKED`
-- **State inventory:** queued/syncing/conflict/retry/revoked/deleted, package download validation/recovery, report compose/queued/sent/error with explicit optional contact/account. **Owners:** docs 03/05/08/09. **Dependencies:** `B-05`, `SYNC-01`, `PKG-01`. **Rationale:** canonical report states are sufficient for design before report implementation. **Acceptance:** owner approval; no background-sync promise or automatic sensitive attachments. **Unlocks:** `UX-10I` and later report presentation integration.
+Create sandbox then production apps/products/offering/webhook, one Premium entitlement, immutable package bucket/object policy, metadata deployment, and least-privilege signing. Verify no client can enumerate or authorize objects directly.
 
-#### UX-10I — Sync/offline/package/report production states — `BLOCKED`
-- **Scope:** implement approved cross-cutting states in their owning verticals. **Dependencies:** `UX-10D`, `DS-03`, runtime dependencies. **Delete:** silent retries/fallbacks and duplicate network state. **Acceptance:** fault/restart/consent/redaction, Storybook/accessibility/screenshots/iOS+Android offline transitions. **Output:** failure-state evidence. **Unlocks:** operational release gate.
+#### OPS-04 — Domain, public origin, sender, and links — `BLOCKED by owner authority`
 
-#### UX-11D — Account deletion design — `BLOCKED`
-- **State inventory:** entitlement display, Manage subscription, immediate deletion, supported scheduled case, public possession flow, progress/failure/deleted-device state and truthful refund/cancellation copy. **Owners:** docs 03/05/09. **Dependencies:** `B-05`, `DEL-02`, `ENT-01`. **Rationale:** stable deletion/entitlement contracts are sufficient for design before lifecycle coordinator implementation. **Acceptance:** owner approval. **Unlocks:** `UX-11I` and later lifecycle presentation integration.
+Promote one professional domain and sender; deploy public/auth/legal/support/deletion surfaces; verify TLS, DNS, AASA, assetlinks, non-enumeration, and remove default Firebase production origins.
 
-#### UX-11I — Account deletion production vertical — `BLOCKED`
-- **Scope:** approved mobile deletion over `DEL-03`; public presentation completed with `UX-12I`. **Dependencies:** `UX-11D`, `DS-03`, `DEL-03`. **Delete:** local-only Your Data copy and any cancellation promise. **Acceptance:** crash/offline/multi-device/active-entitlement/accessibility/device evidence and no resurrection. **Checkpoint:** RevenueCat sandbox. **Output:** privacy deletion pack. **Unlocks:** privacy release gate.
+#### OPS-05 — PITR and restore drill — `BLOCKED by DATA-01 + provider authority`
 
-#### UX-12D — Public/auth/legal/support/store design — `BLOCKED`
-- **State inventory:** landing, Privacy, Terms, support, deletion, auth action results, affiliation-safe track/brand presentation, store icon/screens/feature graphics. **Owners:** docs 05/06/09. **Dependencies:** `B-05`, `DEL-02`, public-origin contract. **Acceptance:** owner approval in Light/Dark/responsive/accessibility; truthful dev destination until promotion. **Unlocks:** `UX-12I`.
+Enable the exact seven-day target if provider capability supports it; run a sanitized sandbox restore; prove tombstones are re-applied and deleted accounts do not resurrect. Backup is disaster recovery, not user account recovery.
 
-#### UX-12I — Canonical public artifact and transactional surfaces — `BLOCKED`
-- **Scope:** implement one maintainable web artifact and approved assets; action/legal/support/deletion routes, AASA/assetlinks inputs. **Dependencies:** `UX-12D`, `DEL-02`, `ID-02`, `DS-01`. **Delete:** duplicate/undeployed placeholder web paths and stale links. **Acceptance:** link/accessibility/privacy/security/header/non-enumeration tests and visual comparison. **Checkpoint:** `X-03`, store assets later. **Output:** deployable artifact. **Unlocks:** `REL-01`.
+#### OPS-06 — Release configuration — `BLOCKED by DES-02 + final provider/store identifiers`
 
-### Stage R — release closure
+Add canonical `eas.json`, build/update channels, app/build version policy, icons/splash/adaptive icon, privacy manifests/declarations, notification/link config, secret/environment boundaries, reproducible prebuild, and release bundle exclusion checks. Current `0.1.0` and minimal `app.json` are not a release packet.
 
-#### REL-01 — Public domain, links and transactional promotion — `BLOCKED`
+---
 
-- **Objective:** promote verified public/auth/legal/support/deletion surfaces to professional origins. **Owners:** environment/public links, docs 09. **Dependencies:** `UX-12I`, `OPS-01`. **Scope:** authorized DNS/domain/sender/hosting/app-link association mutation and verification. **Non-goals:** store submission.
-- **Obligations:** no default Firebase domain in production; delete stale sandbox links after cutover. **Acceptance:** TLS/DNS/sender/auth actions/non-enumerating deletion/AASA/assetlinks verified from production-like clients. **Evidence:** external change record. **Checkpoint:** `X-03`. **Unlocks:** store metadata and production auth.
+### Stage QA — launch closure
 
-#### REL-02A — Accessibility, motion and haptics closure — `BLOCKED`
+#### QA-01 — Eight-track automated contract matrix — `BLOCKED by CAT-01`
 
-- **Objective:** close the interaction-accessibility matrix after every production vertical exists. **Owners:** docs 05/12/13 and `PLATFORM-RELEASE-001`. **Dependencies:** all `UX-*I`, representative proofs, `PLAT-01`. **Scope:** screen reader/focus/order/labels/touch targets, 200% text, reduced motion and semantic haptics on the target phone matrix.
-- **Non-goals:** performance tuning, visual taste review or generic polish. **Obligations:** fix canonical primitives/verticals directly and delete obsolete accessibility exceptions/tests. **Acceptance:** automated accessibility/large-text/motion tests plus real iOS/Android phone evidence, with no Critical/High accessibility defect. **Evidence:** bounded accessibility matrix. **Checkpoint:** physical phones. **Unlocks:** `REL-03` contribution.
+For each track prove registration, family, Free node, supported modes, 10/20/40 where applicable, non-repeating pools, authored feedback, scoring/review, exact package pin, progress, simulation where applicable, no foreign content, and no provider/track hardcoding. Update application CI so the release round-trip covers all eight immutable releases.
 
-#### REL-02B — Layout stability and performance-budget closure — `BLOCKED`
+#### QA-02 — Security/privacy threat and abuse closure — `BLOCKED by completed data/commercial/public owners`
 
-- **Objective:** meet measured startup, interaction, memory, package and layout-stability budgets. **Owners:** docs 11/12/13 and `PLATFORM-RELEASE-001`. **Dependencies:** all `UX-*I`, `PKG-04`, `PLAT-01`. **Scope:** cold/warm launch, Today/Practice/runner/navigation, downloads/activation, loading/flicker/layout shift and representative long sessions on both phone platforms.
-- **Non-goals:** subjective brand approval or unrelated refactor. **Obligations:** fix the canonical bottleneck; delete profiling hooks/artifacts from release. **Acceptance:** checked-in budgets and repeatable measurement protocol pass on representative low/target devices, with explicit variance and no hidden fallback. **Evidence:** bounded performance report. **Checkpoint:** physical phones. **Unlocks:** `REL-03` contribution.
+Verify auth-before-body, App Check, token revocation, linking takeover resistance, recovery code secrecy, webhook replay, signed URL abuse, package substitution, rate limits, closed schemas, consent, report minimization, deletion, tombstone restore, secrets/log redaction, and environment isolation.
 
-#### REL-02C — Whole-product usability and consistency audit — `BLOCKED`
+#### QA-03 — Persistence/offline/concurrency closure — `BLOCKED by DATA/RUN/ENT completion`
 
-- **Objective:** verify first-use comprehension and cross-surface brand/content/provider truth after implementation. **Owners:** docs 01/05/06/07/12. **Dependencies:** all `UX-*I`, all representative proofs, `REL-02A`, `REL-02B`. **Scope:** a small practical first-use beta review, cross-surface copy/state consistency, track/family visibility, affiliation claims, approved asset use and unresolved visual drift.
-- **Non-goals:** vague polish or changing canonical behavior. **Obligations:** log concrete defects against owning vertical and delete superseded screenshots/flows after correction. **Acceptance:** every finding has evidence/severity/owner; all Critical/High fixed or an explicit launch decision exists; owner confirms implemented visual consistency. **Evidence:** bounded closure audit, not a second plan. **Checkpoint:** Product Owner visual review and practical test participants. **Unlocks:** `REL-03`.
+Failure-inject journal, outbox, adoption, package activation, entitlement cache, finalization, deletion, disk-full, process kill, restart, two devices, and version eviction. No silent loss or fake convergence.
 
-#### REL-03 — Figma handoff and CODE_CANONICAL — `BLOCKED`
+#### QA-04 — Accessibility/motion/haptics closure — `BLOCKED by all production verticals`
 
-- **Objective:** move operational visual authority entirely into the repository. **Owners:** `BRAND-DESIGN-AUTHORITY-001`, docs 05/06. **Dependencies:** `REL-02A`, `REL-02B`, `REL-02C`, `DS-01..03`, all approved/implemented verticals. **Scope:** final vectors/exports/tokens/components/states/baselines/licenses/source records, local Figma export where available, deprecation history.
-- **Non-goals:** continuing paid-Figma dependency. **Obligations:** close/delete superseded active references. **Acceptance:** visual parity verified; Storybook complete and release-excluded; owner approves final handoff; registry reaches `CODE_CANONICAL`. **Checkpoint:** `X-09D`. **Evidence:** handoff packet. **Unlocks:** final store assets and freeze.
+Automated and real-device screen-reader order/labels, focus, targets, contrast, 200% text, reduced motion, semantic haptics and persistence-aware success. Zero open Critical/High accessibility defect.
 
-#### REL-04 — Store records, products, declarations and asset closure — `BLOCKED`
+#### QA-05 — Visual parity and whole-product consistency — `BLOCKED by all DES tasks`
 
-- **Objective:** create truthful production store/commercial records before signing candidates. **Owners:** platform/commercial/brand/privacy docs. **Dependencies:** `REL-01`, `REL-02A`, `REL-02B`, `REL-02C`, `REL-03`, `OPS-02`, all ten track admissions. **Scope:** App Store/Play app records, privacy/data safety, metadata/assets and RevenueCat production offering/monthly/annual products.
-- **Non-goals:** signing, build upload or public release. **Obligations:** no slots/tiers, stale screenshots, placeholder URLs or affiliation claims. **Acceptance:** identifiers/prices/products map to one Premium entitlement; declarations match closed data inventory; approved assets pass platform checks. **Evidence:** dated console export/review packet. **Checkpoint:** `X-10`. **Unlocks:** `REL-05`, `REL-06`.
+Compare approved Figma references to iOS and Android captures for every risk-based state; verify public/store/product identity consistency, no family leakage, no stale UI path, no unapproved literal/asset, and no Codex self-approval.
 
-#### REL-05 — iOS signed candidate and TestFlight evidence — `BLOCKED`
+#### QA-06 — Performance and layout budgets — `BLOCKED by complete product`
 
-- **Objective:** produce one clean signed iPhone-only candidate. **Owners:** `PLATFORM-RELEASE-001`, docs 12. **Dependencies:** `REL-04`. **Scope:** distribution identity, signing, archive/export, TestFlight upload and signed iPhone smoke preparation. **Non-goals:** Android or release decision.
-- **Obligations:** Storybook/dev secrets/iPad declarations/obsolete assets and permissions absent. **Acceptance:** iOS 16.4+ matrix, universal links, purchases, privacy manifest and reproducible artifact hash verified; TestFlight install boots. **Evidence:** archive/build/store logs. **Checkpoint:** `X-11`. **Unlocks:** `REL-07`.
+Check cold/warm start, Today/Practice/navigation, ordinary and long sessions, download/activation, memory, package size, flicker, loading and layout shift on representative lower/target devices. Budgets and variance must be checked in, repeatable, and met.
 
-#### REL-06 — Android signed candidate and Play internal evidence — `BLOCKED`
+#### QA-07 — Human content sign-off reconciliation — `BLOCKED by H-CONTENT + final immutable releases`
 
-- **Objective:** produce one clean signed Android candidate. **Owners:** `PLATFORM-RELEASE-001`, docs 12. **Dependencies:** `REL-04`. **Scope:** upload key/Play App Signing, AAB, internal track and signed Android smoke preparation. **Non-goals:** iOS or release decision.
-- **Obligations:** Storybook/dev secrets/obsolete permissions/assets absent. **Acceptance:** API 28 minimum/36 target, app links, billing/data safety and reproducible artifact hash verified; internal-track install boots. **Evidence:** bundle/build/store logs. **Checkpoint:** `X-11`. **Unlocks:** `REL-07`.
+Verify every shipping byte derives from the exact human-approved source commit and no post-approval semantic edit bypassed review. Any semantic change invalidates the affected sign-off.
 
-#### REL-07 — Signed physical-device smoke and GO/NO-GO — `BLOCKED`
+#### QA-08 — Practical first-use beta review — `BLOCKED by signed candidates`
 
-- **Objective:** make the final release decision from production-shaped artifacts and complete evidence. **Owners:** docs 12/13 and this plan for status. **Dependencies:** `REL-05`, `REL-06`; every applicable gate verified. **Scope:** signed iPhone and Android phone journeys: guest/free, account/adoption, sync/device sessions, purchase/restore/Premium packages, offline grace, reports, deletion, links, analytics consent and all ten admitted tracks.
-- **Non-goals:** waiver by documentation or compile success. **Obligations:** no Critical/High risk without explicit Product Owner launch decision. **Acceptance:** clean signed smoke, provider/store/public checks, restore drill evidence, complete handoff and release checklist yield explicit GO or NO-GO. **Checkpoint:** `X-12` release decision/submission. **Output:** final release report. **Unlocks:** authorized submission/release only.
+Run a bounded first-use test across guest, first value, track switching, account boundary, Premium offer, and recovery. Findings receive severity/owner/evidence; all Critical/High are fixed or, for High only, explicitly accepted by the Product Owner.
 
-## 6. External and owner checkpoints
+---
 
-These are gates, not implementation tasks. Local work listed in “May continue” remains unblocked.
+### Stage REL — signed release and GO/NO-GO
 
-| ID | Checkpoint | Authority/evidence required | May continue before it |
-| --- | --- | --- | --- |
-| X-01 | Verify current Firebase/GCP/Cloud Run/IAM/resource state read-only | authorized credentials and dated export | all local code/design/content |
-| X-02 | Deploy/mutate Cloud Run, IAM, Artifact Registry or service accounts | explicit owner authorization and reviewed diff/rollback | local server/container/tests |
-| X-03 | Domain, DNS, sender, hosting, links and public promotion | owner controls/authorization; verified professional values | local web/action/link artifacts |
-| X-04 | Register/configure Firebase mobile apps and email/password/action settings | provider-console access; no product decision reopening | local adapters/emulators/tests |
-| X-05 | Apple/Google provider console setup | owner credentials, platform identifiers and redirect configuration | email/password/recovery/backend work |
-| X-06 | RevenueCat sandbox/apps/products/webhooks | owner/store credentials; opaque account identity mapping | entitlement interfaces/server tests |
-| X-07 | Cloud Storage bucket/object policy and Firestore manifest deployment | reviewed least-privilege plan and owner authorization | local package bytes/server adapters |
-| X-08 | Enable seven-day PITR and run sanitized restore drill | fresh explicit mutation/drill authorization | runbook/tombstone tests |
-| X-09A/B/C | owner reviews 3→2, 2→1 and final actual visual system | Product Owner decision on real Figma work | all nonvisual lanes |
-| X-09D | final Figma handoff approval | implemented parity and complete repo assets/evidence | release prep except CODE_CANONICAL claim |
-| X-10 | App Store/Play/RevenueCat production records and subscriptions | owner/store authorization and final identifiers/prices | sandbox/local commercial work |
-| X-11 | signing identities, TestFlight and Play internal distribution | protected secrets and owner authorization | unsigned/device/debug work |
-| X-12 | store submission and release GO | complete gate packet and Product Owner decision | nothing is auto-submitted |
+#### REL-01 — Store/commercial records and declarations — `BLOCKED`
 
-## 7. Gate framework
+Create App Store/Play records, one monthly and one annual Premium product, RevenueCat production offering, privacy/data-safety declarations, metadata, screenshots, support/privacy/terms/deletion URLs, and affiliation-safe descriptions for exactly eight tracks.
 
-Extend existing checks; do not create parallel gate owners.
+#### REL-02 — Signed iOS candidate — `BLOCKED by REL-01`
 
-| Gate | Required proof |
-| --- | --- |
-| Contract/documentation | canonical requirement/owner linked; contract gate; docs links; no target behavior invented; plan remains sole sequencing source |
-| Architecture/dead paths | one owner per responsibility; dependency direction; imports/routes/scripts/tests/docs scan; replacement deletes aliases/fallbacks/obsolete paths |
-| Persistence/sync | journal-first, device session, idempotent operations, cursors/revisions, restart/failure/concurrency and no silent loss |
-| Security/privacy/consent | identity/recovery/revocation, approved clients, closed schemas, redaction, consent, deletion/subscription truth and tombstone restore safety |
-| Entitlement/package | store/RevenueCat/backend authority, seven-day grace, signed URL, immutable checksum/schema/semantic validation, activation/version pinning and Free/Premium filtering |
-| Learning/content | family semantics, authored feedback/provenance, complete free vertical, no placeholders/filler, representative proofs, reproducible cross-repo release |
-| Brand/Figma | actual owner-approved work at required checkpoint; no Codex self-approval; one Patternly brand and complete visual states |
-| Storybook/code | production components, typed fixtures, risk-based states, visual/accessibility proof, Storybook absent from release, repository owns tokens/assets |
-| Platform/device/performance | exact matrix, themes, 200% text/screen reader, reduced motion/haptics, measured budgets, real iOS/Android phones and signed evidence where required |
-| Public/store/release | legal/support/deletion/auth surfaces, domain/sender/links, declarations/assets/products/signing/distribution, signed smoke and explicit GO/NO-GO |
+Reproducible iPhone-only archive, signing, TestFlight upload, universal links, purchases, privacy manifest, exact artifact hash, and install/boot on supported physical iPhone.
 
-Product release-ready exit requires every applicable gate above, all ten admitted tracks with complete free/core loops, verified production architecture and operations, no unresolved Critical/High risk without explicit launch decision, final `CODE_CANONICAL` handoff, and signed physical-device evidence on both platforms.
+#### REL-03 — Signed Android candidate — `BLOCKED by REL-01`
 
-## 8. Current and next executable task
+Reproducible AAB, Play App Signing/internal track, API 28/36 contract, app links, billing/data-safety, exact artifact hash, and install/boot on supported physical Android phone.
 
-`PLAT-01` is `VERIFIED` at application `cc4a8dd` and its two Product Owner decisions are durable in `PO-056`/`PO-057`: unsigned device smoke is `PASS — PRODUCT_OWNER_ACCEPTED_ENVIRONMENT_EXCEPTION`, and the exact RN migration is `PASS — PRODUCT_OWNER_APPROVED_DESIGN_NEUTRAL_PLATFORM_MIGRATION`. `ARCH-01` is `VERIFIED` at application `59cefd9`. `GUEST-01` is `VERIFIED`: the pushed installation-identity checkpoint `3690df756daf34e1fa0b26f676c9785fa2180997`, local-history identity proof `2beb979`, and PKG-04A complete Free-node activation are now complemented by a passing iPhone 16 Pro Simulator/iOS 18.6 Maestro Learn Approach first-value/relaunch journey. Its durable summary is `docs/reports/guest-01-ios-simulator-maestro-2026-08-10.md`; its ignored capture manifest supplies exact screenshot hashes. This does not claim or waive signed physical-device `REL-07` evidence.
+#### REL-04 — Final signed physical-device matrix — `BLOCKED by REL-02 + REL-03`
 
-`TRACK-01` is `VERIFIED` at application `afe8f8e`. `PO-059` is durable at application `9fc20e5`: content `955159c` supplies the two closed Free-node package records and app byte/provenance verification is pushed at `9fc20e5`. `PKG-01` and `GUEST-01` are `VERIFIED`; `TRACK-02` remains package-evidence verified while shipping-catalogue admission awaits `PKG-03` and downstream product proof. B-01 is `VERIFIED` at application `b6b969b`: the tracked audit confirms the asset, Storybook and release-boundary inventory, and `X-09` is satisfied by authenticated Figma board `10:2` plus its Product Owner approval read-back on 2026-08-10. B-02 is `VERIFIED` at application `051778d` by its tracked evidence-only collision audit. B-03 is `VERIFIED` at application `12f340b`: `PO-061` records X-09A and Figma board `10:92` marks A (`10:93`) and C (`10:95`) as the two editable B-04 finalists, while B (`10:94`) is retained solely as rejected decision provenance. B-04 is `VERIFIED` after `PO-062`: A — Boundary Signal is selected and its active mobile composition is `15:307`; B and C remain only decision provenance. B-05 is now the active brand lane; neither selection is final `APPROVED` authority. ID-01 is blocked on an unresolved security authority and leaves no partial server endpoint. OPS-01 is partially evidenced at application `4b595f6`; its image/runtime/provider proof awaits the existing external gates. `PKG-04A` is `VERIFIED` at application `02c47aa`: it completes the exact-package lifecycle cutover under PO-059 and the PO-060 Figma-backed interaction reference, with no whole-track runtime fallback. FND-01R restores a green content candidate baseline but changes no application runtime authority: the app continues to consume the historical Coding and GCP artifacts pinned in its unchanged lock, while the current GCP source is separately reported as an unapproved, not-admitted candidate. No sync, lock rewrite, registry change, package addition, or runtime admission is authorized until `PROOF-01` reconciles and proves the current GCP reference Certification vertical. No task is blocked by the accepted PLAT-01 device-smoke exception.
+On both signed candidates verify guest/free for all eight tracks, account/adoption, two-device sync, purchase/restore, Premium packages, seven-day grace, downgrade, reports, analytics consent, links/actions, deletion, notifications, offline/restart, exact history, accessibility, and no dev/Storybook path.
 
-## 9. Old-to-new mapping and plan maintenance
+#### REL-05 — GO/NO-GO — `BLOCKED by every gate`
 
-| Historical work/status | Current treatment |
-| --- | --- |
-| old Task 2/RC visual shell and device packets | evidence only; reassess in `B-01`, matching `UX-*`, `REL-02A/B/C` and `REL-04`; never current approval |
-| old Task 3 account/provider foundation | compatible security/HTTP/Firestore parts retained; session/sync semantics migrate in `SESSION-01`, `SYNC-*`, `ADOPT-*`, `ID-*` |
-| old Task 5 learning runtimes | kernel and Certification retained; Algorithms moves atomically in `TRACK-01`; final device coverage belongs to `UX-04/05` and representative proofs |
-| release-candidate closure/readiness audits | historical evidence only; current release exit is `REL-07` |
-| content Algorithms planning ledger | durable rationale moves and obsolete generated ledger is deleted in `TRACK-01`; this file alone sequences work |
-| former launch repair diaries and task numbers | Git history/report links only; none are active IDs |
+The Product Owner receives exact application/content SHAs, CI runs, immutable release IDs, build hashes, provider/store evidence, human content approvals, Figma/code parity, risk register, rollback, and signed device results. `GO` requires every exit criterion below. No agent submits or releases without explicit authorization.
 
-Maintenance rules:
+---
 
-1. Start a task by changing exactly that task from `READY` to `ACTIVE` and recording exact repository SHAs; do not activate a dependency-blocked task.
-2. A completion update cites pushed commit(s), applicable gate results, manual/external evidence, deletion scan and honest blockers. Raw logs and repair diaries stay out of this file.
-3. If acceptance is incomplete, use `PARTIAL` or `BLOCKED`; never infer completion from a report, Figma frame, Storybook render, compile result or partial test.
-4. After `VERIFIED`, update dependencies and name exactly one next `READY` task. Independent lanes may be selected when their dependencies are met, but only one current task is active.
-5. A materially changed task receives a new ID; historical IDs are not repurposed. Superseded details remain in Git history, not an archive folder or second ledger.
-6. Product changes go through the canonical contract/PO process, not this plan. External mutations require their checkpoint even if older reports contain authorization language.
+## 10. Universal Definition of Done for every implementation slice
+
+Every worker report and independent QA report must include:
+
+1. exact starting remote SHAs and proof the worktree matched them;
+2. facts found before editing and assumptions explicitly labelled;
+3. bounded objective, paths changed, and non-goals;
+4. implementation summary and deletion/migration map;
+5. automated commands and exact results;
+6. security, privacy, content, persistence, accessibility, and release impact, including `none` with reasoning;
+7. dead-reference scan covering imports, routes, scripts, tests, CI, docs, generated artifacts, feature flags, and aliases;
+8. manual/device/visual/provider evidence or `NOT_APPLICABLE` with a valid reason;
+9. independent QA findings and disposition;
+10. pushed commit SHA and exact-SHA CI link;
+11. updated status in this plan and the next unlocked task;
+12. clean canonical worktree and remote ahead/behind `0/0` after push.
+
+A task may not be marked `VERIFIED` from local tests alone. A documentation-only task still requires contract-gate and CI evidence when it changes canonical behavior, scope, or status.
+
+---
+
+## 11. Final launch-readiness exit criteria
+
+Patternly is launch-ready only when all conditions are simultaneously true on exact canonical SHAs:
+
+- application `main` and content `master` are clean, pushed, mutually pinned, and green;
+- release scope is exactly the eight confirmed tracks; no Terraform/KCNA production exposure;
+- all eight have complete canonical source, technical/provenance validation, human editorial approval, complete Free node, immutable full package set, publishing admission, runtime admission, and cross-repo lock;
+- GCP uses the approved current source release, not an ambiguous historical substitution;
+- Coding, Certification, and Design Interview family proofs pass without per-track lifecycle forks;
+- guest first value works offline without account creation for every track;
+- account, sync, adoption, security, recovery, entitlement, purchase/restore, package delivery, reporting, deletion, and restore semantics pass their failure matrices;
+- the final Figma authority is implemented in repository-owned tokens/assets/components and complete verticals; Storybook is dev-only and absent from release;
+- public/auth/legal/support/deletion surfaces and professional origins are live and verified;
+- provider infrastructure, least privilege, RevenueCat, package storage, App Check, PITR, rollback, and observability are evidenced;
+- accessibility, visual parity, performance, first-use usability, offline, concurrency, and security gates pass;
+- signed TestFlight and Play internal candidates pass the full physical-device matrix;
+- store metadata, products, declarations, URLs, screenshots, icons, privacy records, and affiliation claims match the product;
+- no open Critical risk and no unaccepted High risk;
+- `npm run release:gate` passes against the exact release SHAs/build evidence;
+- the Product Owner records explicit `GO`.
+
+Until then, status remains `NO-GO`, regardless of local functionality, candidate question counts, green partial CI, or unsigned simulator evidence.

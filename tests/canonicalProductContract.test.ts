@@ -391,7 +391,7 @@ test("defines device session sync surface goal and learning-product semantics", 
   assert.equal(contract.productSurfacesAndGoals.activity, "nestedUnderProgress");
   assert.deepEqual((contract.learningProducts.families as { ids: readonly string[] }).ids, ["certification", "coding_interview", "design_interview"]);
   assert.equal((contract.learningProducts.families as { userVisible: boolean }).userVisible, false);
-  assert.equal((contract.learningProducts.targetTracks as readonly string[]).length, 10);
+  assert.equal((contract.learningProducts.targetTracks as readonly string[]).length, 8);
 });
 
 test("defines package analytics report backup and platform semantics", () => {

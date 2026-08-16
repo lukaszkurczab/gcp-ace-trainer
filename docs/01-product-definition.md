@@ -57,7 +57,7 @@ A track is a user-visible learning product. A family is an internal runtime cont
 
 The three target families are `certification`, `coding_interview` and `design_interview`. Coding and design interview remain separate because their payloads, evaluation details, evidence, review and simulation semantics differ materially. All families reuse one kernel, lifecycle, persistence path, entitlement/package boundary, Activity/Goal/Progress shell and session shell.
 
-The exact ten-track catalogue is owned at overview level in `00-overview.md`. Representative proofs precede broad copying: GCP ACE for Certification, Coding Interview for its migrated family, Backend System Design for Design Interview, then a second Certification and second Design Interview proof.
+The exact eight-track launch catalogue is owned at overview level in `00-overview.md`. Terraform Associate (004) and KCNA remain post-launch briefs and are excluded from launch proof. Representative proofs precede broad copying: GCP ACE for Certification, Coding Interview for its migrated family, Backend System Design for Design Interview, then a second Certification and second Design Interview proof.
 
 ## Learning and recommendation boundaries
 

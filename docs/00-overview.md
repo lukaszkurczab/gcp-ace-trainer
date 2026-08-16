@@ -18,7 +18,7 @@ The target uses three internal families:
 - `coding_interview`;
 - `design_interview`.
 
-The target launch catalogue contains ten equal-status tracks:
+The launch catalogue contains exactly eight learner-visible tracks:
 
 1. Coding Interview: DSA & Problem Solving;
 2. Backend System Design Interview;
@@ -28,8 +28,8 @@ The target launch catalogue contains ten equal-status tracks:
 6. AWS Certified Solutions Architect – Associate;
 7. Microsoft Azure Administrator Associate (AZ-104);
 8. Microsoft Azure AI Fundamentals (AI-901);
-9. HashiCorp Terraform Associate (004);
-10. Kubernetes and Cloud Native Associate (KCNA).
+
+HashiCorp Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are post-launch briefs only. They are not launch dependencies, production registry entries, cards, or store claims.
 
 A target descriptor or design-density fixture is not a production admission. A track enters the shipping registry only with a complete free vertical, valid modes, goals, Progress and Activity behavior, verified packages/content, and a complete user-visible core loop. No placeholder, unavailable or “Coming soon” production card is permitted.
 

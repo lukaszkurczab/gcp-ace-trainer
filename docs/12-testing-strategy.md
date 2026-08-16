@@ -990,7 +990,7 @@ The complete release verification matrix also covers:
 - signed package authorization, checksum/schema/semantic validation, atomic activation/rollback, pinning, review resolution, and protected eviction;
 - consent fail-closed analytics/crash behavior, closed event fields, report attachment preview, retention, and offline queue states;
 - deletion/subscription truth, public deletion non-enumeration, PITR sandbox drill, tombstone reconciliation, and no-resurrection;
-- ten-track registry admission and representative family proofs before broad content copying;
+- eight-track launch-scope admission and representative family proofs before broad content copying;
 - owner-approved Figma evidence, production components in development-only Storybook, risk-based state coverage, visual baselines, and release-bundle exclusion;
 - Light/Dark/System, 200% text, screen reader, reduced motion, semantic haptics, performance budgets, and signed physical-phone smoke on iOS and Android;
 - public Privacy, Terms, support, auth-action, deletion and store surfaces plus signed-artifact release evidence.
