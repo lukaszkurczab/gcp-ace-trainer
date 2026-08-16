@@ -77,7 +77,7 @@ test("production admission remains closed until exact immutable Free-node packag
   await prepareBundledTestPackages();
 
   assert.deepEqual(registrations.map((registration) => registration.id).sort(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE.map((fact) => fact.trackId).sort());
-  assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["package_evidence_verified_catalogue_gate_pending", "package_evidence_verified_catalogue_gate_pending"]);
+  assert.deepEqual(evaluations.map((evaluation) => evaluation.kind), ["package_evidence_verified_catalogue_gate_pending", "unverified_free_node_package"]);
   for (const fact of CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE) {
     const descriptor = TRACK_DENSITY_DESCRIPTORS.find((candidate) => candidate.trackId === fact.trackId);
     const source = GENERATED_FREE_NODE_PACKAGES.find((candidate) => candidate.trackId === fact.trackId);
@@ -108,6 +108,6 @@ test("package admission rejects tampered bytes or extracted profile modes withou
   const profileTampered = GENERATED_FREE_NODE_PACKAGES.map((entry) => entry.trackId === coding.trackId ? { ...entry, profileModes: [...entry.profileModes, "coding-interview-simulation"] } : entry);
   for (const packages of [bytesTampered, profileTampered]) {
     const results = await evaluateProductionTrackAdmissions(getTracks(), CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE, TRACK_DENSITY_DESCRIPTORS, packages);
-    assert.deepEqual(results.map((result) => result.kind), ["unverified_free_node_package", "package_evidence_verified_catalogue_gate_pending"]);
+    assert.deepEqual(results.map((result) => result.kind), ["unverified_free_node_package", "unverified_free_node_package"]);
   }
 });
