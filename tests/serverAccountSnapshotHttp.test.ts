@@ -54,6 +54,7 @@ const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () =>
   verifyIdToken: verify,
 });
 const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
+const lifecycle = { assertWritable: async () => undefined, writeDeletionIntent: async () => undefined };
 
 const makeRecord = (index: number, value = `value-${index}`): AccountRecord => {
   const input = {
@@ -170,6 +171,7 @@ const sendRequest = (
 const withServer = async (service: AccountHttpService, operation: (port: number) => Promise<void>, tokenVerifier = verifier()): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,

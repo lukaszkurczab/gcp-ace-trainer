@@ -16,6 +16,8 @@ test("deletes in revoke-data-identity-proof order and emits exactly the five can
   const calls: string[] = [];
   let recorded: unknown;
   const port: AccountDeletionPort = {
+    assertWritable: async () => undefined,
+    writeDeletionIntent: async () => { calls.push("intent"); },
     revokeSessions: async () => { calls.push("revoke"); },
     deleteRemoteData: async () => { calls.push("data"); },
     deleteIdentity: async () => { calls.push("identity"); },
@@ -30,7 +32,7 @@ test("deletes in revoke-data-identity-proof order and emits exactly the five can
     uid: "user-1",
   });
 
-  assert.deepEqual(calls, ["revoke", "data", "identity", "proof"]);
+  assert.deepEqual(calls, ["intent", "revoke", "data", "identity", "proof"]);
   assert.deepEqual(Object.keys(proof).sort(), [
     "completedAt",
     "irreversibleAccountIdHash",
@@ -54,6 +56,8 @@ test("never records a success proof when revocation, data deletion, or identity 
       requestedAt: "2026-08-01T11:59:00.000Z",
       uid: "user-1",
       port: {
+        assertWritable: async () => undefined,
+        writeDeletionIntent: async () => undefined,
         revokeSessions: () => step("revoke"),
         deleteRemoteData: () => step("data"),
         deleteIdentity: () => step("identity"),
@@ -194,6 +198,8 @@ test("scheduler authentication binds signature verification to exact audience, i
 
 test("requires canonical non-future requestedAt and bounded identifiers", async () => {
   const port: AccountDeletionPort = {
+    assertWritable: async () => undefined,
+    writeDeletionIntent: async () => undefined,
     deleteIdentity: async () => undefined,
     deleteRemoteData: async () => undefined,
     readDeletionProof: async () => undefined,
@@ -220,6 +226,8 @@ test("returns an identical existing proof without destructive replay and rejects
   };
   let destructiveCalls = 0;
   const port: AccountDeletionPort = {
+    assertWritable: async () => undefined,
+    writeDeletionIntent: async () => undefined,
     readDeletionProof: async () => existing,
     revokeSessions: async () => { destructiveCalls += 1; },
     deleteRemoteData: async () => { destructiveCalls += 1; },
@@ -252,6 +260,35 @@ test("Firebase deletion adapter tolerates an already-absent identity for revocat
   const adapter = new FirebaseAccountDeletionAdapter({} as never, auth as never);
   await adapter.revokeSessions("absent-user");
   await adapter.deleteIdentity("absent-user");
+});
+
+test("Firebase deletion adapter persists a UID tombstone outside recursive account data", async () => {
+  let lifecycle: unknown;
+  let creates = 0;
+  const lifecycleReference = {
+    get: async () => ({ exists: lifecycle !== undefined, data: () => lifecycle }),
+  };
+  const firestore = {
+    collection: (name: string) => {
+      assert.equal(name, "accountLifecycles");
+      return { doc: () => lifecycleReference };
+    },
+    runTransaction: async (operation: (transaction: unknown) => Promise<void>) => operation({
+      get: async () => ({ exists: lifecycle !== undefined, data: () => lifecycle }),
+      create: (_reference: unknown, value: unknown) => { creates += 1; lifecycle = value; },
+    }),
+  };
+  const adapter = new FirebaseAccountDeletionAdapter(firestore as never, {} as never);
+  await adapter.assertWritable("user-1");
+  await adapter.writeDeletionIntent("user-1", "request_123456789", "2026-08-01T11:59:00.000Z");
+  assert.equal(creates, 1);
+  await assert.rejects(adapter.assertWritable("user-1"), /account_tombstoned/u);
+  await adapter.writeDeletionIntent("user-1", "request_123456789", "2026-08-01T11:59:00.000Z");
+  assert.equal(creates, 1);
+  await assert.rejects(
+    adapter.writeDeletionIntent("user-1", "request_987654321", "2026-08-01T11:59:00.000Z"),
+    /account_lifecycle_conflict/u,
+  );
 });
 
 test("Firebase deletion adapter recursively deletes and verifies the sole account tree", async () => {

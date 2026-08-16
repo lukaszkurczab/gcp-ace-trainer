@@ -38,6 +38,11 @@ import type {
   VerifiedFirebaseAppCheckToken,
   VerifiedFirebaseIdToken,
 } from "./authentication.js";
+import {
+  accountLifecycleGeneration,
+  isAccountLifecycleTombstone,
+  type AccountLifecyclePort,
+} from "./accountLifecycle.js";
 
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
 
@@ -451,11 +456,45 @@ export type DeletionProof = Readonly<{
   resultCode: "account_deleted";
 }>;
 
-export class FirebaseAccountDeletionAdapter {
+export class FirebaseAccountDeletionAdapter implements AccountLifecyclePort {
   constructor(
     private readonly firestore: Firestore,
     private readonly auth: Auth,
   ) {}
+
+  private lifecycleReference(uid: string) {
+    return this.firestore.collection("accountLifecycles").doc(uid);
+  }
+
+  async assertWritable(uid: string): Promise<void> {
+    const snapshot = await this.lifecycleReference(uid).get();
+    if (!snapshot.exists) return;
+    if (!isAccountLifecycleTombstone(snapshot.data())) throw new Error("account_lifecycle_corrupt");
+    throw new Error("account_tombstoned");
+  }
+
+  async writeDeletionIntent(uid: string, requestId: string, requestedAt: string): Promise<void> {
+    const generation = accountLifecycleGeneration(uid, requestId);
+    const reference = this.lifecycleReference(uid);
+    await this.firestore.runTransaction(async (transaction) => {
+      const existing = await transaction.get(reference);
+      if (existing.exists) {
+        const value = existing.data();
+        if (!isAccountLifecycleTombstone(value)) throw new Error("account_lifecycle_corrupt");
+        if (value.generation !== generation || value.requestId !== requestId || value.requestedAt !== requestedAt) {
+          throw new Error("account_lifecycle_conflict");
+        }
+        return;
+      }
+      transaction.create(reference, {
+        generation,
+        requestId,
+        requestedAt,
+        state: "tombstoned",
+        version: 1,
+      });
+    });
+  }
 
   async revokeSessions(uid: string): Promise<void> {
     try {
@@ -548,6 +587,7 @@ const sameDeletionProof = (left: DeletionProof, right: DeletionProof): boolean =
   && left.resultCode === right.resultCode;
 
 export type FirebaseAdminAccountRuntime = Readonly<{
+  lifecycle: AccountLifecyclePort;
   appCheckVerifier: FirebaseAdminAppCheckTokenVerifier;
   store: FirestoreAccountDatasetStore;
   verifier: FirebaseAdminIdTokenVerifier;
@@ -575,9 +615,12 @@ export const initializeFirebaseAdminAccountRuntime = (
 ): FirebaseAdminAccountRuntime => {
   if (dependencies.getApps().length !== 0) throw new Error("firebase_admin_app_already_initialized");
   const app = dependencies.initializeApp({ projectId });
+  const firestore = dependencies.getFirestore(app);
+  const auth = dependencies.getAuth(app);
   return {
     appCheckVerifier: new FirebaseAdminAppCheckTokenVerifier(dependencies.getAppCheck(app)),
-    store: new FirestoreAccountDatasetStore(dependencies.getFirestore(app)),
-    verifier: new FirebaseAdminIdTokenVerifier(dependencies.getAuth(app)),
+    lifecycle: new FirebaseAccountDeletionAdapter(firestore, auth),
+    store: new FirestoreAccountDatasetStore(firestore),
+    verifier: new FirebaseAdminIdTokenVerifier(auth),
   };
 };

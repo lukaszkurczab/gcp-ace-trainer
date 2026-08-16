@@ -36,6 +36,7 @@ const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () =>
   verifyIdToken: verify,
 });
 const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
+const lifecycle = { assertWritable: async () => undefined, writeDeletionIntent: async () => undefined };
 
 const unexpected = (name: string): (() => Promise<never>) => async () => { throw new Error(`unexpected_${name}_call`); };
 
@@ -136,6 +137,7 @@ const withServer = async (
 ): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,

@@ -53,6 +53,7 @@ const verifier = (verify: FirebaseIdTokenVerifier["verifyIdToken"] = async () =>
   verifyIdToken: verify,
 });
 const appCheckVerifier = { verifyToken: async () => ({ appId: APP_ID }) };
+const lifecycle = { assertWritable: async () => undefined, writeDeletionIntent: async () => undefined };
 
 const httpService = (
   applySync: (...parameters: Parameters<AccountHttpService["applySync"]>) => Promise<unknown>,
@@ -158,6 +159,7 @@ test("exposes only the exact account routes and their POST method", async () => 
   let serviceCalls = 0;
   const dependencies: AccountHttpDependencies = {
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -186,6 +188,7 @@ test("authenticates before entity parsing and routes only the verified UID", asy
   const semantic = putSemantic();
   await withLoopbackServer({
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -231,6 +234,27 @@ test("authenticates before entity parsing and routes only the verified UID", asy
   assert.equal(verifierCalls, 2);
 });
 
+test("rejects a tombstoned account before reading the request body", async () => {
+  let serviceCalls = 0;
+  await withLoopbackServer({
+    appCheckVerifier,
+    lifecycle: { ...lifecycle, assertWritable: async () => { throw new Error("account_tombstoned"); } },
+    expectedProjectId: PROJECT_ID,
+    expectedAppCheckAppIds: [APP_ID],
+    nowSeconds: () => NOW_SECONDS,
+    service: httpService(async () => { serviceCalls += 1; }),
+    verifier: verifier(),
+  }, async (port) => {
+    const result = await sendRequest(port, {
+      body: "not-json",
+      headers: jsonHeaders(),
+    });
+    assert.equal(result.status, 410);
+    assert.deepEqual(parseJson(result), { error: { code: "account_tombstoned" } });
+  });
+  assert.equal(serviceCalls, 0);
+});
+
 test("enforces the raw streamed four-MiB boundary at minus one, equal, and plus one byte", async () => {
   let serviceCalls = 0;
   const base = Buffer.from(JSON.stringify(requestBody(putSemantic())));
@@ -242,6 +266,7 @@ test("enforces the raw streamed four-MiB boundary at minus one, equal, and plus 
   };
   await withLoopbackServer({
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -313,6 +338,7 @@ test("rejects unsupported entity forms, fatal UTF-8, BOM, malformed JSON and inv
   ] as const;
   await withLoopbackServer({
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -350,6 +376,7 @@ test("maps every authentication row without allowing service access", async () =
   for (const malformed of [undefined, "Token invalid"]) {
     await withLoopbackServer({
       appCheckVerifier,
+      lifecycle,
       expectedProjectId: PROJECT_ID,
       expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
@@ -365,6 +392,7 @@ test("maps every authentication row without allowing service access", async () =
   for (const entry of localCases) {
     await withLoopbackServer({
       appCheckVerifier,
+      lifecycle,
       expectedProjectId: PROJECT_ID,
       expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
@@ -379,6 +407,7 @@ test("maps every authentication row without allowing service access", async () =
   for (const entry of providerCases) {
     await withLoopbackServer({
       appCheckVerifier,
+      lifecycle,
       expectedProjectId: PROJECT_ID,
       expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
@@ -407,6 +436,7 @@ test("an unknown coded Auth error cannot borrow the local expired-token message"
   try {
     await withLoopbackServer({
       appCheckVerifier,
+      lifecycle,
       expectedProjectId: PROJECT_ID,
       expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
@@ -454,6 +484,7 @@ test("keeps service error mapping closed, non-leaking, and phase-sensitive", asy
       const service = httpService(async () => { throw new Error(entry.message); });
       await withLoopbackServer({
         appCheckVerifier,
+        lifecycle,
         expectedProjectId: PROJECT_ID,
         expectedAppCheckAppIds: [APP_ID],
         nowSeconds: () => NOW_SECONDS,
@@ -486,6 +517,7 @@ test("a coded Firestore error cannot borrow the local stale-revision message", a
   try {
     await withLoopbackServer({
       appCheckVerifier,
+      lifecycle,
       expectedProjectId: PROJECT_ID,
       expectedAppCheckAppIds: [APP_ID],
       nowSeconds: () => NOW_SECONDS,
@@ -524,6 +556,7 @@ test("maps a boundary-valid oversized record to 413 before service", async () =>
   const semantic = putSemantic(0, largeRecord);
   await withLoopbackServer({
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -644,6 +677,7 @@ test("supports exact put, delete, immediate replay, and replay after an interven
   };
   await withLoopbackServer({
     appCheckVerifier,
+    lifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -695,7 +729,8 @@ test("Firebase initialization is explicit, project-bound, single-app, and reject
   const runtime = initializeFirebaseAdminAccountRuntime(PROJECT_ID, dependencies);
   assert.ok(runtime.store);
   assert.ok(runtime.verifier);
-  assert.deepEqual(calls, ["getApps", `initialize:${PROJECT_ID}`, "app-check", "firestore", "auth"]);
+  assert.ok(runtime.lifecycle);
+  assert.deepEqual(calls, ["getApps", `initialize:${PROJECT_ID}`, "firestore", "auth", "app-check"]);
 
   let initializes = 0;
   assert.throws(() => initializeFirebaseAdminAccountRuntime(PROJECT_ID, {
@@ -722,7 +757,7 @@ test("startup validates environment before one Firebase initialization and one l
   let listeners = 0;
   const base: ServerStartupDependencies = {
     loadEnvironment: loadServerEnvironment,
-    createFirebaseRuntime: () => { initializations += 1; return { appCheckVerifier, store, verifier: verifier() }; },
+    createFirebaseRuntime: () => { initializations += 1; return { appCheckVerifier, lifecycle, store, verifier: verifier() }; },
     createHttpServer: () => ({ listen: () => { listeners += 1; } }),
     nowSeconds: () => NOW_SECONDS,
   };
@@ -749,7 +784,7 @@ test("startup validates environment before one Firebase initialization and one l
     },
     createFirebaseRuntime: (projectId) => {
       order.push(`firebase:${projectId}`);
-      return { appCheckVerifier, store, verifier: verifier() };
+      return { appCheckVerifier, lifecycle, store, verifier: verifier() };
     },
     createHttpServer: (handler: RequestListener) => {
       assert.equal(typeof handler, "function");

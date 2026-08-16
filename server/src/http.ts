@@ -13,6 +13,7 @@ import {
   type FirebaseAppCheckTokenVerifier,
   type FirebaseIdTokenVerifier,
 } from "./authentication.js";
+import type { AccountLifecyclePort } from "./accountLifecycle.js";
 
 export const MAX_SYNC_HTTP_BODY_BYTES = 4 * 1024 * 1024;
 export const MAX_SNAPSHOT_HTTP_BODY_BYTES = 4 * 1024;
@@ -46,6 +47,7 @@ type AdoptionPath = (typeof ADOPTION_PATHS)[number];
 
 type PublicErrorCode =
   | "account_data_retryable"
+  | "account_tombstoned"
   | "app_check_required"
   | "adoption_conflict"
   | "adoption_in_progress"
@@ -92,6 +94,7 @@ export type AccountHttpDependencies = Readonly<{
   appCheckVerifier: FirebaseAppCheckTokenVerifier;
   expectedProjectId: string;
   expectedAppCheckAppIds: readonly string[];
+  lifecycle: AccountLifecyclePort;
   nowSeconds: () => number;
   service: AccountHttpService;
   verifier: FirebaseIdTokenVerifier;
@@ -161,6 +164,15 @@ const authenticationError = (error: unknown): ErrorResponse => {
     return publicError(403, "authorization_required");
   }
   return publicError(500, "internal_error");
+};
+
+const lifecycleError = (error: unknown): ErrorResponse => {
+  switch (errorMessage(error)) {
+    case "account_tombstoned":
+      return publicError(410, "account_tombstoned");
+    default:
+      return publicError(500, "internal_error");
+  }
 };
 
 const syncServiceError = (error: unknown): ErrorResponse => {
@@ -460,6 +472,12 @@ const handleSyncRequest = async (
     sendError(response, authenticationError(error));
     return;
   }
+  try {
+    await dependencies.lifecycle.assertWritable(uid);
+  } catch (error) {
+    sendError(response, lifecycleError(error));
+    return;
+  }
 
   let input: ReturnType<typeof prevalidateSyncInput>;
   try {
@@ -550,6 +568,12 @@ const handleSnapshotPageRequest = async (
     sendError(response, authenticationError(error));
     return;
   }
+  try {
+    await dependencies.lifecycle.assertWritable(uid);
+  } catch (error) {
+    sendError(response, lifecycleError(error));
+    return;
+  }
 
   let input: AccountSnapshotPageInput;
   try {
@@ -590,6 +614,12 @@ const handleAdoptionRequest = async (
     }));
   } catch (error) {
     sendError(response, authenticationError(error));
+    return;
+  }
+  try {
+    await dependencies.lifecycle.assertWritable(uid);
+  } catch (error) {
+    sendError(response, lifecycleError(error));
     return;
   }
 

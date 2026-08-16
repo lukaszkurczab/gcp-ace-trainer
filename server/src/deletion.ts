@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
 
+import type { AccountLifecyclePort } from "./accountLifecycle.js";
 import type { DeletionProof } from "./firebaseAdapters.js";
 
-export interface AccountDeletionPort {
+export interface AccountDeletionPort extends AccountLifecyclePort {
   deleteIdentity(uid: string): Promise<void>;
   deleteRemoteData(uid: string): Promise<void>;
   readDeletionProof(requestId: string): Promise<DeletionProof | undefined>;
@@ -43,6 +44,7 @@ export async function deleteAccountRemotely(input: Readonly<{
     if (!identicalRequest) throw new Error("deletion_proof_collision");
     return existingProof;
   }
+  await input.port.writeDeletionIntent(input.uid, input.requestId, requestedAt.toISOString());
   await input.port.revokeSessions(input.uid);
   await input.port.deleteRemoteData(input.uid);
   await input.port.deleteIdentity(input.uid);
