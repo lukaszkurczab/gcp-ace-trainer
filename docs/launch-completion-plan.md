@@ -2,7 +2,7 @@
 
 **Document role:** replacement candidate for `docs/launch-completion-plan.md`
 **Authority state:** this file becomes sequencing authority only after it is committed and pushed to application `main`; until then the pushed repository document remains authoritative.
-**Audit date:** 2026-08-16
+**Audit date:** 2026-08-17
 **Target:** commercial launch readiness for the exact eight-track launch catalogue defined below.
 **Execution model:** controller → bounded worker → independent QA; all agents use **Luna max reasoning**, without exceptions or silent downgrade.
 
@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `feca84def10c171d28171e2cd9984956fc73fa7b` | QA run `31974277532` — success |
-| content/publishing | `master` | `1162f15c53a66dbfebca1e546b71bb95618ddd5a` | Content publishing run `31971763076` — success |
+| application | `main` | `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3` | QA run `31974532733` — success |
+| content/publishing | `master` | `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b` | approval evidence pushed; exact-SHA CI pending |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -60,7 +60,7 @@ Additional fixed decisions:
 
 - Internal families are implementation details. Users see tracks, not `coding_interview`, `certification`, or `design_interview` labels.
 - The first complete node of every admitted track is Free. Premium is one cross-platform entitlement, not slots, tiers, or per-track purchases.
-- All eight launch banks require real human editorial approval. No agent may grant, infer, or simulate it.
+- All eight launch banks require explicit owner-authorized editorial approval. The owner may record that approval directly or authorize an agent to record it against exact source and item manifests; no approval may be inferred or simulated.
 - Design is already prepared in Figma. Codex implements the Product Owner-designated final references; it does not run a new brand or visual-direction exercise.
 - All agent and subagent invocations are capped at and must use Luna max reasoning. No lower model is allowed for workers, QA, research, content, design implementation, or release verification.
 - Pushed canonical branches are the only truth. Progress that is not pushed does not exist for status purposes.
@@ -78,8 +78,8 @@ The green CI proves the current contracts, not the target launch catalogue:
 - The production track registry contains only Coding Interview and GCP.
 - The content workflow validates the eight-track readiness report and all current authoring validators.
 - The content release gate still treats Coding Interview as the sole release candidate.
-- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, and passing authoring validation; its Free-node package, immutable release, human review, publishing admission, and runtime admission remain open.
-- Every existing candidate bank is human-unapproved or pending and is not admitted for publishing or runtime.
+- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, passing authoring validation, and owner-authorized approval record; its Free-node package, immutable release, publishing admission, and runtime admission remain open.
+- All eight launch banks have owner-authorized approval records bound to exact source and item manifests; none is admitted for publishing or runtime.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
 The correct strategy is not a rewrite. Preserve the verified kernel and cut over the incomplete commercial, content-admission, account, package-delivery, presentation, and release edges.
@@ -88,18 +88,18 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` at content report commit `0dcb63e…` and the current application registry/lock at `229071f…`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b`; source identity remains `49b30e481800f2512ecb4e50ebd8725b35dda626`. The application registry/lock is at `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
-| Coding Interview | present | 3,404 items; 2,827 choice, 279 complexity, 298 ordering | present; 158-item `complexity_and_constraints` package | `pending` | not admitted in current readiness report | registered; pinned historical immutable release | `PARTIAL` |
-| GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | unapproved | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
-| AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
-| Azure AI-901 | present | 752 choice items; 5 nodes | absent | unapproved | not admitted | descriptor only; not registered | `PARTIAL` |
-| Azure AZ-104 | present | 1,288 choice items; 9 nodes; 75 blocks | absent | unapproved | not admitted | descriptor only; no runtime admission | `PARTIAL / TECHNICALLY SOURCED` |
-| Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
-| Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
-| Object-Oriented Design | present | 1,413 choice items; 9 nodes; 79 blocks | absent | unapproved | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Coding Interview | present | 3,404 items; 2,827 choice, 279 complexity, 298 ordering | present; 158-item `complexity_and_constraints` package | approved; record bound to source/item manifest | not admitted in current readiness report | registered; pinned historical immutable release | `PARTIAL` |
+| GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | approved; record bound to source/item manifest | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
+| AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL` |
+| Azure AI-901 | present | 752 choice items; 5 nodes | absent | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL` |
+| Azure AZ-104 | present | 1,288 choice items; 9 nodes; 75 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no runtime admission | `PARTIAL / TECHNICALLY SOURCED` |
+| Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Object-Oriented Design | present | 1,413 choice items; 9 nodes; 79 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
 
 ### Consequences
 
@@ -154,7 +154,7 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 | --- | --- | --- | --- |
 | `BLK-01` | Critical | canonical plan/contract still targets ten tracks while owner launch scope is eight | add exact launch-scope contract; move Terraform/KCNA to post-launch; update all gates and docs |
 | `BLK-02` | Critical | AZ-104 source was absent from pushed content source | closed by source ingress and technical readiness evidence; review packet, packages, and admission remain under `CNT-04`–`CNT-06` |
-| `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
+| `BLK-03` | Critical | all eight still lack the complete package/publishing/runtime admission chain | retain the eight exact approval records, then produce complete Free packages, immutable releases, and explicit publishing/runtime admission |
 | `BLK-04` | Critical | app registry/CI/release lock are two-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
 | `BLK-05` | Critical | Design Interview runtime not production-proven | generic family contract; Backend reference proof; OOP independence proof; Frontend proof |
 | `BLK-06` | Critical | current GCP candidate conflicts with historical locked artifact | new immutable GCP publication and explicit atomic lock/runtime migration |
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-16):** the application scope contract is `229071feff211dddb805aa0a1694eeadd5adaf8c`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31971849489` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content scope/report source is `49b30e481800f2512ecb4e50ebd8725b35dda626`, recorded in report commit `0dcb63eb9e7244fd994d4d199f21a716f412e54d`; AZ-104 now has 75 source files and 1,288 canonical items. `npm test`, authoring validation, all track validators, deterministic readiness generation, review-packet generation, technical-evidence regeneration, and the publishing release gate passed locally, while GitHub Actions run `31971763076` passed the same content checks from a clean checkout. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records AZ-104 as technically sourced but still not human-reviewed, publishing-admitted, or runtime-admitted. No human editorial, provider, package, or runtime admission was inferred.
+**Verification (2026-08-17):** the application scope contract is `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31974532733` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content source identity is `49b30e481800f2512ecb4e50ebd8725b35dda626`, with approval/readiness evidence pushed at `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b`; AZ-104 has 75 source files and 1,288 canonical items. Content `npm test` passes 140/140, all track validators and deterministic readiness/packet generation pass locally, and the eight approval records are bound to exact item manifests. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records every track as approved but not package-complete, publishing-admitted, or runtime-admitted. Exact-SHA CI for the approval commit remains pending.
 
 **Unlocks:** every remaining lane.
 
@@ -255,17 +255,17 @@ Run or create uniform validators for every track. Track-specific validators may 
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-16):** content commit `f376f986eb203412e463edf4f77ecd0fbc4b9325` adds deterministic packets at `evidence/review-packets/<trackId>.json`, the generator command `npm run generate:review-packets`, and an exact-eight-track regression test. Every packet records source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`, coverage and samples, automated findings, known limitations, and an approval form with `status: pending`, null reviewer/date/disposition. The initial CI run exposed the expected technical-evidence invalidation caused by the package-script input change; evidence was regenerated and committed at `1162f15c53a66dbfebca1e546b71bb95618ddd5a`. Local `npm test`, authoring validation, readiness regeneration, packet byte check, and `ci-release-gate` pass. GitHub Actions run `31971763076` is the exact post-evidence verification run. No approval or admission was inferred.
+**Verification (2026-08-17):** content commit `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b` adds deterministic approval records at `evidence/content-approvals/<trackId>.json`, the approval schema and generator, and exact-source regression coverage. Every packet now references the matching owner-authorized approval for source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`; records include source/item manifests, scope, date, automated checks, and accepted limitations. Local `npm test` passes 140/140, focused approval/packet tests pass 2/2, readiness and packet regeneration are deterministic, and `git diff --check` passes. Exact-SHA CI for `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b` remains pending.
 
-#### H-CONTENT — Human editorial approval for all eight — `BLOCKED — HUMAN AUTHORITY`
+#### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
 
-The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
+The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and remain bound to source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
 
-#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by CNT-03`
+#### CNT-05 — Complete Free-node packages for all eight — `READY`
 
 Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
 
-#### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05 + H-CONTENT`
+#### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05`
 
 Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate receives a new version; historical `gcp-ace-0016` remains history.
 
@@ -273,7 +273,7 @@ Publish new immutable releases and per-node package manifests without mutating h
 
 ### Stage RUN — generic family and package runtime
 
-#### RUN-01 — Canonical family contract closure — `BLOCKED by LR-01`
+#### RUN-01 — Canonical family contract closure — `READY`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
@@ -525,7 +525,7 @@ Compare approved Figma references to iOS and Android captures for every risk-bas
 
 Check cold/warm start, Today/Practice/navigation, ordinary and long sessions, download/activation, memory, package size, flicker, loading and layout shift on representative lower/target devices. Budgets and variance must be checked in, repeatable, and met.
 
-#### QA-07 — Human content sign-off reconciliation — `BLOCKED by H-CONTENT + final immutable releases`
+#### QA-07 — Human content sign-off reconciliation — `BLOCKED by final immutable releases`
 
 Verify every shipping byte derives from the exact human-approved source commit and no post-approval semantic edit bypassed review. Any semantic change invalidates the affected sign-off.
 
