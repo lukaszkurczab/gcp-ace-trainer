@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "repository": "lukaszkurczab/patternly-content",
-  "bundleId": "patternly-app-content-0018",
+  "bundleId": "patternly-app-content-0019",
   "artifacts": [
     {
       "releaseId": "patternly-core-0018",
@@ -18,6 +18,14 @@
       "trackId": "google-cloud-associate-cloud-engineer",
       "contentVersion": "gcp-ace-0016",
       "checksumSha256": "9a2c6c760fcd82994c0dd88ece04d488159c1ef8e621b935efcccc668c407a6f"
+    },
+    {
+      "releaseId": "patternly-az104-0001",
+      "producerCommit": "435adc79cbf3ca302687938e3f53649c9d5c317b",
+      "sourceRepositoryCommit": "67437fa377b4021fb1a4764095fa16e6048641a2",
+      "trackId": "microsoft-azure-administrator-associate-az-104",
+      "contentVersion": "microsoft-azure-administrator-associate-az-104-authoring-v2026.08.15",
+      "checksumSha256": "968386e75c9abd4b54401e9876dadba6c0dbd01003aea8cfcad3a8d7027569ec"
     }
   ]
 }

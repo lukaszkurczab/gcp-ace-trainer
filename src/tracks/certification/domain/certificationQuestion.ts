@@ -1,8 +1,5 @@
-export type CertificationDomain =
-  | "setup_environment"
-  | "planning_implementation"
-  | "operations"
-  | "access_security";
+/** Provider/exam-specific domains are content-owned and may expand per certification track. */
+export type CertificationDomain = string;
 
 export type CertificationQuestionType = "single" | "multiple";
 export type CertificationDifficulty = "easy" | "medium" | "hard";
@@ -17,9 +14,10 @@ export type CertificationFeedback = Readonly<{
 
 export type CertificationQuestion = Readonly<{
   id: string;
+  nodeId?: string;
   domain: CertificationDomain;
   type: CertificationQuestionType;
-  difficulty: CertificationDifficulty;
+  difficulty?: CertificationDifficulty;
   question: string;
   options: readonly CertificationQuestionOption[];
   correctOptionIds: readonly string[];

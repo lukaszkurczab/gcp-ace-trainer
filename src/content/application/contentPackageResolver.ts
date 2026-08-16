@@ -96,7 +96,9 @@ function validateNodeLocalTaxonomy(taxonomy: unknown, items: unknown[], familyId
     if (taxonomy.schemaVersion !== manifest.taxonomyVersion || !Array.isArray(taxonomy.roadmapNodes) || taxonomy.roadmapNodes.length !== 1 || !record(taxonomy.roadmapNodes[0]) || taxonomy.roadmapNodes[0].id !== manifest.freeNodeId || !items.every((item) => record(item) && record(item.taxonomy) && item.taxonomy.roadmapNodeId === manifest.freeNodeId)) fail("package_payload_invalid", "Coding package contains taxonomy outside its Free node.");
     return;
   }
-  if (taxonomy.schemaVersion !== "taxonomy-config-v1" || !Array.isArray(taxonomy.cloudDomains) || taxonomy.cloudDomains.length !== 1 || taxonomy.cloudDomains[0] !== manifest.freeNodeId || !items.every((item) => record(item) && item.domain === manifest.freeNodeId)) fail("package_payload_invalid", "Certification package contains taxonomy outside its Free node.");
+  const legacyNodeLocal = taxonomy.schemaVersion === "taxonomy-config-v1" && Array.isArray(taxonomy.cloudDomains) && taxonomy.cloudDomains.length === 1 && taxonomy.cloudDomains[0] === manifest.freeNodeId && items.every((item) => record(item) && item.domain === manifest.freeNodeId);
+  const modernNodeLocal = taxonomy.schemaVersion === "taxonomy-config-v1" && Array.isArray(taxonomy.nodeIds) && taxonomy.nodeIds.length === 1 && taxonomy.nodeIds[0] === manifest.freeNodeId && Array.isArray(taxonomy.tags) && taxonomy.tags.includes(manifest.freeNodeId) && items.every((item) => record(item) && item.nodeId === manifest.freeNodeId);
+  if (!legacyNodeLocal && !modernNodeLocal) fail("package_payload_invalid", "Certification package contains taxonomy outside its Free node.");
 }
 
 function validateFamilyItems(items: unknown[], familyId: "coding_interview" | "certification"): void {

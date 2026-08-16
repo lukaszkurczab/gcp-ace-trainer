@@ -117,7 +117,7 @@ function validateItemProvenance(value: unknown): void { const provenance = recor
 export function validateCertificationBank(value: unknown, manifest: PublishedTrackManifest): PublishedCertificationBank {
   const bank = record(value, "Certification bank");
   exact(bank, ["formatVersion", "trackId", "familyId", "contentVersion", "diagnosticBaseline", "focusPractice", "scenarioPractice", "weakAreaReview", "mixedPractice", "quickReview", "examExperienceProfile", "items"], "Certification bank");
-  if (bank.formatVersion !== 1 || bank.trackId !== "google-cloud-associate-cloud-engineer" || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
+  if (bank.formatVersion !== 1 || bank.trackId !== manifest.trackId || bank.familyId !== "certification" || bank.contentVersion !== manifest.contentVersion) {
     throw new ContentValidationError("Certification bank identity is invalid.");
   }
   const items = values(bank.items, "Certification items");
@@ -126,16 +126,18 @@ export function validateCertificationBank(value: unknown, manifest: PublishedTra
   const ids = new Set<string>();
   const tagsByItemId = new Map<string, readonly string[]>();
   const fingerprints = new Set<string>();
-  const domains = new Set(["setup_environment", "planning_implementation", "access_security", "operations"]);
+  const domains = new Set<string>();
   for (const unknown of items) {
     const item = record(unknown, "Certification item");
     exact(item, ["id", "domain", "type", "difficulty", "question", "options", "correctOptionIds", "feedback", "tags", "examSignals", "itemFingerprint"].filter((key) => item[key] !== undefined), "Certification item");
     const id = text(item.id, "Certification item id");
     if (ids.has(id)) throw new ContentValidationError("Certification bank contains duplicate item IDs.");
     ids.add(id);
-    if (!domains.has(text(item.domain, "Certification item domain"))) throw new ContentValidationError("Certification item references an unknown Cloud domain.");
+    const domain = text(item.domain, "Certification item domain");
+    if (!domain) throw new ContentValidationError("Certification item domain is required.");
+    domains.add(domain);
     if (item.type !== "single" && item.type !== "multiple") throw new ContentValidationError("Certification item type is invalid.");
-    if (item.difficulty !== "easy" && item.difficulty !== "medium" && item.difficulty !== "hard") throw new ContentValidationError("Certification item difficulty is invalid.");
+    if (item.difficulty !== undefined && item.difficulty !== "easy" && item.difficulty !== "medium" && item.difficulty !== "hard") throw new ContentValidationError("Certification item difficulty is invalid.");
     text(item.question, "Certification question");
     const feedback = record(item.feedback, "Certification feedback");
     const feedbackKeys = item.type === "multiple" ? ["reason", "details", "wrongOptionExplanationsByOptionId", "omittedCorrectExplanationsByOptionId"] : ["reason", "details", "wrongOptionExplanationsByOptionId"];

@@ -23,6 +23,7 @@ import { TrainingApplicationFailure, type PracticeDurableOperationState } from "
 import { describeOperationalFailure } from "../../application/operationalDiagnostics";
 import { loadActiveTrainingSession } from "../../application/learningReadModels";
 import { AppShellHeader, Button, EmptyState, Screen } from "../../components";
+import { getTrackRegistration } from "../../domain";
 import { ROUTES } from "../../constants";
 import { CODING_INTERVIEW_TRACK_ID, type TrainingSession } from "../../domain";
 import type { RootStackParamList } from "../../navigation";
@@ -54,7 +55,7 @@ type CompletionFailure = Exclude<Awaited<ReturnType<typeof completeAlgorithmsPra
 
 /** Canonical Algorithms Practice runner. It renders application projections and sends only facade commands. */
 export function PracticeSessionScreen({ navigation, route }: PracticeSessionScreenProps) {
-  if (route.params.trackId === "google-cloud-associate-cloud-engineer" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
+  if (getTrackRegistration(route.params.trackId).familyId === "certification" && (route.params.mode === "certification-diagnostic-baseline" || route.params.mode === "certification-focus-practice" || route.params.mode === "certification-scenario-practice" || route.params.mode === "certification-weak-area-review" || route.params.mode === "certification-mixed-practice" || route.params.mode === "certification-quick-review")) {
     return <CertificationPracticeSessionScreen navigation={navigation} route={route} />;
   }
   const styles = useThemedStyles(createStyles);

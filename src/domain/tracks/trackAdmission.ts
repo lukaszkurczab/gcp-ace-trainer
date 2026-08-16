@@ -81,6 +81,7 @@ export type ProductionTrackArtifactEvidence = Readonly<{
 export const CURRENT_PRODUCTION_TRACK_ARTIFACT_EVIDENCE: readonly ProductionTrackArtifactEvidence[] = Object.freeze([
   Object.freeze({ trackId: "coding-interview-dsa-problem-solving", bundledReleaseId: "patternly-core-0018" }),
   Object.freeze({ trackId: "google-cloud-associate-cloud-engineer", bundledReleaseId: "patternly-core-0018" }),
+  Object.freeze({ trackId: "microsoft-azure-administrator-associate-az-104", bundledReleaseId: "patternly-az104-0001" }),
 ]);
 
 export type ProductionTrackAdmissionEvaluation = Readonly<{
@@ -150,6 +151,9 @@ async function validFreeNodePackageEvidence(registration: TrackRegistration, des
     const manifest = record.manifest;
     if (record.schemaVersion !== "bundled-free-node-v2" || !manifest || manifest.trackId !== registration.id || manifest.familyId !== registration.familyId || manifest.freeNodeId !== descriptor.freeNodeId || manifest.minimumAppVersion !== "0.1.0" || !Array.isArray(manifest.modeIds) || !manifest.modeIds.every((mode) => typeof mode === "string" && descriptor.validModes.includes(mode)) || !Array.isArray(packageFact.profileModes) || JSON.stringify([...manifest.modeIds].sort()) !== JSON.stringify([...packageFact.profileModes].sort())) return false;
     const provenance = manifest.provenance as Record<string, unknown> | undefined;
-    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && manifest.profileVersion === "1" && provenance?.releaseId === "patternly-core-0018" && provenance.sourceRepositoryCommit === "4db6020429a1da67387eec2bcfe4fad80af15dfd" && provenance.profileSourceRepositoryCommit === "4347abb085ef4c91e041b87ab71037789c167823" && sha256(provenance.trackBriefCanonicalSha256 as string);
+    const expectedProvenance = registration.id === "microsoft-azure-administrator-associate-az-104"
+      ? { releaseId: "patternly-az104-0001", sourceRepositoryCommit: "67437fa377b4021fb1a4764095fa16e6048641a2", profileSourceRepositoryCommit: "c1ddb67c64325c938cf39b888d2f55001871cd17" }
+      : { releaseId: "patternly-core-0018", sourceRepositoryCommit: "4db6020429a1da67387eec2bcfe4fad80af15dfd", profileSourceRepositoryCommit: "4347abb085ef4c91e041b87ab71037789c167823" };
+    return manifest.bundleKind === "bundled_free_node" && manifest.packageVersion === packageFact.packageVersion && manifest.payloadSchemaVersion === "bundled-free-node-payload-v2" && typeof manifest.profileId === "string" && manifest.profileVersion === "1" && provenance?.releaseId === expectedProvenance.releaseId && provenance.sourceRepositoryCommit === expectedProvenance.sourceRepositoryCommit && provenance.profileSourceRepositoryCommit === expectedProvenance.profileSourceRepositoryCommit && sha256(provenance.trackBriefCanonicalSha256 as string);
   } catch { return false; }
 }

@@ -1,7 +1,6 @@
 import type { IconName } from "../../components";
 import {
   CODING_INTERVIEW_TRACK_ID,
-  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
   getTrackDisplay,
   getTrackRegistration,
   type TrackDisplay,
@@ -168,14 +167,15 @@ export function resolvePracticeFlowRegistration(
           );
       }
     case "certification":
-      switch (registration.id) {
-        case GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID:
-          return "certification";
-        default:
-          throw new UnsupportedTrackError(
-            registration.id,
-            "Certification practice presentation",
-          );
+      if (registration.id === "google-cloud-associate-cloud-engineer") return "certification";
+      try {
+        contentPackageRuntimeOwner.getPreparedDiscovery(registration.id);
+        return "certification";
+      } catch {
+        throw new UnsupportedTrackError(
+          registration.id,
+          "Certification practice presentation",
+        );
       }
     default:
       throw new UnknownTrackFamilyError(registration.familyId);
@@ -216,19 +216,19 @@ export function getCurrentPracticeTopic(
         },
       };
     }
-    case "certification":
+    case "certification": {
+      const freeNodeId = activeTrack.id === "google-cloud-associate-cloud-engineer" ? "setup_environment" : contentPackageRuntimeOwner.getPreparedDiscovery(activeTrack.id).profile.freeNodeId;
+      const knownTopic = cloudTopics.find((topic) => topic.id === freeNodeId);
       return {
         detail: {
           key: "Scenario practice across the track domains:",
           kind: "track-context",
           trackTitle: track.display.shortTitle,
         },
-        id: "setup_environment",
-        title: {
-          key: "Cloud fundamentals",
-          kind: "translation-key",
-        },
+        id: freeNodeId,
+        title: { kind: "authored", value: knownTopic?.title ?? getDomainLabel(freeNodeId) },
       };
+    }
   }
 }
 
@@ -381,8 +381,9 @@ export function buildTopicRoadmapNodes(input: {
 
   switch (track.kind) {
     case "certification": {
-      const freeNodeId = contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
-      return cloudTopics.filter((topic) => topic.id === freeNodeId);
+      const freeNodeId = input.activeTrackId === "google-cloud-associate-cloud-engineer" ? "setup_environment" : contentPackageRuntimeOwner.getPreparedDiscovery(input.activeTrackId).profile.freeNodeId;
+      const knownTopic = cloudTopics.find((topic) => topic.id === freeNodeId);
+      return knownTopic ? [knownTopic] : [{ detail: { description: "The installed certification Free node.", kind: "authored" }, id: freeNodeId, label: "Current", progress: 0, status: "current", title: getDomainLabel(freeNodeId), tone: "primary" }];
     }
     case "coding_interview": {
       const content = codingPackageContent();

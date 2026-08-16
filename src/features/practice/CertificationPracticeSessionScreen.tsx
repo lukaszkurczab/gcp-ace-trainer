@@ -29,6 +29,7 @@ import { isCertificationPracticeModeId } from "../../tracks/certification";
 import { useAppPreferences } from "../../preferences";
 import type { PracticeSessionRouteParams } from "./sessionConfig";
 import type { TrainingSession } from "../../domain";
+import { getTrackRegistration } from "../../domain";
 import type { PracticeDurableOperationState } from "../../application/trainingLifecycle";
 import { allowsPracticeResponseEditing, formatPracticeElapsedTime, getPracticePrimaryAction, noticeForPracticeCompletionCheckpoint, noticeForPracticeOperation, reconcilePracticeChoiceSelection, type PracticeChoiceSelection, type PracticeSurfacePhase } from "./practiceSessionPresentation";
 import { PracticeSessionSurface } from "./PracticeSessionSurface";
@@ -75,7 +76,7 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
     setCompletionOperation(null);
     void (async () => {
       try {
-        const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, requestedLength: route.params.sessionLength, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
+    const opened = await openCertificationPracticeSession(mode === "certification-diagnostic-baseline" || mode === "certification-quick-review" ? { modeId: mode, trackId: route.params.trackId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-scenario-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, competency: route.params.competencyId, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : mode === "certification-weak-area-review" || mode === "certification-mixed-practice" ? { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, source: route.params.source, expectedSessionId: route.params.expectedSessionId } : { modeId: mode, trackId: route.params.trackId, requestedLength: route.params.sessionLength, domain: route.params.topicId as never, source: route.params.source, expectedSessionId: route.params.expectedSessionId });
         if (opened.kind === "active_session_conflict") { if (live) setConflict(opened.session); return; }
         await enterCertificationPracticeForeground();
         foregroundEntered = true;
@@ -121,8 +122,8 @@ export function CertificationPracticeSessionScreen({ navigation, route }: Props)
 
   if (!mode) return <Screen edges={["top", "bottom"]}><AppShellHeader backAction={{ onPress: () => navigation.navigate(ROUTES.PRACTICE_HUB) }} context={t("Practice Session")} /><EmptyState title={t("Certification Practice unavailable")} description={t("This route is not a canonical Certification practice mode.")} actionLabel={t("Back to practice")} onActionPress={() => navigation.navigate(ROUTES.PRACTICE_HUB)} /></Screen>;
   if (conflict) {
-    const ordinaryCertification = conflict.trackId === "google-cloud-associate-cloud-engineer" && isCertificationPracticeModeId(conflict.modeId);
-    const certificationExam = conflict.trackId === "google-cloud-associate-cloud-engineer" && conflict.modeId === "certification-exam-simulation";
+    const ordinaryCertification = getTrackRegistration(conflict.trackId).familyId === "certification" && isCertificationPracticeModeId(conflict.modeId);
+    const certificationExam = getTrackRegistration(conflict.trackId).familyId === "certification" && conflict.modeId === "certification-exam-simulation";
     const continueActive = () => {
       if (ordinaryCertification) navigation.replace(ROUTES.PRACTICE_SESSION, { ...route.params, mode: conflict.modeId, expectedSessionId: conflict.id });
       else if (certificationExam) navigation.replace(ROUTES.EXAM, { expectedSessionId: conflict.id });

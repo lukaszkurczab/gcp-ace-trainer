@@ -2,6 +2,7 @@ import { UnknownTrackError, UnknownTrackFamilyError, type TrackFamilyId, type Tr
 import type { TrackDisplay, TrackRegistration } from "./trackMetadata";
 
 export const GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID = "google-cloud-associate-cloud-engineer";
+export const MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID = "microsoft-azure-administrator-associate-az-104";
 export const CODING_INTERVIEW_TRACK_ID = "coding-interview-dsa-problem-solving";
 
 const registrationDefinitions = [
@@ -29,6 +30,19 @@ const registrationDefinitions = [
       shortTitle: "Google Cloud ACE",
       status: "active",
       title: "Google Cloud Associate Cloud Engineer",
+    },
+  },
+  {
+    id: MICROSOFT_AZURE_ADMINISTRATOR_ASSOCIATE_AZ_104_TRACK_ID,
+    familyId: "certification",
+    metadata: {
+      accentColor: "#2563EB",
+      accentMutedColor: "#E8F0FE",
+      description: "Scenario practice for Microsoft Azure Administrator Associate AZ-104, with identity-focused review and administration decisions.",
+      legalNote: "Independent study content. Not affiliated with or endorsed by Microsoft.",
+      shortTitle: "Azure Administrator AZ-104",
+      status: "active",
+      title: "Microsoft Azure Administrator Associate AZ-104",
     },
   },
 ] as const satisfies readonly TrackRegistration[];

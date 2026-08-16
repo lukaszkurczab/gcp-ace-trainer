@@ -143,15 +143,15 @@ export function PracticeHubScreen({ navigation, route }: PracticeHubScreenProps)
         ? ALGORITHM_MODE_IDS.learnApproach
         : "certification-focus-practice"
     );
-    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
+    if (activeTrack.familyId === "certification" && (resolvedMode === "certification-focus-practice" || resolvedMode === "certification-scenario-practice" || resolvedMode === "certification-weak-area-review" || resolvedMode === "certification-mixed-practice")) {
       navigation.navigate(ROUTES.PRACTICE_SETUP, { mode: resolvedMode, sessionLength: 10, source: "modeShortcut", topicId: topic.id, trackId: activeTrack.id });
       return;
     }
-    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && resolvedMode === "certification-quick-review") {
+    if (activeTrack.familyId === "certification" && resolvedMode === "certification-quick-review") {
       navigation.navigate(ROUTES.PRACTICE_SESSION, buildPracticeSessionConfig({ mode: resolvedMode, source: "modeShortcut", topicId: "", trackId: activeTrack.id }));
       return;
     }
-    if (activeTrack.id === "google-cloud-associate-cloud-engineer" && resolvedMode === "certification-exam-simulation") {
+    if (activeTrack.familyId === "certification" && resolvedMode === "certification-exam-simulation") {
       navigation.navigate(ROUTES.EXAM);
       return;
     }

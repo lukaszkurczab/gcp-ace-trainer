@@ -112,7 +112,7 @@ export type PublishedCertificationExamExperienceProfile = Readonly<{
   source: Readonly<{ url: string; checkedDate: string; guideVersion: string }>;
   durationMinutes: number;
   questionCount: Readonly<{ kind: "range"; minimum: number; maximum: number }>;
-  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; contentDomainId: "setup_environment" | "planning_implementation" | "operations" | "access_security"; weightPercent: number }>[] }>;
+  blueprint: Readonly<{ kind: "weighted_sections"; sections: readonly Readonly<{ id: string; contentDomainId: string; weightPercent: number }>[] }>;
   interactionPolicy: Readonly<{
     schemaVersion: "patternly-certification-simulation-policy-v1";
     policyId: "patternly-certification-simulation-v1";
@@ -194,7 +194,7 @@ export type PublishedCertificationQuickReview = Readonly<{
 
 export type PublishedCertificationBank = {
   formatVersion: 1;
-  trackId: "google-cloud-associate-cloud-engineer";
+  trackId: string;
   familyId: "certification";
   contentVersion: string;
   /** Required at the immutable published-artifact boundary; catalog fixtures may omit it when they do not exercise Diagnostic Baseline. */
