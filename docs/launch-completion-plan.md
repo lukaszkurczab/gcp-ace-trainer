@@ -227,9 +227,11 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 All sentinels are recorded in section 5 against the post-`LR-01` exact SHAs. They were not reimplemented. Any later failure becomes a regression owned by the slice that caused it.
 
-#### LR-03 — Final gate automation skeleton — `ACTIVE`
+#### LR-03 — Final gate automation skeleton — `VERIFIED`
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
+
+**Verification (2026-08-16):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; the current report is correctly `not_ready` with 54 blockers.
 
 ---
 
