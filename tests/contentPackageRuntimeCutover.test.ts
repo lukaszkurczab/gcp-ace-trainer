@@ -56,6 +56,10 @@ test("PKG-04A makes exact package pins and closed profiles the only runtime cont
   for (const path of REMOVED_RUNTIME_OWNERS) assert.equal(existsSync(path), false, path);
   const runtimeSource = sourceFiles("src").map((path) => readFileSync(path, "utf8")).join("\n");
   assert.doesNotMatch(runtimeSource, /validateBundledContent|BundledContentAvailabilityPort|contentFamilyHandlers|createCodingInterviewRuntime|createCertificationRuntime/);
+  const ownerSource = readFileSync("src/application/contentPackageRuntimeOwner.ts", "utf8");
+  assert.match(ownerSource, /pkg\.familyId === "certification"/);
+  assert.match(ownerSource, /unsupportedPackageFamily\(\(pkg as \{ familyId: string \}\)\.familyId\)/);
+  assert.doesNotMatch(ownerSource, /pkg\.familyId === "coding_interview"[\s\S]*?: new CertificationFamilyRuntime/);
 });
 
 test("Free Practice entry points use the approved primary modes and never route to excluded package modes", () => {

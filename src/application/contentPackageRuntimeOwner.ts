@@ -95,7 +95,9 @@ export class ContentPackageRuntimeOwner {
       const profile = createPackageCatalogProfileAdapter(pkg);
       const runtime = pkg.familyId === "coding_interview"
         ? new CodingInterviewFamilyRuntime(createCodingPackageRuntimeCatalog(pkg), undefined, pkg.taxonomyVersion)
-        : new CertificationFamilyRuntime(createCertificationPackageRuntimeCatalog(pkg), pkg.taxonomyVersion);
+        : pkg.familyId === "certification"
+          ? new CertificationFamilyRuntime(createCertificationPackageRuntimeCatalog(pkg), pkg.taxonomyVersion)
+          : unsupportedPackageFamily((pkg as { familyId: string }).familyId);
       const resolved = Object.freeze({ package: pkg, profile, runtime });
       this.resolvedExact.set(key, resolved);
       return resolved;
@@ -112,6 +114,10 @@ function pinKey(pin: ContentPackagePin): string {
 function supportedFamily(familyId: TrackFamilyId): "coding_interview" | "certification" {
   if (familyId === "coding_interview" || familyId === "certification") return familyId;
   throw new Error(`No content package runtime is installed for ${familyId}.`);
+}
+
+function unsupportedPackageFamily(familyId: string): never {
+  throw new Error(`No content package runtime is installed for ${String(familyId)}.`);
 }
 
 export const contentPackageRuntimeOwner = new ContentPackageRuntimeOwner();
