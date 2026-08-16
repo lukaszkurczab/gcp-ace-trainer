@@ -127,6 +127,8 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history, and the current eight-track readiness report, including explicit AZ-104 source absence |
 | `S-CI-HEAD` exact-SHA CI | application run `31956559706` succeeded on `229071feff211dddb805aa0a1694eeadd5adaf8c`; content run `31956610099` succeeded on `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07` |
 
+**LR-02 rebaseline (2026-08-16):** `S-FND-01`, `S-PLAT-01`, and `S-ARCH-01` were re-exercised by the application recovery gate in run `31956559706`: it installed application and server locks, built the server, regenerated and checked the native platform contract, ran the canonical contract gate, and ran `qa:static`. `S-GUEST-01` and `S-LEARN-01` are covered by that same static suite; the committed iOS first-value/relaunch evidence remains `docs/reports/guest-01-ios-simulator-maestro-2026-08-10.md` and is not represented as a new device run. `S-TRACK-01`, `S-PKG-01`, and `S-PKG-04A` were re-exercised by the focused scope tests and the pinned multi-track release round-trip in the same application run. `S-CONTENT-01` was re-exercised by content run `31956610099`, which installed from the content lock, ran the authoring and per-track validators, regenerated the eight-track report without a diff, validated the bundled Free node, and passed the content publishing gate. `S-CI-HEAD` is the pair of successful exact-SHA runs recorded above. No sentinel was reclassified as a launch admission, and no device, provider, editorial, store, or runtime proof was inferred.
+
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
 ---
@@ -221,11 +223,11 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Unlocks:** every remaining lane.
 
-#### LR-02 — Verified-sentinel rebaseline — `ACTIVE`
+#### LR-02 — Verified-sentinel rebaseline — `VERIFIED`
 
-Record each sentinel in section 5 against the post-`LR-01` exact SHAs. Do not reimplement it. Any failure becomes a regression owned by the slice that caused it.
+All sentinels are recorded in section 5 against the post-`LR-01` exact SHAs. They were not reimplemented. Any later failure becomes a regression owned by the slice that caused it.
 
-#### LR-03 — Final gate automation skeleton — `READY`
+#### LR-03 — Final gate automation skeleton — `ACTIVE`
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
