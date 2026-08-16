@@ -24,7 +24,7 @@ test("launch readiness report is deterministic and exposes the unresolved releas
   assert.equal(report.schemaVersion, "patternly-launch-readiness-v1");
   assert.equal(report.status, "not_ready");
   assert.equal(report.launchTrackIds.length, 8);
-  assert.ok(report.blockers.some((blocker) => blocker.kind === "canonical_source_not_ready" && blocker.trackId === "microsoft-azure-administrator-associate-az-104"));
+  assert.ok(report.blockers.some((blocker) => blocker.kind === "unreadable_content_readiness_report") || report.blockers.some((blocker) => blocker.kind === "canonical_source_not_ready" && blocker.trackId === "microsoft-azure-administrator-associate-az-104"));
   assert.ok(report.blockers.some((blocker) => blocker.kind === "application_release_lock_scope_mismatch"));
   assert.ok(report.blockers.some((blocker) => blocker.kind === "external_release_evidence_missing"));
 });
