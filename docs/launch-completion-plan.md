@@ -124,8 +124,8 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-TRACK-01` canonical Coding/GCP IDs | retired `algorithms`/old cloud IDs are not production aliases; persisted retired IDs fail explicitly |
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
-| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current seven-bank readiness report |
-| `S-CI-HEAD` exact-SHA CI | application run `31951798705` and content run `31951668152` succeeded on the audited HEADs |
+| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history, and the current eight-track readiness report, including explicit AZ-104 source absence |
+| `S-CI-HEAD` exact-SHA CI | application run `31956559706` succeeded on `229071feff211dddb805aa0a1694eeadd5adaf8c`; content run `31956610099` succeeded on `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07` |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -200,7 +200,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 ### Stage LR — canonical baseline and plan reconciliation
 
-#### LR-01 — Eight-track launch contract and plan cutover — `ACTIVE` after this file is pushed
+#### LR-01 — Eight-track launch contract and plan cutover — `VERIFIED`
 
 **Objective:** make the repository unambiguously target the confirmed eight-track release and make this document the sole implementation-order authority.
 
@@ -217,13 +217,15 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
+**Verification (2026-08-16):** the application scope contract is `229071feff211dddb805aa0a1694eeadd5adaf8c`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31956559706` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content scope/report is `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07`; `npm test` (135 tests), authoring validation, deterministic readiness generation, and the publishing release gate passed locally, while GitHub Actions run `31956610099` passed the same content checks from a clean checkout. The report names exactly eight launch tracks, carries AZ-104 as explicit source absence, removes the superseded seven-bank report, and retains the existing two-track runtime lock. No human editorial, provider, package, or runtime admission was inferred.
+
 **Unlocks:** every remaining lane.
 
-#### LR-02 — Verified-sentinel rebaseline — `BLOCKED by LR-01`
+#### LR-02 — Verified-sentinel rebaseline — `ACTIVE`
 
 Record each sentinel in section 5 against the post-`LR-01` exact SHAs. Do not reimplement it. Any failure becomes a regression owned by the slice that caused it.
 
-#### LR-03 — Final gate automation skeleton — `BLOCKED by LR-01`
+#### LR-03 — Final gate automation skeleton — `READY`
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
