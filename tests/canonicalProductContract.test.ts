@@ -126,6 +126,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["LEARNING-PRODUCTS-001", ["canonical-session-sync-surfaces-products"]],
       ["LAUNCH-TRACK-SCOPE-001", ["track-registry-admission"]],
       ["TRACK-REGISTRY-ADMISSION-001", ["track-registry-admission"]],
+      ["TRACK-BRIEF-SOURCE-IDENTITY-001", ["track-registry-admission"]],
       ["FREE-NODE-EXPERIENCE-PROFILE-001", ["free-node-package-admission"]],
       ["FREE-NODE-PACKAGE-ADMISSION-001", ["free-node-package-admission"]],
       ["TRACK-IDENTITY-CUTOVER-001", ["track-identity-cutover"]],
