@@ -261,9 +261,9 @@ Generate one bounded review packet per track: coverage map, node/mental-unit cou
 
 The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and remain bound to source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
 
-#### CNT-05 — Complete Free-node packages for all eight — `READY`
+#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by RUN-01 + family package contracts`
 
-Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
+Package construction may proceed after technical closure and family/package contract closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes only the Coding Free profile, track config, inventory pin, and package input; the publisher has no complete canonical package inputs for the other seven launch tracks. Do not fabricate packages or relabel historical GCP artifacts; `RUN-01` must establish the family-owned contracts and the package builder must then add exact inputs for every approved track.
 
 #### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05`
 
