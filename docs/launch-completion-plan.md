@@ -239,7 +239,7 @@ Add a deterministic non-passing-yet launch-readiness report that lists every blo
 
 #### CNT-01 — AZ-104 canonical ingress — `READY`
 
-Create the missing `microsoft-azure-administrator-associate-az-104` authoring registration and canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
+Use the existing `microsoft-azure-administrator-associate-az-104` authoring registration to add its missing canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
 **Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
 
