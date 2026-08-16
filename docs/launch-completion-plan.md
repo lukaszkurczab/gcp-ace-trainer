@@ -251,9 +251,11 @@ Replace `seven-bank-candidate-readiness-v1` with an eight-track launch readiness
 
 Run or create uniform validators for every track. Track-specific validators may inspect domain-specific constraints, but the result envelope and gate semantics must be generic. Close broken citations, unsupported technical claims, duplicate identities, missing Reason/Details, distractor explanations, interaction-contract mismatches, stale official objectives, and deterministic serialization errors. Do not edit content merely to satisfy fixed quotas.
 
-#### CNT-04 — Human review packets — `READY`
+#### CNT-04 — Human review packets — `VERIFIED`
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
+
+**Verification (2026-08-16):** content commit `f376f986eb203412e463edf4f77ecd0fbc4b9325` adds deterministic packets at `evidence/review-packets/<trackId>.json`, the generator command `npm run generate:review-packets`, and an exact-eight-track regression test. Every packet records source commit `49b30e481800f2512ecb4e50ebd8725b35dda626`, coverage and samples, automated findings, known limitations, and an approval form with `status: pending`, null reviewer/date/disposition. The initial CI run exposed the expected technical-evidence invalidation caused by the package-script input change; evidence was regenerated and committed at `1162f15c53a66dbfebca1e546b71bb95618ddd5a`. Local `npm test`, authoring validation, readiness regeneration, packet byte check, and `ci-release-gate` pass. GitHub Actions run `31971763076` is the exact post-evidence verification run. No approval or admission was inferred.
 
 #### H-CONTENT — Human editorial approval for all eight — `BLOCKED — HUMAN AUTHORITY`
 
