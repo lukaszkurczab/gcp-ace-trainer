@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3` | QA run `31974532733` — success |
-| content/publishing | `master` | `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b` | approval evidence pushed; exact-SHA CI pending |
+| application | `main` | `36f4b9d010a5d94f4bfc19a10a5dd06b5225ef6d` | QA run `31975618836` — success |
+| content/publishing | `master` | `7f11c6b6e6382a560641a669429a967efc20ab8e` | Content publishing run `31975680636` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b`; source identity remains `49b30e481800f2512ecb4e50ebd8725b35dda626`. The application registry/lock is at `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `7f11c6b6e6382a560641a669429a967efc20ab8e`; source identity remains `49b30e481800f2512ecb4e50ebd8725b35dda626`. The application registry/lock is at `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** the application scope contract is `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31974532733` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content source identity is `49b30e481800f2512ecb4e50ebd8725b35dda626`, with approval/readiness evidence pushed at `754150a7c8ec3f36f8d25dd3ab0b5d74b1551d5b`; AZ-104 has 75 source files and 1,288 canonical items. Content `npm test` passes 140/140, all track validators and deterministic readiness/packet generation pass locally, and the eight approval records are bound to exact item manifests. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records every track as approved but not package-complete, publishing-admitted, or runtime-admitted. Exact-SHA CI for the approval commit remains pending.
+**Verification (2026-08-17):** the application scope contract is `a9a4fd9e3f5e9e07cb205e6c2d1fa3f95c70a4f3`; focused contract/admission tests, typecheck, and the contract-change gate passed locally, and GitHub Actions run `31974532733` passed the recovery/static, native-platform, server, contract, and pinned release round-trip gates. The content source identity is `49b30e481800f2512ecb4e50ebd8725b35dda626`, with approval/readiness and regenerated technical evidence pushed at `7f11c6b6e6382a560641a669429a967efc20ab8e`; AZ-104 has 75 source files and 1,288 canonical items. Content `npm test` passes 140/140, all track validators and deterministic readiness/packet generation pass locally, and GitHub Actions run `31975680636` passed the same clean-checkout content gate. The report names exactly eight launch tracks, retains the existing two-track runtime lock, and records every track as approved but not package-complete, publishing-admitted, or runtime-admitted.
 
 **Unlocks:** every remaining lane.
 
