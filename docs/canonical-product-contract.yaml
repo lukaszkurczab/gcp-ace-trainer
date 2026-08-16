@@ -140,6 +140,8 @@ requirements:
     statement: The launch catalogue contains exactly the eight declared learner-visible track IDs; Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are post-launch only and cannot enter launch validation, production registry, cards, or store claims.
   - id: TRACK-REGISTRY-ADMISSION-001
     statement: The non-production density harness pins exactly the eight canonical launch track briefs at its source commit; Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are excluded from launch scope, and the admission evaluator rejects every registration that lacks descriptor-backed factual evidence of its bundled free node and complete core loop.
+  - id: TRACK-BRIEF-SOURCE-IDENTITY-001
+    statement: Each launch descriptor must match the exact current content-repository brief bytes, source commit, freeNodeId, package-content plan, and SHA-256 identity; historical package evidence that no longer matches the current brief remains unverified and cannot be relabeled as current.
   - id: FREE-NODE-EXPERIENCE-PROFILE-001
     statement: "Every implemented production track owns exactly one versioned closed Free-node experience profile: it is a subset of the track's complete validModes, uses only existing family mode IDs and canonical runners, defines only node-local configuration, and never creates a Free-only mode, runner, scoring path, or lifecycle."
   - id: FREE-NODE-PACKAGE-ADMISSION-001
@@ -226,7 +228,7 @@ requirementTestCoverage:
     - id: track-registry-admission
       testPath: tests/trackAdmission.test.ts
       testName: internal density harness pins exactly eight complete canonical launch content-brief descriptors
-      requirementIds: [LAUNCH-TRACK-SCOPE-001, TRACK-REGISTRY-ADMISSION-001]
+      requirementIds: [LAUNCH-TRACK-SCOPE-001, TRACK-REGISTRY-ADMISSION-001, TRACK-BRIEF-SOURCE-IDENTITY-001]
     - id: free-node-package-admission
       testPath: tests/trackAdmission.test.ts
       testName: production admission remains closed until exact immutable Free-node package evidence exists
