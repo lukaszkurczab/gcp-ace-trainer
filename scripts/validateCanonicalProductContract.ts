@@ -824,6 +824,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
   const codingInterview = products.codingInterview as Readonly<Record<string, unknown>>;
   if (!hasExactValues(families.ids as readonly string[], ["certification", "coding_interview", "design_interview"])
     || families.userVisible !== false
+    || !hasExactValues(products.launchTrackScope as readonly string[], ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"])
     || !hasExactValues(products.targetTracks as readonly string[], ["coding-interview-dsa-problem-solving", "backend-system-design-interview", "object-oriented-design-interview", "frontend-system-design-interview", "google-cloud-associate-cloud-engineer", "aws-certified-solutions-architect-associate", "microsoft-azure-administrator-associate-az-104", "microsoft-azure-ai-fundamentals-ai-901"])
     || !hasExactValues(products.targetTrackBriefRequiredFields as readonly string[], ["jobToBeDone", "targetLearner", "internalFamily", "taxonomyOutline", "freeNodeId", "validModes", "goalTemplates", "progressDimensions", "packageContentPlan", "launchCommercialGate"])
     || products.emptyPlaceholderOrComingSoonTracks !== "prohibited"
@@ -835,7 +836,7 @@ export function parseCanonicalProductContract(source: string): CanonicalProductC
     || codingInterview.migration !== "atomicOrBoundedPrerequisiteBeforeRegistryAdmission"
     || codingInterview.productBoundary !== "strategyFirstNotOnlineJudge"
     || codingInterview.implementationPlanningObjective !== "mandatory") {
-    throw new CanonicalProductContractValidationError("Canonical learning products must keep internal-only families, eight launch briefs, and the Coding Interview boundary without aliases or placeholders");
+    throw new CanonicalProductContractValidationError("Canonical learning products must keep internal-only families, one exact eight-track launch scope, and the Coding Interview boundary without aliases or placeholders");
   }
 
   const packages = target.contentPackages;

@@ -124,6 +124,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["DEVICE-SESSION-SYNC-001", ["canonical-session-sync-surfaces-products"]],
       ["PRODUCT-SURFACES-GOALS-001", ["canonical-session-sync-surfaces-products"]],
       ["LEARNING-PRODUCTS-001", ["canonical-session-sync-surfaces-products"]],
+      ["LAUNCH-TRACK-SCOPE-001", ["track-registry-admission"]],
       ["TRACK-REGISTRY-ADMISSION-001", ["track-registry-admission"]],
       ["FREE-NODE-EXPERIENCE-PROFILE-001", ["free-node-package-admission"]],
       ["FREE-NODE-PACKAGE-ADMISSION-001", ["free-node-package-admission"]],
@@ -391,6 +392,7 @@ test("defines device session sync surface goal and learning-product semantics", 
   assert.equal(contract.productSurfacesAndGoals.activity, "nestedUnderProgress");
   assert.deepEqual((contract.learningProducts.families as { ids: readonly string[] }).ids, ["certification", "coding_interview", "design_interview"]);
   assert.equal((contract.learningProducts.families as { userVisible: boolean }).userVisible, false);
+  assert.deepEqual(contract.learningProducts.launchTrackScope, contract.learningProducts.targetTracks);
   assert.equal((contract.learningProducts.targetTracks as readonly string[]).length, 8);
 });
 

@@ -136,6 +136,8 @@ requirements:
     statement: Primary tabs are Today, Practice, Progress, and Settings, Activity is nested under Progress, and per-track goals affect recommendations and cadence without affecting entitlement, locking, scoring, mastery, streaks, or punitive messaging.
   - id: LEARNING-PRODUCTS-001
     statement: Certification, coding_interview, and design_interview are internal-only families; eight equal-status launch track briefs are required, while Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) remain post-launch briefs only, and no track enters the production registry without a real free vertical and complete core loop.
+  - id: LAUNCH-TRACK-SCOPE-001
+    statement: The launch catalogue contains exactly the eight declared learner-visible track IDs; Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are post-launch only and cannot enter launch validation, production registry, cards, or store claims.
   - id: TRACK-REGISTRY-ADMISSION-001
     statement: The non-production density harness pins exactly the eight canonical launch track briefs at its source commit; Terraform Associate (004) and Kubernetes and Cloud Native Associate (KCNA) are excluded from launch scope, and the admission evaluator rejects every registration that lacks descriptor-backed factual evidence of its bundled free node and complete core loop.
   - id: FREE-NODE-EXPERIENCE-PROFILE-001
@@ -224,7 +226,7 @@ requirementTestCoverage:
     - id: track-registry-admission
       testPath: tests/trackAdmission.test.ts
       testName: internal density harness pins exactly eight complete canonical launch content-brief descriptors
-      requirementIds: [TRACK-REGISTRY-ADMISSION-001]
+      requirementIds: [LAUNCH-TRACK-SCOPE-001, TRACK-REGISTRY-ADMISSION-001]
     - id: free-node-package-admission
       testPath: tests/trackAdmission.test.ts
       testName: production admission remains closed until exact immutable Free-node package evidence exists
@@ -544,6 +546,7 @@ learningProducts:
   families:
     ids: [certification, coding_interview, design_interview]
     userVisible: false
+  launchTrackScope: [coding-interview-dsa-problem-solving, backend-system-design-interview, object-oriented-design-interview, frontend-system-design-interview, google-cloud-associate-cloud-engineer, aws-certified-solutions-architect-associate, microsoft-azure-administrator-associate-az-104, microsoft-azure-ai-fundamentals-ai-901]
   targetTracks:
     - coding-interview-dsa-problem-solving
     - backend-system-design-interview
