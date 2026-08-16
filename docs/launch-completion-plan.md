@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `c101825b350698f688d5e020e5a6405af1b06f23` | QA run `31972729087` — success |
+| application | `main` | `bf2bc1739dbbc51537d55b7d303a115964e0681f` | QA run `31973221280` — success |
 | content/publishing | `master` | `1162f15c53a66dbfebca1e546b71bb95618ddd5a` | Content publishing run `31971763076` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -351,7 +351,7 @@ Resolve the existing `ID-01` security blocker with a server-verifiable client as
 
 Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
 
-**Verification (2026-08-16):** the server now persists an immutable UID-addressable tombstone in `accountLifecycles/{uid}` before revocation/data/identity deletion, derives a separate tombstone generation without copying dataset revision, keeps the tombstone outside recursive `accounts/{uid}` deletion, and rejects tombstoned sync/snapshot/adoption requests with a closed 410 response before body handling. Intent writes are transactionally idempotent and conflicting request identities are rejected. The full local suite passes (604 tests), including lifecycle adapter, deletion-order, HTTP boundary, typecheck, and server build coverage. Mobile account creation/restore orchestration is not present in this server slice and remains part of the broader account vertical, so DATA-01 is not marked fully verified.
+**Verification (2026-08-16):** the server now persists an immutable UID-addressable tombstone in `accountLifecycles/{uid}` before revocation/data/identity deletion, derives a separate tombstone generation without copying dataset revision, keeps the tombstone outside recursive `accounts/{uid}` deletion, and rejects tombstoned sync/snapshot/adoption requests with a closed 410 response before body handling. Intent writes are transactionally idempotent and conflicting request identities are rejected. The full local suite passes (604 tests), including lifecycle adapter, deletion-order, HTTP boundary, typecheck, and server build coverage; implementation commit `d6dd3cc` passed exact-SHA application QA run `31973221280`. Mobile account creation/restore orchestration is not present in this server slice and remains part of the broader account vertical, so DATA-01 is not marked fully verified.
 
 #### DATA-02 — Device-session server cutover — `READY`
 
