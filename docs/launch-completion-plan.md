@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `e04e58a99bd1f3d85fe4be1e2ec0634b5f6c060f` | QA run `31987927778` — success |
+| application | `main` | `3674c68` | QA run `31988253547` — success |
 | content/publishing | `master` | `00c97e8ef0d1710e9b8c51e6d5b4740e50cecd32` | Content publishing run `31985200947` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -425,13 +425,13 @@ Verified account required; guest purchase prohibited; Free alternative explicit.
 
 The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work. Their evidence may remain historical. The current lane begins from the Product Owner-designated final Figma references.
 
-#### DES-01 — Final Figma authority inventory — `BLOCKED by current inspectable Figma reference`
+#### DES-01 — Final Figma authority inventory — `PARTIAL; current file inspectable, owner/release evidence still open`
 
-Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices. The account is authenticated and the repository contains an older file key, but the stored node IDs are no longer present, the connector cannot currently return document or selection data, and no current node-specific URL is available. The inventory therefore remains blocked; no Layout, token, component, or asset implementation may claim Figma parity until an inspectable final file/node is available.
+Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices. The current file is now inspectable through the official connector: `kZXD7cNBKUU7x0ceTHPFpR`, Page 1, library root `118:738`, fresh Light/Dark verification board `882:14188` (`882:14189` Dark, `882:14341` Light), Home reference `55:445`, and Practice setup reference `55:2172`. The bounded inventory and live connector evidence are recorded in `docs/reports/launch-des-001-figma-authority-inventory-2026-08-17.md`. This unblocks targeted design implementation, but does not create Product Owner approval evidence, close the external `design-authority` release gate, or claim whole-product `DESIGN READY`. The current Figma uses `Home` while the reconciled runtime contract targets `Today`; implementation must preserve the runtime contract and use only the approved geometry, tokens and components from the reference.
 
-#### DES-02 — Repository tokens, assets, and licensing — `BLOCKED by DES-01`
+#### DES-02 — Repository tokens, assets, and licensing — `PARTIAL; targeted token mapping unblocked, full handoff remains open`
 
-Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
+Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI. The live Figma variable read for the approved Home reference now confirms the semantic color, spacing, radius and typography names needed for bounded implementation. Full repository-owned token/asset/licensing inventory and verified handoff remain open, so this task is not `VERIFIED` and does not unblock the complete Storybook/primitives lane.
 
 #### DES-03 — Development-only Storybook and canonical primitives — `BLOCKED by DES-02`
 
