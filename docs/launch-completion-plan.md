@@ -485,6 +485,8 @@ Queue offline, submit idempotently, attach only bounded content/package identity
 
 Preserve the digest-pinned build/deploy definition already present. Complete local container boot, current read-only provider inventory, service-account/IAM diff, health/logging, rollback, Artifact Registry provenance, and deployed sandbox evidence before production mutation.
 
+**Verification (2026-08-17):** application commit `c0e4aaa` is clean and aligned with `origin/main`. `npm run sync:content-release` produced no diff; the cross-repository content contract (2/2), content boundary, runtime/privacy boundary, application typecheck, server TypeScript build, and `git diff --check` all passed. The digest-pinned `server/Dockerfile` and `server/cloudbuild.yaml` remain unchanged. Podman could not connect to its local machine socket and `gcloud` is not installed, so no container boot, provider inventory, Artifact Registry digest, Cloud Run revision, logging, rollback, or deployed sandbox evidence is claimed; OPS-01 remains `PARTIAL` pending the authorized provider boundary.
+
 #### OPS-02 — Firebase mobile apps and App Check — `BLOCKED by provider authority`
 
 Register/configure iOS and Android apps per environment; email/password/action settings; App Check production providers; debug tokens only in sandbox; deny-all direct Firestore remains. Record identifiers without secrets.
