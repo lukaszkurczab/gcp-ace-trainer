@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `9c6cefd976761198457eede380c3645210cab0b6` | QA run `31980082670` — success |
+| application | `main` | `0c87ae91c9f239771a9cddddbfccc0772b84db08` | QA run `31981873905` — success |
 | content/publishing | `master` | `810d0fd344bf168c89c742b4d22d562d959afcf5` | Content publishing run `31981572935` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -273,11 +273,11 @@ Publish new immutable releases and per-node package manifests without mutating h
 
 ### Stage RUN — generic family and package runtime
 
-#### RUN-01 — Canonical family contract closure — `READY`
+#### RUN-01 — Canonical family contract closure — `VERIFIED`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
-**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; the application QA run `31979778320` passed the corresponding runtime and contract checks. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
+**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; application QA run `31981873905` passed the corresponding runtime and contract checks on application SHA `0c87ae91c9f239771a9cddddbfccc0772b84db08`. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
 
 #### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
 
@@ -415,9 +415,9 @@ Verified account required; guest purchase prohibited; Free alternative explicit.
 
 The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work. Their evidence may remain historical. The current lane begins from the Product Owner-designated final Figma references.
 
-#### DES-01 — Final Figma authority inventory — `READY`
+#### DES-01 — Final Figma authority inventory — `BLOCKED by current inspectable Figma reference`
 
-Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices. Current evidence confirms an authenticated Figma View seat and the approved `PKG-04A` board trace (`wtk4hp8i`, root `10:2`), but the connector cannot currently return document or selection data and the repository has no final file URL/fileKey. The inventory therefore remains open; no Layout, token, component, or asset implementation may claim Figma parity until an inspectable final file/node is available.
+Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices. The account is authenticated and the repository contains an older file key, but the stored node IDs are no longer present, the connector cannot currently return document or selection data, and no current node-specific URL is available. The inventory therefore remains blocked; no Layout, token, component, or asset implementation may claim Figma parity until an inspectable final file/node is available.
 
 #### DES-02 — Repository tokens, assets, and licensing — `BLOCKED by DES-01`
 
