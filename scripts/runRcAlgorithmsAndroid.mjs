@@ -14,8 +14,10 @@ const sdkRoot = required("ANDROID_HOME"); const adb = resolve(sdkRoot, "platform
 const devClientUrl = required("PATTERNLY_DEV_CLIENT_URL"); const metroPort = assertLocalDevClientUrl(devClientUrl); const outputDirectory = required("MAESTRO_TEST_OUTPUT_DIR"); mkdirSync(outputDirectory, { recursive: true });
 const capturePlatform = required("PLATFORM"); if (capturePlatform !== "android") throw new Error('PLATFORM must be "android" for the RC Algorithms Android runner.');
 const captureTheme = required("THEME"); if (!["light", "dark"].includes(captureTheme)) throw new Error('THEME must be "light" or "dark".');
+const captureThemeLabel = required("THEME_LABEL");
+const captureDeviceProfile = required("DEVICE_PROFILE");
 const screenshotRoot = resolve(required("SCREENSHOT_ROOT")); mkdirSync(screenshotRoot, { recursive: true });
-const captureEnvironmentArgs = ["-e", `SCREENSHOT_ROOT=${screenshotRoot}`, "-e", `THEME=${captureTheme}`, "-e", `PLATFORM=${capturePlatform}`, "-e", `PATTERNLY_DEV_CLIENT_URL=${devClientUrl}`];
+const captureEnvironmentArgs = ["-e", `SCREENSHOT_ROOT=${screenshotRoot}`, "-e", `THEME=${captureTheme}`, "-e", `THEME_LABEL=${captureThemeLabel}`, "-e", `DEVICE_PROFILE=${captureDeviceProfile}`, "-e", `PLATFORM=${capturePlatform}`, "-e", `PATTERNLY_DEV_CLIENT_URL=${devClientUrl}`];
 for (const requiredFlow of [DEV_MENU_FLOW, CONTENT_READY_FLOW, BOOTSTRAP_FLOW, flow]) if (!existsSync(requiredFlow)) throw new Error(`RC flow is missing: ${requiredFlow}`);
 if (run(adb, ["-s", serial, "get-state"]).trim() !== "device") throw new Error(`Android serial ${serial} is not online.`);
 run(adb, ["-s", serial, "reverse", `tcp:${metroPort}`, `tcp:${metroPort}`]); run(adb, ["-s", serial, "shell", "pm", "clear", APP_ID]); run(adb, ["-s", serial, "shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", devClientUrl, "-n", APP_ACTIVITY]);

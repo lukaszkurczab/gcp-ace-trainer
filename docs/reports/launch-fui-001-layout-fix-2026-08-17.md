@@ -3,6 +3,7 @@
 ## Stan
 
 Implementacja została wypchnięta na `origin/main` w commicie `8daf59f`.
+Runner screenshotów został uzupełniony o przekazywanie wymaganych zmiennych `THEME_LABEL` i `DEVICE_PROFILE`.
 
 ## Root cause
 
@@ -26,4 +27,8 @@ Przeszły:
 - `node --import tsx --test tests/visualShell.test.ts tests/maestroM1Guided10.test.ts tests/maestroM2Custom10AtSessionEnd.test.ts`
 - `git diff --check`
 
-Pozostaje do wykonania: Maestro na Android 360×800 dp z font scale 1.5 oraz standardowy checkpoint setup na Android/iOS. Bez tego nie deklaruję jeszcze zamknięcia wizualnego FUI-001.
+Maestro przeszedł na emulatorze `Medium_Phone` przy Android 360×800 dp i font scale 1.5. Zrzut setupu:
+
+`/tmp/patternly-fui-001-shots-font15/visual-shell__core__020__custom-practice-setup-ready__light__android-360x800-font15.png`
+
+Na wszystkich trzech kaflach etykieta `QUESTIONS` pozostaje w jednej linii. Standardowy checkpoint setupu na iOS pozostaje poza zakresem tej weryfikacji.
