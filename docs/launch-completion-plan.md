@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `cba3d3bae604d183947eba4a2be3a31f70f45812` | QA run `31987801604` — success |
+| application | `main` | `e04e58a99bd1f3d85fe4be1e2ec0634b5f6c060f` | QA run `31987927778` — success |
 | content/publishing | `master` | `00c97e8ef0d1710e9b8c51e6d5b4740e50cecd32` | Content publishing run `31985200947` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
