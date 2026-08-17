@@ -293,7 +293,7 @@ function SelectableOption({ label, meta, onPress, selected, testID }: Selectable
       testID={testID}
     >
       <Text style={[styles.lengthValue, selected ? styles.selectedText : null]}>{label}</Text>
-      <Text style={styles.optionMeta}>{meta}</Text>
+      <Text numberOfLines={1} style={styles.optionMeta}>{meta}</Text>
     </Pressable>
   );
 }
@@ -356,6 +356,7 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   },
   lengthGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.md,
   },
   lengthOption: {
@@ -367,8 +368,10 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     flex: 1,
     gap: spacing.xs,
     minHeight: 92,
+    minWidth: 108,
     justifyContent: "center",
-    padding: spacing.md,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.md,
   },
   selectedOption: {
     backgroundColor: palette.primarySoft,
