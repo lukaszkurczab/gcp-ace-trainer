@@ -72,6 +72,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CODING-INTERVIEW-MODE-MATRIX-001", ["canonical-coding-interview-mode-matrix"]],
       ["CODING-INTERVIEW-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
       ["PRACTICE-SETUP-RECOVERY-COPY-001", ["practice-setup-recovery-copy"]],
+      ["CERTIFICATION-RESULT-TRUTHFUL-001", ["certification-result-truthful-summary"]],
       ["CODING-INTERVIEW-INDEPENDENT-PRACTICE-001", ["canonical-independent-practice-contract"]],
       ["CODING-INTERVIEW-PROGRESS-EVIDENCE-001", ["coding-interview-progress-evidence-contract"]],
       ["TRACK-PRESENTATION-001", ["track-presentation-contract"]],
@@ -549,6 +550,7 @@ test("locks the Product Owner-approved Free-package interaction reference and it
       { sourcePathPrefix: "src/features/practice/", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/review/AnswerReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ExamReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/exam/ResultScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
     ],
   });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(contract, { status: "not-ready" }), undefined);

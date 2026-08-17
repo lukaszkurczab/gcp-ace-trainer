@@ -32,6 +32,8 @@ requirements:
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
   - id: PRACTICE-SETUP-RECOVERY-COPY-001
     statement: Practice setup exposes one canonical back action, and active-session replacement copy names the learner-visible retained and lost consequences without implementation terminology.
+  - id: CERTIFICATION-RESULT-TRUTHFUL-001
+    statement: A finalized Certification session distinguishes no-answer endings from ordinary completion and shows its requested and actual lengths, answered and unanswered counts, active time, mode, and recorded domains in one truthful summary.
   - id: CODING-INTERVIEW-INDEPENDENT-PRACTICE-001
     statement: Independent Practice uses one explicitly selected declared interleaved scope, defaults to ten items, supports only ten or twenty items, exposes feedback after each durable answer, and never invents a forty-item session or substitute scope.
   - id: CODING-INTERVIEW-PROGRESS-EVIDENCE-001
@@ -217,6 +219,10 @@ requirementTestCoverage:
       testPath: tests/visualShell.test.ts
       testName: Practice setup keeps one canonical back action and recovery copy names learner-visible consequences
       requirementIds: [PRACTICE-SETUP-RECOVERY-COPY-001]
+    - id: certification-result-truthful-summary
+      testPath: tests/certificationResultPresentation.test.ts
+      testName: certification result distinguishes an empty ending and presents truthful session metrics
+      requirementIds: [CERTIFICATION-RESULT-TRUTHFUL-001]
     - id: canonical-independent-practice-contract
       testPath: tests/fullTrackModeContracts.test.ts
       testName: Independent Practice uses one declared scope, supports ten or twenty items, and never substitutes a scope
@@ -1073,6 +1079,8 @@ designReferences:
     - sourcePathPrefix: src/features/review/AnswerReviewScreen.tsx
       designReferenceId: pkg-04a-free-package-interactions
     - sourcePathPrefix: src/features/exam/ExamReviewScreen.tsx
+      designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/exam/ResultScreen.tsx
       designReferenceId: pkg-04a-free-package-interactions
 simulationOperationStateCtas:
   version: 1
