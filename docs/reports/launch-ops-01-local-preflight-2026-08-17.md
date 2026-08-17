@@ -14,6 +14,11 @@ deployment. OPS-01 therefore remains `PARTIAL`.
 - Worktree: clean and aligned with `origin/main` (`0/0`)
 - Content lock: `patternly-app-content-0019`
 
+The documentation update was pushed as application commit
+`b8f869caa7fdf329917db5b22c64650c0b0e93e1`; GitHub Actions QA run
+`31984183287` passed both the Recovery QA gate and the multi-track content
+release contract. The Node.js 20 deprecation notices are runner warnings only.
+
 ## Verified local evidence
 
 The following commands completed successfully on the exact starting commit:
@@ -65,4 +70,3 @@ approved source principal and temporary IAM grants, one sandbox Cloud Build,
 immutable digest verification, a sandbox Cloud Run revision check, sanitized
 logging/rollback evidence, and removal of temporary grants. Production remains
 out of scope until those sandbox proofs and the downstream provider gates pass.
-
