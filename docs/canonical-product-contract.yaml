@@ -30,6 +30,8 @@ requirements:
     statement: Coding Interview exposes exactly the declared mode matrix, including each mode's session, scope, feedback, timer, shortening, and reinsert behavior.
   - id: CODING-INTERVIEW-CUSTOM-PRACTICE-001
     statement: Custom Practice accepts only 10, 20, or 40 items and explicit afterEachAnswer or atSessionEnd feedback, uses the Guided Practice blueprint for an explicitly selected mental unit, and shares the one-active-session lifecycle with profile-owned reinsert.
+  - id: PRACTICE-SETUP-RECOVERY-COPY-001
+    statement: Practice setup exposes one canonical back action, and active-session replacement copy names the learner-visible retained and lost consequences without implementation terminology.
   - id: CODING-INTERVIEW-INDEPENDENT-PRACTICE-001
     statement: Independent Practice uses one explicitly selected declared interleaved scope, defaults to ten items, supports only ten or twenty items, exposes feedback after each durable answer, and never invents a forty-item session or substitute scope.
   - id: CODING-INTERVIEW-PROGRESS-EVIDENCE-001
@@ -211,6 +213,10 @@ requirementTestCoverage:
       testPath: tests/canonicalProductContract.test.ts
       testName: locks the Custom Practice contract required by CODING-INTERVIEW-CUSTOM-PRACTICE-001
       requirementIds: [CODING-INTERVIEW-CUSTOM-PRACTICE-001]
+    - id: practice-setup-recovery-copy
+      testPath: tests/visualShell.test.ts
+      testName: Practice setup keeps one canonical back action and recovery copy names learner-visible consequences
+      requirementIds: [PRACTICE-SETUP-RECOVERY-COPY-001]
     - id: canonical-independent-practice-contract
       testPath: tests/fullTrackModeContracts.test.ts
       testName: Independent Practice uses one declared scope, supports ten or twenty items, and never substitutes a scope

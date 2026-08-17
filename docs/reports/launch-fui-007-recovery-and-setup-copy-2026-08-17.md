@@ -20,4 +20,4 @@ Practice setup exposed the same back destination in the shared header and in a s
 - `node --import tsx --test tests/visualShell.test.ts tests/maestroM1Guided10.test.ts tests/maestroM2Custom10AtSessionEnd.test.ts`
 - `git diff --check`
 
-The focused contract suite passed 11/11 tests. Physical-device and Figma parity evidence remain separate launch gates.
+The focused UI suite passed 11/11 tests; the canonical contract suite passed 33/33 tests and the contract-change gate passed. Physical-device and Figma parity evidence remain separate launch gates.
