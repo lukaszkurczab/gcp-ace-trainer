@@ -285,17 +285,21 @@ Confirm exactly three internal launch families: `coding_interview`, `certificati
 
 **Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; application QA run `31981873905` passed the corresponding runtime and contract checks on application SHA `0c87ae91c9f239771a9cddddbfccc0772b84db08`. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
 
-#### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
+#### RUN-02 — Design Interview reference runtime — `BLOCKED by canonical Design blueprint and executable package inputs`
 
 Implement Backend System Design as the first Design Interview proof through the shared kernel. Support the interaction shapes actually present in approved content, including choice, ordering, and decision-matrix where applicable. Do not force Design content through Certification semantics or create a backend-only lifecycle.
 
-#### RUN-03 — Design Interview independence proof — `BLOCKED by RUN-02`
+**Verification (2026-08-17):** `RUN-01` is already `VERIFIED`, so it is no longer the blocking dependency. The current content source at `patternly-content` `master` `9226bb20e4220e5656d07ae5e505b1deb316536c` still declares `config/families/design_interview.json` with `supportedInteractions: ["choice"]`, `currentExecutableCapacity: 0`, no executable sessions, and no Free-node claim; its 8 Backend, 10 Frontend, and 9 OOD records are explicitly authoring-feasibility batches only. The 142/142 content test suite confirms productive case payloads and blocked slots are rejected. Implementing a Design runner now would require inventing the missing blueprint/package contract, so this task remains blocked by canonical executable Design inputs rather than by the already-closed family contract.
+
+#### RUN-03 — Design Interview independence proof — `BLOCKED by RUN-02 + canonical executable Design inputs`
 
 Admit OOP through the same family owner and remove any backend-specific generic assumptions. Then admit Frontend and prove its rich ordering/decision-matrix inventory without a second family or fallback transformation.
 
-#### RUN-04 — Provider-neutral Certification proof — `BLOCKED by RUN-01 + per-track approved package inputs`
+#### RUN-04 — Provider-neutral Certification proof — `BLOCKED by per-track approved package inputs`
 
 Use GCP as the current-source reference and AWS as the second proof. Remove provider-hardcoded branches. Then prove AZ-104 and AI-901 use the unchanged Certification lifecycle, with track-specific content and official-source profiles only.
+
+**Verification (2026-08-17):** `RUN-01` is `VERIFIED`; the remaining dependency is the approved immutable package/admission chain for the provider tracks. AI-901 has a current immutable package but no runtime/publishing admission, while the current readiness report still lacks package inputs for AWS and the Design tracks and current full-package/admission evidence for the remaining tracks.
 
 #### RUN-05 — Installed package resolver and atomic store — `BLOCKED by package delivery contract`
 
