@@ -14,14 +14,15 @@ deployment. OPS-01 therefore remains `PARTIAL`.
 - Worktree: clean and aligned with `origin/main` (`0/0`)
 - Content lock: `patternly-app-content-0019`
 
-The documentation update was pushed as application commit
-`b8f869caa7fdf329917db5b22c64650c0b0e93e1`; GitHub Actions QA run
-`31984183287` passed both the Recovery QA gate and the multi-track content
+The final documentation update was pushed as application commit
+`aaa1f8fa51363512e30dbb65823adb98d341bc8f`; GitHub Actions QA run
+`31984300974` passed both the Recovery QA gate and the multi-track content
 release contract. The Node.js 20 deprecation notices are runner warnings only.
 
 ## Verified local evidence
 
-The following commands completed successfully on the exact starting commit:
+The following commands completed successfully on the exact starting commit
+and were covered again by the pushed QA run:
 
 ```text
 npm run sync:content-release
