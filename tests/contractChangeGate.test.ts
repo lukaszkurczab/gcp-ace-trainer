@@ -401,6 +401,15 @@ test("accepts only documented design-neutral TRACK-01 identity maintenance", () 
     sourceDiffs: { [separatedResultPath]: exactSeparatedResultDiff },
   }), []);
 
+  const contractWithResultDesign = loadCanonicalProductContract();
+  const contractWithoutResultDesign: CanonicalProductContract = {
+    ...contractWithResultDesign,
+    designReferences: {
+      ...contractWithResultDesign.designReferences,
+      uiOwnership: contractWithResultDesign.designReferences.uiOwnership
+        .filter((ownership) => ownership.sourcePathPrefix !== separatedResultPath),
+    },
+  };
   for (const unsafeAddedLine of [
     '  return <Button onPress={() => navigation.navigate(ROUTES.HOME)}>{t("Done")}</Button>;',
     '  return <Button onPress={() => navigation.navigate(ROUTES.RESULT)} style={styles.changed}>{t("Done")}</Button>;',
@@ -413,7 +422,7 @@ test("accepts only documented design-neutral TRACK-01 identity maintenance", () 
     assert.deepEqual(evaluateContractChangeGate({
       changedPaths: [separatedResultPath, ...trackIdentityRequiredPaths],
       canonicalContractDiff: trackIdentityRequirementDiff,
-      contract: loadCanonicalProductContract(),
+      contract: contractWithoutResultDesign,
       sourceDiffs: { [separatedResultPath]: unsafeSeparatedResultDiff },
     }), [
       `UI change requires a Product Owner APPROVED design reference mapped to ${separatedResultPath}.`,

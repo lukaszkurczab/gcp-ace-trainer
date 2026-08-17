@@ -60,7 +60,7 @@ test("exactly the thirteen inventoried generic pending branches use LoadingState
   assert.match(source("src/features/practice/AlgorithmsScopeSelectionScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/AlgorithmsPracticeSummaryScreen.tsx"), /state\.kind === "loading"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/practice/CertificationPracticeSessionScreen.tsx"), /if \(!projection\) return <Screen[\s\S]*?<LoadingState/);
-  assert.match(source("src/features/exam/ResultScreen.tsx"), /if \(!result\) return <Screen><LoadingState/);
+  assert.match(source("src/features/exam/ResultScreen.tsx"), /if \(!summary\) return <Screen><LoadingState/);
   assert.match(source("src/features/exam/ExamReviewScreen.tsx"), /readState\.requestKey !== requestKey \|\| readState\.kind === "pending"[\s\S]*?<LoadingState/);
   assert.match(source("src/features/exam/ExamScreen.tsx"), /if \(!projection\) return <Screen><LoadingState/);
   assert.match(source("src/features/review/MistakesReviewScreen.tsx"), /\{loading \? \(\s*<LoadingState/);
