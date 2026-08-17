@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `0c87ae91c9f239771a9cddddbfccc0772b84db08` | QA run `31981873905` — success |
-| content/publishing | `master` | `810d0fd344bf168c89c742b4d22d562d959afcf5` | Content publishing run `31981572935` — success |
+| application | `main` | `723d92ee98b8900025da82a2d06b7bb20d486125` | QA run `31982242309` — success |
+| content/publishing | `master` | `9226bb20e4220e5656d07ae5e505b1deb316536c` | Content publishing run `31983559879` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -76,9 +76,9 @@ The green CI proves the current contracts, not the target launch catalogue:
 
 - Application CI and the release lock now contain three artifacts: Coding Interview, historical GCP, and the newly pinned AZ-104 Free-node package; the lock is still intentionally short of the eight-track launch catalogue.
 - The production track registry now exposes Coding Interview, GCP, and AZ-104; the remaining five tracks are not registered.
-- The content workflow validates the eight-track readiness report and all current authoring validators; the latest pushed report has a local exact-SHA gate of 142/142 and records all eight technical validators as passed.
+- The content workflow validates the eight-track readiness report and all current authoring validators; the latest pushed report has a local exact-SHA gate of 142/142 and records all eight technical validators as passed. AI-901 now also has a verified immutable release and bundled Free-node package, but remains explicitly not admitted for application runtime or publishing.
 - The content release gate still treats Coding Interview as the sole release candidate.
-- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, passing authoring validation, owner-authorized approval record, and a currently verified immutable release `patternly-az104-0001`; full-package completion, publishing admission, and runtime admission remain open.
+- AZ-104 retains its pushed authoring registration, canonical source bank, readiness row, passing authoring validation, owner-authorized approval record, and historical immutable release `patternly-az104-0001`; AI-901 now has current release `patternly-ai901-0001`, a 144-item Free-node package, and the same explicit publishing/runtime admission boundary.
 - All eight launch banks have owner-authorized approval records bound to exact source and item manifests; none is admitted for publishing or runtime.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
@@ -88,14 +88,14 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `810d0fd344bf168c89c742b4d22d562d959afcf5`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `9c6cefd976761198457eede380c3645210cab0b6`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `9226bb20e4220e5656d07ae5e505b1deb316536c`; current source identity is `e73c7314eee7b2cd3f53b04c952b6af6526d3685`. The application registry/lock last changed at `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` and remains intentionally short of the eight-track launch catalogue.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
 | Coding Interview | present | 3,404 items; 2,827 choice, 279 complexity, 298 ordering | present; 158-item `complexity_and_constraints` package | approved; record bound to source/item manifest | not admitted in current readiness report | registered; pinned historical immutable release | `PARTIAL` |
 | GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | approved; record bound to source/item manifest | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
 | AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL` |
-| Azure AI-901 | present | 752 choice items; 5 nodes | absent | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL` |
+| Azure AI-901 | present | 752 choice items; 5 nodes | present; 144-item immutable `patternly-ai901-0001` Free-node package | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL / PACKAGE-VERIFIED` |
 | Azure AZ-104 | present | 1,288 choice items; 9 nodes; 75 blocks | present; immutable `patternly-az104-0001` bundled package | approved; record bound to source/item manifest | not admitted | registered with pinned Free-node package; no runtime admission | `PARTIAL / PACKAGE-PINNED` |
 | Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
 | Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
@@ -106,7 +106,7 @@ Content facts below come from `evidence/readiness/eight-track-launch-readiness.j
 - “Prepared track” and “launch-admitted track” are different states. Candidate presence does not authorize production exposure.
 - No release lock update is allowed until a track has an approved source bank, complete Free node, immutable release, package proof, family/runtime proof, and explicit publishing/runtime admission.
 - The historical GCP artifact must never be silently relabelled as the current 2,981-item GCP source. Either publish a new current GCP release and migrate atomically, or retain the old release as immutable history only.
-- AZ-104 source ingress, owner approval, and bundled Free-node packaging are now closed; its remaining blockers are immutable full-package verification plus explicit publishing and runtime admission.
+- AI-901 source ingress, owner approval, technical evidence, immutable release, inventory, and bundled Free-node packaging are now closed; its remaining blockers are explicit publishing/runtime admission and application lock/runtime integration. AZ-104 remains historical-package evidence until its current full-package chain is rebuilt after shared pipeline changes.
 
 ---
 
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `9c6cefd976761198457eede380c3645210cab0b6` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31980082670` passed the recovery/static and multi-track release jobs. Content commit `810d0fd344bf168c89c742b4d22d562d959afcf5` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d`, records all eight technical validators as passed, verifies the current AZ-104 immutable release, and passes 142/142 local tests; content publishing run `31981572935` passed on that exact SHA. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, AZ-104 has a currently verified immutable release, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
+**Verification (2026-08-17):** application commit `723d92ee98b8900025da82a2d06b7bb20d486125` still pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31982242309` passed the recovery/static and multi-track release jobs. Content commit `9226bb20e4220e5656d07ae5e505b1deb316536c` binds all eight approvals/review packets to source `e73c7314eee7b2cd3f53b04c952b6af6526d3685`, records all eight technical validators as passed, publishes current AI-901 immutable release `patternly-ai901-0001` and its 144-item Free-node package, and passes 142/142 local tests; content publishing run `31983559879` passed on that exact SHA. The report names exactly eight launch tracks; Coding/GCP/AZ have existing bundled package evidence and AI-901 now has current immutable package evidence, while all eight remain explicitly not admitted for publishing/runtime. The application readiness report is still `not_ready` with 34 blockers, including lock scope mismatch, four missing Free packages, seven missing current full packages, and eight publishing plus eight runtime admissions.
 
 **Unlocks:** every remaining lane.
 
@@ -231,7 +231,7 @@ All sentinels are recorded in section 5 against the post-`LR-01` exact SHAs. The
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
-**Verification (2026-08-17):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; after current AZ-104 immutable-artifact and eight-validator verification the report is correctly `not_ready` with 35 blockers.
+**Verification (2026-08-17):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; after AI-901 immutable package evidence and the current content report, the application report is correctly `not_ready` with 34 blockers.
 
 ---
 
@@ -242,6 +242,12 @@ Add a deterministic non-passing-yet launch-readiness report that lists every blo
 Use the existing `microsoft-azure-administrator-associate-az-104` authoring registration to add its missing canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
 **Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
+
+#### CNT-01A — AI-901 canonical ingress and Free-node release — `VERIFIED`
+
+Install the existing AI-901 node-authoring source through the canonical Certification adapter, derive the checked-in taxonomy/track/profile configuration from the 752 authored items, emit technical evidence, and produce an immutable full-track release plus a profile-closed 144-item Free-node package. Keep the Patternly practice profile explicit where Microsoft does not publish an exact simulation item count; do not claim Microsoft affiliation or provider-faithful exam simulation.
+
+**Verification (2026-08-17):** content `master` `9226bb20e4220e5656d07ae5e505b1deb316536c`, CI `31983559879`, technical evidence for source commit `a050e8a2417a0f88877c020c9d4142279f38d855`, immutable release `patternly-ai901-0001`, inventory and package `microsoft-azure-ai-fundamentals-ai-901-free-node-0001`; local and CI content tests pass 142/142. Publishing and runtime admission remain intentionally open.
 
 #### CNT-02 — Eight-track deterministic readiness report — `VERIFIED`
 
@@ -255,19 +261,19 @@ Run or create uniform validators for every track. Track-specific validators may 
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-17):** content commit `810d0fd344bf168c89c742b4d22d562d959afcf5` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, refreshed Coding technical/simulation evidence, current AZ-104 immutable-artifact verification, and explicit passed results for all eight technical validators. Local `npm test` passes 142/142; readiness and packet regeneration are deterministic; `git diff --check` passes; content publishing run `31981572935` passes the exact content gate.
+**Verification (2026-08-17):** content commit `9226bb20e4220e5656d07ae5e505b1deb316536c` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `e73c7314eee7b2cd3f53b04c952b6af6526d3685`, refreshed Coding technical/simulation evidence, current AI-901 immutable release/package evidence, and explicit passed results for all eight technical validators. Local `npm test` passes 142/142; readiness and packet regeneration are deterministic; `git diff --check` passes; content publishing run `31983559879` passes the exact content gate.
 
 #### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
 
-The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and bound to source commit `159037c531842842c64758634a1d513b98826b2d`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
+The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and bound to source commit `e73c7314eee7b2cd3f53b04c952b6af6526d3685`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
 
 #### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by canonical family package inputs`
 
-Package construction may proceed after technical closure and the explicit family dispatch contract, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes Coding, historical GCP, and AZ-104 bundled Free-node packages; the publisher still lacks complete canonical package inputs for AWS, AI-901, Backend, Frontend, and OOP. AZ-104 has crossed the package-input boundary, but its package remains source-only readiness evidence until immutable full-package, publishing, and runtime admission are explicitly recorded. Do not copy GCP configuration, infer undocumented provider simulation behavior, fabricate difficulty or package metadata, or relabel historical GCP artifacts; add provider-neutral inputs and explicit adapters only when those contracts are defined and tested.
+Package construction may proceed after technical closure and the explicit family dispatch contract, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes Coding, historical GCP, AZ-104, and current AI-901 bundled Free-node packages; the publisher still lacks complete canonical package inputs for AWS, Backend, Frontend, and OOP. AI-901 has crossed the package-input and immutable-release boundary, but remains outside app runtime/publishing admission. Do not copy GCP configuration, infer undocumented provider simulation behavior, fabricate difficulty or package metadata, or relabel historical GCP artifacts; add provider-neutral inputs and explicit adapters only when those contracts are defined and tested.
 
 #### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05`
 
-Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate still requires a new version; historical `gcp-ace-0016` remains history. The AZ-104 package currently pinned by the app is not yet a publishing/runtime admission record.
+Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate still requires a new version; historical `gcp-ace-0016` remains history. AI-901 now has release `patternly-ai901-0001` and a verified 144-item Free-node package, but no publishing/runtime admission record; the app lock must not be updated until that admission boundary is explicitly closed.
 
 ---
 
