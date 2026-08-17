@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `b1859958a2ed51a5b31c35c11ae8ead115472b94` | QA run `31984636626` — success |
-| content/publishing | `master` | `9226bb20e4220e5656d07ae5e505b1deb316536c` | Content publishing run `31983559879` — success |
+| application | `main` | `6bcefe3acc09f79fdc20085000761adeb51fca9e` | QA run `31986971459` — success |
+| content/publishing | `master` | `00c97e8ef0d1710e9b8c51e6d5b4740e50cecd32` | Content publishing run `31985200947` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `9226bb20e4220e5656d07ae5e505b1deb316536c`; current source identity is `e73c7314eee7b2cd3f53b04c952b6af6526d3685`. The application registry/lock last changed at `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` and remains intentionally short of the eight-track launch catalogue.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at current content commit `00c97e8ef0d1710e9b8c51e6d5b4740e50cecd32`; current source identity is `e73c7314eee7b2cd3f53b04c952b6af6526d3685`. The application registry/lock last changed at `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` and remains intentionally short of the eight-track launch catalogue.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
