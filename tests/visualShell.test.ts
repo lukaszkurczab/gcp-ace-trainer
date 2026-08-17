@@ -144,3 +144,13 @@ test("representative Home, Settings, setup, session, and result routes keep cano
   assert.match(result, /<Screen/);
   assert.match(rootNavigator, /name=\{ROUTES\.ALGORITHMS_PRACTICE_SUMMARY\}[\s\S]*?options=\{\{ title: t\("Session result"\) \}\}/);
 });
+
+test("Practice setup keeps one canonical back action and recovery copy names learner-visible consequences", () => {
+  const setup = source("src/features/practice/PracticeSetupScreen.tsx");
+  const session = source("src/features/practice/PracticeSessionScreen.tsx");
+
+  assert.equal((setup.match(/\{t\("Back"\)\}/g) ?? []).length, 0);
+  assert.match(setup, /<AppShellHeader[\s\S]*backAction=\{\{ onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
+  assert.match(session, /Your saved answers remain available, but this session cannot be resumed\./);
+  assert.doesNotMatch(session, /durable records stay available/);
+});

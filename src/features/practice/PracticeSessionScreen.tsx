@@ -272,7 +272,7 @@ export function PracticeSessionScreen({ navigation, route }: PracticeSessionScre
   function confirmReplacement(session: TrainingSession) {
     Alert.alert(
       "Abandon active session?",
-      `This ends the active ${isAlgorithmModeId(session.modeId) ? getAlgorithmMode(session.modeId).title : "learning"} session. Its durable records stay available, but it cannot be resumed.`,
+      `This ends the active ${isAlgorithmModeId(session.modeId) ? getAlgorithmMode(session.modeId).title : "learning"} session. Your saved answers remain available, but this session cannot be resumed.`,
       [
         { text: "Keep session", style: "cancel" },
         { text: `Abandon and start ${getAlgorithmMode(requestedMode).title}`, style: "destructive", onPress: () => { void replaceActiveSession(); } },

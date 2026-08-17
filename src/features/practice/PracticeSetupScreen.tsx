@@ -261,9 +261,6 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         <View style={styles.actions}>
           {setupError ? <Text accessibilityRole="alert" style={styles.error}>{t(setupError)}</Text> : null}
           <Button onPress={startSession} testID={runtimeSelectors.practice.startSession()}>{t("Start session")}</Button>
-          <Button onPress={() => navigation.goBack()} variant="secondary">
-            {t("Back")}
-          </Button>
         </View>
       </Screen>
     </View>
