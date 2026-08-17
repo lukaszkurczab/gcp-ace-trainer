@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `2047e6579a41c6142ac26c92e5c5ee594a3bb66f` | QA run `31979778320` — success |
-| content/publishing | `master` | `7ad31b74c107e7cab215ab16e7c532d811c5ff68` | Content publishing run `31979631355` — success |
+| application | `main` | `9c6cefd976761198457eede380c3645210cab0b6` | QA run `31980082670` — success |
+| content/publishing | `master` | `c6aabe956f7c8d650559785956d42ccd676fd443` | local exact-SHA gate `141/141` — GitHub Actions result pending |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -76,9 +76,9 @@ The green CI proves the current contracts, not the target launch catalogue:
 
 - Application CI and the release lock now contain three artifacts: Coding Interview, historical GCP, and the newly pinned AZ-104 Free-node package; the lock is still intentionally short of the eight-track launch catalogue.
 - The production track registry now exposes Coding Interview, GCP, and AZ-104; the remaining five tracks are not registered.
-- The content workflow validates the eight-track readiness report and all current authoring validators.
+- The content workflow validates the eight-track readiness report and all current authoring validators; the latest pushed report has a local exact-SHA gate of 141/141.
 - The content release gate still treats Coding Interview as the sole release candidate.
-- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, passing authoring validation, owner-authorized approval record, and bundled Free-node package pinned to immutable release `patternly-az104-0001`; full-package verification, publishing admission, and runtime admission remain open.
+- AZ-104 now has a pushed authoring registration, canonical source bank, readiness row, passing authoring validation, owner-authorized approval record, and a currently verified immutable release `patternly-az104-0001`; full-package completion, publishing admission, and runtime admission remain open.
 - All eight launch banks have owner-authorized approval records bound to exact source and item manifests; none is admitted for publishing or runtime.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
@@ -88,7 +88,7 @@ The correct strategy is not a rewrite. Preserve the verified kernel and cut over
 
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `2047e6579a41c6142ac26c92e5c5ee594a3bb66f`.
+Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records at content commit `c6aabe956f7c8d650559785956d42ccd676fd443`; current source identity is `159037c531842842c64758634a1d513b98826b2d`. The application registry/lock is at `9c6cefd976761198457eede380c3645210cab0b6`.
 
 | Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `2047e6579a41c6142ac26c92e5c5ee594a3bb66f` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; `npm run typecheck`, focused AZ/package/contract tests, and the full 604-test suite pass locally. QA run `31979778320` passed the recovery/static and multi-track release jobs. Content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d` and carries refreshed Coding technical evidence; content `npm test` passes 140/140 and publishing run `31979631355` passes the complete content gate. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
+**Verification (2026-08-17):** application commit `9c6cefd976761198457eede380c3645210cab0b6` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31980082670` passed the recovery/static and multi-track release jobs. Content commit `c6aabe956f7c8d650559785956d42ccd676fd443` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d`, verifies the current AZ-104 immutable release, and passes 141/141 tests plus the exact local publishing gate; the corresponding GitHub Actions result is still pending. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, AZ-104 has a currently verified immutable release, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
 
 **Unlocks:** every remaining lane.
 
@@ -231,7 +231,7 @@ All sentinels are recorded in section 5 against the post-`LR-01` exact SHAs. The
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
-**Verification (2026-08-17):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; the current report is correctly `not_ready` with 44 blockers.
+**Verification (2026-08-17):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; after current AZ-104 immutable-artifact verification the report is correctly `not_ready` with 43 blockers.
 
 ---
 
@@ -255,7 +255,7 @@ Run or create uniform validators for every track. Track-specific validators may 
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-17):** content commit `7ad31b74c107e7cab215ab16e7c532d811c5ff68` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, and refreshed Coding technical/simulation evidence for that publisher input. Local `npm test` passes 140/140; readiness and packet regeneration are deterministic; `git diff --check` passes; publishing run `31979631355` passes the exact content gate.
+**Verification (2026-08-17):** content commit `c6aabe956f7c8d650559785956d42ccd676fd443` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, refreshed Coding technical/simulation evidence, and current AZ-104 immutable-artifact verification. Local `npm test` passes 141/141; readiness and packet regeneration are deterministic; `git diff --check` passes; the exact local publishing gate passes while GitHub Actions evidence for this SHA is pending.
 
 #### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
 
