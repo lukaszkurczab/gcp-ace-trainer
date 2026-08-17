@@ -15,7 +15,7 @@ Only pushed canonical branches count as implementation or status evidence:
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
 | application | `main` | `9c6cefd976761198457eede380c3645210cab0b6` | QA run `31980082670` — success |
-| content/publishing | `master` | `c6aabe956f7c8d650559785956d42ccd676fd443` | local exact-SHA gate `141/141` — GitHub Actions result pending |
+| content/publishing | `master` | `c6aabe956f7c8d650559785956d42ccd676fd443` | Content publishing run `31980770698` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -219,7 +219,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `9c6cefd976761198457eede380c3645210cab0b6` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31980082670` passed the recovery/static and multi-track release jobs. Content commit `c6aabe956f7c8d650559785956d42ccd676fd443` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d`, verifies the current AZ-104 immutable release, and passes 141/141 tests plus the exact local publishing gate; the corresponding GitHub Actions result is still pending. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, AZ-104 has a currently verified immutable release, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
+**Verification (2026-08-17):** application commit `9c6cefd976761198457eede380c3645210cab0b6` pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31980082670` passed the recovery/static and multi-track release jobs. Content commit `c6aabe956f7c8d650559785956d42ccd676fd443` binds all eight approvals/review packets to source `159037c531842842c64758634a1d513b98826b2d`, verifies the current AZ-104 immutable release, and passes 141/141 tests plus the exact publishing gate; content publishing run `31980770698` passed on that exact SHA. The report names exactly eight launch tracks; Coding/GCP/AZ have bundled package evidence, AZ-104 has a currently verified immutable release, while all eight remain explicitly not admitted for publishing/runtime and the source-only report does not verify immutable full-package sets.
 
 **Unlocks:** every remaining lane.
 
@@ -255,7 +255,7 @@ Run or create uniform validators for every track. Track-specific validators may 
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-17):** content commit `c6aabe956f7c8d650559785956d42ccd676fd443` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, refreshed Coding technical/simulation evidence, and current AZ-104 immutable-artifact verification. Local `npm test` passes 141/141; readiness and packet regeneration are deterministic; `git diff --check` passes; the exact local publishing gate passes while GitHub Actions evidence for this SHA is pending.
+**Verification (2026-08-17):** content commit `c6aabe956f7c8d650559785956d42ccd676fd443` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `159037c531842842c64758634a1d513b98826b2d`, refreshed Coding technical/simulation evidence, and current AZ-104 immutable-artifact verification. Local `npm test` passes 141/141; readiness and packet regeneration are deterministic; `git diff --check` passes; content publishing run `31980770698` passes the exact content gate.
 
 #### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
 
