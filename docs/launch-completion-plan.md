@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `a72be8332dfbe6c0ce445385e61967a54addae85` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `bf0073260e421184560b652228da8fb6d5c41738` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -162,6 +162,14 @@ removed because it competed with the prepared transparent processing pattern;
 all thirteen existing consumers and their unavailable/error boundaries remain
 unchanged. Evidence is recorded in
 `docs/reports/launch-fui-012-processing-state-2026-08-20.md`.
+
+The appearance settings route then reconciled the canonical `Pattern /
+Appearance Choice` (`619:5237`) and its System, Light, and Dark variants
+(`619:5222`, `619:5227`, `619:5232`). The existing `ChoiceRow` now renders the
+60×48 decorative preview, preserves responsive copy and radio semantics, and
+uses theme-owned preview tokens; the language route remains on the plain choice
+row. Evidence is recorded in
+`docs/reports/launch-fui-013-appearance-choice-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
 
@@ -484,7 +492,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Processing State slice`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Appearance Choice slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
