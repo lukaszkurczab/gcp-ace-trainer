@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `f7720be` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `25a82f2` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards, narrowed Home Figma ownership) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -136,6 +136,9 @@ action were not fabricated because their canonical runtime values/commands are
 not present. Evidence is recorded in
 `docs/reports/launch-fui-017-home-coding-ready-2026-08-20.md`; final iOS light
 and dark regular Maestro runs passed six checkpoints each.
+The follow-up contract commit `25a82f2` narrows the approved design ownership to
+the two changed Home screens so unrelated Home UI changes still require their
+own approved reference.
 
 The bounded slice updates the repository-owned navigation tokens and
 `BottomTabBar` for the exact 24 px icon, 11/15 caption, 4 px gap, 8 px vertical
