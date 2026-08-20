@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `98fbbd5` (DES-002/OPS-01 evidence refresh after FUI-008..017, DATA-02, SEC-01 and DATA-01) | [QA run 32383014164](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383014164) — Recovery QA and multi-track content contract successful |
+| application | `main` | `be32cc6` (LR-002 sentinel rebaseline plus DES-002/OPS-01 evidence refresh after FUI-008..017, DATA-02, SEC-01 and DATA-01) | [QA run 32383520294](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383520294) — Recovery QA and multi-track content contract successful |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `98fbbd5ac4ffa6febebdb1b6e0b385a435f87322`, with exact-SHA QA run `32383014164` green after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002 and OPS-01 evidence slices.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `be32cc63adb3361f3f307c2c7b4e8fcbf0369246`, with exact-SHA QA run `32383520294` green after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -287,7 +287,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded for `ad6cbe1`; application run `32383014164` succeeded for exact pushed `98fbbd5` |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded for `ad6cbe1`; application run `32383520294` succeeded for exact pushed `be32cc6` |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 

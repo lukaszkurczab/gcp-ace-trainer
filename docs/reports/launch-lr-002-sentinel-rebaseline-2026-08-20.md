@@ -11,7 +11,7 @@ human gate into a pass.
 
 | Repository | Branch | Exact HEAD | Remote | Exact-SHA CI |
 |---|---|---|---|---|
-| application | `main` | `98fbbd5ac4ffa6febebdb1b6e0b385a435f87322` | aligned `0/0` | [QA run 32383014164](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383014164), Recovery QA and Multi-track content release contract successful |
+| application | `main` | `be32cc63adb3361f3f307c2c7b4e8fcbf0369246` | aligned `0/0` | [QA run 32383520294](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383520294), Recovery QA and Multi-track content release contract successful |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | aligned `0/0` | [Content publishing run 31988928289](https://github.com/lukaszkurczab/patternly-content/actions/runs/31988928289), successful |
 
 ## Sentinel verification
@@ -24,7 +24,7 @@ human gate into a pass.
   sentinels; the current exact-SHA QA and content publishing run are the
   required pushed evidence. No changed production code invalidated their
   ownership in this documentation-only rebaseline.
-- `S-CI-HEAD`: now points to application `98fbbd5` / run `32383014164` and
+- `S-CI-HEAD`: now points to application `be32cc6` / run `32383520294` and
   content `ad6cbe1` / run `31988928289`; the former stale baseline references
   are retired from the current plan.
 
