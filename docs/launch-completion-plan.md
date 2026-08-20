@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `d91f47c473c917fa26d3ef7500d6ba7d321a4e4a` (Bottom Navigation + shared Icon Button) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `79e5759f6a2847d3929f19d721cc435445aee7b6` (Bottom Navigation + shared Icon Button + grouped Settings rows) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `cb211c2…`, and this plan update must be verified against its resulting exact SHA.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `79e5759…`, and this plan update must be verified against its resulting exact SHA.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -135,6 +135,14 @@ right-chevron path were removed. Evidence is recorded in
 `docs/reports/launch-fui-009-screen-header-2026-08-20.md`; the slice preserves
 existing route behavior and does not claim the full Screen Header pattern is
 implemented across every product surface.
+
+The next settings slice reconciled `Settings Section` (`456:4995` dark,
+`456:5365` light), the canonical `List Row` (`155:900`), and its supporting
+text variant. Existing grouped settings rows now use the 12 px card radius,
+16/14 px padding, 32 px settings icon treatment, Figma-aligned 14/21 and
+11/15 text tokens, and 8 px separation between rows. Existing callbacks and
+selection/storage states remain unchanged. Evidence is recorded in
+`docs/reports/launch-fui-010-settings-section-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
 
@@ -179,7 +187,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `d91f47c…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `79e5759…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -457,7 +465,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Screen Header / Icon Button slice`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Settings Section / List Row slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
