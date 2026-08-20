@@ -2,7 +2,6 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import { spacing, typography, type AppColors } from "../theme";
-import { Card } from "./Card";
 
 type LoadingStateProps = Readonly<{
   description?: string;
@@ -14,46 +13,57 @@ export function LoadingState({ description, title }: LoadingStateProps) {
   const { colors } = useAppPreferences();
 
   return (
-    <Card style={styles.card}>
-      <View
-        accessibilityLabel={description ? `${title}. ${description}` : title}
-        accessibilityLiveRegion="polite"
-        accessibilityRole="progressbar"
-        accessibilityState={{ busy: true }}
-        accessible
-        style={styles.content}
-      >
-        <ActivityIndicator accessibilityElementsHidden color={colors.primary} importantForAccessibility="no" size="small" />
-        <View style={styles.copy}>
-          <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
-          {description ? <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text> : null}
-        </View>
+    <View
+      accessibilityLabel={description ? `${title}. ${description}` : title}
+      accessibilityLiveRegion="polite"
+      accessibilityRole="progressbar"
+      accessibilityState={{ busy: true }}
+      accessible
+      style={styles.content}
+    >
+      <View style={styles.statusIcon}>
+        <ActivityIndicator accessibilityElementsHidden color={colors.processing.icon} importantForAccessibility="no" size="small" />
       </View>
-    </Card>
+      <View style={styles.copy}>
+        <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
+        {description ? <Text maxFontSizeMultiplier={2} style={styles.description}>{description}</Text> : null}
+      </View>
+    </View>
   );
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  card: {
-    backgroundColor: palette.elevatedSurface,
-  },
   content: {
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: spacing.md,
+    width: "100%",
+  },
+  statusIcon: {
+    alignItems: "center",
+    backgroundColor: palette.processing.iconSurface,
+    borderColor: palette.processing.statusBorder,
+    borderRadius: 28,
+    borderWidth: 1,
+    height: 28,
+    justifyContent: "center",
+    width: 28,
   },
   copy: {
-    gap: spacing.xs,
+    alignItems: "center",
+    gap: spacing.sm,
     minWidth: 0,
     width: "100%",
   },
   description: {
-    ...typography.body,
-    color: palette.textSecondary,
+    ...typography.processingDescription,
+    color: palette.processing.textSecondary,
     flexShrink: 1,
+    textAlign: "center",
   },
   title: {
-    ...typography.heading,
-    color: palette.textPrimary,
+    ...typography.processingTitle,
+    color: palette.processing.textPrimary,
     flexShrink: 1,
+    textAlign: "center",
   },
 });

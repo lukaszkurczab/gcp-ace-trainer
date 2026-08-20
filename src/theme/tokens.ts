@@ -57,6 +57,13 @@ export const colors = {
       surface: "#FBFDFC",
       textPrimary: "#102433",
       textSecondary: "#506472"
+    },
+    processing: {
+      icon: "#102433",
+      iconSurface: "#F3F7F6",
+      statusBorder: "#287A4B",
+      textPrimary: "#102433",
+      textSecondary: "#506472"
     }
   },
   dark: {
@@ -109,6 +116,13 @@ export const colors = {
       active: "#20C997",
       border: "#1E293B",
       surface: "#0E1B31",
+      textPrimary: "#F1F5F9",
+      textSecondary: "#AAB6C8"
+    },
+    processing: {
+      icon: "#F1F5F9",
+      iconSurface: "#081328",
+      statusBorder: "#34B564",
       textPrimary: "#F1F5F9",
       textSecondary: "#AAB6C8"
     }
@@ -193,6 +207,16 @@ export const typography = {
   listRowDetail: {
     fontSize: 11,
     lineHeight: 15,
+    fontWeight: "400"
+  },
+  processingTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: "600"
+  },
+  processingDescription: {
+    fontSize: 14,
+    lineHeight: 22,
     fontWeight: "400"
   }
 } as const;

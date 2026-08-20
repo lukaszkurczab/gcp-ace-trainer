@@ -33,13 +33,15 @@ test("LoadingState is the one accessible and reflowing generic pending primitive
   const exports = source("src/components/index.ts");
 
   assert.match(exports, /export \* from "\.\/LoadingState"/);
-  assert.match(loadingState, /<Card style=\{styles\.card\}>/);
-  assert.match(loadingState, /<ActivityIndicator[\s\S]*color=\{colors\.primary\}/);
+  assert.match(loadingState, /<View[\s\S]*style=\{styles\.statusIcon\}>[\s\S]*<ActivityIndicator[\s\S]*color=\{colors\.processing\.icon\}/);
   assert.match(loadingState, /accessibilityRole="progressbar"/);
   assert.match(loadingState, /accessibilityState=\{\{ busy: true \}\}/);
   assert.match(loadingState, /accessibilityLiveRegion="polite"/);
   assert.match(loadingState, /accessibilityLabel=\{description \? `\$\{title\}\. \$\{description\}` : title\}/);
   assert.match(loadingState, /description\?: string/);
+  assert.match(loadingState, /statusIcon:\s*\{[\s\S]*?borderRadius:\s*28,[\s\S]*?height:\s*28,[\s\S]*?width:\s*28/);
+  assert.match(loadingState, /processingTitle/);
+  assert.match(loadingState, /processingDescription/);
   assert.match(loadingState, /maxFontSizeMultiplier=\{2\}/);
   assert.match(loadingState, /copy:\s*\{[\s\S]*?minWidth:\s*0,[\s\S]*?width:\s*"100%"/);
   assert.match(loadingState, /title:\s*\{[\s\S]*?flexShrink:\s*1/);
