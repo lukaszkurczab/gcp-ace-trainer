@@ -151,6 +151,12 @@ This confirms route/selector behavior and captured appearance only; the
 Expo launcher overlay remains a simulator artifact, and no Figma parity or
 release readiness is inferred from it.
 
+The exact pushed application baseline `00784ef` was then rechecked with
+`npm test`: 619/619 tests passed. The first sandboxed invocation could not
+bind localhost for server tests (`EPERM`); the approved local-network rerun
+passed without failures. Evidence is recorded in
+`docs/reports/launch-current-head-verification-2026-08-20.md`.
+
 The bounded slice updates the repository-owned navigation tokens and
 `BottomTabBar` for the exact 24 px icon, 11/15 caption, 4 px gap, 8 px vertical
 padding, 20×2 active indicator, pressed state, and 200% text behavior. It does
