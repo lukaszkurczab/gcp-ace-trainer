@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `b086c3` (release-signing boundary evidence and reconciled launch plan) | Exact-SHA QA run `32393541571` passed for this pushed SHA; application tests 622/622. |
+| application | `main` | `5253fb0` (reproducible EAS release profiles, version policy, and archive exclusions) | Exact-SHA QA run `32394185998` passed for this pushed SHA; application tests 622/622. |
 | content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 142/142 tests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `b086c305b028f537510a8df2d229b1551e519b04`, which records the canonical fail-closed Android release-signing boundary and reconciles the launch plan after the current-head evidence reconciliation. Exact-SHA QA run `32393541571` passed for this SHA with application tests 622/622.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `5253fb01830bb1d4e052da49067f802eff1e60fd`, which records the canonical fail-closed Android release-signing boundary plus reproducible EAS profiles, version policy, and archive exclusions. Exact-SHA QA run `32394185998` passed for this SHA with application tests 622/622.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -165,6 +165,15 @@ CI passed. A local Gradle debug build could not proceed because this machine
 does not expose an Android SDK; no signed release artifact or store/provider
 credential evidence is inferred. OPS-06 and BLK-10 therefore remain blocked by
 external signing, provider, and store gates.
+
+The repository-side EAS packet is now present in `eas.json`: commit-required
+`development`, `preview`, and `production` profiles own explicit distribution
+and update channels; production enables controlled version auto-increment while
+the app uses `runtimeVersion.policy=appVersion` with seeded iOS/Android build
+numbers. `.easignore` excludes generated native trees, local artifacts, and
+credential/environment patterns. This closes the repository configuration slice
+only; EAS project ownership, credentials, update publication, and store submit
+remain external gates.
 
 An earlier pushed application baseline `00784ef` was then rechecked with
 `npm test`: 619/619 tests passed. The first sandboxed invocation could not
@@ -333,7 +342,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | application QA run `32393541571` and content architecture run `32388398769` both passed for pushed `b086c3`/`12b99c7`; application `npm test` is 622/622 and content `npm test` is 142/142 |
+| `S-CI-HEAD` exact-SHA CI | application QA run `32394185998` and content architecture run `32388398769` both passed for pushed `5253fb0`/`12b99c7`; application `npm test` is 622/622 and content `npm test` is 142/142 |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -687,7 +696,7 @@ Promote one professional domain and sender; deploy public/auth/legal/support/del
 
 Enable the exact seven-day target if provider capability supports it; run a sanitized sandbox restore; prove tombstones are re-applied and deleted accounts do not resurrect. Backup is disaster recovery, not user account recovery.
 
-#### OPS-06 — Release configuration — `PARTIAL — repository-side signing boundary verified; blocked by DES-02 + final provider/store identifiers`
+#### OPS-06 — Release configuration — `PARTIAL — EAS profiles, version policy, archive exclusions, and signing boundary verified; blocked by DES-02 + final provider/store identifiers`
 
 Add canonical `eas.json`, build/update channels, app/build version policy, icons/splash/adaptive icon, privacy manifests/declarations, notification/link config, secret/environment boundaries, reproducible prebuild, and release bundle exclusion checks. Current `0.1.0` and minimal `app.json` are not a release packet.
 
