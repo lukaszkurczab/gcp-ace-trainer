@@ -1,0 +1,17 @@
+# EAS source archives must contain canonical source only.
+node_modules/
+.expo/
+dist/
+web-build/
+android/
+ios/
+artifacts/
+
+# Credentials and local environment files never enter an EAS archive.
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.env
+.env.*

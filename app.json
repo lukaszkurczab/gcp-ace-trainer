@@ -3,6 +3,9 @@
     "name": "Patternly",
     "slug": "patternly",
     "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "scheme": "com.lkurczab.patternly",
     "icon": "./assets/brand/app-icon/patternly-app-icon.png",
     "orientation": "portrait",
@@ -31,10 +34,12 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.lkurczab.patternly"
+      "bundleIdentifier": "com.lkurczab.patternly",
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.lkurczab.patternly",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/brand/app-icon/patternly-app-icon-foreground.png",
         "backgroundColor": "#0C1324",
