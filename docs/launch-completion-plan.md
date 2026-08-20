@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `79e5759f6a2847d3929f19d721cc435445aee7b6` (Bottom Navigation + shared Icon Button + grouped Settings rows) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `3594608e836e0a1ec95dfe11ebec5c46011f1b46` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `79e5759…`, and this plan update must be verified against its resulting exact SHA.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `3594608…`, and this plan update must be verified against its resulting exact SHA.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -143,6 +143,15 @@ text variant. Existing grouped settings rows now use the 12 px card radius,
 11/15 text tokens, and 8 px separation between rows. Existing callbacks and
 selection/storage states remain unchanged. Evidence is recorded in
 `docs/reports/launch-fui-010-settings-section-2026-08-20.md`.
+
+The preference-selection path then reconciled `Choice Group` (`456:4983` dark,
+`456:5353` light), the comfortable `Choice Row` (`141:838`), and canonical
+`Control / Radio` (`132:48`). Preference options now expose a labelled radio
+group with selected/unselected 20 px controls, explicit async-save disabled
+state, and the 72 px comfortable row contract. The former trailing “Current”
+badge path was removed because it did not expose mutually exclusive semantics.
+Evidence is recorded in
+`docs/reports/launch-fui-011-choice-group-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
 
@@ -187,7 +196,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `79e5759…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `3594608…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -465,7 +474,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Settings Section / List Row slice`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Choice Group slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
