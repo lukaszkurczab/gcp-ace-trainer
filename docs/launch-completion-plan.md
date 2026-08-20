@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `be32cc6` (LR-002 sentinel rebaseline plus DES-002/OPS-01 evidence refresh after FUI-008..017, DATA-02, SEC-01 and DATA-01) | [QA run 32383520294](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383520294) — Recovery QA and multi-track content contract successful |
-| content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
+| application | `main` | `432173f` (AZ-104 blocker reconciliation after immutable-release audit) | Existing exact-SHA QA remains tied to the prior application baseline; this docs-only reconciliation does not claim a new CI run. |
+| content/publishing | `master` | `16322c6` (safe AZ-104 package-pin revert after provenance mismatch) | Content `npm test` passed `142/142`; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -78,7 +78,7 @@ The green CI proves the current contracts, not the target launch catalogue:
 - The production track registry/lock now contains Coding Interview, historical GCP, and AZ-104; the remaining five launch tracks are still not admitted.
 - The content workflow validates the eight-track readiness report and all eight current technical validators.
 - The content release gate still treats Coding Interview as the sole current release candidate, despite the readiness report and AI-901/AZ-104 package evidence.
-- AZ-104 now has pushed authoring registration, canonical source, current technical evidence, readiness coverage, a pinned Free-node artifact, and current immutable release `patternly-az104-0002`; publishing/runtime admission and application cutover remain open.
+- AZ-104 now has pushed authoring registration, canonical source, current technical evidence, readiness coverage, a pinned Free-node artifact, and current immutable release `patternly-az104-0002`; the existing package remains safely pinned to historical `patternly-az104-0001` because the canonical immutable build report still proves the older source identity. Publishing/runtime admission and application cutover remain open.
 - Human editorial approval records are present for all eight tracks; publishing/runtime admission and complete package chains remain closed.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `be32cc63adb3361f3f307c2c7b4e8fcbf0369246`, with exact-SHA QA run `32383520294` green after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `432173ffc495b0bc8e4ff883d158cb6261c56d25`, a docs-only AZ-104 blocker reconciliation after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32383520294` remains evidence for its prior application baseline.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -245,7 +245,8 @@ and was published as `patternly-az104-0002` from content commit
 remains content release `patternly-az104-0001`. The deterministic readiness
 report now recognizes the full AZ-104 artifact, while publishing/runtime
 admission remain explicitly `not_admitted`. The current content branch is
-`fc48cb0` after the immutable-release publication and its contract test update. Evidence is recorded in
+`16322c6` after the safe AZ-104 package-pin revert; content `npm test` passes
+`142/142`. Evidence is recorded in
 `docs/reports/launch-cnt-05-az104-immutable-release-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
@@ -274,7 +275,7 @@ is `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. This source/report identity
 must be reconciled before the readiness payload can serve as fresh admission
 evidence; no package or catalogue change is inferred from the mismatch.
 
-The application `release.lock.json` contains exactly three artifacts: Coding Interview, historical GCP, and `patternly-az104-0001`. The CI contract independently enforces this exact three-track lock. The lock must not be expanded by copying or relabelling historical artifacts.
+The application `release.lock.json` contains exactly three artifacts: Coding Interview, historical GCP, and `patternly-az104-0001`. The CI contract independently enforces this exact three-track lock. The lock must not be expanded by copying or relabelling historical artifacts. The AZ-104 package provenance audit is recorded in [launch-cnt-06-az104-package-provenance-and-design-inputs-2026-08-20.md](reports/launch-cnt-06-az104-package-provenance-and-design-inputs-2026-08-20.md).
 
 GCP is the most important content-integrity risk: the current 2,981-item source is not the same source identity as the historical locked `gcp-ace-0016` artifact. The correct operation is a new immutable current GCP release followed by an atomic lock/runtime cutover. Never silently substitute or relabel the historical artifact.
 
@@ -298,7 +299,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded for `ad6cbe1`; application run `32383520294` succeeded for exact pushed `be32cc6` |
+| `S-CI-HEAD` exact-SHA CI | content `npm test` passed `142/142` for pushed `16322c6`; application run `32383520294` remains tied to prior exact pushed `be32cc6` |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -438,7 +439,7 @@ Publish new immutable releases and per-node package manifests without mutating h
 
 ### Stage RUN — generic family and package runtime
 
-#### RUN-01 — Canonical family contract closure — `BLOCKED by missing design_interview family contract and package schema (LR-01 verified)`
+#### RUN-01 — Canonical family contract closure — `BLOCKED by missing design_interview family/package contract and authored Backend first-batch records (LR-01 verified)`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
