@@ -237,6 +237,17 @@ route-guard slice is complete, but account creation/restore integration,
 provider deployment, and PITR reconciliation remain open; `DATA-01` is
 therefore `PARTIAL`, not `VERIFIED`.
 
+The content controller then rebuilt and published the current AZ-104 immutable
+artifact from the clean content `master` state. The rebuilt bank retained the
+existing checksum `968386e75c9abd4b54401e9876dadba6c0dbd01003aea8cfcad3a8d7027569ec`
+and was published as `patternly-az104-0002` from content commit
+`ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`; the existing Free-node package
+remains content release `patternly-az104-0001`. The deterministic readiness
+report now recognizes the full AZ-104 artifact, while publishing/runtime
+admission remain explicitly `not_admitted`. The current content branch is
+`d8d3f83` after this immutable-release publication. Evidence is recorded in
+`docs/reports/launch-cnt-05-az104-immutable-release-2026-08-20.md`.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -415,7 +426,7 @@ Generate one bounded review packet per track: coverage map, node/mental-unit cou
 
 The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
 
-#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by per-track immutable release inputs and family package contracts`
+#### CNT-05 — Complete Free-node packages for all eight — `PARTIAL — AZ-104 current immutable release patternly-az104-0002 published; remaining tracks and family package contracts block closure`
 
 Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
 
