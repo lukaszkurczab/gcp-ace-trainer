@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `cd1103c` (current-head verification and exact launch-evidence reconciliation) | Exact-SHA QA run `32389876039` passed for this pushed SHA. |
+| application | `main` | `00a2bd8` (fail-closed Android release-signing boundary and checkout-safe contract test) | Exact-SHA QA run `32393077443` passed for this pushed SHA; application tests 622/622. |
 | content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 142/142 tests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `cd1103cab38a2dd42f9d65fc070d54ce8f549dde`, a docs-only exact-evidence reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32389876039` passed for this SHA.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `00a2bd83930e3d091cccb225d11adb1007f30b22`, which adds a canonical fail-closed Android release-signing boundary and checkout-safe contract tests after the current-head evidence reconciliation. Exact-SHA QA run `32393077443` passed for this SHA with application tests 622/622.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -151,7 +151,22 @@ This confirms route/selector behavior and captured appearance only; the
 Expo launcher overlay remains a simulator artifact, and no Figma parity or
 release readiness is inferred from it.
 
-The exact pushed application baseline `00784ef` was then rechecked with
+The native release configuration was re-audited after that visual confirmation.
+Because `android/` and `ios/` are generated and ignored, the correction is in
+the canonical Expo config: `plugins/withAndroidReleaseSigningBoundary.js` is
+applied from `app.json`. A clean prebuild now replaces the generated release
+debug-signing fallback with an explicit `signingConfigs.release` sourced only
+from `PATTERNLY_ANDROID_RELEASE_STORE_FILE`,
+`PATTERNLY_ANDROID_RELEASE_STORE_PASSWORD`,
+`PATTERNLY_ANDROID_RELEASE_KEY_ALIAS`, and
+`PATTERNLY_ANDROID_RELEASE_KEY_PASSWORD`; every release task fails closed when
+those external credentials are absent. The focused contract tests and exact-SHA
+CI passed. A local Gradle debug build could not proceed because this machine
+does not expose an Android SDK; no signed release artifact or store/provider
+credential evidence is inferred. OPS-06 and BLK-10 therefore remain blocked by
+external signing, provider, and store gates.
+
+An earlier pushed application baseline `00784ef` was then rechecked with
 `npm test`: 619/619 tests passed. The first sandboxed invocation could not
 bind localhost for server tests (`EPERM`); the approved local-network rerun
 passed without failures. Evidence is recorded in
@@ -318,7 +333,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | application QA run `32389876039` and content architecture run `32388398769` both passed for pushed `cd1103c`/`12b99c7`; application `npm test` is 619/619 and content `npm test` is 142/142 |
+| `S-CI-HEAD` exact-SHA CI | application QA run `32393077443` and content architecture run `32388398769` both passed for pushed `00a2bd8`/`12b99c7`; application `npm test` is 622/622 and content `npm test` is 142/142 |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -672,7 +687,7 @@ Promote one professional domain and sender; deploy public/auth/legal/support/del
 
 Enable the exact seven-day target if provider capability supports it; run a sanitized sandbox restore; prove tombstones are re-applied and deleted accounts do not resurrect. Backup is disaster recovery, not user account recovery.
 
-#### OPS-06 — Release configuration — `BLOCKED by DES-02 + final provider/store identifiers`
+#### OPS-06 — Release configuration — `PARTIAL — repository-side signing boundary verified; blocked by DES-02 + final provider/store identifiers`
 
 Add canonical `eas.json`, build/update channels, app/build version policy, icons/splash/adaptive icon, privacy manifests/declarations, notification/link config, secret/environment boundaries, reproducible prebuild, and release bundle exclusion checks. Current `0.1.0` and minimal `app.json` are not a release packet.
 
