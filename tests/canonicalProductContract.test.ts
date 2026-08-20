@@ -72,6 +72,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CODING-INTERVIEW-MODE-MATRIX-001", ["canonical-coding-interview-mode-matrix"]],
       ["CODING-INTERVIEW-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
       ["PRACTICE-SETUP-RECOVERY-COPY-001", ["practice-setup-recovery-copy"]],
+      ["PRACTICE-SETUP-PRESENTATION-001", ["practice-setup-recovery-copy"]],
       ["CERTIFICATION-RESULT-TRUTHFUL-001", ["certification-result-truthful-summary"]],
       ["CODING-INTERVIEW-INDEPENDENT-PRACTICE-001", ["canonical-independent-practice-contract"]],
       ["CODING-INTERVIEW-PROGRESS-EVIDENCE-001", ["coding-interview-progress-evidence-contract"]],

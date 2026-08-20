@@ -125,6 +125,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
   const algorithmMode = activeTrack.id === CODING_INTERVIEW_TRACK_ID
     ? getAlgorithmMode(selectedMode)
     : null;
+  const compactCodingPractice = algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice;
   const selectedPackageMode = packageProfile.getMode(selectedMode);
   const configuredSessionLength = !selectedPackageMode.requestedLengths.includes(sessionLength)
     ? selectedPackageMode.defaultRequestedLength as PracticeSessionLength
@@ -181,14 +182,14 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           context={t(activeTrack.title)}
         />
 
-        <View style={styles.intro}>
+        <View style={[styles.intro, compactCodingPractice ? styles.compactIntro : null]}>
           <Text
-            style={styles.title}
+            style={[styles.title, compactCodingPractice ? styles.compactTitle : null]}
             testID={algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? runtimeSelectors.practice.customSetupTitle() : undefined}
           >
             {t(algorithmMode?.id === ALGORITHM_MODE_IDS.customPractice ? "Custom Practice" : "Practice setup")}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={[styles.subtitle, compactCodingPractice ? styles.compactSubtitle : null]}>
             {focusPractice ? t("Choose one Cloud domain. The session never mixes domains.") : scenarioPractice ? t("Choose one competency. The session uses only its approved scenario questions.") : weakAreaReview ? t("Review only saved weak areas whose review time has arrived.") : mixedPractice ? t("Practice the approved interleaved Cloud question set.") : `${t("Configure the next session for")} ${formatPracticeTopicTitle(topic.title, t)}.`}
           </Text>
         </View>
@@ -203,11 +204,12 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
           {scenarioCompetencies.map((competency) => <SelectablePanel key={competency.id} detail={t(`${competency.scenarioItemIds.length} approved scenario questions`)} label={t(competency.label)} onPress={() => { setScenarioCompetencyId(competency.id); setSetupError(null); }} selected={scenarioCompetencyId === competency.id} testID={runtimeSelectors.practice.scenarioCompetency(competency.id)} />)}
         </View> : null}
 
-        {!diagnosticBaseline ? <View style={styles.section}>
-          <SectionHeader title={t("Session length")} tight />
-          <View style={styles.lengthGrid}>
+        {!diagnosticBaseline ? <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
+          {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Session length")} subtitle={t("Number of items in your primary practice session.")} /> : <SectionHeader title={t("Session length")} tight />}
+          <View style={[styles.lengthGrid, compactCodingPractice ? styles.compactLengthGrid : null]}>
             {(algorithmMode?.profile.supportedLengths ?? (weakAreaReview ? [10, 20] : sessionLengths)).map((length) => (
               <SelectableOption
+                compact={compactCodingPractice}
                 key={length}
                 label={String(length)}
                 meta={t("Questions")}
@@ -220,9 +222,10 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
         </View> : <Card style={styles.reviewCard}><View style={styles.reviewCopy}><Text style={styles.reviewTitle}>{t("40-question Diagnostic Baseline")}</Text><Text style={styles.subtitle}>{t("Fixed Cloud-domain scope, elapsed timer, and feedback after each saved answer.")}</Text></View></Card>}
 
         {!diagnosticBaseline && !focusPractice && !scenarioPractice && !weakAreaReview && !mixedPractice && (!algorithmMode || algorithmMode.id === ALGORITHM_MODE_IDS.customPractice) ? (
-          <View style={styles.section}>
-            <SectionHeader title={t("Feedback mode")} tight />
+          <View style={[styles.section, compactCodingPractice ? styles.compactSection : null]}>
+            {compactCodingPractice ? <PracticeSetupSectionHeader title={t("Feedback mode")} subtitle={t("Choose when authored feedback becomes available.")} /> : <SectionHeader title={t("Feedback mode")} tight />}
             <SelectablePanel
+              compact={compactCodingPractice}
               detail={t("Correctness and explanation are shown after every item.")}
               label={t("After each answer")}
               onPress={() => setFeedbackMode("afterEachAnswer")}
@@ -230,6 +233,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
               testID={runtimeSelectors.practice.feedbackTiming("afterEachAnswer")}
             />
             <SelectablePanel
+              compact={compactCodingPractice}
               detail={t("Correctness is hidden until the final summary and review.")}
               label={t("At session end")}
               onPress={() => setFeedbackMode("atSessionEnd")}
@@ -268,6 +272,7 @@ export function PracticeSetupScreen({ navigation, route }: PracticeSetupScreenPr
 }
 
 type SelectableOptionProps = {
+  compact?: boolean;
   label: string;
   meta: string;
   onPress: () => void;
@@ -275,7 +280,7 @@ type SelectableOptionProps = {
   testID: string;
 };
 
-function SelectableOption({ label, meta, onPress, selected, testID }: SelectableOptionProps) {
+function SelectableOption({ compact = false, label, meta, onPress, selected, testID }: SelectableOptionProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -284,18 +289,20 @@ function SelectableOption({ label, meta, onPress, selected, testID }: Selectable
       onPress={onPress}
       style={({ pressed }) => [
         styles.lengthOption,
-        selected ? styles.selectedOption : null,
+        compact ? styles.compactLengthOption : null,
+        selected ? (compact ? styles.compactSelectedLengthOption : styles.selectedOption) : null,
         pressed ? styles.pressed : null,
       ]}
       testID={testID}
     >
-      <Text style={[styles.lengthValue, selected ? styles.selectedText : null]}>{label}</Text>
-      <Text numberOfLines={1} style={styles.optionMeta}>{meta}</Text>
+      <Text style={[styles.lengthValue, compact ? styles.compactLengthValue : null, selected ? (compact ? styles.compactSelectedText : styles.selectedText) : null]}>{label}</Text>
+      <Text numberOfLines={1} style={[styles.optionMeta, compact ? styles.compactOptionMeta : null, selected && compact ? styles.compactSelectedText : null]}>{meta}</Text>
     </Pressable>
   );
 }
 
 type SelectablePanelProps = {
+  compact?: boolean;
   detail: string;
   label: string;
   onPress: () => void;
@@ -303,26 +310,28 @@ type SelectablePanelProps = {
   testID: string;
 };
 
-function SelectablePanel({ detail, label, onPress, selected, testID }: SelectablePanelProps) {
+function SelectablePanel({ compact = false, detail, label, onPress, selected, testID }: SelectablePanelProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={compact ? `${label}. ${detail}` : undefined}
       accessibilityState={{ selected }}
       onPress={onPress}
       style={({ pressed }) => [
         styles.panel,
-        selected ? styles.selectedOption : null,
+        compact ? styles.compactPanel : null,
+        selected ? (compact ? styles.compactSelectedPanel : styles.selectedOption) : null,
         pressed ? styles.pressed : null,
       ]}
       testID={testID}
     >
       <View style={styles.panelCopy}>
-        <Text style={[styles.panelTitle, selected ? styles.selectedText : null]}>{label}</Text>
-        <Text style={styles.subtitle}>{detail}</Text>
+        <Text style={[styles.panelTitle, compact ? styles.compactPanelTitle : null, selected && !compact ? styles.selectedText : null]}>{label}</Text>
+        {compact ? null : <Text style={styles.subtitle}>{detail}</Text>}
       </View>
-      <View style={[styles.radio, selected ? styles.radioSelected : null]}>
-        {selected ? <View style={styles.radioDot} /> : null}
+      <View style={[styles.radio, compact ? styles.compactRadio : null, selected ? (compact ? styles.compactRadioSelected : styles.radioSelected) : null]}>
+        {selected ? <View style={[styles.radioDot, compact ? styles.compactRadioDot : null]} /> : null}
       </View>
     </Pressable>
   );
@@ -336,13 +345,25 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   intro: {
     gap: spacing.sm,
   },
+  compactIntro: {
+    gap: spacing.xs,
+  },
   title: {
     ...typography.title,
     color: palette.textPrimary,
   },
+  compactTitle: {
+    fontSize: 28,
+    lineHeight: 34,
+  },
   subtitle: {
     ...typography.small,
     color: palette.textSecondary,
+  },
+  compactSubtitle: {
+    color: palette.textMuted,
+    fontSize: 13.5,
+    lineHeight: 19,
   },
   error: {
     ...typography.small,
@@ -351,10 +372,32 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   section: {
     gap: spacing.md,
   },
+  compactSection: {
+    gap: spacing.sm,
+  },
+  compactSectionHeader: {
+    gap: spacing.xxs,
+  },
+  compactSectionTitle: {
+    color: palette.textPrimary,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 16,
+    textTransform: "uppercase",
+  },
+  compactSectionSubtitle: {
+    color: palette.textMuted,
+    fontSize: 12.5,
+    lineHeight: 19,
+  },
   lengthGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.md,
+  },
+  compactLengthGrid: {
+    flexWrap: "nowrap",
+    gap: spacing.xs,
   },
   lengthOption: {
     alignItems: "center",
@@ -370,6 +413,20 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingVertical: spacing.md,
   },
+  compactLengthOption: {
+    backgroundColor: palette.navigation.surface,
+    borderColor: palette.choice.border,
+    borderRadius: radius.sheet,
+    gap: 0,
+    minHeight: 54,
+    minWidth: 0,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  compactSelectedLengthOption: {
+    backgroundColor: palette.navigation.active,
+    borderColor: palette.navigation.active,
+  },
   selectedOption: {
     backgroundColor: palette.primarySoft,
     borderColor: palette.primary,
@@ -382,13 +439,25 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     color: palette.textSecondary,
     fontVariant: ["tabular-nums"],
   },
+  compactLengthValue: {
+    fontSize: 15,
+    lineHeight: 18,
+  },
   selectedText: {
     color: palette.textPrimary,
+  },
+  compactSelectedText: {
+    color: palette.background,
   },
   optionMeta: {
     ...typography.caption,
     color: palette.textMuted,
     textTransform: "uppercase",
+  },
+  compactOptionMeta: {
+    fontSize: 11,
+    lineHeight: 15,
+    textTransform: "none",
   },
   panel: {
     alignItems: "center",
@@ -401,6 +470,18 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 92,
     padding: spacing.lg,
   },
+  compactPanel: {
+    backgroundColor: palette.navigation.surface,
+    borderColor: palette.choice.border,
+    borderRadius: radius.lg,
+    minHeight: 48,
+    paddingHorizontal: 14,
+    paddingVertical: spacing.md,
+  },
+  compactSelectedPanel: {
+    backgroundColor: palette.navigation.surface,
+    borderColor: palette.choice.active,
+  },
   panelCopy: {
     flex: 1,
     gap: spacing.xs,
@@ -408,6 +489,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   panelTitle: {
     ...typography.bodyStrong,
     color: palette.textSecondary,
+  },
+  compactPanelTitle: {
+    color: palette.textPrimary,
+    fontSize: 14,
+    lineHeight: 21,
   },
   radio: {
     alignItems: "center",
@@ -418,6 +504,15 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     justifyContent: "center",
     width: 28,
   },
+  compactRadio: {
+    borderColor: palette.choice.border,
+    borderRadius: 10,
+    height: 20,
+    width: 20,
+  },
+  compactRadioSelected: {
+    borderColor: palette.choice.active,
+  },
   radioSelected: {
     borderColor: palette.primary,
   },
@@ -426,6 +521,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderRadius: radius.pill,
     height: 12,
     width: 12,
+  },
+  compactRadioDot: {
+    backgroundColor: palette.choice.active,
+    height: 8,
+    width: 8,
   },
   reviewCard: {
     alignItems: "center",
@@ -466,3 +566,8 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     marginTop: spacing.xl,
   },
 });
+
+function PracticeSetupSectionHeader({ title, subtitle }: Readonly<{ title: string; subtitle: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return <View style={styles.compactSectionHeader}><Text style={styles.compactSectionTitle}>{title.toUpperCase()}</Text><Text style={styles.compactSectionSubtitle}>{subtitle}</Text></View>;
+}

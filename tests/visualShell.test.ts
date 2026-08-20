@@ -155,6 +155,10 @@ test("Practice setup keeps one canonical back action and recovery copy names lea
 
   assert.equal((setup.match(/\{t\("Back"\)\}/g) ?? []).length, 0);
   assert.match(setup, /<AppShellHeader[\s\S]*backAction=\{\{ onPress: \(\) => goBackOrHome\(navigation\) \}\}/);
+  assert.match(setup, /compactCodingPractice = algorithmMode\?\.id === ALGORITHM_MODE_IDS\.customPractice/);
+  assert.match(setup, /compactLengthOption:[\s\S]*?minHeight:\s*54/);
+  assert.match(setup, /compactPanel:[\s\S]*?minHeight:\s*48/);
+  assert.match(setup, /compactSectionTitle:[\s\S]*?textTransform:\s*"uppercase"/);
   assert.match(session, /Your saved answers remain available, but this session cannot be resumed\./);
   assert.doesNotMatch(session, /durable records stay available/);
 });
