@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `bf0073260e421184560b652228da8fb6d5c41738` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `264e10ceb07f87f770a848dc560159198a829abc` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice + Retained Content Status) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -170,6 +170,13 @@ Appearance Choice` (`619:5237`) and its System, Light, and Dark variants
 uses theme-owned preview tokens; the language route remains on the plain choice
 row. Evidence is recorded in
 `docs/reports/launch-fui-013-appearance-choice-2026-08-20.md`.
+
+The unavailable/empty-state path then reconciled `Retained Content Status`
+(`516:5153`, QA `518:5157`). The existing `EmptyState` now uses the transparent
+centered status geometry, muted supporting copy, and full-width explicit action
+when a route provides recovery. The former elevated-card wrapper was removed
+because it competed with the prepared status pattern. Evidence is recorded in
+`docs/reports/launch-fui-014-retained-content-status-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
 
@@ -492,7 +499,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Appearance Choice slice`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Retained Content Status slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
