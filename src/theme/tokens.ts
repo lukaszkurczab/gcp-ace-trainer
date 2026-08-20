@@ -50,6 +50,13 @@ export const colors = {
       surface: "#FBFDFC",
       textPrimary: "#102433",
       textSecondary: "#506472"
+    },
+    choice: {
+      active: "#0F766E",
+      border: "#E3EAE9",
+      surface: "#FBFDFC",
+      textPrimary: "#102433",
+      textSecondary: "#506472"
     }
   },
   dark: {
@@ -94,6 +101,13 @@ export const colors = {
     listRow: {
       icon: "#F1F5F9",
       iconSurface: "#0F172A",
+      surface: "#0E1B31",
+      textPrimary: "#F1F5F9",
+      textSecondary: "#AAB6C8"
+    },
+    choice: {
+      active: "#20C997",
+      border: "#1E293B",
       surface: "#0E1B31",
       textPrimary: "#F1F5F9",
       textSecondary: "#AAB6C8"

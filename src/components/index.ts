@@ -3,6 +3,7 @@ export * from "./Badge";
 export * from "./BottomTabBar";
 export * from "./Button";
 export * from "./Card";
+export * from "./ChoiceRow";
 export * from "./DomainAccent";
 export * from "./EmptyState";
 export * from "./Icon";

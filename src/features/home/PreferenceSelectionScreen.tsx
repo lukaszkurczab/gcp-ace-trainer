@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { ListRow, Screen, SettingsGroup } from "../../components";
-import { useAppPreferences, useThemedStyles } from "../../preferences";
+import { ChoiceRow, Screen } from "../../components";
+import { useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 
 type PreferenceOption = Readonly<{
@@ -27,7 +27,6 @@ export function PreferenceSelectionScreen({
   sectionTitle,
 }: PreferenceSelectionScreenProps) {
   const styles = useThemedStyles(createStyles);
-  const { locale } = useAppPreferences();
   const [savingValue, setSavingValue] = useState<string | null>(null);
 
   async function select(value: string) {
@@ -40,32 +39,29 @@ export function PreferenceSelectionScreen({
     }
   }
 
-  const currentLabel = locale === "pl" ? "Wybrane" : "Current";
-
   return (
     <Screen>
       <Text style={styles.intro}>{intro}</Text>
-      <SettingsGroup title={sectionTitle}>
+      <View style={styles.choiceGroup} accessibilityRole="radiogroup" accessibilityLabel={sectionTitle}>
         {options.map((option) => {
           const selected = option.value === currentValue;
           return (
-            <ListRow
+            <ChoiceRow
               detail={option.detail}
               key={option.value}
               onPress={() => { void select(option.value); }}
+              selected={selected}
+              testID={`preference-option-${option.value}`}
               title={option.label}
-              trailing={selected ? <View style={styles.selected}><Text style={styles.selectedLabel}>{currentLabel}</Text></View> : undefined}
-              variant="grouped"
             />
           );
         })}
-      </SettingsGroup>
+      </View>
     </Screen>
   );
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   intro: { ...typography.small, color: palette.textSecondary },
-  selected: { backgroundColor: palette.primarySoft, borderRadius: 999, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  selectedLabel: { ...typography.caption, color: palette.primary },
+  choiceGroup: { gap: spacing.sm },
 });
