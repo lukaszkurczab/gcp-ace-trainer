@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `439d87ff9da46823e3e2390d18c9937bbe4ac95b` (FUI-008..016, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `f7720be` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -127,7 +127,7 @@ evidence, not final design handoff or launch approval. Evidence is recorded in
 capture-only pack under `artifacts/maestro-screen-capture/`.
 
 The next approved surface, `02A · Home · Coding · Ready` (`55:445`), was then
-implemented as FUI-017. The loaded Home route now owns the compact track
+implemented as FUI-017 at `f7720be`. The loaded Home route now owns the compact track
 context and next-practice card presentation, with mint navigation tokens and
 the active card rail; loading and unavailable states retain the shared header
 recovery owner. Existing recommendation/resume guards and topic-selection
