@@ -34,6 +34,8 @@ requirements:
     statement: Practice setup exposes one canonical back action, and active-session replacement copy names the learner-visible retained and lost consequences without implementation terminology.
   - id: PRACTICE-SETUP-PRESENTATION-001
     statement: Coding Interview Custom Practice setup uses the approved compact practice-settings presentation for session length and feedback choices while preserving the canonical Custom Practice labels, explicit feedback semantics, and Start session action.
+  - id: HOME-PRESENTATION-001
+    statement: The primary learning surface uses the approved compact Home presentation for track context and the next-practice card while preserving the canonical recommendation action, change-track route, and explicit topic-selection action.
   - id: CERTIFICATION-RESULT-TRUTHFUL-001
     statement: A finalized Certification session distinguishes no-answer endings from ordinary completion and shows its requested and actual lengths, answered and unanswered counts, active time, mode, and recorded domains in one truthful summary.
   - id: CODING-INTERVIEW-INDEPENDENT-PRACTICE-001
@@ -221,6 +223,10 @@ requirementTestCoverage:
       testPath: tests/visualShell.test.ts
       testName: Practice setup keeps one canonical back action and recovery copy names learner-visible consequences
       requirementIds: [PRACTICE-SETUP-RECOVERY-COPY-001, PRACTICE-SETUP-PRESENTATION-001]
+    - id: home-presentation
+      testPath: tests/runtimeAuditabilitySurfaces.test.ts
+      testName: Home uses the approved compact presentation without changing recommendation ownership
+      requirementIds: [HOME-PRESENTATION-001]
     - id: certification-result-truthful-summary
       testPath: tests/certificationResultPresentation.test.ts
       testName: certification result distinguishes an empty ending and presents truthful session metrics
@@ -1073,6 +1079,12 @@ designReferences:
       version: 1
       approvalStatus: APPROVED
       owner: product-owner
+    - id: figma-02a-home-coding-ready
+      screenStateTarget: coding-home-ready
+      patternPath: docs/designs/figma-home-coding-ready/DESIGN.md
+      version: 1
+      approvalStatus: APPROVED
+      owner: product-owner
   uiOwnership:
     - sourcePathPrefix: src/content/application/ContentPreparationGate.tsx
       designReferenceId: pkg-04a-free-package-interactions
@@ -1084,6 +1096,8 @@ designReferences:
       designReferenceId: pkg-04a-free-package-interactions
     - sourcePathPrefix: src/features/exam/ResultScreen.tsx
       designReferenceId: pkg-04a-free-package-interactions
+    - sourcePathPrefix: src/features/home/
+      designReferenceId: figma-02a-home-coding-ready
 simulationOperationStateCtas:
   version: 1
   policies:

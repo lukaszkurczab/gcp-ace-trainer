@@ -248,7 +248,6 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
   return (
     <View style={styles.shell}>
       <Screen key={activeTab} edges={["top"]} style={styles.screenContent}>
-        <AppShellHeader />
         {activeTab === "home" ? (
           <HomeTab
             activeSession={data.activeSession}

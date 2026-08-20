@@ -73,6 +73,7 @@ test("maps every canonical requirement to real tests and rejects incomplete or i
       ["CODING-INTERVIEW-CUSTOM-PRACTICE-001", ["canonical-custom-practice-contract"]],
       ["PRACTICE-SETUP-RECOVERY-COPY-001", ["practice-setup-recovery-copy"]],
       ["PRACTICE-SETUP-PRESENTATION-001", ["practice-setup-recovery-copy"]],
+      ["HOME-PRESENTATION-001", ["home-presentation"]],
       ["CERTIFICATION-RESULT-TRUTHFUL-001", ["certification-result-truthful-summary"]],
       ["CODING-INTERVIEW-INDEPENDENT-PRACTICE-001", ["canonical-independent-practice-contract"]],
       ["CODING-INTERVIEW-PROGRESS-EVIDENCE-001", ["coding-interview-progress-evidence-contract"]],
@@ -538,20 +539,31 @@ test("locks the Product Owner-approved Free-package interaction reference and it
   const contract = loadCanonicalProductContract();
   assert.deepEqual(contract.designReferences, {
     version: 2,
-    references: [{
-      id: "pkg-04a-free-package-interactions",
-      screenStateTarget: "free-package-practice-and-unavailable-states",
-      patternPath: "docs/designs/pkg-04a-free-package-interactions/DESIGN.md",
-      version: 1,
-      approvalStatus: "APPROVED",
-      owner: "product-owner",
-    }],
+    references: [
+      {
+        id: "pkg-04a-free-package-interactions",
+        screenStateTarget: "free-package-practice-and-unavailable-states",
+        patternPath: "docs/designs/pkg-04a-free-package-interactions/DESIGN.md",
+        version: 1,
+        approvalStatus: "APPROVED",
+        owner: "product-owner",
+      },
+      {
+        id: "figma-02a-home-coding-ready",
+        screenStateTarget: "coding-home-ready",
+        patternPath: "docs/designs/figma-home-coding-ready/DESIGN.md",
+        version: 1,
+        approvalStatus: "APPROVED",
+        owner: "product-owner",
+      },
+    ],
     uiOwnership: [
       { sourcePathPrefix: "src/content/application/ContentPreparationGate.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/practice/", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/review/AnswerReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ExamReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ResultScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
+      { sourcePathPrefix: "src/features/home/", designReferenceId: "figma-02a-home-coding-ready" },
     ],
   });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(contract, { status: "not-ready" }), undefined);

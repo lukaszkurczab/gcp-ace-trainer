@@ -27,6 +27,18 @@ test("active-session resume uses the single recommendation card and a separate c
   assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)[\s\S]*?<\/Button>/);
 });
 
+test("Home uses the approved compact presentation without changing recommendation ownership", () => {
+  const home = source("src/features/home/tabs/HomeTab.tsx");
+
+  assert.match(home, /trackIconContainer:[\s\S]*?height:\s*22/);
+  assert.match(home, /decisionCard:[\s\S]*?borderColor:\s*palette\.navigation\.active[\s\S]*?borderRadius:\s*22/);
+  assert.match(home, /decisionIconTile:[\s\S]*?height:\s*44[\s\S]*?width:\s*44/);
+  assert.match(home, /startButton:[\s\S]*?minHeight:\s*49/);
+  assert.match(home, /<Button[\s\S]*?testID=\{resumeSessionId[\s\S]*?runtimeSelectors\.resume\.continue\(resumeSessionId\)/);
+  assert.match(home, /<Text style=\{styles\.focusTitle\} testID=\{runtimeSelectors\.home\.trackCard\(activeTrack\.id\)\}>/);
+  assert.match(home, /onChooseTopic/);
+});
+
 test("progress, simulation, and simulation summary selectors use canonical identities", () => {
   const progress = source("src/features/home/tabs/ProgressTab.tsx");
   const simulation = source("src/features/simulation/SimulationSessionSurface.tsx");

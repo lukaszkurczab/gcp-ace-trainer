@@ -126,6 +126,17 @@ evidence, not final design handoff or launch approval. Evidence is recorded in
 `docs/reports/launch-fui-016-practice-setup-2026-08-20.md` and the local
 capture-only pack under `artifacts/maestro-screen-capture/`.
 
+The next approved surface, `02A · Home · Coding · Ready` (`55:445`), was then
+implemented as FUI-017. The loaded Home route now owns the compact track
+context and next-practice card presentation, with mint navigation tokens and
+the active card rail; loading and unavailable states retain the shared header
+recovery owner. Existing recommendation/resume guards and topic-selection
+routes remain unchanged. The illustrative overview metrics and Manage settings
+action were not fabricated because their canonical runtime values/commands are
+not present. Evidence is recorded in
+`docs/reports/launch-fui-017-home-coding-ready-2026-08-20.md`; final iOS light
+and dark regular Maestro runs passed six checkpoints each.
+
 The bounded slice updates the repository-owned navigation tokens and
 `BottomTabBar` for the exact 24 px icon, 11/15 caption, 4 px gap, 8 px vertical
 padding, 20×2 active indicator, pressed state, and 200% text behavior. It does
@@ -551,7 +562,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `PARTIAL — FUI-015 Bottom Sheet slice pushed`
+#### DES-02 — Repository tokens, assets, and licensing — `PARTIAL — FUI-016/FUI-017 token slices pushed`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 

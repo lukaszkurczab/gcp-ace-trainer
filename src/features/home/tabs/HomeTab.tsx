@@ -1,10 +1,10 @@
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 
-import { Button, Card, Icon, IconTile } from "../../../components";
+import { Button, Card, Icon } from "../../../components";
 import type { TrackDisplay, TrainingSession } from "../../../domain";
 import type { TrainingAttempt } from "../../../domain";
 import type { CodingInterviewDashboard } from "../../../application/coding-interview";
-import { spacing, typography } from "../../../theme";
+import { colorWithOpacity, spacing, typography } from "../../../theme";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { buildHomeTabModel, type HomeRecommendationAction } from "./homeTabModel";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
@@ -75,45 +75,47 @@ export function HomeTab({
           testID={runtimeSelectors.home.changeTrack()}
         >
           <View style={styles.trackContextCopy}>
-            <View style={styles.trackDot} />
-            <View style={styles.trackLabels}>
-              <Text style={styles.eyebrow}>{t("Current track")}</Text>
-              <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
-                {t(model.focusTitle)}
-              </Text>
+            <View style={styles.trackIconContainer}>
+              <Icon color={palette.accentTeal} name={isCodingInterviewTrack ? "code-brackets" : "cloud"} size={12} />
             </View>
+            <Text style={styles.focusTitle} testID={runtimeSelectors.home.trackCard(activeTrack.id)}>
+              {t(activeTrack.shortTitle)}
+            </Text>
           </View>
-          <Icon color={palette.accentPurple} name="chevron-right" size={18} />
+          <Text style={styles.changeTrack}>{t("Change")}</Text>
         </Pressable>
       </View>
 
       <Card variant="layered" style={styles.decisionCard}>
-        <Text style={styles.heroEyebrow}>{t(recommendation?.label ?? "Recommended for you")}</Text>
+        <View style={styles.cardRail} />
         <View
           style={[styles.decisionHeading, largeText ? styles.decisionHeadingLargeText : null]}
           testID={resumeSessionId
             ? runtimeSelectors.resume.card(resumeSessionId)
             : undefined}
         >
-          <IconTile name={decisionIcon} size={48} tone={decisionTone} />
-          <Text
-            style={styles.decisionTitle}
-            testID={resumeSessionId
-              ? runtimeSelectors.resume.title(resumeSessionId)
-              : undefined}
-          >
-            {t(decisionTitle)}
-          </Text>
+          <View style={styles.decisionIconTile}>
+            <Icon color={decisionTone === "muted" ? palette.textMuted : palette.accentTeal} name={decisionIcon} size={24} />
+          </View>
+          <View style={styles.decisionCopy}>
+            <Text
+              style={styles.decisionTitle}
+              testID={resumeSessionId
+                ? runtimeSelectors.resume.title(resumeSessionId)
+                : undefined}
+            >
+              {t(decisionTitle)}
+            </Text>
+            <Text
+              style={styles.decisionDetail}
+              testID={resumeSessionId
+                ? runtimeSelectors.resume.status(resumeSessionId)
+                : undefined}
+            >
+              {decisionDetail}
+            </Text>
+          </View>
         </View>
-        <View style={styles.divider} />
-        <Text
-          style={styles.decisionDetail}
-          testID={resumeSessionId
-            ? runtimeSelectors.resume.status(resumeSessionId)
-            : undefined}
-        >
-          {decisionDetail}
-        </Text>
         <Button
           disabled={!decisionEnabled}
           onPress={() => {
@@ -123,17 +125,14 @@ export function HomeTab({
             }
             onStartLearning(model.topicId);
           }}
+          style={styles.startButton}
           testID={resumeSessionId
             ? runtimeSelectors.resume.continue(resumeSessionId)
             : undefined}
+          variant="secondary"
         >
           {t(decisionLabel)}
         </Button>
-        <View style={styles.alternativeDivider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.orLabel}>{t("or")}</Text>
-          <View style={styles.dividerLine} />
-        </View>
         <Pressable
           accessibilityRole="button"
           onPress={onChooseTopic}
@@ -149,7 +148,7 @@ export function HomeTab({
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   pageIntro: {
-    gap: spacing.lg,
+    gap: 18,
   },
   pageTitle: {
     ...typography.title,
@@ -158,10 +157,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   trackContext: {
     alignItems: "center",
     flexDirection: "row",
-    gap: spacing.md,
+    gap: spacing.sm,
     justifyContent: "space-between",
-    minHeight: 48,
-    paddingVertical: spacing.xs,
+    minHeight: 44,
   },
   trackContextLargeText: {
     alignSelf: "stretch",
@@ -171,23 +169,29 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "center",
     flex: 1,
     flexDirection: "row",
-    gap: spacing.md,
+    gap: spacing.sm,
     minWidth: 0,
   },
-  trackDot: {
-    backgroundColor: palette.primary,
-    borderRadius: 999,
-    height: 8,
-    width: 8,
-  },
-  trackLabels: {
-    flex: 1,
-    gap: spacing.xxs,
-    minWidth: 0,
+  trackIconContainer: {
+    alignItems: "center",
+    backgroundColor: colorWithOpacity(palette.accentTeal, 0.08),
+    borderRadius: 6,
+    height: 22,
+    justifyContent: "center",
+    width: 22,
   },
   focusTitle: {
-    ...typography.bodyStrong,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 21,
     color: palette.textPrimary,
+    flex: 1,
+  },
+  changeTrack: {
+    color: palette.accentTeal,
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 18,
   },
   pressed: {
     opacity: 0.78,
@@ -198,60 +202,77 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     textTransform: "uppercase",
   },
   decisionCard: {
-    gap: spacing.xl,
+    backgroundColor: palette.navigation.surface,
+    borderColor: palette.navigation.active,
+    borderRadius: 22,
+    elevation: 0,
+    gap: spacing.lg,
+    padding: spacing.xl,
+    position: "relative",
+    shadowOpacity: 0,
   },
-  heroEyebrow: {
-    ...typography.caption,
-    color: palette.accentPurple,
-    letterSpacing: 0.7,
-    textTransform: "uppercase",
+  cardRail: {
+    backgroundColor: palette.navigation.active,
+    borderRadius: 2,
+    height: 44,
+    left: -1,
+    position: "absolute",
+    top: 19,
+    width: 3,
   },
   decisionHeading: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   decisionHeadingLargeText: {
     alignItems: "flex-start",
     flexDirection: "column",
   },
   decisionTitle: {
-    ...typography.heading,
     color: palette.textPrimary,
-    flex: 1,
+    fontSize: 22,
+    fontWeight: "600",
+    lineHeight: 28,
   },
-  divider: {
-    backgroundColor: palette.border,
-    height: StyleSheet.hairlineWidth,
+  decisionCopy: {
+    flex: 1,
+    gap: spacing.xxs,
+    minWidth: 0,
+  },
+  decisionIconTile: {
+    alignItems: "center",
+    backgroundColor: palette.choice.surface,
+    borderColor: palette.choice.active,
+    borderRadius: 14,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  startButton: {
+    backgroundColor: palette.navigation.active,
+    borderColor: palette.navigation.active,
+    minHeight: 49,
+    paddingVertical: 15,
   },
   decisionDetail: {
-    ...typography.body,
     color: palette.textSecondary,
-  },
-  alternativeDivider: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  dividerLine: {
-    backgroundColor: palette.border,
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-  },
-  orLabel: {
-    ...typography.caption,
-    color: palette.textMuted,
+    fontSize: 14,
+    lineHeight: 22,
   },
   secondaryAction: {
     alignItems: "center",
     alignSelf: "center",
     flexDirection: "row",
     gap: spacing.xs,
-    minHeight: 48,
+    minHeight: 44,
     paddingHorizontal: spacing.sm,
   },
   secondaryActionText: {
-    ...typography.bodyStrong,
-    color: palette.accentPurple,
+    color: palette.accentTeal,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 22,
   },
 });
