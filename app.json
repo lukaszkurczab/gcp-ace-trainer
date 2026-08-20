@@ -23,7 +23,8 @@
           }
         }
       ],
-      "./plugins/withPrivacyBoundary"
+      "./plugins/withPrivacyBoundary",
+      "./plugins/withAndroidReleaseSigningBoundary"
     ],
     "assetBundlePatterns": [
       "**/*"
