@@ -168,10 +168,15 @@ const sendRequest = (
   }
 });
 
-const withServer = async (service: AccountHttpService, operation: (port: number) => Promise<void>, tokenVerifier = verifier()): Promise<void> => {
+const withServer = async (
+  service: AccountHttpService,
+  operation: (port: number) => Promise<void>,
+  tokenVerifier = verifier(),
+  serverLifecycle = lifecycle,
+): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
     appCheckVerifier,
-    lifecycle,
+    lifecycle: serverLifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -305,6 +310,19 @@ test("service distinguishes stale binding and bounded races while rejecting corr
     new AccountDataService(provider).readSnapshotPage(UID, INITIAL_REQUEST),
     (error: unknown) => error === codedProviderError,
   );
+});
+
+test("rejects a tombstoned account before reading the snapshot body", async () => {
+  let serviceCalls = 0;
+  await withServer(asHttpService(async () => {
+    serviceCalls += 1;
+    throw new Error("unexpected_snapshot_service_call");
+  }), async (port) => {
+    const result = await sendRequest(port, "not-json");
+    assert.equal(result.status, 410);
+    assert.deepEqual(parseJson(result), { error: { code: "account_tombstoned" } });
+  }, verifier(), { ...lifecycle, assertWritable: async () => { throw new Error("account_tombstoned"); } });
+  assert.equal(serviceCalls, 0);
 });
 
 test("HTTP authenticates first and enforces exact snapshot input plus the 4-KiB raw limit", async () => {

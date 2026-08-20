@@ -207,6 +207,15 @@ attestation-provider registration, mobile app identifiers, and Cloud Run
 operations evidence are still unavailable, so `SEC-01` remains `PARTIAL` and
 `OPS-02` remains provider-blocked.
 
+The controller then verified the server-side `DATA-01` lifecycle boundary:
+the tombstone remains outside recursive account data, deletion proof remains
+idempotent and post-verification only, and sync, snapshot, and all adoption
+routes reject tombstoned UIDs before body parsing. Evidence is recorded in
+`docs/reports/launch-data-001-lifecycle-tombstone-2026-08-20.md`. The server
+route-guard slice is complete, but account creation/restore integration,
+provider deployment, and PITR reconciliation remain open; `DATA-01` is
+therefore `PARTIAL`, not `VERIFIED`.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -469,9 +478,9 @@ Replace the two-track registry with generic admission records for exactly eight 
 
 Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling. The fail-closed server and environment implementation is pushed; production attestation registration, mobile app IDs, and deployment proof remain external acceptance dependencies.
 
-#### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
+#### DATA-01 — Durable account lifecycle/tombstone authority — `PARTIAL — server tombstone and protected-route guards verified; account/restore/provider integration pending`
 
-Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
+Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head. The pushed server slice proves the lifecycle authority and all current protected-route guards; it does not claim the missing account/restore client vertical, provider deployment, or PITR reconciliation.
 
 #### DATA-02 — Device-session server cutover — `PARTIAL — terminal remote payload boundary pushed; exact-SHA CI and account/outbox cutover evidence pending`
 

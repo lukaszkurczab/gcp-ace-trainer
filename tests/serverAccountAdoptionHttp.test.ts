@@ -134,10 +134,11 @@ const withServer = async (
   service: AccountHttpService,
   operation: (port: number) => Promise<void>,
   tokenVerifier = verifier(),
+  serverLifecycle = lifecycle,
 ): Promise<void> => {
   const dependencies: AccountHttpDependencies = {
     appCheckVerifier,
-    lifecycle,
+    lifecycle: serverLifecycle,
     expectedProjectId: PROJECT_ID,
     expectedAppCheckAppIds: [APP_ID],
     nowSeconds: () => NOW_SECONDS,
@@ -371,6 +372,26 @@ test("authenticates before entity parsing on every adoption route", async () => 
     throw new Error("missing_authorization");
   }));
   assert.equal(verifierCalls, 0);
+});
+
+test("rejects a tombstoned account before reading every adoption request body", async () => {
+  let serviceCalls = 0;
+  const service = serviceFor({
+    advanceAdoption: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+    cancelAdoption: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+    confirmAdoptionOperation: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+    readAdoptionPreviewPage: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+    startAdoption: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+    uploadAdoptionPage: async () => { serviceCalls += 1; throw new Error("unexpected_adoption_service_call"); },
+  });
+  await withServer(service, async (port) => {
+    for (const route of routeCases) {
+      const result = await sendRequest(port, { path: route.path, body: "not-json" });
+      assert.equal(result.status, 410, route.path);
+      assert.deepEqual(parseJson(result), { error: { code: "account_tombstoned" } }, route.path);
+    }
+  }, verifier(), { ...lifecycle, assertWritable: async () => { throw new Error("account_tombstoned"); } });
+  assert.equal(serviceCalls, 0);
 });
 
 test("rejects missing, extra, caller-selected UID and malformed top-level command shells", async () => {
