@@ -207,6 +207,13 @@ The current content HEAD differs from the source commit referenced by the readin
 
 The readiness report's `humanReview=approved` is now a closed editorial gate because the Product Owner authorized recording the eight approval records. It does not mean package, publishing, runtime, store, provider, design, or device gates are closed.
 
+The application release gate was re-run after FUI-015 and remains
+`not_ready`. Its current readiness payload reports `sourceCommit=
+e73c7314eee7b2cd3f53b04c952b6af6526d3685`, while canonical content `master`
+is `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. This source/report identity
+must be reconciled before the readiness payload can serve as fresh admission
+evidence; no package or catalogue change is inferred from the mismatch.
+
 The application `release.lock.json` contains exactly three artifacts: Coding Interview, historical GCP, and `patternly-az104-0001`. The CI contract independently enforces this exact three-track lock. The lock must not be expanded by copying or relabelling historical artifacts.
 
 GCP is the most important content-integrity risk: the current 2,981-item source is not the same source identity as the historical locked `gcp-ace-0016` artifact. The correct operation is a new immutable current GCP release followed by an atomic lock/runtime cutover. Never silently substitute or relabel the historical artifact.
