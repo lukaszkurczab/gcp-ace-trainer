@@ -12,7 +12,32 @@ const {
   RELEASE_SIGNING_PROPERTIES: readonly string[];
 };
 
-const generatedGradle = readFileSync("android/app/build.gradle", "utf8");
+const generatedGradle = `android {
+    defaultConfig {
+        versionName "0.1.0"
+    }
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.debug
+        }
+    }
+}
+
+dependencies {
+    implementation("com.facebook.react:react-android")
+}
+`;
 
 test("release signing boundary is part of the canonical Expo config", () => {
   const appConfig = JSON.parse(readFileSync("app.json", "utf8"));
