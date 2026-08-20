@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { spacing, typography } from "../theme";
+import { radius, spacing, typography } from "../theme";
 import { Icon, type IconName } from "./Icon";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
@@ -46,7 +46,10 @@ export function BottomTabBar<TId extends string>({
             accessibilityState={{ selected: isActive }}
             key={item.id}
             onPress={() => onChange(item.id)}
-            style={styles.tabButton}
+            style={({ pressed }) => [
+              styles.tabButton,
+              pressed ? styles.tabButtonPressed : null,
+            ]}
             testID={`${testID ?? "bottom-tab-bar"}-${item.id}`}
           >
             <View
@@ -56,13 +59,13 @@ export function BottomTabBar<TId extends string>({
               ]}
             />
             <Icon
-              color={isActive ? palette.primary : palette.textMuted}
+              color={isActive ? palette.navigation.active : palette.navigation.textMuted}
               name={item.icon}
-              size={22}
+              size={24}
             />
             <Text
               adjustsFontSizeToFit
-              maxFontSizeMultiplier={1.2}
+              maxFontSizeMultiplier={2}
               numberOfLines={1}
               style={[styles.tabLabel, isActive ? styles.tabLabelActive : null]}
             >
@@ -78,40 +81,50 @@ export function BottomTabBar<TId extends string>({
 const createStyles = (palette: AppColors) => StyleSheet.create({
   tabBar: {
     alignItems: "center",
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
+    backgroundColor: palette.navigation.surface,
+    borderColor: palette.navigation.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     bottom: 0,
     flexDirection: "row",
     justifyContent: "space-around",
     left: 0,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    paddingHorizontal: 0,
+    paddingTop: 0,
     position: "absolute",
     right: 0,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    elevation: 4,
   },
   tabButton: {
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
     gap: spacing.xs,
-    minHeight: 52,
+    minHeight: 60,
     paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  tabButtonPressed: {
+    backgroundColor: palette.navigation.pressedSurface,
+    borderRadius: radius.lg,
   },
   activeIndicator: {
     backgroundColor: "transparent",
-    borderRadius: 999,
-    height: 6,
-    width: 6,
+    borderRadius: 1,
+    height: 2,
+    width: 20,
   },
   activeIndicatorVisible: {
-    backgroundColor: palette.primary,
+    backgroundColor: palette.navigation.active,
   },
   tabLabel: {
-    ...typography.caption,
-    color: palette.textMuted,
+    ...typography.navigationLabel,
+    color: palette.navigation.textMuted,
   },
   tabLabelActive: {
-    color: palette.primary,
+    color: palette.navigation.textPrimary,
   },
 });

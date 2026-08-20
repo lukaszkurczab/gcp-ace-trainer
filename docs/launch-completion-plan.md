@@ -1,8 +1,8 @@
 # Patternly — Launch Completion Plan
 
-**Document role:** canonical sequencing plan for `docs/launch-completion-plan.md` after the current reconciliation commit; if used as a replacement candidate elsewhere, the pushed `main` copy remains authoritative.  
-**Authority state:** the pushed `docs/launch-completion-plan.md` on application `main` is the current sequencing authority. This generated copy is the re-audited replacement candidate for the next plan update.  
-**Audit date:** 2026-08-17  
+**Document role:** canonical sequencing plan for `docs/launch-completion-plan.md`.
+**Authority state:** this file is the sole sequencing authority on application `main`; the former audited-copy name has been removed.
+**Audit date:** 2026-08-20
 **Target:** commercial launch readiness for the exact eight-track launch catalogue defined below.  
 **Execution model:** controller → bounded worker → independent QA; all agents use **Luna max reasoning**, without exceptions or silent downgrade.
 
@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `a990eb6d9ef55b17ac23f1de3caa68ef6bfb80ac` | QA run `31989043191` — success |
+| application | `main` | `cb211c2ec30c75e8cdb784d0aeb82c18b0bd3ddb` (branding/layout baseline) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -78,8 +78,8 @@ The green CI proves the current contracts, not the target launch catalogue:
 - The production track registry/lock now contains Coding Interview, historical GCP, and AZ-104; the remaining five launch tracks are still not admitted.
 - The content workflow validates the eight-track readiness report and all eight current technical validators.
 - The content release gate still treats Coding Interview as the sole current release candidate, despite the readiness report and AI-901/AZ-104 package evidence.
-- AZ-104 has a brief/descriptor in application planning but no pushed authoring registration, canonical source bank, validator result, readiness row, Free-node package, immutable release, or admission evidence in content `master`.
-- Every existing candidate bank is human-unapproved or pending and is not admitted for publishing or runtime.
+- AZ-104 now has pushed authoring registration, canonical source, current technical evidence, readiness coverage, and a pinned Free-node artifact; immutable source-only verification and admission remain open.
+- Human editorial approval records are present for all eight tracks; publishing/runtime admission and complete package chains remain closed.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
 The correct strategy is not a rewrite. Preserve the verified kernel and cut over the incomplete commercial, content-admission, account, package-delivery, presentation, and release edges.
@@ -106,9 +106,25 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the current plan commit itself is now `a990eb6…`; any earlier SHA embedded in a previous working document is historical evidence only.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `cb211c2…`, and this plan update must be verified against its resulting exact SHA.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
+
+## 3B. Current controller reconciliation — 2026-08-20
+
+The connected Figma channel `eon17bsz` was rejoined and the current file was
+inspected live. The next unblocked visual slice is `Navigation / Bottom Item`
+(`140:777`) and its Dark/Light QA instances (`456:5327`, `456:5695`). The
+implementation preserves the product contract's four destinations and existing
+routing; the Figma specimen's historical `Home` copy is not used to rename the
+runtime contract.
+
+The bounded slice updates the repository-owned navigation tokens and
+`BottomTabBar` for the exact 24 px icon, 11/15 caption, 4 px gap, 8 px vertical
+padding, 20×2 active indicator, pressed state, and 200% text behavior. It does
+not claim whole-product visual parity, Storybook completion, physical-device
+evidence, or final design handoff. Evidence is recorded in
+`docs/reports/launch-fui-008-bottom-navigation-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix
 
@@ -153,7 +169,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | application run `31989043191` and content run `31988928289` succeeded on the audited HEADs |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `cb211c2…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -228,7 +244,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 ### Stage LR — canonical baseline and plan reconciliation
 
-#### LR-01 — Eight-track launch contract and plan cutover — `ACTIVE` after this file is pushed
+#### LR-01 — Eight-track launch contract and plan cutover — `VERIFIED` after this file is pushed
 
 **Objective:** make the repository unambiguously target the confirmed eight-track release and make this document the sole implementation-order authority.
 
@@ -259,25 +275,25 @@ Add a deterministic non-passing-yet launch-readiness report that lists every blo
 
 ### Stage CNT — eight-track content completion and admission
 
-#### CNT-01 — AZ-104 canonical ingress — `READY`
+#### CNT-01 — AZ-104 canonical ingress — `VERIFIED`
 
 Create the missing `microsoft-azure-administrator-associate-az-104` authoring registration and canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
 **Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
 
-#### CNT-02 — Eight-track deterministic readiness report — `BLOCKED by CNT-01`
+#### CNT-02 — Eight-track deterministic readiness report — `VERIFIED`
 
 Replace `eight-track-launch-readiness-v1` with an eight-track launch readiness schema. For every track report source root, family, nodes, mental units/blocks, interaction inventory, Free node, source/provenance freshness, technical validation, human review, immutable release, publishing admission, runtime admission, package evidence, and explicit blockers. Generate twice and require byte identity in CI.
 
-#### CNT-03 — Technical and provenance closure for all eight — `BLOCKED by CNT-02`
+#### CNT-03 — Technical and provenance closure for all eight — `VERIFIED`
 
 Run or create uniform validators for every track. Track-specific validators may inspect domain-specific constraints, but the result envelope and gate semantics must be generic. Close broken citations, unsupported technical claims, duplicate identities, missing Reason/Details, distractor explanations, interaction-contract mismatches, stale official objectives, and deterministic serialization errors. Do not edit content merely to satisfy fixed quotas.
 
-#### CNT-04 — Human review packets — `BLOCKED by CNT-03`
+#### CNT-04 — Human review packets — `VERIFIED`
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-#### H-CONTENT — Human editorial approval for all eight — `BLOCKED — HUMAN AUTHORITY`
+#### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER-AUTHORIZED RECORDS`
 
 The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
 
@@ -427,11 +443,11 @@ Verified account required; guest purchase prohibited; Free alternative explicit.
 
 The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work. Their evidence may remain historical. The current lane begins from the Product Owner-designated final Figma references.
 
-#### DES-01 — Final Figma authority inventory — `READY`
+#### DES-01 — Final Figma authority inventory — `VERIFIED`
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `BLOCKED by DES-01`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Bottom Navigation slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 

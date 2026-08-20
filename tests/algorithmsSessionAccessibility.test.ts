@@ -108,7 +108,10 @@ test("bottom navigation preserves one-line visual labels while keeping every tab
   assert.match(bottomNavigation, /accessibilityLabel=\{item\.label\}/);
   assert.match(bottomNavigation, /numberOfLines=\{1\}/);
   assert.match(bottomNavigation, /adjustsFontSizeToFit/);
-  assert.match(bottomNavigation, /maxFontSizeMultiplier=\{1\.2\}/);
+  assert.match(bottomNavigation, /maxFontSizeMultiplier=\{2\}/);
+  assert.match(bottomNavigation, /height:\s*2/);
+  assert.match(bottomNavigation, /width:\s*20/);
+  assert.match(bottomNavigation, /tabButtonPressed/);
 });
 
 test("Practice Hub keeps the quiet-layered recommendation readable at large text and removes the competing stats card", () => {

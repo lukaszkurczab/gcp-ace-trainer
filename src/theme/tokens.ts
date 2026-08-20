@@ -30,7 +30,15 @@ export const colors = {
     accentTeal: "#0F766E",
     accentTealSoft: "#E6F6F4",
     accentOrange: "#C2410C",
-    accentOrangeSoft: "#FFF1E7"
+    accentOrangeSoft: "#FFF1E7",
+    navigation: {
+      surface: "#FBFDFC",
+      border: "#F1F5F9",
+      active: "#0F766E",
+      pressedSurface: "#F3F7F6",
+      textPrimary: "#102433",
+      textMuted: "#7A8B95"
+    }
   },
   dark: {
     background: brand.nightNavy,
@@ -57,7 +65,15 @@ export const colors = {
     accentTeal: brand.mint,
     accentTealSoft: "#143A38",
     accentOrange: "#FDBA74",
-    accentOrangeSoft: "#43240F"
+    accentOrangeSoft: "#43240F",
+    navigation: {
+      surface: "#0E1B31",
+      border: "#F1F5F9",
+      active: "#20C997",
+      pressedSurface: "#0F172A",
+      textPrimary: "#F1F5F9",
+      textMuted: "#738198"
+    }
   }
 } as const;
 
@@ -125,6 +141,11 @@ export const typography = {
     fontSize: 12,
     lineHeight: 16,
     fontWeight: "500"
+  },
+  navigationLabel: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "400"
   }
 } as const;
 
