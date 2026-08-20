@@ -245,7 +245,7 @@ and was published as `patternly-az104-0002` from content commit
 remains content release `patternly-az104-0001`. The deterministic readiness
 report now recognizes the full AZ-104 artifact, while publishing/runtime
 admission remain explicitly `not_admitted`. The current content branch is
-`d8d3f83` after this immutable-release publication. Evidence is recorded in
+`fc48cb0` after the immutable-release publication and its contract test update. Evidence is recorded in
 `docs/reports/launch-cnt-05-az104-immutable-release-2026-08-20.md`.
 
 ## 4. Current eight-track evidence matrix

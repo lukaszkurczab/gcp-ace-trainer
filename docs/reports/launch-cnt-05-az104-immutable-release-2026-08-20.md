@@ -8,7 +8,7 @@ Rebuild the existing AZ-104 published bank from the current clean content branch
 
 ## Evidence
 
-- Content branch: `master`, pushed commit `d8d3f83`.
+- Content branch: `master`, pushed commit `fc48cb0` (the release publication is `d8d3f83`; the follow-up contract test is included in the current branch).
 - Source identity used by the readiness report: `e73c7314eee7b2cd3f53b04c952b6af6526d3685` (the latest semantic source commit; later commits only carry technical evidence and immutable release records).
 - Publication commit: `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`.
 - Rebuilt artifact checksum: `968386e75c9abd4b54401e9876dadba6c0dbd01003aea8cfcad3a8d7027569ec`.
