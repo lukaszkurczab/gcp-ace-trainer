@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `6f43598acb32d63e693458b8419add497bf72f9f` (FUI-008..015 plus DATA-02 device-session remote boundary) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `95a7f16e8e0f58a25a68dc57c00322b2cbc05a43` (FUI-008..015, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `6f43598acb32d63e693458b8419add497bf72f9f` after the bounded FUI-015 and DATA-02 slices.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `95a7f16e8e0f58a25a68dc57c00322b2cbc05a43` after the bounded FUI-015, DATA-02, SEC-01, and DATA-01 slices.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -196,9 +196,9 @@ sessions. The HTTP sync boundary maps this explicit failure to
 introduced. Evidence is recorded in
 `docs/reports/launch-data-002-device-session-remote-boundary-2026-08-20.md`.
 The implementation is pushed, but the task remains `PARTIAL` until exact-SHA
-CI and the broader account/outbox cutover evidence exist. The next executable
-task is `SEC-01` production App Check proof, followed by `DATA-01` lifecycle
-integration; no provider evidence is inferred from the existing code.
+CI and the broader account/outbox cutover evidence exist. The subsequent
+SEC-01 and DATA-01 bounded audits below close repository-side boundaries only;
+no provider evidence or account/restore integration is inferred from them.
 
 The `SEC-01` audit confirms that the repository already has the fail-closed
 App Check boundary and environment guards. Evidence is recorded in
@@ -266,7 +266,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `6f43598…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; no exact-SHA application run is currently exposed for pushed `95a7f16…` |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -291,7 +291,7 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 
 | ID | Severity | Blocker | Required closure |
 | --- | --- | --- | --- |
-| `BLK-01` | Critical | canonical plan/contract still targets ten tracks while owner launch scope is eight | add exact launch-scope contract; move Terraform/KCNA to post-launch; update all gates and docs |
+| `BLK-01` | Critical | the exact eight-track catalogue still lacks a complete immutable package and admission chain | produce current-source immutable releases and publishing/runtime admission for all eight, then update the lock and CI atomically |
 | `BLK-02` | Critical | AZ-104 source ingress is closed, but current package/release/admission integrity is not | reconcile current technical evidence, package provenance, immutable release and admission |
 | `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
 | `BLK-04` | Critical | app registry/CI/release lock are three-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
