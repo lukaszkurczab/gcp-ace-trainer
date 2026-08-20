@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `25a82f2` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards, narrowed Home Figma ownership) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `9e92f24` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards, narrowed Home Figma ownership) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
