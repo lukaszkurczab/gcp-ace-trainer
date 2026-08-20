@@ -38,6 +38,11 @@ export const colors = {
       pressedSurface: "#F3F7F6",
       textPrimary: "#102433",
       textMuted: "#7A8B95"
+    },
+    iconButton: {
+      border: "#E3EAE9",
+      icon: "#102433",
+      pressedSurface: "#F1F5F9"
     }
   },
   dark: {
@@ -73,6 +78,11 @@ export const colors = {
       pressedSurface: "#0F172A",
       textPrimary: "#F1F5F9",
       textMuted: "#738198"
+    },
+    iconButton: {
+      border: "#1E293B",
+      icon: "#F1F5F9",
+      pressedSurface: "#0F172A"
     }
   }
 } as const;

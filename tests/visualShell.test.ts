@@ -100,8 +100,12 @@ test("the shared header owns accessible back geometry and long-copy reflow witho
 
   assert.match(header, /backAction\?: Readonly<\{/);
   assert.match(header, /accessibilityLabel=\{backAction\.accessibilityLabel \?\? t\("Go back"\)\}/);
-  assert.match(header, /accessibilityRole="button"/);
-  assert.match(header, /backButton:\s*\{[\s\S]*?height:\s*48,[\s\S]*?width:\s*48,/);
+  assert.match(header, /<IconButton[\s\S]*icon="chevron-left"/);
+  const iconButton = source("src/components/IconButton.tsx");
+  assert.match(iconButton, /accessibilityRole="button"/);
+  assert.match(iconButton, /height:\s*44,[\s\S]*?width:\s*44,/);
+  assert.match(iconButton, /visual:\s*\{[\s\S]*?borderWidth:\s*1,[\s\S]*?height:\s*36,[\s\S]*?width:\s*36,/);
+  assert.match(iconButton, /pressedSurface/);
   assert.match(header, /headerCopy:\s*\{[\s\S]*?flex:\s*1,[\s\S]*?minWidth:\s*0,/);
   assert.match(header, /brandTitle:\s*\{[\s\S]*?flexShrink:\s*1,/);
   assert.match(header, /headerMeta:\s*\{[\s\S]*?flexShrink:\s*1,/);
