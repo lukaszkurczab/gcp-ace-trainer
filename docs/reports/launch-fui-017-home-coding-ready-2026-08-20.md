@@ -26,7 +26,9 @@ action, and centered secondary action.
   settings` CTA were not invented because the current Home contract does not
   expose those values/actions as canonical runtime commands.
 - The approved Figma node is now registered in the canonical design-reference
-  registry and owns `src/features/home/` for the design-change gate.
+  registry and owns only `src/features/home/HomeScreen.tsx` and
+  `src/features/home/tabs/HomeTab.tsx` for the design-change gate; unrelated
+  Home UI changes still require their own approved reference.
 
 ## Maestro confirmation
 
