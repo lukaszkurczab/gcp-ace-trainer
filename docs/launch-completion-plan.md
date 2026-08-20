@@ -200,6 +200,13 @@ CI and the broader account/outbox cutover evidence exist. The next executable
 task is `SEC-01` production App Check proof, followed by `DATA-01` lifecycle
 integration; no provider evidence is inferred from the existing code.
 
+The `SEC-01` audit confirms that the repository already has the fail-closed
+App Check boundary and environment guards. Evidence is recorded in
+`docs/reports/launch-sec-001-app-check-boundary-2026-08-20.md`. Production
+attestation-provider registration, mobile app identifiers, and Cloud Run
+operations evidence are still unavailable, so `SEC-01` remains `PARTIAL` and
+`OPS-02` remains provider-blocked.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -458,9 +465,9 @@ Replace the two-track registry with generic admission records for exactly eight 
 
 ### Stage SEC/DATA — identity, session ownership, sync, adoption, and deletion
 
-#### SEC-01 — Approved mobile-client and environment proof — `READY`
+#### SEC-01 — Approved mobile-client and environment proof — `PARTIAL — fail-closed App Check boundary implemented; production provider evidence pending`
 
-Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling.
+Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling. The fail-closed server and environment implementation is pushed; production attestation registration, mobile app IDs, and deployment proof remain external acceptance dependencies.
 
 #### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
 
