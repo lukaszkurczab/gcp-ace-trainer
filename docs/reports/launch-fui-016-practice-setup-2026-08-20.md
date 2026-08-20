@@ -42,7 +42,7 @@ six checkpoints.
 Evidence is local and intentionally not a release sign-off:
 
 - Dark final run: `artifacts/maestro-screen-capture/fui-visual-confirmation/2026-08-20-1525/updated-dark-final/`
-- Light run: `artifacts/maestro-screen-capture/fui-visual-confirmation/2026-08-20-1525/updated-light-auto/`
+- Light final run: `artifacts/maestro-screen-capture/fui-visual-confirmation/2026-08-20-1525/updated-light-final/`
 - Representative Custom Practice screenshots were manually inspected after
   the run; no clipped controls or broken path state was observed.
 - Android, large text, physical devices, release binaries, and final design
