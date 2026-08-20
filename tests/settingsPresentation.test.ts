@@ -55,3 +55,14 @@ test("appearance choices use the Figma preview variants without changing languag
   assert.match(choiceRow, /previewDarkSurface/);
   assert.match(choiceRow, /height:\s*48,[\s\S]*?width:\s*60/);
 });
+
+test("settings bottom sheets use the Figma elevated shell and modal accessibility boundary", () => {
+  const bottomSheet = readFileSync("src/components/SettingsBottomSheet.tsx", "utf8");
+  const tokens = readFileSync("src/theme/tokens.ts", "utf8");
+  assert.match(bottomSheet, /accessibilityViewIsModal style=\{styles\.sheet\}/);
+  assert.match(bottomSheet, /backgroundColor:\s*palette\.bottomSheet\.surface/);
+  assert.match(bottomSheet, /borderTopLeftRadius:\s*radius\.sheet/);
+  assert.match(bottomSheet, /shadowOffset:\s*\{ height:\s*-4, width:\s*0 \}/);
+  assert.match(tokens, /bottomSheet:\s*\{[\s\S]*?surface:\s*"#F7FAF9"[\s\S]*?border:\s*"#E3EAE9"/);
+  assert.match(tokens, /bottomSheet:\s*\{[\s\S]*?surface:\s*"#0F172A"[\s\S]*?border:\s*"#1E293B"/);
+});

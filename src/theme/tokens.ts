@@ -79,6 +79,11 @@ export const colors = {
     emptyState: {
       textPrimary: "#102433",
       textMuted: "#7A8B95"
+    },
+    bottomSheet: {
+      surface: "#F7FAF9",
+      border: "#E3EAE9",
+      handle: "#E3EAE9"
     }
   },
   dark: {
@@ -155,6 +160,11 @@ export const colors = {
     emptyState: {
       textPrimary: "#F1F5F9",
       textMuted: "#738198"
+    },
+    bottomSheet: {
+      surface: "#0F172A",
+      border: "#1E293B",
+      handle: "#1E293B"
     }
   }
 } as const;
@@ -185,6 +195,7 @@ export const radius = {
   md: 8,
   lg: 12,
   xl: 16,
+  sheet: 14,
   pill: 999
 } as const;
 

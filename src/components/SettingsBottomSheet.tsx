@@ -22,7 +22,7 @@ export function SettingsBottomSheet({ children, closeLabel, intro, onClose, titl
     <Modal animationType="slide" onRequestClose={onClose} statusBarTranslucent transparent visible={visible}>
       <View style={styles.root}>
         <Pressable accessibilityLabel={closeLabel} accessibilityRole="button" onPress={onClose} style={styles.backdrop} />
-        <View style={styles.sheet}>
+        <View accessibilityViewIsModal style={styles.sheet}>
           <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <View style={styles.handle} />
             <Text style={styles.title}>{title}</Text>
@@ -38,9 +38,21 @@ export function SettingsBottomSheet({ children, closeLabel, intro, onClose, titl
 const createStyles = (palette: AppColors) => StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end" },
   backdrop: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(0, 0, 0, 0.48)" },
-  sheet: { backgroundColor: palette.background, borderColor: palette.border, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, borderTopWidth: StyleSheet.hairlineWidth, maxHeight: "86%" },
+  sheet: {
+    backgroundColor: palette.bottomSheet.surface,
+    borderColor: palette.bottomSheet.border,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    maxHeight: "86%",
+    shadowColor: "#000000",
+    shadowOffset: { height: -4, width: 0 },
+    shadowOpacity: 0.48,
+    shadowRadius: 12,
+    elevation: 8
+  },
   content: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
-  handle: { alignSelf: "center", backgroundColor: palette.borderStrong, borderRadius: radius.pill, height: 4, marginBottom: spacing.xs, width: 44 },
+  handle: { alignSelf: "center", backgroundColor: palette.bottomSheet.handle, borderRadius: radius.pill, height: 4, marginBottom: spacing.xs, width: 44 },
   title: { ...typography.heading, color: palette.textPrimary },
   intro: { ...typography.small, color: palette.textSecondary },
 });
