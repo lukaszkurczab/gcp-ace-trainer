@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { radius, spacing, typography } from "../theme";
+import { spacing, typography } from "../theme";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -32,10 +32,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     textTransform: "uppercase",
   },
   rows: {
-    backgroundColor: palette.elevatedSurface,
-    borderColor: palette.border,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: "hidden",
+    gap: spacing.sm,
   },
 });

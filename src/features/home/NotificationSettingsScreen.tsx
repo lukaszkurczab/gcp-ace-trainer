@@ -149,10 +149,10 @@ export function NotificationSettingsScreen() {
       <SettingsGroup title={text.preferences}>
         <ListRow
           detail={text.dailyReminderDetail}
-          leading={<IconTile name="rotate-ccw" tone="primary" />}
+          leading={<IconTile name="rotate-ccw" size={32} tone="settings" />}
           onPress={() => setReminderSheetVisible(true)}
           title={text.dailyReminder}
-          trailing={<View style={styles.reminderValue}><Text style={styles.reminderValueLabel}>{notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}</Text><Icon color={colors.textMuted} name="chevron-right" size={18} /></View>}
+          trailing={<View style={styles.reminderValue}><Text style={styles.reminderValueLabel}>{notifications.dailyReminder ? formatDailyReminderTime(notifications.dailyReminder) : text.reminderOff}</Text><Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
           variant="grouped"
         />
       </SettingsGroup>

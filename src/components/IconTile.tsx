@@ -6,7 +6,7 @@ import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
 
-type IconTileTone = "danger" | "info" | "muted" | "primary" | "success" | "warning";
+type IconTileTone = "danger" | "info" | "muted" | "primary" | "settings" | "success" | "warning";
 
 type IconTileProps = {
   name: IconName;
@@ -32,6 +32,7 @@ function getToneStyles(palette: AppColors): Record<IconTileTone, { backgroundCol
     info: { backgroundColor: palette.infoSoft, color: palette.info },
     muted: { backgroundColor: palette.elevatedSurface, color: palette.textMuted },
     primary: { backgroundColor: palette.primarySoft, color: palette.primary },
+    settings: { backgroundColor: palette.listRow.iconSurface, color: palette.listRow.icon },
     success: { backgroundColor: palette.successSoft, color: palette.success },
     warning: { backgroundColor: palette.warningSoft, color: palette.warning },
   };

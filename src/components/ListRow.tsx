@@ -39,13 +39,13 @@ export function ListRow({
     <>
       {leading ? <View style={styles.leading}>{leading}</View> : null}
       <View style={styles.copy}>
-        <View style={styles.titleRow}>
-          <Text numberOfLines={2} style={styles.title}>
+        <View style={[styles.titleRow, variant === "grouped" ? styles.groupedTitleRow : null]}>
+          <Text maxFontSizeMultiplier={2} numberOfLines={2} style={[styles.title, variant === "grouped" ? styles.groupedTitle : null]}>
             {title}
           </Text>
-          {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+          {meta ? <Text maxFontSizeMultiplier={2} style={styles.meta}>{meta}</Text> : null}
         </View>
-        {detail ? <Text style={styles.detail}>{detail}</Text> : null}
+        {detail ? <Text maxFontSizeMultiplier={2} style={[styles.detail, variant === "grouped" ? styles.groupedDetail : null]}>{detail}</Text> : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
     </>
@@ -83,9 +83,11 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   groupedRow: {
-    backgroundColor: palette.elevatedSurface,
-    borderBottomColor: palette.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: palette.listRow.surface,
+    borderRadius: radius.lg,
+    minHeight: 63,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
   },
   pressed: {
     opacity: 0.84
@@ -102,6 +104,9 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     alignItems: "flex-start",
     gap: spacing.xs
   },
+  groupedTitleRow: {
+    gap: spacing.xxs,
+  },
   title: {
     ...typography.bodyStrong,
     color: palette.textPrimary,
@@ -110,6 +115,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detail: {
     ...typography.small,
     color: palette.textSecondary
+  },
+  groupedTitle: {
+    ...typography.listRowTitle,
+    color: palette.listRow.textPrimary,
+  },
+  groupedDetail: {
+    ...typography.listRowDetail,
+    color: palette.listRow.textSecondary,
   },
   meta: {
     ...typography.caption,

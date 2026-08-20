@@ -155,11 +155,11 @@ function SettingsNavigationRow({ detail, icon, onPress, testID, title, value }: 
   return (
     <ListRow
       detail={detail}
-      leading={<IconTile name={icon} tone="primary" />}
+      leading={<IconTile name={icon} size={32} tone="settings" />}
       onPress={onPress}
       testID={testID}
       title={title}
-      trailing={<View style={styles.preferenceMeta}>{value ? <Text style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.textMuted} name="chevron-right" size={18} /></View>}
+      trailing={<View style={styles.preferenceMeta}>{value ? <Text style={styles.preferenceValue}>{value}</Text> : null}<Icon color={colors.listRow.icon} name="chevron-right" size={20} /></View>}
       variant="grouped"
     />
   );

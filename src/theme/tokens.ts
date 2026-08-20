@@ -43,6 +43,13 @@ export const colors = {
       border: "#E3EAE9",
       icon: "#102433",
       pressedSurface: "#F1F5F9"
+    },
+    listRow: {
+      icon: "#102433",
+      iconSurface: "#F7FAF9",
+      surface: "#FBFDFC",
+      textPrimary: "#102433",
+      textSecondary: "#506472"
     }
   },
   dark: {
@@ -83,6 +90,13 @@ export const colors = {
       border: "#1E293B",
       icon: "#F1F5F9",
       pressedSurface: "#0F172A"
+    },
+    listRow: {
+      icon: "#F1F5F9",
+      iconSurface: "#0F172A",
+      surface: "#0E1B31",
+      textPrimary: "#F1F5F9",
+      textSecondary: "#AAB6C8"
     }
   }
 } as const;
@@ -153,6 +167,16 @@ export const typography = {
     fontWeight: "500"
   },
   navigationLabel: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: "400"
+  },
+  listRowTitle: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: "600"
+  },
+  listRowDetail: {
     fontSize: 11,
     lineHeight: 15,
     fontWeight: "400"

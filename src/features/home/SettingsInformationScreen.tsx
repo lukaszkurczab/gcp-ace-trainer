@@ -38,7 +38,7 @@ export function SettingsInformationScreen({ closeLabel, infoBody, infoTitle, sec
             <ListRow
               detail={topic.summary}
               key={topic.title}
-              leading={<IconTile name={topic.icon} tone="primary" />}
+              leading={<IconTile name={topic.icon} size={32} tone="settings" />}
               onPress={() => setActiveTopic(topic)}
               title={topic.title}
               variant="grouped"
