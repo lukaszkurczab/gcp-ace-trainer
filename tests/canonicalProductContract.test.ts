@@ -563,7 +563,8 @@ test("locks the Product Owner-approved Free-package interaction reference and it
       { sourcePathPrefix: "src/features/review/AnswerReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ExamReviewScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
       { sourcePathPrefix: "src/features/exam/ResultScreen.tsx", designReferenceId: "pkg-04a-free-package-interactions" },
-      { sourcePathPrefix: "src/features/home/", designReferenceId: "figma-02a-home-coding-ready" },
+      { sourcePathPrefix: "src/features/home/HomeScreen.tsx", designReferenceId: "figma-02a-home-coding-ready" },
+      { sourcePathPrefix: "src/features/home/tabs/HomeTab.tsx", designReferenceId: "figma-02a-home-coding-ready" },
     ],
   });
   assert.equal(resolveCanonicalUserFacingTaskDesignReference(contract, { status: "not-ready" }), undefined);

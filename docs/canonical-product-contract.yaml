@@ -1096,7 +1096,9 @@ designReferences:
       designReferenceId: pkg-04a-free-package-interactions
     - sourcePathPrefix: src/features/exam/ResultScreen.tsx
       designReferenceId: pkg-04a-free-package-interactions
-    - sourcePathPrefix: src/features/home/
+    - sourcePathPrefix: src/features/home/HomeScreen.tsx
+      designReferenceId: figma-02a-home-coding-ready
+    - sourcePathPrefix: src/features/home/tabs/HomeTab.tsx
       designReferenceId: figma-02a-home-coding-ready
 simulationOperationStateCtas:
   version: 1
