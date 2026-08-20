@@ -10,14 +10,14 @@ deployment. OPS-01 therefore remains `PARTIAL`.
 ## Starting state
 
 - Application branch: `main`
-- Application commit: `c0e4aaa` (`docs: reconcile launch plan with AI-901 release`)
-- Worktree: clean and aligned with `origin/main` (`0/0`)
+- Application commit: `1bc0b3c` (`docs: reconcile DES-002 launch plan status`)
+- Worktree: application code is clean and aligned with `origin/main`; the only
+  untracked path is the local capture-only Maestro flow directory.
 - Content lock: `patternly-app-content-0019`
 
-The final documentation update was pushed as application commit
-`aaa1f8fa51363512e30dbb65823adb98d341bc8f`; GitHub Actions QA run
-`31984300974` passed both the Recovery QA gate and the multi-track content
-release contract. The Node.js 20 deprecation notices are runner warnings only.
+The latest documentation updates were pushed through `e361197` and `1bc0b3c`.
+The local preflight below was repeated against `1bc0b3c`; no content bundle
+changes were produced.
 
 ## Verified local evidence
 
@@ -46,6 +46,11 @@ passed
 git diff --check
 passed
 ```
+
+The repeated local run also passed `npm run typecheck`; the application test
+suite and content validators are recorded in the current launch audit. The
+lock still contains exactly three registered application artifacts, so this
+preflight cannot prove the eight-track launch catalogue.
 
 The content sync produced no worktree diff. The server build uses the
 digest-pinned `server/Dockerfile` and the digest-pinned Docker builder in
