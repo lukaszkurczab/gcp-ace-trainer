@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `9e92f24` (FUI-008..017, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards, narrowed Home Figma ownership) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `98fbbd5` (DES-002/OPS-01 evidence refresh after FUI-008..017, DATA-02, SEC-01 and DATA-01) | [QA run 32383014164](https://github.com/lukaszkurczab/gcp-ace-trainer/actions/runs/32383014164) — Recovery QA and multi-track content contract successful |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `95a7f16e8e0f58a25a68dc57c00322b2cbc05a43` after the bounded FUI-015, DATA-02, SEC-01, and DATA-01 slices.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `98fbbd5ac4ffa6febebdb1b6e0b385a435f87322`, with exact-SHA QA run `32383014164` green after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002 and OPS-01 evidence slices.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -287,7 +287,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; no exact-SHA application run is currently exposed for pushed `95a7f16…` |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded for `ad6cbe1`; application run `32383014164` succeeded for exact pushed `98fbbd5` |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -381,11 +381,11 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 **Unlocks:** every remaining lane.
 
-#### LR-02 — Verified-sentinel rebaseline — `BLOCKED by LR-01`
+#### LR-02 — Verified-sentinel rebaseline — `VERIFIED — exact pushed SHA and CI rebaselined in launch-lr-002 report`
 
 Record each sentinel in section 5 against the post-`LR-01` exact SHAs. Do not reimplement it. Any failure becomes a regression owned by the slice that caused it.
 
-#### LR-03 — Final gate automation skeleton — `BLOCKED by LR-01`
+#### LR-03 — Final gate automation skeleton — `VERIFIED — deterministic report and enforce mode covered by releaseGate tests`
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
 
@@ -415,7 +415,7 @@ Generate one bounded review packet per track: coverage map, node/mental-unit cou
 
 The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
 
-#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by CNT-03`
+#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by per-track immutable release inputs and family package contracts`
 
 Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
 
