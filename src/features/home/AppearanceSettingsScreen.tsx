@@ -27,7 +27,7 @@ export function AppearanceSettingsScreen() {
       currentValue={preferences.appearance}
       intro={text.intro}
       onSelect={(value) => preferences.setAppearance(value as AppearancePreference)}
-      options={options.map((option) => ({ detail: option.detail[preferences.locale], label: option.label[preferences.locale], value: option.value }))}
+      options={options.map((option) => ({ appearancePreview: option.value, detail: option.detail[preferences.locale], label: option.label[preferences.locale], value: option.value }))}
       sectionTitle={text.options}
     />
   );

@@ -6,6 +6,7 @@ const settingsTab = readFileSync("src/features/home/tabs/SettingsTab.tsx", "utf8
 const listRow = readFileSync("src/components/ListRow.tsx", "utf8");
 const settingsGroup = readFileSync("src/components/SettingsGroup.tsx", "utf8");
 const preferenceSelection = readFileSync("src/features/home/PreferenceSelectionScreen.tsx", "utf8");
+const appearanceSettings = readFileSync("src/features/home/AppearanceSettingsScreen.tsx", "utf8");
 const choiceRow = readFileSync("src/components/ChoiceRow.tsx", "utf8");
 
 test("Settings exposes only its five working navigation actions", () => {
@@ -44,4 +45,13 @@ test("preference selection uses the canonical accessible radio choice row", () =
   assert.match(choiceRow, /minHeight:\s*72,[\s\S]*?paddingHorizontal:\s*14,[\s\S]*?paddingVertical:\s*spacing\.md/);
   assert.match(choiceRow, /height:\s*20,[\s\S]*?width:\s*20/);
   assert.match(choiceRow, /height:\s*8,[\s\S]*?width:\s*8/);
+});
+
+test("appearance choices use the Figma preview variants without changing language choices", () => {
+  assert.match(appearanceSettings, /appearancePreview: option\.value/);
+  assert.match(preferenceSelection, /appearancePreview=\{option\.appearancePreview\}/);
+  assert.match(choiceRow, /function AppearancePreview/);
+  assert.match(choiceRow, /previewLightSurface/);
+  assert.match(choiceRow, /previewDarkSurface/);
+  assert.match(choiceRow, /height:\s*48,[\s\S]*?width:\s*60/);
 });

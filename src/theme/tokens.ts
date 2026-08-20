@@ -64,6 +64,17 @@ export const colors = {
       statusBorder: "#287A4B",
       textPrimary: "#102433",
       textSecondary: "#506472"
+    },
+    appearancePreview: {
+      darkCanvas: "#081328",
+      darkSurface: "#0E1B31",
+      lightCanvas: "#F0F2F5",
+      lightSurface: "#FFFFFF",
+      darkPrimaryBar: "#F1F5F9",
+      darkSecondaryBar: "#A2AEBF",
+      lightPrimaryBar: "#1A1F2E",
+      lightSecondaryBar: "#4D596B",
+      accent: "#20C997"
     }
   },
   dark: {
@@ -125,6 +136,17 @@ export const colors = {
       statusBorder: "#34B564",
       textPrimary: "#F1F5F9",
       textSecondary: "#AAB6C8"
+    },
+    appearancePreview: {
+      darkCanvas: "#081328",
+      darkSurface: "#0E1B31",
+      lightCanvas: "#F0F2F5",
+      lightSurface: "#FFFFFF",
+      darkPrimaryBar: "#F1F5F9",
+      darkSecondaryBar: "#A2AEBF",
+      lightPrimaryBar: "#1A1F2E",
+      lightSecondaryBar: "#4D596B",
+      accent: "#20C997"
     }
   }
 } as const;

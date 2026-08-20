@@ -5,6 +5,7 @@ import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
 type ChoiceRowProps = {
+  appearancePreview?: "dark" | "light" | "system";
   detail: string;
   disabled?: boolean;
   onPress: () => void;
@@ -14,7 +15,7 @@ type ChoiceRowProps = {
 };
 
 /** Canonical comfortable radio row from Figma's Choice Group pattern. */
-export function ChoiceRow({ detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
+export function ChoiceRow({ appearancePreview, detail, disabled = false, onPress, selected, testID, title }: ChoiceRowProps) {
   const styles = useThemedStyles(createStyles);
   return (
     <Pressable
@@ -25,14 +26,29 @@ export function ChoiceRow({ detail, disabled = false, onPress, selected, testID,
       style={[styles.row, selected ? styles.selected : styles.unselected, disabled ? styles.disabled : null]}
       testID={testID}
     >
+      {appearancePreview ? <AppearancePreview mode={appearancePreview} /> : null}
       <View style={[styles.radio, selected ? styles.radioSelected : styles.radioUnselected]}>
         {selected ? <View style={styles.dot} /> : null}
       </View>
       <View style={styles.content}>
-        <Text maxFontSizeMultiplier={2} style={styles.title}>{title}</Text>
-        <Text maxFontSizeMultiplier={2} style={styles.detail}>{detail}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.title, appearancePreview ? styles.appearanceTitle : null]}>{title}</Text>
+        <Text maxFontSizeMultiplier={2} style={[styles.detail, appearancePreview ? styles.appearanceDetail : null]}>{detail}</Text>
       </View>
     </Pressable>
+  );
+}
+
+function AppearancePreview({ mode }: Readonly<{ mode: "dark" | "light" | "system" }>) {
+  const styles = useThemedStyles(createStyles);
+  const light = mode === "light";
+  return (
+    <View accessibilityElementsHidden importantForAccessibility="no" style={[styles.preview, light ? styles.previewLight : styles.previewDark]}>
+      <View style={[styles.previewSurface, light ? styles.previewLightSurface : styles.previewDarkSurface]}>
+        <View style={[styles.previewPrimaryBar, light ? styles.previewLightPrimaryBar : styles.previewDarkPrimaryBar]} />
+        <View style={[styles.previewSecondaryBar, light ? styles.previewLightSecondaryBar : styles.previewDarkSecondaryBar]} />
+      </View>
+      <View style={styles.previewAccent} />
+    </View>
   );
 }
 
@@ -84,6 +100,14 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     gap: spacing.xs,
     minWidth: 0,
   },
+  appearanceDetail: {
+    fontSize: 12.5,
+    lineHeight: 15.125,
+  },
+  appearanceTitle: {
+    fontSize: 15,
+    lineHeight: 18,
+  },
   title: {
     ...typography.listRowTitle,
     color: palette.choice.textPrimary,
@@ -91,5 +115,48 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   detail: {
     ...typography.listRowDetail,
     color: palette.choice.textSecondary,
+  },
+  preview: {
+    borderRadius: 8,
+    flexShrink: 0,
+    height: 48,
+    justifyContent: "flex-start",
+    padding: 6,
+    width: 60,
+  },
+  previewAccent: {
+    backgroundColor: palette.appearancePreview.accent,
+    borderRadius: 2,
+    height: 3,
+    marginTop: 3,
+    width: 16,
+  },
+  previewDark: { backgroundColor: palette.appearancePreview.darkCanvas },
+  previewDarkPrimaryBar: { backgroundColor: palette.appearancePreview.darkPrimaryBar },
+  previewDarkSecondaryBar: { backgroundColor: palette.appearancePreview.darkSecondaryBar },
+  previewDarkSurface: { backgroundColor: palette.appearancePreview.darkSurface },
+  previewLight: { backgroundColor: palette.appearancePreview.lightCanvas },
+  previewLightPrimaryBar: { backgroundColor: palette.appearancePreview.lightPrimaryBar },
+  previewLightSecondaryBar: { backgroundColor: palette.appearancePreview.lightSecondaryBar },
+  previewLightSurface: { backgroundColor: palette.appearancePreview.lightSurface },
+  previewPrimaryBar: {
+    borderRadius: 1,
+    height: 2,
+    marginLeft: 4,
+    marginTop: 3,
+    width: 28,
+  },
+  previewSecondaryBar: {
+    borderRadius: 1,
+    height: 2,
+    marginLeft: 4,
+    marginTop: 2,
+    opacity: 0.4,
+    width: 18,
+  },
+  previewSurface: {
+    borderRadius: 4,
+    height: 14,
+    width: "100%",
   },
 });

@@ -6,6 +6,7 @@ import { useThemedStyles } from "../../preferences";
 import { spacing, typography, type AppColors } from "../../theme";
 
 type PreferenceOption = Readonly<{
+  appearancePreview?: "dark" | "light" | "system";
   detail: string;
   label: string;
   value: string;
@@ -47,6 +48,7 @@ export function PreferenceSelectionScreen({
           const selected = option.value === currentValue;
           return (
             <ChoiceRow
+              appearancePreview={option.appearancePreview}
               detail={option.detail}
               key={option.value}
               onPress={() => { void select(option.value); }}
