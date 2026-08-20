@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `dd6e9ee` (launch-plan/evidence reconciliation after current content verification) | Existing exact-SHA QA remains tied to the prior application baseline; these docs-only reconciliations do not claim a new CI run. |
+| application | `main` | `502a88d` (current-head verification report and launch-plan reconciliation) | Exact-SHA QA run `32389337000` passed for this pushed SHA. |
 | content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 8/8 top-level architecture subtests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `dd6e9ee46893418845d14eefc2c60f6b815f1d9c`, a docs-only launch-plan/evidence reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32383520294` remains evidence for its prior application baseline.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `502a88d4c286aa03e92f8a0bd6aa8acb48ddd8bd`, a docs-only current-head verification and launch-plan reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32389337000` passed for this SHA.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -270,7 +270,7 @@ Evidence for the immutable release is recorded in
 
 ## 4. Current eight-track evidence matrix
 
-Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
+Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `12b99c78e03ec6c58964d7f83d11d1b50af08467` (readiness source commit `e73c7314eee7b2cd3f53b04c952b6af6526d3685`). The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
 
 | Launch track | Current source | Inventory | Free package | Human review | Publishing/runtime admission | App state | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
@@ -283,16 +283,16 @@ Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at co
 | Frontend System Design | present | 1,766; 10 nodes / 88 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
 | Object-Oriented Design | present | 1,413; 9 nodes / 79 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
 
-The current content HEAD differs from the source commit referenced by the readiness report only by technical evidence, immutable-release, contract-test, and verification-report commits. These commits do not change the approved AZ-104 source content or grant publishing/runtime admission.
+The readiness report's source commit intentionally tracks the latest commit that changed the described authoring inputs (`e73c7314...`); the current content HEAD `12b99c7` contains only the later technical-evidence, immutable-release, contract-test, and verification-report commits. These commits do not change the approved source content or grant publishing/runtime admission.
 
 The readiness report's `humanReview=approved` is now a closed editorial gate because the Product Owner authorized recording the eight approval records. It does not mean package, publishing, runtime, store, provider, design, or device gates are closed.
 
-The application release gate was re-run after FUI-015 and DATA-02 and remains
-`not_ready`. Its current readiness payload reports `sourceCommit=
-e73c7314eee7b2cd3f53b04c952b6af6526d3685`, while canonical content `master`
-is `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. This source/report identity
-must be reconciled before the readiness payload can serve as fresh admission
-evidence; no package or catalogue change is inferred from the mismatch.
+The application release gate was re-run against the current canonical inputs and
+remains `not_ready` with 33 explicit blockers. Its readiness payload reports
+`sourceCommit=e73c7314...` by design: that is the latest authoring-input commit,
+while canonical content `master` is `12b99c7` after evidence-only commits. The
+identity is therefore reconciled and does not grant package, catalogue,
+publishing, or runtime admission.
 
 The application `release.lock.json` contains exactly three artifacts: Coding Interview, historical GCP, and `patternly-az104-0001`. The CI contract independently enforces this exact three-track lock. The lock must not be expanded by copying or relabelling historical artifacts. The AZ-104 package provenance audit is recorded in [launch-cnt-06-az104-package-provenance-and-design-inputs-2026-08-20.md](reports/launch-cnt-06-az104-package-provenance-and-design-inputs-2026-08-20.md).
 
@@ -318,7 +318,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | current content `npm test` passed 8/8 top-level architecture subtests for pushed `12b99c7`; application run `32383520294` remains tied to prior exact pushed `be32cc6` |
+| `S-CI-HEAD` exact-SHA CI | application QA run `32389337000` and content architecture run `32388398769` both passed for pushed `502a88d`/`12b99c7`; application `npm test` is 619/619 and content `npm test` is 8/8 top-level subtests |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 

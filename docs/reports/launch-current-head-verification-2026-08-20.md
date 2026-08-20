@@ -10,9 +10,11 @@ runtime, publishing, provider, store, signing, or device admission.
 
 - Repository: `Patternly/patternly`
 - Canonical branch: `main`
-- Tested commit: `00784ef` (`docs: align launch plan with current app head`)
+- Tested application code baseline: `00784ef` (`docs: align launch plan with current app head`)
 - Command: `npm test`
 - Result: **passed**, 619/619 tests, 0 failures
+- The subsequent pushed commit `502a88d` changed documentation only; GitHub
+  Actions QA run `32389337000` passed for that exact pushed SHA.
 - Execution note: the first sandboxed run could not bind localhost and reported
   `EPERM`; the same command was rerun with the approved local-network
   permission required by the server HTTP tests and passed in full.
