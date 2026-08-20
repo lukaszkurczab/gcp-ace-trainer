@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `502a88d` (current-head verification report and launch-plan reconciliation) | Exact-SHA QA run `32389337000` passed for this pushed SHA. |
-| content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 8/8 top-level architecture subtests; remote HEAD verified. |
+| application | `main` | `cd1103c` (current-head verification and exact launch-evidence reconciliation) | Exact-SHA QA run `32389876039` passed for this pushed SHA. |
+| content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 142/142 tests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `502a88d4c286aa03e92f8a0bd6aa8acb48ddd8bd`, a docs-only current-head verification and launch-plan reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32389337000` passed for this SHA.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `cd1103cab38a2dd42f9d65fc070d54ce8f549dde`, a docs-only exact-evidence reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32389876039` passed for this SHA.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -141,12 +141,12 @@ the two changed Home screens so unrelated Home UI changes still require their
 own approved reference.
 
 The current capture-only Maestro confirmation was rerun against application
-commit `327b79aedfff1d31fd0849bd9ca249ca82affeff` on
+commit `cd1103cab38a2dd42f9d65fc070d54ce8f549dde` on
 `Maestro_IOS_iPhone-16-Pro_18` (iOS 18.6). The flow passed `1/1` in 44 seconds
 and asserted the complete Coding Interview first-use → Practice → session →
 summary → Progress → Settings path, with 13 dark-theme checkpoints. The
-auditable manifest and run report are stored under
-`artifacts/maestro-screen-capture/fui-visual-confirmation/2026-08-20-1742/`.
+latest auditable manifest and run report are stored under
+`artifacts/maestro-screen-capture/fui-visual-confirmation/2026-08-20-1820/`.
 This confirms route/selector behavior and captured appearance only; the
 Expo launcher overlay remains a simulator artifact, and no Figma parity or
 release readiness is inferred from it.
@@ -263,7 +263,7 @@ remains content release `patternly-az104-0001`. The deterministic readiness
 report now recognizes the full AZ-104 artifact, while publishing/runtime
 admission remain explicitly `not_admitted`. The current content branch is
 `12b99c7` after the safe AZ-104 package-pin revert and verification refresh; the current content test
-run passes 8/8 top-level architecture subtests. The verification refresh is
+run passes 142/142 tests. The verification refresh is
 recorded in `docs/reports/launch-cnt-07-current-head-verification-2026-08-20.md`.
 Evidence for the immutable release is recorded in
 `docs/reports/launch-cnt-05-az104-immutable-release-2026-08-20.md`.
@@ -318,7 +318,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | application QA run `32389337000` and content architecture run `32388398769` both passed for pushed `502a88d`/`12b99c7`; application `npm test` is 619/619 and content `npm test` is 8/8 top-level subtests |
+| `S-CI-HEAD` exact-SHA CI | application QA run `32389876039` and content architecture run `32388398769` both passed for pushed `cd1103c`/`12b99c7`; application `npm test` is 619/619 and content `npm test` is 142/142 |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
