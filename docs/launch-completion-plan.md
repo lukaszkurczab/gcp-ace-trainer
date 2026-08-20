@@ -78,7 +78,7 @@ The green CI proves the current contracts, not the target launch catalogue:
 - The production track registry/lock now contains Coding Interview, historical GCP, and AZ-104; the remaining five launch tracks are still not admitted.
 - The content workflow validates the eight-track readiness report and all eight current technical validators.
 - The content release gate still treats Coding Interview as the sole current release candidate, despite the readiness report and AI-901/AZ-104 package evidence.
-- AZ-104 now has pushed authoring registration, canonical source, current technical evidence, readiness coverage, and a pinned Free-node artifact; immutable source-only verification and admission remain open.
+- AZ-104 now has pushed authoring registration, canonical source, current technical evidence, readiness coverage, a pinned Free-node artifact, and current immutable release `patternly-az104-0002`; publishing/runtime admission and application cutover remain open.
 - Human editorial approval records are present for all eight tracks; publishing/runtime admission and complete package chains remain closed.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
@@ -263,7 +263,7 @@ Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at co
 | Frontend System Design | present | 1,766; 10 nodes / 88 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
 | Object-Oriented Design | present | 1,413; 9 nodes / 79 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
 
-The current content HEAD differs from the source commit referenced by the readiness report only by the latest AZ-104 technical-evidence commit. That commit adds technical evidence for the existing AZ-104 source; it does not grant package, publishing, or runtime admission.
+The current content HEAD differs from the source commit referenced by the readiness report only by technical evidence, immutable-release, and contract-test commits. These commits do not change the approved AZ-104 source content or grant publishing/runtime admission.
 
 The readiness report's `humanReview=approved` is now a closed editorial gate because the Product Owner authorized recording the eight approval records. It does not mean package, publishing, runtime, store, provider, design, or device gates are closed.
 
@@ -280,7 +280,7 @@ GCP is the most important content-integrity risk: the current 2,981-item source 
 
 AI-901 is materially ahead of the previous audit: it has current source approval, technical validation, immutable release `patternly-ai901-0001`, and a verified 144-item Free-node package. Its remaining content-side boundary is publishing/runtime admission and application integration.
 
-AZ-104 is also materially ahead: source ingress, 1,288-item inventory, approval, bundled package evidence and app lock integration now exist. The latest content commit adds fresh technical validation evidence. The current readiness report still marks its immutable artifact as not verified by the source-only report, so no launch admission may be inferred from the historical app lock.
+AZ-104 is also materially ahead: source ingress, 1,288-item inventory, approval, bundled package evidence, current immutable release `patternly-az104-0002`, and app lock integration now exist. The readiness report verifies that immutable artifact; publishing/runtime admission remains closed, and the application still points at the historical Free-node provenance until an atomic admission cutover is justified.
 
 
 ## 5. Verified foundations retained as regression sentinels
@@ -324,7 +324,7 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 | ID | Severity | Blocker | Required closure |
 | --- | --- | --- | --- |
 | `BLK-01` | Critical | the exact eight-track catalogue still lacks a complete immutable package and admission chain | produce current-source immutable releases and publishing/runtime admission for all eight, then update the lock and CI atomically |
-| `BLK-02` | Critical | AZ-104 source ingress is closed, but current package/release/admission integrity is not | reconcile current technical evidence, package provenance, immutable release and admission |
+| `BLK-02` | Critical | AZ-104 package and immutable release are current, but publishing/runtime admission and atomic app cutover are not | reconcile package provenance with the admitted release, then prove publishing/runtime admission and lock cutover |
 | `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
 | `BLK-04` | Critical | app registry/CI/release lock are three-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
 | `BLK-05` | Critical | Design Interview runtime not production-proven | generic family contract; Backend reference proof; OOP independence proof; Frontend proof |
