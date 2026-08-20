@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `327b79a` (AZ-104 provenance/design-input reconciliation after the immutable-release audit) | Existing exact-SHA QA remains tied to the prior application baseline; this docs-only reconciliation does not claim a new CI run. |
+| application | `main` | `dd6e9ee` (launch-plan/evidence reconciliation after current content verification) | Existing exact-SHA QA remains tied to the prior application baseline; these docs-only reconciliations do not claim a new CI run. |
 | content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 8/8 top-level architecture subtests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `327b79aedfff1d31fd0849bd9ca249ca82affeff`, a docs-only AZ-104 provenance/design-input reconciliation after the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32383520294` remains evidence for its prior application baseline.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `dd6e9ee46893418845d14eefc2c60f6b815f1d9c`, a docs-only launch-plan/evidence reconciliation after the AZ-104 provenance/design-input and current content verification refreshes, following the bounded FUI-015, FUI-016/FUI-017, DATA-02, SEC-01, DATA-01, DES-002, OPS-01 and LR-002 evidence slices. Exact-SHA QA run `32383520294` remains evidence for its prior application baseline.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
