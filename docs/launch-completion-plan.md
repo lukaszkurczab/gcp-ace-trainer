@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `95a7f16e8e0f58a25a68dc57c00322b2cbc05a43` (FUI-008..015, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `439d87ff9da46823e3e2390d18c9937bbe4ac95b` (FUI-008..016, DATA-02 device-session remote boundary, SEC-01 boundary evidence, DATA-01 tombstone route guards) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -113,11 +113,18 @@ No Product Owner decision is reopened by this audit. The eight-track launch scop
 ## 3B. Current controller reconciliation — 2026-08-20
 
 The connected Figma channel `eon17bsz` was rejoined and the current file was
-inspected live. The next unblocked visual slice is `Navigation / Bottom Item`
-(`140:777`) and its Dark/Light QA instances (`456:5327`, `456:5695`). The
-implementation preserves the product contract's four destinations and existing
-routing; the Figma specimen's historical `Home` copy is not used to rename the
-runtime contract.
+inspected live. The bounded `Custom Practice` setup slice is now pushed at
+`439d87ff9da46823e3e2390d18c9937bbe4ac95b`, using the approved Coding practice
+settings reference (`55:2172`). It preserves the canonical `Custom Practice`
+labels, explicit feedback semantics, existing `AppShellHeader`, and `Start
+session` command while applying the compact session-length and feedback-row
+geometry to this mode only. Decorative topography/glow assets and the
+reference's unowned focus/save semantics remain outside this slice. Local
+Maestro runs confirmed the full Home → Practice → Custom Practice → session →
+summary → Settings path in iOS light and dark regular themes; this is visual
+evidence, not final design handoff or launch approval. Evidence is recorded in
+`docs/reports/launch-fui-016-practice-setup-2026-08-20.md` and the local
+capture-only pack under `artifacts/maestro-screen-capture/`.
 
 The bounded slice updates the repository-owned navigation tokens and
 `BottomTabBar` for the exact 24 px icon, 11/15 caption, 4 px gap, 8 px vertical
