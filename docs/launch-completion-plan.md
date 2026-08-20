@@ -427,7 +427,7 @@ Publish new immutable releases and per-node package manifests without mutating h
 
 ### Stage RUN — generic family and package runtime
 
-#### RUN-01 — Canonical family contract closure — `BLOCKED by LR-01`
+#### RUN-01 — Canonical family contract closure — `BLOCKED by missing design_interview family contract and package schema (LR-01 verified)`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
