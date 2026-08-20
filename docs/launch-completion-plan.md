@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `cb211c2ec30c75e8cdb784d0aeb82c18b0bd3ddb` (branding/layout baseline) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `d91f47c473c917fa26d3ef7500d6ba7d321a4e4a` (Bottom Navigation + shared Icon Button) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -126,6 +126,16 @@ not claim whole-product visual parity, Storybook completion, physical-device
 evidence, or final design handoff. Evidence is recorded in
 `docs/reports/launch-fui-008-bottom-navigation-2026-08-20.md`.
 
+The controller then reconciled the `Screen Header` QA instances (`456:5317`,
+`456:5685`) with the canonical outlined `Icon Button` (`153:836`,
+`242:2301`). The shared back action now uses a 44 px touch target, a centered
+36 px visual, 12 px radius, 20 px left-chevron, explicit light/dark tokens,
+and a Figma-matched pressed surface. The old 48 px pill and rotated
+right-chevron path were removed. Evidence is recorded in
+`docs/reports/launch-fui-009-screen-header-2026-08-20.md`; the slice preserves
+existing route behavior and does not claim the full Screen Header pattern is
+implemented across every product surface.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -169,7 +179,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `cb211c2…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `d91f47c…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -447,7 +457,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Bottom Navigation slice`
+#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Screen Header / Icon Button slice`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
