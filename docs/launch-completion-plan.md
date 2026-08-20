@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `00a2bd8` (fail-closed Android release-signing boundary and checkout-safe contract test) | Exact-SHA QA run `32393077443` passed for this pushed SHA; application tests 622/622. |
+| application | `main` | `b086c3` (release-signing boundary evidence and reconciled launch plan) | Exact-SHA QA run `32393541571` passed for this pushed SHA; application tests 622/622. |
 | content/publishing | `master` | `12b99c7` (current content HEAD verification after safe AZ-104 package-pin revert) | Current `npm test` passed 142/142 tests; remote HEAD verified. |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `00a2bd83930e3d091cccb225d11adb1007f30b22`, which adds a canonical fail-closed Android release-signing boundary and checkout-safe contract tests after the current-head evidence reconciliation. Exact-SHA QA run `32393077443` passed for this SHA with application tests 622/622.
+- the previous implementation baseline was `a990eb6…`; the latest pushed application baseline is `b086c305b028f537510a8df2d229b1551e519b04`, which records the canonical fail-closed Android release-signing boundary and reconciles the launch plan after the current-head evidence reconciliation. Exact-SHA QA run `32393541571` passed for this SHA with application tests 622/622.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -333,7 +333,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | application QA run `32393077443` and content architecture run `32388398769` both passed for pushed `00a2bd8`/`12b99c7`; application `npm test` is 622/622 and content `npm test` is 142/142 |
+| `S-CI-HEAD` exact-SHA CI | application QA run `32393541571` and content architecture run `32388398769` both passed for pushed `b086c3`/`12b99c7`; application `npm test` is 622/622 and content `npm test` is 142/142 |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
