@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `264e10ceb07f87f770a848dc560159198a829abc` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice + Retained Content Status) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `895e971df7504ff89ba7cd0405ef9a78ab161c2c` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice + Retained Content Status + Bottom Sheet shell) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `3594608…`, and this plan update must be verified against its resulting exact SHA.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `895e971df7504ff89ba7cd0405ef9a78ab161c2c` after the bounded FUI-015 slice.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -178,6 +178,16 @@ when a route provides recovery. The former elevated-card wrapper was removed
 because it competed with the prepared status pattern. Evidence is recorded in
 `docs/reports/launch-fui-014-retained-content-status-2026-08-20.md`.
 
+The next directly owned visual surface was the existing settings and
+notification `SettingsBottomSheet`, reconciled against `Surface=Bottom Sheet`
+(`456:5450` Light, `456:5080` Dark; canonical shell `181:1080`). The runtime
+owner now uses semantic elevated light/dark surfaces, the exact Figma border and
+handle roles, a 14 px top radius, the prepared top shadow, and an explicit modal
+accessibility boundary. Existing sheet content, safe-area handling, scroll
+behavior, and callbacks remain unchanged. Evidence is recorded in
+`docs/reports/launch-fui-015-bottom-sheet-2026-08-20.md`. Purchase and sign-out
+patterns remain unowned by this component and were not introduced here.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -221,7 +231,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `3594608…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `895e971…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -499,7 +509,7 @@ The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work.
 
 Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `ACTIVE — bounded Retained Content Status slice`
+#### DES-02 — Repository tokens, assets, and licensing — `PARTIAL — FUI-015 Bottom Sheet slice pushed`
 
 Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
