@@ -183,6 +183,7 @@ const syncServiceError = (error: unknown): ErrorResponse => {
     case "invalid_record_payload":
     case "record_fingerprint_mismatch":
     case "active_training_session_remote_sync_forbidden":
+    case "device_only_record_remote_sync_forbidden":
       return publicError(400, "invalid_request");
     case "sync_operation_too_large":
       return publicError(413, "request_too_large");

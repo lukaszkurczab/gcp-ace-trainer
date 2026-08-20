@@ -59,6 +59,15 @@ export type AdoptionConfirmation = Readonly<{
 }>;
 
 const IMMUTABLE_TYPES = new Set<AccountRecordType>(["trainingSessionResult", "trainingAttempt"]);
+const DEVICE_ONLY_REMOTE_KEYS = new Set([
+  "activeSessionPointer",
+  "activeSessionReference",
+  "activeSession",
+  "draft",
+  "currentPosition",
+  "foregroundTimer",
+  "mutationJournal",
+]);
 
 const canonicalize = (value: unknown): unknown => {
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
@@ -87,9 +96,19 @@ export const computeRecordFingerprint = (record: Omit<AccountRecord, "fingerprin
     type: record.type,
   });
 
+const containsDeviceOnlyRemoteKey = (value: unknown): boolean => {
+  if (Array.isArray(value)) return value.some(containsDeviceOnlyRemoteKey);
+  if (typeof value !== "object" || value === null) return false;
+  return Object.entries(value as Record<string, unknown>).some(([key, nested]) =>
+    DEVICE_ONLY_REMOTE_KEYS.has(key) || containsDeviceOnlyRemoteKey(nested));
+};
+
 export const validateAccountRecord = (record: AccountRecord): void => {
   const expected = computeRecordFingerprint(record);
   if (record.fingerprint !== expected) throw new Error("record_fingerprint_mismatch");
+  if (containsDeviceOnlyRemoteKey(record.payload)) {
+    throw new Error("device_only_record_remote_sync_forbidden");
+  }
   if (record.type === "trainingSession" && record.payload.status !== "completed" && record.payload.status !== "abandoned") {
     throw new Error("active_training_session_remote_sync_forbidden");
   }

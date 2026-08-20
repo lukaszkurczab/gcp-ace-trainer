@@ -219,6 +219,27 @@ test("rejects device-owned remote records and non-terminal session state", () =>
   assert.throws(() => validateAccountDataset({ records: [activeSession] }), /active_training_session_remote_sync_forbidden/u);
 });
 
+test("rejects device-owned fields nested in terminal remote records", () => {
+  for (const [key, value] of [
+    ["currentPosition", 2],
+    ["draft", { revision: 3 }],
+    ["foregroundTimer", { elapsedMs: 12 }],
+    ["mutationJournal", { operationId: "op-1" }],
+  ] as const) {
+    const recordValue = {
+      id: `terminal-${key}`,
+      payload: { status: "completed", [key]: value },
+      revision: 1,
+      type: "trainingSession" as const,
+    };
+    const candidate = { ...recordValue, fingerprint: computeRecordFingerprint(recordValue) };
+    assert.throws(
+      () => validateAccountDataset({ records: [candidate] }),
+      /device_only_record_remote_sync_forbidden/u,
+    );
+  }
+});
+
 class MemoryStore implements AccountDatasetStore {
   readonly heads = new Map<string, AccountDatasetHead>();
   readonly records = new Map<string, Map<string, Map<string, PersistedAccountRecordDocument>>>();
