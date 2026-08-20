@@ -1,9 +1,9 @@
 # Patternly — Launch Completion Plan
 
-**Document role:** replacement candidate for `docs/launch-completion-plan.md`
-**Authority state:** this file becomes sequencing authority only after it is committed and pushed to application `main`; until then the pushed repository document remains authoritative.
-**Audit date:** 2026-08-17
-**Target:** commercial launch readiness for the exact eight-track launch catalogue defined below.
+**Document role:** canonical sequencing plan for `docs/launch-completion-plan.md` after the current reconciliation commit; if used as a replacement candidate elsewhere, the pushed `main` copy remains authoritative.  
+**Authority state:** the pushed `docs/launch-completion-plan.md` on application `main` is the current sequencing authority. This generated copy is the re-audited replacement candidate for the next plan update.  
+**Audit date:** 2026-08-17  
+**Target:** commercial launch readiness for the exact eight-track launch catalogue defined below.  
 **Execution model:** controller → bounded worker → independent QA; all agents use **Luna max reasoning**, without exceptions or silent downgrade.
 
 ---
@@ -14,8 +14,8 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `a58b054a1dbc3bb49af1c9795f85a62243e2aeee` | QA run `31988679329` — success |
-| content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — in progress at audit time |
+| application | `main` | `a990eb6d9ef55b17ac23f1de3caa68ef6bfb80ac` | QA run `31989043191` — success |
+| content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
 
@@ -60,7 +60,7 @@ Additional fixed decisions:
 
 - Internal families are implementation details. Users see tracks, not `coding_interview`, `certification`, or `design_interview` labels.
 - The first complete node of every admitted track is Free. Premium is one cross-platform entitlement, not slots, tiers, or per-track purchases.
-- All eight launch banks require explicit owner-authorized editorial approval. The owner may record that approval directly or authorize an agent to record it against exact source and item manifests; no approval may be inferred or simulated.
+- All eight launch banks require real human editorial approval. No agent may grant, infer, or simulate it.
 - Design is already prepared in Figma. Codex implements the Product Owner-designated final references; it does not run a new brand or visual-direction exercise.
 - All agent and subagent invocations are capped at and must use Luna max reasoning. No lower model is allowed for workers, QA, research, content, design implementation, or release verification.
 - Pushed canonical branches are the only truth. Progress that is not pushed does not exist for status purposes.
@@ -70,45 +70,73 @@ Additional fixed decisions:
 
 ## 3. Audit verdict
 
-**Current verdict: NO-GO.** The repositories contain a strong learning kernel, durable local storage, exact content identity work, a usable guest/free-package foundation, content authoring infrastructure, and green exact-SHA CI. They do not contain a release-ready commercial product.
+**Current verdict: NO-GO.** The repositories contain a strong learning kernel, durable local storage, exact content identity work, a usable guest/free-package foundation, substantially completed content authoring infrastructure, and green exact-SHA CI. They still do not contain a release-ready commercial product.
 
 The green CI proves the current contracts, not the target launch catalogue:
 
-- Application CI and the release lock now contain three artifacts: Coding Interview, historical GCP, and the newly pinned AZ-104 Free-node package; the lock is still intentionally short of the eight-track launch catalogue.
-- The production track registry now exposes Coding Interview, GCP, and AZ-104; the remaining five tracks are not registered.
-- The content workflow validates the eight-track readiness report and all current authoring validators; the latest pushed report has a local exact-SHA gate of 142/142 and records all eight technical validators as passed. AI-901 now also has a verified immutable release and bundled Free-node package, but remains explicitly not admitted for application runtime or publishing.
-- The content release gate still treats Coding Interview as the sole release candidate.
-- AZ-104 retains its pushed authoring registration, canonical source bank, readiness row, passing authoring validation, owner-authorized approval record, and historical immutable release `patternly-az104-0001`; AI-901 now has current release `patternly-ai901-0001`, a 144-item Free-node package, and the same explicit publishing/runtime admission boundary.
-- All eight launch banks have owner-authorized approval records bound to exact source and item manifests; none is admitted for publishing or runtime.
+- Application CI explicitly requires a three-artifact lock containing Coding Interview, historical GCP, and AZ-104; it is still intentionally short of the eight-track launch catalogue.
+- The production track registry/lock now contains Coding Interview, historical GCP, and AZ-104; the remaining five launch tracks are still not admitted.
+- The content workflow validates the eight-track readiness report and all eight current technical validators.
+- The content release gate still treats Coding Interview as the sole current release candidate, despite the readiness report and AI-901/AZ-104 package evidence.
+- AZ-104 has a brief/descriptor in application planning but no pushed authoring registration, canonical source bank, validator result, readiness row, Free-node package, immutable release, or admission evidence in content `master`.
+- Every existing candidate bank is human-unapproved or pending and is not admitted for publishing or runtime.
 - RevenueCat, production package delivery, complete account/auth/sync/adoption/deletion, final design-system implementation, public surfaces, store records, signed builds, and final physical-device evidence are incomplete or absent.
 
 The correct strategy is not a rewrite. Preserve the verified kernel and cut over the incomplete commercial, content-admission, account, package-delivery, presentation, and release edges.
 
 ---
 
+## 3A. Re-audit delta from the previous 2026-08-16 audit
+
+The second audit found that the previous plan was directionally correct but factually stale in several places because implementation continued immediately after the first audit.
+
+Closed since the previous audit:
+- AZ-104 canonical source ingress is no longer blocked.
+- AZ-104 has current technical-validation evidence in content `master`.
+- The eight-track readiness report is now populated and deterministic.
+- All eight tracks have owner-authorized editorial approval records bound to exact source/item manifests.
+- AI-901 now has a current immutable full-track release and a verified 144-item Free-node package.
+- The application lock and CI contract have expanded from two tracks to three by adding AZ-104.
+- The launch-readiness/release-gate automation exists and is intentionally non-passing while launch blockers remain.
+
+Still open and still launch-critical:
+- five launch tracks have no Free-node package evidence: AWS, Backend, Frontend, OOP, plus the current GCP source requires a new immutable publication rather than use of the historical package;
+- four tracks therefore lack the complete package/release chain even though their editorial content is approved;
+- publishing and runtime admission remain closed for all eight tracks;
+- Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
+- Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
+- the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
+- the current plan commit itself is now `a990eb6…`; any earlier SHA embedded in a previous working document is historical evidence only.
+
+No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
+
 ## 4. Current eight-track evidence matrix
 
-Content facts below come from `evidence/readiness/eight-track-launch-readiness.json` and the eight approval records, with the latest content HEAD `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`; current source identity remains `e73c7314eee7b2cd3f53b04c952b6af6526d3685`. The application registry/lock last changed at `53986c5e2b7f0db7e3e85fdcad634f90bafcb0cf` and remains intentionally short of the eight-track launch catalogue.
+Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
 
-| Launch track | Pushed candidate source | Candidate inventory | Free package | Human review | Publishing/runtime admission | Current app exposure | Launch status |
+| Launch track | Current source | Inventory | Free package | Human review | Publishing/runtime admission | App state | Launch status |
 | --- | --- | ---: | --- | --- | --- | --- | --- |
-| Coding Interview | present | 3,404 items; 2,827 choice, 279 complexity, 298 ordering | present; 158-item `complexity_and_constraints` package | approved; record bound to source/item manifest | not admitted in current readiness report | registered; pinned historical immutable release | `PARTIAL` |
-| GCP ACE | present | 2,981 choice items; 20 nodes; 152 blocks | present; 82-item `setup_environment` package | approved; record bound to source/item manifest | not admitted; current candidate differs from historical app lock | registered; historical GCP release pinned | `PARTIAL / CONTRADICTED` |
-| AWS SAA | present | 2,568 choice items; 21 nodes; 134 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL` |
-| Azure AI-901 | present | 752 choice items; 5 nodes | present; 144-item immutable `patternly-ai901-0001` Free-node package | approved; record bound to source/item manifest | not admitted | descriptor only; not registered | `PARTIAL / PACKAGE-VERIFIED` |
-| Azure AZ-104 | present | 1,288 choice items; 9 nodes; 75 blocks | present; immutable `patternly-az104-0001` bundled package | approved; record bound to source/item manifest | not admitted | registered with pinned Free-node package; no runtime admission | `PARTIAL / PACKAGE-PINNED` |
-| Backend System Design | present | 1,569 choice items; 10 nodes; 89 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
-| Frontend System Design | present | 1,766 items; 601 choice, 147 decision-matrix, 1,018 ordering; 10 nodes; 88 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
-| Object-Oriented Design | present | 1,413 choice items; 9 nodes; 79 blocks | absent | approved; record bound to source/item manifest | not admitted | descriptor only; no Design runtime admission | `PARTIAL` |
+| Coding Interview | present | 3,404 | present; 158-item Free node | approved | not admitted | registered; pinned | `PARTIAL` |
+| GCP ACE | present | 2,981; 20 nodes / 152 blocks | present; 82-item package | approved | not admitted | registered; historical package pinned | `PARTIAL / SOURCE-DRIFT` |
+| AWS SAA | present | 2,568; 21 nodes / 134 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / PACKAGE MISSING` |
+| Azure AI-901 | present | 752; 5 nodes | present; 144-item immutable package `patternly-ai901-0001` | approved | not admitted | descriptor only | `PARTIAL / PACKAGE VERIFIED` |
+| Azure AZ-104 | present | 1,288; 9 nodes / 75 blocks | present; `patternly-az104-0001` | approved | not admitted | registered; package pinned | `PARTIAL / PACKAGE PINNED` |
+| Backend System Design | present | 1,569; 10 nodes / 89 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
+| Frontend System Design | present | 1,766; 10 nodes / 88 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
+| Object-Oriented Design | present | 1,413; 9 nodes / 79 blocks | absent | approved | not admitted | descriptor only | `PARTIAL / DESIGN PACKAGE MISSING` |
 
-### Consequences
+The current content HEAD differs from the source commit referenced by the readiness report only by the latest AZ-104 technical-evidence commit. That commit adds technical evidence for the existing AZ-104 source; it does not grant package, publishing, or runtime admission.
 
-- “Prepared track” and “launch-admitted track” are different states. Candidate presence does not authorize production exposure.
-- No release lock update is allowed until a track has an approved source bank, complete Free node, immutable release, package proof, family/runtime proof, and explicit publishing/runtime admission.
-- The historical GCP artifact must never be silently relabelled as the current 2,981-item GCP source. Either publish a new current GCP release and migrate atomically, or retain the old release as immutable history only.
-- AI-901 source ingress, owner approval, technical evidence, immutable release, inventory, and bundled Free-node packaging are now closed; its remaining blockers are explicit publishing/runtime admission and application lock/runtime integration. AZ-104 remains historical-package evidence until its current full-package chain is rebuilt after shared pipeline changes.
+The readiness report's `humanReview=approved` is now a closed editorial gate because the Product Owner authorized recording the eight approval records. It does not mean package, publishing, runtime, store, provider, design, or device gates are closed.
 
----
+The application `release.lock.json` contains exactly three artifacts: Coding Interview, historical GCP, and `patternly-az104-0001`. The CI contract independently enforces this exact three-track lock. The lock must not be expanded by copying or relabelling historical artifacts.
+
+GCP is the most important content-integrity risk: the current 2,981-item source is not the same source identity as the historical locked `gcp-ace-0016` artifact. The correct operation is a new immutable current GCP release followed by an atomic lock/runtime cutover. Never silently substitute or relabel the historical artifact.
+
+AI-901 is materially ahead of the previous audit: it has current source approval, technical validation, immutable release `patternly-ai901-0001`, and a verified 144-item Free-node package. Its remaining content-side boundary is publishing/runtime admission and application integration.
+
+AZ-104 is also materially ahead: source ingress, 1,288-item inventory, approval, bundled package evidence and app lock integration now exist. The latest content commit adds fresh technical validation evidence. The current readiness report still marks its immutable artifact as not verified by the source-only report, so no launch admission may be inferred from the historical app lock.
+
 
 ## 5. Verified foundations retained as regression sentinels
 
@@ -124,10 +152,8 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-TRACK-01` canonical Coding/GCP IDs | retired `algorithms`/old cloud IDs are not production aliases; persisted retired IDs fail explicitly |
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
-| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history, and the current eight-track readiness report with AZ-104 source counts and explicit non-admission |
-| `S-CI-HEAD` exact-SHA CI | application run `31956559706` succeeded on `229071feff211dddb805aa0a1694eeadd5adaf8c`; content run `31956610099` succeeded on `1d46083ab7ce7f8c03b1ec42a7c07be35406ce07` |
-
-**LR-02 rebaseline (2026-08-16):** `S-FND-01`, `S-PLAT-01`, and `S-ARCH-01` were re-exercised by the application recovery gate in run `31956559706`: it installed application and server locks, built the server, regenerated and checked the native platform contract, ran the canonical contract gate, and ran `qa:static`. `S-GUEST-01` and `S-LEARN-01` are covered by that same static suite; the committed iOS first-value/relaunch evidence remains `docs/reports/guest-01-ios-simulator-maestro-2026-08-10.md` and is not represented as a new device run. `S-TRACK-01`, `S-PKG-01`, and `S-PKG-04A` were re-exercised by the focused scope tests and the pinned multi-track release round-trip in the same application run. `S-CONTENT-01` was re-exercised by content run `31956610099`, which installed from the content lock, ran the authoring and per-track validators, regenerated the eight-track report without a diff, validated the bundled Free node, and passed the content publishing gate. `S-CI-HEAD` is the pair of successful exact-SHA runs recorded above. No sentinel was reclassified as a launch admission, and no device, provider, editorial, store, or runtime proof was inferred.
+| `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
+| `S-CI-HEAD` exact-SHA CI | application run `31989043191` and content run `31988928289` succeeded on the audited HEADs |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -153,16 +179,16 @@ Human and provider gates are represented as blockers on a task, not as fake impl
 | ID | Severity | Blocker | Required closure |
 | --- | --- | --- | --- |
 | `BLK-01` | Critical | canonical plan/contract still targets ten tracks while owner launch scope is eight | add exact launch-scope contract; move Terraform/KCNA to post-launch; update all gates and docs |
-| `BLK-02` | Critical | AZ-104 source was absent from pushed content source | closed by source ingress and technical readiness evidence; review packet, packages, and admission remain under `CNT-04`–`CNT-06` |
-| `BLK-03` | Critical | all eight still lack the complete package/publishing/runtime admission chain | retain the eight exact approval records, then produce complete Free packages, immutable releases, and explicit publishing/runtime admission |
-| `BLK-04` | Critical | app registry/CI/release lock are two-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
+| `BLK-02` | Critical | AZ-104 source ingress is closed, but current package/release/admission integrity is not | reconcile current technical evidence, package provenance, immutable release and admission |
+| `BLK-03` | Critical | all eight lack full human approval/admission chain | human sign-off per track plus machine-readable approval and immutable release records |
+| `BLK-04` | Critical | app registry/CI/release lock are three-track | generic eight-track admission and exact cross-repo lock; no placeholder registrations |
 | `BLK-05` | Critical | Design Interview runtime not production-proven | generic family contract; Backend reference proof; OOP independence proof; Frontend proof |
-| `BLK-06` | Critical | current GCP brief identity no longer matches the historical locked artifact | keep historical GCP package explicitly unverified; produce a new immutable GCP publication and atomic lock/runtime migration |
+| `BLK-06` | Critical | current GCP candidate conflicts with historical locked artifact | new immutable GCP publication and explicit atomic lock/runtime migration |
 | `BLK-07` | Critical | Premium entitlement and package authorization absent | backend RevenueCat authority, App Check/auth boundary, signed URL manifest API and verified client store |
 | `BLK-08` | Critical | account/session/sync/adoption/deletion contracts incomplete | remove remote session ownership; compact idempotent sync; safe adoption; durable tombstones and non-resurrection |
 | `BLK-09` | Critical | prepared Figma is not yet repository-owned production UI | exact Figma node map; tokens/assets/licenses; canonical components; all verticals; parity and accessibility proof |
 | `BLK-10` | Critical | no complete public/store/signed release chain | legal/support/deletion/auth surfaces, professional origins, store records, EAS/signing, TestFlight/Play and signed smoke |
-| `BLK-11` | High | final launch gate still reports content/admission blockers | deterministic eight-track readiness report and fail-closed `release:gate` now exist; gate remains intentionally non-passing |
+| `BLK-11` | High | current CI does not enforce eight-track launch readiness | deterministic eight-track readiness report and final fail-closed launch gate |
 | `BLK-12` | High | provider/operations state is not freshly evidenced | least-privilege deployment, App Check/Firebase apps, package bucket, PITR, RevenueCat and domain evidence |
 | `BLK-13` | High | accessibility/performance/usability closure absent | 200% text, screen reader, reduced motion, haptics, budgets, first-use review and both physical platforms |
 | `BLK-14` | High | app release configuration is incomplete | release versioning, icons/splash/privacy/link config, `eas.json`, build profiles, secrets boundary and declarations |
@@ -202,7 +228,7 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 
 ### Stage LR — canonical baseline and plan reconciliation
 
-#### LR-01 — Eight-track launch contract and plan cutover — `VERIFIED`
+#### LR-01 — Eight-track launch contract and plan cutover — `ACTIVE` after this file is pushed
 
 **Objective:** make the repository unambiguously target the confirmed eight-track release and make this document the sole implementation-order authority.
 
@@ -212,94 +238,76 @@ Independent local lanes may proceed in parallel after `LR-01`, but no lane may f
 - add one canonical `LAUNCH_TRACK_IDS`/release-scope owner containing exactly the eight IDs;
 - keep Terraform and KCNA only as post-launch briefs, never shipping registry entries or release dependencies;
 - reconcile `canonical-product-contract.yaml`, overview/product/roadmap/testing/risk documentation, track admission tests, launch surface inventory, and plan references;
-- replace “seven-bank” and “ten-track launch” assumptions with a deterministic eight-track readiness model that reports AZ-104 source counts and explicit non-admission;
-- preserve current immutable releases and the two-track lock until replacement artifacts are valid.
+- remove any remaining stale seven-bank assumptions; the deterministic eight-track readiness model is now populated and AZ-104 is no longer source-blocked;
+- preserve historical immutable releases and the current three-track lock until replacement artifacts are valid.
 
 **Acceptance:** exact-scope tests reject missing, extra, duplicated, aliased, or visible-family tracks; docs and tests agree; current CI remains green; no production placeholder is added.
 
 **Evidence:** pushed application SHA, content SHA if content report changes, CI links, scope diff, old-term/dead-reference scan.
 
-**Verification (2026-08-17):** application commit `723d92ee98b8900025da82a2d06b7bb20d486125` still pins Coding, historical GCP, and `patternly-az104-0001` and dispatches certification packages by track without family aliases; QA run `31982242309` passed the recovery/static and multi-track release jobs. Content commit `9226bb20e4220e5656d07ae5e505b1deb316536c` binds all eight approvals/review packets to source `e73c7314eee7b2cd3f53b04c952b6af6526d3685`, records all eight technical validators as passed, publishes current AI-901 immutable release `patternly-ai901-0001` and its 144-item Free-node package, and passes 142/142 local tests; content publishing run `31983559879` passed on that exact SHA. The report names exactly eight launch tracks; Coding/GCP/AZ have existing bundled package evidence and AI-901 now has current immutable package evidence, while all eight remain explicitly not admitted for publishing/runtime. The application readiness report is still `not_ready` with 34 blockers, including lock scope mismatch, four missing Free packages, seven missing current full packages, and eight publishing plus eight runtime admissions.
-
 **Unlocks:** every remaining lane.
 
-#### LR-02 — Verified-sentinel rebaseline — `VERIFIED`
+#### LR-02 — Verified-sentinel rebaseline — `BLOCKED by LR-01`
 
-All sentinels are recorded in section 5 against the post-`LR-01` exact SHAs. They were not reimplemented. Any later failure becomes a regression owned by the slice that caused it.
+Record each sentinel in section 5 against the post-`LR-01` exact SHAs. Do not reimplement it. Any failure becomes a regression owned by the slice that caused it.
 
-#### LR-03 — Final gate automation skeleton — `VERIFIED`
+#### LR-03 — Final gate automation skeleton — `BLOCKED by LR-01`
 
 Add a deterministic non-passing-yet launch-readiness report that lists every blocker without making ordinary CI red. Add a separate `release:gate` command that fails until all eight tracks and all release evidence are complete. The command becomes mandatory only at `REL-03`; it must never infer human, device, provider, or store evidence.
-
-**Verification (2026-08-17):** `npm run launch:readiness` emits deterministic `patternly-launch-readiness-v1` JSON without failing ordinary validation. `npm run release:gate` emits the identical report and exits `1` while blockers remain. The gate reads the canonical eight-track contract, the content readiness report, and the application release lock; it requires explicit verified evidence records for design authority, security/privacy, provider/operations, physical devices, store readiness, and Product Owner `GO`. It reports absent or invalid evidence as a blocker rather than inferring it. Focused gate tests pass; after AI-901 immutable package evidence and the current content report, the application report is correctly `not_ready` with 34 blockers.
 
 ---
 
 ### Stage CNT — eight-track content completion and admission
 
-#### CNT-01 — AZ-104 canonical ingress — `VERIFIED`
+#### CNT-01 — AZ-104 canonical ingress — `READY`
 
-Use the existing `microsoft-azure-administrator-associate-az-104` authoring registration to add its missing canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
+Create the missing `microsoft-azure-administrator-associate-az-104` authoring registration and canonical source using the existing content contracts. Reconcile its official objective coverage, node taxonomy, mental units, interaction contract, explanations, distractor explanations, provenance, and source freshness. Preserve the owner requirement of more than 120 authored questions per admitted node unless the canonical content contract is explicitly changed by the Product Owner.
 
 **Acceptance:** source is deterministic; all official domains/skills are mapped; no workbook-only or generated temporary ledger becomes canonical; validator passes; the readiness report includes AZ-104 with exact counts; no publishing/runtime admission is granted.
 
-#### CNT-01A — AI-901 canonical ingress and Free-node release — `VERIFIED`
+#### CNT-02 — Eight-track deterministic readiness report — `BLOCKED by CNT-01`
 
-Install the existing AI-901 node-authoring source through the canonical Certification adapter, derive the checked-in taxonomy/track/profile configuration from the 752 authored items, emit technical evidence, and produce an immutable full-track release plus a profile-closed 144-item Free-node package. Keep the Patternly practice profile explicit where Microsoft does not publish an exact simulation item count; do not claim Microsoft affiliation or provider-faithful exam simulation.
+Replace `eight-track-launch-readiness-v1` with an eight-track launch readiness schema. For every track report source root, family, nodes, mental units/blocks, interaction inventory, Free node, source/provenance freshness, technical validation, human review, immutable release, publishing admission, runtime admission, package evidence, and explicit blockers. Generate twice and require byte identity in CI.
 
-**Verification (2026-08-17):** content `master` `9226bb20e4220e5656d07ae5e505b1deb316536c`, CI `31983559879`, technical evidence for source commit `a050e8a2417a0f88877c020c9d4142279f38d855`, immutable release `patternly-ai901-0001`, inventory and package `microsoft-azure-ai-fundamentals-ai-901-free-node-0001`; local and CI content tests pass 142/142. Publishing and runtime admission remain intentionally open.
-
-#### CNT-02 — Eight-track deterministic readiness report — `VERIFIED`
-
-Replace `seven-bank-candidate-readiness-v1` with an eight-track launch readiness schema. For every track report source root, family, nodes, mental units/blocks, interaction inventory, Free node, source/provenance freshness, technical validation, human review, immutable release, publishing admission, runtime admission, package evidence, and explicit blockers. Generate twice and require byte identity in CI.
-
-#### CNT-03 — Technical and provenance closure for all eight — `VERIFIED`
+#### CNT-03 — Technical and provenance closure for all eight — `BLOCKED by CNT-02`
 
 Run or create uniform validators for every track. Track-specific validators may inspect domain-specific constraints, but the result envelope and gate semantics must be generic. Close broken citations, unsupported technical claims, duplicate identities, missing Reason/Details, distractor explanations, interaction-contract mismatches, stale official objectives, and deterministic serialization errors. Do not edit content merely to satisfy fixed quotas.
 
-#### CNT-04 — Human review packets — `VERIFIED`
+#### CNT-04 — Human review packets — `BLOCKED by CNT-03`
 
 Generate one bounded review packet per track: coverage map, node/mental-unit counts, interaction distribution, sample strata, source freshness, automated findings, known limitations, and a machine-readable approval form. Agents may prepare and validate packets but may not set `approved`.
 
-**Verification (2026-08-17):** content commit `9226bb20e4220e5656d07ae5e505b1deb316536c` carries deterministic approval records at `evidence/content-approvals/<trackId>.json`, review packets bound to source `e73c7314eee7b2cd3f53b04c952b6af6526d3685`, refreshed Coding technical/simulation evidence, current AI-901 immutable release/package evidence, and explicit passed results for all eight technical validators. Local `npm test` passes 142/142; readiness and packet regeneration are deterministic; `git diff --check` passes; content publishing run `31983559879` passes the exact content gate.
+#### H-CONTENT — Human editorial approval for all eight — `BLOCKED — HUMAN AUTHORITY`
 
-#### H-CONTENT — Human editorial approval for all eight — `VERIFIED — OWNER AUTHORIZED`
+The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. Rejection returns the track to `CNT-03`. No agent-generated approval string counts.
 
-The Product Owner or designated human reviewer must approve every track without exception. Approval must identify exact source commit, review scope, reviewer, date, disposition, and any accepted limitations. The Product Owner explicitly authorized the agent in the active task to record these approvals. The eight records are machine-validated and bound to source commit `e73c7314eee7b2cd3f53b04c952b6af6526d3685`; they do not grant runtime, publishing, package, provider, store, signing, or device admission. Rejection or source drift returns the affected track to `CNT-03`.
+#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by CNT-03`
 
-#### CNT-05 — Complete Free-node packages for all eight — `BLOCKED by canonical family package inputs`
+Package construction may proceed after technical closure, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Coding/GCP packages are retained but rebuilt only when current approved source requires a new immutable version.
 
-Package construction may proceed after technical closure and the explicit family dispatch contract, but production admission also requires `H-CONTENT`. Build a complete bundled Free node for each track from its canonical brief and approved source. Each package must be whole-node, immutable, reproducible, profile-closed, non-repeating for supported session sizes, and include exact feedback/evidence identities. No Premium content may leak into Free pools. Current repository evidence exposes Coding, historical GCP, AZ-104, and current AI-901 bundled Free-node packages; the publisher still lacks complete canonical package inputs for AWS, Backend, Frontend, and OOP. AI-901 has crossed the package-input and immutable-release boundary, but remains outside app runtime/publishing admission. Do not copy GCP configuration, infer undocumented provider simulation behavior, fabricate difficulty or package metadata, or relabel historical GCP artifacts; add provider-neutral inputs and explicit adapters only when those contracts are defined and tested.
+#### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05 + H-CONTENT`
 
-#### CNT-06 — Immutable full-node release sets and publishing admission — `BLOCKED by CNT-05`
-
-Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate still requires a new version; historical `gcp-ace-0016` remains history. AI-901 now has release `patternly-ai901-0001` and a verified 144-item Free-node package, but no publishing/runtime admission record; the app lock must not be updated until that admission boundary is explicitly closed.
+Publish new immutable releases and per-node package manifests without mutating historical bytes. Admission records must bind source commit, technical evidence, human approval, brief, package set, checksums, minimum app version, locale/evidence identity, and publisher version. The current GCP candidate receives a new version; historical `gcp-ace-0016` remains history.
 
 ---
 
 ### Stage RUN — generic family and package runtime
 
-#### RUN-01 — Canonical family contract closure — `VERIFIED`
+#### RUN-01 — Canonical family contract closure — `BLOCKED by LR-01`
 
 Confirm exactly three internal launch families: `coding_interview`, `certification`, `design_interview`. Define family-owned mode capabilities, interaction adapters, scoring semantics, progress dimensions, simulation rules, and content/package contracts. Shared session, storage, review, journal, and navigation ownership remains family-neutral. No user-visible family labels.
 
-**Verification (2026-08-17):** the canonical contract now requires explicit package-to-family dispatch with fail-closed unsupported-family behavior; application QA run `31981873905` passed the corresponding runtime and contract checks on application SHA `0c87ae91c9f239771a9cddddbfccc0772b84db08`. This closes the dispatch boundary, but does not admit a Design runtime or fabricate package inputs for tracks that do not yet have them.
-
-#### RUN-02 — Design Interview reference runtime — `BLOCKED by canonical Design blueprint and executable package inputs`
+#### RUN-02 — Design Interview reference runtime — `BLOCKED by RUN-01`
 
 Implement Backend System Design as the first Design Interview proof through the shared kernel. Support the interaction shapes actually present in approved content, including choice, ordering, and decision-matrix where applicable. Do not force Design content through Certification semantics or create a backend-only lifecycle.
 
-**Verification (2026-08-17):** `RUN-01` is already `VERIFIED`, so it is no longer the blocking dependency. The current content source at `patternly-content` `master` `9226bb20e4220e5656d07ae5e505b1deb316536c` still declares `config/families/design_interview.json` with `supportedInteractions: ["choice"]`, `currentExecutableCapacity: 0`, no executable sessions, and no Free-node claim; its 8 Backend, 10 Frontend, and 9 OOD records are explicitly authoring-feasibility batches only. The 142/142 content test suite confirms productive case payloads and blocked slots are rejected. Implementing a Design runner now would require inventing the missing blueprint/package contract, so this task remains blocked by canonical executable Design inputs rather than by the already-closed family contract.
-
-#### RUN-03 — Design Interview independence proof — `BLOCKED by RUN-02 + canonical executable Design inputs`
+#### RUN-03 — Design Interview independence proof — `BLOCKED by RUN-02`
 
 Admit OOP through the same family owner and remove any backend-specific generic assumptions. Then admit Frontend and prove its rich ordering/decision-matrix inventory without a second family or fallback transformation.
 
-#### RUN-04 — Provider-neutral Certification proof — `BLOCKED by per-track approved package inputs`
+#### RUN-04 — Provider-neutral Certification proof — `BLOCKED by RUN-01 + per-track approved package inputs`
 
 Use GCP as the current-source reference and AWS as the second proof. Remove provider-hardcoded branches. Then prove AZ-104 and AI-901 use the unchanged Certification lifecycle, with track-specific content and official-source profiles only.
-
-**Verification (2026-08-17):** `RUN-01` is `VERIFIED`; the remaining dependency is the approved immutable package/admission chain for the provider tracks. AI-901 has a current immutable package but no runtime/publishing admission, while the current readiness report still lacks package inputs for AWS and the Design tracks and current full-package/admission evidence for the remaining tracks.
 
 #### RUN-05 — Installed package resolver and atomic store — `BLOCKED by package delivery contract`
 
@@ -353,23 +361,17 @@ Replace the two-track registry with generic admission records for exactly eight 
 
 ### Stage SEC/DATA — identity, session ownership, sync, adoption, and deletion
 
-#### SEC-01 — Approved mobile-client and environment proof — `PARTIAL`
+#### SEC-01 — Approved mobile-client and environment proof — `READY`
 
 Resolve the existing `ID-01` security blocker with a server-verifiable client assertion. The default implementation is Firebase App Check verification at the server boundary, with production attestation providers and explicitly environment-gated debug support only in sandbox. Firebase ID token alone is not an approved-client assertion. Requests missing or failing the assertion are rejected before body handling.
 
-**Verification (2026-08-16):** the API now verifies Firebase App Check with the Firebase Admin adapter, checks the returned app ID against an explicit environment allow-list, rejects missing/invalid assertions before parsing request bodies, and maps provider failures to closed 401 responses. `PATTERNLY_APPCHECK_MODE` is required and production rejects `debug`; `PATTERNLY_APPCHECK_APP_IDS` is required, unique, and passed from startup into every protected account route. The full local suite passes (602 tests), including authentication, HTTP, snapshot, adoption, environment, server build, and release-gate coverage; exact pushed commit `3c74a5f8700300f4666f2e6a4ac6666aa89e95a2` passed application QA run `31972610341`. Mobile provider registration and production attestation evidence remain an external OPS-02/provider gate, so this slice is not marked fully verified.
-
-#### DATA-01 — Durable account lifecycle/tombstone authority — `PARTIAL`
+#### DATA-01 — Durable account lifecycle/tombstone authority — `READY`
 
 Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
 
-**Verification (2026-08-16):** the server now persists an immutable UID-addressable tombstone in `accountLifecycles/{uid}` before revocation/data/identity deletion, derives a separate tombstone generation without copying dataset revision, keeps the tombstone outside recursive `accounts/{uid}` deletion, and rejects tombstoned sync/snapshot/adoption requests with a closed 410 response before body handling. Intent writes are transactionally idempotent and conflicting request identities are rejected. The full local suite passes (604 tests), including lifecycle adapter, deletion-order, HTTP boundary, typecheck, and server build coverage; implementation commit `d6dd3cc` passed exact-SHA application QA run `31973221280`. Mobile account creation/restore orchestration is not present in this server slice and remains part of the broader account vertical, so DATA-01 is not marked fully verified.
-
-#### DATA-02 — Device-session server cutover — `PARTIAL`
+#### DATA-02 — Device-session server cutover — `READY`
 
 Delete remote active-session pointer, draft, item position, timer, conflict selection, and cross-device resume from account schemas/services/tests. Each device owns at most one local active session. Server sync contains compact terminal learning facts and projections only.
-
-**Verification (2026-08-16):** the server account schema no longer accepts `activeSessionReference`, `simulationDraft`, or `foregroundTimer`; adoption no longer classifies or resolves active-session conflicts, and confirmation carries no session-selection or abandonment fields. Full durable adoption, sync, HTTP, typecheck, and build coverage passes locally for the cutover. `trainingSession` records are accepted only when terminal (`completed` or `abandoned`), while local active-session ownership remains in the device learning kernel. The implementation is therefore a pushed server-side partial: mobile outbox projection, account creation/restore orchestration, and two-physical-device proof remain open under DATA-03–DATA-05.
 
 #### DATA-03 — Incremental account operations and projections — `BLOCKED by DATA-02 + SEC-01`
 
@@ -425,13 +427,13 @@ Verified account required; guest purchase prohibited; Free alternative explicit.
 
 The old Brand Lab direction-generation tasks are `SUPERSEDED` as execution work. Their evidence may remain historical. The current lane begins from the Product Owner-designated final Figma references.
 
-#### DES-01 — Final Figma authority inventory — `PARTIAL; current file inspectable, owner/release evidence still open`
+#### DES-01 — Final Figma authority inventory — `READY`
 
-Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices. The current file is now inspectable through the official connector: `kZXD7cNBKUU7x0ceTHPFpR`, Page 1, library root `118:738`, fresh Light/Dark verification board `882:14188` (`882:14189` Dark, `882:14341` Light), Home reference `55:445`, and Practice setup reference `55:2172`. The bounded inventory and live connector evidence are recorded in `docs/reports/launch-des-001-figma-authority-inventory-2026-08-17.md`. This unblocks targeted design implementation, but does not create Product Owner approval evidence, close the external `design-authority` release gate, or claim whole-product `DESIGN READY`. The current Figma uses `Home` while the reconciled runtime contract targets `Today`; implementation must preserve the runtime contract and use only the approved geometry, tokens and components from the reference.
+Record exact Figma file, page, node IDs, version, owner approval state, and mapping to every required product/public/store state. Do not assume old B-05 `DRAFT` frames are final. Classify each state as `REFERENCE_COMPLETE`, `REFERENCE_MISSING`, or `NOT_APPLICABLE`. Missing visual references block only corresponding `DES-*` slices.
 
-#### DES-02 — Repository tokens, assets, and licensing — `PARTIAL; targeted token mapping unblocked, full handoff remains open`
+#### DES-02 — Repository tokens, assets, and licensing — `BLOCKED by DES-01`
 
-Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI. The live Figma variable read for the approved Home reference now confirms the semantic color, spacing, radius and typography names needed for bounded implementation. Full repository-owned token/asset/licensing inventory and verified handoff remain open, so this task is not `VERIFIED` and does not unblock the complete Storybook/primitives lane.
+Import final vectors rather than reconstructing geometry; record fonts/licenses; generate typed Light/Dark/System tokens; track accents remain subordinate to one Patternly brand; lint unsafe literals; no live Figma dependency in build or CI.
 
 #### DES-03 — Development-only Storybook and canonical primitives — `BLOCKED by DES-02`
 
@@ -489,8 +491,6 @@ Queue offline, submit idempotently, attach only bounded content/package identity
 
 Preserve the digest-pinned build/deploy definition already present. Complete local container boot, current read-only provider inventory, service-account/IAM diff, health/logging, rollback, Artifact Registry provenance, and deployed sandbox evidence before production mutation.
 
-**Verification (2026-08-17):** application commit `c0e4aaa` was clean and aligned with `origin/main` before the documentation-only updates; final application commit `aaa1f8fa51363512e30dbb65823adb98d341bc8f` passed GitHub Actions QA run `31984300974` (Recovery QA gate and multi-track content release contract). `npm run sync:content-release` produced no diff; the cross-repository content contract (2/2), content boundary, runtime/privacy boundary, application typecheck, server TypeScript build, and `git diff --check` all passed. The digest-pinned `server/Dockerfile` and `server/cloudbuild.yaml` remain unchanged. Podman could not connect to its local machine socket and `gcloud` is not installed, so no container boot, provider inventory, Artifact Registry digest, Cloud Run revision, logging, rollback, or deployed sandbox evidence is claimed; OPS-01 remains `PARTIAL` pending the authorized provider boundary.
-
 #### OPS-02 — Firebase mobile apps and App Check — `BLOCKED by provider authority`
 
 Register/configure iOS and Android apps per environment; email/password/action settings; App Check production providers; debug tokens only in sandbox; deny-all direct Firestore remains. Record identifiers without secrets.
@@ -539,7 +539,7 @@ Compare approved Figma references to iOS and Android captures for every risk-bas
 
 Check cold/warm start, Today/Practice/navigation, ordinary and long sessions, download/activation, memory, package size, flicker, loading and layout shift on representative lower/target devices. Budgets and variance must be checked in, repeatable, and met.
 
-#### QA-07 — Human content sign-off reconciliation — `BLOCKED by final immutable releases`
+#### QA-07 — Human content sign-off reconciliation — `BLOCKED by H-CONTENT + final immutable releases`
 
 Verify every shipping byte derives from the exact human-approved source commit and no post-approval semantic edit bypassed review. Any semantic change invalidates the affected sign-off.
 

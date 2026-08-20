@@ -71,6 +71,52 @@ detail or spacing. Monospace is reserved for code, pseudocode and formal
 notation. Prefer a high-quality open-source/OFL type family unless repository
 evidence proves a materially better no-recurring-cost option.
 
+## Approved production mark — Quiet Aperture QA-A
+
+**Status: APPROVED / FROZEN.** The production mark is the original Quiet
+Aperture geometry, refined as QA-A. It preserves the four-module construction,
+calm architectural balance and secondary negative-space reading. QA-A is an
+optical refinement, not a new concept or a literal monogram.
+
+The canonical source assets are:
+
+- `src/assets/brand/mark/patternly-mark-navy.svg`
+- `src/assets/brand/mark/patternly-mark-mint.svg`
+- `src/assets/brand/mark/patternly-mark-black.svg`
+- `src/assets/brand/mark/patternly-mark-white.svg`
+- `src/assets/brand/mark/patternly-mark-{navy,mint,black,white}-micro.svg`
+- `src/assets/brand/app-icon/patternly-app-icon.svg`
+- `src/assets/brand/app-icon/patternly-app-icon-foreground.svg`
+- `src/assets/brand/app-icon/patternly-app-icon-monochrome.svg`
+
+The repository token source is authoritative for the applied palette:
+
+- Night Navy: `#0C1324` (`colors.dark.background`)
+- Mint: `#5EEAD4` (`colors.dark.accentTeal`)
+- Warm White: `#F6F8FB` (`colors.light.background`)
+
+The master was compared against the QA-A master crop at high resolution. Its
+four modules retain the measured optical offsets rather than being generated
+from one rotated path. The QA-A board's Micro Master was also compared with
+the master reduced to 24, 20 and 16 px; its larger small-size gaps and lighter
+central aperture are materially different at those sizes. The sanctioned
+micro geometry is therefore used deterministically by `PatternlyMark` for
+sizes up to 24 px. It preserves the same four-module construction and is not a
+second logo concept.
+
+Reference crop, final render and comparison evidence are checked in under
+`docs/brand/qa-a-reconstruction/`.
+
+Launcher assets use Night Navy with the Mint mark. Android adaptive foreground
+and monochrome exports are separate platform assets; the operating system owns
+the launcher mask. The wordmark remains a separate typographic asset and is not
+embedded in the mark or launcher icon.
+
+QA-B, QA-C, Quiet Aperture V2, Focus Boundary, Resolved Route and the other
+exploration directions are historical references only. They are not active
+production directions and must not be reintroduced through runtime assets or
+components without a new Product Owner brand decision.
+
 ## Colour and track signatures
 
 The system contains neutral Light and Dark surfaces, one primary Patternly
@@ -103,8 +149,9 @@ success signal cannot be emitted before canonical persistence and verification.
 
 ## Visual approval and handoff
 
-Figma is the one-time active visual environment. Exploration uses three
-materially different directions, two developed finalists and one final system.
+Figma was the one-time active visual environment. The completed exploration
+used three materially different directions, two developed finalists and one
+final system; the current production mark is frozen as QA-A.
 The Product Owner alone may set actual visual work to `APPROVED`; Codex may set
 only `DRAFT` or `REVIEW`.
 

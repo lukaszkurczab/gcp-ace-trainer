@@ -1,6 +1,12 @@
+export const brand = {
+  nightNavy: "#0C1324",
+  mint: "#5EEAD4",
+  warmWhite: "#F6F8FB"
+} as const;
+
 export const colors = {
   light: {
-    background: "#F6F8FB",
+    background: brand.warmWhite,
     surface: "#FFFFFF",
     elevatedSurface: "#F9FBFE",
     border: "#D9E2EC",
@@ -27,7 +33,7 @@ export const colors = {
     accentOrangeSoft: "#FFF1E7"
   },
   dark: {
-    background: "#0C1324",
+    background: brand.nightNavy,
     surface: "#111827",
     elevatedSurface: "#1E293B",
     border: "#263247",
@@ -48,7 +54,7 @@ export const colors = {
     infoSoft: "#0B344A",
     accentPurple: "#B99CFF",
     accentPurpleSoft: "#2B2147",
-    accentTeal: "#5EEAD4",
+    accentTeal: brand.mint,
     accentTealSoft: "#143A38",
     accentOrange: "#FDBA74",
     accentOrangeSoft: "#43240F"

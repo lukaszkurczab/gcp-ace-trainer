@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { radius, spacing, typography } from "../theme";
 import { Icon } from "./Icon";
+import { PatternlyMark } from "./PatternlyMark";
 import { useAppPreferences, useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
 
@@ -17,7 +18,7 @@ type AppShellHeaderProps = {
 
 export function AppShellHeader({ backAction, context, placement = "inline" }: AppShellHeaderProps) {
   const styles = useThemedStyles(createStyles);
-  const { colors: palette, t } = useAppPreferences();
+  const { colorMode, colors: palette, t } = useAppPreferences();
   const header = (
     <View style={[styles.header, placement === "stack" ? styles.stackHeader : null]}>
       <View style={styles.brandRow}>
@@ -34,7 +35,7 @@ export function AppShellHeader({ backAction, context, placement = "inline" }: Ap
           </Pressable>
         ) : null}
         <View style={styles.brandMark}>
-          <Icon color={palette.primary} name="grid" size={30} />
+          <PatternlyMark decorative size={30} treatment={colorMode === "dark" ? "mint" : "navy"} />
         </View>
         <View style={styles.headerCopy}>
           <Text maxFontSizeMultiplier={2} style={styles.brandTitle}>Patternly</Text>

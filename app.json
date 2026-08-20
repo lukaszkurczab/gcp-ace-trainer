@@ -4,6 +4,7 @@
     "slug": "patternly",
     "version": "0.1.0",
     "scheme": "com.lkurczab.patternly",
+    "icon": "./assets/brand/app-icon/patternly-app-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -32,7 +33,17 @@
       "bundleIdentifier": "com.lkurczab.patternly"
     },
     "android": {
-      "package": "com.lkurczab.patternly"
+      "package": "com.lkurczab.patternly",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/app-icon/patternly-app-icon-foreground.png",
+        "backgroundColor": "#0C1324",
+        "monochromeImage": "./assets/brand/app-icon/patternly-app-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/brand/web/favicon.png",
+      "themeColor": "#0C1324",
+      "backgroundColor": "#F6F8FB"
     }
   }
 }

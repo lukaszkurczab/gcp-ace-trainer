@@ -62,8 +62,8 @@ second design system.
 
 ## Design authority lifecycle
 
-Figma is the temporary visual authority while the one-time active design phase
-is open. The controlled spaces are `Patternly — Brand Lab`,
+Figma was the temporary visual authority while the one-time active design phase
+was open. The controlled spaces were `Patternly — Brand Lab`,
 `Patternly — Design System` and `Patternly — Product`.
 
 Exploration follows one funnel:
@@ -111,6 +111,8 @@ and physical-device QA.
 The design system implements the formal grammar owned by
 `06-branding-and-style-direction.md`. One Patternly mark, optical app-icon
 master and wordmark sit above subordinate monochrome-capable track symbols.
+The approved production mark is Quiet Aperture QA-A; its source SVGs, launcher
+exports and constrained `PatternlyMark` component are repository-canonical.
 Track signatures orient content; they are not sub-brands.
 
 Illustration is sparse, abstract and diagrammatic, built from the same bounded
@@ -481,7 +483,8 @@ Animations must not be the only indication of state and must not delay a require
 Significant new or rewritten presentation requires its applicable actual
 Figma state to be owner-approved before production implementation. Nonvisual
 kernel, application, persistence, server and package work may proceed while
-brand exploration is active when it does not commit a new presentation.
+the approved mark and visual system remain frozen when it does not commit a
+new presentation.
 
 Approved visual and interaction design must exist before implementing every required state, including:
 
