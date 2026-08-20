@@ -49,6 +49,18 @@ test("LoadingState is the one accessible and reflowing generic pending primitive
   assert.doesNotMatch(loadingState, /numberOfLines/);
 });
 
+test("EmptyState is the centered retained-content/unavailable status primitive", () => {
+  const emptyState = source("src/components/EmptyState.tsx");
+  assert.match(emptyState, /alignItems:\s*"center"/);
+  assert.match(emptyState, /paddingHorizontal:\s*20/);
+  assert.match(emptyState, /paddingVertical:\s*spacing\.xxxl/);
+  assert.match(emptyState, /statusTitle/);
+  assert.match(emptyState, /statusDescription/);
+  assert.match(emptyState, /textAlign:\s*"center"/);
+  assert.match(emptyState, /style=\{styles\.action\}/);
+  assert.doesNotMatch(emptyState, /backgroundColor: palette\.elevatedSurface|borderRadius: radius/);
+});
+
 test("exactly the thirteen inventoried generic pending branches use LoadingState", () => {
   const consumers = tsxFiles("src")
     .filter((path) => /<LoadingState\b/.test(source(path)))

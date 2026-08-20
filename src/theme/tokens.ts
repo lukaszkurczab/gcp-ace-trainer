@@ -75,6 +75,10 @@ export const colors = {
       lightPrimaryBar: "#1A1F2E",
       lightSecondaryBar: "#4D596B",
       accent: "#20C997"
+    },
+    emptyState: {
+      textPrimary: "#102433",
+      textMuted: "#7A8B95"
     }
   },
   dark: {
@@ -147,6 +151,10 @@ export const colors = {
       lightPrimaryBar: "#1A1F2E",
       lightSecondaryBar: "#4D596B",
       accent: "#20C997"
+    },
+    emptyState: {
+      textPrimary: "#F1F5F9",
+      textMuted: "#738198"
     }
   }
 } as const;
@@ -237,6 +245,16 @@ export const typography = {
     fontWeight: "600"
   },
   processingDescription: {
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: "400"
+  },
+  statusTitle: {
+    fontSize: 14,
+    lineHeight: 17,
+    fontWeight: "600"
+  },
+  statusDescription: {
     fontSize: 14,
     lineHeight: 22,
     fontWeight: "400"

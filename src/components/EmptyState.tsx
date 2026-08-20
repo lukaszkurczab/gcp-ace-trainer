@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { radius, spacing, typography } from "../theme";
+import { spacing, typography } from "../theme";
 import { Button } from "./Button";
 import { useThemedStyles } from "../preferences";
 import type { AppColors } from "../theme";
@@ -19,27 +19,32 @@ export function EmptyState({ actionLabel, description, onActionPress, title }: E
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
-      {actionLabel && onActionPress ? <Button onPress={onActionPress}>{actionLabel}</Button> : null}
+      {actionLabel && onActionPress ? <Button onPress={onActionPress} style={styles.action}>{actionLabel}</Button> : null}
     </View>
   );
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
   container: {
-    alignItems: "flex-start",
-    backgroundColor: palette.elevatedSurface,
-    borderColor: palette.border,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: spacing.md,
-    padding: spacing.lg
+    alignItems: "center",
+    gap: spacing.lg,
+    paddingHorizontal: 20,
+    paddingVertical: spacing.xxxl,
+    width: "100%"
+  },
+  action: {
+    width: "100%"
   },
   title: {
-    ...typography.heading,
-    color: palette.textPrimary
+    ...typography.statusTitle,
+    color: palette.emptyState.textPrimary,
+    flexShrink: 1,
+    textAlign: "center"
   },
   description: {
-    ...typography.body,
-    color: palette.textSecondary
+    ...typography.statusDescription,
+    color: palette.emptyState.textMuted,
+    flexShrink: 1,
+    textAlign: "center"
   }
 });
