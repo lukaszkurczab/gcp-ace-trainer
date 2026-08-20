@@ -14,7 +14,7 @@ Only pushed canonical branches count as implementation or status evidence:
 
 | Repository | Canonical branch | Audited HEAD | Exact-sha CI evidence |
 | --- | --- | --- | --- |
-| application | `main` | `895e971df7504ff89ba7cd0405ef9a78ab161c2c` (Bottom Navigation + shared Icon Button + grouped Settings rows + Choice Group + Processing State + Appearance Choice + Retained Content Status + Bottom Sheet shell) | exact-SHA CI pending for the current bounded slice |
+| application | `main` | `6f43598acb32d63e693458b8419add497bf72f9f` (FUI-008..015 plus DATA-02 device-session remote boundary) | exact-SHA CI pending for the current bounded slice |
 | content/publishing | `master` | `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de` | Content publishing run `31988928289` — success |
 
 A local worktree, unpushed commit, worker report, screenshot, Figma comment, spreadsheet, chat statement, or stale evidence pack never changes task status. A task becomes `VERIFIED` only after:
@@ -106,7 +106,7 @@ Still open and still launch-critical:
 - Design Interview has no executable package blueprint sufficient to justify implementing a runner by inference;
 - Premium entitlement/package delivery, account/auth/sync/adoption/deletion, public/legal/store surfaces, final Figma implementation, provider/operations, signing and physical-device gates remain incomplete;
 - the current application lock is intentionally only three tracks and therefore cannot represent the final catalogue;
-- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `895e971df7504ff89ba7cd0405ef9a78ab161c2c` after the bounded FUI-015 slice.
+- the previous implementation baseline was `a990eb6…`; the current pushed application baseline is `6f43598acb32d63e693458b8419add497bf72f9f` after the bounded FUI-015 and DATA-02 slices.
 
 No Product Owner decision is reopened by this audit. The eight-track launch scope remains fixed.
 
@@ -188,6 +188,18 @@ behavior, and callbacks remain unchanged. Evidence is recorded in
 `docs/reports/launch-fui-015-bottom-sheet-2026-08-20.md`. Purchase and sign-out
 patterns remain unowned by this component and were not introduced here.
 
+The controller then closed the next executable data boundary, `DATA-02`. The
+account-record validator now rejects device-owned session keys recursively in
+terminal payloads, while preserving the existing rejection of active remote
+sessions. The HTTP sync boundary maps this explicit failure to
+`400 invalid_request`; no remote session owner or compatibility path was
+introduced. Evidence is recorded in
+`docs/reports/launch-data-002-device-session-remote-boundary-2026-08-20.md`.
+The implementation is pushed, but the task remains `PARTIAL` until exact-SHA
+CI and the broader account/outbox cutover evidence exist. The next executable
+task is `SEC-01` production App Check proof, followed by `DATA-01` lifecycle
+integration; no provider evidence is inferred from the existing code.
+
 ## 4. Current eight-track evidence matrix
 
 Fresh audit source: `evidence/readiness/eight-track-launch-readiness.json` at content `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. The report covers exactly the eight launch tracks and records all eight as human-approved, technically validated, but explicitly not admitted for publishing or runtime.
@@ -207,7 +219,7 @@ The current content HEAD differs from the source commit referenced by the readin
 
 The readiness report's `humanReview=approved` is now a closed editorial gate because the Product Owner authorized recording the eight approval records. It does not mean package, publishing, runtime, store, provider, design, or device gates are closed.
 
-The application release gate was re-run after FUI-015 and remains
+The application release gate was re-run after FUI-015 and DATA-02 and remains
 `not_ready`. Its current readiness payload reports `sourceCommit=
 e73c7314eee7b2cd3f53b04c952b6af6526d3685`, while canonical content `master`
 is `ad6cbe1b6948ddb16b7c9f7f3a26ddb49c12e0de`. This source/report identity
@@ -238,7 +250,7 @@ The following work is not reopened merely because the plan is regenerated. It re
 | `S-PKG-01` package format | exact-byte/provenance verification and immutable bundled Free-node records for Coding and GCP |
 | `S-PKG-04A` package resolver | exact `ContentPackagePin`, profile-closed mode catalogue, malformed/tampered/foreign package failure, no whole-track runtime fallback |
 | `S-CONTENT-01` authoring infrastructure | schemas, provenance, deterministic serialization, track-specific candidate validators, immutable history and current eight-track launch readiness report |
-| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `895e971…` bounded-slice SHA requires its own CI run |
+| `S-CI-HEAD` exact-SHA CI | content run `31988928289` succeeded; application run `31989043191` succeeded for the prior `a990eb6…` baseline; current `6f43598…` bounded-slice SHA requires its own CI run |
 
 A regression sentinel is not proof of a missing launch capability. For example, successful package verification does not prove remote Premium delivery, and successful candidate validation does not prove human approval or runtime admission.
 
@@ -454,9 +466,9 @@ Resolve the existing `ID-01` security blocker with a server-verifiable client as
 
 Create a UID-addressable lifecycle record outside recursive account-data deletion. Write deletion intent/tombstone before destructive work, retain bounded proof, revoke sessions, and make account creation/sync/restore reject tombstoned generations. Do not copy mutable dataset revision into a static identity record; retain revision ownership in the dataset head.
 
-#### DATA-02 — Device-session server cutover — `READY`
+#### DATA-02 — Device-session server cutover — `PARTIAL — terminal remote payload boundary pushed; exact-SHA CI and account/outbox cutover evidence pending`
 
-Delete remote active-session pointer, draft, item position, timer, conflict selection, and cross-device resume from account schemas/services/tests. Each device owns at most one local active session. Server sync contains compact terminal learning facts and projections only.
+Delete remote active-session pointer, draft, item position, timer, conflict selection, and cross-device resume from account schemas/services/tests. Each device owns at most one local active session. Server sync contains compact terminal learning facts and projections only. The current pushed slice fail-closes device-owned keys, including nested terminal payloads; it does not claim the remaining mobile outbox/account cutover or provider evidence.
 
 #### DATA-03 — Incremental account operations and projections — `BLOCKED by DATA-02 + SEC-01`
 
