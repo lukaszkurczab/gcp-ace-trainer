@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { Card, Icon, IconTile, ListRow, SettingsGroup, type IconName } from "../../../components";
+import { Icon, IconTile, ListRow, SettingsGroup, type IconName } from "../../../components";
 import type { StorageIssue } from "../../../application/learningReadModels";
 import { useAppPreferences, useThemedStyles, type AppLocale } from "../../../preferences";
 import type { AppearancePreference, LanguagePreference } from "../../../application/appPreferences";
@@ -21,42 +21,42 @@ const copy = {
   en: {
     appearance: "Appearance",
     appearanceDetail: "Choose the theme used on this device.",
-    appSettings: "App settings",
+    appSettings: "Settings",
+    app: "App",
     data: "Your data",
     dataDetail: "View the local data contract for this app.",
     dataPrivacy: "Data & privacy",
     developerVerification: "Developer verification",
     backendDiagnostics: "Backend diagnostics",
     backendDiagnosticsDetail: "Run every local backend path on this simulator.",
-    info: "These settings control how Patternly looks and sends reminders on this device.",
+    learning: "Learning",
     language: "Language",
     languageDetail: "Choose the language used across Patternly.",
     legal: "Legal information",
     legalDetail: "Privacy and study-use information.",
     notifications: "Notifications",
     notificationsDetail: "Set permission and daily practice reminders.",
-    preferences: "Preferences",
     storageDegraded: "Local data degraded",
     storageStatus: "Storage status",
   },
   pl: {
     appearance: "Wygląd",
     appearanceDetail: "Wybierz motyw używany na tym urządzeniu.",
-    appSettings: "Ustawienia aplikacji",
+    appSettings: "Ustawienia",
+    app: "Aplikacja",
     data: "Twoje dane",
     dataDetail: "Zobacz lokalny kontrakt danych tej aplikacji.",
     dataPrivacy: "Dane i prywatność",
     developerVerification: "Weryfikacja deweloperska",
     backendDiagnostics: "Diagnostyka backendu",
     backendDiagnosticsDetail: "Uruchom wszystkie lokalne ścieżki backendu na tym symulatorze.",
-    info: "Te ustawienia kontrolują wygląd Patternly i przypomnienia na tym urządzeniu.",
+    learning: "Nauka",
     language: "Język",
     languageDetail: "Wybierz język używany w całym Patternly.",
     legal: "Informacje prawne",
     legalDetail: "Prywatność i informacje o korzystaniu z materiałów.",
     notifications: "Powiadomienia",
     notificationsDetail: "Ustaw zgodę i codzienne przypomnienie o ćwiczeniach.",
-    preferences: "Preferencje",
     storageDegraded: "Problem z danymi lokalnymi",
     storageStatus: "Stan danych",
   },
@@ -83,11 +83,6 @@ export function SettingsTab({
         <Text style={styles.screenTitle}>{text.appSettings}</Text>
       </View>
 
-      <Card style={styles.infoCard} variant="tonal">
-        <IconTile name="settings" tone="primary" />
-        <Text style={styles.infoText}>{text.info}</Text>
-      </Card>
-
       {latestStorageIssue ? (
         <SettingsGroup title={text.storageStatus}>
           <ListRow
@@ -99,7 +94,7 @@ export function SettingsTab({
         </SettingsGroup>
       ) : null}
 
-      <SettingsGroup title={text.appearance}>
+      <SettingsGroup title={text.app}>
         <SettingsNavigationRow
           detail={text.appearanceDetail}
           icon="grid"
@@ -110,7 +105,7 @@ export function SettingsTab({
         />
       </SettingsGroup>
 
-      <SettingsGroup title={text.preferences}>
+      <SettingsGroup title={text.learning}>
         <SettingsNavigationRow
           detail={text.languageDetail}
           icon="settings"
@@ -144,6 +139,10 @@ export function SettingsTab({
           />
         </SettingsGroup>
       ) : null}
+      <View style={styles.footer}>
+        <Text style={styles.footerTitle}>Patternly</Text>
+        <Text style={styles.footerText}>{`Version 0.1.0 · Build 1`}</Text>
+      </View>
     </>
   );
 }
@@ -196,8 +195,9 @@ function formatStorageIssue(issue: StorageIssue, locale: AppLocale): string {
 const createStyles = (palette: AppColors) => StyleSheet.create({
   pageIntro: { gap: spacing.md },
   screenTitle: { ...typography.heading, color: palette.textPrimary },
-  infoCard: { alignItems: "center", flexDirection: "row" },
-  infoText: { ...typography.small, color: palette.textSecondary, flex: 1 },
   preferenceMeta: { alignItems: "center", flexDirection: "row", gap: spacing.xs },
   preferenceValue: { ...typography.caption, color: palette.textMuted },
+  footer: { alignItems: "center", gap: spacing.xxs, paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
+  footerTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  footerText: { ...typography.caption, color: palette.textMuted },
 });

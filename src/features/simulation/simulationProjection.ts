@@ -108,12 +108,15 @@ export type SimulationResponseChange =
   | Readonly<{ dimensionId: string; kind: "complexity"; value: string }>;
 
 export type SimulationCompletionProjection = Readonly<{
+  activeTime?: string;
   answeredCount: number;
+  configuration?: string;
   correctCount: number;
   earnedPoints: number;
   incorrectCount: number;
   maxPoints: number;
   partialCount: number;
+  reviewAvailable?: boolean;
   reviewAction?: SimulationAction;
   unansweredCount: number;
 }>;
@@ -132,6 +135,7 @@ export type SimulationSurfaceProjection = Readonly<{
   notice?: SimulationNotice;
   operation?: SimulationOperationPresentation;
   onOccurrencePress?: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
+  onFinish?: () => void;
   onResponseChange?: (change: SimulationResponseChange) => void;
   position?: SessionMetricPresentation;
   progress?: number;

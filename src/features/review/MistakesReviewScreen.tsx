@@ -31,6 +31,7 @@ export function MistakesReviewScreen() {
   const [model, setModel] = useState<ReviewQueueScreenModel | null>(null);
   const [loading, setLoading] = useState(true);
   const [readError, setReadError] = useState<string | null>(null);
+  const [hasActiveTrack, setHasActiveTrack] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
 
   useFocusEffect(
@@ -42,14 +43,22 @@ export function MistakesReviewScreen() {
         setReadError(null);
         setModel(null);
         setSelectedRowId(null);
+        setHasActiveTrack(false);
 
         try {
           const activeTrackId = await getActiveTrackId();
-          if (!activeTrackId) { if (isActive) setLoading(false); return; }
+          if (!activeTrackId) {
+            if (isActive) {
+              setHasActiveTrack(false);
+              setLoading(false);
+            }
+            return;
+          }
           const viewModel = await loadTrackReviewQueueViewModel({ trackId: activeTrackId });
           const nextModel = buildReviewQueueScreenModel(viewModel);
 
           if (isActive) {
+            setHasActiveTrack(true);
             setModel(nextModel);
             setLoading(false);
           }
@@ -114,7 +123,14 @@ export function MistakesReviewScreen() {
         />
       ) : null}
 
-      {!loading && !readError && model && visibleRows.length > 0 ? (
+      {!loading && !readError && !hasActiveTrack ? (
+        <EmptyState
+          title={t("Choose a track first")}
+          description={t("Select a track before opening review.")}
+        />
+      ) : null}
+
+      {!loading && !readError && hasActiveTrack && model && visibleRows.length > 0 ? (
         <View style={styles.list}>
           <SectionHeader
             title={t(model.dueRows.length > 0 ? "Due now" : "Upcoming")}
@@ -144,7 +160,7 @@ export function MistakesReviewScreen() {
         </View>
       ) : null}
 
-      {!loading && !readError && model && visibleRows.length === 0 ? (
+      {!loading && !readError && hasActiveTrack && model && visibleRows.length === 0 ? (
         <Card>
           <EmptyState
             title={t(model.emptyTitle)}

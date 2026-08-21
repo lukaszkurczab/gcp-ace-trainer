@@ -282,6 +282,7 @@ export function HomeScreen({ navigation, route }: HomeScreenProps) {
             analytics={analytics}
             attempts={data.attempts}
             cloudProgress={data.cloudProgress}
+            onChangeTrack={() => navigation.navigate(ROUTES.SELECT_TRACK)}
             onProgressAction={handleProgressAction}
             practiceHistory={data.practiceHistory}
             reviewQueueItems={data.reviewQueueItems}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Button, Card } from "../../components";
+import { Button, Card, Screen } from "../../components";
 import { radius, spacing, typography } from "../../theme";
 import { complexityValueAccessibilityLabel, orderingMoveAccessibilityLabel } from "../coding-interview/session/sessionAccessibility";
 import { SessionShell } from "../coding-interview/session/SessionShell";
@@ -25,6 +25,9 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
   const styles = useThemedStyles(createStyles);
   const [navigatorVisible, setNavigatorVisible] = useState(false);
   const runtimeIdentity = projection.runtimeIdentity;
+  if (mayRenderSimulationCompletion(projection)) {
+    return <CompletedSurface projection={projection} sessionId={runtimeIdentity?.sessionId} />;
+  }
   const actionBar = projection.confirmation
     ? <ConfirmationActionBar confirmation={projection.confirmation} sessionId={runtimeIdentity?.sessionId} />
     : projection.actions ? <ActionBar sessionId={runtimeIdentity?.sessionId} {...projection.actions} /> : undefined;
@@ -48,9 +51,8 @@ export function SimulationSessionSurface({ projection }: SimulationSessionSurfac
         {projection.question ? <Question itemId={runtimeIdentity?.itemId} question={projection.question} locked={interactionLocked} onChange={projection.onResponseChange} sessionId={runtimeIdentity?.sessionId} /> : null}
         {projection.operation ? <SimulationOperationPanel operation={projection.operation} /> : null}
         {projection.confirmation ? <Confirmation confirmation={projection.confirmation} /> : null}
-        {mayRenderSimulationCompletion(projection) ? <Completion completion={projection.completion!} sessionId={runtimeIdentity?.sessionId} /> : null}
       </SessionShell>
-      {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
+      {projection.state === "editable" && projection.onOccurrencePress ? <SimulationQuestionNavigator onDismiss={() => setNavigatorVisible(false)} onFinish={projection.onFinish} onOccurrencePress={projection.onOccurrencePress} positions={projection.navigator} visible={navigatorVisible} /> : null}
     </View>
   );
 }
@@ -97,7 +99,7 @@ function ResponseControl({ control, disabled, itemId, onChange, sessionId }: Rea
   const { t } = useAppPreferences();
   if (control.kind === "choice") {
     const role = control.selectionMode === "single" ? "radio" : "checkbox";
-    return <View style={styles.controls}>{control.options.map((option) => <Button accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} testID={simulationOptionSelector(itemId, option.id)} variant={option.selected ? "primary" : "secondary"}>{option.label}</Button>)}</View>;
+    return <View style={styles.controls}>{control.options.map((option) => <Pressable accessibilityLabel={option.label} accessibilityRole={role} accessibilityState={{ checked: option.selected }} disabled={disabled} key={option.id} onPress={() => onChange?.({ kind: "choice", optionId: option.id, selected: !option.selected })} style={({ pressed }) => [styles.optionRow, option.selected ? styles.optionRowSelected : null, pressed && !disabled ? styles.pressed : null]} testID={simulationOptionSelector(itemId, option.id)}><View style={[styles.optionRadio, option.selected ? styles.optionRadioSelected : null]}>{option.selected ? <View style={styles.optionRadioDot} /> : null}</View><Text maxFontSizeMultiplier={2} style={styles.optionText}>{option.label}</Text></Pressable>)}</View>;
   }
   if (control.kind === "ordering") {
     return <View style={styles.controls}>{control.elements.map((element, index) => <View key={element.id} style={styles.orderRow} testID={simulationOptionSelector(itemId, element.id)}><Text style={styles.orderLabel}>{`${index + 1}. ${element.label}`}</Text><View style={styles.orderActions}><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "up")} disabled={disabled || index === 0} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "up" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:up`) : undefined} variant="secondary">{t("Up")}</Button><Button accessibilityLabel={orderingMoveAccessibilityLabel(element.label, index, control.elements.length, "down")} disabled={disabled || index === control.elements.length - 1} onPress={() => onChange?.({ elementId: element.id, kind: "ordering", movement: "down" })} testID={sessionId ? runtimeSelectors.simulation.action(sessionId, `${element.id}:move:down`) : undefined} variant="secondary">{t("Down")}</Button></View></View>)}</View>;
@@ -122,10 +124,45 @@ function ConfirmationActionBar({ confirmation, sessionId }: Readonly<{ confirmat
   return <View style={styles.actionBar}><Action action={confirmation.secondary} sessionId={sessionId} /><Action action={confirmation.primary} sessionId={sessionId} /></View>;
 }
 
-function Completion({ completion, sessionId }: Readonly<{ completion: NonNullable<SimulationSurfaceProjection["completion"]>; sessionId?: string }>) {
+function CompletedSurface({ projection, sessionId }: Readonly<{ projection: SimulationSurfaceProjection; sessionId?: string }>) {
   const styles = useThemedStyles(createStyles);
   const { t } = useAppPreferences();
-  return <Card variant="success"><Text style={styles.confirmationTitle}>{t("Verified session result")}</Text><Text style={styles.body}>{`${completion.answeredCount} ${t("answered")} · ${completion.unansweredCount} ${t("unanswered")}`}</Text><Text style={styles.body}>{`${completion.correctCount} ${t("correct")} · ${completion.partialCount} ${t("partial")} · ${completion.incorrectCount} ${t("incorrect")}`}</Text><Text style={styles.body}>{`${completion.earnedPoints} ${t("of")} ${completion.maxPoints} ${t("points")}`}</Text>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}</Card>;
+  const completion = projection.completion!;
+  const missedCount = completion.partialCount + completion.incorrectCount;
+  return (
+    <View style={styles.root} testID={sessionId ? runtimeSelectors.summary.root(sessionId) : undefined}>
+      <Screen edges={["top", "bottom"]} footer={<View style={styles.summaryActions}>{completion.reviewAction ? <Action action={completion.reviewAction} sessionId={sessionId} /> : null}{projection.actions?.primary ? <Action action={projection.actions.primary} sessionId={sessionId} /> : null}</View>}>
+        <View style={styles.summaryShell}>
+          <View style={styles.summaryHeader}>
+            <Text style={styles.eyebrow}>{t("Learn approach")} / {t(projection.modeLabel ?? "Coding Interview")}</Text>
+            <Text style={styles.title}>{t(projection.title)}</Text>
+            <Text style={styles.body}>{t("You completed this focused interview simulation.")}</Text>
+          </View>
+          <Card style={styles.summaryStats} variant="layered">
+            <SummaryStat label={t("Completed items")} value={`${completion.answeredCount} ${t("of")} ${completion.answeredCount + completion.unansweredCount}`} />
+            <SummaryStat label={t("Active time")} value={completion.activeTime ?? "—"} />
+            {completion.configuration ? <Text style={styles.caption}>{t(completion.configuration)}</Text> : null}
+          </Card>
+          <View style={styles.outcomeSection}>
+            <Text style={styles.sectionTitle}>{t("Outcome distribution")}</Text>
+            <View style={styles.outcomeRow}><OutcomeStat label={t("Correct")} value={completion.correctCount} tone="success" /><OutcomeStat label={t("Partial")} value={completion.partialCount} tone="warning" /><OutcomeStat label={t("Incorrect")} value={completion.incorrectCount} tone="danger" /></View>
+            <Text style={styles.body}>{completion.correctCount} {t("correct")} · {missedCount} {t("Missed")} · {completion.earnedPoints} / {completion.maxPoints} {t("points")}</Text>
+          </View>
+          {completion.reviewAvailable ? <Card style={styles.reviewBanner} variant="success"><Text style={styles.confirmationTitle}>{t("Answer review available")}</Text><Text style={styles.body}>{t("Review the saved explanations before leaving this session.")}</Text></Card> : null}
+        </View>
+      </Screen>
+    </View>
+  );
+}
+
+function SummaryStat({ label, value }: Readonly<{ label: string; value: string }>) {
+  const styles = useThemedStyles(createStyles);
+  return <View style={styles.summaryStat}><Text style={styles.caption}>{label}</Text><Text style={styles.summaryValue}>{value}</Text></View>;
+}
+
+function OutcomeStat({ label, tone, value }: Readonly<{ label: string; tone: "danger" | "success" | "warning"; value: number }>) {
+  const styles = useThemedStyles(createStyles);
+  return <View style={styles.outcomeStat}><View style={[styles.outcomeDot, styles[`${tone}Dot`]]} /><Text style={styles.caption}>{label}</Text><Text style={styles.outcomeValue}>{value}</Text></View>;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
@@ -134,6 +171,24 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   body: { ...typography.small, color: palette.textSecondary },
   code: { backgroundColor: palette.background, borderColor: palette.border, borderRadius: radius.sm, borderWidth: 1, color: palette.textSecondary, fontFamily: "monospace", padding: spacing.md },
   confirmationTitle: { ...typography.heading, color: palette.textPrimary },
+  summaryActions: { gap: spacing.sm },
+  summaryShell: { gap: spacing.xl },
+  summaryHeader: { gap: spacing.sm },
+  eyebrow: { ...typography.caption, color: palette.accentPurple, letterSpacing: 0.7, textTransform: "uppercase" },
+  summaryStats: { borderRadius: 24, gap: spacing.lg, padding: spacing.xl, shadowOpacity: 0 },
+  summaryStat: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 36 },
+  summaryValue: { ...typography.bodyStrong, color: palette.textPrimary },
+  outcomeSection: { gap: spacing.md },
+  sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  outcomeRow: { flexDirection: "row", gap: spacing.sm },
+  outcomeStat: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1, flex: 1, gap: spacing.xs, padding: spacing.md },
+  outcomeDot: { borderRadius: 4, height: 8, width: 8 },
+  successDot: { backgroundColor: palette.success },
+  warningDot: { backgroundColor: palette.warning },
+  dangerDot: { backgroundColor: palette.danger },
+  outcomeValue: { ...typography.heading, color: palette.textPrimary },
+  reviewBanner: { borderColor: palette.success, borderRadius: radius.md, borderWidth: 1 },
+  caption: { ...typography.caption, color: palette.textSecondary },
   controls: { gap: spacing.sm },
   dimension: { gap: spacing.xs },
   dimensionLabel: { ...typography.bodyStrong, color: palette.textPrimary },
@@ -141,6 +196,13 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
   heading: { gap: spacing.xs, justifyContent: "center", minHeight: 48 },
   notice: { borderRadius: radius.md, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   noticeText: { ...typography.small, color: palette.textPrimary },
+  optionRow: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: radius.md, borderWidth: 1.5, flexDirection: "row", gap: spacing.md, minHeight: 54, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  optionRowSelected: { backgroundColor: palette.primarySoft, borderColor: palette.primary },
+  optionRadio: { alignItems: "center", borderColor: palette.borderStrong, borderRadius: 10, borderWidth: 2, height: 20, justifyContent: "center", width: 20 },
+  optionRadioSelected: { borderColor: palette.primary },
+  optionRadioDot: { backgroundColor: palette.primary, borderRadius: 4, height: 8, width: 8 },
+  optionText: { ...typography.body, color: palette.textPrimary, flex: 1 },
+  pressed: { opacity: 0.78 },
   neutral: { backgroundColor: palette.elevatedSurface, borderColor: palette.border },
   orderActions: { flexDirection: "row", flexShrink: 0, gap: spacing.xs },
   orderLabel: { ...typography.small, color: palette.textPrimary, flex: 1 },

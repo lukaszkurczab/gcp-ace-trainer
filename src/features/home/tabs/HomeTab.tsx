@@ -48,14 +48,23 @@ export function HomeTab({
   const largeText = fontScale >= 1.3;
   const model = buildHomeTabModel({ activeSession, activeTrack, algorithmsDashboard, analytics, dashboardError, trainingAttempts });
   const recommendation = model.recommendations[0];
+  const hasActiveSession = activeSession?.status === "active" && activeSession.trackId === activeTrack.id;
+  const isReviewRecommendation = recommendation?.action.kind === "start_practice" &&
+    recommendation.action.reviewSource !== undefined;
   const resumeSessionId = recommendation?.action.kind === "resume_active_session" || recommendation?.action.kind === "resume_certification_practice"
     ? recommendation.action.sessionId
     : undefined;
-  const decisionTitle = recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
-  const decisionDetail = recommendation
-    ? t(recommendation.unavailableReason ?? recommendation.detail)
+  const decisionTitle = hasActiveSession
+    ? "Session in progress"
+    : isReviewRecommendation
+      ? "Review weak areas"
+      : recommendation?.title ?? formatPracticeTopicTitle(model.heroTitle, t);
+  const decisionDetail = hasActiveSession
+    ? t(modeLabel(activeSession.modeId))
+    : recommendation
+      ? t(recommendation.unavailableReason ?? recommendation.detail)
     : formatPracticeTopicDetail(model.heroSubtitle, t);
-  const decisionLabel = recommendation?.primaryLabel ?? model.primaryLabel;
+  const decisionLabel = hasActiveSession ? "Resume session" : recommendation?.primaryLabel ?? model.primaryLabel;
   const isCodingInterviewTrack = activeTrack.id === "coding-interview-dsa-problem-solving";
   const decisionIcon = recommendation?.icon ?? (isCodingInterviewTrack ? "route" : "cloud");
   const decisionTone = recommendation?.enabled === false ? "muted" : "primary";
@@ -148,16 +157,50 @@ export function HomeTab({
         <Text style={styles.sectionLabel}>{t("Overview")}</Text>
         {overview.map((metric) => (
           <View key={metric.label} style={styles.overviewRow} accessibilityLabel={`${t(metric.label)}: ${t(metric.value)}`}>
-            <Text style={styles.overviewLabel}>{t(metric.label)}</Text>
+            <View style={styles.overviewCopy}>
+              <Text style={styles.overviewLabel}>{t(metric.label)}</Text>
+              <View style={styles.overviewTrack}><View style={[styles.overviewFill, { width: `${metric.progress * 100}%` }]} /></View>
+            </View>
             <Text style={styles.overviewValue}>{t(metric.value)}</Text>
           </View>
         ))}
+      </View>
+      <View style={styles.detailSection}>
+        <Text style={styles.sectionLabel}>{t("Current focus")}</Text>
+        <Card style={styles.focusCard}>
+          <View style={styles.focusHeader}>
+            <View style={styles.focusCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{formatPracticeTopicTitle(model.heroTitle, t)}</Text>
+              <Text maxFontSizeMultiplier={2} style={styles.focusDetail}>{formatPracticeTopicDetail(model.heroSubtitle, t)}</Text>
+            </View>
+            <Icon color={palette.accentTeal} name={isCodingInterviewTrack ? "route" : "cloud"} size={20} />
+          </View>
+          <Button onPress={onChooseTopic} variant="ghost">{t("Open focus")}</Button>
+        </Card>
+      </View>
+      <View style={styles.detailSection}>
+        <Text style={styles.sectionLabel}>{t("Recent activity")}</Text>
+        {trainingAttempts.length > 0 ? (
+          <View style={styles.activityList}>
+            {trainingAttempts.slice(0, 3).map((attempt) => (
+              <View key={attempt.id} style={styles.activityRow}>
+                <View style={styles.activityDot} />
+                <View style={styles.activityCopy}>
+                  <Text style={styles.activityTitle}>{t(modeLabel(attempt.modeId))}</Text>
+                  <Text style={styles.activityDetail}>{`${relativeDay(attempt.answeredAt)} · ${attempt.result.kind}`}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Card style={styles.emptyActivityCard}><Text style={styles.activityDetail}>{t("No activity yet")}</Text></Card>
+        )}
       </View>
     </>
   );
 }
 
-type HomeOverviewMetric = Readonly<{ label: string; value: string }>;
+type HomeOverviewMetric = Readonly<{ label: string; progress: number; value: string }>;
 
 function buildOverviewMetrics(
   trackId: TrackDisplay["id"],
@@ -171,9 +214,9 @@ function buildOverviewMetrics(
   const latestAttempt = [...trackAttempts].sort((left, right) => right.answeredAt.localeCompare(left.answeredAt))[0];
 
   return [
-    { label: "This week", value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
-    { label: "Review", value: dueReviews ? `${dueReviews} due` : "Nothing due" },
-    { label: "Last session", value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
+    { label: "This week", progress: Math.min(1, weekAttempts.length / 10), value: weekAttempts.length ? `${weekAttempts.length} answered` : "No activity yet" },
+    { label: "Review", progress: dueReviews ? 1 : 0, value: dueReviews ? `${dueReviews} due` : "Nothing due" },
+    { label: "Last session", progress: latestAttempt ? 1 : 0, value: latestAttempt ? `${modeLabel(latestAttempt.modeId)} · ${relativeDay(latestAttempt.answeredAt)}` : "No activity yet" },
   ];
 }
 
@@ -241,13 +284,6 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     height: 22,
     justifyContent: "center",
     width: 22,
-  },
-  focusTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 21,
-    color: palette.textPrimary,
-    flex: 1,
   },
   changeTrack: {
     color: palette.accentTeal,
@@ -345,6 +381,23 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     minHeight: 48,
     paddingVertical: spacing.sm,
   },
+  overviewCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  overviewTrack: {
+    backgroundColor: palette.border,
+    borderRadius: 2,
+    height: 4,
+    overflow: "hidden",
+    width: "100%",
+  },
+  overviewFill: {
+    backgroundColor: palette.accentTeal,
+    borderRadius: 2,
+    height: 4,
+  },
   overviewLabel: {
     color: palette.textSecondary,
     flex: 1,
@@ -371,5 +424,65 @@ const createStyles = (palette: AppColors) => StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     lineHeight: 22,
+  },
+  detailSection: {
+    gap: spacing.sm,
+  },
+  focusCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    gap: spacing.sm,
+    padding: spacing.lg,
+  },
+  focusHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  focusCopy: {
+    flex: 1,
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  focusTitle: {
+    ...typography.bodyStrong,
+    color: palette.textPrimary,
+  },
+  focusDetail: {
+    ...typography.small,
+    color: palette.textSecondary,
+  },
+  activityList: {
+    gap: spacing.sm,
+  },
+  activityRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    minHeight: 48,
+  },
+  activityDot: {
+    backgroundColor: palette.accentTeal,
+    borderRadius: 4,
+    height: 8,
+    width: 8,
+  },
+  activityCopy: {
+    flex: 1,
+    gap: spacing.xxs,
+  },
+  activityTitle: {
+    ...typography.bodyStrong,
+    color: palette.textPrimary,
+  },
+  activityDetail: {
+    ...typography.caption,
+    color: palette.textSecondary,
+  },
+  emptyActivityCard: {
+    backgroundColor: palette.surface,
+    borderColor: palette.border,
+    padding: spacing.lg,
   },
 });

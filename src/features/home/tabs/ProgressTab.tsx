@@ -1,589 +1,260 @@
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import {
-  Badge,
-  Button,
-  Card,
-  EmptyState,
-  IconTile,
-  MetricCard,
-  ProgressBar,
-  SectionHeader,
-} from "../../../components";
-import {
-  GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID,
-  type TrackDisplay,
-} from "../../../domain";
-import type { ReviewQueueEntry, TrainingAttempt } from "../../../domain";
+import { Badge, Button, Card, Icon, IconTile, ProgressBar, type IconName } from "../../../components";
+import type { ReviewQueueEntry, TrackDisplay, TrainingAttempt } from "../../../domain";
 import type { CloudCertificationProgressViewModel } from "../../../tracks";
-import { spacing, typography } from "../../../theme";
 import type { CertificationExamSummaryViewModel, CertificationPracticeAnswerViewModel } from "../../../tracks/certification";
 import type { AnalyticsData } from "../../analytics/analyticsService";
 import { useAppPreferences, useThemedStyles } from "../../../preferences";
 import type { AppColors } from "../../../theme";
+import { spacing, typography } from "../../../theme";
 import { runtimeSelectors } from "../../../testing/runtimeSelectors";
-
-import {
-  buildProgressTabModel,
-  type AlgorithmsProgressScreenModel,
-  type ProgressAction,
-} from "./progressTabModel";
+import { buildProgressTabModel, type ProgressAction } from "./progressTabModel";
 
 type ProgressTabProps = {
   activeTrack: TrackDisplay;
   analytics: AnalyticsData;
   attempts: CertificationExamSummaryViewModel[];
   cloudProgress?: CloudCertificationProgressViewModel | null;
+  onChangeTrack: () => void;
+  onProgressAction?: (action: ProgressAction) => void;
   practiceHistory: CertificationPracticeAnswerViewModel[];
   reviewQueueItems?: readonly ReviewQueueEntry[];
   trainingAttempts?: TrainingAttempt[];
-  onProgressAction?: (action: ProgressAction) => void;
 };
 
+/** Figma 09A-09G progress shell backed by the existing local evidence model. */
 export function ProgressTab({
   activeTrack,
   analytics,
   attempts,
   cloudProgress,
+  onChangeTrack,
+  onProgressAction,
   practiceHistory,
   reviewQueueItems = [],
   trainingAttempts = [],
-  onProgressAction,
 }: ProgressTabProps) {
   const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
-  const progress = buildProgressTabModel({
-    activeTrackId: activeTrack.id,
-    analytics,
-    attempts,
-    cloudProgress,
-    practiceHistory,
-    reviewQueueItems,
-    trainingAttempts,
-  });
-  const reviewAction = progress.reviewAction;
-  const isCertificationTrack = activeTrack.familyId === "certification";
-
-  if (progress.algorithmsProgress) {
-    return (
-      <AlgorithmsProgressContent
-        model={progress.algorithmsProgress}
-        onProgressAction={onProgressAction}
-      />
-    );
-  }
+  const { colors: palette, t } = useAppPreferences();
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const model = buildProgressTabModel({ activeTrackId: activeTrack.id, analytics, attempts, cloudProgress, practiceHistory, reviewQueueItems, trainingAttempts });
+  const focus = model.algorithmsProgress?.currentFocus;
+  const focusTitle = focus?.title ?? model.performanceScores[0]?.label ?? activeTrack.shortTitle;
+  const focusProgress = focus?.showProgress ? focus.progressPercent : model.performanceScores[0]?.percent ?? 0;
+  const focusDetail = focus?.explanation ?? model.performanceScores[0]?.detail ?? model.activitySummary.detail;
+  const focusIcon: IconName = activeTrack.familyId === "certification" ? "cloud" : "practice";
+  const focusAction = model.algorithmsProgress?.priority.primaryAction ?? model.reviewAction;
+  const focusActionLabel = model.algorithmsProgress ? "Open practice" : model.reviewActionLabel;
+  const weekValue = model.activitySummary.value;
+  const progressRatio = focusProgress > 0 ? Math.min(1, focusProgress / 100) : weekValue > 0 ? 1 : 0;
 
   return (
-    <>
-      <View style={styles.pageIntro}>
-        <Text style={styles.screenTitle}>{t("Focus overview")}</Text>
-        <Text style={styles.screenSubtitle}>
-          {t("Review what needs attention and track recent local practice.")}
-        </Text>
-      </View>
-
-      <Card variant="layered" style={styles.reviewCard}>
-        <View style={styles.reviewHeader}>
-          <View style={styles.reviewCopy}>
-            <Text style={styles.reviewTitle}>{t("Due review")}</Text>
-            <Text style={styles.mutedText}>
-              {t(progress.reviewQueueCopy)}
-            </Text>
-          </View>
-          <Text style={styles.reviewNumber}>{progress.reviewQueueCount}</Text>
-        </View>
-        {progress.warning ? (
-          <View style={styles.warningBanner}>
-            <Text style={styles.warningText}>{t(progress.warning)}</Text>
-          </View>
-        ) : null}
-        {progress.reviewActionEnabled && reviewAction && onProgressAction ? (
-          <Button onPress={() => onProgressAction(reviewAction)} variant="secondary">
-            {t(progress.reviewActionLabel)}
-          </Button>
-        ) : null}
-      </Card>
-
-      <View style={styles.section}>
-        <SectionHeader
-          title={t("Practice activity")}
-          action={<Badge label={t("Local data")} tone="neutral" />}
-          tight
-        />
-        <Card>
-          <View style={styles.activityHeader}>
-            <IconTile name="practice" tone="primary" />
-            <View style={styles.activityCopy}>
-              <Text style={styles.activityValue}>
-                {progress.activitySummary.value}
-              </Text>
-              <Text style={styles.performanceTitle}>
-                {t(progress.activitySummary.label)}
-              </Text>
-              <Text style={styles.mutedText}>
-                {t(progress.activitySummary.detail)}
-              </Text>
-            </View>
-          </View>
-        </Card>
-      </View>
-
-      <View style={styles.section}>
-        <SectionHeader title={t(progress.performanceSectionTitle)} tight />
-        {progress.performanceScores.length > 0 ? (
-          <View style={styles.actionList}>
-            {progress.performanceScores.map((score) => (
-              <View key={score.id} style={styles.performanceRow}>
-                <View style={styles.performanceHeader}>
-                  <IconTile
-                    name={isCertificationTrack ? "cloud" : "route"}
-                    tone="info"
-                  />
-                  <View style={styles.performanceCopy}>
-                    <Text style={styles.performanceTitle}>{t(score.label)}</Text>
-                    <Text style={styles.mutedText}>
-                      {score.detail ? t(score.detail) : `${score.correct}/${score.total} ${t("correct")}`}
-                    </Text>
-                  </View>
-                  <View style={styles.performanceMeta}>
-                    <Text style={styles.performanceValue}>{score.percent}%</Text>
-                  </View>
-                </View>
-                <ProgressBar progress={score.percent / 100} tone="primary" />
-              </View>
-            ))}
-          </View>
-        ) : (
-          <EmptyState
-            title={t(getProgressEmptyTitle(activeTrack.id))}
-            description={t(getProgressEmptyDescription(activeTrack.id, progress.hasData))}
-          />
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <SectionHeader title={t("Concrete metrics")} tight />
-        <View style={styles.metricRow}>
-          {progress.metrics.map((metric) => (
-            <MetricCard
-              key={metric.label}
-              label={t(metric.label)}
-              tone={metric.tone}
-              value={metric.value}
-            />
-          ))}
-        </View>
-      </View>
-    </>
-  );
-}
-
-function AlgorithmsProgressContent({
-  model,
-  onProgressAction,
-}: {
-  model: AlgorithmsProgressScreenModel;
-  onProgressAction?: (action: ProgressAction) => void;
-}) {
-  const styles = useThemedStyles(createStyles);
-  const { t } = useAppPreferences();
-  const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
-  const [showDiagnostics, setShowDiagnostics] = useState(!model.diagnostics.collapsedByDefault);
-  const roadmapNodes = showAllRoadmapNodes
-    ? model.roadmapSummary.allNodes
-    : model.roadmapSummary.nodes;
-
-  return (
-    <>
-      <View style={styles.pageIntro}>
-        <Text style={styles.screenTitle} testID={runtimeSelectors.progress.root()}>{t("Learning priority")}</Text>
-        <Text style={styles.screenSubtitle}>
-          {t("Use your current evidence to choose the next learning action.")}
-        </Text>
-      </View>
-
-      <Card variant="layered" style={styles.priorityCard}>
-        <Badge label={t(model.priority.label)} tone={getBadgeTone(model.priority.tone)} />
-        <Text style={styles.priorityTitle}>{t(model.priority.title)}</Text>
-        <Text style={styles.mutedText}>{t(model.priority.detail)}</Text>
-        <Button
-          disabled={!onProgressAction}
-          onPress={() => onProgressAction?.(model.priority.primaryAction)}
+    <View style={styles.root} testID={runtimeSelectors.progress.root()}>
+      <View style={styles.header}>
+        <Text maxFontSizeMultiplier={2} style={styles.screenTitle}>{t("Progress")}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t("Change track")}: ${t(activeTrack.shortTitle)}`}
+          onPress={onChangeTrack}
+          style={({ pressed }) => [styles.trackSelector, pressed ? styles.pressed : null]}
+          testID="patternly:progress:track-selector"
         >
-          {t(model.priority.primaryActionLabel)}
-        </Button>
-        {model.priority.secondaryAction && model.priority.secondaryActionLabel ? (
-          <Button
-            disabled={!onProgressAction}
-            onPress={() => onProgressAction?.(model.priority.secondaryAction!)}
-            variant="ghost"
-          >
-            {t(model.priority.secondaryActionLabel)}
-          </Button>
-        ) : null}
+          <Text maxFontSizeMultiplier={2} style={styles.trackSelectorText}>{t(activeTrack.shortTitle)}</Text>
+          <Icon color={palette.textPrimary} name="chevron-down" size={18} />
+        </Pressable>
+      </View>
+
+      <Text style={styles.sectionLabel}>{t("This week")}</Text>
+      <Card style={styles.weekCard}>
+        <View style={styles.weekHeader}>
+          <View style={styles.weekCopy}>
+            <Text maxFontSizeMultiplier={2} style={styles.weekTitle}>{t(formatWeekTitle(weekValue))}</Text>
+            <Text maxFontSizeMultiplier={2} style={styles.weekDetail}>{t(model.activitySummary.detail)}</Text>
+          </View>
+          <View style={styles.miniBar}>
+            <View style={[styles.miniBarFill, { width: `${Math.round(progressRatio * 100)}%` }]} />
+          </View>
+        </View>
+        {model.reviewQueueCount > 0 ? <Text style={styles.weekAction}>{t(`${model.reviewQueueCount} review items due`)}</Text> : null}
       </Card>
 
       <View style={styles.section}>
-        <SectionHeader title={t("Current focus")} tight />
+        <Text style={styles.sectionTitle}>{t("Current focus")}</Text>
         <Card style={styles.focusCard}>
-          <View style={styles.cardHeading}>
-            <Text style={styles.activityValue}>{model.currentFocus.title}</Text>
-            <Badge
-              label={t(model.currentFocus.statusLabel)}
-              tone={getBadgeTone(model.currentFocus.statusTone)}
-            />
-          </View>
-          <View style={styles.focusMetrics}>
-            <FocusMetric
-              label={t("Items practiced")}
-              showDivider
-              value={t(model.currentFocus.practicedLabel)}
-            />
-            <FocusMetric
-              label={t("Skills tried")}
-              value={t(model.currentFocus.skillEvidenceLabel)}
-            />
-          </View>
-          {model.currentFocus.showProgress ? (
-            <ProgressBar progress={model.currentFocus.progressPercent / 100} tone="primary" />
-          ) : null}
-          <Text style={styles.mutedText}>{t(model.currentFocus.explanation)}</Text>
-        </Card>
-      </View>
-
-      {model.nextTopic ? (
-        <View style={styles.section}>
-          <SectionHeader title={t("Another topic")} tight />
-          <Card style={styles.focusCard}>
-            <View style={styles.cardHeading}>
-              <Text style={styles.activityValue}>{model.nextTopic.title}</Text>
-              <Badge label={t("Available")} tone="info" />
+          <View style={styles.focusHeader}>
+            <View style={styles.focusCopy}>
+              <Text maxFontSizeMultiplier={2} style={styles.focusTitle}>{t(focusTitle)}</Text>
+              <Text style={styles.focusSubtitle}>{t(focus?.showProgress ? "Recent effectiveness" : "Local evidence")}</Text>
             </View>
-            <Text style={styles.mutedText}>{t(model.nextTopic.detail)}</Text>
-          </Card>
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <SectionHeader title={t("Roadmap summary")} tight />
-        <Card style={styles.roadmapCard}>
-          {roadmapNodes.map((node) => (
-            <View key={node.id} style={styles.roadmapRow} testID={runtimeSelectors.progress.node(node.id)}>
-              <View style={styles.roadmapCopy}>
-                <Text style={styles.performanceTitle}>{node.title}</Text>
-                {node.showProgress ? (
-                  <ProgressBar progress={node.progressPercent / 100} tone="primary" />
-                ) : null}
-              </View>
-              <Badge label={t(node.label)} tone={getBadgeTone(node.tone)} />
-            </View>
-          ))}
-          {model.roadmapSummary.allNodes.length > model.roadmapSummary.nodes.length ? (
-            <Button
-              onPress={() => setShowAllRoadmapNodes((current) => !current)}
-              variant="ghost"
-            >
-              {showAllRoadmapNodes ? t("Show roadmap summary") : t(model.roadmapSummary.showAllActionLabel)}
+            <IconTile name={focusIcon} size={32} tone="primary" />
+          </View>
+          <Text style={styles.focusPercent}>{focusProgress}%</Text>
+          <Text style={styles.focusDetail}>{t(focusDetail)}</Text>
+          <ProgressBar progress={progressRatio} tone="primary" />
+          {focusAction && onProgressAction ? (
+            <Button onPress={() => onProgressAction(focusAction)} variant="ghost">
+              {t(focusActionLabel)}
             </Button>
           ) : null}
         </Card>
       </View>
 
-      <View style={styles.explanationDisclosure}>
-        <View style={styles.explanationHeader}>
-          <View style={styles.explanationCopy}>
-            <Text style={styles.explanationTitle}>{t(model.diagnostics.title)}</Text>
-            <Text style={styles.explanationSubtitle}>{t(model.diagnostics.subtitle)}</Text>
-          </View>
-          <Button onPress={() => setShowDiagnostics((current) => !current)} variant="ghost">
-            {showDiagnostics ? t(model.diagnostics.hideActionLabel) : t(model.diagnostics.showActionLabel)}
-          </Button>
-        </View>
-        {showDiagnostics ? (
-          <View style={styles.explanationDetails}>
-            <ExplanationBlock
-              label={t("Attempt outcomes")}
-              text={formatDiagnosticFacts(model.diagnostics.outcomeSummary)}
-            />
-            <ExplanationBlock
-              label={t("Detected mistake patterns")}
-              text={
-                model.diagnostics.mistakePatterns.length > 0
-                  ? model.diagnostics.mistakePatterns.join(" · ")
-                  : t("No repeated mistake patterns detected yet.")
-              }
-            />
-            <ExplanationBlock
-              label={t("Roadmap state")}
-              text={formatDiagnosticFacts(model.diagnostics.roadmapFacts)}
-            />
-          </View>
-        ) : null}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t("Needs attention")}</Text>
+        {model.reviewQueueCount > 0 ? (
+          <Card style={styles.attentionCard}>
+            <View style={styles.attentionTitleRow}>
+              <View style={styles.attentionDot} />
+              <Text style={styles.attentionTitle}>{t("Review due")}</Text>
+            </View>
+            <Text style={styles.attentionDetail}>{t(model.reviewQueueCopy)}</Text>
+            {model.reviewAction && onProgressAction ? (
+              <Button onPress={() => onProgressAction(model.reviewAction!)} variant="ghost">
+                {t(model.reviewActionLabel)}
+              </Button>
+            ) : null}
+          </Card>
+        ) : (
+          <Card style={styles.emptyAttentionCard}>
+            <Text style={styles.attentionTitle}>{t("Nothing needs attention")}</Text>
+            <Text style={styles.attentionDetail}>{t("Keep practicing to build local evidence for this track.")}</Text>
+          </Card>
+        )}
       </View>
-    </>
-  );
-}
-
-function ExplanationBlock({
-  label,
-  text,
-}: {
-  label: string;
-  text: string;
-}) {
-  const styles = useThemedStyles(createStyles);
-  return (
-    <View style={styles.explanationBlock}>
-      <Text style={styles.explanationLabel}>{label}</Text>
-      <Text style={styles.explanationText}>{text}</Text>
+      {model.algorithmsProgress ? (
+        <AlgorithmsEvidenceSection
+          model={model.algorithmsProgress}
+          onProgressAction={onProgressAction}
+          showDiagnostics={showDiagnostics}
+          setShowDiagnostics={setShowDiagnostics}
+        />
+      ) : (
+        <PerformanceEvidenceSection scores={model.performanceScores} trackFamily={activeTrack.familyId} />
+      )}
     </View>
   );
 }
 
-function FocusMetric({
-  label,
-  showDivider = false,
-  value,
-}: {
-  label: string;
-  showDivider?: boolean;
-  value: string;
-}) {
+function AlgorithmsEvidenceSection({
+  model,
+  onProgressAction,
+  setShowDiagnostics,
+  showDiagnostics,
+}: Readonly<{
+  model: NonNullable<ReturnType<typeof buildProgressTabModel>["algorithmsProgress"]>;
+  onProgressAction?: (action: ProgressAction) => void;
+  setShowDiagnostics: (value: (current: boolean) => boolean) => void;
+  showDiagnostics: boolean;
+}>) {
   const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  const [showAllRoadmapNodes, setShowAllRoadmapNodes] = useState(false);
+  const roadmapNodes = showAllRoadmapNodes ? model.roadmapSummary.allNodes : model.roadmapSummary.nodes;
   return (
-    <View style={[styles.focusMetric, showDivider ? styles.focusMetricDivider : null]}>
-      <Text style={styles.focusMetricValue}>{value}</Text>
-      <Text style={styles.focusMetricLabel}>{label}</Text>
+    <View style={styles.section}>
+      <View style={styles.sectionHeading}>
+        <Text style={styles.sectionTitle}>{t("Learning map")}</Text>
+        <Badge label={t("Local evidence")} tone="neutral" />
+      </View>
+      <Card style={styles.evidenceCard}>
+        {roadmapNodes.map((node) => (
+          <View key={node.id} style={styles.roadmapRow} testID={runtimeSelectors.progress.node(node.id)}>
+            <View style={styles.roadmapCopy}>
+              <Text style={styles.roadmapTitle}>{t(node.title)}</Text>
+              {node.showProgress ? <ProgressBar progress={node.progressPercent / 100} tone="primary" /> : null}
+            </View>
+            <Badge label={t(node.label)} tone={node.tone === "muted" ? "neutral" : node.tone} />
+          </View>
+        ))}
+        {model.roadmapSummary.allNodes.length > model.roadmapSummary.nodes.length ? <Button onPress={() => setShowAllRoadmapNodes((current) => !current)} variant="ghost">{t(showAllRoadmapNodes ? "Show roadmap summary" : model.roadmapSummary.showAllActionLabel)}</Button> : null}
+        {model.priority.primaryAction && onProgressAction ? <Button onPress={() => onProgressAction(model.priority.primaryAction)} variant="ghost">{t(model.priority.primaryActionLabel)}</Button> : null}
+      </Card>
+      <View style={styles.diagnosticsCard}>
+        <View style={styles.diagnosticsHeader}>
+          <View style={styles.diagnosticsCopy}>
+            <Text style={styles.diagnosticsTitle}>{t(model.diagnostics.title)}</Text>
+            <Text style={styles.diagnosticsSubtitle}>{t(model.diagnostics.subtitle)}</Text>
+          </View>
+          <Button onPress={() => setShowDiagnostics((current) => !current)} variant="ghost">{t(showDiagnostics ? model.diagnostics.hideActionLabel : model.diagnostics.showActionLabel)}</Button>
+        </View>
+        {showDiagnostics ? <View style={styles.diagnosticsDetails}>
+          <Text style={styles.diagnosticsText}>{`${t("Attempt outcomes")}: ${formatDiagnosticFacts(model.diagnostics.outcomeSummary)}`}</Text>
+          <Text style={styles.diagnosticsText}>{`${t("Detected mistake patterns")}: ${model.diagnostics.mistakePatterns.length ? model.diagnostics.mistakePatterns.join(" · ") : t("No repeated mistake patterns detected yet.")}`}</Text>
+          <Text style={styles.diagnosticsText}>{`${t("Roadmap state")}: ${formatDiagnosticFacts(model.diagnostics.roadmapFacts)}`}</Text>
+        </View> : null}
+      </View>
     </View>
   );
 }
 
-function getBadgeTone(
-  tone: "danger" | "warning" | "info" | "success" | "muted",
-): "danger" | "warning" | "info" | "success" | "neutral" {
-  return tone === "muted" ? "neutral" : tone;
+function PerformanceEvidenceSection({ scores, trackFamily }: Readonly<{ scores: readonly { correct: number; detail?: string; id: string; label: string; percent: number; total: number }[]; trackFamily: string }>) {
+  const styles = useThemedStyles(createStyles);
+  const { t } = useAppPreferences();
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{t("Performance evidence")}</Text>
+      {scores.length > 0 ? scores.map((score) => <Card key={score.id} style={styles.evidenceRow}><View style={styles.evidenceRowHeader}><IconTile name={trackFamily === "certification" ? "cloud" : "route"} tone="info" /><View style={styles.roadmapCopy}><Text style={styles.roadmapTitle}>{t(score.label)}</Text><Text style={styles.evidenceDetail}>{t(score.detail ?? `${score.correct}/${score.total} correct`)}</Text></View><Text style={styles.evidencePercent}>{score.percent}%</Text></View><ProgressBar progress={score.percent / 100} tone="primary" /></Card>) : <Card style={styles.emptyEvidenceCard}><Text style={styles.roadmapTitle}>{t("No evidence yet")}</Text><Text style={styles.evidenceDetail}>{t("Complete a focused session to build track-aware evidence here.")}</Text></Card>}
+    </View>
+  );
 }
 
-function formatDiagnosticFacts(
-  facts: AlgorithmsProgressScreenModel["diagnostics"]["outcomeSummary"],
-): string {
+function formatDiagnosticFacts(facts: readonly { label: string; value: number | string }[]): string {
   return facts.map((fact) => `${fact.label}: ${fact.value}`).join(" · ");
 }
 
-function getProgressEmptyTitle(trackId: TrackDisplay["id"]): string {
-  return trackId === GOOGLE_CLOUD_ASSOCIATE_CLOUD_ENGINEER_TRACK_ID
-    ? "No topic samples yet"
-    : "No practice samples yet";
-}
-
-function getProgressEmptyDescription(
-  trackId: TrackDisplay["id"],
-  hasData: boolean,
-): string {
-  return hasData
-    ? "Topic performance appears after answers have domain-level scoring data."
-    : "Start a focused practice session to build track-aware performance data.";
+function formatWeekTitle(value: number): string {
+  if (value === 0) return "No sessions completed yet";
+  return value === 1 ? "1 session completed" : `${value} sessions completed`;
 }
 
 const createStyles = (palette: AppColors) => StyleSheet.create({
-  pageIntro: {
-    gap: spacing.md,
-  },
-  screenTitle: {
-    ...typography.heading,
-    color: palette.textPrimary,
-  },
-  screenSubtitle: {
-    ...typography.small,
-    color: palette.textSecondary,
-  },
-  reviewCard: {
-    gap: spacing.lg,
-  },
-  reviewHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-  },
-  reviewCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  reviewTitle: {
-    ...typography.bodyStrong,
-    color: palette.textPrimary,
-  },
-  reviewNumber: {
-    ...typography.display,
-    color: palette.info,
-    fontVariant: ["tabular-nums"],
-  },
-  metricRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.md,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  activityHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  activityCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  activityValue: {
-    ...typography.heading,
-    color: palette.textPrimary,
-    fontVariant: ["tabular-nums"],
-  },
-  priorityCard: {
-    gap: spacing.lg,
-  },
-  priorityTitle: {
-    ...typography.heading,
-    color: palette.textPrimary,
-  },
-  focusCard: {
-    gap: spacing.lg,
-  },
-  cardHeading: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-  },
-  focusMetrics: {
-    flexDirection: "row",
-    gap: spacing.sm,
-  },
-  focusMetric: {
-    flex: 1,
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  focusMetricDivider: {
-    borderColor: palette.border,
-    borderRightWidth: StyleSheet.hairlineWidth,
-  },
-  focusMetricValue: {
-    ...typography.bodyStrong,
-    color: palette.textPrimary,
-    fontVariant: ["tabular-nums"],
-  },
-  focusMetricLabel: {
-    ...typography.caption,
-    color: palette.textSecondary,
-  },
-  mutedText: {
-    ...typography.small,
-    color: palette.textSecondary,
-  },
-  roadmapCard: {
-    gap: spacing.lg,
-  },
-  roadmapRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-  },
-  roadmapCopy: {
-    flex: 1,
-    gap: spacing.sm,
-  },
-  explanationDisclosure: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: spacing.md,
-    padding: spacing.md,
-  },
-  explanationHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-  },
-  explanationCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  explanationTitle: {
-    ...typography.bodyStrong,
-    color: palette.textPrimary,
-  },
-  explanationSubtitle: {
-    ...typography.caption,
-    color: palette.textMuted,
-  },
-  explanationDetails: {
-    borderColor: palette.border,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    gap: spacing.md,
-    paddingTop: spacing.md,
-  },
-  explanationBlock: {
-    gap: spacing.xs,
-  },
-  explanationLabel: {
-    ...typography.caption,
-    color: palette.textSecondary,
-  },
-  explanationText: {
-    ...typography.small,
-    color: palette.textPrimary,
-  },
-  warningBanner: {
-    backgroundColor: palette.warningSoft,
-    borderRadius: 8,
-    padding: spacing.md,
-  },
-  warningText: {
-    ...typography.small,
-    color: palette.textPrimary,
-  },
-  actionList: {
-    gap: spacing.md,
-  },
-  performanceRow: {
-    backgroundColor: palette.surface,
-    borderColor: palette.border,
-    borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: spacing.sm,
-    padding: spacing.lg,
-  },
-  performanceHeader: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.md,
-    justifyContent: "space-between",
-  },
-  performanceCopy: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-  performanceTitle: {
-    ...typography.bodyStrong,
-    color: palette.textPrimary,
-    flexShrink: 1,
-  },
-  performanceMeta: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.xs,
-  },
-  performanceValue: {
-    ...typography.bodyStrong,
-    color: palette.primary,
-    flexShrink: 0,
-    fontVariant: ["tabular-nums"],
-  },
+  root: { gap: spacing.lg },
+  header: { gap: spacing.lg },
+  screenTitle: { ...typography.title, color: palette.textPrimary },
+  trackSelector: { alignItems: "center", backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 12, borderWidth: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 40, paddingHorizontal: spacing.md },
+  trackSelectorText: { ...typography.bodyStrong, color: palette.textSecondary },
+  pressed: { opacity: 0.78 },
+  sectionLabel: { ...typography.bodyStrong, color: palette.info },
+  sectionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  weekCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
+  weekHeader: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  weekCopy: { flex: 1, gap: spacing.xs },
+  weekTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  weekDetail: { ...typography.small, color: palette.textSecondary },
+  miniBar: { backgroundColor: palette.borderStrong, borderRadius: 2, height: 4, marginTop: spacing.xs, overflow: "hidden", width: 40 },
+  miniBarFill: { backgroundColor: palette.success, borderRadius: 2, height: 4 },
+  weekAction: { ...typography.small, color: palette.primary },
+  section: { gap: spacing.md },
+  sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  focusCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
+  focusHeader: { alignItems: "flex-start", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  focusCopy: { flex: 1, gap: spacing.xs },
+  focusTitle: { ...typography.heading, color: palette.textPrimary },
+  focusSubtitle: { ...typography.small, color: palette.textSecondary },
+  focusPercent: { color: palette.textPrimary, fontSize: 34, fontWeight: "700", lineHeight: 40 },
+  focusDetail: { ...typography.small, color: palette.textSecondary },
+  attentionCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
+  emptyAttentionCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.xs, padding: spacing.lg },
+  attentionTitleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
+  attentionDot: { backgroundColor: palette.danger, borderRadius: 4, height: 7, width: 7 },
+  attentionTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  attentionDetail: { ...typography.small, color: palette.textSecondary },
+  evidenceCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.md, padding: spacing.lg },
+  roadmapRow: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  roadmapCopy: { flex: 1, gap: spacing.xs, minWidth: 0 },
+  roadmapTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  diagnosticsCard: { backgroundColor: palette.surface, borderColor: palette.border, borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, gap: spacing.md, padding: spacing.md },
+  diagnosticsHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md, justifyContent: "space-between" },
+  diagnosticsCopy: { flex: 1, gap: spacing.xs },
+  diagnosticsTitle: { ...typography.bodyStrong, color: palette.textPrimary },
+  diagnosticsSubtitle: { ...typography.caption, color: palette.textMuted },
+  diagnosticsDetails: { borderColor: palette.border, borderTopWidth: StyleSheet.hairlineWidth, gap: spacing.sm, paddingTop: spacing.md },
+  diagnosticsText: { ...typography.small, color: palette.textSecondary },
+  evidenceRow: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.sm, padding: spacing.lg },
+  evidenceRowHeader: { alignItems: "center", flexDirection: "row", gap: spacing.md },
+  evidenceDetail: { ...typography.caption, color: palette.textSecondary },
+  evidencePercent: { ...typography.bodyStrong, color: palette.primary },
+  emptyEvidenceCard: { backgroundColor: palette.surface, borderColor: palette.border, gap: spacing.xs, padding: spacing.lg },
 });

@@ -13,13 +13,14 @@ type NavigatorFeedback = Readonly<{ kind: "incomplete_response" | "save_failed";
 
 type SimulationQuestionNavigatorProps = Readonly<{
   onDismiss: () => void;
+  onFinish?: () => void;
   onOccurrencePress: (occurrenceId: string) => Promise<SimulationNavigatorSelectionResult>;
   positions?: readonly SimulationNavigatorPosition[];
   visible: boolean;
 }>;
 
 /** The navigator is a separate modal surface; it only asks its owning route to perform a canonical jump. */
-export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, positions, visible }: SimulationQuestionNavigatorProps) {
+export function SimulationQuestionNavigator({ onDismiss, onFinish, onOccurrencePress, positions, visible }: SimulationQuestionNavigatorProps) {
   const styles = useThemedStyles(createStyles);
   const { fontScale } = useWindowDimensions();
   const { colors: palette, t } = useAppPreferences();
@@ -56,6 +57,7 @@ export function SimulationQuestionNavigator({ onDismiss, onOccurrencePress, posi
           <ScrollView contentContainerStyle={styles.grid} style={styles.gridScroll}>
             {validPositions.map((position, index) => <NavigatorCell columns={columns} disabled={Boolean(savingOccurrenceId)} index={index} key={position.occurrenceId} onPress={() => void select(position.occurrenceId)} position={position} />)}
           </ScrollView>
+          {onFinish ? <Button disabled={Boolean(savingOccurrenceId)} onPress={onFinish}>{t("Finish simulation")}</Button> : null}
         </View>
       </View>
     </Modal>

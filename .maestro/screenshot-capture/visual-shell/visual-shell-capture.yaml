@@ -22,6 +22,8 @@ tags:
     visibilityPercentage: 50
 - tapOn:
     id: "patternly:home:select-track:coding-interview-dsa-problem-solving"
+- tapOn:
+    id: "patternly:home:select-track:continue"
 - scrollUntilVisible:
     element:
       id: "patternly:home:track-card:coding-interview-dsa-problem-solving"

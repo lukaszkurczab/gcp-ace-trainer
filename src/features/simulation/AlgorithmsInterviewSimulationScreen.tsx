@@ -134,6 +134,7 @@ export function AlgorithmsInterviewSimulationScreen({ navigation, route }: Props
       progress: projection.position.current / projection.position.total, timer: simulationTimer(projection.remainingForegroundMs),
       notice: { tone: changed ? "neutral" : "success", message: changed ? "Not saved yet" : response ? "Saved" : "No saved response" },
       question: question(projection, response), navigator: navigator(projection), runtimeIdentity: { itemId: projection.item.itemId, sessionId: projection.session.id },
+      onFinish: () => setOverlay("finish"),
       onOccurrencePress: async (occurrenceId) => {
         const target = projection.navigator.find((item) => item.occurrenceId === occurrenceId);
         return target ? goTo(target.index) : "save_failed";

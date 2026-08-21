@@ -1,15 +1,15 @@
 # Patternly Figma parity and design-system cutover
 
-Date: 2026-08-21  
+Date: 2026-08-22
 Repository: `Patternly`  
-Starting commit: `4adf8012224ea7d187da9b30fd081076ce6386d6`  
+Starting commit: `b16c20b456d62d42b6f1a75d62e69bae18b29755`
 Branch at start: `main`, tracking `origin/main`
 
 ## Outcome
 
-This change consolidates the reachable launch surfaces onto the repository-owned visual system and aligns the implemented slice with the live Figma authority. It does not invent routes, metrics, commands, or data for Figma frames that the current product does not expose.
+This pass extends the repository-owned visual system across the reachable Home, track selection, Progress, Settings, practice summary, simulation runner, simulation navigator, simulation summary/review, answer review, and review-empty states. It does not invent routes, metrics, commands, persistence, or account behavior for Figma frames that the current product does not expose.
 
-The completed slice covers shared tokens and primitives, Home, Practice Hub, compact Coding Practice setup, the active practice question surface, answer options, session shell, partial practice summary, and bottom navigation. The full Figma file is broader than the current launch plan and contains several screens that have no canonical runtime owner yet.
+The implementation is not design-complete. Several Figma-backed operational states still need a fresh screenshot comparison, and the Figma file contains account, authentication, premium, content-trust, goal/cadence, and focus-area surfaces without a matching canonical runtime owner. The correct final status for this pass is `INCOMPLETE`.
 
 ## Figma authority
 
@@ -42,7 +42,9 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Reachable surface/state | Current canonical owner | Figma authority | Status | Notes |
 |---|---|---|---|---|
 | Home ready, Coding track, no activity | `HomeScreen` / `HomeTab` | `55:445` | `MATCHED` | Shell, title, track context, recommendation card, action geometry, overview rows, colors, and bottom navigation aligned. Current recommendation copy remains data-driven. |
-| Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `DESIGN_MISSING` | Runtime state is reachable, but a complete current-SHA visual comparison was not established for the selection and switch-pending states. |
+| Home track switch | `SelectTrackScreen` | `42:422`, `42:478`, `42:539` | `PARTIAL` | The local selection plus single footer Continue command now follows the Figma track-choice shell. Current-head screenshot capture remains pending because the local Metro endpoint did not open a port. |
+| Home active session | `HomeScreen` / `HomeTab` | `55:539` | `PARTIAL` | Resume card, overview, focus, activity, and bottom navigation are implemented from real local session data; current-head screenshot comparison remains pending. |
+| Home review due | `HomeScreen` / `HomeTab` | `55:632` | `PARTIAL` | Review weak areas, Start review, Manage settings, overview, focus, and activity are implemented without synthetic counts; current-head screenshot comparison remains pending. |
 | Practice Hub ready/review available | `PracticeHubScreen` | `55:993` | `CANONICAL_CONFLICT` | Shell, topic context, hero card, grouped rows, and navigation were aligned. Figma's mode taxonomy and copy do not match the current canonical modes and commands, so no Figma-only mode or CTA was added. |
 | Practice Hub unavailable | `PracticeHubScreen` | `55:1139` | `DESIGN_MISSING` | Runtime has an explicit unavailable state; the current Figma frame was not translated into a verified current-SHA implementation. |
 | Coding Custom Practice setup/default | `PracticeSetupScreen` | `55:2172` | `CANONICAL_CONFLICT` | Local Screen Header, compact choice geometry, section rhythm, and footer align. Figma's Focus Areas and `Save settings` command do not exist in the canonical runtime; existing `Start session` behavior is preserved. |
@@ -50,32 +52,34 @@ Status meanings are the task-required classifications: `MATCHED` means the curre
 | Coding practice active question, single choice unanswered | `PracticeSessionScreen` / `SessionShell` / `PracticeResponseControls` | `68:569`, `750:6400` | `MATCHED` | Session top bar, question card, answer-option spacing/borders/badges, disabled submit, and dark/light tokens verified by iOS capture. |
 | Coding practice immediate feedback/details | `PracticeSessionScreen` / `PracticeResponseControls` | `68:603`, `68:637`, `68:719` | `DESIGN_MISSING` | Runtime state exists, but a fresh state-specific visual comparison was not completed in this slice. |
 | Practice pause/end, final item, persistence/recovery states | Session route owners | `68:804`, `68:844`, `68:1074`, `68:1115`, `68:1156`, `68:1200`, `68:1239` | `DESIGN_MISSING` | Canonical behavior exists and is covered by tests, but no current-SHA Figma parity implementation was established for every operational state. |
-| Partial practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235`, `750:6109` | `CANONICAL_CONFLICT` | Result card surface, title scale, radius, and action footer were aligned. Review-answer semantics and Figma summary data do not map to the current partial-summary contract, so no fake review CTA or score was added. |
-| Completed practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235` | `DESIGN_MISSING` | Runtime route exists; the completed-state visual parity pass remains open. |
+| Partial practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235`, `750:6109` | `PARTIAL` | Summary shell, truthful partial state, active time, completed-item count, outcome section, and real feedback disclosure are implemented. Current-head screenshot comparison remains pending. |
+| Completed practice summary | `AlgorithmsPracticeSummaryScreen` | `750:6235` | `PARTIAL` | Completed summary now has the Figma summary hierarchy and real score distribution; current-head screenshot comparison remains pending. |
 | Bottom navigation | `BottomTabBar` / `AppBottomNavigation` | `140:875` | `MATCHED` | Surface, top rule, active indicator, safe-area padding, label scale, and tab geometry verified in dark/light captures. |
 | Shared Button | `Button` | `141:817` | `MATCHED` | Primary, pressed, disabled, secondary, ghost, and destructive contracts consolidated. |
 | Shared Screen Header | `ScreenHeader` | `140:881` | `MATCHED` | Back touch target, context, title, description, and large-text multiplier implemented and tested. |
 | Shared Answer Option | `PracticeResponseControls` | `248:2394` | `MATCHED` | Default, selected, correct, incorrect, and omitted-compatible letter-badge geometry implemented; correctness remains runtime-owned. |
-| Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `CANONICAL_CONFLICT` | Figma describes week/focus/evidence/goal/activity views that do not match the current persisted progress model. No unsupported goal or evidence commands were invented. |
+| Progress tab | `ProgressTab` | `842:9563`, `842:10822`, `842:10949`, `842:11057`, `842:11192`, `842:11410`, `842:11466`, `842:11568`, `842:11692` | `PARTIAL` | Figma week/focus/attention hierarchy is implemented over real local evidence, including explicit empty performance evidence and the existing Algorithms roadmap/diagnostics. Goal/cadence and activity sub-surfaces remain canonical conflicts; current-head screenshot comparison remains pending. |
 | Settings root and appearance | `SettingsTab` / `AppearanceSettingsScreen` | `822:7687`, `619:5237` | `MATCHED` | Root and appearance journeys pass in both dark and light iOS captures; current settings commands remain canonical. |
 | Language, notifications, data, legal, diagnostics | Existing settings route owners | `822:7687` and related Page 1 sections | `DESIGN_MISSING` | Routes are reachable, but no verified Figma-specific frame-to-code parity was completed for each detail surface. |
 | Exam, exam review, result, answer review | `ExamScreen`, `ExamReviewScreen`, `ResultScreen`, `AnswerReviewScreen` | No direct current-state authority mapped | `DESIGN_MISSING` | Existing behavior and actions remain unchanged. |
-| Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `DESIGN_MISSING` | Figma frames exist, but the simulation-specific parity implementation and fresh state captures remain open. |
-| Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `DESIGN_MISSING` | Existing runtime route remains canonical; no unsupported review state was created. |
-| Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Behavior is outside the verified Figma cutover slice. |
+| Algorithms simulation active/navigator/recovery | `AlgorithmsInterviewSimulationScreen` and navigator | `74:539` through `74:1046` | `PARTIAL` | Choice rows, navigator sheet, Finish simulation action, and existing durable recovery states use the Figma geometry where the canonical projection exposes it; fresh state captures remain open. |
+| Simulation summary | `AlgorithmsInterviewSimulationResultScreen` / `SimulationSessionSurface` | `74:1046`, `750:6109` | `PARTIAL` | Summary shell, active time, outcome distribution, review availability, and real back/review commands are implemented; fresh screenshot comparison remains open. |
+| Simulation review | `AlgorithmsInterviewSimulationResultScreen` | `765:6130` and related review frames | `PARTIAL` | All/Missed filters, score, current item, feedback blocks, pager, and back-to-summary are implemented over the verified result; fresh screenshot comparison remains open. |
+| Mistakes review and topic roadmap | Existing route owners | No direct current-state authority mapped | `DESIGN_MISSING` | Review now exposes an explicit no-active-track state; no direct Figma authority was found for the full queue/roadmap surfaces. |
 | Auth, account, premium, content trust/reporting | No current runtime route | Page 1 sections `57:1952`, `95:1563`, `107:960`, `115:738`; Library account/content nodes | `DESIGN_MISSING` | These are present in Figma but absent from the current launch route graph. Adding them would invent product scope and commands. |
 
 ## Verification
 
 - `npm test`: 544 passed, 0 failed.
 - `npm run typecheck`: passed.
+- `npm run qa:static`: passed, including recovery inventory and both runtime/content boundary checks.
 - `npm run validate:runtime-privacy-boundary`: passed.
 - `npm run validate:content-boundary`: passed.
 - `git diff --check`: passed.
-- iOS Release simulator build/install: 0 errors, 2 existing Xcode warnings.
-- Maestro visual-shell flow: passed in dark and light on `Maestro_IOS_iPhone-16-Pro_18`, iOS 18.6. Captured Home, compact setup, active session, partial summary, settings root, and appearance in each theme.
-- Local capture artifacts: `artifacts/maestro-screen-capture/current-head/2026-08-21-figma-cutover-dark/` and `artifacts/maestro-screen-capture/current-head/2026-08-21-figma-cutover-light/`. These are ignored evidence artifacts and are not committed.
-- Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier on the new Screen Header, and route ownership tests pass.
+- `npx expo export --platform ios --output-dir /tmp/patternly-figma-export-2026-08-22`: passed; current source produced an iOS bundle with 1,342 modules.
+- Existing iOS Release simulator build/install and dark/light Maestro capture were successful for the previous pushed slice, not for this current working tree.
+- Current-head Maestro capture was attempted but the local Expo process did not expose the required explicit 127.0.0.1 Metro listener in this environment. No new screenshot evidence is claimed for this pass.
+- Automated accessibility/source checks: shared back geometry, title/description contracts, answer-option semantics, large-text multiplier, simulation option semantics, navigation ownership, and route ownership tests pass.
 
 Not verified here: Android, signed/distribution builds, physical-device rendering, full 200% large-text traversal across every route, reduced-motion runtime capture, and every Figma operational/recovery state.
 
@@ -85,4 +89,4 @@ No route was deleted because the current reachability graph does not prove any e
 
 ## Remaining work
 
-The remaining gaps are product/design-contract gaps, not silent UI fallbacks: map or approve Figma frames for the current routes, decide whether the Figma-only account/progress/premium/content-trust surfaces are launch scope, and provide canonical data/commands for the conflicting Practice Hub, Practice Setup, Home overview, and Summary designs. Only after those decisions should the `DESIGN_MISSING` and `CANONICAL_CONFLICT` rows be promoted to implementation work.
+The remaining gaps are explicit and blocking: run current-head dark/light screenshot comparison once the local Metro endpoint is available; finish visual parity for all operational/recovery states; map or approve Figma frames for the current routes; decide whether the Figma-only account/auth/premium/content-trust surfaces are launch scope; and provide canonical data/commands for conflicting Practice Hub, Practice Setup focus areas, Progress goal/cadence, and account/settings designs. Until then the product cannot be reported as 99% design-complete.

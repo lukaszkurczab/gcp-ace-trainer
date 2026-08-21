@@ -6,7 +6,7 @@ export const brand = {
 
 export const colors = {
   light: {
-    background: brand.warmWhite,
+    background: "#F0F2F5",
     surface: "#FFFFFF",
     elevatedSurface: "#F9FBFE",
     border: "#D9E2EC",
